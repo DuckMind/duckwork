@@ -3,7 +3,7 @@
 set -euo pipefail
 fail() { printf 'Duckwork install failed: %s\n' "$*" >&2; exit 1; }
 [ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] || fail 'No binary release for this platform yet (supported: macOS arm64). No source will be downloaded.'
-release=v0.22.7
+release=v0.22.8
 asset=duckwork-darwin-arm64.tar.gz
 base="https://github.com/DuckMind/duckwork/releases/download/$release"
 root="${DUCKWORK_INSTALL_DIR:-$HOME/.local/share/duckwork-binary}"

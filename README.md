@@ -1,6 +1,6 @@
 # Duckwork binary distribution
 
-Duckwork **v0.22.7** for **macOS Apple Silicon (arm64)**. This repository contains
+Duckwork **v0.22.8** for **macOS Apple Silicon (arm64)**. This repository contains
 only the installer, distribution documentation and license. Release assets contain
 the compiled CLI runtime and a Desktop app with its runtime bundled. Application
 source and development Git history are not published here.
@@ -22,7 +22,7 @@ select `gpt-6-luna`, then run `duckwork`. This repository contains no API keys.
 
 ## Install Desktop
 
-Download `Duckwork-0.22.7-mac-arm64.dmg` and `SHA256SUMS` from release `v0.22.7`.
+Download `Duckwork-0.22.8-mac-arm64.dmg` and `SHA256SUMS` from release `v0.22.8`.
 Verify the checksum, open the image and copy **Duckwork Agent.app** to Applications
 (or your user Applications folder). The backend is included; first launch does not
 clone application source. Connect your own Fordex Router key in onboarding.
