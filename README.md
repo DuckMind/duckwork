@@ -1,6 +1,6 @@
 # Duckwork binary distribution
 
-Duckwork **v0.22.9** for **macOS Apple Silicon (arm64)**. This repository contains
+Duckwork **v0.22.10** for **macOS Apple Silicon (arm64)**. This repository contains
 only the installer, distribution documentation and license. Release assets contain
 the compiled CLI runtime and a Desktop app with its runtime bundled. Application
 source and development Git history are not published here.
