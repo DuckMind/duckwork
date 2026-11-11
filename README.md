@@ -1,11 +1,33 @@
 # Duckwork binary distribution
 
-Duckwork **v0.22.10** for **macOS Apple Silicon (arm64)**. This repository contains
-only the installer, distribution documentation and license. Release assets contain
-the compiled CLI runtime and a Desktop app with its runtime bundled. Application
-source and development Git history are not published here.
+Duckwork **v0.22.11** for **macOS Apple Silicon (arm64)** and **Windows x64**. This
+repository contains only the installer, distribution documentation and license.
+Release assets contain the compiled CLI runtime, a macOS Desktop app and a Windows
+installer, each with its runtime bundled. Application source and development Git
+history are not published here.
 
-## Install CLI
+## Windows (Desktop + CLI)
+
+1. Download `Duckwork-<version>-win-x64.exe` and `SHA256SUMS` from the
+   [latest release](https://github.com/DuckMind/duckwork/releases/latest) and check
+   the hash: `Get-FileHash .\Duckwork-<version>-win-x64.exe` must equal its line in
+   `SHA256SUMS`.
+2. Run the `.exe`. It installs for the current user only (no administrator rights),
+   adds Start menu and desktop shortcuts for **Duckwork Agent**, and puts the
+   `duckwork` command on your user PATH. Silent install: `Duckwork-<version>-win-x64.exe /S`.
+3. Open a **new** terminal: `duckwork --version`, then `duckwork setup` (Fordex Router,
+   your own key, `gpt-6-luna`). In Desktop, connect the key in onboarding.
+
+The installer is **not Authenticode-signed**: Windows SmartScreen may show
+"Windows protected your PC" — choose *More info → Run anyway* only for a file whose
+hash you verified. Do not disable SmartScreen or Defender. Uninstall from
+*Settings → Apps*; it removes the app and its PATH entry and keeps `%LOCALAPPDATA%\duckwork`
+(your profile). Update with `duckwork update` (downloads the next `.exe`, verifies
+it against `SHA256SUMS` and installs it silently in place) or run the newer `.exe`.
+
+## macOS
+
+### Install CLI
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/DuckMind/duckwork/main/scripts/install.sh | bash
@@ -20,7 +42,7 @@ Unsupported platforms stop explicitly; there is no source-download fallback.
 Run `duckwork setup` for Quick Setup (Fordex Router), enter **your own** API key,
 select `gpt-6-luna`, then run `duckwork`. This repository contains no API keys.
 
-## Install Desktop
+### Install Desktop
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/DuckMind/duckwork/main/scripts/install.sh | bash -s -- --desktop
@@ -43,8 +65,8 @@ do not disable Gatekeeper or remove quarantine as an installation requirement.
 Python application modules are bytecode; the UI is a compiled JavaScript bundle.
 These are not encryption or a promise against reverse engineering. Third-party
 runtimes, permitted dependency source, licenses and notices remain included.
-Only macOS arm64 is supplied in this release; Linux, Windows and Intel macOS are
-not claimed as tested binary installations. Optional integrations may need their
+Only macOS arm64 and Windows x64 are supplied in this release; Linux and Intel macOS
+are not claimed as tested binary installations. Optional integrations may need their
 own services and credentials.
 
 ## Upgrade

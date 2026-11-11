@@ -2,7 +2,7 @@
 # Duckwork binary distribution. No Git, Python source checkout, or source fallback.
 # Installs, upgrades and rolls back the terminal CLI and Duckwork Desktop (see --help).
 set -euo pipefail
-release=v0.22.10
+release=v0.22.11
 repo=DuckMind/duckwork
 asset=duckwork-darwin-arm64.tar.gz
 bundle_id=com.fordex.duckwork-bundled
@@ -58,7 +58,7 @@ done
 [[ "$release" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail 'Release must look like vX.Y.Z.'
 [[ "$keep" =~ ^[0-9]+$ ]] || fail '--keep must be a whole number.'
 [ -z "$wait_pid" ] || [[ "$wait_pid" =~ ^[0-9]+$ ]] || fail '--wait-pid must be a process id.'
-[ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] || fail 'No binary release for this platform yet (supported: macOS arm64). No source will be downloaded.'
+[ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] || fail "This script installs macOS arm64 only. Windows x64: run Duckwork-${release#v}-win-x64.exe from https://github.com/$repo/releases/latest (Desktop + duckwork CLI). Other platforms have no binary release yet. No source will be downloaded."
 version=${release#v}
 base="https://github.com/$repo/releases/download/$release"
 root="${DUCKWORK_INSTALL_DIR:-$HOME/.local/share/duckwork-binary}"
