@@ -1,0 +1,17 @@
+name: "\x68ermes-kame-provider"
+repo: "https://github.com/Kame696/kame-api-rotation-for-\x68ermes"
+sha: d89dce1d80b511b874217ea73d445c3c4c32260c
+subdir: "\x68ermes-kame-provider"
+description: "Companion to duckwork-kame-api-rotation (install both). A model-provider plugin that re-registers Duckwork' bundled API-key profiles unchanged except for create_client and create_messages_client, which return the rotation plugin's key-rotating client; otherwise None and Duckwork builds its own. Same endpoints as Duckwork, no third-party service, no core override."
+maintainer: Kame696
+tier: community
+category: models
+requires_duckwork: ">=0.21.4"
+version: "1.8.2.9"
+docs_url: "https://github.com/Kame696/kame-api-rotation-for-\x68ermes/tree/v1.8.2.9/\x68ermes-kame-provider#readme"
+readme: true
+capabilities:
+  provides_tools: []
+  provides_hooks: []
+  provides_middleware: []
+  requires_env: []

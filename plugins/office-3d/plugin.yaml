@@ -1,0 +1,20 @@
+name: office-3d
+label: Office 3D
+version: 1.4.4
+description: >-
+  A live isometric office for Duckwork Desktop: every profile is a person at a desk.
+  A profile doing real work sits typing at its desk with a lit terminal screen; an
+  online-but-idle profile relaxes in the lounge with tea; an offline profile leaves
+  an empty desk with a dark monitor. A stat bar aggregates active sessions, tokens
+  and cost across profiles. The backend reads each profile's gateway_state.json and
+  opens its state.db read-only, running aggregate queries only — never message content.
+author: oslook
+license: MIT
+requires_duckwork: ">=0.21.4"
+kind: standalone
+provides_tools:
+  - office_status
+# Liveness uses Duckwork gateway resolution (including multiplexed profiles),
+# not bare PID existence. The Windows branch of the PID probe now uses
+# ctypes OpenProcess/GetExitCodeProcess instead of refusing the check.
+platforms: [linux, macos, windows]

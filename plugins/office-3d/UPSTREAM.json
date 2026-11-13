@@ -1,0 +1,52 @@
+{
+  "repository": "https://github.com/oslook/\u0068ermes-desktop-plugin-office-3d",
+  "commit": "127c28accc950d1a10ff55ced992538eda656f16",
+  "version": "1.4.4",
+  "license": "MIT",
+  "upstream_files_sha256": {
+    "CHANGELOG.md": "85827b249e969baf8680f5568c05f218aaff9b75b0feae2ca6ffb5f86d2ab9c9",
+    "LICENSE": "2f16e7d7ebff39c98081a988582784e3233dea9cdde52b1849bb361173bb41d3",
+    "README.md": "075a74418e65ebce6c4ae2fd96c752d4c0e11363c6445b4c3bbdcb9e18021ee0",
+    "README.zh-CN.md": "a2501708b0dc85ddf84e261640d538b85f7035860bc9eac47402cad928267c9a",
+    "RELEASING.md": "60998d697a3b145dd61650c5600eecaefd339743ce6ce4d65dff6285b8637179",
+    "WINDOWS.md": "8f1d5edb49eb5114d4b447fd4ad2f13eddaa9c7263a1cbeebbf5ea57317a3ea8",
+    "__init__.py": "4cd7de0a755c73e763596e0cb46379ba75496c66c6e89def5b88ee66137220f7",
+    "dashboard/manifest.json": "da968d0518a5328f5cfbacbf2f54549642c9ce490fe2db00cb47fc1f9df2d9d9",
+    "dashboard/plugin_api.py": "630a6dfbba45a9766de01432c36365c21bd2befe5501061feb58110e02c9cc70",
+    "desktop/plugin.js": "3760338fb18e1875d5a51dd1130acb32c4ca70121e91aed713277c098bf9fd70",
+    "plugin.yaml": "4d681f7cfae47e8e08e81fb7ec95735e0b1244f320245631d1c3d3acdd57b19a",
+    "tests/canvas-browser.mjs": "3d3a93d07bdf48b3ff39dd97eeed9c45f560634ac265a04c473b081066dd73dd",
+    "tests/fixtures/pre-ik-plugin.js": "98147490a165b58ef1bd0eab895c1b694c6e59fe4f3dbd949fae0841d114ff12",
+    "tests/layout-backend-semantics.py": "75623be2d1ad991cbd742415556f3a4288a410da63cb2288af25b2c56532a3d5",
+    "tests/layout-browser.mjs": "703196f9cb0289bc9aa22083627ecfb89171bb65442ea35baea293762958364c",
+    "tests/layout-checks.html": "f0a91cccb545f76aff744e5b2e131d2156bdecc1c25f42261e2f6039ac74df6a",
+    "tests/layout-preview.mjs": "88b7aedee51e56e167f345d41ed21b72ada617a0fbf1cd4afae63a26e77af9f2",
+    "tests/lowpoly-perf.html": "2ce0d82dcb48e994847aa0ac05f33a7a23f95c6457d5150a734b4d06b2125cd3",
+    "tests/pose-preview.py": "d2044cb0b6c913e1f42f2a4fe0dc1fcff2caa14b2a72e59c5d94048f3de8257c",
+    "tests/pose-regression.html": "a19332a5ad4ed9f4462a37365e8cd3ed7e622268e81de5206be695e84f9d53ab",
+    "tests/profile-visibility.mjs": "fcfcba2d591f1ae2cebb66dba21f6fda5826823c4e14dca1aa86600133570beb",
+    "tests/route-query.mjs": "31f3b169d8a8dea868be9c5e97e5bfa0407892d8a98bc72c466f62590a92f01a",
+    "tests/sofa-preview.py": "155fe38037589360998ccf365b771d746437a5e39c6bf4c13c71eceeb16c4184",
+    "tests/sofa-regression.html": "ed97c8c2e2351fa86598e64a9b27206c04e521a5e116120e1a679633d6b24244",
+    "tests/test_display_name.py": "0779a000bf11337b0b4bf3521b1dbb84d2e1ad67716de6bbed1a16c2bc9904e7",
+    "tests/test_fleet_root.py": "dbf2067f2ad9cbad84f82443e02b548d6ecf4ef12ea1ee29741e8702acae286e",
+    "tests/test_gateway_liveness.py": "c427888d8f6f374351ab40ef4ea103a6afb76f9d06f37c31953ca37b5be5e4fb",
+    "tests/test_profile_discovery.py": "3027bd0af8066f58322c1f8ba9f3893c291f35d0e60f51fa940446513bc3ccbb",
+    "tests/wheel-browser.mjs": "8709acae150a2c62c32e32e8d2c6c5d2c643b87d33509862da895b9db9abb3bd",
+    "tests/wheel-checks.html": "5135df2e90588b7cb42ec1e917881216865b2d1514d509d978c241c58e584edf"
+  },
+  "omitted": [
+    ".git",
+    ".github",
+    ".gitignore",
+    "install.sh",
+    "docs binary screenshots"
+  ],
+  "changes": [
+    "Duckwork namespaces and SDK",
+    "Duckwork YAML adapter",
+    "Aggregate-only delegation routing SQL",
+    "Reject invalid profile paths",
+    "Native liveness fixture patches Duckwork symbols"
+  ]
+}

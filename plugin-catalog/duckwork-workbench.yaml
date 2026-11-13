@@ -1,0 +1,20 @@
+name: "\x68ermes-workbench"
+repo: "https://github.com/sxuff/\x68ermes-workbench"
+sha: f07fb5c90e24c1a396604758feb0fd4ae077760b
+description: The Duckwork desktop app in your browser. `duckwork workbench` serves the desktop interface through the Duckwork dashboard, for headless servers, VPSes and tablets. Disclosure — community plugin, not a Fordex product. On the first `duckwork workbench` run and again after each Duckwork update it runs `npm install --ignore-scripts` (guided by Duckwork's lockfile) and Vite against your Duckwork checkout's desktop sources, writing only under ~/.duckwork/duckwork-workbench and its own plugin dir (the checkout is only read), and starts `duckwork dashboard` on loopback when none is running.
+maintainer: sxuff
+tier: community
+category: desktop
+requires_duckwork: ">=0.21"
+docs_url: "https://github.com/sxuff/\x68ermes-workbench#readme"
+version: "0.2.1"
+image: "https://raw.githubusercontent.com/sxuff/\x68ermes-workbench/f07fb5c90e24c1a396604758feb0fd4ae077760b/docs/media/banner.png"
+screenshots:
+  - "https://raw.githubusercontent.com/sxuff/\x68ermes-workbench/f07fb5c90e24c1a396604758feb0fd4ae077760b/docs/media/session.png"
+  - "https://raw.githubusercontent.com/sxuff/\x68ermes-workbench/f07fb5c90e24c1a396604758feb0fd4ae077760b/docs/media/slash-commands.png"
+  - "https://raw.githubusercontent.com/sxuff/\x68ermes-workbench/f07fb5c90e24c1a396604758feb0fd4ae077760b/docs/media/model-picker.png"
+capabilities:
+  provides_tools: []
+  provides_hooks: []
+  provides_middleware: []
+  requires_env: []
