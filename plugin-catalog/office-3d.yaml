@@ -1,22 +1,18 @@
-# Bundled Duckwork Office 3D; upstream provenance pin is below.
-# Parent publication must repin repo/subdir/sha to the audited DuckMind tree.
-# Never substitute an uncreated public commit SHA.
+# Bundled Duckwork Office 3D; source pin is the audited public extension commit.
+# Original MIT provenance is preserved in plugins/office-3d/UPSTREAM.json.
 name: office-3d
 title: Office 3D
-repo: "https://github.com/oslook/\x68ermes-desktop-plugin-office-3d"
-sha: "127c28accc950d1a10ff55ced992538eda656f16"
+repo: https://github.com/DuckMind/duckwork
+sha: "8eb4de8c61fd998b864e48299799d81d71962757"
+subdir: plugins/office-3d
 description: "A live isometric office for Duckwork Desktop: every profile is a person at a desk — a profile doing real work sits typing with a lit terminal screen, an online-but-idle one relaxes in the lounge with tea, an offline one leaves an empty desk with a dark monitor. Click a desk to inspect that profile (state, sessions, tokens, cost) and open its chat or latest session; a cost/tokens leaderboard ranks the profiles; plus a global Total/Working/Idle/Offline overview, a status-bar chip, a palette command with keybind, a settings page, and an office_status agent tool that reports the same status to the model. Disclosure — the backend and the tool read each profile's gateway_state.json and open its state.db read-only, running aggregate queries only (COUNT/SUM/MAX over the sessions table: counts, token totals, cost, last-activity); they never read message content, system prompts or titles, make no network calls, and need no credentials. Opening a profile's latest session asks the app's own session.list RPC for that session's id (metadata only) and then opens it through the app's own openSession; no message content is read. Windows liveness uses the read-only OpenProcess/GetExitCodeProcess probe, never os.kill(pid, 0). Bundled Duckwork adaptation preserves approval/security gates and reads only delegation-routing labels and aggregate counts, never task bodies."
 maintainer: oslook
 tier: community
 category: desktop
-requires_duckwork: ">=0.21.4"
+requires_duckwork: ">=0.22.13"
 version: "1.4.4"
 platforms: [linux, macos, windows]
-docs_url: "https://github.com/oslook/\x68ermes-desktop-plugin-office-3d#readme"
-image: "https://raw.githubusercontent.com/oslook/\x68ermes-desktop-plugin-office-3d/127c28accc950d1a10ff55ced992538eda656f16/docs/banner.png"
-screenshots:
-  - "https://raw.githubusercontent.com/oslook/\x68ermes-desktop-plugin-office-3d/127c28accc950d1a10ff55ced992538eda656f16/docs/screenshot.jpeg"
-  - "https://raw.githubusercontent.com/oslook/\x68ermes-desktop-plugin-office-3d/127c28accc950d1a10ff55ced992538eda656f16/docs/screenshot-2.jpeg"
+docs_url: "https://github.com/DuckMind/duckwork/tree/8eb4de8c61fd998b864e48299799d81d71962757/plugins/office-3d#readme"
 readme: true
 capabilities:
   provides_tools:
