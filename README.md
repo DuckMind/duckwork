@@ -1,6 +1,6 @@
 # Duckwork binary distribution
 
-Duckwork **v0.22.11** for **macOS Apple Silicon (arm64)** and **Windows x64**. This
+Duckwork **v0.22.12** for **macOS Apple Silicon (arm64)** and **Windows x64**. This
 repository contains only the installer, distribution documentation and license.
 Release assets contain the compiled CLI runtime, a macOS Desktop app and a Windows
 installer, each with its runtime bundled. Application source and development Git
@@ -24,6 +24,24 @@ hash you verified. Do not disable SmartScreen or Defender. Uninstall from
 *Settings → Apps*; it removes the app and its PATH entry and keeps `%LOCALAPPDATA%\duckwork`
 (your profile). Update with `duckwork update` (downloads the next `.exe`, verifies
 it against `SHA256SUMS` and installs it silently in place) or run the newer `.exe`.
+
+## Duckwork Crew Desktop (new)
+
+The new **Duckwork** desktop app (your bots, sessions, plans, automations and plugins
+in one window) has its own downloads in the same release, each with the Duckwork
+runtime bundled — no separate CLI install is needed for it:
+
+- macOS: `Duckwork-Crew-Desktop-<version>-mac-arm64.dmg` — open it and drag
+  **Duckwork.app** to Applications. Ad-hoc signed, not Apple notarized (see the
+  macOS note below).
+- Windows: `Duckwork-Crew-Desktop-<version>-win-x64.exe` — installs **Duckwork** for
+  the current user (no administrator rights). Not Authenticode-signed (see the
+  SmartScreen note above). Needs Microsoft Edge WebView2, which Windows 10/11
+  already include; the installer downloads it if it is missing.
+
+Check each file against `SHA256SUMS` first. It runs next to **Duckwork Agent** and
+uses the same Duckwork profile; connect your Fordex Router key with `duckwork setup`
+(or in Duckwork Agent onboarding). Update it by installing the newer download.
 
 ## macOS
 
