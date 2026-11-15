@@ -2,22 +2,23 @@
 # Duckwork binary distribution. No Git, Python source checkout, or source fallback.
 # Installs, upgrades and rolls back the terminal CLI and Duckwork Desktop (see --help).
 set -euo pipefail
-release=v0.22.12
+release=v0.22.13
 repo=DuckMind/duckwork
-asset=duckwork-darwin-arm64.tar.gz
+arch=
 bundle_id=com.fordex.duckwork-bundled
 app_name='Duckwork Agent.app'
 fail() { printf 'Duckwork install failed: %s\n' "$*" >&2; exit 1; }
 note() { printf '%s\n' "$*"; }
 usage() {
     cat <<'EOF'
-Duckwork installer for macOS arm64 (terminal CLI + Desktop). Re-run it to upgrade.
+Duckwork installer for macOS arm64/x64 (terminal CLI + Desktop). Re-run it to upgrade.
 
   curl -fsSL https://raw.githubusercontent.com/DuckMind/duckwork/main/scripts/install.sh | bash
   bash install.sh [options]          # after installing, `duckwork update` does the same
 
 Options:
   --version vX.Y.Z   install this release (upgrade, or roll back to a kept release)
+  --arch arm64|x64   architecture (default: this Mac; updater preserves the running app)
   --desktop          also install Duckwork Desktop when it is not installed yet
   --no-desktop       do not touch Duckwork Desktop
   --desktop-only     update only Duckwork Desktop
@@ -41,6 +42,7 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         --version) need_value "$1" "$#"; release=$2; shift 2;;
         --version=*) release=${1#*=}; shift;;
+        --arch) need_value "$1" "$#"; arch=$2; shift 2;;
         --desktop) desktop=yes; shift;;
         --no-desktop) desktop=no; shift;;
         --desktop-only) cli=0; desktop=yes; shift;;
@@ -58,7 +60,13 @@ done
 [[ "$release" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail 'Release must look like vX.Y.Z.'
 [[ "$keep" =~ ^[0-9]+$ ]] || fail '--keep must be a whole number.'
 [ -z "$wait_pid" ] || [[ "$wait_pid" =~ ^[0-9]+$ ]] || fail '--wait-pid must be a process id.'
-[ "$(uname -s)" = Darwin ] && [ "$(uname -m)" = arm64 ] || fail "This script installs macOS arm64 only. Windows x64: run Duckwork-${release#v}-win-x64.exe from https://github.com/$repo/releases/latest (Desktop + duckwork CLI). Other platforms have no binary release yet. No source will be downloaded."
+[ "$(uname -s)" = Darwin ] || fail "This script installs macOS only. Windows x64: run Duckwork-${release#v}-win-x64.exe. Linux x64: use the .deb or .rpm package at https://github.com/$repo/releases/latest. No source will be downloaded."
+host_arch=$(uname -m)
+case "$host_arch" in arm64) default_arch=arm64;; x86_64) default_arch=x64;; *) fail 'Unsupported macOS architecture. No source will be downloaded.';; esac
+arch=${arch:-$default_arch}
+case "$arch" in arm64|x64) ;; *) fail 'Architecture must be arm64 or x64.';; esac
+[ "$host_arch:$arch" != x86_64:arm64 ] || fail 'An Intel Mac cannot run an arm64 release.'
+asset="duckwork-darwin-$arch.tar.gz"
 version=${release#v}
 base="https://github.com/$repo/releases/download/$release"
 root="${DUCKWORK_INSTALL_DIR:-$HOME/.local/share/duckwork-binary}"
@@ -124,7 +132,7 @@ install_cli() {
         DUCKWORK_HOME="$stage/smoke-home" "$destination/bin/duckwork" --version > "$stage/version.txt" || fail 'Installed release no longer runs; remove it and retry.'
         note "Duckwork $release is already downloaded and verified; reusing it."
     else
-        printf 'Downloading Duckwork %s for macOS arm64…\n' "$release"
+        printf 'Downloading Duckwork %s for macOS %s…\n' "$release" "$arch"
         fetch "$asset" "$stage/$asset" 1800
         verify_file "$stage/$asset" "$expected"
         # Published CLI archives contain regular files/directories only. In particular,
@@ -279,7 +287,7 @@ install_desktop() {
             return 0
         fi
     fi
-    local image="Duckwork-$version-mac-arm64.dmg"
+    local image="Duckwork-$version-mac-$arch.dmg"
     expected=$(expect_checksum "$image")
     local source_image="$stage/desktop.dmg"
     if [ -n "$dmg" ]; then

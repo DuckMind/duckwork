@@ -1,10 +1,9 @@
 # Duckwork binary distribution
 
-Duckwork **v0.22.12** for **macOS Apple Silicon (arm64)** and **Windows x64**. This
-repository contains only the installer, distribution documentation and license.
-Release assets contain the compiled CLI runtime, a macOS Desktop app and a Windows
-installer, each with its runtime bundled. Application source and development Git
-history are not published here.
+Duckwork **v0.22.13**: **macOS arm64 + x64**, **Windows x64**, and **Linux x86_64**.
+Release installers bundle the compiled CLI/runtime and Desktop; no application core
+source or private development Git history is included. Existing separately authorized
+extension catalogs remain in this repository; they are not a source-install fallback.
 
 ## Windows (Desktop + CLI)
 
@@ -69,7 +68,9 @@ curl -fsSL https://raw.githubusercontent.com/DuckMind/duckwork/main/scripts/inst
 This installs the CLI and **Duckwork Agent.app** (checksum, bundle id, version and
 code signature are verified before the app is copied to `/Applications`, or
 `~/Applications` when `/Applications` is not writable; `--app PATH` chooses the
-location). Manual alternative: download `Duckwork-<version>-mac-arm64.dmg` and
+location). The installer selects this Mac’s architecture. Manual alternative: download
+`Duckwork-<version>-mac-arm64.dmg` (Apple Silicon) or `Duckwork-<version>-mac-x64.dmg`
+(Intel) and
 `SHA256SUMS` from the latest release, verify the checksum, open the image and copy
 the app. The backend is included; first launch does not clone application source.
 Connect your own Fordex Router key in onboarding.
@@ -78,14 +79,44 @@ The app is **ad-hoc signed, not Apple notarized**. Keep macOS security settings
 unchanged. If macOS blocks launch, review it through normal macOS approval controls;
 do not disable Gatekeeper or remove quarantine as an installation requirement.
 
+## Linux (Desktop + CLI)
+
+Download `duckwork-agent_<version>_amd64.deb` (Debian/Ubuntu) or
+`duckwork-agent-<version>-1.x86_64.rpm` (RPM distributions), plus `SHA256SUMS`.
+Check `sha256sum <downloaded-file>` against its exact checksum line before installation.
+Use your distribution's package installer, for example:
+
+```sh
+sudo apt install ./duckwork-agent_0.22.13_amd64.deb
+# On an RPM distribution, with required system libraries available:
+sudo dnf install ./duckwork-agent-0.22.13-1.x86_64.rpm
+```
+
+Packages install under `/opt/duckwork-agent`, provide `duckwork` (CLI),
+`duckwork-agent` (Desktop) and a desktop-menu entry. They do not enable a background
+system service or remove your profile. Upgrade by installing the newer package;
+Linux automatic updates are not claimed. A standalone CLI archive
+`duckwork-linux-x64.tar.gz` is also available: verify, extract into a new directory,
+then run `duckwork/bin/duckwork --version`.
+
+Requirements: x86_64, **glibc 2.39 or newer**, Electron GTK/NSS/X11/GBM/ALSA system
+libraries, and a working Chromium user-namespace sandbox. Do **not** add
+`--no-sandbox`, change system security policy, or set a user-writable helper setuid.
+Package payloads are tested on Ubuntu; RPM-native package-manager installation,
+Wayland and hardware/GPU behavior are not claimed. A `.rpm` filename alone does
+not imply compatibility with older RHEL/CentOS systems.
+
 ## Packaging and updates
 
 Python application modules are bytecode; the UI is a compiled JavaScript bundle.
 These are not encryption or a promise against reverse engineering. Third-party
 runtimes, permitted dependency source, licenses and notices remain included.
-Only macOS arm64 and Windows x64 are supplied in this release; Linux and Intel macOS
-are not claimed as tested binary installations. Optional integrations may need their
-own services and credentials.
+macOS x64 is exercised with x64 binaries under Rosetta on Apple Silicon, not on
+physical Intel hardware. Windows ARM64 and Linux ARM/musl are not supplied.
+Windows v0.22.13 acceptance uses isolated extracted installer payloads and the actual
+PATH hook on a scratch registry key; the full NSIS upgrade/uninstall lifecycle was
+not repeated, to preserve existing installations. Optional integrations may need
+their own services and credentials.
 
 ## Upgrade
 
