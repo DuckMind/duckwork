@@ -1,6 +1,6 @@
 # Duckwork binary distribution
 
-Duckwork **v0.22.13**: **macOS arm64 + x64**, **Windows x64**, and **Linux x86_64**.
+Duckwork **v0.22.14**: **macOS arm64 + x64**, **Windows x64**, and **Linux x86_64**.
 Release installers bundle the compiled CLI/runtime and Desktop; no application core
 source or private development Git history is included. Existing separately authorized
 extension catalogs remain in this repository; they are not a source-install fallback.
@@ -87,9 +87,9 @@ Check `sha256sum <downloaded-file>` against its exact checksum line before insta
 Use your distribution's package installer, for example:
 
 ```sh
-sudo apt install ./duckwork-agent_0.22.13_amd64.deb
+sudo apt install ./duckwork-agent_0.22.14_amd64.deb
 # On an RPM distribution, with required system libraries available:
-sudo dnf install ./duckwork-agent-0.22.13-1.x86_64.rpm
+sudo dnf install ./duckwork-agent-0.22.14-1.x86_64.rpm
 ```
 
 Packages install under `/opt/duckwork-agent`, provide `duckwork` (CLI),
@@ -113,7 +113,7 @@ These are not encryption or a promise against reverse engineering. Third-party
 runtimes, permitted dependency source, licenses and notices remain included.
 macOS x64 is exercised with x64 binaries under Rosetta on Apple Silicon, not on
 physical Intel hardware. Windows ARM64 and Linux ARM/musl are not supplied.
-Windows v0.22.13 acceptance uses isolated extracted installer payloads and the actual
+Windows v0.22.14 acceptance uses isolated extracted installer payloads and the actual
 PATH hook on a scratch registry key; the full NSIS upgrade/uninstall lifecycle was
 not repeated, to preserve existing installations. Optional integrations may need
 their own services and credentials.
