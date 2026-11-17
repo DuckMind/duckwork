@@ -1,14 +1,12 @@
 name: source-tray
-repo: "https://github.com/aydnOktay/\x68ermes-source-tray"
-sha: e64f7d2ad56f922410071e2096a40ceab421a392
-description: Session source tray — URLs the Duckwork agent opened via web_search,
-  web_extract, or browser_navigate. Desktop pane and /sources. No search backend
-  of its own and no API keys.
-maintainer: aydnOktay
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Session source tray — URLs the Duckwork agent opened via web_search, web_extract, or browser_navigate. Desktop pane and /sources. No search backend of its own and no API keys.
+maintainer: Fordex
 tier: community
 category: web
 requires_duckwork: ">=0.21"
-docs_url: "https://github.com/aydnOktay/\x68ermes-source-tray"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/source-tray/3c46d67bb789/README.md"
 version: "0.1.1"
 platforms: []
 capabilities:
@@ -19,3 +17,8 @@ capabilities:
   - post_tool_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/source-tray/3c46d67bb789
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/aydnOktay/hermes-source-tray"

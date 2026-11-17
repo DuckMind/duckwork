@@ -1,18 +1,22 @@
 name: token-cost-meter
-repo: https://github.com/IT-dreamer/token-cost-meter
-sha: 18fbc2c15d3ddd1c3784e0f83feec314ac686152
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Live token usage, model-aware USD cost and prompt-cache savings in the Duckwork Desktop status bar, with a persistent per-day ledger that survives restarts. Disclosure — Desktop only; no network calls of its own (prices come from the gateway's model.options and a bundled models.dev rate table); stores per-day token totals, per-session counters and last-known rates in its own Desktop plugin storage; costs are list-price estimates, not billing data."
-maintainer: IT-dreamer
+maintainer: Fordex
 tier: community
 category: desktop
 version: "1.0.0"
 requires_duckwork: ">=0.21.6"
-docs_url: https://github.com/IT-dreamer/token-cost-meter#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/token-cost-meter/ca060c43eca3/README.md
 screenshots:
-  - https://raw.githubusercontent.com/IT-dreamer/token-cost-meter/18fbc2c15d3ddd1c3784e0f83feec314ac686152/image/statusbar-chip-en.png
-  - https://raw.githubusercontent.com/IT-dreamer/token-cost-meter/18fbc2c15d3ddd1c3784e0f83feec314ac686152/image/session-pane-en.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/token-cost-meter/ca060c43eca3/image/statusbar-chip-en.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/token-cost-meter/ca060c43eca3/image/session-pane-en.png
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/token-cost-meter/ca060c43eca3
+image: ''
+legacy_sources:
+- "https://github.com/IT-dreamer/token-cost-meter"

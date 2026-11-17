@@ -1,21 +1,22 @@
-name: "\x68ermes-token-speed"
-repo: "https://github.com/Ayshinko/\x68ermes-token-speed"
-sha: 0c0bb14b92ea1bd7d1287a22d845393632d14a71
-subdir: ""
-description: 'Live decode tokens-per-second chip for the Duckwork Desktop status
-  bar: 1-second sliding window while the model is still streaming, tool execution
-  time excluded from decode seconds, UI spinner frames never counted, TTFT tracked
-  separately, cumulative totals calibrated against authoritative provider usage
-  at turn end. Desktop-only (desktop/plugin.js); no agent tools, hooks, middleware
-  or env vars.'
-maintainer: Ayshinko
+name: "duckwork-token-speed"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/duckwork-token-speed/cc409d5ef823"
+description: 'Live decode tokens-per-second chip for the Duckwork Desktop status bar: 1-second sliding window while the model is still streaming, tool execution time excluded from decode seconds, UI spinner frames never counted, TTFT tracked separately, cumulative totals calibrated against authoritative provider usage at turn end. Desktop-only (desktop/plugin.js); no agent tools, hooks, middleware or env vars.'
+maintainer: Fordex
 tier: community
 category: desktop
 version: "1.1.0"
-docs_url: "https://github.com/Ayshinko/\x68ermes-token-speed#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-token-speed/cc409d5ef823/README.md"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-token-speed"
+legacy_sources:
+- "https://github.com/Ayshinko/hermes-token-speed"
+image: ''
+screenshots: []

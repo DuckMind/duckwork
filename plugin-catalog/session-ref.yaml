@@ -1,15 +1,12 @@
 name: session-ref
-repo: "https://github.com/kama-dev/\x68ermes-session-ref"
-sha: 468a0408a657becfcc70025d20b6ffc3bf66f8d1
-description: Reference another Duckwork session in the Desktop composer with @session —
-  type @ and pick from live session suggestions. Inserts a compact @session:"<title>"
-  reference; nothing is injected into context, the agent resolves it with its own
-  session-search. No more copying session IDs.
-maintainer: kama-dev
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Reference another Duckwork session in the Desktop composer with @session — type @ and pick from live session suggestions. Inserts a compact @session:"<title>" reference; nothing is injected into context, the agent resolves it with its own session-search. No more copying session IDs.
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.0"
-docs_url: "https://github.com/kama-dev/\x68ermes-session-ref#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/session-ref/41dcae08a320/README.md"
 version: "0.1.1"
 platforms: []
 capabilities:
@@ -17,3 +14,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/session-ref/41dcae08a320
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/kama-dev/hermes-session-ref"

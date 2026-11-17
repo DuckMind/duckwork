@@ -1,17 +1,14 @@
 name: custom-dangerous-patterns
-repo: "https://github.com/scross01/\x68ermes-custom-dangerous-patterns-plugin"
-sha: 256ff08d0be04baf1916f5e7d841b1c2718aa1e4
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: >-
-  Add custom dangerous command patterns to Duckwork's built-in approval
-  system. Users define regex patterns in YAML; a pre_tool_call hook sends
-  block patterns to Duckwork's human approval gate and blocks deny patterns
-  immediately. Modifies no Duckwork internals.
-maintainer: scross01
+  Add custom dangerous command patterns to Duckwork's built-in approval system. Users define regex patterns in YAML; a pre_tool_call hook sends block patterns to Duckwork's human approval gate and blocks deny patterns immediately. Modifies no Duckwork internals.
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.4"
 version: "0.5.1"
-image: "https://raw.githubusercontent.com/scross01/\x68ermes-custom-dangerous-patterns-plugin/256ff08d0be04baf1916f5e7d841b1c2718aa1e4/assets/card.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/custom-dangerous-patterns/298094347291/assets/card.png"
 platforms: []
 capabilities:
   provides_tools: []
@@ -19,3 +16,8 @@ capabilities:
   - pre_tool_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/custom-dangerous-patterns/298094347291
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/custom-dangerous-patterns/298094347291/README.md
+screenshots: []
+legacy_sources:
+- "https://github.com/scross01/hermes-custom-dangerous-patterns-plugin"

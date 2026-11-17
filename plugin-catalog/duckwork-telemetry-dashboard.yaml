@@ -1,17 +1,23 @@
-name: "\x68ermes-telemetry-dashboard"
-repo: "https://github.com/cybertecla/\x68ermes-telemetry-dashboard"
-sha: 1399a77f8096c536e51dbd5e732da44ff345c354
+name: "duckwork-telemetry-dashboard"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Dashboard-only read plugin: visualize the shared-metrics telemetry Duckwork collects locally — metric families, drilldowns, milestone timeline, install snapshot, and the exact next package payload. Send stays off."
-maintainer: cybertecla
+maintainer: Fordex
 tier: community
 category: general
-docs_url: "https://github.com/cybertecla/\x68ermes-telemetry-dashboard#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-telemetry-dashboard/dda3bd199a0a/README.md"
 version: "0.1.1"
 screenshots:
-  - "https://raw.githubusercontent.com/cybertecla/\x68ermes-telemetry-dashboard/1399a77f8096c536e51dbd5e732da44ff345c354/assets/screenshot-overview.png"
-  - "https://raw.githubusercontent.com/cybertecla/\x68ermes-telemetry-dashboard/1399a77f8096c536e51dbd5e732da44ff345c354/assets/screenshot-drilldown.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-telemetry-dashboard/dda3bd199a0a/assets/screenshot-overview.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-telemetry-dashboard/dda3bd199a0a/assets/screenshot-drilldown.png
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-telemetry-dashboard"
+legacy_sources:
+- "https://github.com/cybertecla/hermes-telemetry-dashboard"
+subdir: plugins/catalog-vendor/duckwork-telemetry-dashboard/dda3bd199a0a
+image: ''

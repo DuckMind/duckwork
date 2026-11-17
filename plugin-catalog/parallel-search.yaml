@@ -1,15 +1,13 @@
 name: parallel-search
-repo: https://github.com/parallel-web/search-mcp
-sha: "12f721b2b7ad29e63315884c008b5d77c2a4d7e4"
+repo: https://github.com/DuckMind/duckwork
+sha: "86b0c19d1504bc127a6c34d8a8d146e58276ef63"
 description: >-
-  Free web search and page fetching through Parallel's hosted MCP, with a setup
-  skill bundled. No account or API key required. Queries and requested URLs are
-  sent to Parallel. Adds direct MCP tools alongside Duckwork's native web providers.
-maintainer: georgeatparallel
+  Free web search and page fetching through Parallel's hosted MCP, with a setup skill bundled. No account or API key required. Queries and requested URLs are sent to Parallel. Adds direct MCP tools alongside Duckwork's native web providers.
+maintainer: Fordex
 tier: community
 category: web
 requires_duckwork: ">=0.20.1"
-docs_url: "https://github.com/parallel-web/search-mcp#\x68ermes-agent"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/parallel-search/a6df900862a8/README.md"
 version: "0.1.2"
 platforms: []
 capabilities:
@@ -17,3 +15,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/parallel-search/a6df900862a8
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/parallel-web/search-mcp"

@@ -1,18 +1,22 @@
 name: tavily-plugin
 title: Tavily
-repo: "https://github.com/tavily-ai/tavily-\x68ermes-plugin"
-sha: ac556341056dc903988f63d627d595e468f1cfa9
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Search, extract, map, crawl, and research through Tavily hosted MCP, with Tavily skills. The default connection requires TAVILY_API_KEY; supports Duckwork-managed OAuth through a native MCP override. Disclosure — Connects to Tavily's hosted MCP server at `mcp.tavily.com` and sends it the search queries, URLs and research prompts the agent issues, authenticated with `TAVILY_API_KEY` or a Duckwork-managed Tavily OAuth sign-in."
-maintainer: tavily-ai
+maintainer: Fordex
 tier: verified
 category: web
 requires_duckwork: ">=0.22.2"
-docs_url: "https://github.com/tavily-ai/tavily-\x68ermes-plugin/blob/ac556341056dc903988f63d627d595e468f1cfa9/README.md"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/tavily-plugin/086903c4cf38/README.md"
 version: "1.0.0"
-image: "https://raw.githubusercontent.com/tavily-ai/tavily-\x68ermes-plugin/ac556341056dc903988f63d627d595e468f1cfa9/assets/tavily-catalog-card.svg"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/tavily-plugin/086903c4cf38/assets/tavily-catalog-card.svg"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: [TAVILY_API_KEY]
+subdir: plugins/catalog-vendor/tavily-plugin/086903c4cf38
+screenshots: []
+legacy_sources:
+- "https://github.com/tavily-ai/tavily-hermes-plugin"

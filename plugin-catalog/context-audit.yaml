@@ -13,10 +13,12 @@ platforms: []
 capabilities:
   provides_tools: []
   provides_hooks:
-    - pre_tool_call
-    - post_tool_call
-    - pre_llm_call
-    - post_llm_call
-    - post_auxiliary_call
+  - pre_tool_call
+  - post_tool_call
+  - pre_llm_call
+  - post_llm_call
+  - post_auxiliary_call
   provides_middleware: []
   requires_env: []
+availability: unavailable
+unavailable_reason: "anonymous archive fetch failed: [{'attempt': 1, 'status': 404}]"

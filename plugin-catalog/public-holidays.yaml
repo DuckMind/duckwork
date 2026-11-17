@@ -1,12 +1,12 @@
 name: public-holidays
-repo: "https://github.com/Akloenx123/\x68ermes-public-holidays"
-sha: d73f177b13c368c5c2445f6595f4008ed6c79a78
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Public holidays for 200+ countries and their regions, plus workday checks, workday counts and deadline math (N working days after a date), computed in code instead of by the model. Disclosure — sends HTTPS GET requests to date.nager.at (Nager.Date, free, no key) carrying only a country code and a year; no redirects, 10 s timeout, responses cached in memory only. No credentials, no files written, no shell commands, no hooks, no background processes, no telemetry."
-maintainer: Akloenx123
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/Akloenx123/\x68ermes-public-holidays#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/public-holidays/7b5b7ddf15ce/README.md"
 version: "0.1.0"
 readme: true
 platforms: []
@@ -19,3 +19,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/public-holidays/7b5b7ddf15ce
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/Akloenx123/hermes-public-holidays"

@@ -1,16 +1,11 @@
 name: ard-kit
-repo: https://gitlab.com/ameobius-ai/ard-kit
-sha: 99796c7d776d89c8dcf99489b89a2b52831c4dc9
-description: Agentic Resource Discovery — search a local tool catalog by intent and inspect an entry to
-  get its invoke command. Ships the ard-registry skill plus an stdio MCP server (ard_search /
-  ard_inspect / ard_verify); stdlib only, the run stays local. Disclosure — no network egress, no API
-  keys and no environment variables read by the MCP front, which ranks a catalog JSON on disk; no
-  catalog ships in the repo, so the first call returns an explicit error naming the
-  `python -m ard_kit.catalogize` command that builds one.
-maintainer: ameobius-ai
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Agentic Resource Discovery — search a local tool catalog by intent and inspect an entry to get its invoke command. Ships the ard-registry skill plus an stdio MCP server (ard_search / ard_inspect / ard_verify); stdlib only, the run stays local. Disclosure — no network egress, no API keys and no environment variables read by the MCP front, which ranks a catalog JSON on disk; no catalog ships in the repo, so the first call returns an explicit error naming the `python -m ard_kit.catalogize` command that builds one.
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: https://gitlab.com/ameobius-ai/ard-kit#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/ard-kit/a2c5033f2073/README.md
 version: "0.20.0"
 platforms: []
 capabilities:
@@ -18,3 +13,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/ard-kit/a2c5033f2073
+image: ''
+screenshots: []
+legacy_sources:
+- "https://gitlab.com/ameobius-ai/ard-kit"

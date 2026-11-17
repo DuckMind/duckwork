@@ -1,22 +1,25 @@
 name: agent-station
-repo: https://github.com/thealps01-netizen/agent-station
-sha: ce8e97d25a3de6894e7f6066977c6346120b655b
-subdir: ""
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/agent-station/6a057b2a1bea"
 description: "Read-only Duckwork Desktop page for the focused chat: the main agent and its subagents, background commands and a Replay of file edits. Disclosure — its local dashboard routes serve the file-edit contents (Replay) and background-command output tails of the chat you view to the Desktop page; reads state.db read-only."
 title: "Agent Station"
-maintainer: thealps01-netizen
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.7"
 version: "3.0.3"
-docs_url: https://github.com/thealps01-netizen/agent-station#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/agent-station/6a057b2a1bea/README.md
 screenshots:
-  - "https://raw.githubusercontent.com/thealps01-netizen/agent-station/ce8e97d25a3de6894e7f6066977c6346120b655b/Docs/images/agents.png"
-  - "https://raw.githubusercontent.com/thealps01-netizen/agent-station/ce8e97d25a3de6894e7f6066977c6346120b655b/Docs/images/commands.png"
-  - "https://raw.githubusercontent.com/thealps01-netizen/agent-station/ce8e97d25a3de6894e7f6066977c6346120b655b/Docs/images/replay.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/agent-station/6a057b2a1bea/Docs/images/agents.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/agent-station/6a057b2a1bea/Docs/images/commands.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/agent-station/6a057b2a1bea/Docs/images/replay.png
 readme: true
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+image: ''
+legacy_sources:
+- "https://github.com/thealps01-netizen/agent-station"

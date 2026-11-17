@@ -1,15 +1,15 @@
-name: "optmem-\x68ermes"
-repo: "https://github.com/rarf/optmem-\x68ermes-plugin"
-sha: 2868af6620bf07958f833ca354fbeecf2a56b265
-subdir: optmem
+name: "optmem-duckwork"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/optmem-duckwork/90056b1174d8
 description: "Independent Duckwork integration of Victor Taelin's OptMem design: local, append-only memory with regex/BM25 recall and a bounded wake digest. Hybrid and guarded OptMem-only modes; verified migration and rollback. Local by default. Compaction is manual unless auto_nap is enabled. Optional LLM summaries run only when both auto_nap and llm_summary are on; they send memory blocks to the configured provider via host-owned authentication and may incur token costs. Summaries are lossy, raw records remain recoverable, and conflicts are not resolved automatically. Wake consumes model context. See README for upstream attribution. Disclosure — memory is stored locally under DUCKWORK_HOME; optional auto_nap+llm_summary sends stored memory lines to the user's configured model provider; the optmem-only mode (explicit CLI with --yes) disables Duckwork' built-in MEMORY.md/USER.md injection after a verified backup."
-maintainer: rarf
+maintainer: Fordex
 tier: community
 category: memory
 requires_duckwork: ">=0.21.2"
-docs_url: "https://github.com/rarf/optmem-\x68ermes-plugin/blob/2868af6620bf07958f833ca354fbeecf2a56b265/README.md"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/optmem-duckwork/90056b1174d8/README.md"
 version: "0.3.3"
-image: "https://raw.githubusercontent.com/rarf/optmem-\x68ermes-plugin/2868af6620bf07958f833ca354fbeecf2a56b265/docs/assets/catalog-banner-card.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/optmem-duckwork/90056b1174d8/_catalog_assets/docs/assets/catalog-banner-card.png"
 screenshots: []
 readme: true
 platforms: [linux, macos, windows]
@@ -29,3 +29,7 @@ capabilities:
   - on_turn_start
   provides_middleware: []
   requires_env: []
+aliases:
+- "optmem-hermes"
+legacy_sources:
+- "https://github.com/rarf/optmem-hermes-plugin#optmem"

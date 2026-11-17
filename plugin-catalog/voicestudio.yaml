@@ -1,14 +1,14 @@
 name: voicestudio
-repo: https://github.com/aska-digital/protean-voice-studio
-sha: "efe5c1910ee22de7e911a9c8a8625027781f2729"
-subdir: voicestudio
+repo: https://github.com/DuckMind/duckwork
+sha: "86b0c19d1504bc127a6c34d8a8d146e58276ef63"
+subdir: plugins/catalog-vendor/voicestudio/20d9fce561b2
 description: "Client for the local VoiceStudio text-to-speech app (debpalash/VoiceStudio): speak short text, design or clone voices, browse voices, render chaptered long-form audio, dub videos, and check server status. Six tools with mirrored slash commands plus a bundled skill. Disclosure — sends the text, script files, videos and voice samples you point it at to the VoiceStudio server you configure (default http://127.0.0.1:3900, plain HTTP) and saves the returned audio under DUCKWORK_HOME/plugin-data/voicestudio; no credentials, no telemetry, no self-update."
-maintainer: aska-digital
+maintainer: Fordex
 tier: community
 category: voice
 requires_duckwork: ">=0.21"
 version: "1.0.0"
-docs_url: https://github.com/aska-digital/protean-voice-studio
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/voicestudio/20d9fce561b2/plugin.yaml
 readme: true
 platforms: []
 capabilities:
@@ -16,3 +16,7 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/aska-digital/protean-voice-studio#voicestudio"

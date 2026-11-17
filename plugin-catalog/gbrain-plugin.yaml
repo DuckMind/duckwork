@@ -1,12 +1,12 @@
 name: gbrain-plugin
-repo: "https://github.com/kerrz2020/\x68ermes-gbrain"
-sha: 51f5b558e00aa3ea412801d423f436fdd43385ec
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Community (non-official) plugin wiring GBrain (garrytan/gbrain, MIT) into Duckwork as a local memory layer over MCP: /gbrain status command, desktop starter, and per-profile Postgres setup/update/maintenance scripts. Not affiliated with upstream. Disclosure — the plugin itself only adds a /gbrain status command and a Desktop pane; GBrain is installed by the user via scripts/setup.sh, which installs bun (curl|bash), an unpinned gbrain from GitHub HEAD, and provisions PostgreSQL with sudo."
-maintainer: kerrz2020
+maintainer: Fordex
 tier: community
 category: memory
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/kerrz2020/\x68ermes-gbrain#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/gbrain-plugin/18720cf91a72/README.md"
 version: "1.2.1"
 platforms: []
 capabilities:
@@ -14,3 +14,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/gbrain-plugin/18720cf91a72
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/kerrz2020/hermes-gbrain"

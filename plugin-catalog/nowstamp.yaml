@@ -1,11 +1,11 @@
 name: nowstamp
-repo: "https://github.com/zakiyys/\x68ermes-nowstamp"
-sha: 26148cca897f0798ca2cfc035e9eb2e00349bcf8
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Give the agent a clock. Appends the current date and time, plus the real gap since the previous message, to every user turn. Optional spaced-out timestamps on tool results for long runs.
-maintainer: zakiyys
+maintainer: Fordex
 tier: community
 category: general
-docs_url: "https://github.com/zakiyys/\x68ermes-nowstamp#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/nowstamp/7ab1e7705099/README.md"
 version: "1.0.1"
 platforms: []
 capabilities:
@@ -16,3 +16,8 @@ capabilities:
   - transform_tool_result
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/nowstamp/7ab1e7705099
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/zakiyys/hermes-nowstamp"

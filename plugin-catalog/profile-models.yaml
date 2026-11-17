@@ -1,19 +1,23 @@
 name: profile-models
 title: "Profile Models"
-repo: https://github.com/AllenRobinHubert/profile-models
-sha: 669157573ae4f577fae1eac88bed54afb7506c40
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Read-only Desktop model map for main, auxiliary, sub-agent and MoA routes. Disclosure — reads the selected profile's full config.yaml through the host's `config.get` (the response includes any credential fields it holds); only model-routing fields are kept and nothing is stored or sent off the machine."
-maintainer: AllenRobinHubert
+maintainer: Fordex
 tier: community
 category: desktop
 version: "1.0.1"
 requires_duckwork: ">=0.21.5"
-docs_url: https://github.com/AllenRobinHubert/profile-models#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/profile-models/1996d40c6475/README.md
 readme: true
 screenshots:
-  - https://raw.githubusercontent.com/AllenRobinHubert/profile-models/669157573ae4f577fae1eac88bed54afb7506c40/docs/statusbar.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/profile-models/1996d40c6475/docs/statusbar.png
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/profile-models/1996d40c6475
+image: ''
+legacy_sources:
+- "https://github.com/AllenRobinHubert/profile-models"

@@ -1,14 +1,14 @@
 name: tam
-repo: "https://github.com/vbcherepanov/\x68ermes-tam-memory"
-sha: 9a6e51839fb0619c6e41804ac201272e857ea825
-subdir: "\x68ermes_tam_memory"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/tam/a6a6e552ac68"
 version: "0.1.1"
 description: "Local-first long-term memory backed by total-agent-memory (TAM) over MCP — saves each completed turn (with a noise filter; TAM's quality gate applies), recalls relevant memories before each turn within a token budget, and adds tam_recall / tam_save tools; optional TAM team server for shared company memory. Disclosure — local mode starts the separately installed tam binary as a child process per session with an allowlisted environment that carries no credentials: Duckwork provider keys (including HF_TOKEN and OLLAMA_API_KEY), TAM_API_TOKEN and any *_TOKEN / *_API_KEY / *_SECRET / *_PASSWORD variable are withheld, and of HF_* / OLLAMA_* only non-secret settings pass (OLLAMA_URL, OLLAMA_EMBED_MODEL, HF_HOME, HF_HUB_OFFLINE); it stores user/assistant turn text plus built-in memory additions (not tool output) in TAM's store, by default outside DUCKWORK_HOME and shared with other agents using TAM; remote mode sends the same text to the user-configured URL with an optional TAM_API_TOKEN bearer token; duckwork memory setup tam writes tam.json, TAM_API_TOKEN to .env and memory.provider in config.yaml."
-maintainer: vbcherepanov
+maintainer: Fordex
 tier: community
 category: memory
 requires_duckwork: ">=0.21.4"
-docs_url: "https://github.com/vbcherepanov/\x68ermes-tam-memory#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/tam/a6a6e552ac68/README.md"
 readme: true
 platforms: [linux, macos]
 capabilities:
@@ -18,3 +18,7 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/vbcherepanov/hermes-tam-memory#hermes_tam_memory"

@@ -1,21 +1,26 @@
 name: image-utils
-repo: "https://github.com/MazenMkhinini/\x68ermes-image-plugin"
-sha: c4123fbdb315137b40e4c5b4b5fd3eb2298dae66
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Inspect, resize, crop, rotate, convert and re-encode image files in-process with Pillow - no shell, no ImageMagick, no network.
-maintainer: MazenMkhinini
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/MazenMkhinini/\x68ermes-image-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/image-utils/d6c505f0dc79/README.md"
 version: "1.0.0"
 platforms: [linux, macos, windows]
 capabilities:
   provides_tools:
-    - image_info
-    - image_resize
-    - image_crop
-    - image_rotate
-    - image_convert
-    - image_optimize
+  - image_info
+  - image_resize
+  - image_crop
+  - image_rotate
+  - image_convert
+  - image_optimize
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/image-utils/d6c505f0dc79
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/MazenMkhinini/hermes-image-plugin"

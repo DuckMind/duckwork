@@ -1,12 +1,11 @@
 name: local_knowledge
-repo: "https://github.com/stepanov1975/\x68ermes-local-knowledge"
-sha: c13a1a357eb110fe62d6d4f8a715187079766541
-description: 'Native Duckwork tools for a configurable local capability index: search/get/neighbors plus
-  local usage feedback/reporting.'
-maintainer: stepanov1975
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: 'Native Duckwork tools for a configurable local capability index: search/get/neighbors plus local usage feedback/reporting.'
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/stepanov1975/\x68ermes-local-knowledge#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/local_knowledge/b0337c874229/README.md"
 capabilities:
   provides_tools:
   - knowledge_feedback
@@ -21,3 +20,8 @@ capabilities:
   - pre_llm_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/local_knowledge/b0337c874229
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/stepanov1975/hermes-local-knowledge"

@@ -1,5 +1,5 @@
 name: operations
-repo: "https://github.com/c-pompa/operations-\x68ermes-desktop-plugin"
+repo: "https://github.com/c-pompa/operations-hermes-desktop-plugin"
 sha: 56e4d650652770acc634ad65d6d9b1c4b29907e5
 subdir: plugins/operations
 title: Operations
@@ -7,19 +7,21 @@ description: "A Duckwork Desktop page for running a fleet - topology, model traf
 maintainer: c-pompa
 tier: community
 category: desktop
-docs_url: "https://github.com/c-pompa/operations-\x68ermes-desktop-plugin#readme"
+docs_url: "https://github.com/c-pompa/operations-hermes-desktop-plugin#readme"
 version: "0.3.5"
 requires_duckwork: ">=0.21.5"
-image: "https://raw.githubusercontent.com/c-pompa/operations-\x68ermes-desktop-plugin/56e4d650652770acc634ad65d6d9b1c4b29907e5/screenshots/card.png"
+image: "https://raw.githubusercontent.com/c-pompa/operations-hermes-desktop-plugin/56e4d650652770acc634ad65d6d9b1c4b29907e5/screenshots/card.png"
 screenshots:
-  - "https://raw.githubusercontent.com/c-pompa/operations-\x68ermes-desktop-plugin/56e4d650652770acc634ad65d6d9b1c4b29907e5/screenshots/overview.png"
+- "https://raw.githubusercontent.com/c-pompa/operations-hermes-desktop-plugin/56e4d650652770acc634ad65d6d9b1c4b29907e5/screenshots/overview.png"
 readme: true
 platforms: []
 known_issues:
-  - On a fresh install the request, error, host and conformance sections read duckwork-metrics-dash's metrics.db (read-only) until the plugin's own store has collected; with neither present they show "unavailable".
-  - Merge requests and the GitLab conformance standard need the GitLab host and token set in the plugin's settings (or GITLAB_HOST and GITLAB_TOKEN).
+- On a fresh install the request, error, host and conformance sections read duckwork-metrics-dash's metrics.db (read-only) until the plugin's own store has collected; with neither present they show "unavailable".
+- Merge requests and the GitLab conformance standard need the GitLab host and token set in the plugin's settings (or GITLAB_HOST and GITLAB_TOKEN).
 capabilities:
   provides_tools: []
   provides_hooks: [on_kanban_dispatch_tick]
   provides_middleware: []
   requires_env: []
+availability: unavailable
+unavailable_reason: no full recognized redistribution license at pinned root/subdir

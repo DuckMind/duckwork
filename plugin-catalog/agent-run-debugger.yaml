@@ -10,11 +10,13 @@ version: "0.1.1"
 platforms: []
 capabilities:
   provides_tools:
-    - rundebug_import
-    - rundebug_timeline
-    - rundebug_explain
-    - rundebug_replay
-    - rundebug_status
+  - rundebug_import
+  - rundebug_timeline
+  - rundebug_explain
+  - rundebug_replay
+  - rundebug_status
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+availability: unavailable
+unavailable_reason: 'secret scan requires review: github-token at tests/adversarial/test_privacy.py, aws-access-key at tests/adversarial/test_privacy.py, github-token at tests/integration/test_import_hermes.py'

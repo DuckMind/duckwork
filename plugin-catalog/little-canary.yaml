@@ -1,19 +1,23 @@
 name: little-canary
-repo: "https://github.com/\x68ermes-labs-ai/little-canary"
-sha: 61855a940a66fb8319742756c3ff72c720a89160
-subdir: "integrations/\x68ermes-agent"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/little-canary/dc7c7b25d47c"
 version: "0.4.0"
 description: Screens user turns and blocks downstream tools on a BLOCK verdict; the original prompt still reaches the model.
-maintainer: "roli-lpci (\x48ermes Labs; independent of \x4eous Research)"
+maintainer: "Fordex"
 tier: community
 category: general
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/\x68ermes-labs-ai/little-canary/blob/61855a940a66fb8319742756c3ff72c720a89160/integrations/\x68ermes-agent/README.md"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/little-canary/dc7c7b25d47c/README.md"
 capabilities:
   provides_tools: []
   provides_hooks:
-    - pre_llm_call
-    - pre_tool_call
-    - on_session_end
+  - pre_llm_call
+  - pre_tool_call
+  - on_session_end
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/hermes-labs-ai/little-canary#integrations/hermes-agent"

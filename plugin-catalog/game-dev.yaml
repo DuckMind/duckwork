@@ -1,19 +1,24 @@
 name: game-dev
-repo: "https://github.com/123mikeyd/\x68ermes-game-dev"
-sha: d9d82477cf67ec14ec51cc88b3dd14e4430edd9f
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "0.1.0"
 title: Game Dev
-maintainer: 123mikeyd
+maintainer: Fordex
 tier: community
 category: tools
 description: "Read-only project inspection and asset audits with playable-slice, asset-production, and verification skills. Disclosure — lists file names and sizes under any absolute project path the agent supplies (skipping hidden, symlinked and credential-named entries), reads that project's project.godot/export_presets.cfg and, on request, hashes asset files; no writes, no shell commands, no network calls."
-docs_url: "https://github.com/123mikeyd/\x68ermes-game-dev#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/game-dev/949af9b7d991/README.md"
 readme: true
 capabilities:
   provides_tools:
-    - game_dev_inspect
-    - game_dev_asset_audit
-    - game_dev_checklist
+  - game_dev_inspect
+  - game_dev_asset_audit
+  - game_dev_checklist
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/game-dev/949af9b7d991
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/123mikeyd/hermes-game-dev"

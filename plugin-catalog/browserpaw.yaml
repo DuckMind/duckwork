@@ -12,22 +12,24 @@ docs_url: "https://github.com/GoldenLoaf24h/browserpaw#readme"
 version: "4.0.0"
 capabilities:
   provides_tools:
-    - browserpaw_act_toward_goal
-    - browserpaw_navigate
-    - browserpaw_read_dom
-    - browserpaw_interact_index
-    - browserpaw_fill_index
-    - browserpaw_batch_actions
-    - browserpaw_screenshot
-    - browserpaw_smart_scroll
-    - browserpaw_scroll_until_found
-    - browserpaw_inspect_media
-    - browserpaw_grep
-    - browserpaw_get_markdown
-    - browserpaw_switch_tab
-    - browserpaw_close_tabs
-    - browserpaw_get_windows_and_tabs
-    - browserpaw_tool_docs
+  - browserpaw_act_toward_goal
+  - browserpaw_navigate
+  - browserpaw_read_dom
+  - browserpaw_interact_index
+  - browserpaw_fill_index
+  - browserpaw_batch_actions
+  - browserpaw_screenshot
+  - browserpaw_smart_scroll
+  - browserpaw_scroll_until_found
+  - browserpaw_inspect_media
+  - browserpaw_grep
+  - browserpaw_get_markdown
+  - browserpaw_switch_tab
+  - browserpaw_close_tabs
+  - browserpaw_get_windows_and_tabs
+  - browserpaw_tool_docs
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+availability: unavailable
+unavailable_reason: 'Held from public export: path blocked by the extension publication safety policy (config dirs/config.yaml/.pem); needs a reviewed narrow publication rule.'

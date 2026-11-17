@@ -1,16 +1,19 @@
 name: fluxer-platform
-repo: "https://github.com/elkimek/\x68ermes-fluxer-plugin"
-sha: 6d2ef9767d0a0811a3ae26a76290b9b1e4636d4c
-description: Fluxer gateway adapter for Duckwork Agent. Native Fluxer integration using Fluxer's bot REST
-  API for outbound messages, Gateway WebSocket events for inbound dispatches, message edits, agent-requested
-  reactions, pins, reply references, media delivery, and channel-directory enumeration. Component button
-maintainer: elkimek
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Fluxer gateway adapter for Duckwork Agent. Native Fluxer integration using Fluxer's bot REST API for outbound messages, Gateway WebSocket events for inbound dispatches, message edits, agent-requested reactions, pins, reply references, media delivery, and channel-directory enumeration. Component button
+maintainer: Fordex
 tier: community
 category: platform
-docs_url: "https://github.com/elkimek/\x68ermes-fluxer-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/fluxer-platform/72419cb846ec/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
   - name
+subdir: plugins/catalog-vendor/fluxer-platform/72419cb846ec
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/elkimek/hermes-fluxer-plugin"

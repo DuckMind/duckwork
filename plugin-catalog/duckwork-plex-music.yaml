@@ -1,15 +1,22 @@
-name: "\x68ermes-plex-music"
-repo: "https://github.com/imzacksong/\x68ermes-plex-music"
-sha: c583d6fdaac61d2108bada99b275460b4d08a993
+name: "duckwork-plex-music"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Mini-Plexamp for Duckwork Desktop: statusbar player for your Plex music library — likes synced to Liked Songs, custom playlists with rename/delete, shuffle + repeat, sleep timer, queue editing, OS media keys. Needs only Plex Media Server. Zero API keys, zero model tokens. Disclosure — talks only to the Plex Media Server you configure (default http://127.0.0.1:32400), sending your Plex token in the request URL as Plex requires; the token is stored in Desktop plugin storage, and the optional \"Get token…\" button reads the Plex `.LocalAdminToken` file you pick. Likes and playlist create/rename/delete write to your Plex server. No agent tools, no telemetry."
-maintainer: imzacksong
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: '>=0.21'
-docs_url: "https://github.com/imzacksong/\x68ermes-plex-music"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-plex-music/109953cd93d2/README.md"
 platforms: [windows]
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-plex-music"
+legacy_sources:
+- "https://github.com/imzacksong/hermes-plex-music"
+subdir: plugins/catalog-vendor/duckwork-plex-music/109953cd93d2
+image: ''
+screenshots: []

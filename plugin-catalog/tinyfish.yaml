@@ -1,16 +1,16 @@
 name: tinyfish
-repo: https://github.com/tinyfish-io/tinyfish-web-agent-integrations
-sha: 770a3765fa6249b1f6a6153ddaaf65b76bf8fdd4
-subdir: "\x68ermes"
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/tinyfish/1ecea7b9ee80"
 description: "TinyFish: the web, built into Duckwork. Free Search and Fetch power Duckwork's own web_search and web_extract, and when a site needs clicks, forms or a login, a remote browser and the tinyfish_agent web agent handle it. Disclosure — sends search queries, URLs to fetch and tinyfish_agent goals with your TINYFISH_API_KEY to the TinyFish API (*.tinyfish.ai). Browser sessions and tinyfish_agent runs spend TinyFish credits. Under the default `request` policy each one goes through Duckwork's approval prompt first (a session/always answer covers every later call; cron and unattended runs are denied unless you allow them). Setting `tinyfish.credit_policy.<feature>: allow` or YOLO skips the prompt. `duckwork tinyfish setup` / `browser enable` (run by you) save the key to Duckwork .env, set web.search_backend/extract_backend and browser.cloud_provider in config.yaml, enable the web/browser toolsets, and can install the agent-browser CLI after asking."
-maintainer: tinyfish-io
+maintainer: Fordex
 title: TinyFish
 version: "0.2.3"
-image: "https://raw.githubusercontent.com/tinyfish-io/tinyfish-web-agent-integrations/770a3765fa6249b1f6a6153ddaaf65b76bf8fdd4/\x68ermes/assets/banner.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/tinyfish/1ecea7b9ee80/assets/banner.png"
 tier: verified
 category: web
 requires_duckwork: ">=0.19"
-docs_url: https://docs.tinyfish.ai
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/tinyfish/1ecea7b9ee80/README.md
 capabilities:
   provides_tools:
   - tinyfish_agent
@@ -21,3 +21,6 @@ capabilities:
   provides_middleware: []
   requires_env:
   - TINYFISH_API_KEY
+screenshots: []
+legacy_sources:
+- "https://github.com/tinyfish-io/tinyfish-web-agent-integrations#hermes"

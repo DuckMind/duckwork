@@ -1,13 +1,11 @@
 name: rocketchat-platform
-repo: "https://github.com/HalfbitStudio/\x68ermes-plugin-rocketchat"
-sha: 989a04cd5f09e57bdd88997940cd18e4d58415b2
-description: Rocket.Chat gateway adapter for Duckwork Agent. Connects to a self-hosted Rocket.Chat instance
-  via the REST API v1 for outbound traffic and the Realtime (DDP) WebSocket for inbound messages. Uses
-  aiohttp (already a Duckwork dependency) — no extra packages needed.
-maintainer: HalfbitStudio
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Rocket.Chat gateway adapter for Duckwork Agent. Connects to a self-hosted Rocket.Chat instance via the REST API v1 for outbound traffic and the Realtime (DDP) WebSocket for inbound messages. Uses aiohttp (already a Duckwork dependency) — no extra packages needed.
+maintainer: Fordex
 tier: community
 category: platform
-docs_url: "https://github.com/HalfbitStudio/\x68ermes-plugin-rocketchat#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/rocketchat-platform/5ceae8638482/README.md"
 capabilities:
   provides_tools:
   - rocketchat_create_channel
@@ -24,3 +22,8 @@ capabilities:
   provides_middleware: []
   requires_env:
   - name
+subdir: plugins/catalog-vendor/rocketchat-platform/5ceae8638482
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/HalfbitStudio/hermes-plugin-rocketchat"

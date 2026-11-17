@@ -1,29 +1,32 @@
 name: unraid
 title: Unraid
-repo: "https://github.com/Anunnaki-Astronaut/\x68ermes-unraid"
-sha: 48deec3dfd9bbc0b00731412635fa2dc06263d03
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Read-only Unraid monitoring for Duckwork Desktop: server metadata, array capacity, Docker containers, virtual machines, and grouped alerts. Disclosure — sends fixed GraphQL queries to the user-configured Unraid host and stores a VIEWER key through Duckwork secret scope; no telemetry, background process, shell, SSH, MCP, or mutations."
-maintainer: Anunnaki-Astronaut
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.22.2"
-docs_url: "https://github.com/Anunnaki-Astronaut/\x68ermes-unraid#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unraid/478edbc72e65/README.md"
 version: "0.2.0"
-image: "https://raw.githubusercontent.com/Anunnaki-Astronaut/\x68ermes-unraid/48deec3dfd9bbc0b00731412635fa2dc06263d03/docs/screenshots/catalog-banner.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unraid/478edbc72e65/docs/screenshots/catalog-banner.png"
 screenshots:
-  - "https://raw.githubusercontent.com/Anunnaki-Astronaut/\x68ermes-unraid/48deec3dfd9bbc0b00731412635fa2dc06263d03/docs/screenshots/overview.png"
-  - "https://raw.githubusercontent.com/Anunnaki-Astronaut/\x68ermes-unraid/48deec3dfd9bbc0b00731412635fa2dc06263d03/docs/screenshots/array.png"
-  - "https://raw.githubusercontent.com/Anunnaki-Astronaut/\x68ermes-unraid/48deec3dfd9bbc0b00731412635fa2dc06263d03/docs/screenshots/docker.png"
-  - "https://raw.githubusercontent.com/Anunnaki-Astronaut/\x68ermes-unraid/48deec3dfd9bbc0b00731412635fa2dc06263d03/docs/screenshots/vms.png"
-  - "https://raw.githubusercontent.com/Anunnaki-Astronaut/\x68ermes-unraid/48deec3dfd9bbc0b00731412635fa2dc06263d03/docs/screenshots/alerts.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unraid/478edbc72e65/docs/screenshots/overview.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unraid/478edbc72e65/docs/screenshots/array.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unraid/478edbc72e65/docs/screenshots/docker.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unraid/478edbc72e65/docs/screenshots/vms.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unraid/478edbc72e65/docs/screenshots/alerts.png
 readme: true
 platforms: []
 known_issues:
-  - When Duckwork Desktop uses a remote backend, install the Desktop part locally and the Agent/backend part on the remote Duckwork host.
-  - The Unraid GraphQL schema can vary by release; this version was manually tested with Unraid 7.3.
+- When Duckwork Desktop uses a remote backend, install the Desktop part locally and the Agent/backend part on the remote Duckwork host.
+- The Unraid GraphQL schema can vary by release; this version was manually tested with Unraid 7.3.
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - UNRAID_API_KEY
+  - UNRAID_API_KEY
+subdir: plugins/catalog-vendor/unraid/478edbc72e65
+legacy_sources:
+- "https://github.com/Anunnaki-Astronaut/hermes-unraid"

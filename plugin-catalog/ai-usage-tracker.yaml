@@ -4,19 +4,22 @@
 # Exact-SHA pin (40-hex). No self-updating code: the desktop half ships as static
 # files under `desktop/plugin.js` and never fetches, downloads, or replaces itself.
 name: ai-usage-tracker
-repo: "https://github.com/lvabarajithan/\x68ermes-ai-usage-tracker"
-sha: "14e844f6ced5e0d618c767d726330a78c5cadadd"   # tag v1.0.2
-description: Live subscription-quota windows for every AI provider Duckwork can route to, as a
-  desktop page plus a status-bar chip, with a per-profile picker — Codex, Claude, Copilot,
-  OpenCode Go/Zen, Z.AI, Kimi, MiniMax, Fordex, OpenRouter, DeepSeek.
-maintainer: lvabarajithan
+repo: "https://github.com/DuckMind/duckwork"
+sha: "86b0c19d1504bc127a6c34d8a8d146e58276ef63"   # tag v1.0.2
+description: Live subscription-quota windows for every AI provider Duckwork can route to, as a desktop page plus a status-bar chip, with a per-profile picker — Codex, Claude, Copilot, OpenCode Go/Zen, Z.AI, Kimi, MiniMax, Fordex, OpenRouter, DeepSeek.
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21"
 platforms: [linux, macos]
-docs_url: "https://github.com/lvabarajithan/\x68ermes-ai-usage-tracker"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/ai-usage-tracker/a2c634750d80/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/ai-usage-tracker/a2c634750d80
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/lvabarajithan/hermes-ai-usage-tracker"

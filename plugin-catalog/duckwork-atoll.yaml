@@ -1,16 +1,23 @@
-name: "\x68ermes-atoll"
+name: "duckwork-atoll"
 title: Duckwork Notch Plugin
-repo: "https://github.com/himanusia/\x68ermes-notch-plugin"
-sha: 298a67e9fc1f9e5a4ec821bdce9d516e7e72e968
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Native Duckwork Agent plugin that runs the local Atoll notch monitor for Duckwork session and turn status on macOS. Disclosure — macOS only. Starts a detached Node daemon on every Duckwork session that reads state.db read-only and sends session titles, model/profile/token stats and a ≤96-char redacted preview of your latest request to the third-party Atoll notch app over localhost. duckwork notch setup clones and builds the author's Atoll fork (github.com/himanusia/Atoll at a pinned commit, not reviewed here) with Xcode and installs an unnotarized app to ~/Applications. Node deps install via Duckwork's npm ci prompt. Run duckwork notch stop before removing."
-maintainer: himanusia
+maintainer: Fordex
 tier: community
 category: desktop
 version: "0.3.0"
-image: "https://raw.githubusercontent.com/himanusia/\x68ermes-notch-plugin/298a67e9fc1f9e5a4ec821bdce9d516e7e72e968/assets/\x68ermes-atoll-thumbnail.jpg"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-atoll/52ec4b4c42ab/assets/duckwork-atoll-thumbnail.jpg"
 platforms: [macos]
 capabilities:
   provides_tools: []
   provides_hooks: [on_session_start]
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-atoll"
+legacy_sources:
+- "https://github.com/himanusia/hermes-notch-plugin"
+subdir: plugins/catalog-vendor/duckwork-atoll/52ec4b4c42ab
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-atoll/52ec4b4c42ab/README.md
+screenshots: []

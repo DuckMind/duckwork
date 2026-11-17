@@ -1,4 +1,4 @@
-name: "\x68ermes-lcm-x"
+name: "duckwork-lcm-x"
 title: LCM-X
 repo: https://github.com/electricsheephq/lcm-x
 sha: 39daadd1c90f4dc60061089878bbd40dc5e4eaeb
@@ -14,25 +14,31 @@ image: https://raw.githubusercontent.com/electricsheephq/lcm-x/77b2b4f795fb6a4f8
 platforms: []
 capabilities:
   provides_tools:
-    - lcm_grep
-    - lcm_recall
-    - lcm_query_state
-    - lcm_compute
-    - lcm_compile_evidence
-    - lcm_evidence_pack
-    - lcm_retrieve
-    - lcm_recent
-    - lcm_load_session
-    - lcm_describe
-    - lcm_expand
-    - lcm_expand_query
-    - lcm_status
-    - lcm_inspect
-    - lcm_doctor
+  - lcm_grep
+  - lcm_recall
+  - lcm_query_state
+  - lcm_compute
+  - lcm_compile_evidence
+  - lcm_evidence_pack
+  - lcm_retrieve
+  - lcm_recent
+  - lcm_load_session
+  - lcm_describe
+  - lcm_expand
+  - lcm_expand_query
+  - lcm_status
+  - lcm_inspect
+  - lcm_doctor
   provides_hooks:
-    - pre_llm_call
-    - post_llm_call
-    - subagent_start
-    - subagent_stop
+  - pre_llm_call
+  - post_llm_call
+  - subagent_start
+  - subagent_stop
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-lcm-x"
+legacy_sources:
+- "https://github.com/electricsheephq/lcm-x#plugin"
+availability: unavailable
+unavailable_reason: 'secret scan requires review: private-key at ingest_pem_scan.py'

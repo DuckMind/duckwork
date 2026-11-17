@@ -1,17 +1,22 @@
 name: netmind-provider
 title: NetMind
-repo: "https://github.com/NetMind-AI/netmind-\x68ermes-provider"
-sha: 00ab432e251fc04b983382a7b339f54d96e4b29d
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "NetMind OpenAI-compatible model provider with a bundled model catalog. Disclosure — registers one model provider at import and nothing else (no tools, hooks, commands or threads); chat requests go to https://api.netmind.ai/inference-api/v1 through Duckwork' own client with NETMIND_API_KEY, which Duckwork reads; the plugin itself opens no connections, reads and writes no files and starts no processes."
-maintainer: NetMind-AI
+maintainer: Fordex
 tier: community
 category: models
 requires_duckwork: ">=0.21.6"
 version: "1.0.0"
-docs_url: "https://github.com/NetMind-AI/netmind-\x68ermes-provider#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/netmind-provider/c4785d02072b/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - NETMIND_API_KEY
+  - NETMIND_API_KEY
+subdir: plugins/catalog-vendor/netmind-provider/c4785d02072b
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/NetMind-AI/netmind-hermes-provider"

@@ -1,24 +1,25 @@
-name: "\x68ermes-mpp"
-repo: "https://github.com/tempoxyz/\x68ermes-mpp"
-sha: a0782b7024ad0256cceede338754b466ded1df06
+name: "duckwork-mpp"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "0.1.3+a0782b7"
-subdir: "src/\x68ermes_mpp"
+subdir: "plugins/catalog-vendor/duckwork-mpp/cae84f61c1b1"
 description: >-
-  Pay supported HTTP 402 MPP challenges on Tempo through mpp_fetch and
-  in-process HTTPX clients. Uses a dedicated wallet.
-  Disclosure — with MPP_ALLOWED_ORIGINS unset, any supported HTTP 402 MPP
-  challenge returned to core HTTPX traffic (not only mpp_fetch) is auto-paid
-  from the Tempo wallet with no per-payment cap or confirmation; the origin
-  allowlist is the operator's control.
-maintainer: tempoxyz
+  Pay supported HTTP 402 MPP challenges on Tempo through mpp_fetch and in-process HTTPX clients. Uses a dedicated wallet. Disclosure — with MPP_ALLOWED_ORIGINS unset, any supported HTTP 402 MPP challenge returned to core HTTPX traffic (not only mpp_fetch) is auto-paid from the Tempo wallet with no per-payment cap or confirmation; the origin allowlist is the operator's control.
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/tempoxyz/\x68ermes-mpp#native-plugin-installation"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-mpp/cae84f61c1b1/plugin.yaml"
 capabilities:
   provides_tools:
-    - mpp_fetch
+  - mpp_fetch
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - TEMPO_PRIVATE_KEY
+  - TEMPO_PRIVATE_KEY
+aliases:
+- "hermes-mpp"
+legacy_sources:
+- "https://github.com/tempoxyz/hermes-mpp#src/hermes_mpp"
+image: ''
+screenshots: []

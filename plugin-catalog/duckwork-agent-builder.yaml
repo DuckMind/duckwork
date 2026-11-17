@@ -1,25 +1,30 @@
-name: "\x68ermes-agent-builder"
+name: "duckwork-agent-builder"
 title: Duckwork Agent Builder
-repo: "https://github.com/itsflownium/\x68ermes-agent-builder"
-sha: 6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Guided Desktop workspace in BOTS: tailored questions, reference files, editable instructions and capabilities, version comparisons, model-only trials, and native Bot Chat handoff. Saves specialists as separate Duckwork profiles and installs the Builder companion plugin into its own bot profile. Disclosure — \"Talk to Builder\" auto-creates a duckwork-builder profile cloned from the active profile with copied .env/auth.json and copies+enables this plugin there outside the catalog installer (uninstall does not remove that copy); \"Save agent\" creates new profiles the same way and rewrites their tool/skill selection."
-maintainer: itsflownium
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/itsflownium/\x68ermes-agent-builder#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-agent-builder/321e4af9ade2/README.md"
 version: "1.0.0"
-image: "https://raw.githubusercontent.com/itsflownium/\x68ermes-agent-builder/6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6/docs/banner.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-agent-builder/321e4af9ade2/docs/banner.png"
 screenshots:
-  - "https://raw.githubusercontent.com/itsflownium/\x68ermes-agent-builder/6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6/docs/builder.png"
-  - "https://raw.githubusercontent.com/itsflownium/\x68ermes-agent-builder/6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6/docs/compare.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-agent-builder/321e4af9ade2/docs/builder.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-agent-builder/321e4af9ade2/docs/compare.png
 readme: true
 platforms: [macos, windows]
 known_issues:
-  - Windows Desktop runtime testing remains; the installer and renderer use portable paths and APIs.
+- Windows Desktop runtime testing remains; the installer and renderer use portable paths and APIs.
 capabilities:
   provides_tools:
-    - agent_builder
+  - agent_builder
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-agent-builder"
+legacy_sources:
+- "https://github.com/itsflownium/hermes-agent-builder"
+subdir: plugins/catalog-vendor/duckwork-agent-builder/321e4af9ade2

@@ -1,14 +1,21 @@
-name: "\x68ermes-plugin-guard"
-repo: "https://github.com/mauricemohr88-debug/\x68ermes-plugin-guard"
-sha: 857d881be77249c192c5fefa8254db186a7abbca
+name: "duckwork-plugin-guard"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Static review of candidate Duckwork plugins; target code is never executed.
-maintainer: mauricemohr88-debug
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/mauricemohr88-debug/\x68ermes-plugin-guard#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-plugin-guard/6f2772df1a32/README.md"
 capabilities:
   provides_tools:
   - plugin_guard_review_candidate
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-plugin-guard"
+legacy_sources:
+- "https://github.com/mauricemohr88-debug/hermes-plugin-guard"
+subdir: plugins/catalog-vendor/duckwork-plugin-guard/6f2772df1a32
+image: ''
+screenshots: []

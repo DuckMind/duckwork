@@ -1,11 +1,11 @@
 name: s3
-repo: "https://github.com/lagoon-labs/\x68ermes-s3-plugin"
-sha: 3d1514e270914d89b4e99db9917eaec25d4e6688
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Generic S3-compatible backup and restore operations for Duckwork
-maintainer: lagoon-labs
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/lagoon-labs/\x68ermes-s3-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/s3/7525897ff6fa/README.md"
 capabilities:
   provides_tools:
   - s3-ls
@@ -15,3 +15,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/s3/7525897ff6fa
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/lagoon-labs/hermes-s3-plugin"

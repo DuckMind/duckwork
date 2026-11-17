@@ -1,23 +1,25 @@
 name: sem-weave
-repo: https://github.com/Ataraxy-Labs/sem
-sha: "631138c691817f2aa11cecdde3c400e6a0b910aa"
-subdir: integrations/agent-plugin
+repo: https://github.com/DuckMind/duckwork
+sha: "86b0c19d1504bc127a6c34d8a8d146e58276ef63"
+subdir: plugins/catalog-vendor/sem-weave/822abb1e2f37
 description: >-
-  CLI-backed skills for local code discovery and entity-diff review with Sem,
-  plus optional Weave branch-merge previews. Requires user-installed CLIs;
-  does not apply edits or merges, install binaries, or change Git configuration.
-maintainer: rs545837
+  CLI-backed skills for local code discovery and entity-diff review with Sem, plus optional Weave branch-merge previews. Requires user-installed CLIs; does not apply edits or merges, install binaries, or change Git configuration.
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.6"
-docs_url: https://github.com/Ataraxy-Labs/sem/tree/631138c691817f2aa11cecdde3c400e6a0b910aa/integrations/agent-plugin
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/sem-weave/822abb1e2f37/README.md
 version: "0.1.0"
 platforms: [linux, macos]
 known_issues:
-  - Requires Ataraxy Sem on the host terminal's PATH; Weave is optional for merge previews.
-  - Tested with Sem 0.27.0 and Weave 0.5.4 on macOS; Windows shell instructions are not included.
+- Requires Ataraxy Sem on the host terminal's PATH; Weave is optional for merge previews.
+- Tested with Sem 0.27.0 and Weave 0.5.4 on macOS; Windows shell instructions are not included.
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/Ataraxy-Labs/sem#integrations/agent-plugin"

@@ -1,24 +1,23 @@
 name: cortexlayer
-repo: "https://github.com/Cortex-Layer/cortexlayer-\x68ermes-plugin"
-sha: 099e4b3e77f73086bbf94fb32e052c864295e2ee
-subdir: plugins/memory/cortexlayer
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/cortexlayer/0d3c4f00badc
 description: >
-  CortexLayer memory provider — page-linked long-term memory with link-expansion retrieval,
-  wired into Duckwork' automatic per-turn recall (prefetch) and persistence (sync_turn), plus a
-  pre-compress checkpoint so evidence Duckwork' own context compaction would otherwise drop is
-  saved first. Platform mode only: each turn's query and conversational content is sent to the
-  hosted api.cortexlayer.net (HTTPS, API-key authenticated) for storage/retrieval — no
-  local/offline mode. Requires a free CortexLayer account and API key.
-maintainer: Cortex-Layer
+  CortexLayer memory provider — page-linked long-term memory with link-expansion retrieval, wired into Duckwork' automatic per-turn recall (prefetch) and persistence (sync_turn), plus a pre-compress checkpoint so evidence Duckwork' own context compaction would otherwise drop is saved first. Platform mode only: each turn's query and conversational content is sent to the hosted api.cortexlayer.net (HTTPS, API-key authenticated) for storage/retrieval — no local/offline mode. Requires a free CortexLayer account and API key.
+maintainer: Fordex
 tier: community
 category: memory
-docs_url: "https://docs.cortexlayer.net/docs/agents/\x68ermes"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/cortexlayer/0d3c4f00badc/README.md"
 version: "0.1.1"
 capabilities:
   provides_tools: []
   provides_hooks:
-    - on_session_end
-    - on_pre_compress
+  - on_session_end
+  - on_pre_compress
   provides_middleware: []
   requires_env:
-    - CORTEX_API_KEY
+  - CORTEX_API_KEY
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/Cortex-Layer/cortexlayer-hermes-plugin#plugins/memory/cortexlayer"

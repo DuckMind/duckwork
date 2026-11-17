@@ -1,17 +1,23 @@
-name: "git\x68ermes"
-repo: "https://github.com/claudiumio/git\x68ermes"
-sha: 09d5b566da650290dc0d639ea1e77def4bcdab31
+name: "gitduckwork"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: GitHub PRs and issues as a right workspace pane in Duckwork Desktop, via the connected gh CLI. Disclosure — shells out to your logged-in gh CLI; the in-pane update pill only runs `duckwork plugins update gitduckwork` (no fetch-and-replace) and currently compares against upstream main rather than the pinned sha.
-maintainer: claudiumio
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.1"
-docs_url: "https://github.com/claudiumio/git\x68ermes#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/gitduckwork/d54efc5d2d36/README.md"
 version: "0.5.0"
-image: "https://raw.githubusercontent.com/claudiumio/git\x68ermes/09d5b566da650290dc0d639ea1e77def4bcdab31/docs/social-preview.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/gitduckwork/d54efc5d2d36/docs/social-preview.png"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "githermes"
+legacy_sources:
+- "https://github.com/claudiumio/githermes"
+subdir: plugins/catalog-vendor/gitduckwork/d54efc5d2d36
+screenshots: []

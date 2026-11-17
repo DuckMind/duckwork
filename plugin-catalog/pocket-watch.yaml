@@ -1,12 +1,12 @@
 name: pocket-watch
-repo: "https://github.com/indigokarasu/\x68ermes-pocket-watch-plugin"
-sha: b05178ab1f2d8a39a377581c3dc7562ec8f0c2dc
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "1.0.1"
 description: "Dashboard-only cron companion: a Pocket Watch pane showing cron jobs by schedule (daily/weekly/monthly), a health view of run outcomes and consecutive failures, a timeline, and maintenance actions — a read-oriented window onto the scheduler rather than another agent-facing toolset. Disclosure — the pane's API reads the cron jobs file under DUCKWORK_HOME to render schedules and run history; it registers no tools, hooks or middleware, performs no network I/O and holds no credentials."
-maintainer: indigokarasu
+maintainer: Fordex
 tier: community
 category: automation
-docs_url: "https://github.com/indigokarasu/\x68ermes-pocket-watch-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/pocket-watch/689f1de1e891/README.md"
 readme: true
 platforms: []
 capabilities:
@@ -14,3 +14,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/pocket-watch/689f1de1e891
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/indigokarasu/hermes-pocket-watch-plugin"

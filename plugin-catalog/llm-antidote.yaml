@@ -1,21 +1,26 @@
 name: llm-antidote
-repo: https://github.com/GroveMinting/llmAntidote
-sha: c7f6a5428abbdba2b48f8b5fd3494b7ae2e3c5e8
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Runtime guardrails, behavioral evaluation, and signed fleet admission for Duckwork Agent: a versioned capability policy that blocks or requires approval for model tool calls, paired synthetic behavioral evaluation with no real side effects, and a signed local promotion gate that refuses a model whose evidence does not satisfy signed fleet policy. Hooks-only (no agent tools). Disclosure — Adds approval prompts to tool calls by default (balanced mode): every MCP, connector or other-plugin tool, memory and skill writes, file reads outside the working and temp directories, and network-capable terminal/code commands go to Duckwork's approval prompt; strict mode blocks them instead, and opt-in enforced fleet mode blocks all tool calls until the served model name matches the admitted one. The user-run `duckwork antidote eval run` command sends synthetic prompts (and the API key you name) to the OpenAI-compatible endpoint you pass, as billed model calls (default suite up to ~170 requests); `model inspect hf:` queries huggingface.co; `fleet keygen` writes unencrypted Ed25519 private keys (mode 0600) to paths you choose."
-maintainer: GroveMinting
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.5"
 version: "3.2.4"
-docs_url: https://github.com/GroveMinting/llmAntidote#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/llm-antidote/2fbd2147234c/README.md
 capabilities:
   provides_tools: []
   provides_hooks:
-    - pre_tool_call
-    - post_tool_call
-    - pre_api_request
-    - on_session_start
-    - on_session_reset
-    - on_session_finalize
+  - pre_tool_call
+  - post_tool_call
+  - pre_api_request
+  - on_session_start
+  - on_session_reset
+  - on_session_finalize
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/llm-antidote/2fbd2147234c
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/GroveMinting/llmAntidote"

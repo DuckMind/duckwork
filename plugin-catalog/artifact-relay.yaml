@@ -1,14 +1,19 @@
 name: artifact-relay
-repo: "https://github.com/eloktev/\x68ermes-artifact-relay"
-sha: c91fa9229121dd616a275a45447301eacca45e6f
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Publish and read private Markdown or HTML reports through your Artifact Relay server.
-maintainer: eloktev
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/eloktev/\x68ermes-artifact-relay#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/artifact-relay/0907891f6cf9/README.md"
 platforms: [linux, macos, windows]
 capabilities:
   provides_tools: [artifact_read, artifact_publish]
   provides_hooks: []
   provides_middleware: []
   requires_env: [ARTIFACT_RELAY_API_TOKEN]
+subdir: plugins/catalog-vendor/artifact-relay/0907891f6cf9
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/eloktev/hermes-artifact-relay"

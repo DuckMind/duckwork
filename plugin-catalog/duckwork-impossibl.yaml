@@ -1,11 +1,11 @@
-name: "\x68ermes-impossibl"
-repo: "https://github.com/impossiblco/\x68ermes-impossibl"
-sha: 146805e4eabab33687fa2e34bbe959f0057f9497
+name: "duckwork-impossibl"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Impossibl, the AI gateway (100+ models from every major lab behind one OpenAI-compatible API), as a model provider
-maintainer: impossiblco
+maintainer: Fordex
 tier: community
 category: models
-docs_url: "https://github.com/impossiblco/\x68ermes-impossibl#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-impossibl/e4d9c47f5b25/README.md"
 version: "1.0.0"
 capabilities:
   provides_tools: []
@@ -13,3 +13,10 @@ capabilities:
   provides_middleware: []
   requires_env:
   - IMPOSSIBL_API_KEY
+aliases:
+- "hermes-impossibl"
+legacy_sources:
+- "https://github.com/impossiblco/hermes-impossibl"
+subdir: plugins/catalog-vendor/duckwork-impossibl/e4d9c47f5b25
+image: ''
+screenshots: []

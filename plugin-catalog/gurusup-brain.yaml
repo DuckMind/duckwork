@@ -1,16 +1,21 @@
 name: gurusup-brain
 title: Gurusup
-repo: https://github.com/gurusup/gurusup-brain-plugin
-sha: 4709ca345cb55a1fab809b6b53523c5c0600be6e
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Your company's memory in Duckwork: search decisions, people, customers and projects across every source your team connected to Gurusup (Slack, HubSpot, Notion, uploaded documents and more), with the sources behind each answer. Portable Agent Plugins v1 package (mcp.json + skills/), remote streamable-http with OAuth 2.1, no local code and no API keys. Disclosure — hosted-only MCP connector with no local code: every tool call goes to Gurusup's server at mcp.brain.gurusup.com under the signed-in Gurusup account (OAuth via `duckwork mcp add gurusup-brain --url https://mcp.brain.gurusup.com/mcp --auth oauth`; the bundled mcp.json alone yields 401), and answers are limited to what that account can see; write tools save knowledge to the company's Gurusup workspace (add_company_knowledge, skills_publish) and send issue reports or feedback to Gurusup (report_issue, send_feedback), and request_human_info can message a teammate on Slack or phone them when its dispatch flag is set."
-maintainer: Gurusup
+maintainer: Fordex
 tier: community
 category: tools
 version: "0.1.0"
-docs_url: https://gurusup.com/brain/mcp
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/gurusup-brain/f29faf8aa68c/README.md
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/gurusup-brain/f29faf8aa68c
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/gurusup/gurusup-brain-plugin"

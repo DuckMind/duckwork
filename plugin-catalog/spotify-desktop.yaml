@@ -1,16 +1,12 @@
 name: spotify-desktop
-repo: "https://github.com/cruzlxyz/\x68ermes-spotify-desktop"
-sha: 9b564d53c219f9962404dee5f84d3bbb47683897
-description: 'Spotify Connect remote for Duckwork Desktop — status-bar mini player (now playing,
-  transport, volume, devices, search, playlists, queue) reusing the Duckwork Spotify login
-  (Spotify Premium required for playback control). Unified agent+desktop
-  package: Electron status-bar player plus a dashboard-API backend (desktop-focused, no web UI).
-  No agent tools; config via plugins.entries.spotify-desktop.settings (poll intervals).'
-maintainer: cruzlxyz
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: 'Spotify Connect remote for Duckwork Desktop — status-bar mini player (now playing, transport, volume, devices, search, playlists, queue) reusing the Duckwork Spotify login (Spotify Premium required for playback control). Unified agent+desktop package: Electron status-bar player plus a dashboard-API backend (desktop-focused, no web UI). No agent tools; config via plugins.entries.spotify-desktop.settings (poll intervals).'
+maintainer: Fordex
 tier: community
 version: "0.1.2"
 category: desktop
-docs_url: "https://github.com/cruzlxyz/\x68ermes-spotify-desktop"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/spotify-desktop/b19e99c25f46/README.md"
 platforms: []
 capabilities:
   provides_tools: []
@@ -18,4 +14,9 @@ capabilities:
   provides_middleware: []
   requires_env: []
 known_issues:
-  - "On Duckwork releases where Spotify moved to the `spotify` plugin, the player needs spotify-desktop with cruzlxyz/duckwork-spotify-desktop#2 plus `duckwork plugins install spotify` (login: `duckwork spotify login`); this pin predates that change."
+- "On Duckwork releases where Spotify moved to the `spotify` plugin, the player needs spotify-desktop with cruzlxyz/duckwork-spotify-desktop#2 plus `duckwork plugins install spotify` (login: `duckwork spotify login`); this pin predates that change."
+subdir: plugins/catalog-vendor/spotify-desktop/b19e99c25f46
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/cruzlxyz/hermes-spotify-desktop"

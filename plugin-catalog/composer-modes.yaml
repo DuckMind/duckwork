@@ -1,19 +1,22 @@
 name: composer-modes
-repo: "https://github.com/LisandroNahuelH/\x68ermes-composer-modes"
-sha: de372aa34ecfe6adb424f86c04ca2de924984cb0
-description: Cursor-style composer modes (ask / agent / plan / debug) for the Duckwork desktop —
-  the mode's operating note reaches the model inside the turn's model-facing bytes, never the
-  bubble, transcript or session titles, and ask mode is enforced read-only on the tool side.
-maintainer: LisandroNahuelH
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Cursor-style composer modes (ask / agent / plan / debug) for the Duckwork desktop — the mode's operating note reaches the model inside the turn's model-facing bytes, never the bubble, transcript or session titles, and ask mode is enforced read-only on the tool side.
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/LisandroNahuelH/\x68ermes-composer-modes#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/composer-modes/9c3de46001bb/README.md"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks:
-    - pre_llm_call
-    - pre_tool_call
+  - pre_llm_call
+  - pre_tool_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/composer-modes/9c3de46001bb
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/LisandroNahuelH/hermes-composer-modes"

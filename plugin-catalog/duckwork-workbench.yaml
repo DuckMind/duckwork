@@ -1,20 +1,25 @@
-name: "\x68ermes-workbench"
-repo: "https://github.com/sxuff/\x68ermes-workbench"
-sha: f07fb5c90e24c1a396604758feb0fd4ae077760b
+name: "duckwork-workbench"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: The Duckwork desktop app in your browser. `duckwork workbench` serves the desktop interface through the Duckwork dashboard, for headless servers, VPSes and tablets. Disclosure — community plugin, not a Fordex product. On the first `duckwork workbench` run and again after each Duckwork update it runs `npm install --ignore-scripts` (guided by Duckwork's lockfile) and Vite against your Duckwork checkout's desktop sources, writing only under ~/.duckwork/duckwork-workbench and its own plugin dir (the checkout is only read), and starts `duckwork dashboard` on loopback when none is running.
-maintainer: sxuff
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21"
-docs_url: "https://github.com/sxuff/\x68ermes-workbench#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-workbench/cc69a183ebd1/README.md"
 version: "0.2.1"
-image: "https://raw.githubusercontent.com/sxuff/\x68ermes-workbench/f07fb5c90e24c1a396604758feb0fd4ae077760b/docs/media/banner.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-workbench/cc69a183ebd1/docs/media/banner.png"
 screenshots:
-  - "https://raw.githubusercontent.com/sxuff/\x68ermes-workbench/f07fb5c90e24c1a396604758feb0fd4ae077760b/docs/media/session.png"
-  - "https://raw.githubusercontent.com/sxuff/\x68ermes-workbench/f07fb5c90e24c1a396604758feb0fd4ae077760b/docs/media/slash-commands.png"
-  - "https://raw.githubusercontent.com/sxuff/\x68ermes-workbench/f07fb5c90e24c1a396604758feb0fd4ae077760b/docs/media/model-picker.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-workbench/cc69a183ebd1/docs/media/session.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-workbench/cc69a183ebd1/docs/media/slash-commands.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-workbench/cc69a183ebd1/docs/media/model-picker.png
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-workbench"
+legacy_sources:
+- "https://github.com/sxuff/hermes-workbench"
+subdir: plugins/catalog-vendor/duckwork-workbench/cc69a183ebd1

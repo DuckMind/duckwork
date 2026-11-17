@@ -1,12 +1,12 @@
 name: yolo-auto
-repo: "https://github.com/yolo-auto-org/\x68ermes-provider-yolo-auto"
-sha: e81ef7c28cf79e8664cac6634e0e6bafb28cad3a
-subdir: yolo-auto
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/yolo-auto/9e14c4d6b88d
 description: "Yolo-Auto: flat-rate OpenAI-compatible API with plan-filtered live model discovery."
-maintainer: yolo-auto-org
+maintainer: Fordex
 tier: community
 category: models
-docs_url: "https://github.com/yolo-auto-org/\x68ermes-provider-yolo-auto#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/yolo-auto/9e14c4d6b88d/plugin.yaml"
 capabilities:
   provides_tools: []
   provides_hooks: []
@@ -14,3 +14,7 @@ capabilities:
   requires_env:
   - YOLO_AUTO_API_KEY
   - YOLO_AUTO_BASE_URL
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/yolo-auto-org/hermes-provider-yolo-auto#yolo-auto"

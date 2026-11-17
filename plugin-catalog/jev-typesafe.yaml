@@ -1,16 +1,12 @@
 name: jev-typesafe
-repo: "https://github.com/ajensenwaud/\x68ermes-jev-plugin"
-sha: b3d29f71770a3447ad0b3db00658f64a8edc7dd3
-description: TypeSafe Jev (System One) decision tools — atomic yes/no checks, routing, rubric scoring
-  and mixed typed questions with calibrated probabilities, for triage, routing and review gating in coding
-  agents. Disclosure — every tool call sends the model-supplied question/state together with your TYPESAFE_API_KEY
-  to api.typesafe.ai (TypeSafe AI, an independent vendor); the catalog has not verified the plugin author's
-  affiliation with that vendor.
-maintainer: Anders Jensen-Waud
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: TypeSafe Jev (System One) decision tools — atomic yes/no checks, routing, rubric scoring and mixed typed questions with calibrated probabilities, for triage, routing and review gating in coding agents. Disclosure — every tool call sends the model-supplied question/state together with your TYPESAFE_API_KEY to api.typesafe.ai (TypeSafe AI, an independent vendor); the catalog has not verified the plugin author's affiliation with that vendor.
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: '>=0.19'
-docs_url: "https://github.com/ajensenwaud/\x68ermes-jev-plugin/blob/b3d29f71770a3447ad0b3db00658f64a8edc7dd3/README.md"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/jev-typesafe/19ed51e053ee/README.md"
 version: 0.1.0
 platforms: []
 capabilities:
@@ -23,3 +19,8 @@ capabilities:
   provides_middleware: []
   requires_env:
   - TYPESAFE_API_KEY
+subdir: plugins/catalog-vendor/jev-typesafe/19ed51e053ee
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/ajensenwaud/hermes-jev-plugin"

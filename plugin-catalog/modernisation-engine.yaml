@@ -10,34 +10,36 @@ version: "0.0.1"
 platforms: []
 capabilities:
   provides_tools:
-    - modernise_status
-    - modernise_assess
-    - modernise_inventory
-    - modernise_plan
-    - modernise_record
-    - modernise_protocol
-    - modernise_response_protocol
-    - modernise_schema
-    - modernise_contract
-    - modernise_prepare
-    - modernise_attempts
-    - modernise_review_request
-    - modernise_review
-    - modernise_rule_review_request
-    - modernise_rule_review
-    - modernise_rule_reviews
-    - modernise_proposal
-    - modernise_build
-    - modernise_run
-    - modernise_resume
-    - modernise_control_request
-    - modernise_cancel
-    - modernise_recover
-    - modernise_recover_build
-    - modernise_recipe
-    - modernise_compare
-    - modernise_report
+  - modernise_status
+  - modernise_assess
+  - modernise_inventory
+  - modernise_plan
+  - modernise_record
+  - modernise_protocol
+  - modernise_response_protocol
+  - modernise_schema
+  - modernise_contract
+  - modernise_prepare
+  - modernise_attempts
+  - modernise_review_request
+  - modernise_review
+  - modernise_rule_review_request
+  - modernise_rule_review
+  - modernise_rule_reviews
+  - modernise_proposal
+  - modernise_build
+  - modernise_run
+  - modernise_resume
+  - modernise_control_request
+  - modernise_cancel
+  - modernise_recover
+  - modernise_recover_build
+  - modernise_recipe
+  - modernise_compare
+  - modernise_report
   provides_hooks: []
   provides_middleware: []
   requires_env: []
 requires_duckwork: ">=0.21.4"
+availability: unavailable
+unavailable_reason: 'modified file format needs a safe license-notice strategy: development/recovery/benchmark-candidate.patch'

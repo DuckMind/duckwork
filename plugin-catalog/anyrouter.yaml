@@ -1,15 +1,19 @@
 name: anyrouter
-repo: "https://github.com/duyet/\x68ermes-provider-anyrouter"
-sha: 86bc17dd61ade9baa6f2fb7d440979b55359a907
-subdir: anyrouter
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/anyrouter/faf2b8df2271
 description: AnyRouter — unified model gateway (OpenAI-compatible); /model picker filtered to tool-capable routes, first-party meta-models like anyrouter/duckwork. Disclosure — sends your prompts and ANYROUTER_API_KEY to anyrouter.dev, a third-party relay that forwards to upstream vendors (OpenAI, Anthropic, Google, xAI, …), on some plans through a shared pool of other members' donated free-tier vendor keys; billed in prepaid AnyRouter credits. anyrouter/duckwork is AnyRouter's own routing meta-model, not a Fordex model. Opt-in ANYROUTER_APP_ATTRIBUTION=1 adds Duckwork attribution headers.
-maintainer: duyet
+maintainer: Fordex
 tier: community
 category: models
-docs_url: "https://github.com/duyet/\x68ermes-provider-anyrouter#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/anyrouter/faf2b8df2271/plugin.yaml"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
   - ANYROUTER_API_KEY
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/duyet/hermes-provider-anyrouter#anyrouter"

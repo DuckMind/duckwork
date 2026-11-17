@@ -1,12 +1,12 @@
 name: protean-ordaprompt
-repo: https://github.com/aska-digital/protean-ordaprompt
-sha: 60e89af2853072c7801c465f30999f3c6ceb35b2
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Jev-style comparative classifier for OrdaPilot. It compares all topic labels and session choices in one batch, including new-topic, ambiguous, and new-session options. It uses calibrated score and margin gates, weighs continuity against context cost and contamination, and abstains when uncertain. OpenRouter is optional for provisional new-label proposals and disabled by default."
-maintainer: aska-digital
+maintainer: Fordex
 tier: community
 category: automation
 requires_duckwork: ">=0.21"
-docs_url: https://github.com/aska-digital/protean-ordaprompt
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/protean-ordaprompt/7e9162ce64f0/README.md
 version: "1.0.0"
 readme: true
 platforms: []
@@ -15,3 +15,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/protean-ordaprompt/7e9162ce64f0
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/aska-digital/protean-ordaprompt"

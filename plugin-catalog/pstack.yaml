@@ -1,12 +1,12 @@
 name: pstack
-repo: https://github.com/Cloeille/pstack
-sha: d9454cc1ecba5f28b136deacdfe2df959cf7cdec
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Engineering rigor stack: poteto-mode orchestrator with 17 playbooks, plus how, architect, interrogate, swarm, unslop, and 46 other skills and principles. Disclosure — skills only, no tools or network calls of their own; when the user asks, the setup-pstack skill changes Duckwork `delegation` model/provider/reasoning settings via `duckwork config set`, the autopilot, shipping and babysit playbooks push and force-push the agent's own branches, squash-merge pull requests and arm hourly Duckwork cron jobs to watch them, and the reflect skill files backlog issues in your team's tracker without asking per item."
-maintainer: Cloeille
+maintainer: Fordex
 tier: community
 category: tools
 version: "0.3.1"
-docs_url: https://github.com/Cloeille/pstack
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/pstack/fc170336aa88/README.md
 platforms: []
 capabilities:
   provides_tools: []
@@ -14,3 +14,8 @@ capabilities:
   provides_middleware: []
   requires_env: []
 requires_duckwork: ">=0.21.0"
+subdir: plugins/catalog-vendor/pstack/fc170336aa88
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/Cloeille/pstack"

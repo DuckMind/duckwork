@@ -1,16 +1,21 @@
 name: nachos
-repo: "https://github.com/Nacho-Labs-LLC/\x68ermes-plugin-nachos"
-sha: 2ad0b272d4fbd2c000713e927a656851dc8787e2
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "0.5.4"
 description: "Durable memory and context compression for Duckwork Agent with local SQLite or flat-file storage. Disclosure — replaces the memory provider (memory.provider: nachos) and, only when context.engine: nachos is set, the context engine; the provider injects a system-prompt block telling the agent to use the nachos_memory_* tools and keep built-in memory disabled; opt-in semantic ranking either runs a separately installed nachos-embeddings CLI or sends the turn query plus memory titles/summaries to api.openai.com with OPENAI_API_KEY; all storage is local under $DUCKWORK_HOME/nachos/."
-maintainer: Nacho Labs LLC
+maintainer: Fordex
 tier: community
 category: memory
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/Nacho-Labs-LLC/\x68ermes-plugin-nachos#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/nachos/5cb80cce6f10/README.md"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/nachos/5cb80cce6f10
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/Nacho-Labs-LLC/hermes-plugin-nachos"

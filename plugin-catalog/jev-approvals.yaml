@@ -1,12 +1,12 @@
 name: jev-approvals
-repo: "https://github.com/anpicasso/\x68ermes-jev-approvals"
-sha: 28be98a19539b29768398fb400f4c62f41337c26
-subdir: plugin
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/jev-approvals/a0bcf5ac87d6
 description: "TypeSafe's Jev decision model as Duckwork' smart-approval reviewer only: it cannot generate text and refuses every other task. Supports TypeSafe direct, OpenRouter, and configurable Jev-compatible HTTPS endpoints with optional endpoint-specific authentication; validates typed answers and endpoint/redirect boundaries, redacts command credentials, and records bounded structured audit logs. Disclosure — each command routed to smart approval (redacted best-effort) and the operator's smart-policy text leave the machine for the configured third-party endpoint; provider or validation failures fail closed to ESCALATE."
-maintainer: anpicasso
+maintainer: Fordex
 tier: community
 category: models
-docs_url: "https://github.com/anpicasso/\x68ermes-jev-approvals#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/jev-approvals/a0bcf5ac87d6/plugin.yaml"
 version: "0.3.0"
 platforms: []
 capabilities:
@@ -14,4 +14,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - TYPESAFE_API_KEY
+  - TYPESAFE_API_KEY
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/anpicasso/hermes-jev-approvals#plugin"

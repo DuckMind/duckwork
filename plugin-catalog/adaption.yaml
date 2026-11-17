@@ -1,12 +1,12 @@
 name: adaption
-repo: "https://github.com/adaptionlabs/adaption-\x68ermes-plugin"
-sha: 958ad2e9077107be1919a5365541caa4e0acdcc8
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Dataset import, adaptation, augmentation, translation, synthetic generation, and AutoScientist fine-tuning through the hosted Adaption MCP. Portable Agent Plugins v1 package with three workflow skills; the MCP server is added separately with OAuth (or an API key for headless use). Disclosure — skill-only, no code; the MCP tools call api.prod.adaptionlabs.ai, and launches spend Adaption credits (the skills request a cost estimate first, Duckwork does not enforce it). Duckwork does not prompt before those tools unless the server is configured with trust: untrusted."
-maintainer: adaptionlabs
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/adaptionlabs/adaption-\x68ermes-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/adaption/24fdee2852b7/README.md"
 version: "0.1.0"
 readme: true
 platforms: []
@@ -15,3 +15,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/adaption/24fdee2852b7
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/adaptionlabs/adaption-hermes-plugin"

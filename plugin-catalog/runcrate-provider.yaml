@@ -1,14 +1,14 @@
 name: runcrate-provider
-repo: "https://github.com/runcrateai/\x68ermes-runcrate"
-sha: c0023f37820e05147f1dcd1cb8ebd712e6b122e2
-subdir: model-providers/runcrate
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/runcrate-provider/62d50db31574
 title: "Runcrate"
 description: "Runcrate (runcrate.ai) open models via the OpenAI-compatible API at api.runcrate.ai/v1: live model list from /v1/models, DeepSeek V4.1 Flash as the default, and Duckwork reasoning settings sent as reasoning_effort. Disclosure: model provider; prompts, tool schemas and RUNCRATE_API_KEY go to api.runcrate.ai, and free requests can be served by third-party model providers under their own terms (runcrate.ai/privacy)."
-maintainer: runcrateai
+maintainer: Fordex
 tier: community
 category: models
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/runcrateai/\x68ermes-runcrate#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/runcrate-provider/62d50db31574/plugin.yaml"
 version: "1.0.0"
 platforms: []
 capabilities:
@@ -16,4 +16,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - RUNCRATE_API_KEY
+  - RUNCRATE_API_KEY
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/runcrateai/hermes-runcrate#model-providers/runcrate"

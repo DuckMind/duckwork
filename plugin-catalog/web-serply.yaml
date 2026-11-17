@@ -1,12 +1,11 @@
 name: web-serply
-repo: "https://github.com/serply-inc/\x68ermes-web-serply"
-sha: c6cab41471586a110e5a584061168a045f566e08
-description: Serply web search provider for Duckwork Agent. Google web results via the Serply
-  SERP API. Requires SERPLY_API_KEY (sign up at https://serply.io).
-maintainer: serply-inc
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Serply web search provider for Duckwork Agent. Google web results via the Serply SERP API. Requires SERPLY_API_KEY (sign up at https://serply.io).
+maintainer: Fordex
 tier: community
 category: web
-docs_url: "https://github.com/serply-inc/\x68ermes-web-serply#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/web-serply/6047d177c4d8/README.md"
 version: "1.0.0"
 capabilities:
   provides_tools: []
@@ -14,3 +13,8 @@ capabilities:
   provides_middleware: []
   requires_env:
   - SERPLY_API_KEY
+subdir: plugins/catalog-vendor/web-serply/6047d177c4d8
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/serply-inc/hermes-web-serply"

@@ -1,20 +1,20 @@
 name: reasoning-switch
-repo: "https://github.com/apoapostolov/\x68ermes-agent-awesome-plugins"
-sha: 953732a9fb52b6fd89e73fc96d910aab63163e07
-subdir: public/reasoning-switch
-description: Rotate the focused session reasoning effort from the status bar. A dialog sets the levels,
-  colors, and per-level prompt limits. Disclosure — changes the focused session's reasoning effort through
-  the gateway config.set API (core may fall back to writing the global config.yaml when the session id
-  is stale) and auto-demotes the level after the configured number of prompts.
-maintainer: apoapostolov
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/reasoning-switch/91deaa9d62fd
+description: Rotate the focused session reasoning effort from the status bar. A dialog sets the levels, colors, and per-level prompt limits. Disclosure — changes the focused session's reasoning effort through the gateway config.set API (core may fall back to writing the global config.yaml when the session id is stale) and auto-demotes the level after the configured number of prompts.
+maintainer: Fordex
 tier: community
 category: desktop
-docs_url: "https://github.com/apoapostolov/\x68ermes-agent-awesome-plugins/tree/main/public/reasoning-switch"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/reasoning-switch/91deaa9d62fd/README.md"
 version: 1.1.1
-image: "https://raw.githubusercontent.com/apoapostolov/\x68ermes-agent-awesome-plugins/953732a9fb52b6fd89e73fc96d910aab63163e07/public/reasoning-switch/docs/hero.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/reasoning-switch/91deaa9d62fd/docs/hero.png"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+screenshots: []
+legacy_sources:
+- "https://github.com/apoapostolov/hermes-agent-awesome-plugins#public/reasoning-switch"

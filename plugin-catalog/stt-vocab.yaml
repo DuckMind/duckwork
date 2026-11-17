@@ -1,25 +1,16 @@
 name: stt-vocab
-repo: "https://github.com/pierrenode/\x68ermes-stt-vocab"
-sha: 54e83f9289315af6d47c7c6fdeb5714a08b35262
-subdir: stt-vocab
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/stt-vocab/997119b9d331
 description: >-
-  Puts the names a speech-to-text model mis-hears into the transcription prompt Duckwork sends with
-  each voice message: terms you list (globally or per surface) and names found in this profile's
-  memories/USER.md and MEMORY.md, most important last, within the 896 characters Duckwork keeps for
-  Whisper-family backends; your stt.prompt stays in front. Notes written in German, Spanish,
-  French, Italian, Dutch, Portuguese or Turkish can be named in the languages setting.
-  Disclosure — register() adds one pre_transcription hook that returns a new prompt string;
-  memory-derived names go only to local backends (faster-whisper, local_command) unless
-  allow_remote is set, and the memory files are not read otherwise; reads at most 256 KB per
-  memory file; no tools, network access, subprocesses or writes; Duckwork uploads the prompt with
-  the audio to the configured STT provider.
-maintainer: pierrenode
+  Puts the names a speech-to-text model mis-hears into the transcription prompt Duckwork sends with each voice message: terms you list (globally or per surface) and names found in this profile's memories/USER.md and MEMORY.md, most important last, within the 896 characters Duckwork keeps for Whisper-family backends; your stt.prompt stays in front. Notes written in German, Spanish, French, Italian, Dutch, Portuguese or Turkish can be named in the languages setting. Disclosure — register() adds one pre_transcription hook that returns a new prompt string; memory-derived names go only to local backends (faster-whisper, local_command) unless allow_remote is set, and the memory files are not read otherwise; reads at most 256 KB per memory file; no tools, network access, subprocesses or writes; Duckwork uploads the prompt with the audio to the configured STT provider.
+maintainer: Fordex
 tier: community
 category: voice
 requires_duckwork: ">=0.21"
-docs_url: "https://github.com/pierrenode/\x68ermes-stt-vocab"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/stt-vocab/997119b9d331/README.md"
 version: "1.1.0"
-image: "https://raw.githubusercontent.com/pierrenode/\x68ermes-stt-vocab/6145d065d50f196d51b3ab80fe4a76fb2827c115/docs/card.png"
+image: ""
 platforms: []
 capabilities:
   provides_tools: []
@@ -27,3 +18,6 @@ capabilities:
   - pre_transcription
   provides_middleware: []
   requires_env: []
+screenshots: []
+legacy_sources:
+- "https://github.com/pierrenode/hermes-stt-vocab#stt-vocab"

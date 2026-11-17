@@ -1,19 +1,23 @@
 name: magi
-repo: https://github.com/MarcosAlves90/magi
-sha: 3f1a38c1804b12080a329a41fc2cc257f1af151a
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Review pending Duckwork memory writes and inspect, add, edit, delete, or AI-compact stored memory from Desktop.
-maintainer: MarcosAlves90
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.5"
 version: "1.7.8"
-image: https://raw.githubusercontent.com/MarcosAlves90/magi/3f1a38c1804b12080a329a41fc2cc257f1af151a/docs/magi-cover-banner.png
+image: https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/magi/64a0b1c5153e/docs/magi-cover-banner.png
 screenshots:
-  - https://raw.githubusercontent.com/MarcosAlves90/magi/3f1a38c1804b12080a329a41fc2cc257f1af151a/docs/screenshots/pending-writes.png
-  - https://raw.githubusercontent.com/MarcosAlves90/magi/3f1a38c1804b12080a329a41fc2cc257f1af151a/docs/screenshots/stored-memory.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/magi/64a0b1c5153e/docs/screenshots/pending-writes.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/magi/64a0b1c5153e/docs/screenshots/stored-memory.png
 readme: true
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/magi/64a0b1c5153e
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/magi/64a0b1c5153e/README.md
+legacy_sources:
+- "https://github.com/MarcosAlves90/magi"

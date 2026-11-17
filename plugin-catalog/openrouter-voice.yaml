@@ -1,15 +1,20 @@
 name: openrouter-voice
-repo: "https://github.com/esketids/\x68ermes-openrouter-voice"
-sha: 3f2478ab6e795da54547e7a4b162dd207d73079a
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: OpenRouter speech-to-text and text-to-speech providers for Duckwork Agent (stt.provider / tts.provider = openrouter).
-maintainer: esketids
+maintainer: Fordex
 tier: community
 category: voice
 requires_duckwork: ">=0.21"
-docs_url: "https://github.com/esketids/\x68ermes-openrouter-voice#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/openrouter-voice/f216ed9a881f/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
   - OPENROUTER_API_KEY
+subdir: plugins/catalog-vendor/openrouter-voice/f216ed9a881f
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/esketids/hermes-openrouter-voice"

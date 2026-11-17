@@ -1,24 +1,22 @@
 name: osv-ref
-repo: "https://github.com/EloquentBrush0x/\x68ermes-context-refs"
-sha: 43ab2b75e660db5edcfe2f215776294c45408b40
-subdir: osv-ref
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/osv-ref/2367dbba0923
 description: >-
-  @cve:, @ghsa: and @osv: context references: attach a vulnerability record from OSV.dev to a
-  message (summary, aliases, severity, affected packages with version ranges and fixed versions,
-  details, references), with package data merged from up to four alias records. Disclosure — sends
-  HTTPS GET requests to api.osv.dev/v1/vulns/<id> only (the referenced id and up to four of its
-  alias ids leave the machine); no API key, no files written, no subprocess; register() only adds
-  the @cve:, @ghsa: and @osv: reference providers.
-maintainer: EloquentBrush0x
+  @cve:, @ghsa: and @osv: context references: attach a vulnerability record from OSV.dev to a message (summary, aliases, severity, affected packages with version ranges and fixed versions, details, references), with package data merged from up to four alias records. Disclosure — sends HTTPS GET requests to api.osv.dev/v1/vulns/<id> only (the referenced id and up to four of its alias ids leave the machine); no API key, no files written, no subprocess; register() only adds the @cve:, @ghsa: and @osv: reference providers.
+maintainer: Fordex
 tier: community
 category: web
 requires_duckwork: ">=0.21"
-docs_url: "https://github.com/EloquentBrush0x/\x68ermes-context-refs/tree/main/osv-ref"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/osv-ref/2367dbba0923/README.md"
 version: "1.0.0"
-image: "https://raw.githubusercontent.com/EloquentBrush0x/\x68ermes-context-refs/43ab2b75e660db5edcfe2f215776294c45408b40/docs/osv-ref-card.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/osv-ref/2367dbba0923/_catalog_assets/docs/osv-ref-card.png"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+screenshots: []
+legacy_sources:
+- "https://github.com/EloquentBrush0x/hermes-context-refs#osv-ref"

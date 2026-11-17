@@ -1,13 +1,13 @@
-name: "\x68ermes-lang-th"
-repo: "https://github.com/shoesroom13/\x68ermes-lang-thai"
-sha: 0c2f11bba4225fca17c7bf348c350bf55c3fdc18
+name: "duckwork-lang-th"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 title: Thai (ภาษาไทย) Language Pack
 description: "Thai (ภาษาไทย) language pack covering all three Duckwork UI surfaces — Desktop (5,023/5,030), core CLI/gateway/platforms (3,437/3,437), and the Ink TUI (1,259/1,259) — 9,719/9,725 keys total (99.9%). All three catalogs checked against the English reference with `duckwork plugins validate`. Manifest-only plugin: flat nested YAML overlays under locales/, no code, no network, no dependencies. Registering the pack never changes display.language — the user opts in via `duckwork config set display.language th`. Disclosure — text-only catalogs (no code, network or dependencies); untranslated keys fall back to English: the 7 array/conditional Desktop keys listed in the repo README, plus strings Duckwork added after the pack was built."
-maintainer: shoesroom13
+maintainer: Fordex
 tier: community
 category: general
 requires_duckwork: ">=0.21.6"
-docs_url: "https://github.com/shoesroom13/\x68ermes-lang-thai#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-lang-th/2f55bfe33e9d/README.md"
 version: "1.1.0"
 platforms: []
 capabilities:
@@ -16,4 +16,10 @@ capabilities:
   provides_middleware: []
   requires_env: []
 screenshots:
-  - "https://raw.githubusercontent.com/shoesroom13/\x68ermes-lang-thai/0c2f11bba4225fca17c7bf348c350bf55c3fdc18/screenshots/desktop-th.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-lang-th/2f55bfe33e9d/screenshots/desktop-th.png
+aliases:
+- "hermes-lang-th"
+legacy_sources:
+- "https://github.com/shoesroom13/hermes-lang-thai"
+subdir: plugins/catalog-vendor/duckwork-lang-th/2f55bfe33e9d
+image: ''

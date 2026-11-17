@@ -1,12 +1,11 @@
 name: davinci-resolve
-repo: "https://github.com/wassermanproductions/\x68ermes-davinci-resolve-plugin"
-sha: bbd5b207f823f16a20e756bfa80f44ad34790a3f
-description: Control DaVinci Resolve Studio live, or generate importable interchange files for free DaVinci
-  Resolve.
-maintainer: wassermanproductions
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Control DaVinci Resolve Studio live, or generate importable interchange files for free DaVinci Resolve.
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/wassermanproductions/\x68ermes-davinci-resolve-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/davinci-resolve/10b9cbf06fcc/README.md"
 capabilities:
   provides_tools:
   - resolve_add_timeline_marker
@@ -28,3 +27,8 @@ capabilities:
   requires_env: []
 platforms:
 - macos
+subdir: plugins/catalog-vendor/davinci-resolve/10b9cbf06fcc
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/wassermanproductions/hermes-davinci-resolve-plugin"

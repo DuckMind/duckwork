@@ -1,17 +1,22 @@
 name: replaid
-repo: "https://github.com/replaid-pro/replaid-\x68ermes"
-sha: 3f8881f2f9f6ee27b59515ff9fef0afee33b87e0
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Connect Replaid with OAuth to read, triage, and draft replies in your social inbox.
-maintainer: replaid-pro
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/replaid-pro/replaid-\x68ermes#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/replaid/209dca5043dc/README.md"
 version: "0.2.1"
 capabilities:
   provides_tools:
-    - replaid_connection_status
+  - replaid_connection_status
   provides_hooks:
-    - pre_llm_call
+  - pre_llm_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/replaid/209dca5043dc
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/replaid-pro/replaid-hermes"

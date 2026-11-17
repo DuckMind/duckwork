@@ -1,17 +1,20 @@
 name: openrouter-picker
-repo: "https://github.com/PIR8-Software/\x48ermes-OR-Picker"
-sha: 5f360c80ecbb09216e41b62db83262c1bde4cb7f
-subdir: catalog
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/openrouter-picker/e1a747a7009f
 description: "One install: the Desktop model picker and the OR Picker composer provider. Checking a model here is what the composer lists. Disclosure — the optional OpenRouter management key is stored in plaintext in Desktop localStorage; the plugin reads OPENROUTER_API_KEY from your environment, Duckwork secret store or DUCKWORK_HOME/.env and sends it only to openrouter.ai (credits, usage, and the Test-model button, which spends credits)."
-maintainer: PIR8-Software
+maintainer: Fordex
 tier: community
 category: desktop
 version: "1.1.1"
-image: "https://raw.githubusercontent.com/PIR8-Software/\x48ermes-OR-Picker/5f360c80ecbb09216e41b62db83262c1bde4cb7f/docs/images/openrouter-picker-banner.png"
-docs_url: "https://github.com/PIR8-Software/\x48ermes-OR-Picker#readme"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/openrouter-picker/e1a747a7009f/_catalog_assets/docs/images/openrouter-picker-banner.png"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/openrouter-picker/e1a747a7009f/plugin.yaml"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
   - OPENROUTER_API_KEY
+screenshots: []
+legacy_sources:
+- "https://github.com/PIR8-Software/Hermes-OR-Picker#catalog"

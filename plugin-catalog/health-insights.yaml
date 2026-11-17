@@ -1,12 +1,12 @@
 name: health-insights
-repo: "https://github.com/mwdearing/\x68ermes-health-insights"
-sha: d6d09c1f17ada6ca60368a1e0c7a7b5bd4efefc6
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Deterministic, local-first analysis of your own Apple Health data - weekly trends, rule-based concern checks, nutrition versus Dietary Reference Intakes, an IOM energy target, lab results and opt-in modules (GLP-1 monitoring, medication adherence; all off by default). Portable Agent Plugins v1 package of ten skills that drive the separately installed health-insights command line tool (installed from the plugin's own pinned copy); the plugin itself contains no executable. Works on a self-hosted HealthRelay or Health Bridge receiver database. Disclosure - it handles sensitive health data, so use a local model or one you trust; personal integrations (medication counts, model wording) are off by default. Disclosure — the skills run a separately installed health-insights CLI that reads your HealthRelay or Health Bridge SQLite database read-only and keeps imported lab and ECG results under ~/.local/share/health-insights; the health values it prints are sent to whichever model provider your Duckwork session uses."
-maintainer: mwdearing
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: '>=0.20'
-docs_url: "https://github.com/mwdearing/\x68ermes-health-insights#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/health-insights/a9bdab41343f/README.md"
 version: 0.3.2
 platforms: []
 capabilities:
@@ -14,3 +14,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/health-insights/a9bdab41343f
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/mwdearing/hermes-health-insights"

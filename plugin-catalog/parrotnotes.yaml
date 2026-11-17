@@ -1,24 +1,21 @@
 name: parrotnotes
-repo: "https://github.com/ascetx/parrot-notes-\x68ermes-plugin"
-sha: 18b2ed0d4b9eacff38e286f34bc08301afe3f0f3
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: >-
-  Find, search, summarize and save insights for your ParrotNotes in-person meeting notes
-  through the hosted ParrotNotes MCP server (Streamable HTTP, OAuth 2.0 + DCR), with the parrotnotes
-  workflow skill bundled. Portable Agent Plugins v1 package (mcp.json + skills/).
-  Disclosure — hosted-only connector with no local code: every tool call goes to the vendor's
-  remote MCP server at mcp.parrotnotes.app (OAuth via a Supabase auth backend); note titles,
-  transcripts and insights from the user's ParrotNotes account are pulled into the session
-  context, and text the model passes to save_note_insight is written to that account. OAuth
-  must be enabled with `duckwork mcp add parrotnotes --url https://mcp.parrotnotes.app/mcp --auth oauth`;
-  the bundled mcp.json alone yields 401.
-maintainer: ParrotNotes
+  Find, search, summarize and save insights for your ParrotNotes in-person meeting notes through the hosted ParrotNotes MCP server (Streamable HTTP, OAuth 2.0 + DCR), with the parrotnotes workflow skill bundled. Portable Agent Plugins v1 package (mcp.json + skills/). Disclosure — hosted-only connector with no local code: every tool call goes to the vendor's remote MCP server at mcp.parrotnotes.app (OAuth via a Supabase auth backend); note titles, transcripts and insights from the user's ParrotNotes account are pulled into the session context, and text the model passes to save_note_insight is written to that account. OAuth must be enabled with `duckwork mcp add parrotnotes --url https://mcp.parrotnotes.app/mcp --auth oauth`; the bundled mcp.json alone yields 401.
+maintainer: Fordex
 tier: community
 category: tools
 version: "1.2.2"
-docs_url: https://parrotnotes.app/docs/mcp
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/parrotnotes/ea77853476cc/README.md
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/parrotnotes/ea77853476cc
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/ascetx/parrot-notes-hermes-plugin"

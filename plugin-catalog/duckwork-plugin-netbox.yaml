@@ -1,12 +1,11 @@
-name: "\x68ermes-plugin-netbox"
-repo: "https://github.com/andrewvieyra/\x68ermes-plugin-netbox"
-sha: 8ff1fc408e765294664e6ed96c4a5a437b76ceef
-description: 'NetBox change management: query DCIM/IPAM objects, build a reviewed field-level diff, apply
-  with a journal and roll back.'
-maintainer: andrewvieyra
+name: "duckwork-plugin-netbox"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: 'NetBox change management: query DCIM/IPAM objects, build a reviewed field-level diff, apply with a journal and roll back.'
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/andrewvieyra/\x68ermes-plugin-netbox"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-plugin-netbox/28dfa14abf3b/README.md"
 platforms: []
 capabilities:
   provides_tools:
@@ -20,3 +19,10 @@ capabilities:
   requires_env:
   - NETBOX_URL
   - NETBOX_TOKEN
+aliases:
+- "hermes-plugin-netbox"
+legacy_sources:
+- "https://github.com/andrewvieyra/hermes-plugin-netbox"
+subdir: plugins/catalog-vendor/duckwork-plugin-netbox/28dfa14abf3b
+image: ''
+screenshots: []

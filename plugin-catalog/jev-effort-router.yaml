@@ -1,22 +1,27 @@
 name: jev-effort-router
-repo: https://github.com/AlphaPerseii3000/jev-effort-router
-sha: 6fd9f2ec1c53cb99b5e6c7043c25bbd37938d4a5
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Per-turn model AND reasoning-effort routing, decided by TypeSafe Jev, which rewrites the outgoing Ollama:Cloud provider request itself via the llm_request middleware. Every other catalog router picks a model and stops, and the two entries that touch reasoning effort move it by hand; this one decides both per turn. Ollama:Cloud only — no other provider is routed, and every failure path leaves the request byte-identical to a plugin-disabled run. Disclosure — sends the current user message and up to 4 previous turns to OpenRouter's Decisions API (typesafe/jev, billed to your OpenRouter key) on every routed turn."
-maintainer: AlphaPerseii3000
+maintainer: Fordex
 tier: community
 category: models
 requires_duckwork: ">=0.21.4"
-docs_url: https://github.com/AlphaPerseii3000/jev-effort-router
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/jev-effort-router/6b750d213c7a/README.md
 version: "0.3.0"
 platforms: []
 capabilities:
   provides_tools:
-    - jev_effort_router_status
-    - jev_effort_router_route
+  - jev_effort_router_status
+  - jev_effort_router_route
   provides_hooks:
-    - on_session_end
-    - post_llm_call
+  - on_session_end
+  - post_llm_call
   provides_middleware:
-    - llm_request
+  - llm_request
   requires_env:
-    - OPENROUTER_API_KEY
+  - OPENROUTER_API_KEY
+subdir: plugins/catalog-vendor/jev-effort-router/6b750d213c7a
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/AlphaPerseii3000/jev-effort-router"

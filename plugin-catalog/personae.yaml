@@ -17,7 +17,7 @@ version: "1.2.0"
 # embeds, so card, docs page and README cannot drift apart.
 image: https://raw.githubusercontent.com/SmoothMarx/personae/6c6f0fc524eb8fcdd7e633bf0229b8c829281ff3/assets/personae-pane.png
 screenshots:
-  - https://raw.githubusercontent.com/SmoothMarx/personae/6c6f0fc524eb8fcdd7e633bf0229b8c829281ff3/assets/personae-pane.png
+- https://raw.githubusercontent.com/SmoothMarx/personae/6c6f0fc524eb8fcdd7e633bf0229b8c829281ff3/assets/personae-pane.png
 platforms: [linux, macos, windows]
 capabilities:
   provides_tools: []
@@ -25,3 +25,5 @@ capabilities:
   provides_middleware: []
   requires_env: []
 requires_duckwork: ">=0.21.5"
+availability: unavailable
+unavailable_reason: 'modified file format needs a safe license-notice strategy: package.json'

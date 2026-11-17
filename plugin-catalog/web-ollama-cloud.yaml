@@ -1,14 +1,18 @@
 name: web-ollama-cloud
-repo: "https://github.com/rriggs/\x68ermes-plugin-ollama-cloud-search"
-sha: 9c739a9ea5985e0ba86c20d7160af06382c2198e
-description: Ollama Cloud web search + content extraction via Ollama's native REST API. Search returns
-  web results; extract fetches page content. Reuses OLLAMA_API_KEY (https://ollama.com/settings/keys).
-maintainer: rriggs
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Ollama Cloud web search + content extraction via Ollama's native REST API. Search returns web results; extract fetches page content. Reuses OLLAMA_API_KEY (https://ollama.com/settings/keys).
+maintainer: Fordex
 tier: community
 category: web
-docs_url: "https://github.com/rriggs/\x68ermes-plugin-ollama-cloud-search#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/web-ollama-cloud/4d70a9cfbcbf/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/web-ollama-cloud/4d70a9cfbcbf
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/rriggs/hermes-plugin-ollama-cloud-search"

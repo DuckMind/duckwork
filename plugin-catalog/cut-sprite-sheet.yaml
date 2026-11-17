@@ -1,5 +1,5 @@
 name: cut-sprite-sheet
-repo: "https://github.com/TakeshiTGAL/\x68ermes-plugin-sprite-sheet"
+repo: "https://github.com/TakeshiTGAL/hermes-plugin-sprite-sheet"
 sha: 3e5e9b274177a4d561658be82acd9a10cbc6c39c
 version: "0.1.0"
 requires_duckwork: '>=0.21.6'
@@ -7,15 +7,17 @@ description: 'pixel art sprite sheet cutter. png to tileset splitter. cut pixel 
 maintainer: TakeshiTGAL
 tier: community
 category: tools
-docs_url: "https://github.com/TakeshiTGAL/\x68ermes-plugin-sprite-sheet"
+docs_url: "https://github.com/TakeshiTGAL/hermes-plugin-sprite-sheet"
 platforms:
-  - macos
+- macos
 capabilities:
   provides_tools:
-    - inspect_grid
-    - slice_grid
-    - place_kit
+  - inspect_grid
+  - slice_grid
+  - place_kit
   provides_hooks:
-    - pre_tool_call
+  - pre_tool_call
   provides_middleware: []
   requires_env: []
+availability: unavailable
+unavailable_reason: no full recognized redistribution license at pinned root/subdir

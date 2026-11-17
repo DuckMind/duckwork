@@ -1,15 +1,22 @@
-name: "\x68ermes-desktop-camera"
-repo: "https://github.com/BrokeSkill/\x48ermes-Camera"
-sha: ce9e8b914cb73ca88e797d89124f6add516bf823
+name: "duckwork-desktop-camera"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: A camera button for the Duckwork Desktop composer. Open the preview, take a photo, and the frame lands in the composer as an image attachment, ready to send.
-maintainer: BrokeSkill
+maintainer: Fordex
 tier: community
 category: desktop
 version: "0.1.0"
-image: "https://raw.githubusercontent.com/BrokeSkill/\x48ermes-Camera/ce9e8b914cb73ca88e797d89124f6add516bf823/docs/demo.gif"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-desktop-camera/6aa53468c67f/docs/demo.gif"
 platforms: [linux, macos, windows]
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-desktop-camera"
+legacy_sources:
+- "https://github.com/BrokeSkill/Hermes-Camera"
+subdir: plugins/catalog-vendor/duckwork-desktop-camera/6aa53468c67f
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-desktop-camera/6aa53468c67f/README.md
+screenshots: []

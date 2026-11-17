@@ -1,13 +1,13 @@
 name: govee
-repo: "https://github.com/promptclickrun/\x68ermes-govee"
-sha: 2d552cd1c67421cd5c9bbd8dd9b267f6dd5f0a0a
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Discover and control Govee lights (power, brightness, color, white temperature, scenes) through Govee's developer API. Every command is checked against the model's advertised capabilities and ranges, then confirmed by a state read-back. Disclosure — sends device IDs and control commands to openapi.api.govee.com with your Govee API key; the model can change light state; stores nothing on disk."
-maintainer: promptclickrun
+maintainer: Fordex
 tier: community
 category: tools
 version: "0.1.0"
 requires_duckwork: ">=0.21.2"
-docs_url: "https://github.com/promptclickrun/\x68ermes-govee#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/govee/fe704d0136cb/README.md"
 platforms: []
 capabilities:
   provides_tools:
@@ -16,3 +16,8 @@ capabilities:
   provides_middleware: []
   requires_env:
   - GOVEE_API_KEY
+subdir: plugins/catalog-vendor/govee/fe704d0136cb
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/promptclickrun/hermes-govee"

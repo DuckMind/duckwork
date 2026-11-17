@@ -1,11 +1,11 @@
 name: hopper
-repo: https://github.com/mykeura/hopper
-sha: 68427cf7770b393b6b4b694722d24431058fbd3f
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Add and manage custom OpenRouter models in Duckwork without modifying the core catalog.
-maintainer: mykeura
+maintainer: Fordex
 tier: community
 category: models
-docs_url: https://github.com/mykeura/hopper#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/hopper/2784312d3b99/README.md
 version: "1.4.0"
 requires_duckwork: ">=0.21"
 capabilities:
@@ -13,4 +13,9 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - OPENROUTER_API_KEY
+  - OPENROUTER_API_KEY
+subdir: plugins/catalog-vendor/hopper/2784312d3b99
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/mykeura/hopper"

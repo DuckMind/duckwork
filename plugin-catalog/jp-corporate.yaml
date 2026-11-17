@@ -1,11 +1,11 @@
 name: jp-corporate
-repo: "https://github.com/TakeshiTGAL/\x68ermes-plugin-jp-corporate"
-sha: fc0e16c2924d00774957c516f5eb14016228b91d
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Japanese corporate lookup (法人照会): find or verify a company by name or corporate number and read its gBizINFO record (basic info, subsidies, government contracts, awards, certifications, financials, patents, workplace data). Disclosure — sends the company names, corporate numbers and prefectures you look up to api.info.gbiz.go.jp (METI gBizINFO) with your own GBIZINFO_API_TOKEN in a request header; no other host, nothing written to disk."
-maintainer: TakeshiTGAL
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/TakeshiTGAL/\x68ermes-plugin-jp-corporate#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/jp-corporate/343e2e08cda5/README.md"
 version: "0.1.1"
 requires_duckwork: ">=0.21.4"
 platforms: []
@@ -17,3 +17,8 @@ capabilities:
   provides_middleware: []
   requires_env:
   - GBIZINFO_API_TOKEN
+subdir: plugins/catalog-vendor/jp-corporate/343e2e08cda5
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/TakeshiTGAL/hermes-plugin-jp-corporate"

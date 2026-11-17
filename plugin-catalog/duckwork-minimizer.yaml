@@ -1,23 +1,28 @@
-name: "\x68ermes-minimizer"
+name: "duckwork-minimizer"
 title: Minimizer
-repo: "https://github.com/nosliwhtes/\x68ermes-minimizer"
-sha: d209ed0824e2787cd6454bd4b060dbf0381b7b79
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "YAGNI coding and code-review guidance for Duckwork: reduce over-engineering, reuse existing behavior, and preserve requirements. One static prompt section; no tools or hooks."
-maintainer: nosliwhtes
+maintainer: Fordex
 tier: community
 category: general
 requires_duckwork: ">=0.22.0"
 version: "0.1.1"
-docs_url: "https://github.com/nosliwhtes/\x68ermes-minimizer/blob/d209ed0824e2787cd6454bd4b060dbf0381b7b79/README.md"
-image: "https://raw.githubusercontent.com/nosliwhtes/\x68ermes-minimizer/d209ed0824e2787cd6454bd4b060dbf0381b7b79/docs/assets/minimizer-demo.png"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-minimizer/652a073fdc8f/README.md"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-minimizer/652a073fdc8f/docs/assets/minimizer-demo.png"
 screenshots:
-  - "https://raw.githubusercontent.com/nosliwhtes/\x68ermes-minimizer/d209ed0824e2787cd6454bd4b060dbf0381b7b79/docs/assets/minimizer-demo.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-minimizer/652a073fdc8f/docs/assets/minimizer-demo.png
 readme: true
 platforms: []
 known_issues:
-  - Guidance is advisory, not enforcement; existing session prompts may retain it after disabling.
+- Guidance is advisory, not enforcement; existing session prompts may retain it after disabling.
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-minimizer"
+legacy_sources:
+- "https://github.com/nosliwhtes/hermes-minimizer"
+subdir: plugins/catalog-vendor/duckwork-minimizer/652a073fdc8f

@@ -1,25 +1,27 @@
-name: "\x68ermes-soniox"
-repo: "https://github.com/XimilalaXiang/\x68ermes-soniox"
-sha: 99c747918d3049bca3c6744ba92b176b3f6bef6c
+name: "duckwork-soniox"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: >-
-  Native BYOK Soniox text-to-speech and asynchronous speech-to-text providers with configurable
-  languages and voices, automatic STT language detection, and Duckwork voice-bubble support.
-  Disclosure — TTS sends reply text and synthesis settings to tts-rt.soniox.com; STT uploads audio,
-  optional language hints, and optional prompt context to api.soniox.com, then best-effort deletes
-  the remote transcription and uploaded file. SONIOX_API_KEY is resolved through Duckwork' active-profile
-  secret scope. No telemetry, shell commands, background processes, or stored credentials.
-maintainer: XimilalaXiang
+  Native BYOK Soniox text-to-speech and asynchronous speech-to-text providers with configurable languages and voices, automatic STT language detection, and Duckwork voice-bubble support. Disclosure — TTS sends reply text and synthesis settings to tts-rt.soniox.com; STT uploads audio, optional language hints, and optional prompt context to api.soniox.com, then best-effort deletes the remote transcription and uploaded file. SONIOX_API_KEY is resolved through Duckwork' active-profile secret scope. No telemetry, shell commands, background processes, or stored credentials.
+maintainer: Fordex
 tier: community
 version: "0.2.0"
 category: voice
 requires_duckwork: ">=0.22.4"
-docs_url: "https://github.com/XimilalaXiang/\x68ermes-soniox#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-soniox/b0793be7826f/README.md"
 platforms: []
 known_issues:
-  - Realtime WebSocket TTS/STT is not implemented; v0.2.0 uses file-based synthesis and asynchronous transcription.
+- Realtime WebSocket TTS/STT is not implemented; v0.2.0 uses file-based synthesis and asynchronous transcription.
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - SONIOX_API_KEY
+  - SONIOX_API_KEY
+aliases:
+- "hermes-soniox"
+legacy_sources:
+- "https://github.com/XimilalaXiang/hermes-soniox"
+subdir: plugins/catalog-vendor/duckwork-soniox/b0793be7826f
+image: ''
+screenshots: []

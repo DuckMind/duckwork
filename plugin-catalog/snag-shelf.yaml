@@ -1,12 +1,12 @@
 name: snag-shelf
-repo: "https://github.com/aydnOktay/\x68ermes-snag-shelf"
-sha: da1b51c53235010ca161bfda67097bfbc74ae277
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Everything that snagged - cross-session shelf of failed tool calls. Full Desktop page, chip, pin, fix-prompt insert. No API keys. Disclosure — stores failed tool-call metadata (tool, truncated args with key-name redaction, error snippet) locally in plugin-data; no network."
-maintainer: aydnOktay
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/aydnOktay/\x68ermes-snag-shelf"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/snag-shelf/8393c1c9df68/README.md"
 version: "0.1.0"
 platforms: []
 capabilities:
@@ -17,3 +17,8 @@ capabilities:
   - post_tool_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/snag-shelf/8393c1c9df68
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/aydnOktay/hermes-snag-shelf"

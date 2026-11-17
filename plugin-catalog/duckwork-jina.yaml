@@ -1,18 +1,23 @@
-name: "\x68ermes-jina"
-repo: "https://github.com/Adolanium/\x68ermes-jina"
-sha: 98505951a3d26230dc30dfd47a502fcdc396f793
-description: Jina Reader web backend for web_extract (r.jina.ai, works without a key) and web_search
-  (s.jina.ai, needs JINA_API_KEY). Unofficial; not affiliated with Jina AI.
-maintainer: Adolanium
+name: "duckwork-jina"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Jina Reader web backend for web_extract (r.jina.ai, works without a key) and web_search (s.jina.ai, needs JINA_API_KEY). Unofficial; not affiliated with Jina AI.
+maintainer: Fordex
 tier: community
 category: web
 requires_duckwork: ">=0.21.6"
-docs_url: "https://github.com/Adolanium/\x68ermes-jina#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-jina/24dc522ed322/README.md"
 version: "0.1.0"
-image: "https://raw.githubusercontent.com/Adolanium/\x68ermes-jina/98505951a3d26230dc30dfd47a502fcdc396f793/assets/catalog-banner.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-jina/24dc522ed322/assets/catalog-banner.png"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - JINA_API_KEY
+  - JINA_API_KEY
+aliases:
+- "hermes-jina"
+legacy_sources:
+- "https://github.com/Adolanium/hermes-jina"
+subdir: plugins/catalog-vendor/duckwork-jina/24dc522ed322
+screenshots: []

@@ -1,11 +1,11 @@
-name: "\x68ermes-opper"
-repo: "https://github.com/opper-ai/\x68ermes-opper"
-sha: 2e15f465b4c2a107fd0230611ebc1e5a7586a196
+name: "duckwork-opper"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Opper, the EU-hosted AI gateway (700+ models behind one OpenAI-compatible API), as a model provider
-maintainer: opper-ai
+maintainer: Fordex
 tier: community
 category: models
-docs_url: "https://github.com/opper-ai/\x68ermes-opper#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-opper/605b80273f30/README.md"
 version: "1.0.0"
 capabilities:
   provides_tools: []
@@ -13,3 +13,10 @@ capabilities:
   provides_middleware: []
   requires_env:
   - OPPER_API_KEY
+aliases:
+- "hermes-opper"
+legacy_sources:
+- "https://github.com/opper-ai/hermes-opper"
+subdir: plugins/catalog-vendor/duckwork-opper/605b80273f30
+image: ''
+screenshots: []

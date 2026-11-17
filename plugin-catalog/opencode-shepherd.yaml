@@ -5,18 +5,23 @@
 # static, and the standalone CLI it documents is installed by the operator,
 # never fetched by the plugin itself.
 name: opencode-shepherd
-repo: https://github.com/okazakee/opencode-shepherd
-sha: "207a1443a5daa20e20824d13776794c0057cd539"   # tag v0.2.5
+repo: https://github.com/DuckMind/duckwork
+sha: "86b0c19d1504bc127a6c34d8a8d146e58276ef63"   # tag v0.2.5
 description: "Watch over opencode sessions from anywhere: alerts for stopped turns, questions and permissions, plus a dependency-free CLI to reply. Disclosure — the skill has the agent install the ocshepherd CLI from GitHub at a pinned commit and, after asking you, add a cron entry or systemd unit that polls your opencode server; the CLI talks to that server with the password you provide, can reply to its questions and permission prompts, and optionally sends alerts to Telegram or runs a notify command you configure."
-maintainer: okazakee
+maintainer: Fordex
 tier: community
 category: automation
 requires_duckwork: ">=0.21"
 version: "0.2.5"
-docs_url: https://github.com/okazakee/opencode-shepherd#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/opencode-shepherd/189f4a2c37f7/README.md
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/opencode-shepherd/189f4a2c37f7
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/okazakee/opencode-shepherd"

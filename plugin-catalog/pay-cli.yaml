@@ -1,21 +1,13 @@
 name: pay-cli
-repo: https://github.com/solana-foundation/pay
-sha: d76d57ddbce5f2338432d98cfc06240992d49097
-subdir: agent-plugins/pay-cli
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/pay-cli/35831617a406
 title: Pay CLI
-description: 'Discover priced APIs and pay per request (HTTP 402, x402, MPP) in stablecoins from a
-  wallet on this machine, through the local `pay mcp` stdio server of the official Pay CLI, with the
-  pay workflow skill bundled. Portable Agent Plugins v1 package (mcp.json + skills/), no Python or
-  executables; the user installs the `pay` CLI (brew or npm) and runs `pay setup` first, and the server
-  is offered only while `pay` is on PATH. Disclosure — payments plugin for pay.sh: Duckwork starts `pay mcp`
-  as a long-running local process; the curl tool spends the local wallet''s stablecoin balance; each
-  payment is confirmed by the user through MCP elicitation (PAY_FORCE_ELICITATION=1, declined when
-  nobody can answer) and the server is marked untrusted; every profile using the plugin shares the
-  same local wallet.'
-maintainer: solana-foundation
+description: 'Discover priced APIs and pay per request (HTTP 402, x402, MPP) in stablecoins from a wallet on this machine, through the local `pay mcp` stdio server of the official Pay CLI, with the pay workflow skill bundled. Portable Agent Plugins v1 package (mcp.json + skills/), no Python or executables; the user installs the `pay` CLI (brew or npm) and runs `pay setup` first, and the server is offered only while `pay` is on PATH. Disclosure — payments plugin for pay.sh: Duckwork starts `pay mcp` as a long-running local process; the curl tool spends the local wallet''s stablecoin balance; each payment is confirmed by the user through MCP elicitation (PAY_FORCE_ELICITATION=1, declined when nobody can answer) and the server is marked untrusted; every profile using the plugin shares the same local wallet.'
+maintainer: Fordex
 tier: verified
 category: tools
-docs_url: https://github.com/solana-foundation/pay/tree/main/agent-plugins/pay-cli#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/pay-cli/35831617a406/README.md
 version: "0.1.0"
 requires_duckwork: ">=0.21.6"
 platforms: []
@@ -24,3 +16,7 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/solana-foundation/pay#agent-plugins/pay-cli"

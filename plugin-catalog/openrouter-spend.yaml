@@ -1,25 +1,29 @@
 name: openrouter-spend
 title: "OpenRouter Spend"
-repo: https://github.com/AllenRobinHubert/openrouter-spend
-sha: 4a54b43f82264a0703d21abec9f7e49e8650abcf
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "OpenRouter API-key spend and recorded chat costs in USD/INR. Disclosure — sends the configured OpenRouter key (OPENROUTER_API_KEY, or the variable named in api_key_env) only to openrouter.ai's read-only key and generation accounting endpoints, and fetches public USD/INR rates from api.frankfurter.dev unless a manual rate is set; middleware on every LLM request records ids, model, token counts and reported cost (no prompt or reply text) to its own ledger; the dashboard reads accounting metadata (session ids, token counts, billing provider) read-only from the state.db and OpenRouter Spend ledger of every profile under the Duckwork root."
-maintainer: AllenRobinHubert
+maintainer: Fordex
 tier: community
 category: desktop
 version: "0.4.1"
 requires_duckwork: ">=0.21.5"
-docs_url: https://github.com/AllenRobinHubert/openrouter-spend#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/openrouter-spend/66b55dc0ac38/README.md
 readme: true
 screenshots:
-  - https://raw.githubusercontent.com/AllenRobinHubert/openrouter-spend/4a54b43f82264a0703d21abec9f7e49e8650abcf/docs/statusbar.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/openrouter-spend/66b55dc0ac38/docs/statusbar.png
 capabilities:
   provides_tools: []
   provides_hooks:
-    - pre_api_request
-    - api_request_error
-    - post_auxiliary_call
-    - post_tool_call
+  - pre_api_request
+  - api_request_error
+  - post_auxiliary_call
+  - post_tool_call
   provides_middleware:
-    - llm_execution
+  - llm_execution
   requires_env:
-    - OPENROUTER_API_KEY
+  - OPENROUTER_API_KEY
+subdir: plugins/catalog-vendor/openrouter-spend/66b55dc0ac38
+image: ''
+legacy_sources:
+- "https://github.com/AllenRobinHubert/openrouter-spend"

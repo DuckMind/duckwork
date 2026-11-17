@@ -1,16 +1,22 @@
 name: doctorpack
-repo: "https://github.com/godhiraj-code/\x68ermes-doctorpack"
-sha: ac00ace14ea9210e2e02a7b978cf4bc51eec2d8f
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Local-first diagnostics, safety audit, and incident postmortems for Duckwork Agent.
-maintainer: godhiraj-code
+maintainer: Fordex
 tier: community
 category: tools
 version: "0.1.0"
 capabilities:
   provides_tools:
-    - doctorpack_config_audit
-    - doctorpack_plugin_check
-    - doctorpack_postmortem
+  - doctorpack_config_audit
+  - doctorpack_plugin_check
+  - doctorpack_postmortem
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/doctorpack/987f70dbd5a9
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/doctorpack/987f70dbd5a9/README.md
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/godhiraj-code/hermes-doctorpack"

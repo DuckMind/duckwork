@@ -1,13 +1,11 @@
 name: nextdns
-repo: "https://github.com/shanelord01/\x68ermes-nextdns"
-sha: 6e46460e9d7f4775d247fb1e467532cf42bfc52d
-description: Read-only NextDNS tools - DNS query logs, blocked queries with the blocklist that matched,
-  and aggregate analytics by domain, device, blocklist or protocol. For triaging DNS problems and answering
-  "was this blocked, and by what". Uses the official NextDNS API; makes no configuration changes.
-maintainer: shanelord01
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Read-only NextDNS tools - DNS query logs, blocked queries with the blocklist that matched, and aggregate analytics by domain, device, blocklist or protocol. For triaging DNS problems and answering "was this blocked, and by what". Uses the official NextDNS API; makes no configuration changes.
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/shanelord01/\x68ermes-nextdns#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/nextdns/1e534d098c0d/README.md"
 capabilities:
   provides_tools:
   - nextdns_analytics
@@ -18,3 +16,8 @@ capabilities:
   provides_middleware: []
   requires_env:
   - name
+subdir: plugins/catalog-vendor/nextdns/1e534d098c0d
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/shanelord01/hermes-nextdns"

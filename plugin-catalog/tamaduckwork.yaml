@@ -1,30 +1,31 @@
-name: "tama\x68ermes"
-repo: "https://github.com/ahrazzle/Tama\x48ermes"
-subdir: "plugins/tama\x68ermes"
-sha: d25f76fdf5d8032910ffbe1dca3ba00bf442061f
+name: "tamaduckwork"
+repo: "https://github.com/DuckMind/duckwork"
+subdir: "plugins/catalog-vendor/tamaduckwork/62bcc5a594dd"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: >-
-  Grow a local TamaDuckwork pet from real Duckwork agent activity. Disclosure — hooks write a pet
-  ledger and sprite atlas under $DUCKWORK_HOME only; the optional python -m tamaduckwork CLI
-  additionally reads/writes ~/.codex, ~/.petdex and ~/.evopet, runs an unauthenticated loopback
-  preview server (127.0.0.1:8765) and on macOS compiles a Swift overlay and installs a
-  RunAtLoad+KeepAlive LaunchAgent with no uninstall command. No network egress, no credential
-  reads.
-maintainer: ahrazzle
+  Grow a local TamaDuckwork pet from real Duckwork agent activity. Disclosure — hooks write a pet ledger and sprite atlas under $DUCKWORK_HOME only; the optional python -m tamaduckwork CLI additionally reads/writes ~/.codex, ~/.petdex and ~/.evopet, runs an unauthenticated loopback preview server (127.0.0.1:8765) and on macOS compiles a Swift overlay and installs a RunAtLoad+KeepAlive LaunchAgent with no uninstall command. No network egress, no credential reads.
+maintainer: Fordex
 tier: community
 category: general
 requires_duckwork: ">=0.21"
-docs_url: "https://github.com/ahrazzle/Tama\x48ermes"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/tamaduckwork/62bcc5a594dd/plugin.yaml"
 version: "1.2.3"
 readme: true
 platforms:
-  - macos
+- macos
 capabilities:
   provides_tools: []
   provides_hooks:
-    - on_session_start
-    - pre_llm_call
-    - post_tool_call
-    - post_api_request
-    - on_session_end
+  - on_session_start
+  - pre_llm_call
+  - post_tool_call
+  - post_api_request
+  - on_session_end
   provides_middleware: []
   requires_env: []
+aliases:
+- "tamahermes"
+legacy_sources:
+- "https://github.com/ahrazzle/TamaHermes#plugins/tamahermes"
+image: ''
+screenshots: []

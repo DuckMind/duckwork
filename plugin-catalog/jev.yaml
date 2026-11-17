@@ -1,20 +1,24 @@
 name: jev
-repo: "https://github.com/ourines/\x68ermes-jev"
-sha: 28a4ea390f80d97fcdc8c20d6b630dfe2de645de
-subdir: ""
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/jev/d7d5e83bcc8c"
 description: "Explicit Jev decision sidekick via TypeSafe or Cloudflare; advisory judgments, no automatic tool gating."
-maintainer: ourines
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/ourines/\x68ermes-jev/blob/28a4ea390f80d97fcdc8c20d6b630dfe2de645de/README.md"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/jev/d7d5e83bcc8c/README.md"
 version: "0.1.2"
 platforms: []
 capabilities:
   provides_tools:
-    - jev_evaluate
+  - jev_evaluate
   provides_hooks: []
   provides_middleware: []
   # Credentials are alternatives, selected per backend during interactive setup.
   # Offline guide/status/presets and plugin registration require neither key.
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/ourines/hermes-jev"

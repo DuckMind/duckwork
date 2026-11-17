@@ -1,13 +1,13 @@
 name: cursor-provider
-repo: "https://github.com/anpicasso/\x68ermes-cursor-provider"
-sha: bf7d61fb1e37fa78ec58de7683ec436dff5b71bf
-subdir: provider
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/cursor-provider/349c83cdd7c8
 description: "Cursor model provider using the official proprietary Cursor SDK. Disclosure — uses Cursor's proprietary cursor-sdk (PyPI, bundled binary bridge on loopback) with the user's CURSOR_API_KEY; sends the full conversation, tool schemas/results and images (HTTPS URLs or base64) to Cursor; keeps private per-session SDK workspaces under DUCKWORK_HOME/cache/cursor-sdk; Cursor built-in tools and MCP are requested off and Duckwork keeps tool execution and approvals."
-maintainer: anpicasso
+maintainer: Fordex
 tier: community
 category: models
 requires_duckwork: ">=0.22.0"
-docs_url: "https://github.com/anpicasso/\x68ermes-cursor-provider#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/cursor-provider/349c83cdd7c8/plugin.yaml"
 version: "0.4.1"
 platforms: []
 capabilities:
@@ -15,3 +15,7 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/anpicasso/hermes-cursor-provider#provider"

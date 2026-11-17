@@ -1,13 +1,13 @@
-﻿name: duckwork-lang-pt-br
-repo: "https://github.com/StudioCodeAI/\x68ermes-lang-pt-br"
-sha: 9b0199013502730c9a24f411488c249a47ca451a
+name: duckwork-lang-pt-br
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 title: Brazilian Portuguese (Português do Brasil) Language Pack
 description: "Brazilian Portuguese (pt-BR) language pack for Duckwork Agent covering all three UI surfaces — core CLI/gateway/platforms (3,477/3,477 keys), the Ink TUI (1,356/1,356) and the Desktop app (5,172/5,176). Every translatable key exists and every value is translated against the English source of `main`: no key upstream has since removed, zero placeholder divergence, and the four remaining Desktop keys are arrays/structured values a text pack cannot carry. Checked with `duckwork plugins validate` and with the pack's own `tools/verify_pack.py`, which also runs as public CI on every push. Core and TUI mirror the bundled `pt` locale, registered as a real `pt-br` variant so it wins over the `pt`/`pt-BR` alias; the Desktop catalog is the original contribution (first proposed upstream in PR #92590, 2026-08-23), since the Desktop app ships no Portuguese at all. Manifest-only plugin: flat dotted YAML catalogs under locales/, no code, no network, no dependencies. Registering the pack never changes display.language — the user opts in via `duckwork config set display.language pt-br`. A weekly drift workflow reports when `main` adds or drops keys; nothing self-updates. Tradução pt-BR da interface do Duckwork Agent."
-maintainer: StudioCodeAI
+maintainer: Fordex
 tier: community
 category: general
 requires_duckwork: ">=0.21.6"
-docs_url: "https://github.com/StudioCodeAI/\x68ermes-lang-pt-br#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-lang-pt-br/10edf3fd9288/README.md"
 version: "1.2.0"
 platforms: []
 capabilities:
@@ -15,3 +15,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/duckwork-lang-pt-br/10edf3fd9288
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/StudioCodeAI/hermes-lang-pt-br"

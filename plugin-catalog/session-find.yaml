@@ -1,12 +1,12 @@
 name: session-find
-repo: https://github.com/djmango/session-find
-sha: caf185c59e62c56a6e4377b8fb08a0ce0e574301
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "A search window over your Duckwork session history, opened with Cmd+Option+F, from the command palette, or from the glyph in the bottom bar whose hover shows the chord. Finds a session by an exact word, identifier or phrase through the gateway's own full text index, and by meaning as well when a session-find service answers on loopback; typed filters (in:, -in:, after:, before:, me:, repo: and quoted phrases) are mirrored as chips under the box. The empty box lists pinned then recent sessions, the preview pane shows the matching message with its neighbours, and the footer carries the round trip in whole milliseconds. It reads the session database read only, registers no agent tools, hooks or middleware, needs no credentials or environment variables; its only network calls are the loopback checks named below. The window half ships off by default and is switched on in the app's plugin inventory. Disclosure — while the search window is in use, the plugin's dashboard backend checks every 30 seconds for a separate session-find service at http://127.0.0.1:8474 (or the URL in SESSION_FIND_URL) and, when one answers, sends it your search text, preview requests and the ids of sessions you open, and shows the results it returns; otherwise it reads your Duckwork session database read-only."
-maintainer: djmango
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.22.0"
-docs_url: https://github.com/djmango/session-find#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/session-find/d9070ec7ae10/README.md
 version: "1.0.0"
 readme: true
 platforms: []
@@ -15,3 +15,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/session-find/d9070ec7ae10
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/djmango/session-find"

@@ -1,15 +1,15 @@
 name: approval-ledger
-repo: "https://github.com/olric3015/\x68ermes-plugins"
-sha: 4a2ef866a51f1c99ed1d77e423136450340d901b
-subdir: approval-ledger
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/approval-ledger/f92356d526eb
 description: "Local ledger of Duckwork's approval prompts (dangerous commands, protected writes, MCP consent, smart-mode verdicts): /approval-log shows how often each rule asked, how many prompts were approved, denied or left unanswered, and how long a person took to answer, per rule, per surface or per day, for the last 24 hours, any number of hours or days, the latest session or everything recorded; /approval-log recent lists the newest decisions (ten, or up to 100 with /approval-log recent 50). Disclosure — writes decision metadata (session id, surface, rule label, answer, timings; no command, description or session key) to plugin-data/approval-ledger/approvals.jsonl, trimmed to 5,000 rows past 2 MB; observer only, cannot answer or change an approval; no network"
-maintainer: olric3015
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/olric3015/\x68ermes-plugins/tree/main/approval-ledger"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/approval-ledger/f92356d526eb/README.md"
 version: "1.2.0"
-image: "https://raw.githubusercontent.com/olric3015/\x68ermes-plugins/4a2ef866a51f1c99ed1d77e423136450340d901b/docs/approval-ledger-card.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/approval-ledger/f92356d526eb/_catalog_assets/docs/approval-ledger-card.png"
 platforms: []
 capabilities:
   provides_tools: []
@@ -18,3 +18,6 @@ capabilities:
   - post_approval_response
   provides_middleware: []
   requires_env: []
+screenshots: []
+legacy_sources:
+- "https://github.com/olric3015/hermes-plugins#approval-ledger"

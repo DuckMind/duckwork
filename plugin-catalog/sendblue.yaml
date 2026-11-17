@@ -1,12 +1,11 @@
 name: sendblue
-repo: "https://github.com/duoi/\x68ermes-sendblue-plugin"
-sha: 3318aaa4402769ce440d43e0445ea2151ad5e73e
-description: Sendblue iMessage / SMS integration. Provides typing indicators, async daemon routing, and
-  Active LLM Tools for SMS dispatch.
-maintainer: duoi
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Sendblue iMessage / SMS integration. Provides typing indicators, async daemon routing, and Active LLM Tools for SMS dispatch.
+maintainer: Fordex
 tier: community
 category: platform
-docs_url: "https://github.com/duoi/\x68ermes-sendblue-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/sendblue/553fad57274f/README.md"
 capabilities:
   provides_tools:
   - sendblue_list_messages
@@ -15,3 +14,8 @@ capabilities:
   - pre_llm_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/sendblue/553fad57274f
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/duoi/hermes-sendblue-plugin"

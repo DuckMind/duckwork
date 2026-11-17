@@ -1,14 +1,19 @@
 name: monid
-repo: "https://github.com/monid-ai/\x68ermes-plugin"
-sha: cdf26de6da51a04c5ffccaa48bee0a2d51f7c35c
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Connect your agent to third-party tools and APIs (web search and scraping, people and company data, social media, media generation, email and phone) through one integration. The agent discovers, compares and runs tools at runtime, paid per call from one Monid balance. Disclosure — Monid (monid.ai, by Monid / monid-ai) is a paid third-party marketplace: the agent installs the @monid-ai/cli npm package or connects to mcp.monid.ai, sends your requests and any uploaded files to Monid and on to its providers, and each run spends your prepaid Monid workspace balance. The \"confirm the price first\" step is an instruction to the model in the bundled skill, not a Duckwork approval prompt, unless you add `trust: untrusted` to `mcp_servers.monid`."
-maintainer: monid-ai
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/monid-ai/\x68ermes-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/monid/61a0232ea425/README.md"
 version: "0.2.0"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/monid/61a0232ea425
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/monid-ai/hermes-plugin"

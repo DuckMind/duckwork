@@ -1,17 +1,19 @@
 name: carbonvoice-platform
-repo: "https://github.com/PhononX/\x68ermes-plugin-carbonvoice"
-sha: 55867dba9c6645ce493fd955970302e59a4548ea
-description: Carbon Voice gateway adapter for Duckwork Agent. Connects via Socket.IO (primary) with REST
-  polling fallback — no public webhook or tunnel required. Persists a cursor to disk so messages received
-  while Duckwork is offline are processed on the next startup. Replies via POST /v3/messages/start, so the
-  Her
-maintainer: PhononX
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Carbon Voice gateway adapter for Duckwork Agent. Connects via Socket.IO (primary) with REST polling fallback — no public webhook or tunnel required. Persists a cursor to disk so messages received while Duckwork is offline are processed on the next startup. Replies via POST /v3/messages/start, so the Her
+maintainer: Fordex
 tier: community
 category: platform
-docs_url: "https://github.com/PhononX/\x68ermes-plugin-carbonvoice#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/carbonvoice-platform/333fc8d4d266/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
   - name
+subdir: plugins/catalog-vendor/carbonvoice-platform/333fc8d4d266
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/PhononX/hermes-plugin-carbonvoice"

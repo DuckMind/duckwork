@@ -1,11 +1,11 @@
-name: "\x68ermes-plugin-gen"
-repo: "https://github.com/iruzen-dono/\x68ermes-plugin-gen"
-sha: 75899f960d8358731255172add8232344c9084b8
+name: "duckwork-plugin-gen"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Generate, scaffold, and extend Duckwork Agent plugins from simple descriptions.
-maintainer: iruzen-dono
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/iruzen-dono/\x68ermes-plugin-gen#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-plugin-gen/e43490a2f464/README.md"
 capabilities:
   provides_tools:
   - plugin_add_skill
@@ -14,3 +14,10 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-plugin-gen"
+legacy_sources:
+- "https://github.com/iruzen-dono/hermes-plugin-gen"
+subdir: plugins/catalog-vendor/duckwork-plugin-gen/e43490a2f464
+image: ''
+screenshots: []

@@ -1,23 +1,26 @@
 name: agentwalletapi
-repo: "https://github.com/openclawcash/agentwalletapi-\x68ermes"
-sha: ae547a9c51dfc6060fe2441411f9ec846250ef75
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "1.31.0"
-image: "https://raw.githubusercontent.com/openclawcash/agentwalletapi-\x68ermes/ae547a9c51dfc6060fe2441411f9ec846250ef75/assets/catalog-banner.png"
-subdir: agentwalletapi
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/agentwalletapi/995ed0287ec0/_catalog_assets/assets/catalog-banner.png"
+subdir: plugins/catalog-vendor/agentwalletapi/995ed0287ec0
 description: "OpenClawCash managed EVM and Solana wallets for AI agents — thin bridge to the OpenClawCash agent API. Disclosure — payments plugin for the OpenClawCash custodial wallet service (openclawcash.com); the model can create wallets and send EVM/Solana transfers from wallets reachable by OPENCLAWCASH_AGENT_KEY with no Duckwork confirmation prompt; tool arguments go to openclawcash.com, and wallet_create also sends OPENCLAWCASH_EXPORT_PASSPHRASE to that API."
-maintainer: openclawcash
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: https://openclawcash.com/mcp
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/agentwalletapi/995ed0287ec0/plugin.yaml
 platforms: []
 capabilities:
   provides_tools:
-    - agentwalletapi_wallets_list
-    - agentwalletapi_wallet_get
-    - agentwalletapi_wallet_rename
-    - agentwalletapi_wallet_create
-    - agentwalletapi_transfer_send
+  - agentwalletapi_wallets_list
+  - agentwalletapi_wallet_get
+  - agentwalletapi_wallet_rename
+  - agentwalletapi_wallet_create
+  - agentwalletapi_transfer_send
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - OPENCLAWCASH_AGENT_KEY
+  - OPENCLAWCASH_AGENT_KEY
+screenshots: []
+legacy_sources:
+- "https://github.com/openclawcash/agentwalletapi-hermes#agentwalletapi"

@@ -10,11 +10,13 @@ docs_url: https://github.com/macd2/Crew#readme
 version: "0.10.1"
 image: https://raw.githubusercontent.com/macd2/Crew/998fd9d3685cd412a9294fbbb93687054d20058c/assets/banner.png
 screenshots:
-  - https://raw.githubusercontent.com/macd2/Crew/998fd9d3685cd412a9294fbbb93687054d20058c/assets/dashboard.webp
-  - https://raw.githubusercontent.com/macd2/Crew/998fd9d3685cd412a9294fbbb93687054d20058c/assets/desktop-dark.png
+- https://raw.githubusercontent.com/macd2/Crew/998fd9d3685cd412a9294fbbb93687054d20058c/assets/dashboard.webp
+- https://raw.githubusercontent.com/macd2/Crew/998fd9d3685cd412a9294fbbb93687054d20058c/assets/desktop-dark.png
 platforms: [linux, windows]
 capabilities:
   provides_tools: [crew_verdict, crew_progress, crew_proof_check, crew_lesson, crew_plan, crew_diagnose]
   provides_hooks: [pre_tool_call, post_tool_call, pre_llm_call, post_api_request, api_request_error, on_kanban_dispatch_tick]
   provides_middleware: []
   requires_env: []
+availability: unavailable
+unavailable_reason: 'nested license unrecognized/requires rights review: assets/fonts/LICENSE.md'

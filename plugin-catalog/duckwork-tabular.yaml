@@ -1,9 +1,9 @@
-name: "\x68ermes-tabular"
-repo: "https://github.com/frankiethull/\x68ermes-tabular"
-sha: c5b965086d0d5b8239703c2aa8a5df99b1eee5c3
-subdir: ""
+name: "duckwork-tabular"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/duckwork-tabular/fff124ac2883"
 description: "Tabular AI that grows with your tables — Duckwork skills for honest tabular ML, one entry point. Disclosure — Installing pulls numpy, pandas, scikit-learn, pyarrow, joblib and pyyaml into Duckwork's environment. The skills have the agent run Python on your data files, may ask it to pip install catboost, tabicl/torch, mapie or matplotlib, and the TabICL skill downloads a pretrained checkpoint of a few hundred MB on first use. Saved checkpoints are pickles: load only ones you made."
-maintainer: frankiethull
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.6"
@@ -13,3 +13,10 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-tabular"
+legacy_sources:
+- "https://github.com/frankiethull/hermes-tabular"
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-tabular/fff124ac2883/README.md
+image: ''
+screenshots: []

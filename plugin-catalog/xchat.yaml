@@ -1,22 +1,22 @@
 name: xchat
-repo: "https://github.com/\x4eousResearch/\x68ermes-official-plugins"
-sha: f98c0999c6dd4e59680addc8f3480208018ab5b0
-subdir: xchat
-description: 'X Chat gateway platform: talk to Duckwork in X''s end-to-end encrypted DMs. Duckwork runs as the X
-  account you connect: chat with it in your own self-chat ("message yourself"), or give it a separate account and
-  DM that. Messages are decrypted and encrypted locally with X''s official Chat XDK, so X only routes ciphertext.
-  Encrypted media, threaded replies, group mention gating and cron delivery.'
-maintainer: "\x4eousResearch"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/xchat/7b6d1e793c61
+description: 'X Chat gateway platform: talk to Duckwork in X''s end-to-end encrypted DMs. Duckwork runs as the X account you connect: chat with it in your own self-chat ("message yourself"), or give it a separate account and DM that. Messages are decrypted and encrypted locally with X''s official Chat XDK, so X only routes ciphertext. Encrypted media, threaded replies, group mention gating and cron delivery.'
+maintainer: "Fordex"
 tier: official
 category: platform
 requires_duckwork: ">=0.21.5"
 version: "0.1.0"
-image: "https://raw.githubusercontent.com/\x4eousResearch/\x68ermes-official-plugins/f98c0999c6dd4e59680addc8f3480208018ab5b0/assets/xchat.jpg"
-docs_url: "https://github.com/\x4eousResearch/\x68ermes-official-plugins/tree/main/xchat"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/xchat/7b6d1e793c61/_catalog_assets/assets/xchat.jpg"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/xchat/7b6d1e793c61/README.md"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - XCHAT_ACCESS_TOKEN
+  - XCHAT_ACCESS_TOKEN
+screenshots: []
+legacy_sources:
+- "https://github.com/NousResearch/hermes-official-plugins#xchat"

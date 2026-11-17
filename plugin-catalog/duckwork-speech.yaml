@@ -1,22 +1,25 @@
-name: "\x68ermes-speech"
-repo: "https://github.com/allmodels-io/\x68ermes-speech"
-sha: 6efecc359aa4c091b41ad530575943657ee259de
-description: Give your agent the voice it deserves. Guided TTS and STT setup for
-  Duckwork, with voice search and previews, model switching, testing, and native
-  spoken replies across supported providers. Access 80+ speech models through a
-  single API key with the AllModels router.
-maintainer: moeadham
+name: "duckwork-speech"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Give your agent the voice it deserves. Guided TTS and STT setup for Duckwork, with voice search and previews, model switching, testing, and native spoken replies across supported providers. Access 80+ speech models through a single API key with the AllModels router.
+maintainer: Fordex
 tier: community
 category: voice
 requires_duckwork: ">=0.20.0"
-docs_url: "https://github.com/allmodels-io/\x68ermes-speech#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-speech/ff15cb71586b/README.md"
 version: "0.3.3"
-image: "https://raw.githubusercontent.com/allmodels-io/\x68ermes-speech/6efecc359aa4c091b41ad530575943657ee259de/.github/social-preview.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-speech/ff15cb71586b/.github/social-preview.png"
 platforms: []
 capabilities:
   provides_tools:
-    - allmodels_speech_setup
-    - allmodels_speech_manage
+  - allmodels_speech_setup
+  - allmodels_speech_manage
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-speech"
+legacy_sources:
+- "https://github.com/allmodels-io/hermes-speech"
+subdir: plugins/catalog-vendor/duckwork-speech/ff15cb71586b
+screenshots: []

@@ -1,15 +1,15 @@
 name: error-ledger
-repo: "https://github.com/olric3015/\x68ermes-plugins"
-sha: dd646070c662ebf1978e5623bf30d2d1f55f7bef
-subdir: error-ledger
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/error-ledger/354fd017e013
 description: "Local ledger of failed provider calls (rate limits, overloads, timeouts, context overflows): /errors shows how many attempts failed per model, provider or cause, how many Duckwork could retry, and the most common HTTP status, for the last 24 hours, any number of hours or days, the latest session or everything recorded; /errors days puts one day on each line, newest first; /errors recent lists the newest failures (ten, or up to 100 with /errors recent 50) and how long ago each happened. Disclosure — writes failed-attempt metadata (ids, provider, model, HTTP status, Duckwork's failure class, exception class name, timings; no error message, request or prompt text) to plugin-data/error-ledger/errors.jsonl, trimmed to 5,000 rows past 2 MB; no network"
-maintainer: olric3015
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/olric3015/\x68ermes-plugins/tree/main/error-ledger"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/error-ledger/354fd017e013/README.md"
 version: "1.3.0"
-image: "https://raw.githubusercontent.com/olric3015/\x68ermes-plugins/dd646070c662ebf1978e5623bf30d2d1f55f7bef/docs/error-ledger-card.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/error-ledger/354fd017e013/_catalog_assets/docs/error-ledger-card.png"
 platforms: []
 capabilities:
   provides_tools: []
@@ -17,3 +17,6 @@ capabilities:
   - api_request_error
   provides_middleware: []
   requires_env: []
+screenshots: []
+legacy_sources:
+- "https://github.com/olric3015/hermes-plugins#error-ledger"

@@ -1,22 +1,16 @@
 name: reaction-feedback
-repo: "https://github.com/AhmetArif0/\x68ermes-reaction-feedback"
-sha: 50d8dbd0fb9f89ce1002ad378a8b656e52a617e1
-subdir: reaction-feedback
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/reaction-feedback/39a4ef95271d
 description: >-
-  Lets the agent see the emoji reactions you leave on its Telegram messages: react 👍 or 👎 to
-  a reply and the agent's next turn in that private chat starts with a short note naming the
-  reaction and the message it followed. Disclosure — registers pre_gateway_dispatch (always
-  returns None, so dispatch is never changed), pre_llm_call and gateway_platform_event hooks;
-  keeps a bounded in-memory record of private-chat message ids, 60-character excerpts and
-  reactions; writes nothing to disk, makes no network requests, starts no processes and
-  reads no secrets.
-maintainer: AhmetArif0
+  Lets the agent see the emoji reactions you leave on its Telegram messages: react 👍 or 👎 to a reply and the agent's next turn in that private chat starts with a short note naming the reaction and the message it followed. Disclosure — registers pre_gateway_dispatch (always returns None, so dispatch is never changed), pre_llm_call and gateway_platform_event hooks; keeps a bounded in-memory record of private-chat message ids, 60-character excerpts and reactions; writes nothing to disk, makes no network requests, starts no processes and reads no secrets.
+maintainer: Fordex
 tier: community
 category: general
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/AhmetArif0/\x68ermes-reaction-feedback"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/reaction-feedback/39a4ef95271d/README.md"
 version: "1.0.2"
-image: "https://raw.githubusercontent.com/AhmetArif0/\x68ermes-reaction-feedback/14f339e250ccfac1961977276256745da72e6491/docs/card.png"
+image: ""
 platforms: []
 capabilities:
   provides_tools: []
@@ -26,3 +20,6 @@ capabilities:
   - gateway_platform_event
   provides_middleware: []
   requires_env: []
+screenshots: []
+legacy_sources:
+- "https://github.com/AhmetArif0/hermes-reaction-feedback#reaction-feedback"

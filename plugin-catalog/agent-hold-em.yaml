@@ -1,16 +1,20 @@
 name: agent-hold-em
-repo: https://github.com/tony-simons-aiowa/agent-hold-em
-sha: dcd3b8d265778a70e6e671467cf2e6ec3cf21f42
-subdir: package/agent-hold-em
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/agent-hold-em/35dc65b7778f
 version: "1.0.0"
 description: "No-Limit Texas Hold 'Em for Duckwork Desktop: play with three isolated Duckwork profile agents using play chips only. Agent decisions use configured models and may consume provider tokens; this is a local game, not gambling software. Disclosure — each opponent is a zero-tool Duckwork agent run in-process under the local Duckwork profile you select for it, using that profile's configured provider credentials and spending its tokens; reads every local profile's name, model and avatar for the picker; stores the table (including hole cards) in plugin-data/agent-hold-em/table.json."
-maintainer: tony-simons-aiowa
+maintainer: Fordex
 tier: community
 category: desktop
 screenshots:
-  - https://raw.githubusercontent.com/tony-simons-aiowa/agent-hold-em/dcd3b8d265778a70e6e671467cf2e6ec3cf21f42/assets/catalog-setup.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/agent-hold-em/35dc65b7778f/_catalog_assets/assets/catalog-setup.png
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/agent-hold-em/35dc65b7778f/README.md
+image: ''
+legacy_sources:
+- "https://github.com/tony-simons-aiowa/agent-hold-em#package/agent-hold-em"

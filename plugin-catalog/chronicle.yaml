@@ -14,9 +14,11 @@ platforms: []
 capabilities:
   provides_tools: []
   provides_hooks:
-    - subagent_start
-    - subagent_stop
-    - on_session_reset
-    - post_tool_call
+  - subagent_start
+  - subagent_stop
+  - on_session_reset
+  - post_tool_call
   provides_middleware: []
   requires_env: []
+availability: unavailable
+unavailable_reason: 'secret scan requires review: github-token at tests/test_credentials.py'

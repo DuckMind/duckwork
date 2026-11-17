@@ -1,17 +1,22 @@
 name: auto-pin
-repo: "https://github.com/bmcfiv/\x68ermes-plugin-auto-pin"
-sha: 4458088ccfe3b5371e16fdae37753956f1296713
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Automatically pin every new interactive session (desktop, CLI, TUI) and the branches you fork from them. Cron, one-shot, subagent and messaging sessions are left alone, and unpinning a session sticks. Disclosure — on each new desktop/CLI/TUI session it sets the session's pinned flag in Duckwork's session database (state.db) through the shared SessionDB handle, and records each automatic pin in $DUCKWORK_HOME/auto-pin/ledger.txt; no network, no tools."
-maintainer: bmcfiv
+maintainer: Fordex
 tier: community
 category: general
 requires_duckwork: ">=0.21.1"
-docs_url: "https://github.com/bmcfiv/\x68ermes-plugin-auto-pin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/auto-pin/2cd6f8bc1bcf/README.md"
 version: "1.0.0"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks:
-    - on_session_start
+  - on_session_start
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/auto-pin/2cd6f8bc1bcf
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/bmcfiv/hermes-plugin-auto-pin"

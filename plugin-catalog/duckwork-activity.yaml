@@ -1,16 +1,16 @@
-name: "\x68ermes-activity"
-repo: "https://github.com/hassan-kamel/\x68ermes-activity"
-sha: 0335e954b3ab00193720205fcdab7e10ae1194f9
+name: "duckwork-activity"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 title: Activity
 description: "Duckwork Desktop session analytics and provider-reported usage: annual heatmaps, token mix, model breakdowns and source-period summaries. Disclosure — reads the selected profile's state.db read-only and, for the Providers tab, an Activity cache under plugin-data/duckwork-activity plus the optional Quota quota_cache.json. Fetch provider data runs a local Node.js (22.18+) collector and, only on that explicit click, calls chatgpt.com through Duckwork's signed-in Codex request route (requires_auth: openai-codex) and api.commandcode.ai, opencode.ai and ollama.com with the optional API keys you configure as plugin secrets; it stores usage aggregates and hashed key identifiers locally. No other credential reads, telemetry or sign-in flow; remote profiles go through the configured gateway."
-maintainer: hassan-kamel
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.7"
-docs_url: "https://github.com/hassan-kamel/\x68ermes-activity"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-activity/8e0bc9821505/README.md"
 version: "0.2.2"
 screenshots:
-  - "https://raw.githubusercontent.com/hassan-kamel/\x68ermes-activity/0335e954b3ab00193720205fcdab7e10ae1194f9/assets/activity-preview.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-activity/8e0bc9821505/assets/activity-preview.png
 readme: true
 platforms: []
 capabilities:
@@ -18,3 +18,9 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-activity"
+legacy_sources:
+- "https://github.com/hassan-kamel/hermes-activity"
+subdir: plugins/catalog-vendor/duckwork-activity/8e0bc9821505
+image: ''

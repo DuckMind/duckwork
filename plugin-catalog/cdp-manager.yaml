@@ -1,23 +1,21 @@
 name: cdp-manager
-repo: "https://github.com/apoapostolov/\x68ermes-agent-awesome-plugins"
-sha: b364f8d5f015b9a9c10fb6af1d2d1112edc2af48
-subdir: public/cdp-manager
-description: "Local Chrome CDP debug ports in the status bar (probe, launch, stop, recheck)
-  plus a managed port Duckwork keeps alive and the `cdp` agent tool, which also detects and
-  repairs a Chrome profile-picker launch (wedged/unwedge). Disclosure: launches
-  local Chrome on 127.0.0.1 only, with per-port profiles under the local app-data directory,
-  and closes it with a clean Browser.close; state lives in the plugin's own config file.
-  Windows only."
-maintainer: apoapostolov
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/cdp-manager/a5de47d823b4
+description: "Local Chrome CDP debug ports in the status bar (probe, launch, stop, recheck) plus a managed port Duckwork keeps alive and the `cdp` agent tool, which also detects and repairs a Chrome profile-picker launch (wedged/unwedge). Disclosure: launches local Chrome on 127.0.0.1 only, with per-port profiles under the local app-data directory, and closes it with a clean Browser.close; state lives in the plugin's own config file. Windows only."
+maintainer: Fordex
 tier: community
 category: desktop
-docs_url: "https://github.com/apoapostolov/\x68ermes-agent-awesome-plugins/tree/main/public/cdp-manager"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/cdp-manager/a5de47d823b4/README.md"
 version: "1.0.2"
-image: "https://raw.githubusercontent.com/apoapostolov/\x68ermes-agent-awesome-plugins/b364f8d5f015b9a9c10fb6af1d2d1112edc2af48/public/cdp-manager/docs/hero.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/cdp-manager/a5de47d823b4/docs/hero.png"
 platforms: [windows]
 capabilities:
   provides_tools:
-    - cdp
+  - cdp
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+screenshots: []
+legacy_sources:
+- "https://github.com/apoapostolov/hermes-agent-awesome-plugins#public/cdp-manager"

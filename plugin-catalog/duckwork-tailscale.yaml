@@ -1,16 +1,21 @@
-name: "\x68ermes-tailscale"
-repo: "https://github.com/Adolanium/\x68ermes-tailscale"
-sha: f4cc92e69859a9ee2e899195f0f2559c10874525
+name: "duckwork-tailscale"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "0.0.8"
-image: "https://raw.githubusercontent.com/Adolanium/\x68ermes-tailscale/f4cc92e69859a9ee2e899195f0f2559c10874525/assets/catalog-banner.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-tailscale/316e225d96bd/_catalog_assets/assets/catalog-banner.png"
 description: Browse Tailscale devices and connect to remote Duckwork instances in Duckwork Desktop.
-maintainer: Adolanium
+maintainer: Fordex
 tier: community
 category: desktop
-docs_url: "https://github.com/Adolanium/\x68ermes-tailscale#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-tailscale/316e225d96bd/plugin.yaml"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
-subdir: catalog
+subdir: plugins/catalog-vendor/duckwork-tailscale/316e225d96bd
+aliases:
+- "hermes-tailscale"
+legacy_sources:
+- "https://github.com/Adolanium/hermes-tailscale#catalog"
+screenshots: []

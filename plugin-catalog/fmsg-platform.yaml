@@ -1,17 +1,19 @@
 name: fmsg-platform
-repo: "https://github.com/markmnl/\x68ermes-fmsg"
-sha: 562f45a48a6b10504c8d6ff5c677f1ec990e6b7b
-description: fmsg platform adapter for Duckwork Agent. Real-time inbound over the fmsg-webapi WebSocket
-  (/fmsg/ws), outbound via its JSON REST routes. Authenticates with an fmsg API key (fmsgk_...) exchanged
-  for a short-lived JWT — run the agent as a derived sub-account such as @alice_duckwork@example.com. Only
-  http
-maintainer: markmnl
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: fmsg platform adapter for Duckwork Agent. Real-time inbound over the fmsg-webapi WebSocket (/fmsg/ws), outbound via its JSON REST routes. Authenticates with an fmsg API key (fmsgk_...) exchanged for a short-lived JWT — run the agent as a derived sub-account such as @alice_duckwork@example.com. Only http
+maintainer: Fordex
 tier: community
 category: platform
-docs_url: "https://github.com/markmnl/\x68ermes-fmsg#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/fmsg-platform/95b78c713bdb/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
   - name
+subdir: plugins/catalog-vendor/fmsg-platform/95b78c713bdb
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/markmnl/hermes-fmsg"

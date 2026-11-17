@@ -1,12 +1,12 @@
-name: "\x68ermes-slash-router"
-repo: "https://github.com/raitoxlol/\x68ermes-slash-router"
-sha: 2088919f4c59927aa2d47f21bb12e639453c1a2a
+name: "duckwork-slash-router"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Jev-powered routing for misspelled, shortened, and meaning-based slash commands in the Duckwork Desktop composer. Preserves drafts when unsure. Requires a TypeSafe API key; every non-exact lookup uses paid TypeSafe API usage. Disclosure — every non-exact slash token is sent through the plugin's local backend to api.typesafe.ai (paid, your TYPESAFE_API_KEY) together with the Desktop command catalog (names and descriptions), any prior route, up to 8 saved correction explanations and any clarification you type into its panel; message arguments and conversation content are not sent; the backend reads DUCKWORK_HOME/.env only to check whether TYPESAFE_API_KEY is set."
-maintainer: raitoxlol
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.2"
-docs_url: "https://github.com/raitoxlol/\x68ermes-slash-router#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-slash-router/d79b359630d1/README.md"
 version: "0.3.1"
 platforms: []
 capabilities:
@@ -14,4 +14,11 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - TYPESAFE_API_KEY
+  - TYPESAFE_API_KEY
+aliases:
+- "hermes-slash-router"
+legacy_sources:
+- "https://github.com/raitoxlol/hermes-slash-router"
+subdir: plugins/catalog-vendor/duckwork-slash-router/d79b359630d1
+image: ''
+screenshots: []

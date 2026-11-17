@@ -1,18 +1,21 @@
 name: unicode-ref
-repo: "https://github.com/olric3015/\x68ermes-plugins"
-sha: d33c8c9379ee8d90ef4276ddc61073b28fa32abe
-subdir: unicode-ref
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/unicode-ref/c37f9c49c530
 description: "@unicode: context references that spell text out character by character for the model: @unicode:\"text\" attaches a table of every character of the quoted text (code point, Unicode name, category) with notes on what does not show on screen: invisible characters and their positions, text-direction controls, spaces other than the ordinary one, Unicode tag characters (decoded), words that mix Latin letters with lookalike Cyrillic, Greek or fullwidth ones, and private-use or unassigned code points; @unicode:U+200B describes up to 20 code points (name, category, UTF-8 bytes, decomposition); the TUI and Desktop composer suggest characters by name. Disclosure — reads only the text of the reference itself, using Python's unicodedata; no network, no files read or written, no subprocess, no credentials; register() only adds the @unicode: reference provider"
-maintainer: olric3015
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21.5"
-docs_url: "https://github.com/olric3015/\x68ermes-plugins/tree/main/unicode-ref"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unicode-ref/c37f9c49c530/README.md"
 version: "1.0.0"
-image: "https://raw.githubusercontent.com/olric3015/\x68ermes-plugins/d33c8c9379ee8d90ef4276ddc61073b28fa32abe/docs/unicode-ref-card.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/unicode-ref/c37f9c49c530/_catalog_assets/docs/unicode-ref-card.png"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+screenshots: []
+legacy_sources:
+- "https://github.com/olric3015/hermes-plugins#unicode-ref"

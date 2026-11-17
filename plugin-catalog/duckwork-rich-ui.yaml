@@ -3,21 +3,21 @@
 # https://raw.githubusercontent.com/DuckMind/duckwork/main/plugin-catalog/README.md
 # Owner-gated: `sha` is filled at tag-push time (publish.sh replaces it with the
 # v0.1.0 tag's 40-hex commit SHA); the loader rejects anything but a full SHA.
-name: "\x68ermes-rich-ui"
-repo: "https://github.com/jacobhausler/\x68ermes-rich-ui"
-sha: "693fe296579ae69cfc78b90624a7b6bfc2564755"
-subdir: ""
+name: "duckwork-rich-ui"
+repo: "https://github.com/DuckMind/duckwork"
+sha: "86b0c19d1504bc127a6c34d8a8d146e58276ef63"
+subdir: "plugins/catalog-vendor/duckwork-rich-ui/8cbd2121f3c8"
 description: "Rich, evidence-backed answer cards — tables, charts, metrics, timelines, sources — rendered inline in the desktop transcript Disclosure — Image and ImageGallery cards load agent-supplied https image URLs (up to 8 per gallery) from any host when the card renders in Desktop"
-maintainer: jacobhausler
+maintainer: Fordex
 tier: community
 category: desktop                       # README vocabulary: desktop|memory|platform|web|tools|voice|automation|models|general
 requires_duckwork: ">=0.21.5"
 version: "0.1.4"                        # cosmetic label; quoted per README
-image: "https://raw.githubusercontent.com/jacobhausler/\x68ermes-rich-ui/693fe296579ae69cfc78b90624a7b6bfc2564755/assets/screenshot-1.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-rich-ui/8cbd2121f3c8/assets/screenshot-1.png"
 screenshots:
-- "https://raw.githubusercontent.com/jacobhausler/\x68ermes-rich-ui/693fe296579ae69cfc78b90624a7b6bfc2564755/assets/screenshot-1.png"
-- "https://raw.githubusercontent.com/jacobhausler/\x68ermes-rich-ui/693fe296579ae69cfc78b90624a7b6bfc2564755/assets/screenshot-2.png"
-- "https://raw.githubusercontent.com/jacobhausler/\x68ermes-rich-ui/693fe296579ae69cfc78b90624a7b6bfc2564755/assets/screenshot-3.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-rich-ui/8cbd2121f3c8/assets/screenshot-1.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-rich-ui/8cbd2121f3c8/assets/screenshot-2.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-rich-ui/8cbd2121f3c8/assets/screenshot-3.png
 readme: true
 platforms: []
 capabilities:
@@ -26,3 +26,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []               # plugin.yaml registers no middleware — verify at pinned SHA
   requires_env: []
+aliases:
+- "hermes-rich-ui"
+legacy_sources:
+- "https://github.com/jacobhausler/hermes-rich-ui"
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-rich-ui/8cbd2121f3c8/README.md

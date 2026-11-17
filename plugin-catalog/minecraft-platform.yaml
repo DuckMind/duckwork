@@ -1,16 +1,19 @@
 name: minecraft-platform
-repo: "https://github.com/kyssta-exe/\x68ermes-minecraft-gateway"
-sha: 8ff37a626439caecb9ceb724b5da7718eb77a8b1
-description: Minecraft gateway adapter for Duckwork Agent. Spawns a Mineflayer bot that joins a Minecraft
-  server, wanders around, and relays chat messages between players and the Duckwork agent. Supports offline
-  and Microsoft-authenticated accounts.
-maintainer: kyssta-exe
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Minecraft gateway adapter for Duckwork Agent. Spawns a Mineflayer bot that joins a Minecraft server, wanders around, and relays chat messages between players and the Duckwork agent. Supports offline and Microsoft-authenticated accounts.
+maintainer: Fordex
 tier: community
 category: platform
-docs_url: "https://github.com/kyssta-exe/\x68ermes-minecraft-gateway#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/minecraft-platform/a1f148507090/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
   - name
+subdir: plugins/catalog-vendor/minecraft-platform/a1f148507090
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/kyssta-exe/hermes-minecraft-gateway"

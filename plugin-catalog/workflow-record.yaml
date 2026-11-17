@@ -1,15 +1,19 @@
 name: workflow-record
-repo: "https://github.com/\x4eousResearch/\x68ermes-labs-plugins"
-sha: fde77be2bc939dbc71d425aab41731ad88173e67
-subdir: workflow-record
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/workflow-record/c803aa949048
 description: "duckwork record: demonstrate a browser workflow once (clicks, field values, navigations) and its bundled skill lets /learn turn the recording into a skill that replays it with the browser tools. A Duckwork Labs plugin: built by Fordex, not supported. Disclosure — attaches over CDP to a Chromium you point it at (--cdp, BROWSER_CDP_URL, browser.cdp_url or 127.0.0.1:9222) and records what you do in that tab until Ctrl-C; password, one-time-code and card fields are masked inside the page as {SECRET:name} and never written. Recordings stay local in <DUCKWORK_HOME>/recordings; nothing is sent anywhere until you run /learn on one, which hands it to your active model."
-maintainer: "\x4eousResearch"
+maintainer: "Fordex"
 tier: community
 category: automation
-docs_url: "https://github.com/\x4eousResearch/\x68ermes-labs-plugins/tree/main/workflow-record"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/workflow-record/c803aa949048/README.md"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/NousResearch/hermes-labs-plugins#workflow-record"

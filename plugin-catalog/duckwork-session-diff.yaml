@@ -1,15 +1,21 @@
-name: "\x68ermes-session-diff"
-repo: "https://github.com/Adolanium/\x68ermes-session-diff"
-sha: 9ed3bf2f6e7d859495589940430782c542bbc4f9
+name: "duckwork-session-diff"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Persistent session file diffs, run comparisons, and individual edit history in Duckwork Desktop.
-maintainer: Adolanium
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/Adolanium/\x68ermes-session-diff#readme"
-image: "https://raw.githubusercontent.com/Adolanium/\x68ermes-session-diff/9ed3bf2f6e7d859495589940430782c542bbc4f9/assets/catalog-banner.png"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-session-diff/5470a473b920/README.md"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-session-diff/5470a473b920/assets/catalog-banner.png"
 capabilities:
   provides_tools: []
   provides_hooks: [pre_llm_call]
   provides_middleware: [tool_execution]
   requires_env: []
+aliases:
+- "hermes-session-diff"
+legacy_sources:
+- "https://github.com/Adolanium/hermes-session-diff"
+subdir: plugins/catalog-vendor/duckwork-session-diff/5470a473b920
+screenshots: []

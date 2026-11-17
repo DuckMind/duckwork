@@ -1,12 +1,12 @@
 name: session-mirror
-repo: "https://github.com/rrrrnmtsu/\x68ermes-session-mirror"
-sha: 02a923f04b414f30286d31b278a3177892dd5f9f
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Mirrors Duckwork Desktop, CLI, TUI and ACP conversations into Discord: one public thread per session in a channel you choose, one post per turn (your message and the reply), so work started on a desktop can be followed from the phone. Posting runs on a background thread and never delays or breaks a turn. Disclosure — register() adds one post_llm_call hook; every turn's text (your message and the final reply, not tool calls or outputs) is sent to the Discord REST API (discord.com) using the bot token you configure, after Duckwork's redact_for_egress plus a local token-pattern filter (fail-closed: nothing is sent if the redactor is unavailable); mentions are disabled. The bot token is read only via agent.secret_scope.get_secret (an UnscopedSecretError under multiplexing skips the turn); no external command is ever run. Each turn reads the session's title and source from $DUCKWORK_HOME/state.db read-only; session-to-thread ids are stored (mode 0600) in $DUCKWORK_HOME/state/session-mirror.json. The optional `duckwork session-mirror backfill` CLI command reads $DUCKWORK_HOME/state.db read-only and replays past sessions through the same redaction. No other files, telemetry or long-running processes beyond one daemon sender thread."
-maintainer: rrrrnmtsu
+maintainer: Fordex
 tier: community
 category: platform
 requires_duckwork: ">=0.21.6"
-docs_url: "https://github.com/rrrrnmtsu/\x68ermes-session-mirror"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/session-mirror/d3c346414cb8/README.md"
 version: "0.5.0"
 platforms: []
 capabilities:
@@ -15,3 +15,8 @@ capabilities:
   - post_llm_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/session-mirror/d3c346414cb8
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/rrrrnmtsu/hermes-session-mirror"

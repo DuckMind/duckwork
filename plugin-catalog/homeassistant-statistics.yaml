@@ -1,20 +1,25 @@
 name: homeassistant-statistics
-repo: "https://github.com/goncami/\x68ermes-homeassistant-statistics"
-sha: c6a64211c5411eeb4a15d912f9640906bc7c6ee3
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: 'Read-only Home Assistant Recorder statistics tools (ha_list_statistics and ha_get_statistics). Disclosure — each call opens an authenticated WebSocket connection to the configured Home Assistant instance using the active profile HASS_TOKEN; returned statistic metadata and values become agent tool results and may reach the configured model provider. No telemetry, shell commands, background processes, credential storage or direct database access.'
-maintainer: goncami
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.22.5"
 version: "0.1.0"
-docs_url: "https://github.com/goncami/\x68ermes-homeassistant-statistics"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/homeassistant-statistics/cbe6a3d889e4/README.md"
 platforms: []
 known_issues: []
 capabilities:
   provides_tools:
-    - ha_list_statistics
-    - ha_get_statistics
+  - ha_list_statistics
+  - ha_get_statistics
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - HASS_TOKEN
+  - HASS_TOKEN
+subdir: plugins/catalog-vendor/homeassistant-statistics/cbe6a3d889e4
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/goncami/hermes-homeassistant-statistics"

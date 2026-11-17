@@ -1,15 +1,20 @@
 name: turn-usage
-repo: "https://github.com/tpte/\x68ermes-turn-usage"
-sha: 728cea2b267af6f4bbc59707fb886d7df10a39e4
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Usage and cost footer appended to every reply — tokens, cache hit rate, cost and context occupancy, plus a per-tool time breakdown showing which tool actually consumed the wall clock. Waiting time (a blocking user prompt) is reported separately and excluded from the active-time denominator. Pure computation, never calls a model; any failure leaves the reply untouched. Disclosure — the usage footer is appended to the stored assistant reply, so it is replayed to the model on later turns and adds tokens to every turn."
-maintainer: tpte
+maintainer: Fordex
 tier: community
 category: general
-docs_url: "https://github.com/tpte/\x68ermes-turn-usage#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/turn-usage/5939f8fa2069/README.md"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks:
-    - transform_llm_output
+  - transform_llm_output
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/turn-usage/5939f8fa2069
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/tpte/hermes-turn-usage"

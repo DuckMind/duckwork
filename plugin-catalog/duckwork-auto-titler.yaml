@@ -1,13 +1,13 @@
-name: "\x68ermes-auto-titler"
-repo: "https://github.com/Vocllum/\x68ermes-auto-titler"
-sha: 42259f5cf346eba307e1cc8cac835203d986bcb6
+name: "duckwork-auto-titler"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "0.3.0"
-image: "https://raw.githubusercontent.com/Vocllum/\x68ermes-auto-titler/42259f5cf346eba307e1cc8cac835203d986bcb6/docs/catalog-card.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-auto-titler/18b8eed87ef4/docs/catalog-card.png"
 description: "Topic-aware session title tracking for Duckwork Agent. Duckwork generates the first title by default; AutoTitler follows conversation changes and session close without changing the host title-generation switch. Disclosure — sends excerpts of each conversation (sampled user turns, short assistant replies, compaction summaries) to your Duckwork title-generation model in the background, also for up to 200 recent untitled sessions at startup; needs plugins.entries.duckwork-auto-titler.llm.allow_task_override (or allow_provider/model_override for a custom route). 0.3 no longer edits config.yaml, but users upgrading from 0.2.x keep auxiliary.title_generation.enabled=false until they re-enable it (/autotitler status shows the fix)."
-maintainer: Vocllum
+maintainer: Fordex
 tier: community
 category: automation
-docs_url: "https://github.com/Vocllum/\x68ermes-auto-titler"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-auto-titler/18b8eed87ef4/README.md"
 platforms: []
 capabilities:
   provides_tools: []
@@ -17,3 +17,9 @@ capabilities:
   - on_session_finalize
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-auto-titler"
+legacy_sources:
+- "https://github.com/Vocllum/hermes-auto-titler"
+subdir: plugins/catalog-vendor/duckwork-auto-titler/18b8eed87ef4
+screenshots: []

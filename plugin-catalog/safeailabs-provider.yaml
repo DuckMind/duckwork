@@ -1,17 +1,22 @@
 name: safeailabs-provider
 title: Safe AI Labs
-repo: "https://github.com/nevertrust-ai/\x68ermes-safeailabs-provider"
-sha: 3fa82ed3b8fc2aa52e96afeabdfbe19fa6a043fc
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Safe AI Labs as a Duckwork model provider (`--provider safeailabs`, or Safe AI Labs in `duckwork model`): an OpenAI-compatible API with one endpoint per region, the model list from its /v1/models and the context window of its fallback model declared. Disclosure — registers one model provider at import and nothing else (no tools, hooks, commands or threads); chat requests and the model list go to https://us.api.safeailabs.ai/v1 (or SAFE_AI_BASE_URL) through Duckwork' own client with SAFE_AI_KEY, which Duckwork reads; the plugin itself opens no connections, reads and writes no files and starts no processes."
-maintainer: nevertrust-ai
+maintainer: Fordex
 tier: community
 category: models
 requires_duckwork: ">=0.22.0"
 version: "1.0.0"
-docs_url: "https://github.com/nevertrust-ai/\x68ermes-safeailabs-provider#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/safeailabs-provider/8450c01f3793/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - SAFE_AI_KEY
+  - SAFE_AI_KEY
+subdir: plugins/catalog-vendor/safeailabs-provider/8450c01f3793
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/nevertrust-ai/hermes-safeailabs-provider"

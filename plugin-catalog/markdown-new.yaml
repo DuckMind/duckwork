@@ -1,12 +1,12 @@
 name: markdown-new
-repo: "https://github.com/nosliwhtes/\x68ermes-markdown-new"
-sha: dab049e0fd338ab8f7159c120fe55490410d0a6e
-subdir: plugin/markdown-new
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/markdown-new/d068be4082bc
 description: "Search the public web, read pages as Markdown, crawl sites, and convert documents in Duckwork. No API key required. Disclosure — search queries, submitted URLs and explicitly approved local file uploads go to the public markdown.new service; needs the companion markdown-new CLI (uv tool install from the same repo tag), which the plugin runs as a subprocess with the Duckwork process environment."
-maintainer: nosliwhtes
+maintainer: Fordex
 tier: community
 category: web
-docs_url: "https://github.com/nosliwhtes/\x68ermes-markdown-new/blob/dab049e0fd338ab8f7159c120fe55490410d0a6e/plugin/markdown-new/README.md"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/markdown-new/d068be4082bc/README.md"
 version: "1.0.0"
 readme: true
 platforms:
@@ -19,3 +19,7 @@ capabilities:
   - pre_tool_call
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/nosliwhtes/hermes-markdown-new#plugin/markdown-new"

@@ -1,12 +1,12 @@
 name: telnyx-provider
-repo: "https://github.com/team-telnyx/\x68ermes-inference-provider"
-sha: f53c20e80f84b4a880a7f2b4f1ed2f8b3fa1d11c
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Vendor-maintained Telnyx inference provider with an authenticated live model catalog, hosted open models, frontier routes, and catalog-derived pricing.
-maintainer: team-telnyx
+maintainer: Fordex
 tier: community
 category: models
 requires_duckwork: ">=0.21.4"
-docs_url: "https://github.com/team-telnyx/\x68ermes-inference-provider#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/telnyx-provider/18db341405c5/README.md"
 version: "0.1.0"
 platforms: []
 capabilities:
@@ -15,3 +15,8 @@ capabilities:
   provides_middleware: []
   requires_env:
   - TELNYX_API_KEY
+subdir: plugins/catalog-vendor/telnyx-provider/18db341405c5
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/team-telnyx/hermes-inference-provider"

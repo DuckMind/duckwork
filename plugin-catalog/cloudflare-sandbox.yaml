@@ -1,13 +1,13 @@
 name: cloudflare-sandbox
-repo: "https://github.com/kiyo-e/\x68ermes-cloudflare-sandbox"
-sha: 75961d77109b185bdaeef650cc9f945df0aa0551
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "0.1.0"
 description: "Run Duckwork terminal, file and execute_code tools in Cloudflare Containers, with the workspace saved to a snapshot when idle. Disclosure — you deploy the bundled Cloudflare Worker to your own account first; running containers is billed by Cloudflare; commands and file contents run in the container at DUCKWORK_CF_ENDPOINT using DUCKWORK_CF_TOKEN; the container has outbound internet by default (ENABLE_INTERNET); host env vars, skills and credentials are not copied into the container; dangerous-command approval stays on."
-maintainer: kiyo-e
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.20.6"
-docs_url: "https://github.com/kiyo-e/\x68ermes-cloudflare-sandbox#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/cloudflare-sandbox/30317e3942fb/README.md"
 platforms: []
 capabilities:
   provides_tools: []
@@ -16,3 +16,8 @@ capabilities:
   requires_env:
   - DUCKWORK_CF_ENDPOINT
   - DUCKWORK_CF_TOKEN
+subdir: plugins/catalog-vendor/cloudflare-sandbox/30317e3942fb
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/kiyo-e/hermes-cloudflare-sandbox"

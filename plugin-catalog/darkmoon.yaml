@@ -1,12 +1,12 @@
 name: darkmoon
-repo: "https://github.com/ASCIT31/darkmoon-\x68ermes-plugin"
-sha: '4a24b4eb77f01bf8ba56c11f37803d623fc14f14'
+repo: "https://github.com/DuckMind/duckwork"
+sha: '86b0c19d1504bc127a6c34d8a8d146e58276ef63'
 description: "Triage the findings file of a Darkmoon autonomous pentest scan (JSON or SARIF): filter by severity and proof status, get a severity-sorted summary and a pass/fail gate for a release. Read-only and offline: no network, no subprocess, no credentials, standard library only. Darkmoon is open source (GPL-3.0); its web dashboard and remediation agent are Pro and are not used here. Disclosure — reads a local .json or .sarif file at a model-supplied path (10 MB cap) and returns its findings; no network, subprocess or writes"
-maintainer: ASCIT31
+maintainer: Fordex
 tier: community
 category: tools
 version: "0.1.0"
-docs_url: https://github.com/ASCIT31/Dark-Moon
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/darkmoon/5cc146b6cfb4/README.md
 platforms: []
 capabilities:
   provides_tools:
@@ -14,3 +14,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/darkmoon/5cc146b6cfb4
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/ASCIT31/darkmoon-hermes-plugin"

@@ -1,13 +1,8 @@
 name: lightningai
-repo: "https://github.com/dinosauria123/\x68ermes-lightningai-provider"
+repo: "https://github.com/dinosauria123/hermes-lightningai-provider"
 sha: e4350ca278f8994322fc3b79a55a52e83388b7da
 description: >-
-  Lightning AI as a Duckwork model provider (--provider lightning, lightning-ai, lightningai):
-  OpenAI-compatible gateway at https://lightning.ai/api/v1, models fetched live from /models.
-  Disclosure — registers one model provider at import and nothing else (no tools, hooks, commands
-  or threads); chat requests and the model list go to lightning.ai through Duckwork' own client with
-  LIGHTNING_API_KEY (or LIGHTNING_AI_API_KEY), optional LIGHTNING_BASE_URL overrides the endpoint;
-  the plugin itself opens no connections, reads/writes no files and starts no processes.
+  Lightning AI as a Duckwork model provider (--provider lightning, lightning-ai, lightningai): OpenAI-compatible gateway at https://lightning.ai/api/v1, models fetched live from /models. Disclosure — registers one model provider at import and nothing else (no tools, hooks, commands or threads); chat requests and the model list go to lightning.ai through Duckwork' own client with LIGHTNING_API_KEY (or LIGHTNING_AI_API_KEY), optional LIGHTNING_BASE_URL overrides the endpoint; the plugin itself opens no connections, reads/writes no files and starts no processes.
 maintainer: dinosauria123
 tier: community
 category: models
@@ -20,3 +15,5 @@ capabilities:
   provides_middleware: []
   requires_env:
   - LIGHTNING_API_KEY
+availability: unavailable
+unavailable_reason: no full recognized redistribution license at pinned root/subdir

@@ -1,24 +1,23 @@
 name: inline-platform
-repo: https://github.com/inline-chat/inline
-sha: 2d3b360da0430684eabab2d946eca0e725c08aa5
-subdir: "plugins/\x68ermes-agent/plugin/inline"
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/inline-platform/f5a705a56abd"
 description: >-
-  Use Duckwork Agent from Inline work-chat DMs, chats, and reply threads.
-  Disclosure — the setup wizard can, on explicit opt-in, download
-  https://inline.chat/cli/install.sh and pipe it to sh without a checksum,
-  then run the vendor inline CLI login; on connect the adapter publishes
-  your Duckwork slash-command list and the names and descriptions of installed
-  skills to the Inline server (INLINE_SYNC_COMMANDS=false disables); error
-  telemetry is off unless a Sentry DSN is set.
-maintainer: morajabi
+  Use Duckwork Agent from Inline work-chat DMs, chats, and reply threads. Disclosure — the setup wizard can, on explicit opt-in, download https://inline.chat/cli/install.sh and pipe it to sh without a checksum, then run the vendor inline CLI login; on connect the adapter publishes your Duckwork slash-command list and the names and descriptions of installed skills to the Inline server (INLINE_SYNC_COMMANDS=false disables); error telemetry is off unless a Sentry DSN is set.
+maintainer: Fordex
 tier: community
 category: platform
 requires_duckwork: ">=0.21.3"
 version: "0.0.21"
 capabilities:
   provides_tools:
-    - inline
+  - inline
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - INLINE_TOKEN
+  - INLINE_TOKEN
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/inline-platform/f5a705a56abd/README.md
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/inline-chat/inline#plugins/hermes-agent/plugin/inline"

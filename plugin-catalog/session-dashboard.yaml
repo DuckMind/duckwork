@@ -1,16 +1,20 @@
 name: session-dashboard
-repo: "https://github.com/tommulkins/\x68ermes-plugin-session-analyzer"
-sha: f5a880ce8d9c4b3891c0687b4de6f30b93b5da16
-image: "https://raw.githubusercontent.com/tommulkins/\x68ermes-plugin-session-analyzer/f5a880ce8d9c4b3891c0687b4de6f30b93b5da16/assets/social-preview.png"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/session-dashboard/685538494a0b/assets/social-preview.png"
 description: 'Session Analyzer — per-session analytics for the Duckwork desktop app: full page at /session-dashboard with token/cache/cost aggregates, tool-call breakdown, file changes, failure groups, and Ask AI (copies a ready-to-run analysis prompt into a fresh draft chat). Read-only over state.db.'
-maintainer: tommulkins
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.20.0"
-docs_url: "https://github.com/tommulkins/\x68ermes-plugin-session-analyzer"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/session-dashboard/685538494a0b/README.md"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/session-dashboard/685538494a0b
+screenshots: []
+legacy_sources:
+- "https://github.com/tommulkins/hermes-plugin-session-analyzer"

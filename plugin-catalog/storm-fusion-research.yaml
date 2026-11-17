@@ -1,16 +1,20 @@
 name: storm-fusion-research
-repo: https://github.com/bmtrnavsky/storm-fusion-research-pipeline
-sha: b1a492eb9cfd41b120db8ac6d8a97128901b87d2
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Human-gated perspective-panel research. One question, several seats, one judge, one human. Solo, native subagent panel, or per-seat MoA/Fusion fanout via the storm_run_panel tool. Disclosure — every seat/judge call runs through Duckwork's plugin LLM lane on your own credentials; with llm.allow_provider_override / allow_model_override enabled the agent picks provider and model per seat and spend follows that choice. The human gates are skill instructions to the agent, not enforced by the tool."
-maintainer: bmtrnavsky
+maintainer: Fordex
 tier: community
 category: tools
 version: "0.5.0"
 requires_duckwork: ">=0.21.0"
-docs_url: https://github.com/bmtrnavsky/storm-fusion-research-pipeline#readme
-image: https://raw.githubusercontent.com/bmtrnavsky/storm-fusion-research-pipeline/b1a492eb9cfd41b120db8ac6d8a97128901b87d2/docs/social-preview.png
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/storm-fusion-research/01a5913a35f5/README.md
+image: https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/storm-fusion-research/01a5913a35f5/docs/social-preview.png
 capabilities:
   provides_tools: [storm_run_panel]
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/storm-fusion-research/01a5913a35f5
+screenshots: []
+legacy_sources:
+- "https://github.com/bmtrnavsky/storm-fusion-research-pipeline"

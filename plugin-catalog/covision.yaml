@@ -1,15 +1,12 @@
 name: covision
-repo: https://github.com/Covision-Consultants/covision-agent-plugin
-sha: 373012bed0a36f7d4345a180eefc26352403cd3d
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: >-
-  Read-only Covision meeting, assigned-task, and published-knowledge tools through
-  the Covision Streamable HTTP MCP service, plus a workflow skill. Requires a
-  Covision account, organization connector enablement, and browser OAuth consent;
-  no API key or client secret is stored in the plugin.
-maintainer: Covision Consultants
+  Read-only Covision meeting, assigned-task, and published-knowledge tools through the Covision Streamable HTTP MCP service, plus a workflow skill. Requires a Covision account, organization connector enablement, and browser OAuth consent; no API key or client secret is stored in the plugin.
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: https://github.com/Covision-Consultants/covision-agent-plugin
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/covision/59e991e2fa7f/README.md
 version: "1.0.0"
 platforms: []
 capabilities:
@@ -17,3 +14,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/covision/59e991e2fa7f
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/Covision-Consultants/covision-agent-plugin"

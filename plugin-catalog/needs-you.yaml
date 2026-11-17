@@ -1,15 +1,14 @@
 name: needs-you
-repo: "https://github.com/aydnOktay/\x68ermes-needs-you"
-sha: f903b8eb8f166b609e2ee3c535209fb4602b60d3
-description: Duckwork is waiting — full Desktop page for pending approvals.
-  Queue, chip, OS notify. Redacted previews only. No API keys.
-maintainer: aydnOktay
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: Duckwork is waiting — full Desktop page for pending approvals. Queue, chip, OS notify. Redacted previews only. No API keys.
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21"
-docs_url: "https://github.com/aydnOktay/\x68ermes-needs-you"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/needs-you/72ad6238671a/README.md"
 version: "0.1.0"
-image: "https://raw.githubusercontent.com/aydnOktay/\x68ermes-needs-you/f903b8eb8f166b609e2ee3c535209fb4602b60d3/logo.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/needs-you/72ad6238671a/logo.png"
 platforms: []
 capabilities:
   provides_tools:
@@ -20,3 +19,7 @@ capabilities:
   - post_approval_response
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/needs-you/72ad6238671a
+screenshots: []
+legacy_sources:
+- "https://github.com/aydnOktay/hermes-needs-you"

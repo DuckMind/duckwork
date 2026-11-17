@@ -1,20 +1,25 @@
-name: "\x68ermes-routines"
+name: "duckwork-routines"
 title: Duckwork Routines
-repo: "https://github.com/crdesign8/\x68ermes-routines"
-sha: aa055f5851a9e9cacd0e8516f56c58f62c639292
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: A minimal Routines page in Duckwork Desktop that turns crontab's five cron.manage actions into a plain-language interface for non-developers - name a routine, pick a schedule, write the prompt, and pause or resume it. No cron syntax, no service, no database; routine data stays in the host.
-maintainer: crdesign8
+maintainer: Fordex
 tier: community
 category: desktop
-docs_url: "https://github.com/crdesign8/\x68ermes-routines#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-routines/63e31d5cda8a/README.md"
 version: "0.1.0"
-image: "https://raw.githubusercontent.com/crdesign8/\x68ermes-routines/aa055f5851a9e9cacd0e8516f56c58f62c639292/docs/assets/hr-cover-04.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-routines/63e31d5cda8a/docs/assets/hr-cover-04.png"
 screenshots:
-  - "https://raw.githubusercontent.com/crdesign8/\x68ermes-routines/aa055f5851a9e9cacd0e8516f56c58f62c639292/docs/assets/\x68ermes-routines-01.png"
-  - "https://raw.githubusercontent.com/crdesign8/\x68ermes-routines/aa055f5851a9e9cacd0e8516f56c58f62c639292/docs/assets/\x68ermes-routines-03.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-routines/63e31d5cda8a/docs/assets/duckwork-routines-01.png
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-routines/63e31d5cda8a/docs/assets/duckwork-routines-03.png
 platforms: [linux]
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-routines"
+legacy_sources:
+- "https://github.com/crdesign8/hermes-routines"
+subdir: plugins/catalog-vendor/duckwork-routines/63e31d5cda8a

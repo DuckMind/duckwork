@@ -1,17 +1,11 @@
 name: kiwi
-repo: "https://github.com/harrylabsj/\x68ermes-plugin-kiwi"
-sha: 5d23517308bf9e5d75b62dcda63a19dd03ab0491
-description: 'Source suppliers and negotiate purchases through the Kiwi Buyer MCP server — an
-  open-source A2A commerce runtime (pinned @harrylabsj/kiwi@0.12.5 over npx stdio), with the
-  kiwi-buyer sourcing workflow skill bundled. Sourcing is dual-source: Kiwi Network results come
-  from kiwi_search, and internet e-commerce listings are reported through the host''s own web tools
-  when the session has them (a host capability, not a plugin guarantee). Portable Agent Plugins v1
-  package (mcp.json + skills/); needs Node.js/npm on PATH. No credentials required; Kiwi never
-  handles payments.'
-maintainer: harrylabsj
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+description: 'Source suppliers and negotiate purchases through the Kiwi Buyer MCP server — an open-source A2A commerce runtime (pinned @harrylabsj/kiwi@0.12.5 over npx stdio), with the kiwi-buyer sourcing workflow skill bundled. Sourcing is dual-source: Kiwi Network results come from kiwi_search, and internet e-commerce listings are reported through the host''s own web tools when the session has them (a host capability, not a plugin guarantee). Portable Agent Plugins v1 package (mcp.json + skills/); needs Node.js/npm on PATH. No credentials required; Kiwi never handles payments.'
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/harrylabsj/\x68ermes-plugin-kiwi"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/kiwi/4a73b56fa1c4/README.md"
 version: "1.2.2"
 platforms: []
 capabilities:
@@ -19,3 +13,8 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/kiwi/4a73b56fa1c4
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/harrylabsj/hermes-plugin-kiwi"

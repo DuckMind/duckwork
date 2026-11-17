@@ -10,9 +10,11 @@ docs_url: https://github.com/coe0718/diaktoros#readme
 version: "0.4.0"
 image: "https://raw.githubusercontent.com/coe0718/diaktoros/baf20324f54360b2dfd44f855ab6292df8f742cc/docs/banner.jpg"
 platforms:
-  - linux
+- linux
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+availability: unavailable
+unavailable_reason: 'secret scan requires review: github-token at tests/test_desktop_settings.py'

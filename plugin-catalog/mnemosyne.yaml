@@ -1,14 +1,14 @@
 name: mnemosyne
-repo: https://github.com/mnemosyne-oss/mnemosyne
-sha: d73848735a2a48471a62d2c8fb96cd7183c97491
-subdir: "integrations/\x68ermes-catalog"
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: "plugins/catalog-vendor/mnemosyne/77d3f23eae3d"
 requires_duckwork: ">=0.21.4"
 version: "0.7.3"
 description: "Local-first memory layer for Duckwork Agent — SQLite with vector + FTS5 hybrid recall, episodic consolidation, temporal knowledge graph. Zero cloud. Disclosure — the mnemosyne_remember_media tool refuses local file paths unless MNEMOSYNE_MEDIA_ALLOWED_PATHS is set and sends media only to an operator-configured OpenAI-compatible endpoint when modality_enabled is on; video uses ffmpeg/ffprobe from PATH; the embedding model (BAAI/bge-small-en-v1.5) downloads from Hugging Face on first use."
-maintainer: mnemosyne-oss
+maintainer: Fordex
 tier: community
 category: memory
-docs_url: https://github.com/mnemosyne-oss/mnemosyne
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/mnemosyne/77d3f23eae3d/README.md
 capabilities:
   provides_tools:
   - mnemosyne_apply_pending
@@ -55,5 +55,9 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/mnemosyne-oss/mnemosyne#integrations/hermes-catalog"
 
 

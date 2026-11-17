@@ -1,20 +1,23 @@
 name: typesafe-skill-router
-repo: https://github.com/DECRUX9812/typesafe-skill-router
-sha: e6cdac26f9ed588b4a94b8a2f7f9f026e1b9faf3
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: >-
-  TypeSafe (Jev) skill routing: the request is routed before the model call and the one skill
-  from the live roster that fits it is named in a single <skill_relevance> line on the user
-  message — nothing is injected when nothing fits.
-maintainer: DECRUX9812
+  TypeSafe (Jev) skill routing: the request is routed before the model call and the one skill from the live roster that fits it is named in a single <skill_relevance> line on the user message — nothing is injected when nothing fits.
+maintainer: Fordex
 tier: community
 category: automation
 requires_duckwork: ">=0.21"
-docs_url: https://github.com/DECRUX9812/typesafe-skill-router#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/typesafe-skill-router/da3e429ac216/README.md
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks:
-    - pre_llm_call
+  - pre_llm_call
   provides_middleware: []
   requires_env:
-    - TYPESAFE_API_KEY
+  - TYPESAFE_API_KEY
+subdir: plugins/catalog-vendor/typesafe-skill-router/da3e429ac216
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/DECRUX9812/typesafe-skill-router"

@@ -1,9 +1,9 @@
 # Dashboard Button — one-click access to the Duckwork Web Dashboard on 127.0.0.1:9119.
 name: dashboard-button
-repo: https://github.com/g3org3yo/dashboard-button
-sha: e3ad0477d61587a0f9e8f1f136d275995328070d
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "One-click access to the Duckwork Web Dashboard (127.0.0.1:9119) from the Desktop app — sidebar row, in-app page that loads itself when the server comes up, and a status-bar chip with a live dot. Front-end only: no agent calls, no tokens, no API keys."
-maintainer: g3org3yo
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.2"
@@ -14,3 +14,9 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/dashboard-button/40ad2839d971
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/dashboard-button/40ad2839d971/README.md
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/g3org3yo/dashboard-button"

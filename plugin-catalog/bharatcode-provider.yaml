@@ -1,17 +1,21 @@
 name: bharatcode-provider
-repo: "https://github.com/thenabbu/bharatcode-\x68ermes"
-sha: f4cc1d1f2977963173b23b9ac6a19c3ca8851050
-subdir: model-providers/bharatcode
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
+subdir: plugins/catalog-vendor/bharatcode-provider/0906bc711229
 description: "BharatCode (bharatcode.ai) OpenAI-compatible model provider — free student tier, native /model integration. Disclosure — model provider; prompts, tool schemas and BHARATCODE_API_KEY go to bharatcode.ai (BharatCode, India), which processes prompts through third-party inference partners, some outside India; outside paid Pro (complimentary or referral Pro included) BharatCode may retain private prompt/response logs for debugging, abuse review and product quality, and even on paid Pro a flagged account can have a time-limited sample of up to 100 prompts and responses captured for security review."
-maintainer: thenabbu
+maintainer: Fordex
 tier: community
 category: models
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/thenabbu/bharatcode-\x68ermes#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/bharatcode-provider/0906bc711229/README.md"
 version: "1.0.0"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - BHARATCODE_API_KEY
+  - BHARATCODE_API_KEY
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/thenabbu/bharatcode-hermes#model-providers/bharatcode"

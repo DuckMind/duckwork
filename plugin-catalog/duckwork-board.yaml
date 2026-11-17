@@ -1,27 +1,32 @@
-name: "\x68ermes-board"
+name: "duckwork-board"
 title: Board
-repo: "https://github.com/skk2010/\x68ermes-board-plugin"
-sha: feb66592881bf76198cd8d790fd1dae25e5057f6
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "A Miro-like board the agent draws with its own tools and you edit in a desktop pane, both sides working on one JSON document. board_apply builds a whole diagram in one call from ordered ops (nodes, edges, free lines, groups, notes, captions, layered auto-layout, bus trunks); board_render writes a PNG for chat or the interactive HTML editor; board_watch reports your own pane edits back to the agent. The pane docks beside the conversation with the same editor, saves your edits, and takes agent updates live. Disclosure — board_render shells out to a headless Chrome/Chromium already on PATH (nothing is downloaded; private temp profile, sandbox kept unless running as root) for PNG and self-test rendering; boards live in ~/.duckwork/board/ shared across profiles (DUCKWORK_BOARD_DIR / DUCKWORK_BOARD_RENDER_DIR / DUCKWORK_BOARD_WATCH override); serves /api/plugins/duckwork-board/ on the plugin host; reads this profile's state.db read-only to find the session board_watch should wake; no external network calls and no stored credentials; board_watch's wake into a messaging chat additionally needs plugins.entries.duckwork-board.allow_gateway_injection: true."
-maintainer: skk2010
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21"
 version: "1.9.3"
-docs_url: "https://github.com/skk2010/\x68ermes-board-plugin"
-image: "https://raw.githubusercontent.com/skk2010/\x68ermes-board-plugin/feb66592881bf76198cd8d790fd1dae25e5057f6/assets/card.png"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-board/859adf18da18/README.md"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-board/859adf18da18/assets/card.png"
 screenshots:
-  - "https://raw.githubusercontent.com/skk2010/\x68ermes-board-plugin/feb66592881bf76198cd8d790fd1dae25e5057f6/assets/pane.png"
+- https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-board/859adf18da18/assets/pane.png
 platforms: []
 capabilities:
   provides_tools:
-    - board_list
-    - board_get
-    - board_new
-    - board_delete
-    - board_apply
-    - board_render
-    - board_watch
+  - board_list
+  - board_get
+  - board_new
+  - board_delete
+  - board_apply
+  - board_render
+  - board_watch
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-board"
+legacy_sources:
+- "https://github.com/skk2010/hermes-board-plugin"
+subdir: plugins/catalog-vendor/duckwork-board/859adf18da18

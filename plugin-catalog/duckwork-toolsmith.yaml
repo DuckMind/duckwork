@@ -1,16 +1,22 @@
-name: "\x68ermes-toolsmith"
-repo: "https://github.com/Adolanium/\x68ermes-toolsmith"
-sha: 419669c1efd49513cc404f5503c99b61ed68593f
+name: "duckwork-toolsmith"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "1.0.1"
-image: "https://raw.githubusercontent.com/Adolanium/\x68ermes-toolsmith/419669c1efd49513cc404f5503c99b61ed68593f/assets/catalog-banner.png"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-toolsmith/c0e649abe8c6/assets/catalog-banner.png"
 description: Local developer tools, transformation recipes, and reviewed chat handoff inside Duckwork Desktop.
-maintainer: Adolanium
+maintainer: Fordex
 tier: community
 category: desktop
 requires_duckwork: ">=0.21.3"
-docs_url: "https://github.com/Adolanium/\x68ermes-toolsmith#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-toolsmith/c0e649abe8c6/README.md"
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-toolsmith"
+legacy_sources:
+- "https://github.com/Adolanium/hermes-toolsmith"
+subdir: plugins/catalog-vendor/duckwork-toolsmith/c0e649abe8c6
+screenshots: []

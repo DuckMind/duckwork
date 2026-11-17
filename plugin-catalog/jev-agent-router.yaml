@@ -1,14 +1,19 @@
 name: jev-agent-router
-repo: https://github.com/Pinutss/jev-agent-router
-sha: 8cb6d67a81d4545502750c4599b427d98acf3120
+repo: https://github.com/DuckMind/duckwork
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Agent Plugins v1 package: one skill plus one stdio MCP server (agent_route) started with uv run from the checkout. Needs uv on PATH. Registers no Duckwork tools or hooks; do not expect jev_* tools."
-maintainer: Pinutss
+maintainer: Fordex
 tier: community
 category: general
-docs_url: https://github.com/Pinutss/jev-agent-router#readme
+docs_url: https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/jev-agent-router/cb2e15fadcdf/README.md
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/jev-agent-router/cb2e15fadcdf
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/Pinutss/jev-agent-router"

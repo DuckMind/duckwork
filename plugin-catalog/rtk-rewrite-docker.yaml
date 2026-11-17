@@ -1,13 +1,13 @@
 name: rtk-rewrite-docker
-repo: "https://github.com/petertaras/\x68ermes-rtk-rewrite-with-docker-support"
-sha: 929c8f5f86fc544a523f94a92f95a57d4c0d7d40
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Community plugin that rewrites Duckwork terminal commands through RTK (rtk-ai/rtk, Apache-2.0) so the model sees compact output. Adds a backend gate: it rewrites only for terminal backends a profile opts in to (default local), so a Docker or remote backend without rtk never receives an rtk command. Fail-open pre_tool_call hook (2s timeout). Disclosure — every terminal command on an opted-in backend (default local) is passed to the rtk binary on the Duckwork host's PATH (or RTK_BIN) and replaced with rtk's stdout before approval and execution; the plugin does not validate the rewrite, fails open on timeout or error, and downloads nothing (the repo's optional Containerfile fetches a checksum-pinned RTK release only when you build it). Not affiliated with rtk-ai."
-maintainer: petertaras
+maintainer: Fordex
 tier: community
 category: tools
 requires_duckwork: ">=0.21"
 version: "0.1.0"
-docs_url: "https://github.com/petertaras/\x68ermes-rtk-rewrite-with-docker-support#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/rtk-rewrite-docker/d90eced62eed/README.md"
 platforms: [linux, macos]
 capabilities:
   provides_tools: []
@@ -15,3 +15,8 @@ capabilities:
   - pre_tool_call
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/rtk-rewrite-docker/d90eced62eed
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/petertaras/hermes-rtk-rewrite-with-docker-support"

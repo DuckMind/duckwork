@@ -1,11 +1,11 @@
 name: nextcloud-talk-platform
-repo: "https://github.com/smilinTux/\x68ermes-nextcloud-talk"
-sha: 03f27203fd983d4714891302c49f06b404c4b02f
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Nextcloud Talk platform adapter for Duckwork Agent, in two modes behind one plugin: a webhook bot (Nextcloud Talk Bot API, HMAC-SHA256 signed, with an explicit body-size cap and a nonce-replay cache ahead of payload parsing) and a real Nextcloud user account (app password, long-polling the Chat REST API, with federation-invite support, per-room mention/watch/free modes, and an agent-to-agent loop guard plus active-listening context for multi-agent rooms). Mode is picked automatically by which credential is configured. No extra SDKs -- aiohttp for bot mode, httpx for user mode, both already Duckwork dependencies. Disclosure — Connects to your Nextcloud server either as a Talk bot (HMAC-verified webhook listener, 127.0.0.1:18797 by default) or as a real Nextcloud user with an app password (long-polls the Chat API and auto-accepts federation invites only from NEXTCLOUD_TALK_ALLOWED_INVITERS); in user mode, unanswered room messages from allowed senders (up to 40 per room by default) and, for rooms listed in NEXTCLOUD_TALK_ROOM_MODES or with room_rules_all_rooms on, the room description are added to the agent's next turn in that room."
-maintainer: smilinTux
+maintainer: Fordex
 tier: community
 category: platform
-docs_url: "https://github.com/smilinTux/\x68ermes-nextcloud-talk#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/nextcloud-talk-platform/125a68777506/README.md"
 version: "1.4.3"
 readme: true
 capabilities:
@@ -13,4 +13,9 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+subdir: plugins/catalog-vendor/nextcloud-talk-platform/125a68777506
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/smilinTux/hermes-nextcloud-talk"
 

@@ -1,11 +1,11 @@
-name: "\x68ermes-openwhispr"
-repo: "https://github.com/mooserini/\x68ermes-openwhispr"
-sha: 636314f33376616d3a39815eb63b8a0f06900f3b
+name: "duckwork-openwhispr"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Local-first OpenWhispr dictation history and shared notes for Duckwork agents: find what the user said, search notes, transcribe local audio. Free local desktop bridge by default, paid cloud opt-in only. Skill-carrier plugin, no tools or hooks registered. Disclosure — skill only: the agent runs the external OpenWhispr CLI (installed with an unpinned `npm install -g @openwhispr/cli`) through the terminal tool to read your dictation history and notes over the OpenWhispr desktop app's authenticated loopback bridge, and, with your consent each time, to create, update or delete notes, transcriptions and dictionary entries and to transcribe local audio files; OpenWhispr Cloud (api.openwhispr.com, including an email-code sign-in that mints an API key kept in the CLI's own config) is used only when you opt in; the agent never opens credential files itself."
-maintainer: mooserini
+maintainer: Fordex
 tier: community
 category: voice
-docs_url: "https://github.com/mooserini/\x68ermes-openwhispr#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-openwhispr/abb7d6540f5c/README.md"
 version: "0.1.0"
 platforms: []
 capabilities:
@@ -13,3 +13,10 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-openwhispr"
+legacy_sources:
+- "https://github.com/mooserini/hermes-openwhispr"
+subdir: plugins/catalog-vendor/duckwork-openwhispr/abb7d6540f5c
+image: ''
+screenshots: []

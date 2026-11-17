@@ -1,18 +1,23 @@
 name: coder
-repo: "https://github.com/perqin/\x68ermes-plugin-coder"
-sha: 98e023da379961702fb0ce0cf03b983176039321
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 version: "0.1.0"
 description: "Run Duckwork terminal commands in an existing remote Coder workspace. Disclosure — runs terminal commands inside your Coder workspace at CODER_URL using CODER_API_KEY; starts a stopped workspace automatically; forwards only the env vars you list in TERMINAL_CODER_FORWARD_ENV."
-maintainer: perqin
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/perqin/\x68ermes-plugin-coder#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/coder/8cece3267f67/README.md"
 platforms: []
 capabilities:
   provides_tools: []
   provides_hooks: []
   provides_middleware: []
   requires_env:
-    - CODER_URL
-    - CODER_API_KEY
-    - CODER_WORKSPACE
+  - CODER_URL
+  - CODER_API_KEY
+  - CODER_WORKSPACE
+subdir: plugins/catalog-vendor/coder/8cece3267f67
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/perqin/hermes-plugin-coder"

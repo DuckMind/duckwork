@@ -12,7 +12,7 @@
 #   commit of Frihet-io/duckwork-frihet. Update via a new PR whenever we
 #   ship a meaningful change (rule 4 of the catalog admission policy).
 name: frihet
-repo: "https://github.com/Frihet-io/\x68ermes-frihet"
+repo: "https://github.com/DuckMind/duckwork"
 # Pinned SHA — Frihet-io/duckwork-frihet @ v0.2.1 (tagged)
 # (fix(classifier): treat anomaly_list as read; make manifest tests real).
 #
@@ -70,12 +70,12 @@ repo: "https://github.com/Frihet-io/\x68ermes-frihet"
 #
 # Tests: 88 pass + 3 skips. duckwork plugins validate --install-deps
 # (clean DUCKWORK_HOME): 14/14 checks, security scan "safe".
-sha: 72493236b16c5e1e2b6a5ada3674781a6da180a1
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: "Official Duckwork Agent integration for Frihet — discoverability, setup, diagnostics, and operating guidance for the Frihet MCP. Zero duplicated tools; the canonical Frihet MCP surface stays in @frihet/mcp-server and the remote endpoint https://mcp.frihet.io/mcp. Disclosure — /frihet setup and /frihet doctor send an unauthenticated MCP initialize to mcp.frihet.io (or FRIHET_MCP_URL); /frihet doctor also makes one read-only list_invoices call through Duckwork's MCP client once you grant plugins.entries.frihet.mcp_allowlist; reads ~/.duckwork/config.yaml only to check that an mcp_servers.frihet block exists; the pre_tool_call hook prompts before Frihet MCP calls it classifies as irreversible or unknown, but reads and draft-first creates pass without a prompt unless the server sets trust: untrusted."
-maintainer: Frihet-io
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/Frihet-io/\x68ermes-frihet#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/frihet/d6718a8dbb2e/README.md"
 requires_duckwork: ">=0.21.5"
 version: "0.2.1"
 # Capabilities mirror plugin.yaml exactly.
@@ -89,9 +89,14 @@ version: "0.2.1"
 capabilities:
   provides_tools: []
   provides_hooks:
-    - pre_tool_call
+  - pre_tool_call
   provides_middleware: []
   # No env vars required. Credentials (Bearer API key or OAuth 2.0+PKCE)
   # live on the ``mcp_servers.frihet`` block in the user's config.yaml,
   # not on the plugin itself.
   requires_env: []
+subdir: plugins/catalog-vendor/frihet/d6718a8dbb2e
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/Frihet-io/hermes-frihet"

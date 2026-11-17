@@ -1,12 +1,12 @@
 name: shodan
-repo: "https://github.com/Adolanium/\x68ermes-plugin-shodan"
-sha: d12828e9c90654bca598d45832cee2ef6454cf30
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Shodan tools with complete capability declarations.
-maintainer: Adolanium
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/Adolanium/\x68ermes-plugin-shodan#readme"
-image: "https://raw.githubusercontent.com/Adolanium/\x68ermes-plugin-shodan/d12828e9c90654bca598d45832cee2ef6454cf30/assets/catalog-banner.png"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/shodan/92ddf0fbf8fe/README.md"
+image: "https://github.com/DuckMind/duckwork/raw/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/shodan/92ddf0fbf8fe/assets/catalog-banner.png"
 capabilities:
   provides_tools:
   - shodan_host
@@ -27,3 +27,7 @@ capabilities:
   provides_middleware: []
   requires_env:
   - SHODAN_API_KEY
+subdir: plugins/catalog-vendor/shodan/92ddf0fbf8fe
+screenshots: []
+legacy_sources:
+- "https://github.com/Adolanium/hermes-plugin-shodan"

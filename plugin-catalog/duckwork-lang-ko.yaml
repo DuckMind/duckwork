@@ -1,13 +1,13 @@
-name: "\x68ermes-lang-ko"
-repo: "https://github.com/dandacompany/\x68ermes-lang-ko"
-sha: 454364157cc7cad777d3c534ab19be2ff866cf39
+name: "duckwork-lang-ko"
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: >-
   Korean (한국어) language pack for Duckwork Desktop — Desktop UI (5,282 of 5,384 keys on v0.22.5 and main cb757fac59; 349 new translations); CLI, gateway and TUI keep the Korean catalogs already bundled with Duckwork. Independent translation from the English source; values identical to English are omitted so missing strings fall back to English. Disclosure — text-only catalogs plus an __init__.py whose register() is a no-op (kept so Desktop "Install from Git" accepts the pack, #138118); registering the pack never changes display.language, the user opts in via config.
-maintainer: dandacompany
+maintainer: Fordex
 tier: community
 category: general
 requires_duckwork: ">=0.21.6"
-docs_url: "https://github.com/dandacompany/\x68ermes-lang-ko#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/duckwork-lang-ko/3b32c5821051/README.md"
 version: "0.2.4"
 platforms: []
 capabilities:
@@ -15,3 +15,10 @@ capabilities:
   provides_hooks: []
   provides_middleware: []
   requires_env: []
+aliases:
+- "hermes-lang-ko"
+legacy_sources:
+- "https://github.com/dandacompany/hermes-lang-ko"
+subdir: plugins/catalog-vendor/duckwork-lang-ko/3b32c5821051
+image: ''
+screenshots: []

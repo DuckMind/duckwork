@@ -1,11 +1,11 @@
 name: financial-datasets
-repo: "https://github.com/financial-datasets/\x68ermes-plugin"
-sha: 6745cb6261f86895364579d897be2b6067f117f1
+repo: "https://github.com/DuckMind/duckwork"
+sha: 86b0c19d1504bc127a6c34d8a8d146e58276ef63
 description: Stock market data from Financial Datasets - financial statements, prices, SEC filings, insider and institutional ownership, KPIs, news, macro data, and a stock screener.
-maintainer: financial-datasets
+maintainer: Fordex
 tier: community
 category: tools
-docs_url: "https://github.com/financial-datasets/\x68ermes-plugin#readme"
+docs_url: "https://github.com/DuckMind/duckwork/tree/86b0c19d1504bc127a6c34d8a8d146e58276ef63/plugins/catalog-vendor/financial-datasets/6e989cf92a7f/README.md"
 version: "1.0.0"
 capabilities:
   provides_tools:
@@ -41,3 +41,8 @@ capabilities:
   provides_middleware: []
   requires_env:
   - FINANCIAL_DATASETS_API_KEY
+subdir: plugins/catalog-vendor/financial-datasets/6e989cf92a7f
+image: ''
+screenshots: []
+legacy_sources:
+- "https://github.com/financial-datasets/hermes-plugin"
