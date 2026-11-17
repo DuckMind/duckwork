@@ -1,0 +1,143 @@
+# Publish-scrub allow-list: one entry per line.
+#   file            -> every hit in that file is a GUARD
+#   file:LINE       -> the hit at that source line is a GUARD
+#   regex:PATTERN   -> any hit whose line matches PATTERN is a false-positive guard
+# Kept verbatim per docs/PUBLISH-SCRUB.md.
+tests/test_skill_docs.py
+scripts/make_public.py
+regex:exhaust
+docs/catalog/entry.yaml
+docs/catalog/pr-body.md
+docs/manifest-decisions.md
+plugin.yaml
+regex:Fordex/duckwork-agent
+scripts/.scrub-guards
+regex:"author": "(Jacob Hausler|jacobhausler)"
+# Public PR-author credit only; anchored line excludes the change description.
+regex:^- #[0-9]+ — (Duckwork Agent; )?@jacobhausler\.$
+# MIT license identity: the copyright-holder line is load-bearing by design
+# (renaming it would mislicense the package); the audit reaching it is a
+# feature of content-based text detection, not a regression. Anchored so the
+# guard covers ONLY the copyright line of LICENSE.
+regex:^Copyright \(c\) \d{4} (Jacob Hausler|jacobhausler)$
+
+# ---- Core-10 committed scrub list (2026-10-01): GUARD rows for the merged audit ----
+# Classification discipline per docs/PUBLISH-SCRUB.md: GUARD = load-bearing absence
+# -enforcing or fixture identity; kept verbatim. Everything below names the WHY.
+# Frozen golden-solo capture: the runner spawn env_keys list is compared BYTE-FOR-BYTE
+# against the v1.0.15 baseline; the NOMAD_*/env rows are the captured OS environment
+# surface, renaming them would void the golden-solo law (the ban it enforces is on
+# LEAKING these into prompts, not on the capture naming them).
+tests/golden_solo/v1.0.15.json
+# Model-route test fixtures: the alias/tier names ARE the asserted data (resolution,
+# preflight, route-hold, reasoning-effort tests assert the CLI receives exactly these
+# tokens; neutralizing them would test nothing — the PUBLISH-SCRUB GUARD class).
+tests/test_amend_rebake_034849a2.py
+tests/test_sprint101_A-door.py
+tests/test_routing_routes.py
+# Alias-versus-literal routing fixture; the mocked route tokens are asserted verbatim.
+tests/test_literal_provider_prefix_46.py
+tests/test_require_route_25.py
+tests/test_metrics_0923.py
+tests/test_route_efforts_b3c98b2a.py
+# est-2ek.1.699: ONLY the fixture block — stock core folds '.'->'-' solely for
+# claude prefixed ids, so the dotted/hyphenated pair and its controls must carry
+# that prefix (neutral model names; every other line of the test is scrub-clean).
+tests/test_route_identity_699.py:54
+tests/test_route_identity_699.py:55
+tests/test_route_identity_699.py:56
+tests/test_route_identity_699.py:57
+tests/test_fatal_quota_24.py
+tests/test_tiers.py
+tests/test_model_preflight_0924.py
+tests/test_run_dry_run.py
+tests/test_model_law_dad50be0.py
+tests/test_failures_0923.py
+# #54 credential-window fixture: the banner the fake child prints carries the model
+# token verbatim because the runner's give-up error must quote it back byte-for-byte
+# (the same GUARD class as tests/test_fatal_quota_24.py's fixture quota banner).
+tests/fake_duckwork.py
+tests/test_ratelimit_54.py
+tests/test_ratelimit_park_walls_159c.py
+# Dialect golden fixtures: `model: 'sonnet'` is a pinned byte of the importer golden
+# (test_dialect_js_33 asserts the export carries it verbatim).
+tests/test_dialect_js_33.py
+tests/fixtures/dialect/golden-export.workflow.json
+tests/fixtures/dialect/sequential-awaits.js
+tests/fixtures/dialect/sequential-awaits.expected.json
+# Vendor-grammar mapping docs: quoting the vendor's vocabulary IS their purpose (the
+# same GUARD class as tests/test_skill_docs.py quoting its own ban).
+references/anthropic-grammar.md
+references/dialect.md
+# Concrete alias-pitfall example in the playbook (line-anchored by regex, not by file,
+# so a future stray model name in the playbook still fires).
+regex:die 404 \(`opus` → `anthropic/opus` while the alias meant `claude-opus-5-5`\)
+# graphify semantic community labels naming the dialect's source scripts (carried
+# verbatim by --fix; AST regeneration re-derives the rest of graphify-out).
+regex:Claude-generated cookbook
+regex:Suite hook for the standalone 20-cycle
+# Core-10 #4: the peer clean-run stub carries the PEER-AGREED contract strings
+# verbatim (from: austin-exec estate) — the public contract names the peer whose
+# PASS gates the merge; guarded, not hidden.
+receipts/gated-publish/peer-clean-run.json
+# Core-10 #6: same peer-agreed stub contract for the exchange-run clean-run seat.
+receipts/exchange-run/peer-clean-run.json
+# Core-10 #4 fold (ruling wf-101-disposition): the austin-estate clean-run receipt
+# names the reviewing estate (austin-exec) as its evidence provenance — the peer's
+# identity IS the receipt; guarded, not hidden.
+receipts/gated-publish/peer-clean-run-austin.json
+# est-2ek.1.641 route-substitution fixture: SUB_M IS the asserted data — B2 pins that
+# the typed error quotes the substituted route verbatim and the seat-stub ledger holds
+# ZERO attempts against it. Neutralizing the token would test nothing (the PUBLISH-SCRUB
+# GUARD class of tests/test_require_route_25.py's pinned proof routes).
+tests/test_route_substitution_641.py
+# The #25/#641 evidence comment names the route a proved-alive pinned lane actually
+# billed on the evidence runs — kept verbatim, line-anchored by regex (not file) so a
+# future stray model name in wf.py still fires.
+regex:# a proved-alive pinned route whose later spawn billed
+
+
+# ---- committee wf166c A1 (suffix widening .yml/.txt): rows newly SEEN by the audit ----
+# The audit's own input: every line of scripts/scrub-list.txt IS a forbidden-pattern
+# regex by role — guarding it is the contract (the audit must read it verbatim; the
+# ban is on LEAKING the vocabulary into shipped docs/code, not on the input naming it).
+scripts/scrub-list.txt
+# Suffix-blind-spot pin: the FORBIDDEN_LINE constant is fixture identity — the probe
+# asserts the AUDITOR refuses this exact token in .yml/.txt; neutralizing it would
+# pin nothing (same GUARD class as the model-route fixtures above).
+tests/test_scrub_yml_166b.py
+# ---- committee wf166d (r2): tests/fake-b1 model-alias line newly SEEN by the audit ----
+# The ratelimit-mode banner the fake child prints carries the model token verbatim
+# because the runner's give-up error must quote the banner back byte-for-byte — the
+# SAME fixture-identity GUARD class as tests/fake_duckwork.py's banner (line-guarded,
+# not file-guarded: a future stray model name elsewhere in fake-b1 must still fire).
+tests/fake-b1:137
+# SECURITY.md advisories URL (issue #43 conformance): the private-vulnerability-reporting
+# URL is the documented reporter handle and must ship verbatim; guarded.
+regex:github\.com/jacobhausler/duckwork-workflows/security/advisories
+
+# Joint-eng-protocol SSOT pointer (AGENTS.md §4d / CONTRIBUTING.md footer): the
+# citation must name the governing repo, file, digest, and public check mirror
+# verbatim — the pointer IS the verification handle a cold reader checks; guarded.
+regex:^Cross-estate joint eng protocol v1 is the SSOT
+# One-owner check-guide pointer (references/development.md): CONTRIBUTING.md is not
+# packaged in the release ZIP, so the shipped reference resolves the canonical gates
+# block by public URL — the pointer IS the one-source handle; guarded verbatim.
+regex:^\[CONTRIBUTING\.md\]\(https://github\.com/jacobhausler/duckwork-workflows/blob/main/CONTRIBUTING\.md\)$
+scripts/vendor/archify/renderers/shared/generated-brand-marks.mjs
+
+# ---- est-q2nwx: owner pr-compliance gate text (main tip 6ee8fba, CI run 37949429728) ----
+# The owner's own pr-compliance gate (haus-docs rules/pr-diagram-standard.md v0.2 C1/C2)
+# SHIPS these two public repo artifacts; the flagged vocabulary is the gate's mandated
+# citation/exemption text, not a private string. Line-anchored (not file-guarded) so any
+# future stray hit elsewhere in these files still fires. GUARD, per AGENTS.md rule 4.
+.github/PULL_REQUEST_TEMPLATE.md:6
+.github/workflows/pr-compliance.yml:32
+
+# ---- est-o8c6o (2026-10-11): the diff-scoped gate re-worded the ::error:: line ----
+# est-q2nwx's line anchor (:32) went stale because the diff-scope re-word moved the
+# citation line and kept the same mandated standard citation. Anchored by the citation
+# phrase itself instead of a line number, so any future re-word that keeps the citation
+# stays guarded and any stray hit WITHOUT the citation still fires. GUARD, per AGENTS.md
+# rule 4 - same class as est-q2nwx.
+regex:haus-docs rules/pr-diagram-standard

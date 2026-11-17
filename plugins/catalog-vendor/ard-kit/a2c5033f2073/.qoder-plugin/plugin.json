@@ -1,0 +1,34 @@
+{
+  "name": "ard-kit",
+  "version": "0.20.0",
+  "displayName": "ARD Kit — Agentic Resource Discovery",
+  "description": "Discover and inspect local tool catalogs through an ARD v0.91 registry: stateless ranked search and per-URN inspection that returns the invoke command — the run stays with you. The catalogizer indexes .py/.sh scripts and SKILL.md agent skills. Trust verdicts (ard-verify CLI, ard_verify MCP tool) screen an entry for injection markers, invisible characters and identity/URN mismatch, reporting VERIFIED / UNVERIFIED / SUSPECT / UNSUPPORTED with the worst verdict winning, and the federation gate drops SUSPECT peer rows instead of serving them. Query your tool catalog FIRST for any capability need, not only before writing new tooling.",
+  "author": {
+    "name": "ameobius-ai",
+    "url": "https://gitlab.com/ameobius-ai"
+  },
+  "homepage": "https://gitlab.com/ameobius-ai/ard-kit",
+  "repository": "https://gitlab.com/ameobius-ai/ard-kit",
+  "license": "MIT",
+  "keywords": [
+    "ard",
+    "agent-discovery",
+    "tool-catalog",
+    "registry",
+    "skills",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "commands": {
+    "ard-catalogize": {
+      "source": "./commands/ard-catalogize.md"
+    },
+    "ard-doctor": {
+      "source": "./commands/ard-doctor.md"
+    },
+    "ard-serve": {
+      "source": "./commands/ard-serve.md"
+    }
+  },
+  "mcpServers": "./.mcp.json"
+}

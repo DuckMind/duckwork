@@ -1,0 +1,30 @@
+{
+  "grammar": "wf/1",
+  "name": "golden-export",
+  "description": "Exporter golden: every lossy family, a decorative gate, an echo constant, a run_context binding",
+  "defaults": {"model": "worker-tier", "context": "Reply with ONLY a fenced json block.",
+               "schema": {"type": "object", "required": ["note"], "properties": {"note": {"type": "string"}}}},
+  "nodes": [
+    {"id": "params", "type": "echo", "output": {"target": "src/", "depth": 2}},
+    {"id": "recon", "type": "agent", "after": ["params"], "shape": "recon", "toolsets": ["file"],
+     "goal": "Survey {run.area} under the target directory and list modules. Return {modules}.",
+     "schema": {"type": "object", "required": ["modules"], "properties": {"modules": {"type": "array", "items": {"type": "string"}}}}},
+    {"id": "review", "type": "agent", "after": ["recon"], "requires": {"recon": ["modules"]},
+     "max_turns": 40, "timeout": 600, "repo": "lanes/review", "profile": "reviewer",
+     "context": "PIPE-CTX: cite file:line for every finding.",
+     "fanout": {"items_from": "recon.modules", "goal": "Review module {item} for dead code. Return {module, findings}.",
+                "schema": {"type": "object", "required": ["module", "findings"], "properties": {"module": {"type": "string"}, "findings": {"type": "string"}}}}},
+    {"id": "probes", "type": "agent", "after": ["params"], "context": "PAR-CTX: one probe per item.",
+     "fanout": {"items": [{"id": "lint", "goal": "Run the linter over the target. Return {note}."},
+                          {"id": "types", "goal": "Run the type checker over the target. Return {note}."}]}},
+    {"id": "smoke", "type": "agent", "after": ["params"], "context": "UNI-CTX: never write files.",
+     "fanout": {"items": ["unit", "e2e"], "goal": "Smoke the {item} suite. Return {note}."}},
+    {"id": "publish", "type": "gate", "after": ["review"], "question": "Publish the review digest?",
+     "options": ["yes", "no"], "hold_timeout": 3600, "default_option": "no", "requires": {"review": ["items"]}},
+    {"id": "digest", "type": "agent", "after": ["publish"], "inputs": ["review.items", "params.target"],
+     "model": "sonnet", "require_route": false, "reasoning": "high", "run_budget": 1200,
+     "goal": "Write the feedback digest from the review items; the owner's gate answer is injected. Return {digest}.",
+     "context": "Keep it under one page.",
+     "schema": {"type": "object", "required": ["digest"], "properties": {"digest": {"type": "string"}}}}
+  ]
+}

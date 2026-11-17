@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "recipe": {
+    "name": "Spectator plugin",
+    "kind": "fastapi",
+    "bootstrap": [
+      "uv venv .venv --allow-existing",
+      "uv pip install -e '.[dev]' --python .venv/bin/python"
+    ],
+    "build": [],
+    "test": [
+      ".venv/bin/python -m pytest -q"
+    ],
+    "start": "SPECTATOR_DATA_DIR=\"$(mktemp -d \"${TMPDIR:-/tmp}/duckwork-spectator-verify.XXXXXX\")\" .venv/bin/python -m uvicorn spectator.serve:app --host 127.0.0.1 --port 8000",
+    "port": 8000,
+    "readinessPath": "/api/plugins/spectator/guest.html",
+    "evidence": [
+      "Repo-local recipe for the standalone Spectator FastAPI app"
+    ]
+  }
+}

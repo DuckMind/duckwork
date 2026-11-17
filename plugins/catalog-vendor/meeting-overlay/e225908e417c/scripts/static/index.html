@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b0f" />
+  <title>Meeting Copilot</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Meeting" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; background: #0b0b0f; color: #e7e7ea;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; }
+    #app { display: flex; flex-direction: column; height: 100dvh;
+      padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom); overflow: hidden; }
+    /* UI controls are not selectable; content (transcript, card body) stays selectable */
+    button, .chip { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    .card p, #transcript { -webkit-user-select: text; user-select: text; }
+
+    /* ── toolbar ── */
+    .toolbar { display: flex; gap: 10px; align-items: flex-end; padding: 6px 0 8px; flex: 0 0 auto; }
+    .tool { display: flex; flex-direction: column; gap: 4px; }
+    .tool.grow { flex: 1; min-width: 0; }
+    .tool.grow2 { flex: 1.3; min-width: 0; }
+    #rec { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
+      letter-spacing: .06em; padding: 8px 12px; border-radius: 8px; cursor: pointer;
+      white-space: nowrap; border: 1px solid #2c2c34; background: transparent; color: #6f6f78; }
+    #rec .recdot { width: 7px; height: 7px; border-radius: 50%; background: #4a4a52; flex: 0 0 auto; }
+    #rec.on { border-color: #cf2d56; background: rgba(207,45,86,.14); color: #cf2d56; }
+    #rec.on .recdot { background: #cf2d56; }
+    .chip { display: flex; gap: 4px; }
+    .chip button { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center;
+      padding: 8px 0; border-radius: 8px; background: transparent; cursor: pointer;
+      color: #6f6f78; border: 1px solid transparent; }
+    .chip button svg { display: block; width: 15px; height: 15px; }
+    /* capture sources (phone/mic/audio/both): medium-gray outline when selected
+       & idle; green stroke on the icon when recording; red glow for the phone. */
+    .chip.mode button.sel { border: 1px solid #4a4a52; color: #e7e7ea; }
+    .chip.mode button.sel.live { border-color: #2ecc71; color: #2ecc71; }
+    .chip.mode button.sel.live svg { stroke: currentColor; }
+    .chip.mode button.sel.live-red { border-color: #cf2d56; color: #cf2d56; background: rgba(207,45,86,.16); }
+    .chip.mode button.sel.live-red svg { stroke: currentColor; }
+    /* model (host/local): selected = muted medium fill, icon in normal tone;
+       deselected = bare icon, no background, no stroke. */
+    .chip.model button { border: 1px solid transparent; background: transparent; color: #a0a0aa; }
+    .chip.model button.sel { background: rgba(111,111,120,.14); color: #e7e7ea; border-color: #2c2c34; }
+    .chip.model button svg { fill: none; stroke: currentColor; }
+    /* mini icon button (clear transcript / clear cards) */
+    .mini { display: flex; align-items: center; justify-content: center; padding: 3px 6px;
+      border-radius: 6px; border: 1px solid #26262e; background: transparent;
+      color: #a0a0aa; cursor: pointer; flex: 0 0 auto; }
+    .mini svg { display: block; }
+
+    /* ── transcript ── */
+    .t-head { display: flex; align-items: center; gap: 8px; padding: 4px 0; flex: 0 0 auto; }
+    .t-head .lbl { flex: 1; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: #6f6f78; }
+    #tSearch { font-size: 12px; padding: 5px 8px; border-radius: 6px; width: 40%;
+      background: #141419; border: 1px solid #26262e; color: #e7e7ea; }
+    #transcript { flex: 1; overflow-y: auto; font-size: 14px; line-height: 1.5; min-height: 0; }
+    #transcript .ln { display: flex; gap: 7px; padding: 2px 0; }
+    #transcript .ts { color: #5a5a63; font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; flex: 0 0 auto; }
+    #transcript .empty { color: #5a5a63; font-style: italic; }
+
+    /* ── answer deck: fixed tall window, inner scroll (no arrow pagination) ── */
+    .deck { flex: 0 0 300px; padding: 6px 0 4px; min-height: 0; display: flex; flex-direction: column; }
+    .deck-head { display: flex; align-items: center; gap: 8px; padding-bottom: 6px; flex: 0 0 auto; }
+    .deck-head .lbl { flex: 1; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: #6f6f78; }
+    .deck-head .nav { font-size: 15px; padding: 2px 9px; border-radius: 6px; background: transparent;
+      border: 1px solid #26262e; color: #c9c9d1; cursor: pointer; }
+    .deck-head .nav:disabled { color: #3a3a42; }
+    #cSearch { font-size: 12px; padding: 5px 8px; border-radius: 6px; width: 30%;
+      background: #141419; border: 1px solid #26262e; color: #e7e7ea; }
+    .scrob { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+    .scrob-track { position: relative; width: 48px; height: 10px; cursor: ew-resize; touch-action: none; }
+    .scrob-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+      transform: translateY(-50%); background: #2c2c34; border-radius: 1px; }
+    .scrob-ticks { position: absolute; inset: 0; }
+    .scrob-ticks span { position: absolute; top: 50%; transform: translate(-50%, -50%);
+      width: 1px; background: #4a4a52; border-radius: 1px; }
+    .scrob-grab { position: absolute; top: 50%; transform: translate(-50%, -50%);
+      width: 8px; height: 8px; border-radius: 2px; background: #1b1b22;
+      border: 1px solid #22c55e; cursor: ew-resize; }
+    .scrob-val { font-size: 9px; color: #6f6f78; font-variant-numeric: tabular-nums; }
+    .pile { display: flex; flex-direction: column; align-items: stretch; flex: 1 1 0; min-height: 0; overflow-y: auto; padding-bottom: 4px; }
+    .card { min-width: 0; border: 1px solid #26262e; border-radius: 10px; padding: 8px 10px;
+      background: #141419; display: flex; flex-direction: column; flex-shrink: 0; }
+    .card.drop { animation: cardDrop 1.1s ease-out forwards; }
+    @keyframes cardDrop { 0% { background: #22c55e; } 60% { background: #22c55e; } 100% { background: #141419; } }
+    .card .h { display: flex; justify-content: space-between; font-size: 10px; color: #6f6f78;
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; flex: 0 0 auto; }
+    .card p { margin: 0; font-size: 13px; line-height: 1.4; white-space: pre-wrap; flex: 1;
+      min-height: 0; padding-right: 8px; }
+    /* edge bar: a thin clickable strip that surfaces its card when tapped */
+    .edge { display: flex; align-items: center; gap: 8px; min-width: 0; height: 20px;
+      margin-top: 2px; padding: 0 9px; box-sizing: border-box; border: 1px solid #26262e;
+      border-radius: 6px; background: #1b1b22; cursor: pointer; text-align: left;
+      font-size: 10px; line-height: 1; color: #6f6f78; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; flex: 0 0 auto; }
+    .edge .e-lab { flex-shrink: 0; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; color: #6f6f78; }
+    .edge .e-ts { flex-shrink: 0; color: #565660; font-size: 9px; font-variant-numeric: tabular-nums; }
+    .edge .e-peek { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; color: #c9c9d1; }
+    /* minimize button on the surfaced card's header (plain aligned span) */
+    .card .h { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .card .h .t { cursor: pointer; font-weight: 700; letter-spacing: .05em; }
+    .card .h .x { background: transparent; border: none; color: #6f6f78; font-size: 13px;
+      line-height: 10px; padding: 0 1px; cursor: pointer; flex-shrink: 0; }
+
+    /* ── action bar ── */
+    .actions { display: flex; gap: 6px; padding: 8px 0 2px; flex: 0 0 auto; }
+    .actions button { flex: 1; font-size: 12px; font-weight: 600; padding: 11px 4px;
+      border-radius: 8px; border: 1px solid #2c2c34; background: transparent; color: #c9c9d1; cursor: pointer;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .actions button.on { background: #22c55e; border-color: #22c55e; color: #0b0b0f;
+      font-weight: 800; box-shadow: 0 0 0 2px rgba(34,197,94,.28); }
+
+    /* ── records (phone: open/view only) ── */
+    .records { flex: 0 0 auto; border-top: 1px solid #26262e; padding: 6px 0 0; }
+    .records .h { display: flex; align-items: center; gap: 6px; }
+    .records .h .lbl { flex: 0 0 auto; font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: #6f6f78; }
+    /* action feedback lives to the RIGHT of the Records (X) label. flex:1 reserves
+       its space even when empty, so appearing/disappearing never shifts the row. */
+    .records .h .rnote { flex: 1; min-width: 0; display: flex; align-items: center;
+      justify-content: flex-end; gap: 5px; font-size: 10px; font-weight: 600;
+      color: #2ecc71; white-space: nowrap; }
+    .records .h .rnote .ck { flex: 0 0 auto; font-size: 11px; line-height: 1; }
+    .records .h .rnote .spin { flex: 0 0 auto; width: 9px; height: 9px; border-radius: 50%;
+      border: 1.5px solid #4a4a52; border-top-color: #2ecc71; animation: mspin .7s linear infinite; }
+    @keyframes mspin { to { transform: rotate(360deg); } }
+    .records .h button { background: transparent; border: 1px solid #26262e; color: #c9c9d1;
+      border-radius: 6px; font-size: 12px; padding: 3px 8px; cursor: pointer; }
+    .records .list { max-height: 132px; overflow-y: auto; }
+    .records .row { display: flex; align-items: center; gap: 8px; padding: 7px 2px;
+      border-bottom: 1px solid #1c1c22; cursor: pointer; }
+    .records .row:last-child { border-bottom: none; }
+    .records .row .nm { flex: 1; min-width: 0; font-size: 13px; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .records .row .dt { color: #5a5a63; font-size: 11px; flex: 0 0 auto; }
+    /* triage: checkbox (keep) + hide/restore, and the Hidden section */
+    .records .row .rcb { flex: 0 0 auto; width: 15px; height: 15px; margin: 0;
+      accent-color: #2ecc71; -webkit-user-select: none; user-select: none; }
+    .records .row .ract { flex: 0 0 auto; background: transparent; border: none;
+      color: #6f6f78; font-size: 13px; padding: 0 4px; cursor: pointer; line-height: 1; }
+    .records .row.hid { opacity: .55; }
+    .records .hlbl { font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: #4a4a52; padding: 6px 2px 2px; }
+    /* record viewer modal */
+    #modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); z-index: 1000;
+      display: none; align-items: center; justify-content: center; }
+    #modal.open { display: flex; }
+    #modal .box { width: 92%; max-height: 80dvh; background: #141419; border: 1px solid #26262e;
+      border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+    #modal .bh { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
+      border-bottom: 1px solid #26262e; }
+    #modal .bh .t { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #modal .bh button { background: transparent; border: none; color: #c9c9d1; font-size: 18px; cursor: pointer; }
+    #modal .bd { overflow-y: auto; padding: 12px 14px; font-size: 13px; line-height: 1.55; white-space: pre-wrap;
+      -webkit-user-select: text; user-select: text; }
+    #tip { position: fixed; z-index: 999; background: #1c1c22; color: #e7e7ea; font-size: 12px;
+      padding: 7px 10px; border-radius: 8px; border: 1px solid #2c2c34; pointer-events: none;
+      opacity: 0; transition: opacity .12s; max-width: 240px; }
+    #tip.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="toolbar">
+      <div class="tool"><button id="rec" class="off" data-hint="Start or stop capturing from the selected source">RECORD</button></div>
+      <div class="tool grow2"><div class="chip mode" id="modeChip"></div></div>
+      <div class="tool grow"><div class="chip model" id="modelChip"></div></div>
+    </div>
+
+    <div id="tBlock" style="display:flex; flex-direction:column; gap:4px; flex:1 1 0; min-height:0; order:1;">
+      <div class="t-head">
+        <div class="lbl" id="tLbl">Transcript</div>
+        <input id="tSearch" placeholder="Search" />
+        <button id="tClear" class="mini" data-hint="Clear the transcript"></button>
+      </div>
+      <div id="transcript"></div>
+    </div>
+
+    <div class="deck" id="deck" style="order:2;">
+      <div class="deck-head">
+        <div class="lbl" id="deckLbl">Answers</div>
+        <div class="scrob" id="scrobber" data-hint="Record-mode chunk interval">
+          <div class="scrob-track" id="scrobTrack">
+            <div class="scrob-line"></div>
+            <div class="scrob-ticks" id="scrobTicks"></div>
+            <div class="scrob-grab" id="scrobGrab"></div>
+          </div>
+          <span class="scrob-val" id="chunkVal">30s</span>
+        </div>
+        <button class="nav" id="flipBtn" data-hint="Flip transcript and answers">⇅</button>
+        <button class="mini" id="deckClear" data-hint="Clear all answer cards"></button>
+        <input id="cSearch" placeholder="Search" />
+      </div>
+      <div class="pile" id="pile"></div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-what" data-hint="Listen mode: auto-chunk what-to-say every interval">What to say</button>
+      <button id="btn-follow" data-hint="Listen mode: auto-chunk follow-up questions">Follow-up</button>
+      <button id="btn-research" data-hint="Listen mode: auto-chunk background/research">Research</button>
+      <button id="btn-save" data-hint="Save transcript to the Records vault">Save</button>
+      <button id="btn-recap" data-hint="LLM summary, saved to Records">Recap</button>
+    </div>
+
+    <div class="records" id="records">
+      <div class="h"><div class="lbl" id="recLbl">Records</div><span class="rnote" id="recNote"></span><button id="recToggle" data-hint="Show or hide saved records">⌄</button></div>
+      <div class="list" id="recList" style="display:none"></div>
+    </div>
+  </div>
+  <div id="modal"><div class="box"><div class="bh"><span class="t" id="modalTitle"></span><button id="modalClose" data-hint="Close">✕</button></div><div class="bd" id="modalBody"></div></div></div>
+  <div id="tip"></div>
+
+  <script>
+    const $ = id => document.getElementById(id)
+    const MODELS = [['host','Host','Your Duckwork default model'],['local','Local','Qwen3-4B, works offline']]
+    // four capture sources. "phone" = this phone streams its own mic; the rest
+    // = the desktop daemon captures. One source at a time (no merge/echo).
+    const MODES = [['phone','Phone','Use this phone as the mic'],['mic','Mic','This Mac\u2019s microphone'],
+                   ['blackhole','Audio','Computer audio (call on Mac)'],['both','Both','Computer audio + mic']]
+    const ICON = {
+      host: 'M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z',
+      local: 'M22 12H2 M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z M6 16h.01 M10 16h.01',
+      both: 'M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z M22 17.65l-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65 M22 12.65l-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65',
+      mic: 'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z M19 10v2a7 7 0 0 1-14 0v-2 M12 19v3',
+      blackhole: 'M2 3h20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M8 21h8 M12 17v4',
+      phone: 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.08 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z',
+      trash: 'M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6',
+      xcircle: 'M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M15 9l-6 6 M9 9l6 6',
+    }
+    const icon = (name, size = 15) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ICON[name] || ''}"/></svg>`
+
+    let settings = {}, deck = [], liveAnswer = '', tQuery = '', cQuery = ''
+    let ws = null, stream = null, ctx = null, srcNode = null, processor = null
+    let recording = false   // THIS phone is streaming its own mic (phone source)
+    let surfacedId = null  // which card is expanded full; null = newest
+    let lastLandedId = null  // newest finalized card id, for the green drop-flash
+    let flipped = true       // transcript ⇄ answers swap (default: answers/cards on top)
+    const chunkSec = () => Math.max(15, Math.min(60, settings.chunk_sec || 30))
+
+    async function poll() {
+      try {
+        const [t, a, s] = await Promise.all([
+          fetch('/api/transcript').then(r => r.json()),
+          fetch('/api/answers').then(r => r.json()),
+          fetch('/api/settings').then(r => r.json()),
+        ])
+        settings = s
+        const prevDeck = deck
+        deck = a.answers || []
+        liveAnswer = a.live || ''
+        // a finalized card that wasn't in the last poll is "newly landed" → flash
+        const prevIds = new Set(prevDeck.map(d => String(d.id)))
+        const landed = deck.filter(d => !prevIds.has(String(d.id)))
+        if (landed.length) { lastLandedId = String(landed[landed.length - 1].id); surfacedId = null }
+        renderTranscript(t.lines || [])
+        renderCards()
+        renderChips()
+        renderRec()
+        renderAssist()
+      } catch (e) { /* offline */ }
+    }
+
+    function renderAssist() {
+      const cs = chunkSec()
+      const modelOff = (settings.model || 'host') === 'off'
+      const am = settings.assist_mode || (settings.auto_assist ? 'what' : 'off')
+      $('chunkVal').textContent = cs + 's'
+      placeScrobGrab(cs)
+      // three MUTUALLY-EXCLUSIVE, PERSISTED listen modes. Selecting one only
+      // changes the setting — listening is started by the capture toggles.
+      const modes = { 'btn-what': 'what', 'btn-follow': 'followup', 'btn-research': 'research' }
+      Object.entries(modes).forEach(([id, k]) => {
+        const b = $(id)
+        b.classList.toggle('on', am === k)
+        b.disabled = modelOff
+        b.style.opacity = modelOff ? 0.45 : 1
+        b.style.cursor = modelOff ? 'default' : 'pointer'
+      })
+      const r = $('btn-recap')
+      r.disabled = modelOff
+      r.style.opacity = modelOff ? 0.45 : 1
+      r.style.cursor = modelOff ? 'default' : 'pointer'
+    }
+
+    // ── scrobbler: custom draggable track (ticks + rounded-square grabber) ──
+    const SCR_MIN = 15, SCR_MAX = 60, SCR_STEP = 5
+    function scrValToPct(v) { return ((v - SCR_MIN) / (SCR_MAX - SCR_MIN)) * 100 }
+    function placeScrobGrab(v) {
+      $('scrobGrab').style.left = scrValToPct(v) + '%'
+    }
+    function buildScrobTicks() {
+      const ticks = []
+      for (let v = SCR_MIN; v <= SCR_MAX; v += SCR_STEP) {
+        const t = document.createElement('span')
+        t.style.left = scrValToPct(v) + '%'
+        t.style.height = (v % 15 === 0) ? '9px' : '5px'
+        ticks.push(t)
+      }
+      $('scrobTicks').replaceChildren(...ticks)
+    }
+    function scrubTo(clientX) {
+      const r = $('scrobTrack').getBoundingClientRect()
+      const pct = Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100))
+      const raw = SCR_MIN + (pct / 100) * (SCR_MAX - SCR_MIN)
+      const v = Math.max(SCR_MIN, Math.min(SCR_MAX, Math.round(raw / SCR_STEP) * SCR_STEP))
+      $('chunkVal').textContent = v + 's'
+      placeScrobGrab(v)
+      post('/api/assist', { chunk_sec: v }).then(() => {})
+    }
+    (function initScrob() {
+      buildScrobTicks()
+      const track = $('scrobTrack')
+      let drag = false
+      track.addEventListener('pointerdown', e => {
+        drag = true
+        track.setPointerCapture(e.pointerId)
+        scrubTo(e.clientX)
+      })
+      track.addEventListener('pointermove', e => { if (drag) scrubTo(e.clientX) })
+      track.addEventListener('pointerup', () => { drag = false })
+      track.addEventListener('pointercancel', () => { drag = false })
+    })()
+
+    function renderTranscript(lines) {
+      const el = $('transcript')
+      const filt = tQuery ? lines.filter(l => l.toLowerCase().includes(tQuery.toLowerCase())) : lines
+      if (!filt.length) { el.innerHTML = '<div class="empty">Nothing yet.</div>'; return }
+      el.innerHTML = filt.slice(-60).map(l => {
+        const m = String(l).match(/^\[(\d\d:\d\d:\d\d)\]\s?(?:\[(\w+)\]\s?)?(.*)$/)
+        const ts = m ? m[1] : '', tag = m && m[2] ? ' [' + m[2] + ']' : '', txt = m ? m[3] : l
+        return `<div class="ln"><span class="ts">${ts}</span><span>${tag} ${txt}</span></div>`
+      }).join('')
+      el.scrollTop = el.scrollHeight
+    }
+
+    function renderCards() {
+      const cards = deck.map(d => ({ ...d, live: false }))
+      if (liveAnswer && (!cards.length || cards[cards.length - 1].text !== liveAnswer)) {
+        cards.push({ id: 'live', ts: 'now', action: 'live', text: liveAnswer, live: true })
+      }
+      const newestFirst = [...cards].reverse()
+      const filtered = cQuery ? newestFirst.filter(c => (c.text || '').toLowerCase().includes(cQuery.toLowerCase())) : newestFirst
+      const label = { what:'Say', followup:'Follow-up', research:'Research', recap:'Recap', save:'Saved', live:'Assist' }
+      $('deckLbl').textContent = cards.length + ' answers'
+      $('deckLbl').title = cards.length + ' answers'
+      $('pile').innerHTML = filtered.map((c, i) => {
+        const isSurfaced = (surfacedId == null ? i === 0 : c.id === surfacedId)
+        const act = label[c.action] || c.action
+        const drop = !c.live && c.id === lastLandedId ? ' drop' : ''
+        // surfaced = full card (with minimize ✕); non-surfaced = thin edge-bar.
+        // No timestamp anywhere — the label + peek text is enough.
+        if (!isSurfaced) {
+          return `<button class="edge" data-id="${c.id}">
+            <span class="e-lab">${act}</span><span class="e-peek">${esc(c.text || '').slice(0, 80)}</span></button>`
+        }
+        // surfaced card: title-tap minimizes (the "Say"/"Recap" label), ✕ is a
+        // plain aligned span; no timestamp keeps the top bar quiet.
+        return `<div class="card${drop}">
+          <div class="h"><span class="t" data-min="1" title="Minimize this card">${act}</span><span class="x" data-min="1" title="Minimize this card">✕</span></div><p${c.live ? ' style="color:#fff"' : ''}>${esc(c.text)}</p></div>`
+      }).join('')
+      // wire click-to-surface on the edge bars + minimize (title or ✕) on surfaced
+      $('pile').querySelectorAll('.edge').forEach(b => b.onclick = () => { surfacedId = b.dataset.id; renderCards() })
+      $('pile').querySelectorAll('[data-min]').forEach(b => b.onclick = () => { surfacedId = 'none'; renderCards() })
+    }
+
+    function renderChips() {
+      const model = settings.model || 'host', mode = settings.mode || 'both'
+      const anyLive = recording || !!settings.listening
+      $('modelChip').innerHTML = MODELS.map(([id,,hint]) =>
+        `<button class="${model===id?'sel':''}" data-k="model" data-v="${id}" data-hint="${hint}">${icon(id)}</button>`).join('')
+      // capture sources: add a 'live' class so the active source strokes green
+      // (or red for the phone, like REC) while recording.
+      $('modeChip').innerHTML = MODES.map(([id,,hint]) => {
+        const live = mode === id && anyLive
+        const cls = mode === id ? 'sel' : ''
+        const liveCls = live ? (id === 'phone' ? ' live-red' : ' live') : ''
+        return `<button class="${cls}${liveCls}" data-k="mode" data-v="${id}" data-hint="${hint}">${icon(id)}</button>`
+      }).join('')
+      document.querySelectorAll('.chip button[data-k]').forEach(b => b.onclick = () => {
+        if (b.dataset.k === 'mode') {
+          const m = b.dataset.v
+          // capture source = TOGGLE. Phone is master: it can stop the desktop
+          // daemon or its own stream, and switch to any source.
+          if (m === 'phone') {
+            if (recording) { stopPhoneStream(); return }
+            // phone source: also stop any desktop daemon, then stream
+            post('/api/settings', { mode: 'phone', listen: false }).then(() => {
+              startPhoneStream().catch(() => stopPhoneStream())
+            })
+            return
+          }
+          // desktop sources: toggle — active source stops, others start
+          if (recording) stopPhoneStream()
+          if (mode === m && settings.listening) {
+            post('/api/settings', { listen: false }).then(poll)
+          } else {
+            post('/api/settings', { mode: m, listen: true }).then(poll)
+          }
+        } else if (b.dataset.k === 'model') {
+          // model = TOGGLE. Clicking the selected model turns it OFF (no model
+          // engaged — transcript keeps flowing, cards stop stacking); clicking
+          // the other selects it.
+          const cur = settings.model || 'host'
+          post('/api/settings', { model: b.dataset.v === cur ? 'off' : b.dataset.v }).then(poll)
+        } else {
+          post('/api/settings', { [b.dataset.k]: b.dataset.v }).then(poll)
+        }
+      })
+    }
+
+    function renderRec() {
+      const rec = $('rec')
+      // recording is live if EITHER this phone is streaming its own mic (phone
+      // source) OR the desktop daemon is listening (mic/audio/both sources).
+      // Styled to match the desktop pane's REC indicator: a dot + "REC" label,
+      // red when live, muted when idle.
+      const live = recording || !!settings.listening
+      rec.className = live ? 'on' : 'off'
+      rec.innerHTML = '<span class="recdot"></span>REC'
+      $('tLbl').textContent = 'Transcript' + (live ? ' · live' : '')
+    }
+
+    const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))
+    const post = (p, b) => fetch(p, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(b||{}) })
+    const run = a => post('/api/run', { action: a }).then(() => setTimeout(poll, 1500))
+    // transient action feedback, right of the "Records (X)" label. Icon is LEFT
+    // of the text: spinner while in flight, check when done. No ellipsis.
+    let toastTimer = null
+    function toast(msg, kind = 'check') {
+      const t = $('recNote')
+      if (!t) return
+      t.innerHTML = (kind === 'spin' ? '<span class="spin"></span>' : '<span class="ck">✓</span>')
+        + '<span>' + esc(msg) + '</span>'
+      if (toastTimer) clearTimeout(toastTimer)
+      toastTimer = setTimeout(() => { t.innerHTML = '' }, kind === 'spin' ? 90000 : 3400)
+    }
+
+    // ── records: triage (check to keep → Save commits), hide/restore, view ──
+    let records = [], hiddenRecords = [], checked = [], recOpen = false
+    async function pollRecords() {
+      try {
+        const r = await fetch('/api/sessions').then(r => r.json())
+        records = r.sessions || []
+        hiddenRecords = r.hidden || []
+        // drop checks for rows that no longer exist
+        const live = new Set(records.map(s => s.rel))
+        checked = checked.filter(rel => live.has(rel))
+        renderRecords()
+      } catch (e) {}
+    }
+    function renderRecords() {
+      $('recLbl').textContent = 'Records (' + records.length + ')'
+      const el = $('recList')
+      const row = (s, isHidden) => {
+        const nm = s.name.replace(/\.md$/, '')
+        const dt = s.modified
+          ? new Date(s.modified * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+          : ''
+        const box = isHidden ? '' :
+          `<input type="checkbox" class="rcb" data-rel="${esc(s.rel)}"${checked.includes(s.rel) ? ' checked' : ''}>`
+        const act = isHidden
+          ? `<button class="ract" data-act="restore" data-rel="${esc(s.rel)}" data-hint="Restore">↩</button>`
+          : `<button class="ract" data-act="hide" data-rel="${esc(s.rel)}" data-hint="Hide (restorable)">⊘</button>`
+        return `<div class="row${isHidden ? ' hid' : ''}">${box}`
+          + `<span class="nm" data-open="${esc(s.rel)}" data-name="${esc(s.name)}">${esc(nm)}</span>`
+          + `<span class="dt">${dt}</span>${act}</div>`
+      }
+      el.innerHTML = records.map(s => row(s, false)).join('')
+        + (hiddenRecords.length
+            ? `<div class="hlbl">Hidden (${hiddenRecords.length})</div>`
+              + hiddenRecords.map(s => row(s, true)).join('')
+            : '')
+      el.querySelectorAll('.rcb').forEach(cb => cb.onchange = () => {
+        const rel = cb.dataset.rel
+        checked = cb.checked ? checked.concat([rel]) : checked.filter(r => r !== rel)
+      })
+      el.querySelectorAll('.nm[data-open]').forEach(n => n.onclick = () => openRecord(n.dataset.open, n.dataset.name))
+      el.querySelectorAll('.ract').forEach(b => b.onclick = () => {
+        const act = b.dataset.act, rel = b.dataset.rel
+        post(act === 'restore' ? '/api/session/restore' : '/api/session/hide', { rel }).then(pollRecords)
+      })
+    }
+    async function openRecord(rel, name) {
+      try {
+        const r = await fetch('/api/record?rel=' + encodeURIComponent(rel)).then(r => r.json())
+        $('modalTitle').textContent = name || r.name || ''
+        $('modalBody').textContent = r.text || '(empty)'
+        $('modal').classList.add('open')
+      } catch (e) {}
+    }
+    $('recToggle').onclick = () => { recOpen = !recOpen; $('recList').style.display = recOpen ? 'block' : 'none'; $('recToggle').textContent = recOpen ? '⌃' : '⌄' }
+    $('modalClose').onclick = () => $('modal').classList.remove('open')
+    $('modal').onclick = e => { if (e.target === $('modal')) $('modal').classList.remove('open') }
+
+    // ── RECORD, per source. "phone" → this phone streams its own mic over
+    // /ws/audio. "mic"/"audio"/"both" → toggle the desktop daemon (launchd).
+    // One source at a time, so there is no phone+desktop merge/echo. ──
+    const TARGET_RATE = 16000
+    async function startPhoneStream() {
+      if (!navigator.mediaDevices?.getUserMedia) { alert('Mic needs a secure (https) Tailscale context.'); return }
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      })
+      ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/audio')
+      ws.binaryType = 'arraybuffer'
+      ws.onopen = () => {
+        recording = true
+        // signal shared state so the desktop indicator lights (phone is live)
+        post('/api/settings', { mode: 'phone', listen: true })
+        renderRec()
+      }
+      ws.onclose = ws.onerror = () => { recording = false; post('/api/settings', { listen: false }); renderRec() }
+      ctx = new (window.AudioContext || window.webkitAudioContext)()
+      await ctx.resume().catch(() => {})
+      srcNode = ctx.createMediaStreamSource(stream)
+      processor = ctx.createScriptProcessor(4096, 1, 1)
+      processor.onaudioprocess = e => {
+        if (ws && ws.readyState === 1) {
+          const inRate = ctx.sampleRate
+          const ch = e.inputBuffer.getChannelData(0)
+          const out = downsample16k(ch, inRate)
+          const pcm = new Int16Array(out.length)
+          for (let i = 0; i < out.length; i++) pcm[i] = Math.max(-1, Math.min(1, out[i])) * 0x7fff
+          ws.send(pcm.buffer)
+        }
+      }
+      srcNode.connect(processor); processor.connect(ctx.destination)
+      renderRec()
+    }
+    function downsample16k(buf, inRate) {
+      if (inRate === TARGET_RATE) return buf
+      const ratio = inRate / TARGET_RATE
+      const outLen = Math.floor(buf.length / ratio)
+      const out = new Float32Array(outLen)
+      for (let i = 0; i < outLen; i++) {
+        const pos = i * ratio
+        const i0 = Math.floor(pos)
+        const i1 = Math.min(i0 + 1, buf.length - 1)
+        const frac = pos - i0
+        out[i] = buf[i0] * (1 - frac) + buf[i1] * frac
+      }
+      return out
+    }
+    function stopPhoneStream() {
+      if (processor) { processor.onaudioprocess = null; try { processor.disconnect() } catch (e) {} }
+      if (srcNode) { try { srcNode.disconnect() } catch (e) {} }
+      if (ctx) ctx.close().catch(() => {})
+      if (stream) stream.getTracks().forEach(t => t.stop())
+      if (ws) ws.close()
+      processor = srcNode = ctx = stream = ws = null
+      recording = false
+      post('/api/settings', { listen: false })
+      renderRec()
+    }
+
+    $('rec').onclick = () => {
+      const source = settings.mode || 'both'
+      const anyLive = recording || !!settings.listening
+      // phone is MASTER: it can stop the desktop daemon OR its own stream.
+      if (anyLive) {
+        // stop whatever is recording (phone stream + any desktop daemon)
+        if (recording) stopPhoneStream()
+        else post('/api/settings', { listen: false }).then(poll)
+        return
+      }
+      // start the selected source
+      if (source === 'phone') startPhoneStream().catch(() => stopPhoneStream())
+      else post('/api/settings', { mode: source, listen: true }).then(poll)
+    }
+    $('tSearch').oninput = e => { tQuery = e.target.value; poll() }
+    $('cSearch').oninput = e => { cQuery = e.target.value; renderCards() }
+    // record mode toggle: on starts the watch loop, off stops it
+    // the three assist entries are MUTUALLY-EXCLUSIVE, PERSISTED listen modes
+    const setAssistMode = k => post('/api/assist',
+      { assist_mode: (settings.assist_mode || 'off') === k ? 'off' : k }).then(poll)
+    $('btn-what').onclick = () => setAssistMode('what')
+    $('btn-follow').onclick = () => setAssistMode('followup')
+    $('btn-research').onclick = () => setAssistMode('research')
+    $('btn-save').onclick = () => {
+      const keep = checked.slice()
+      toast(keep.length ? 'Saving ' + keep.length + ' kept' : 'Saving to Records', 'spin')
+      post('/api/run', { action: 'save' }).then(() =>
+        // commit the CHECKED rows: kept in the vault, dropped off the list
+        Promise.all(keep.map(rel => post('/api/session/hide', { rel }))).then(() => {
+          checked = []
+          pollRecords()
+          setTimeout(() => toast(keep.length ? keep.length + ' kept' : 'Saved to Records', 'check'), 6000)
+        })
+      )
+    }
+    $('btn-recap').onclick = () => {
+      toast('Recapping', 'spin'); run('recap')
+      setTimeout(() => toast('Recap saved', 'check'), 20000)
+    }
+    // scrobbler drag is wired in initScrob() above (custom track, no native range)
+    // flip: swap transcript and answers. Default is cards-on-top (flipped=true).
+    function applyFlip() {
+      const t = $('tBlock'), d = $('deck')
+      if (flipped) { t.style.order = 2; d.style.order = 1; t.style.flex = '0 0 150px'; d.style.flex = '1 1 0' }
+      else { t.style.order = 1; d.style.order = 2; t.style.flex = '1 1 0'; d.style.flex = '0 0 auto' }
+    }
+    $('flipBtn').onclick = () => { flipped = !flipped; applyFlip() }
+    applyFlip()
+    // clear buttons: wipe the deck or the transcript, with visible confirmation
+    $('tClear').innerHTML = icon('xcircle', 13)
+    $('deckClear').innerHTML = icon('trash', 13)
+    $('tClear').onclick = async () => {
+      try { await post('/api/clear/transcript'); toast('Transcript cleared') }
+      catch (e) { toast('Clear failed — server unreachable') }
+      poll()
+    }
+    $('deckClear').onclick = async () => {
+      try { await post('/api/clear/deck'); toast('Answer cards cleared') }
+      catch (e) { toast('Clear failed — server unreachable') }
+      poll()
+    }
+
+    // ── long-hold tooltips (mobile: title doesn't show on tap; long-hold does) ──
+    let tipTimer = null
+    const tip = $('tip')
+    function showTip(el) {
+      const r = el.getBoundingClientRect()
+      tip.textContent = el.dataset.hint || ''
+      tip.style.left = Math.max(8, r.left) + 'px'
+      tip.style.top = (r.top - 34) + 'px'
+      tip.classList.add('show')
+    }
+    function hideTip() { tip.classList.remove('show'); if (tipTimer) { clearTimeout(tipTimer); tipTimer = null } }
+    document.addEventListener('pointerdown', e => {
+      const el = e.target.closest('[data-hint]')
+      if (!el) return
+      tipTimer = setTimeout(() => showTip(el), 550)
+    })
+    document.addEventListener('pointerup', hideTip)
+    document.addEventListener('pointermove', e => { if (tipTimer && Math.abs(e.movementX) + Math.abs(e.movementY) > 4) hideTip() })
+    document.addEventListener('scroll', hideTip, true)
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})
+    poll(); pollRecords(); setInterval(poll, 2000); setInterval(pollRecords, 5000)
+  </script>
+</body>
+</html>

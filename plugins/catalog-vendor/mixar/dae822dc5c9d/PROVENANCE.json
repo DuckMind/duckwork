@@ -1,0 +1,453 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "mixar",
+  "content_id": "dae822dc5c9d",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 132,
+      "mode": "100644",
+      "path": ".gitattributes",
+      "sha256": "6107bb302c8a0beeea129416f558523d0c054c40eb0f30894fc8b0faad617e59"
+    },
+    {
+      "bytes": 5955,
+      "mode": "100644",
+      "path": ".github/workflows/launcher-shim.yml",
+      "sha256": "97436104a909be065a08d0e4e09d3f7cf0c80519d70895c8531060fd2d441832"
+    },
+    {
+      "bytes": 40,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "13a69de271aa672eed662265a3c2e92f1b0e3f04a79c3e6b5b3bd1c0310c8526"
+    },
+    {
+      "bytes": 1092,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "6838f558b983683d197b87d164460dd1b22fe6d3877ce42c6b0d6499dd6cb7fd"
+    },
+    {
+      "bytes": 8005,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "de49dd0bf3cf865db5021647e26df8b3ad8998b16ad876151366418a5b16d0b7"
+    },
+    {
+      "bytes": 10690,
+      "mode": "100644",
+      "path": "VERIFICATION.md",
+      "sha256": "f5bafaf00dcc87bc5e6fb488346f84740bc43bf01b9aae249a43bbc05999e68c"
+    },
+    {
+      "bytes": 838,
+      "mode": "100755",
+      "path": "bin/mixar-mcp",
+      "sha256": "1eb65a88c41aced235373e4fa011ebc5ee1d809662e56f75c1c1883de4a8b234"
+    },
+    {
+      "bytes": 1020,
+      "mode": "100644",
+      "path": "bin/mixar-mcp.cmd",
+      "sha256": "fcc8e576c352e4184dfe4d1d67e7b751b3a3963fb99188db8d4f275013428a4b"
+    },
+    {
+      "bytes": 365,
+      "mode": "100644",
+      "path": "mcp.json",
+      "sha256": "7614663f331ddc187d038d7372898d78d3d529adb484c080a18b120edd084139"
+    },
+    {
+      "bytes": 2523,
+      "mode": "100644",
+      "path": "plugin.json",
+      "sha256": "d9ac791e368301a549b30524a9759047e55e12ca4ea38ab243c32c279c9bba33"
+    },
+    {
+      "bytes": 8024,
+      "mode": "100644",
+      "path": "skills/mixar/SKILL.md",
+      "sha256": "5022fdc4fe14f72f00db62541f2fb354829a3634f4f66f3bc781385d93b6f37f"
+    },
+    {
+      "bytes": 2337,
+      "mode": "100644",
+      "path": "skills/mixar/references/setup.md",
+      "sha256": "e4a05e767a3c01ae14eb59dd45f777e7b20d73f495d5199062d7e2076c168b79"
+    }
+  ],
+  "input_manifest_sha256": "dae822dc5c9dd3dc8a321752692ee6f935ed88ee970b35c049d5b3d17747aab1",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "6838f558b983683d197b87d164460dd1b22fe6d3877ce42c6b0d6499dd6cb7fd",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/launcher-shim.yml",
+      "README.md",
+      "VERIFICATION.md",
+      "bin/mixar-mcp",
+      "bin/mixar-mcp.cmd",
+      "plugin.json",
+      "skills/mixar/SKILL.md",
+      "skills/mixar/references/setup.md"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Mixar-AI/hermes-mixar",
+    "sha": "246e46f084f560cbdde10fe01bff8b6e598ff297",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/Mixar-AI/hermes-mixar",
+  "original_sha": "246e46f084f560cbdde10fe01bff8b6e598ff297",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "6107bb302c8a0beeea129416f558523d0c054c40eb0f30894fc8b0faad617e59",
+      "bytes": 132,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/launcher-shim.yml",
+      "sha256": "ee1654b169973b79fca4f14b2261e46369aa0c8001a46aab6388b08bbf11f6d6",
+      "bytes": 5975,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "13a69de271aa672eed662265a3c2e92f1b0e3f04a79c3e6b5b3bd1c0310c8526",
+      "bytes": 40,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "6838f558b983683d197b87d164460dd1b22fe6d3877ce42c6b0d6499dd6cb7fd",
+      "bytes": 1092,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "d39916842072f0d4adf2e69ed5757921dc4b39e489852856863b44d89b86cdf5",
+      "bytes": 8055,
+      "mode": "100644"
+    },
+    {
+      "path": "VERIFICATION.md",
+      "sha256": "cb5dfc53bae61e5ea5ced0895c17ef474d0995c54bd55d1e8296fd76f9771906",
+      "bytes": 10721,
+      "mode": "100644"
+    },
+    {
+      "path": "bin/mixar-mcp",
+      "sha256": "f194b668ff74be1c4337b3d631cc9b0f53d81d9a5a925bb6da289b9a5134bffd",
+      "bytes": 842,
+      "mode": "100755"
+    },
+    {
+      "path": "bin/mixar-mcp.cmd",
+      "sha256": "5b3be123905c6bd04a5040af995498d677c089d4dd62fcc4c3bd72c4bfc43e5f",
+      "bytes": 1024,
+      "mode": "100644"
+    },
+    {
+      "path": "mcp.json",
+      "sha256": "7614663f331ddc187d038d7372898d78d3d529adb484c080a18b120edd084139",
+      "bytes": 365,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.json",
+      "sha256": "17737f934e3057a4d44a316cacff4ea375b261e1294829056f3f89f4cc22af71",
+      "bytes": 2517,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mixar/SKILL.md",
+      "sha256": "4d27c957d747794b5b5517755edb371e1fe64424fc171a5510fadf6d9b011d6b",
+      "bytes": 8034,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mixar/references/setup.md",
+      "sha256": "f8202411ef627594ce039e7dd3564b03117ccc32ac4bdbbe65838111e2752216",
+      "bytes": 2357,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "c00c144288bc94d9871afae84773c2989535f36a8ce9e8afe880e5cc69d2d9e0",
+  "pin_verification": {
+    "archive_bytes": 15661,
+    "archive_sha256": "5777434a0a089205ff254cf281412ea1e781eba0c2b2283b5fdfa8f9964d3ec1",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "246e46f084f560cbdde10fe01bff8b6e598ff297",
+    "verified_commit_marker": "246e46f084f560cbdde10fe01bff8b6e598ff297"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "b5af3e70a2eca74d3b1da2b85ef7d56e57f5a9767dda6f73f88055f66ae4b00d",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitattributes",
+        "input_sha256": "6107bb302c8a0beeea129416f558523d0c054c40eb0f30894fc8b0faad617e59",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6107bb302c8a0beeea129416f558523d0c054c40eb0f30894fc8b0faad617e59",
+        "source": ".gitattributes",
+        "final_output_sha256": "6107bb302c8a0beeea129416f558523d0c054c40eb0f30894fc8b0faad617e59",
+        "cli_destination": ".gitattributes",
+        "previous_staging_sha256": "6107bb302c8a0beeea129416f558523d0c054c40eb0f30894fc8b0faad617e59"
+      },
+      {
+        "destination": ".github/workflows/launcher-shim.yml",
+        "input_sha256": "97436104a909be065a08d0e4e09d3f7cf0c80519d70895c8531060fd2d441832",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ee1654b169973b79fca4f14b2261e46369aa0c8001a46aab6388b08bbf11f6d6",
+        "source": ".github/workflows/launcher-shim.yml",
+        "final_output_sha256": "ee1654b169973b79fca4f14b2261e46369aa0c8001a46aab6388b08bbf11f6d6",
+        "cli_destination": ".github/workflows/launcher-shim.yml",
+        "previous_staging_sha256": "ee1654b169973b79fca4f14b2261e46369aa0c8001a46aab6388b08bbf11f6d6"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "13a69de271aa672eed662265a3c2e92f1b0e3f04a79c3e6b5b3bd1c0310c8526",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "13a69de271aa672eed662265a3c2e92f1b0e3f04a79c3e6b5b3bd1c0310c8526",
+        "source": ".gitignore",
+        "final_output_sha256": "13a69de271aa672eed662265a3c2e92f1b0e3f04a79c3e6b5b3bd1c0310c8526",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "13a69de271aa672eed662265a3c2e92f1b0e3f04a79c3e6b5b3bd1c0310c8526"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "6838f558b983683d197b87d164460dd1b22fe6d3877ce42c6b0d6499dd6cb7fd",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "6838f558b983683d197b87d164460dd1b22fe6d3877ce42c6b0d6499dd6cb7fd",
+        "source": "LICENSE",
+        "final_output_sha256": "6838f558b983683d197b87d164460dd1b22fe6d3877ce42c6b0d6499dd6cb7fd",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "6838f558b983683d197b87d164460dd1b22fe6d3877ce42c6b0d6499dd6cb7fd"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "de49dd0bf3cf865db5021647e26df8b3ad8998b16ad876151366418a5b16d0b7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7f9363db2bf23ed94f182940f3ed6af1a0928c06c93590491de8819debfb9401",
+        "source": "README.md",
+        "final_output_sha256": "d39916842072f0d4adf2e69ed5757921dc4b39e489852856863b44d89b86cdf5",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "7f9363db2bf23ed94f182940f3ed6af1a0928c06c93590491de8819debfb9401"
+      },
+      {
+        "destination": "VERIFICATION.md",
+        "input_sha256": "f5bafaf00dcc87bc5e6fb488346f84740bc43bf01b9aae249a43bbc05999e68c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c7ac2e5cd79ba2a35af8881a73842e5dbfe177656282a882f40741e41c76f7a0",
+        "source": "VERIFICATION.md",
+        "final_output_sha256": "cb5dfc53bae61e5ea5ced0895c17ef474d0995c54bd55d1e8296fd76f9771906",
+        "cli_destination": "VERIFICATION.md",
+        "previous_staging_sha256": "c7ac2e5cd79ba2a35af8881a73842e5dbfe177656282a882f40741e41c76f7a0"
+      },
+      {
+        "destination": "bin/mixar-mcp",
+        "input_sha256": "1eb65a88c41aced235373e4fa011ebc5ee1d809662e56f75c1c1883de4a8b234",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "f194b668ff74be1c4337b3d631cc9b0f53d81d9a5a925bb6da289b9a5134bffd",
+        "source": "bin/mixar-mcp",
+        "final_output_sha256": "f194b668ff74be1c4337b3d631cc9b0f53d81d9a5a925bb6da289b9a5134bffd",
+        "cli_destination": "bin/mixar-mcp",
+        "previous_staging_sha256": "f194b668ff74be1c4337b3d631cc9b0f53d81d9a5a925bb6da289b9a5134bffd"
+      },
+      {
+        "destination": "bin/mixar-mcp.cmd",
+        "input_sha256": "fcc8e576c352e4184dfe4d1d67e7b751b3a3963fb99188db8d4f275013428a4b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b3be123905c6bd04a5040af995498d677c089d4dd62fcc4c3bd72c4bfc43e5f",
+        "source": "bin/mixar-mcp.cmd",
+        "final_output_sha256": "5b3be123905c6bd04a5040af995498d677c089d4dd62fcc4c3bd72c4bfc43e5f",
+        "cli_destination": "bin/mixar-mcp.cmd",
+        "previous_staging_sha256": "5b3be123905c6bd04a5040af995498d677c089d4dd62fcc4c3bd72c4bfc43e5f"
+      },
+      {
+        "destination": "mcp.json",
+        "input_sha256": "7614663f331ddc187d038d7372898d78d3d529adb484c080a18b120edd084139",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7614663f331ddc187d038d7372898d78d3d529adb484c080a18b120edd084139",
+        "source": "mcp.json",
+        "final_output_sha256": "7614663f331ddc187d038d7372898d78d3d529adb484c080a18b120edd084139",
+        "cli_destination": "mcp.json",
+        "previous_staging_sha256": "7614663f331ddc187d038d7372898d78d3d529adb484c080a18b120edd084139"
+      },
+      {
+        "destination": "plugin.json",
+        "input_sha256": "d9ac791e368301a549b30524a9759047e55e12ca4ea38ab243c32c279c9bba33",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "011b108b0bfbd19e8e8c1bf0b2397cfcdb8388d670b571318ac685bd6f2a1713",
+        "source": "plugin.json",
+        "final_output_sha256": "17737f934e3057a4d44a316cacff4ea375b261e1294829056f3f89f4cc22af71",
+        "cli_destination": "plugin.json",
+        "previous_staging_sha256": "011b108b0bfbd19e8e8c1bf0b2397cfcdb8388d670b571318ac685bd6f2a1713"
+      },
+      {
+        "destination": "skills/mixar/SKILL.md",
+        "input_sha256": "5022fdc4fe14f72f00db62541f2fb354829a3634f4f66f3bc781385d93b6f37f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4d27c957d747794b5b5517755edb371e1fe64424fc171a5510fadf6d9b011d6b",
+        "source": "skills/mixar/SKILL.md",
+        "final_output_sha256": "4d27c957d747794b5b5517755edb371e1fe64424fc171a5510fadf6d9b011d6b",
+        "cli_destination": "skills/mixar/SKILL.md",
+        "previous_staging_sha256": "4d27c957d747794b5b5517755edb371e1fe64424fc171a5510fadf6d9b011d6b"
+      },
+      {
+        "destination": "skills/mixar/references/setup.md",
+        "input_sha256": "e4a05e767a3c01ae14eb59dd45f777e7b20d73f495d5199062d7e2076c168b79",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f8202411ef627594ce039e7dd3564b03117ccc32ac4bdbbe65838111e2752216",
+        "source": "skills/mixar/references/setup.md",
+        "final_output_sha256": "f8202411ef627594ce039e7dd3564b03117ccc32ac4bdbbe65838111e2752216",
+        "cli_destination": "skills/mixar/references/setup.md",
+        "previous_staging_sha256": "f8202411ef627594ce039e7dd3564b03117ccc32ac4bdbbe65838111e2752216"
+      }
+    ],
+    "manifest_sha256": "c521ddd597719d89623a1909d5f1551776408a0fd04bf1e1964705ff92ed3a4d",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitattributes": ".gitattributes",
+    ".github/workflows/launcher-shim.yml": ".github/workflows/launcher-shim.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "VERIFICATION.md": "VERIFICATION.md",
+    "bin/mixar-mcp": "bin/mixar-mcp",
+    "bin/mixar-mcp.cmd": "bin/mixar-mcp.cmd",
+    "mcp.json": "mcp.json",
+    "plugin.json": "plugin.json",
+    "skills/mixar/SKILL.md": "skills/mixar/SKILL.md",
+    "skills/mixar/references/setup.md": "skills/mixar/references/setup.md"
+  },
+  "verification": {
+    "manifest": "plugin.json",
+    "manifest_name": "mixar",
+    "python_files_compiled": 0,
+    "secret_findings": 0
+  },
+  "canonical_slug": "mixar",
+  "catalog_file": "src/plugin-catalog/mixar.yaml",
+  "identity": {
+    "catalog_id": "mixar",
+    "canonical_slug": "mixar",
+    "original_manifest_name": "mixar",
+    "rebranded_manifest_name": "mixar",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "b14d68d5d2544411a4858950cafc15d20d7b9379ed9f04716c53926fc63f97dc",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "7f9363db2bf23ed94f182940f3ed6af1a0928c06c93590491de8819debfb9401",
+          "after_sha256": "d39916842072f0d4adf2e69ed5757921dc4b39e489852856863b44d89b86cdf5",
+          "before_bytes": 8063,
+          "after_bytes": 8055,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "VERIFICATION.md",
+          "after_path": "VERIFICATION.md",
+          "before_sha256": "c7ac2e5cd79ba2a35af8881a73842e5dbfe177656282a882f40741e41c76f7a0",
+          "after_sha256": "cb5dfc53bae61e5ea5ced0895c17ef474d0995c54bd55d1e8296fd76f9771906",
+          "before_bytes": 10750,
+          "after_bytes": 10721,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.json",
+          "after_path": "plugin.json",
+          "before_sha256": "011b108b0bfbd19e8e8c1bf0b2397cfcdb8388d670b571318ac685bd6f2a1713",
+          "after_sha256": "17737f934e3057a4d44a316cacff4ea375b261e1294829056f3f89f4cc22af71",
+          "before_bytes": 2521,
+          "after_bytes": 2517,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

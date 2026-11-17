@@ -1,0 +1,551 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "done-bell",
+  "content_id": "beb910620fac",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 119,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "8dea696d882f5bbd6b590bd1ec5a6e294357d7f3b73d790cc2b06c2c683ca61a"
+    },
+    {
+      "bytes": 1066,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "f97f45f0fbcb6c00d4d2e565e852ef441028666a85d65903f214294922468fb4"
+    },
+    {
+      "bytes": 1472,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "8b8817df20002122573efff9f0343bf7dd8e172eb8a556be9590b9eb7f6b4ee5"
+    },
+    {
+      "bytes": 2284,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "978dc28c5228ab96ccfc5387551302f61b69cfdd8a56662bf7f0e3f4947eb8d9"
+    },
+    {
+      "bytes": 182,
+      "mode": "100644",
+      "path": "bell_context.py",
+      "sha256": "cebe79fff490c01158be7011885b7240f7f5c933b84772ebd66eeb8460355785"
+    },
+    {
+      "bytes": 2274,
+      "mode": "100644",
+      "path": "bell_hooks.py",
+      "sha256": "8b6fe29a5072a2a3c6ab8b6e5545a80ead47cd0dcb09ff7137b69c0d4347c21a"
+    },
+    {
+      "bytes": 727,
+      "mode": "100644",
+      "path": "bell_schemas.py",
+      "sha256": "6fb398fa5b6f4535a8cf21b989b28998b7f2b0155b552e1f05e0166b2703dfe8"
+    },
+    {
+      "bytes": 8174,
+      "mode": "100644",
+      "path": "bell_store.py",
+      "sha256": "5a85bf18a5defc73f20fd4900f5ea44ce86e87ab91e11ec3326e994698cbc080"
+    },
+    {
+      "bytes": 773,
+      "mode": "100644",
+      "path": "bell_tools.py",
+      "sha256": "ab730bd293afedb097fbf97062a06f543c6000f4d9f0775638dca490d380b3ea"
+    },
+    {
+      "bytes": 52,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "27308a2adc28ed566fe22c3bf7bcd65e36ab682db9b4967df8e231abab599777"
+    },
+    {
+      "bytes": 1177,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "62a6564f0a382577d04b94d0c62ea68cb065a8f7d55f42bc89c77d483e288bac"
+    },
+    {
+      "bytes": 9716,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "fdce856c53a940f37174c1cdf63c942a5ffacb35759a2aa4253f5eae2024b0b9"
+    },
+    {
+      "bytes": 767,
+      "mode": "100644",
+      "path": "docs/catalog.yaml",
+      "sha256": "44631da73f30f2d7232d3dc67cf1c27dfeea00076262776605fe88af6bd23619"
+    },
+    {
+      "bytes": 830,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "73b215f443a10cee7a449e697d146ee98cacaf669125a42c574a2b0079fad667"
+    },
+    {
+      "bytes": 557,
+      "mode": "100644",
+      "path": "skills/done-bell/SKILL.md",
+      "sha256": "7ef104f3beda7d5b2f7814753823508c8fa2c4b5238c15ed6123437d4aa76fa0"
+    },
+    {
+      "bytes": 3125,
+      "mode": "100644",
+      "path": "tests/test_bell.py",
+      "sha256": "b53cb6034ebc8cf91c4b34b621a6d106a6970654e93c5f471d7ef2baf3f2567a"
+    }
+  ],
+  "input_manifest_sha256": "beb910620facef86a435f174bfe9278a12c67e6b2f4d12428b23bc7c9a02bed6",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "f97f45f0fbcb6c00d4d2e565e852ef441028666a85d65903f214294922468fb4",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "bell_hooks.py",
+      "bell_schemas.py",
+      "bell_store.py",
+      "desktop/plugin.js",
+      "docs/catalog.yaml",
+      "plugin.yaml",
+      "skills/done-bell/SKILL.md",
+      "tests/test_bell.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/aydnOktay/hermes-done-bell-",
+    "sha": "3fa519a291d91b0e6c44bd42762190363ce80c39",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/aydnOktay/hermes-done-bell-",
+  "original_sha": "3fa519a291d91b0e6c44bd42762190363ce80c39",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "8dea696d882f5bbd6b590bd1ec5a6e294357d7f3b73d790cc2b06c2c683ca61a",
+      "bytes": 119,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "f97f45f0fbcb6c00d4d2e565e852ef441028666a85d65903f214294922468fb4",
+      "bytes": 1066,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "238071a8229badc1324b9c6c474f9ad40acb6d1e16d714621a3440302f499f46",
+      "bytes": 1484,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "89bce8bded1421e0a2aee8d97cb80a61b8180aac809e4516bf3646ae51c12209",
+      "bytes": 2286,
+      "mode": "100644"
+    },
+    {
+      "path": "bell_context.py",
+      "sha256": "cebe79fff490c01158be7011885b7240f7f5c933b84772ebd66eeb8460355785",
+      "bytes": 182,
+      "mode": "100644"
+    },
+    {
+      "path": "bell_hooks.py",
+      "sha256": "feeb90b8d6224fe87e004c20b17eca75ce88dd009f7f5649f8d1a93ed90426a3",
+      "bytes": 2282,
+      "mode": "100644"
+    },
+    {
+      "path": "bell_schemas.py",
+      "sha256": "61cbb1945349008d6bd3aa40aaf09bc65d42f9e8de97613f944b2edf96dc7a8a",
+      "bytes": 729,
+      "mode": "100644"
+    },
+    {
+      "path": "bell_store.py",
+      "sha256": "2dec4a8e624f042fc65ffd42586bfd40a0654b3a52eab7732d47f7261c74aaed",
+      "bytes": 8180,
+      "mode": "100644"
+    },
+    {
+      "path": "bell_tools.py",
+      "sha256": "ab730bd293afedb097fbf97062a06f543c6000f4d9f0775638dca490d380b3ea",
+      "bytes": 773,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "27308a2adc28ed566fe22c3bf7bcd65e36ab682db9b4967df8e231abab599777",
+      "bytes": 52,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "62a6564f0a382577d04b94d0c62ea68cb065a8f7d55f42bc89c77d483e288bac",
+      "bytes": 1177,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "6e0216d9a2c2c51ae3787738c7ac09f28469dbf7c79dce351422ec3b4b63fe81",
+      "bytes": 9734,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/catalog.yaml",
+      "sha256": "6153c701a1bf3cc1f4e245fa4e1963bd03584c1108eef4520a91d109d254e2da",
+      "bytes": 747,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "00e18a03e21cc65e292983ede314a0101b02f0d8960041e5a6e5a44d05f687bb",
+      "bytes": 824,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/done-bell/SKILL.md",
+      "sha256": "b1673abe0ed77229de8ebe84c422ec60d513ab0f05de3c16304d773dbf7cfd0d",
+      "bytes": 561,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_bell.py",
+      "sha256": "ce34052f98bdbf28bcc67452f9eb15c9b9dcb5a0e064db5782041e006d44b395",
+      "bytes": 3129,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "d8c1d176565a147aaaf0d6bedf4adc32a4950f758bc876fc3621f2fdcb0d3cbf",
+  "pin_verification": {
+    "archive_bytes": 10641,
+    "archive_sha256": "57bc8ebf9a1d1de3f00b23a73aabae9bc52beef9ac70a9ea8e0b72c61de1a207",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "3fa519a291d91b0e6c44bd42762190363ce80c39",
+    "verified_commit_marker": "3fa519a291d91b0e6c44bd42762190363ce80c39"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "71e30e1706baeb14dca7e6c050bb7d0739a4c4a8a7d7b81d60757cbc470b34e6",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "8dea696d882f5bbd6b590bd1ec5a6e294357d7f3b73d790cc2b06c2c683ca61a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8dea696d882f5bbd6b590bd1ec5a6e294357d7f3b73d790cc2b06c2c683ca61a",
+        "source": ".gitignore",
+        "final_output_sha256": "8dea696d882f5bbd6b590bd1ec5a6e294357d7f3b73d790cc2b06c2c683ca61a",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "8dea696d882f5bbd6b590bd1ec5a6e294357d7f3b73d790cc2b06c2c683ca61a"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "f97f45f0fbcb6c00d4d2e565e852ef441028666a85d65903f214294922468fb4",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "f97f45f0fbcb6c00d4d2e565e852ef441028666a85d65903f214294922468fb4",
+        "source": "LICENSE",
+        "final_output_sha256": "f97f45f0fbcb6c00d4d2e565e852ef441028666a85d65903f214294922468fb4",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "f97f45f0fbcb6c00d4d2e565e852ef441028666a85d65903f214294922468fb4"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "8b8817df20002122573efff9f0343bf7dd8e172eb8a556be9590b9eb7f6b4ee5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "92b76e31f48b8cc740a4036e4e1cfb12e994f6baddba91e264b2d929828c3af8",
+        "source": "README.md",
+        "final_output_sha256": "238071a8229badc1324b9c6c474f9ad40acb6d1e16d714621a3440302f499f46",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "92b76e31f48b8cc740a4036e4e1cfb12e994f6baddba91e264b2d929828c3af8"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "978dc28c5228ab96ccfc5387551302f61b69cfdd8a56662bf7f0e3f4947eb8d9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "89bce8bded1421e0a2aee8d97cb80a61b8180aac809e4516bf3646ae51c12209",
+        "source": "__init__.py",
+        "final_output_sha256": "89bce8bded1421e0a2aee8d97cb80a61b8180aac809e4516bf3646ae51c12209",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "89bce8bded1421e0a2aee8d97cb80a61b8180aac809e4516bf3646ae51c12209"
+      },
+      {
+        "destination": "bell_context.py",
+        "input_sha256": "cebe79fff490c01158be7011885b7240f7f5c933b84772ebd66eeb8460355785",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cebe79fff490c01158be7011885b7240f7f5c933b84772ebd66eeb8460355785",
+        "source": "bell_context.py",
+        "final_output_sha256": "cebe79fff490c01158be7011885b7240f7f5c933b84772ebd66eeb8460355785",
+        "cli_destination": "bell_context.py",
+        "previous_staging_sha256": "cebe79fff490c01158be7011885b7240f7f5c933b84772ebd66eeb8460355785"
+      },
+      {
+        "destination": "bell_hooks.py",
+        "input_sha256": "8b6fe29a5072a2a3c6ab8b6e5545a80ead47cd0dcb09ff7137b69c0d4347c21a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "feeb90b8d6224fe87e004c20b17eca75ce88dd009f7f5649f8d1a93ed90426a3",
+        "source": "bell_hooks.py",
+        "final_output_sha256": "feeb90b8d6224fe87e004c20b17eca75ce88dd009f7f5649f8d1a93ed90426a3",
+        "cli_destination": "bell_hooks.py",
+        "previous_staging_sha256": "feeb90b8d6224fe87e004c20b17eca75ce88dd009f7f5649f8d1a93ed90426a3"
+      },
+      {
+        "destination": "bell_schemas.py",
+        "input_sha256": "6fb398fa5b6f4535a8cf21b989b28998b7f2b0155b552e1f05e0166b2703dfe8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "61cbb1945349008d6bd3aa40aaf09bc65d42f9e8de97613f944b2edf96dc7a8a",
+        "source": "bell_schemas.py",
+        "final_output_sha256": "61cbb1945349008d6bd3aa40aaf09bc65d42f9e8de97613f944b2edf96dc7a8a",
+        "cli_destination": "bell_schemas.py",
+        "previous_staging_sha256": "61cbb1945349008d6bd3aa40aaf09bc65d42f9e8de97613f944b2edf96dc7a8a"
+      },
+      {
+        "destination": "bell_store.py",
+        "input_sha256": "5a85bf18a5defc73f20fd4900f5ea44ce86e87ab91e11ec3326e994698cbc080",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2dec4a8e624f042fc65ffd42586bfd40a0654b3a52eab7732d47f7261c74aaed",
+        "source": "bell_store.py",
+        "final_output_sha256": "2dec4a8e624f042fc65ffd42586bfd40a0654b3a52eab7732d47f7261c74aaed",
+        "cli_destination": "bell_store.py",
+        "previous_staging_sha256": "2dec4a8e624f042fc65ffd42586bfd40a0654b3a52eab7732d47f7261c74aaed"
+      },
+      {
+        "destination": "bell_tools.py",
+        "input_sha256": "ab730bd293afedb097fbf97062a06f543c6000f4d9f0775638dca490d380b3ea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ab730bd293afedb097fbf97062a06f543c6000f4d9f0775638dca490d380b3ea",
+        "source": "bell_tools.py",
+        "final_output_sha256": "ab730bd293afedb097fbf97062a06f543c6000f4d9f0775638dca490d380b3ea",
+        "cli_destination": "bell_tools.py",
+        "previous_staging_sha256": "ab730bd293afedb097fbf97062a06f543c6000f4d9f0775638dca490d380b3ea"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "27308a2adc28ed566fe22c3bf7bcd65e36ab682db9b4967df8e231abab599777",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "27308a2adc28ed566fe22c3bf7bcd65e36ab682db9b4967df8e231abab599777",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "27308a2adc28ed566fe22c3bf7bcd65e36ab682db9b4967df8e231abab599777",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "27308a2adc28ed566fe22c3bf7bcd65e36ab682db9b4967df8e231abab599777"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "62a6564f0a382577d04b94d0c62ea68cb065a8f7d55f42bc89c77d483e288bac",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "62a6564f0a382577d04b94d0c62ea68cb065a8f7d55f42bc89c77d483e288bac",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "62a6564f0a382577d04b94d0c62ea68cb065a8f7d55f42bc89c77d483e288bac",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "62a6564f0a382577d04b94d0c62ea68cb065a8f7d55f42bc89c77d483e288bac"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "fdce856c53a940f37174c1cdf63c942a5ffacb35759a2aa4253f5eae2024b0b9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6e0216d9a2c2c51ae3787738c7ac09f28469dbf7c79dce351422ec3b4b63fe81",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "6e0216d9a2c2c51ae3787738c7ac09f28469dbf7c79dce351422ec3b4b63fe81",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "6e0216d9a2c2c51ae3787738c7ac09f28469dbf7c79dce351422ec3b4b63fe81"
+      },
+      {
+        "destination": "docs/catalog.yaml",
+        "input_sha256": "44631da73f30f2d7232d3dc67cf1c27dfeea00076262776605fe88af6bd23619",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c5f10e52e858de0c1edff0a54c121586c624516fb11009df5d886d5b155a6fea",
+        "source": "docs/catalog.yaml",
+        "final_output_sha256": "6153c701a1bf3cc1f4e245fa4e1963bd03584c1108eef4520a91d109d254e2da",
+        "cli_destination": "docs/catalog.yaml",
+        "previous_staging_sha256": "c5f10e52e858de0c1edff0a54c121586c624516fb11009df5d886d5b155a6fea"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "73b215f443a10cee7a449e697d146ee98cacaf669125a42c574a2b0079fad667",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "663d5c99b965ab44ebfc4be32061a30d137459b383be826ac7e785b46a87b460",
+        "source": "plugin.yaml",
+        "final_output_sha256": "00e18a03e21cc65e292983ede314a0101b02f0d8960041e5a6e5a44d05f687bb",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "663d5c99b965ab44ebfc4be32061a30d137459b383be826ac7e785b46a87b460"
+      },
+      {
+        "destination": "skills/done-bell/SKILL.md",
+        "input_sha256": "7ef104f3beda7d5b2f7814753823508c8fa2c4b5238c15ed6123437d4aa76fa0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b1673abe0ed77229de8ebe84c422ec60d513ab0f05de3c16304d773dbf7cfd0d",
+        "source": "skills/done-bell/SKILL.md",
+        "final_output_sha256": "b1673abe0ed77229de8ebe84c422ec60d513ab0f05de3c16304d773dbf7cfd0d",
+        "cli_destination": "skills/done-bell/SKILL.md",
+        "previous_staging_sha256": "b1673abe0ed77229de8ebe84c422ec60d513ab0f05de3c16304d773dbf7cfd0d"
+      },
+      {
+        "destination": "tests/test_bell.py",
+        "input_sha256": "b53cb6034ebc8cf91c4b34b621a6d106a6970654e93c5f471d7ef2baf3f2567a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ce34052f98bdbf28bcc67452f9eb15c9b9dcb5a0e064db5782041e006d44b395",
+        "source": "tests/test_bell.py",
+        "final_output_sha256": "ce34052f98bdbf28bcc67452f9eb15c9b9dcb5a0e064db5782041e006d44b395",
+        "cli_destination": "tests/test_bell.py",
+        "previous_staging_sha256": "ce34052f98bdbf28bcc67452f9eb15c9b9dcb5a0e064db5782041e006d44b395"
+      }
+    ],
+    "manifest_sha256": "ac93024ce83f24b31e8634c2697ee6b3559554dbcdebd0cf97c1d4486659af09",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "bell_context.py": "bell_context.py",
+    "bell_hooks.py": "bell_hooks.py",
+    "bell_schemas.py": "bell_schemas.py",
+    "bell_store.py": "bell_store.py",
+    "bell_tools.py": "bell_tools.py",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "docs/catalog.yaml": "docs/catalog.yaml",
+    "plugin.yaml": "plugin.yaml",
+    "skills/done-bell/SKILL.md": "skills/done-bell/SKILL.md",
+    "tests/test_bell.py": "tests/test_bell.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "done-bell",
+    "python_files_compiled": 8,
+    "secret_findings": 0
+  },
+  "canonical_slug": "done-bell",
+  "catalog_file": "src/plugin-catalog/done-bell.yaml",
+  "identity": {
+    "catalog_id": "done-bell",
+    "canonical_slug": "done-bell",
+    "original_manifest_name": "done-bell",
+    "rebranded_manifest_name": "done-bell",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "1ea62a4b91be9c17bed2425ce4018d111838ed98a765eb6076eb7851e0cacf93",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "92b76e31f48b8cc740a4036e4e1cfb12e994f6baddba91e264b2d929828c3af8",
+          "after_sha256": "238071a8229badc1324b9c6c474f9ad40acb6d1e16d714621a3440302f499f46",
+          "before_bytes": 1492,
+          "after_bytes": 1484,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "docs/catalog.yaml",
+          "after_path": "docs/catalog.yaml",
+          "before_sha256": "c5f10e52e858de0c1edff0a54c121586c624516fb11009df5d886d5b155a6fea",
+          "after_sha256": "6153c701a1bf3cc1f4e245fa4e1963bd03584c1108eef4520a91d109d254e2da",
+          "before_bytes": 767,
+          "after_bytes": 747,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "663d5c99b965ab44ebfc4be32061a30d137459b383be826ac7e785b46a87b460",
+          "after_sha256": "00e18a03e21cc65e292983ede314a0101b02f0d8960041e5a6e5a44d05f687bb",
+          "before_bytes": 834,
+          "after_bytes": 824,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

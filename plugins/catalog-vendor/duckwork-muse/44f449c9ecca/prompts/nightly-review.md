@@ -1,0 +1,22 @@
+Read companion references/context.md for the bounded signal window and section pagination contract. Never expect unbounded context arrays.
+
+[Duckwork Muse background job: nightly-review]
+Read duckwork-muse:companion's execution/recovery contract plus memory, goals and research procedures. Bring together what the user actually said, what happened and what should change in the next interaction. Prioritize useful understanding, correction and follow-through over a short or inexpensive run. Use the configured memory backend; background output is evidence, not new user intent.
+
+Call context(section=signals,job=nightly-review), retain window and through, enumerate each ID and read its complete body pages. Save each batch's notes before review_complete(job=nightly-review,window,through,up_to=last fully processed timestamp,summary). Read all timestamp ties; continue the same window while remaining > 0. New arrivals after through wait for the next window. For an empty window use through. Never skip failed writes; retain partial progress if blocked.
+
+Then synthesize the complete snapshot with dated source notes, verified outcomes, user feedback, goals and notification records. Write dreams/YYYY-MM-DD.md and update dreams/alignment/derived/ALIGNMENT_SYNTHESIS.md: confirmed understanding, changes, useful results, unresolved friction/repair, a concrete next behavior and sources. Distinguish historical diagnoses from the latest verified state. Do not invent reconciliation from silence, change explicit preferences or rewrite SOUL. Keep alignment usable; preserve important nuance instead of imposing arbitrary brevity.
+
+Research eligible active goals according to urgency, user value and neglected open questions. Read GOAL.md, original evidence and earlier work; use existing tools or native asynchronous research and collect real results. Save evidence/briefings in hidden_files and user-facing artifacts in files; record concrete progress. Do not automatically extend research dates or stop an explicit subscription. Consider feasible, novel Ideas from verified personal/source context when they would help, without forcing a quota or executing unaccepted ideas.
+
+Check closure, expiry/cancellation, owned watches, unfinished research and promised final delivery. Use the memory procedure to maintain verified Working lessons and existing skill tools/Curator for relevant reusable improvements, preserving user instructions and permission rules. Do not audit or remove unrelated workflows merely to fill the review.
+
+Read context(section=finding) and its content_read objects and relevant native evidence to verify current repairs and extract useful lessons. Hourly memory-upkeep owns the full incremental operation audit; do not start another backlog scan. Write confirmed reflection and alignment before optional follow-up research, retaining uncertainty and unfinished audit work explicitly. An audit backlog must not prevent these files from being updated. Stage consequential corrections through the patrol; no separate delivery job.
+
+Complete recoverable work. Stage worthwhile results or consequential unresolved service gaps through the common notification flow for the patrol, not a separate nightly announcement. After final writes succeed, save the final review summary with the same through and processed cursor, then call run_complete with outcome=complete and a factual summary. If any required work remains, use outcome=partial with concrete gaps and recovery steps. Return exactly [SILENT].
+
+Read task_runs for this job's preceding partial result. Resume its remaining work from saved checkpoints and verified artifacts; do not redo successful actions or treat a new execution as proof the earlier gap disappeared.
+
+Read context(section=followups) for due active goals. Inspect available owner results and report useful progress to the parent; only the parent marks goals done. Unknown external writes are never automatically resent. Keep this job’s full source coverage and checkpoints.
+
+Access all Muse bodies through content_read/content_write with object IDs and explicit revisions/request keys (companion references/content.md), never direct file edits. Native memory/skills and authorized connector tools retain ownership. Apply proactivity.md §Coverage scope before any source access: declared responsibilities and explicit exclusions govern; the preferences prose refines them. Keep in-scope responsibilities and the notification budget; do not probe or report gaps for outside-scope personal sources.

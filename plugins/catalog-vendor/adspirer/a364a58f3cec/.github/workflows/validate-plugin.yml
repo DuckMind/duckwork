@@ -1,0 +1,47 @@
+name: Validate Duckwork plugin
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: plugin
+
+      - name: Check out Duckwork validator
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: Fordex/duckwork-agent
+          ref: 8a92051f20e6b371c4ff1a46a5bcec7138cc4e8c
+          path: duckwork-agent
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.11"
+
+      - name: Validate JSON
+        run: |
+          jq -e . plugin/plugin.json >/dev/null
+          jq -e . plugin/mcp.json >/dev/null
+
+      - name: Validate with Duckwork
+        run: |
+          pip install -e duckwork-agent
+          duckwork plugins validate plugin
+
+      - name: Reject client-specific setup instructions
+        run: |
+          if grep -RniE 'Cursor Settings|\.cursor/' plugin/skills; then
+            echo "Client-specific instructions found in portable skills"
+            exit 1
+          fi

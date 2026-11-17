@@ -1,0 +1,234 @@
+# duckwork-frihet
+
+> **Official Duckwork Agent integration for Frihet.**
+> Discoverability, setup, diagnostics, and operating guidance for the Frihet MCP.
+> **Zero duplicated tools** — the canonical Frihet MCP surface
+> stays in [`@frihet/mcp-server`](https://www.npmjs.com/package/@frihet/mcp-server)
+> and the remote endpoint [`https://mcp.frihet.io/mcp`](https://mcp.frihet.io/mcp).
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-171717)](LICENSE)
+[![Duckwork](https://img.shields.io/badge/Duckwork-Agent-18181b)](https://duckwork-agent.fordex.com/)
+[![MCP endpoint](https://img.shields.io/badge/MCP-https%3A%2Fmcp.frihet.io%2Fmcp-4A90D9)](https://mcp.frihet.io/mcp)
+[![Frihet docs](https://img.shields.io/badge/docs-frihet.io-171717)](https://docs.frihet.io/)
+
+---
+
+## What this plugin is
+
+Duckwork Agent is an open-source agent framework by [Fordex](https://fordex.com/).
+Frihet is an official business-management platform. This plugin is the
+**discoverability + operating layer** between them.
+
+The plugin does **not** re-implement any of the Frihet MCP operations. It
+adds three things on top of the canonical MCP:
+
+1. **`/frihet` slash command** with three sub-actions: `status`, `setup`, `doctor`.
+2. **`pre_tool_call` hook** that flags Frihet writes whose names imply irreversibility
+   (send, markPaid, registerVerifactu, delete, …) so downstream policy or the
+   model can pause and require human confirmation.
+3. **Bundled skill** (`skills/frihet/SKILL.md`) that teaches Duckwork the Frihet
+   operating contract: read-before-write, draft-first, Idempotency-Key,
+   redaction, Frihet-server authority for workspace/scopes/roles/resources.
+
+The actual data operations flow through the canonical Frihet MCP, which
+Duckwork already speaks natively (`duckwork mcp add` / `mcp_servers.frihet` block).
+
+## Install
+
+### From the Duckwork plugin catalog (recommended)
+
+```bash
+duckwork plugins search frihet
+duckwork plugins install frihet
+```
+
+The installer clones this repo at the exact SHA pinned in the catalog entry
+and drops it under `~/.duckwork/plugins/frihet/`.
+
+### Manual install
+
+```bash
+git clone https://github.com/DuckMind/duckwork \
+  ~/.duckwork/plugins/frihet
+```
+
+Restart Duckwork or start a new chat (`/reset`) so the loader picks it up.
+
+## Configure
+
+Add a Frihet API key (generate one at <https://app.frihet.io/settings/api>)
+and the MCP server block. The plugin's `.env.example` ships the canonical
+values:
+
+```bash
+cp ~/.duckwork/plugins/frihet/.env.example ~/.duckwork/plugins/frihet/.env
+# Edit the new .env and paste your key.
+```
+
+Or add the MCP server block to `~/.duckwork/config.yaml`:
+
+```yaml
+mcp_servers:
+  frihet:
+    url: https://mcp.frihet.io/mcp
+    auth: oauth                # ← MUST be the string "oauth", NOT a dict.
+    oauth:
+      flow: browser            # browser PKCE (default) or "device"
+    trust: untrusted           # Frihet is a third-party MCP; default to untrusted
+    # Alternatively, for unattended callers:
+    # auth: api_key
+    # env:
+    #   FRIHET_API_KEY: ${FRIHET_API_KEY}
+```
+
+> ⚠ **Trap to avoid.** Duckwork v0.21.5 reads `cfg["auth"]` as a *string*
+> (`"oauth"` or `"api_key"`), not as a nested mapping. Writing
+> `auth: {type: oauth, flow: browser}` — which is what `duckwork config
+> set mcp_servers.frihet.auth.type oauth` produces — silently makes the
+> client connect with no auth and the MCP server's 401 retries spin
+> forever as a "Connecting…" panel. If you copy this config verbatim
+> it works; if you wire it via the granular `config set` keys you must
+> end with `duckwork config set mcp_servers.frihet.auth oauth` (string),
+> not a sub-dict.
+
+> The plugin itself never stores your API key. Strings matching
+> `fri_<24+ chars>`, `Bearer …`, or any `token|secret|api_key|password:
+> <value>` shape are redacted by the `status()`, `setup()`, `doctor()`,
+> and `redact()` helpers before they reach slash-command output. The
+> `pre_tool_call` hook does NOT redact — it only classifies and
+> escalates; the redaction contract lives in the helper functions, not
+> in the hook.
+
+## Use
+
+In any Duckwork chat session:
+
+```text
+/frihet status    # local snapshot — no network
+/frihet setup     # prints host-level auth guidance; does NOT accept credentials
+/frihet doctor    # live MCP handshake — reports four explicit states
+```
+
+`/frihet setup` no longer accepts a candidate API key. Passing one in chat
+would land it in the slash-command transcript. Use `duckwork mcp login frihet`
+(OAuth/PKCE) or `duckwork auth add frihet` (unattended API key) instead —
+those are the host-level auth surfaces, and they leave no plugin transcript
+behind.
+
+`/frihet doctor` reports four states side by side rather than a single
+`connected` flag, because those four states are NOT the same thing:
+
+| State | Type | Means |
+|-------|------|-------|
+| `endpoint_reachable` | bool | The network handshake landed on a server (HTTP 2xx/4xx/5xx). |
+| `mcp_configured_in_duckwork` | tri-state | A `mcp_servers.frihet` block exists in `$DUCKWORK_HOME/config.yaml`. `"configured"` / `"missing"` / `"unknown"` (the last when the file is unreadable). |
+| `authenticated` | tri-state | The server accepted the credential we presented. `True`/`False`/`"unknown"`. Anonymous 200 is reachable but NOT authenticated. |
+| `tools_available` | tri-state | The `initialize` response carries a populated `serverInfo` and parses as MCP. |
+
+An anonymous HTTP 200 is reachable but NOT authenticated. The umbrella
+`ok` flips True only when every state is `True` or `"configured"`. We
+deliberately do NOT use `api_key_present` as a synonym for
+`mcp_configured_in_duckwork`: an OAuth-first flow has no env var at all,
+so conflating the two would be a known false negative.
+
+Then ask Duckwork:
+
+```
+show me my overdue invoices from the last 30 days
+```
+
+Duckwork will:
+
+1. Resolve `mcp__frihet__list_invoices` (provided by the canonical MCP).
+2. Filter by status and due date on the Duckwork side, or pass the filter
+   through to the MCP tool.
+3. Render the result.
+
+The bundled skill guides every read/write to honour the Frihet operating
+contract. Irreversible writes escalate to Duckwork's human approval gate
+via the `pre_tool_call` hook (`{"action": "approve", ...}`) — Duckwork
+prompts the user before the tool runs. Reads and draft-writes pass
+through; the model sees the skill and pauses to show totals before
+sending anything. The hook is fail-closed: any Frihet MCP operation
+that the classifier does not recognise also escalates.
+
+## Safety contract (summary)
+
+The full version lives in [`skills/frihet/SKILL.md`](skills/frihet/SKILL.md).
+The non-negotiables:
+
+- **Read before write.** Confirm the target exists before mutating it.
+- **Draft first (when the operation supports drafts).** `createInvoice`,
+  `createQuote`, `createCreditNote` default to `status: "draft"`. Show
+  totals, hand back. **`createPayment` is NOT draft-capable** — it is
+  classified as **irreversible** by the plugin's `pre_tool_call` hook
+  and always escalates to human approval before it lands.
+- **Honour `Idempotency-Key`.** Reuse on retry-with-same-intent;
+  generate a new one for a different business reason. Never retry blindly.
+- **Reconcile before retry on ambiguity.** If a write returned
+  `idempotency_pending`, `unknown_status`, a 5xx, or a timeout,
+  **read the record by the key you used** before retrying.
+- **No secrets in the model context.** The `pre_tool_call` hook redacts
+  `fri_…`, `Bearer …`, and `Authorization:` lines.
+- **Frihet is the authority.** Workspace, scopes, roles, and resources
+  belong to Frihet. Don't invent rows that contradict it.
+
+## Disclosure
+
+Before installing, please note:
+
+- The plugin makes outbound HTTPS calls to `https://mcp.frihet.io/mcp`
+  when you run `/frihet doctor` or any Frihet MCP tool. No other
+  third-party endpoints are contacted.
+- `/frihet setup` validates a candidate key against the canonical
+  endpoint, but does **not** persist the value — that's your job, in
+  the Duckwork secret directory.
+- The plugin does not run background processes, does not write to any
+  file outside the plugin directory, and does not auto-update itself.
+
+## Development
+
+The plugin is stdlib-only by design — zero runtime dependencies keeps the
+catalog admission floor uncontested and the install footprint minimal.
+
+```bash
+# Run the test suite.
+python -m pytest -q
+
+# Smoke-load the plugin via the official Duckwork loader
+# (skipped if duckwork_cli is not importable in this env).
+python -m pytest -q tests/test_plugin_discovery.py
+
+# Build the wheel.
+python -m build
+
+# Validate the manifest against the current Duckwork admission rules.
+duckwork plugins validate ~/.duckwork/plugins/frihet --install-deps
+```
+
+## Compatibility
+
+- **Duckwork Agent:** `>=0.21.5` (declared in `plugin.yaml` as `requires_duckwork`).
+- **Python:** Duckwork Agent currently `we *only* support 3.14` per its
+  `pyproject.toml` (the `>=3.11,<3.15` range is only so older installs can
+  run the updater and reach 3.14). CI runs the authoritative job on 3.14
+  and a non-blocking smoke on 3.11/3.12/3.13.
+- **Frihet MCP protocol:** `2025-06-18` (forward-compatible with later minor).
+
+## Upstream MCP catalog candidate
+
+In addition to this plugin, the repo carries a ready-to-submit candidate for
+Duckwork's native `optional-mcps/` directory:
+
+- `upstream/frihet-mcp-manifest.yaml` — modelled on
+  `optional-mcps/linear/manifest.yaml`, declares native MCP OAuth 2.1 + PKCE,
+  no third-party provider, post-install guidance.
+
+When we're ready to publish (after dogfooding the plugin), the upstream PR
+lands this manifest at `Fordex/duckwork-agent/optional-mcps/frihet/`,
+so Frihet shows up under **Capabilities → Connectors** in addition to
+**Capabilities → Plugins**.
+
+## License
+
+[MIT](LICENSE) © 2026 Frihet-io.

@@ -1,0 +1,596 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/ReARCLabs/bilinc-hermes-plugin/1ad81b4aaef8632ba5d6438384f3f063f46a0ebd/docs/banner.jpg": "docs/banner.jpg",
+      "https://raw.githubusercontent.com/ReARCLabs/bilinc-hermes-plugin/1ad81b4aaef8632ba5d6438384f3f063f46a0ebd/docs/screenshots/memory-history.png": "docs/screenshots/memory-history.png",
+      "https://raw.githubusercontent.com/ReARCLabs/bilinc-hermes-plugin/1ad81b4aaef8632ba5d6438384f3f063f46a0ebd/docs/screenshots/memory-workspace.png": "docs/screenshots/memory-workspace.png"
+    },
+    "image": "docs/banner.jpg",
+    "omitted": [],
+    "screenshots": [
+      "docs/screenshots/memory-history.png",
+      "docs/screenshots/memory-workspace.png"
+    ],
+    "deduplicated": [
+      {
+        "before_path": "_catalog_assets/docs/banner.jpg",
+        "after_path": "docs/banner.jpg",
+        "before_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "after_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "before_bytes": 179158,
+        "after_bytes": 179158,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      },
+      {
+        "before_path": "_catalog_assets/docs/screenshots/memory-history.png",
+        "after_path": "docs/screenshots/memory-history.png",
+        "before_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "after_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "before_bytes": 162281,
+        "after_bytes": 162281,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      },
+      {
+        "before_path": "_catalog_assets/docs/screenshots/memory-workspace.png",
+        "after_path": "docs/screenshots/memory-workspace.png",
+        "before_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "after_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "before_bytes": 166763,
+        "after_bytes": 166763,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      }
+    ]
+  },
+  "catalog_id": "bilinc",
+  "content_id": "3ee6d2d5a074",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 824,
+      "mode": "100644",
+      "path": ".github/workflows/validate.yml",
+      "sha256": "519c9319da863d72220c23da3f0b91170e6ae6959b9637be3690df3dd904a702"
+    },
+    {
+      "bytes": 44,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "7345c8c5a0aced5f3d020d90760579368b7f2d9fb509f636f703fc5590d1953b"
+    },
+    {
+      "bytes": 1067,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "49207b07ddff7f027fb2acf27036e97cb4fa811dc1e1131b6527e011219ef045"
+    },
+    {
+      "bytes": 5050,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "a5aaf3fe9372374b48c7cfaadf7eb2a37594aef8f4e914e4a0c07dcb6d990174"
+    },
+    {
+      "bytes": 29505,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "4cd4ceeb6ff03413612443b1140b8e53216b087a4753ec42f3aa126bcddaba04"
+    },
+    {
+      "bytes": 179158,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/banner.jpg",
+      "sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d"
+    },
+    {
+      "bytes": 162281,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/screenshots/memory-history.png",
+      "sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385"
+    },
+    {
+      "bytes": 166763,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/screenshots/memory-workspace.png",
+      "sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0"
+    },
+    {
+      "bytes": 179158,
+      "mode": "100644",
+      "path": "docs/banner.jpg",
+      "sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d"
+    },
+    {
+      "bytes": 162281,
+      "mode": "100644",
+      "path": "docs/screenshots/memory-history.png",
+      "sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385"
+    },
+    {
+      "bytes": 166763,
+      "mode": "100644",
+      "path": "docs/screenshots/memory-workspace.png",
+      "sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0"
+    },
+    {
+      "bytes": 228,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "67efecdb0ac7c6c8a75b33d93aa816830ccefc641aec2ce7b96bb5aa77d1cf3f"
+    },
+    {
+      "bytes": 275,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "4106f711e9e02f72b40e5d91cc04f87b677fc6439b8ac39803e7e532642f835a"
+    },
+    {
+      "bytes": 3612,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "e2c54e1add452c3ad5f48c35fca9c4eef5fbe66bc8aaffc026101e6f37e8e3ab"
+    },
+    {
+      "bytes": 9778,
+      "mode": "100644",
+      "path": "tests/test_provider.py",
+      "sha256": "8ec02efb5e5b747c2f630bba7f3f06f99d6e52572a12def87e4aaf4b5854fade"
+    },
+    {
+      "bytes": 3115,
+      "mode": "100644",
+      "path": "tests/test_transport.py",
+      "sha256": "d5592e836d2a5ccf188e69d922c7064c357a1a7bc92470e13b25b3d8a722bd8d"
+    }
+  ],
+  "input_manifest_sha256": "3ee6d2d5a0746a762812e0e89cb663c17a68cf19cddaabd04523822626d18039",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "49207b07ddff7f027fb2acf27036e97cb4fa811dc1e1131b6527e011219ef045",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/validate.yml",
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/conftest.py",
+      "tests/test_provider.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/ReARCLabs/bilinc-hermes-plugin",
+    "sha": "1ad81b4aaef8632ba5d6438384f3f063f46a0ebd",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/ReARCLabs/bilinc-hermes-plugin",
+  "original_sha": "1ad81b4aaef8632ba5d6438384f3f063f46a0ebd",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/validate.yml",
+      "sha256": "9597946188315180847329cfec21bfdea37c2a805a8d6a8dcd96973b12981952",
+      "bytes": 836,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "7345c8c5a0aced5f3d020d90760579368b7f2d9fb509f636f703fc5590d1953b",
+      "bytes": 44,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "49207b07ddff7f027fb2acf27036e97cb4fa811dc1e1131b6527e011219ef045",
+      "bytes": 1067,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "1eb866f91263bc1a041f9a4c7288a5b169d21e3255d5c9523dfbf2f66a7ae70e",
+      "bytes": 5062,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "851ad6af41623ff483895e9d2e04c35442386e7eda5d4b41a24a81e0fc5ff509",
+      "bytes": 29557,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/banner.jpg",
+      "sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+      "bytes": 179158,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/screenshots/memory-history.png",
+      "sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+      "bytes": 162281,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/screenshots/memory-workspace.png",
+      "sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+      "bytes": 166763,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "4d6456918c1e5da2d237053a666cb544c6d5547daddf0c9a930bfd943661eb83",
+      "bytes": 230,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "b6ab10db541f889243141d2a3b87aad7140c4980e872fa072c076ecf241d2c36",
+      "bytes": 279,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "5b393a7479d3aa7efaa17ee71cdaee3b1ac6c100c365339cabe12f4b1c1c7a0b",
+      "bytes": 3652,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_provider.py",
+      "sha256": "fc553667b75cdf6d7a8d9439e0c5c084900e79e01313349e078602fd234ac9ab",
+      "bytes": 9786,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_transport.py",
+      "sha256": "d5592e836d2a5ccf188e69d922c7064c357a1a7bc92470e13b25b3d8a722bd8d",
+      "bytes": 3115,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "8a93177d1a627537209cbba4a62076c98342d2ef840e248fd077468f200cf722",
+  "pin_verification": {
+    "archive_bytes": 520015,
+    "archive_sha256": "6af7818b260b54854bcabccb05cfc2097dd1f63a2d2ecf22dc4b8a324daef398",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "1ad81b4aaef8632ba5d6438384f3f063f46a0ebd",
+    "verified_commit_marker": "1ad81b4aaef8632ba5d6438384f3f063f46a0ebd"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "6ed426224a93e85a9b92f44fd933b785d11a53ba0820ba61fa3e6ec58fea3d03",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/validate.yml",
+        "input_sha256": "519c9319da863d72220c23da3f0b91170e6ae6959b9637be3690df3dd904a702",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9597946188315180847329cfec21bfdea37c2a805a8d6a8dcd96973b12981952",
+        "source": ".github/workflows/validate.yml",
+        "final_output_sha256": "9597946188315180847329cfec21bfdea37c2a805a8d6a8dcd96973b12981952",
+        "cli_destination": ".github/workflows/validate.yml",
+        "previous_staging_sha256": "9597946188315180847329cfec21bfdea37c2a805a8d6a8dcd96973b12981952"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "7345c8c5a0aced5f3d020d90760579368b7f2d9fb509f636f703fc5590d1953b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7345c8c5a0aced5f3d020d90760579368b7f2d9fb509f636f703fc5590d1953b",
+        "source": ".gitignore",
+        "final_output_sha256": "7345c8c5a0aced5f3d020d90760579368b7f2d9fb509f636f703fc5590d1953b",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "7345c8c5a0aced5f3d020d90760579368b7f2d9fb509f636f703fc5590d1953b"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "49207b07ddff7f027fb2acf27036e97cb4fa811dc1e1131b6527e011219ef045",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "49207b07ddff7f027fb2acf27036e97cb4fa811dc1e1131b6527e011219ef045",
+        "source": "LICENSE",
+        "final_output_sha256": "49207b07ddff7f027fb2acf27036e97cb4fa811dc1e1131b6527e011219ef045",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "49207b07ddff7f027fb2acf27036e97cb4fa811dc1e1131b6527e011219ef045"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "a5aaf3fe9372374b48c7cfaadf7eb2a37594aef8f4e914e4a0c07dcb6d990174",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a7649970094ae0d40eebbc037728480f1a5990a10b8640b7f769e1eaf44d3024",
+        "source": "README.md",
+        "final_output_sha256": "1eb866f91263bc1a041f9a4c7288a5b169d21e3255d5c9523dfbf2f66a7ae70e",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "a7649970094ae0d40eebbc037728480f1a5990a10b8640b7f769e1eaf44d3024"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "4cd4ceeb6ff03413612443b1140b8e53216b087a4753ec42f3aa126bcddaba04",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6727cd542c6d1126a344fd2c81e89a6703e82169c83c065b9f7ffc76a95e0832",
+        "source": "__init__.py",
+        "final_output_sha256": "851ad6af41623ff483895e9d2e04c35442386e7eda5d4b41a24a81e0fc5ff509",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "6727cd542c6d1126a344fd2c81e89a6703e82169c83c065b9f7ffc76a95e0832"
+      },
+      {
+        "destination": "docs/banner.jpg",
+        "input_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "source": "_catalog_assets/docs/banner.jpg",
+        "final_output_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "cli_destination": "_catalog_assets/docs/banner.jpg",
+        "previous_staging_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "docs/screenshots/memory-history.png",
+        "input_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "source": "_catalog_assets/docs/screenshots/memory-history.png",
+        "final_output_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "cli_destination": "_catalog_assets/docs/screenshots/memory-history.png",
+        "previous_staging_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "docs/screenshots/memory-workspace.png",
+        "input_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "source": "_catalog_assets/docs/screenshots/memory-workspace.png",
+        "final_output_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "cli_destination": "_catalog_assets/docs/screenshots/memory-workspace.png",
+        "previous_staging_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "docs/banner.jpg",
+        "input_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "source": "docs/banner.jpg",
+        "final_output_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+        "cli_destination": "docs/banner.jpg",
+        "previous_staging_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d"
+      },
+      {
+        "destination": "docs/screenshots/memory-history.png",
+        "input_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "source": "docs/screenshots/memory-history.png",
+        "final_output_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+        "cli_destination": "docs/screenshots/memory-history.png",
+        "previous_staging_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385"
+      },
+      {
+        "destination": "docs/screenshots/memory-workspace.png",
+        "input_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "source": "docs/screenshots/memory-workspace.png",
+        "final_output_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+        "cli_destination": "docs/screenshots/memory-workspace.png",
+        "previous_staging_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "67efecdb0ac7c6c8a75b33d93aa816830ccefc641aec2ce7b96bb5aa77d1cf3f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4d6456918c1e5da2d237053a666cb544c6d5547daddf0c9a930bfd943661eb83",
+        "source": "plugin.yaml",
+        "final_output_sha256": "4d6456918c1e5da2d237053a666cb544c6d5547daddf0c9a930bfd943661eb83",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "4d6456918c1e5da2d237053a666cb544c6d5547daddf0c9a930bfd943661eb83"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "4106f711e9e02f72b40e5d91cc04f87b677fc6439b8ac39803e7e532642f835a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b6ab10db541f889243141d2a3b87aad7140c4980e872fa072c076ecf241d2c36",
+        "source": "pyproject.toml",
+        "final_output_sha256": "b6ab10db541f889243141d2a3b87aad7140c4980e872fa072c076ecf241d2c36",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "b6ab10db541f889243141d2a3b87aad7140c4980e872fa072c076ecf241d2c36"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "e2c54e1add452c3ad5f48c35fca9c4eef5fbe66bc8aaffc026101e6f37e8e3ab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b393a7479d3aa7efaa17ee71cdaee3b1ac6c100c365339cabe12f4b1c1c7a0b",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "5b393a7479d3aa7efaa17ee71cdaee3b1ac6c100c365339cabe12f4b1c1c7a0b",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "5b393a7479d3aa7efaa17ee71cdaee3b1ac6c100c365339cabe12f4b1c1c7a0b"
+      },
+      {
+        "destination": "tests/test_provider.py",
+        "input_sha256": "8ec02efb5e5b747c2f630bba7f3f06f99d6e52572a12def87e4aaf4b5854fade",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc553667b75cdf6d7a8d9439e0c5c084900e79e01313349e078602fd234ac9ab",
+        "source": "tests/test_provider.py",
+        "final_output_sha256": "fc553667b75cdf6d7a8d9439e0c5c084900e79e01313349e078602fd234ac9ab",
+        "cli_destination": "tests/test_provider.py",
+        "previous_staging_sha256": "fc553667b75cdf6d7a8d9439e0c5c084900e79e01313349e078602fd234ac9ab"
+      },
+      {
+        "destination": "tests/test_transport.py",
+        "input_sha256": "d5592e836d2a5ccf188e69d922c7064c357a1a7bc92470e13b25b3d8a722bd8d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d5592e836d2a5ccf188e69d922c7064c357a1a7bc92470e13b25b3d8a722bd8d",
+        "source": "tests/test_transport.py",
+        "final_output_sha256": "d5592e836d2a5ccf188e69d922c7064c357a1a7bc92470e13b25b3d8a722bd8d",
+        "cli_destination": "tests/test_transport.py",
+        "previous_staging_sha256": "d5592e836d2a5ccf188e69d922c7064c357a1a7bc92470e13b25b3d8a722bd8d"
+      }
+    ],
+    "manifest_sha256": "fedcbfdfdd51a7246afc9b27ab53816da305827d9653cdba40282284d2226ad7",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/validate.yml": ".github/workflows/validate.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "_catalog_assets/docs/banner.jpg": "docs/banner.jpg",
+    "_catalog_assets/docs/screenshots/memory-history.png": "docs/screenshots/memory-history.png",
+    "_catalog_assets/docs/screenshots/memory-workspace.png": "docs/screenshots/memory-workspace.png",
+    "docs/banner.jpg": "docs/banner.jpg",
+    "docs/screenshots/memory-history.png": "docs/screenshots/memory-history.png",
+    "docs/screenshots/memory-workspace.png": "docs/screenshots/memory-workspace.png",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/test_provider.py": "tests/test_provider.py",
+    "tests/test_transport.py": "tests/test_transport.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "bilinc",
+    "python_files_compiled": 4,
+    "secret_findings": 0
+  },
+  "canonical_slug": "bilinc",
+  "catalog_file": "src/plugin-catalog/bilinc.yaml",
+  "identity": {
+    "catalog_id": "bilinc",
+    "canonical_slug": "bilinc",
+    "original_manifest_name": "bilinc",
+    "rebranded_manifest_name": "bilinc",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "6b355699fd5b9f99158726afdedfc6c87060412bfe4fb320dea78e0ae015d90f",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "a7649970094ae0d40eebbc037728480f1a5990a10b8640b7f769e1eaf44d3024",
+          "after_sha256": "1eb866f91263bc1a041f9a4c7288a5b169d21e3255d5c9523dfbf2f66a7ae70e",
+          "before_bytes": 5098,
+          "after_bytes": 5062,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "__init__.py",
+          "after_path": "__init__.py",
+          "before_sha256": "6727cd542c6d1126a344fd2c81e89a6703e82169c83c065b9f7ffc76a95e0832",
+          "after_sha256": "851ad6af41623ff483895e9d2e04c35442386e7eda5d4b41a24a81e0fc5ff509",
+          "before_bytes": 29555,
+          "after_bytes": 29557,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "_catalog_assets/docs/banner.jpg",
+          "after_path": "docs/banner.jpg",
+          "before_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+          "after_sha256": "5f063f5431607467c6fa3bc78b5e3a760922810d4e13acc535ef324529dc028d",
+          "before_bytes": 179158,
+          "after_bytes": 179158,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "_catalog_assets/docs/screenshots/memory-history.png",
+          "after_path": "docs/screenshots/memory-history.png",
+          "before_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+          "after_sha256": "8f4f74b12eb8b70ff2daa1fcf71d5216da6e6004808928b7dfa098522a3bc385",
+          "before_bytes": 162281,
+          "after_bytes": 162281,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "_catalog_assets/docs/screenshots/memory-workspace.png",
+          "after_path": "docs/screenshots/memory-workspace.png",
+          "before_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+          "after_sha256": "0f20b5d37aebbc1e01f2abf40dc1cf487eb07b15057765bd15f19f138e7db0d0",
+          "before_bytes": 166763,
+          "after_bytes": 166763,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

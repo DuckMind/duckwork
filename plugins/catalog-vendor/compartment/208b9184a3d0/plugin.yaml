@@ -1,0 +1,16 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: compartment
+version: 4.10.0
+description: "Compartment - high-security, fully offline, encrypted vector memory. AEAD-encrypted vault, locked-by-default after restart, native Duckwork provider, no API key."
+# The engine. `duckwork plugins install compartment` (the plugin catalog) and
+# `duckwork memory setup` install it into the Duckwork environment from this
+# line; `compartment integrate duckwork` installs it itself, so there it is
+# already satisfied. The floor is the oldest release that shipped this
+# exact provider, not the newest: Duckwork resolves plugin dependencies
+# behind a two-week age filter, so a floor younger than that refuses to
+# install for two weeks.
+pip_dependencies:
+  - "compartment>=4.9.3"
+requires_env: []
+hooks:
+  - on_session_switch

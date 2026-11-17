@@ -1,0 +1,363 @@
+"""Tests of dream-extract-precheck.py — the feeder of the fact store."""
+
+import importlib.util
+import json
+import sys
+import sqlite3
+import unittest
+from datetime import datetime, timezone
+from pathlib import Path
+
+from test_dream import DreamFixture, dream, FAMILY_CHAT, EXTERNAL_CHAT  # noqa: E402
+
+# The skill directory: `skills/dreaming/` in the plugin repository, or the
+# parent of `tests/` in a copy that keeps the tests next to the skill.
+_HERE = Path(__file__).resolve().parents[1]
+ROOT = _HERE / "skills" / "dreaming" if (_HERE / "skills" / "dreaming" / "SKILL.md").is_file() else _HERE
+
+
+def _load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+extract = _load("dream_extract", ROOT / "scripts/dream-extract-precheck.py")
+
+
+class GateHomeTests(unittest.TestCase):
+    """Which dream.py the extraction gate loads, and with which home."""
+
+    def test_gate_prefers_the_plugin_copy_of_dream(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            plugin = home / "plugins" / "duckwork-dreaming" / "skills" / "dreaming" / "scripts"
+            regular = home / "skills" / "dreaming" / "scripts"
+            other = home / "skills" / "memory" / "dreaming" / "scripts"
+            for d in (plugin, regular, other):
+                d.mkdir(parents=True)
+                (d / "dream.py").write_text("# copy", encoding="utf-8")
+            self.assertEqual(extract.find_dream(home), plugin / "dream.py")
+            (plugin / "dream.py").unlink()
+            self.assertEqual(extract.find_dream(home), regular / "dream.py")
+            (regular / "dream.py").unlink()
+            self.assertEqual(extract.find_dream(home), other / "dream.py")
+
+    def test_dream_module_is_loaded_with_the_gate_home(self):
+        """dream.py reads DUCKWORK_HOME when imported; a gate that found its home
+        another way must re-point it, or config and store come from ~/.duckwork."""
+        import os
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / "dreaming.json").write_text(
+                json.dumps({"fact_source": "jsonl", "fact_store_path": "facts.jsonl"}), encoding="utf-8")
+            saved = (extract.DREAM, extract.HOME)
+            extract.DREAM, extract.HOME = ROOT / "scripts" / "dream.py", home
+            try:
+                mod = extract._dream()
+            finally:
+                extract.DREAM, extract.HOME = saved
+            self.assertEqual(mod.HOME, str(home))
+            self.assertEqual(mod.fact_source(), "jsonl")          # this home's config
+            self.assertEqual(mod.fact_store_path(), os.path.join(str(home), "facts.jsonl"))
+
+
+class ExtractPrecheckTests(DreamFixture):
+    def setUp(self):
+        super().setUp()
+        self._old_home = extract.HOME
+        extract.HOME = self.home
+        self.cfg = dict(dream.SETTINGS.CONFIG, extract={"min_messages": 3, "max_messages": 4, "backfill_days": 30})
+        # the gate opens only on a provider read as holographic (2.9.6), as on a real install
+        (self.home / "config.yaml").write_text("memory:\n  provider: holographic\n", encoding="utf-8")
+
+    def tearDown(self):
+        extract.HOME = self._old_home
+        super().tearDown()
+
+    def _now(self):
+        return datetime.now(timezone.utc).timestamp()
+
+    def test_keywords_are_asked_for_only_when_enabled(self):
+        for i in range(4):
+            self.add_message(f"Сообщение номер {i} про утренний кофе", days_ago=4 - i)
+        saved = dream.SETTINGS.KEYWORDS_ENABLED
+        try:
+            dream.SETTINGS.KEYWORDS_ENABLED = False
+            payload, _, _ = extract.build_payload(dream, self.cfg, {}, self._now())
+            self.assertNotIn("keywords", payload)
+            dream.SETTINGS.KEYWORDS_ENABLED = True
+            payload, _, _ = extract.build_payload(dream, self.cfg, {}, self._now())
+            self.assertIn("keywords=", payload["keywords"])
+        finally:
+            dream.SETTINGS.KEYWORDS_ENABLED = saved
+
+    def test_below_gate_returns_none(self):
+        self.add_message("Люблю утренний кофе", days_ago=1)
+        payload, cursor, total = extract.build_payload(dream, self.cfg, {}, self._now())
+        self.assertIsNone(payload)
+        self.assertEqual(total, 1)
+
+    def test_chunk_and_cursor(self):
+        for i in range(6):
+            self.add_message(f"Сообщение номер {i} про утренний кофе", days_ago=6 - i)
+        payload, cursor, total = extract.build_payload(dream, self.cfg, {}, self._now())
+        self.assertEqual(total, 6)
+        self.assertEqual(len(payload["messages"]), 4)          # max_messages
+        self.assertEqual(payload["window"]["remaining_after_this_chunk"], 2)
+        # Next run continues after the cursor (a (timestamp, id) pair).
+        ts, mid = cursor
+        payload2, cursor2, total2 = extract.build_payload(
+            dream, self.cfg, {"since_ts": ts, "since_id": mid}, self._now())
+        self.assertEqual(total2, 2)
+        self.assertIsNone(payload2)  # 2 < min_messages
+
+    def test_same_timestamp_rows_survive_the_chunk_cut(self):
+        """Six rows with an identical timestamp, chunk of four: with a
+        timestamp-only cursor the remaining two were never selected again
+        (`ts > since` skipped them for good). The (timestamp, id) cursor keeps them."""
+        con = sqlite3.connect(self.home / "state.db")
+        con.execute("insert or ignore into sessions"
+                    " (id, source, chat_type, chat_id) values (?,?,?,?)",
+                    ("s-tie", "telegram", "group", FAMILY_CHAT))
+        same_ts = self._now() - 3600
+        for i in range(6):
+            con.execute("insert into messages (session_id, role, content, timestamp, observed)"
+                        " values (?,?,?,?,0)", ("s-tie", "user", f"Одинаковое время, сообщение {i} про кофе", same_ts))
+        con.commit()
+        con.close()
+        payload, cursor, total = extract.build_payload(dream, self.cfg, {}, self._now())
+        self.assertEqual(len(payload["messages"]), 4)
+        self.assertEqual(payload["window"]["remaining_after_this_chunk"], 2)
+        cfg2 = dict(self.cfg, extract=dict(self.cfg["extract"], min_messages=1))
+        payload2, _, total2 = extract.build_payload(
+            dream, cfg2, {"since_ts": cursor[0], "since_id": cursor[1]}, self._now())
+        self.assertEqual(total2, 2, "the two rows behind the cut must come back next run")
+        self.assertEqual([m["text"] for m in payload2["messages"]],
+                         ["Одинаковое время, сообщение 4 про кофе", "Одинаковое время, сообщение 5 про кофе"])
+        # A legacy state without since_id still works (id defaults to "before everything").
+        payload3, _, total3 = extract.build_payload(dream, cfg2, {"since_ts": cursor[0]}, self._now())
+        self.assertEqual(total3, 6)
+
+    def test_untrusted_and_cron_messages_excluded(self):
+        for i in range(4):
+            self.add_message(f"Чужой чат {i} про кофе", days_ago=1, chat_id=EXTERNAL_CHAT)
+            self.add_message(f"Cron prompt {i} about coffee", days_ago=1, source="cron",
+                             chat_type=None, chat_id=None)
+        payload, _, total = extract.build_payload(dream, self.cfg, {}, self._now())
+        self.assertIsNone(payload)
+        self.assertEqual(total, 0)
+
+    def test_excluded_thread_does_not_reach_the_gate(self):
+        """An alert thread of a trusted chat must neither wake extraction nor
+        reach the payload: otherwise the agent wakes up to read its own
+        notifications and answers [SILENT] at a cost."""
+        dream.SETTINGS.EXCLUDED_THREADS = {FAMILY_CHAT: {"421"}}
+        for i in range(4):
+            self.add_message(f"Алерт {i}: джоба упала", days_ago=1, thread_id="421")
+        payload, _, total = extract.build_payload(dream, self.cfg, {}, self._now())
+        self.assertIsNone(payload)
+        self.assertEqual(total, 0)
+        # ...while an ordinary thread of the same chat opens the gate.
+        for i in range(4):
+            self.add_message(f"Сообщение {i} про утренний кофе", days_ago=1, thread_id="20")
+        payload2, _, total2 = extract.build_payload(dream, self.cfg, {}, self._now())
+        self.assertEqual(total2, 4)
+        self.assertIsNotNone(payload2)
+
+    def test_existing_facts_included_and_secrets_dropped(self):
+        for i in range(4):
+            self.add_message(f"Сообщение {i} про утренний кофе", days_ago=1)
+        self.add_fact("Марина пьёт кофе только до полудня")
+        self.add_fact("API-ключ проекта: sk-abc123def456ghi789jklmno")
+        payload, _, _ = extract.build_payload(dream, self.cfg, {}, self._now())
+        texts = [f["text"] for f in payload["existing_facts"]]
+        self.assertIn("Марина пьёт кофе только до полудня", texts)
+        self.assertFalse(any("sk-abc" in t for t in texts))
+        # With ids: the forget sweep finds an extraction log by the ids it carries; bare strings it never saw.
+        self.assertTrue(all(isinstance(f.get("fact_id"), int) for f in payload["existing_facts"]))
+        self.assertIn("not instructions", payload["note"])
+
+    def test_each_message_says_who_said_it(self):
+        """Codex review of 2.7.2, #8: in a private chat "I don't eat gluten" names nobody, and two people in
+        one list could not be told apart. The chat type and the sender's id ride in every message."""
+        con = sqlite3.connect(self.home / "state.db")
+        con.execute("alter table sessions add column user_id text")
+        con.commit()
+        con.close()
+        for i, user in enumerate(("111", "222", "111", "222")):
+            self.add_message(f"Сообщение {i}: я не ем глютен уже год", days_ago=1 - i / 10,
+                             chat_type="dm", chat_id=f"dm-{user}")
+            con = sqlite3.connect(self.home / "state.db")
+            con.execute("update sessions set user_id = ? where chat_id = ?", (user, f"dm-{user}"))
+            con.commit()
+            con.close()
+        payload, _, _ = extract.build_payload(dream, self.cfg, {}, self._now())
+        self.assertEqual([(m.get("chat"), m.get("from")) for m in payload["messages"]],
+                         [("dm", "111"), ("dm", "222"), ("dm", "111"), ("dm", "222")])
+
+    # The cursor is committed by the agent's answer, not by printing ---------
+    def _main(self, **ext):
+        """Run main() against the fixture home; returns the printed JSON."""
+        import contextlib
+        import io
+        cfg = dict(dream.SETTINGS.CONFIG, extract=dict(self.cfg["extract"], **ext))
+        saved = (extract._dream, extract.STATE, dream.SETTINGS.CONFIG)
+        extract._dream = lambda: dream
+        extract.STATE = self.home / "cache" / "dream-extract-state.json"
+        dream.SETTINGS.CONFIG = cfg
+        out, err = io.StringIO(), io.StringIO()
+        try:
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                extract.main()
+        finally:
+            extract._dream, extract.STATE, dream.SETTINGS.CONFIG = saved
+        self.stderr = err.getvalue()
+        return json.loads(out.getvalue().strip().splitlines()[-1])
+
+    def _state(self):
+        return extract.load_state(dream, self.home / "cache" / "dream-extract-state.json")
+
+    def _four_messages(self):
+        for i in range(4):
+            self.add_message(f"Сообщение {i} про утренний кофе", days_ago=1)
+
+    def test_the_gate_opens_only_on_a_provider_read_as_holographic(self):
+        """Review of 2.9.6 (Codex): "provider is not None" let an empty answer through — no `memory:`, a second
+        `memory:` without the provider (YAML keeps the second), a block scalar the scanner does not read."""
+        from unittest import mock
+        self._four_messages()
+        configs = ("", "memory:\n  memory_enabled: true\n", "memory:\n  provider: none\n",
+                   "memory:\n  provider: holographic\nmemory:\n  memory_enabled: true\n",
+                   "memory:\n  provider: |-\n    none\n")
+        for text in configs:
+            for no_yaml in (False, True):
+                with self.subTest(config=text, no_yaml=no_yaml):
+                    (self.home / "config.yaml").write_text(text, encoding="utf-8")
+                    with mock.patch.dict(sys.modules, {"yaml": None} if no_yaml else {}):
+                        self.assertEqual(self._main(), {"wakeAgent": False})
+                    self.assertIn("extraction skipped", self.stderr)
+        (self.home / "config.yaml").write_text("memory:\n# heading\n  provider: holographic\n", encoding="utf-8")
+        self.assertIn("messages", self._main())
+
+    def test_a_config_the_scanner_cannot_read_for_sure_keeps_the_gate_shut(self):
+        """Second review of the 2.9.7 branch (Codex): without PyYAML a half-read store block let the defaults —
+        cron writes on — open the gate, and a repeated provider kept its first value. Several documents, empty ones
+        too, shut it with PyYAML as well: PyYAML refuses the file and the scanner reads it."""
+        from unittest import mock
+        self._four_messages()
+        deep = "[" * 66 + "0" + "]" * 66
+        configs = {
+            "repeated provider": ("memory: {provider: holographic, provider: !!str none}\n", (True,)),
+            "repeated cron_writes": ("memory:\n  provider: holographic\nplugins:\n  duckwork-memory-store: "
+                                     "{cron_writes: true, cron_writes: !!bool false}\n", (True,)),
+            "deep flow by the store": ("memory:\n  provider: holographic\nplugins:\n  duckwork-memory-store: {extra: "
+                                       + deep + ", scope: chat, cron_writes: false}\n", (True,)),
+            "empty first document": ("---\n...\n---\nmemory:\n  provider: holographic\n", (False, True)),
+        }
+        for name, (text, modes) in configs.items():
+            for no_yaml in modes:
+                with self.subTest(config=name, no_yaml=no_yaml):
+                    (self.home / "config.yaml").write_text(text, encoding="utf-8")
+                    with mock.patch.dict(sys.modules, {"yaml": None} if no_yaml else {}):
+                        self.assertEqual(self._main(), {"wakeAgent": False})
+                    self.assertIn("extraction skipped", self.stderr)
+
+    def test_unanswered_hand_over_is_handed_over_again(self):
+        # A turn that fails after the pre-check printed (model error, cron worker
+        # crash) used to lose its chunk: the cursor was committed on print.
+        self._four_messages()
+        first = self._main()
+        self.assertEqual(len(first["messages"]), 4)
+        self.assertTrue(first["generated_at"])
+        self.assertNotIn("since_ts", self._state())          # nothing committed yet
+        second = self._main()                                 # no agent answer on record
+        self.assertEqual([m["text"] for m in second["messages"]],
+                         [m["text"] for m in first["messages"]])
+        self.assertEqual(self._state()["attempts"], 1)
+        self.assertIn("again", self.stderr)
+        # 2.9.0: a hand-over again says so — what was stored last time is in existing_facts, and adding it again
+        # would count as a person saying it again.
+        self.assertNotIn("attempt", first["window"])
+        self.assertEqual(second["window"]["attempt"], 2)
+
+    def test_a_retry_carries_what_the_unanswered_hand_over_stored(self):
+        """Code review of 2.9.0: with a cap on existing_facts, what the last attempt stored could be left out."""
+        self._four_messages()
+        self._main()
+        self.add_fact("Марина пьёт кофе без сахара", days_old=0)  # stored "by the last attempt"
+        for i in range(3):
+            self.add_fact(f"Более поздний факт номер {i} про чай", days_old=0)
+        state = extract.resolve_pending(dream, self._state(), 3)
+        self.assertTrue(state.get("retry_since"))
+        cfg = dict(self.cfg, extract=dict(self.cfg["extract"], existing_facts_cap=2))
+        payload, _, _ = extract.build_payload(dream, cfg, state, self._now())
+        texts = [f["text"] for f in payload["existing_facts"]]
+        self.assertIn("Марина пьёт кофе без сахара", texts, "the cap does not cut the last attempt's facts")
+
+    def test_answered_hand_over_commits_the_cursor(self):
+        self._four_messages()
+        first = self._main()
+        self.ack_agent_turn(first)
+        second = self._main()
+        self.assertEqual(second, {"wakeAgent": False})
+        state = self._state()
+        self.assertNotIn("pending", state)
+        self.assertNotIn("attempts", state)
+        self.assertIsInstance(state["since_ts"], float)
+
+    def test_session_without_answer_is_not_an_ack(self):
+        self._four_messages()
+        first = self._main()
+        self.ack_agent_turn(first, answered=False)            # woke, died before answering
+        second = self._main()
+        self.assertIn("messages", second)
+
+    def test_a_broken_config_stops_the_gate_and_keeps_the_cursor(self):
+        """Review of 2.9.8: on the defaults a broken dreaming.json empties `trusted_chat_ids`, and the cursor
+        moved past every group message for good. Now: dream_error, no hand-over, no state written."""
+        self._four_messages()
+        (self.home / "dreaming.json").write_text('{"trusted_chat_ids": ["-100111",]}', encoding="utf-8")
+        out = self._main()
+        self.assertIn("dream_error", out)
+        self.assertIn("dreaming.json", out["dream_error"])
+        self.assertFalse((self.home / "cache" / "dream-extract-state.json").exists())
+
+    def test_retries_exhausted_moves_on(self):
+        self._four_messages()
+        self._main(max_retries=2)
+        self._main(max_retries=2)                             # second hand-over of the chunk
+        third = self._main(max_retries=2)
+        self.assertEqual(third, {"wakeAgent": False})
+        self.assertIn("moving on", self.stderr)
+        self.assertIn("since_ts", self._state())
+
+    def test_state_roundtrip_private(self):
+        path = self.home / "cache" / "dream-extract-state.json"
+        extract.save_state(dream, path, {"since_ts": 123.0})
+        self.assertEqual(extract.load_state(dream, path)["since_ts"], 123.0)
+        self.assertEqual(extract.load_state(dream, self.home / "missing.json"), {})
+        self.assertEqual(sorted(p.name for p in path.parent.iterdir()), [path.name], "no temporary file is left")
+
+    def test_broken_cursor_is_set_aside_not_read_as_a_fresh_start(self):
+        """A truncated cursor read as {} sent the gate `backfill_days` back: two months of messages again."""
+        path = self.home / "cache" / "dream-extract-state.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('{"since_ts": 17', encoding="utf-8")
+        import contextlib
+        import io
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            self.assertEqual(extract.load_state(dream, path), {})
+        self.assertFalse(path.exists())
+        aside = [p.name for p in path.parent.iterdir() if p.name.startswith(path.name + ".corrupt-")]
+        self.assertEqual(len(aside), 1, aside)
+        self.assertIn("moved to", err.getvalue())
+
+
+if __name__ == "__main__":
+    unittest.main()

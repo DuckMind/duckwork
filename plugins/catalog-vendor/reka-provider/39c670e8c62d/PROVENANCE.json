@@ -1,0 +1,265 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "reka-provider",
+  "content_id": "39c670e8c62d",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5"
+    },
+    {
+      "bytes": 2740,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "85999c9d3ffe5d0b340f03a2a755b71574cf9267b3a8748e15bda824851e017b"
+    },
+    {
+      "bytes": 5566,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "c1c09ec8f35d7ff0d5597a069a9af70302f9724c32e0f34375d3b8f8e48c4399"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5"
+    },
+    {
+      "bytes": 429,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "6e690867686ac3189d880652b68addceffb41d04a3c48c6d0495f847267eda30"
+    }
+  ],
+  "input_manifest_sha256": "39c670e8c62dbcb6b2acf63cb6d0786c3cd62be766c6199f7dbdee2a87eeb566",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+        "source_path": "reka-provider/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/reka-ai/reka-hermes",
+    "sha": "df031f732c9eddf8b39a0fa240b898da4ca2d6ff",
+    "subdir": "reka-provider"
+  },
+  "original_repo": "https://github.com/reka-ai/reka-hermes",
+  "original_sha": "df031f732c9eddf8b39a0fa240b898da4ca2d6ff",
+  "original_subdir": "reka-provider",
+  "output_files": [
+    {
+      "path": "LICENSE",
+      "sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "0cfddfaeb7c9e0cc8e4ad209cdad07f43e0321df8a1dfc63f503067006a54917",
+      "bytes": 2764,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "ea982cd8f6ea117b5b623677497ae0b9317c32125cbe513eb2f6225c23750092",
+      "bytes": 5592,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "5532d533350984037c722f4cc9c0472fedcffe8ce1ef2fcc4bf218b10924a531",
+      "bytes": 433,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "911e2e8aebe0fe9ba2a726436c963acf8865c53b01bdab80722a2eb1991d061c",
+  "pin_verification": {
+    "archive_bytes": 182189,
+    "archive_sha256": "98c38e36baa1dae19877e3e4c025d136ec4245ae7f87ed796d0520818e25fa09",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "df031f732c9eddf8b39a0fa240b898da4ca2d6ff",
+    "verified_commit_marker": "df031f732c9eddf8b39a0fa240b898da4ca2d6ff"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "69e2f4045c4d5afc8c2402cbe89ed344b376b89ed2be3fa08fd7fda4e268aba6",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "LICENSE",
+        "input_sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+        "source": "LICENSE",
+        "final_output_sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "85999c9d3ffe5d0b340f03a2a755b71574cf9267b3a8748e15bda824851e017b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "93ae55b2268a8a52e8908c09765c9c9ef5edb48f3310c7fd0bf8b1e0c60e981f",
+        "source": "README.md",
+        "final_output_sha256": "0cfddfaeb7c9e0cc8e4ad209cdad07f43e0321df8a1dfc63f503067006a54917",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "93ae55b2268a8a52e8908c09765c9c9ef5edb48f3310c7fd0bf8b1e0c60e981f"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "c1c09ec8f35d7ff0d5597a069a9af70302f9724c32e0f34375d3b8f8e48c4399",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ea982cd8f6ea117b5b623677497ae0b9317c32125cbe513eb2f6225c23750092",
+        "source": "__init__.py",
+        "final_output_sha256": "ea982cd8f6ea117b5b623677497ae0b9317c32125cbe513eb2f6225c23750092",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "ea982cd8f6ea117b5b623677497ae0b9317c32125cbe513eb2f6225c23750092"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "e7688441bc9cd784c3b1781f07649697ac789d41733414a77b500992056467c5"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "6e690867686ac3189d880652b68addceffb41d04a3c48c6d0495f847267eda30",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5532d533350984037c722f4cc9c0472fedcffe8ce1ef2fcc4bf218b10924a531",
+        "source": "plugin.yaml",
+        "final_output_sha256": "5532d533350984037c722f4cc9c0472fedcffe8ce1ef2fcc4bf218b10924a531",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "5532d533350984037c722f4cc9c0472fedcffe8ce1ef2fcc4bf218b10924a531"
+      }
+    ],
+    "manifest_sha256": "e2701755320105df4d90426e0217c8acbd77539f5c38c93abf52f02d1b2185ae",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "LICENSE": "reka-provider/LICENSE",
+    "README.md": "reka-provider/README.md",
+    "__init__.py": "reka-provider/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "reka-provider/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "reka-provider",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "reka-provider",
+  "catalog_file": "src/plugin-catalog/reka-provider.yaml",
+  "identity": {
+    "catalog_id": "reka-provider",
+    "canonical_slug": "reka-provider",
+    "original_manifest_name": "reka-provider",
+    "rebranded_manifest_name": "reka-provider",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "45212ba35d42225c7b8e6d0376bc2a6c0395d68b5b2c6af9b0eb5bea6cfa8c32",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "93ae55b2268a8a52e8908c09765c9c9ef5edb48f3310c7fd0bf8b1e0c60e981f",
+          "after_sha256": "0cfddfaeb7c9e0cc8e4ad209cdad07f43e0321df8a1dfc63f503067006a54917",
+          "before_bytes": 2780,
+          "after_bytes": 2764,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

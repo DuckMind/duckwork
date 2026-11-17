@@ -1,0 +1,560 @@
+# Duckwork Health Apollo
+
+Local-first health intelligence for Duckwork. Apollo connects your wearable data,
+calendar, and communication context so Duckwork can answer the questions that sit
+between "how am I doing?" and "what should I do next?"
+
+It installs as the Duckwork `health-data` plugin and keeps the sensitive parts on
+your machine: health history, OAuth tokens, calendar context, Gmail metadata,
+and generated analysis all live under your Duckwork profile instead of inside this
+repository.
+
+Maintainer: RTK (X: `@RiverKhan`).
+Community, for non-sensitive questions only: Discord <https://discord.gg/AeUbSYas>
+Security and privacy reports: use private reporting in
+[`SECURITY.md`](SECURITY.md). Do not post health data, OAuth material, local
+database contents, logs, callback URLs, or other sensitive context in public
+issues or chat.
+License: MIT; see [`LICENSE`](LICENSE).
+
+Prerequisite: Duckwork Agent must already be installed and configured:
+<https://github.com/DuckMind/duckwork>. Apollo is the `health-data`
+plugin for Duckwork, not a standalone app.
+
+## What it does
+
+Apollo turns personal signals into usable context for an agent:
+
+- Syncs Oura sleep, readiness, activity, stress, heart-rate, workout, session,
+  resilience, SpO2, and tag data into a local SQLite database.
+- Pulls Google Calendar and Gmail metadata through Duckwork' Google Workspace
+  helper so workload, meetings, and inbox pressure can be compared with health
+  signals.
+- Gives Duckwork tools for recent health state, date ranges, stress days,
+  correlations, heart-rate windows, workouts, sessions, tags, coverage checks,
+  and higher-level analysis plans.
+- Ships a health-coach skill so ordinary Duckwork questions automatically use the
+  right health/context tools instead of forcing you into low-level CLI commands.
+- Includes terminal-native visual patterns for meeting stress leaderboards,
+  recovery gates, workload-outcome matrices, day-shape barcodes, baseline drift,
+  sleep debt, stress waterfalls, workout recovery, and coverage trust ledgers.
+- Keeps analysis grounded with coverage checks and privacy guardrails, so thin
+  data, missing syncs, and sensitive identities are surfaced instead of hidden.
+
+Example questions:
+
+```text
+Why was I stressed yesterday?
+What should I prioritize today based on recovery and schedule?
+Did my inbox or meetings line up with my stress this week?
+Show me which meetings created the biggest heart-rate spikes.
+Am I recovered enough for a hard training day tomorrow?
+What changed in my baseline over the last month?
+```
+
+## Why it is useful
+
+Most health dashboards show biometric charts in isolation. Apollo is built for
+the messier questions people actually ask: whether a packed calendar changed
+their stress load, whether poor sleep is making today's plan unrealistic, whether
+training is helping or draining recovery, and whether a trend is backed by
+enough data to trust.
+
+The goal is not medical diagnosis. The goal is a private, local, agent-readable
+memory layer that can help you plan your day, protect recovery, notice workload
+patterns, and turn wearable exhaust into decisions.
+
+## Data model and privacy posture
+
+Apollo is intentionally local-first. The plugin stores data in
+`~/.duckwork/health.db`, keeps OAuth material in the active Duckwork home, and does
+not commit or publish user data. Calendar and Gmail syncs store redacted
+metadata and counts; Gmail body content, snippets, OAuth secrets, credential
+files, calendar attendee identities, and route/map artifacts are either
+intentionally not persisted or blocked from release by scanner and CI tripwires.
+
+WHOOP support is documented for future connector work, but this release does
+not include a `duckwork health connect-whoop` command yet.
+
+## Install and enable
+
+Prerequisite: install and configure Duckwork Agent first. This repository supplies
+the `health-data` plugin; it does not install Duckwork itself.
+
+Current install path: install from a local source checkout. A PyPI package is
+not the normal install path until a published package exists.
+
+```bash
+make install-git-hooks
+make install-local
+duckwork plugins enable health-data
+```
+
+`make install-git-hooks` installs the repository's tracked `pre-commit` and
+`pre-push` hooks into the clone's effective Git hooks directory.
+
+- `pre-commit` scans staged files with `scripts/secret_scan.py` and blocks the
+  commit if it finds secrets, personal local artifacts, token files, local DBs,
+  map/route exports, or other blocked private material.
+- `pre-push` scans tracked repo content again before upload and also blocks
+  pushes to private ref namespaces such as Conductor checkpoints while allowing
+  normal branch and tag pushes.
+
+The installer will overwrite older repo-managed hook versions, but it refuses
+to overwrite unrelated custom local hooks.
+
+`make install-local` installs this workspace into the active Duckwork profile as
+`health-data` using the profile's Duckwork home. It copies only git-visible,
+non-ignored files and writes `.health-data-install.json` metadata with the
+workspace source path, plugin version, git commit, branch, dirty state, install
+time, and destination. `duckwork health status` reports that metadata so stale
+installed copies are visible. This command is intended for contributors and
+local testing.
+
+Future PyPI package, only after publication:
+
+```bash
+pip install duckwork-health-data
+duckwork plugins enable health-data
+```
+
+Until the `duckwork-health-data` project exists on PyPI, use the source-checkout
+install path above. Do not treat the future `pip install` command as current
+release instructions.
+
+Restart Duckwork after enabling, then run setup:
+
+```bash
+duckwork health setup
+```
+
+Setup installs the local database, registers the `/health` command family, adds
+the plugin `skills/` directory to `skills.external_dirs`, and installs the
+scheduled sync launcher at `~/.duckwork/scripts/health_sync.py`. It does not log in
+to Oura or Google for you. Use `duckwork health connect` for Oura and
+`duckwork health connect-google` for Google after setup reports the next action.
+Setup also registers a Duckwork no-agent cron job named `health-data-sync` on an
+`every 6h` schedule. `setup` and `status` report whether that cron is registered
+and whether the Duckwork gateway appears to be running. If the gateway is stopped,
+the cron job is registered but scheduled syncs will not fire automatically; start
+or install the gateway explicitly with `duckwork gateway run` or
+`duckwork gateway install`.
+
+## Oura developer app setup
+
+Official docs:
+<https://cloud.ouraring.com/docs/authentication>
+
+Oura does not expose developer-application registration through the API. You
+must create the app in the browser:
+
+1. Log in to <https://cloud.ouraring.com/oauth/applications> with the Oura
+   account that owns the ring.
+2. Create a new application.
+3. Fill the registration form:
+   - Display Name: `Duckwork Health Data` or another personal name.
+   - Description: `Personal local Duckwork plugin for my own Oura health data.`
+   - Contact Email: your email.
+   - Website: a valid URL you control, for example a GitHub profile/repo or
+     personal site. The portal expects a URL, not free-form text.
+   - Privacy Policy / Terms of Service: for a personal-only app, use a valid
+     URL that explains the data stays local on your machine. A README, gist, or
+     personal page is enough for personal use.
+   - Redirect URI: `http://localhost:43828/callback` exactly, then click
+     `Add URI`. Oura's portal currently rejects `http://127.0.0.1...` even
+     though it is also loopback; use the literal `localhost` hostname.
+4. Select the scopes the plugin can sync: `Daily`, `Session`, `SpO2`, `Stress`,
+   `Heartrate`, `Tag`, `Workout`, `Personal`, `Heart Health`, and `Ring
+   Configuration`. Oura's OpenAPI 1.34 names the SpO2 OAuth scope `spo2Daily`,
+   while some auth examples use `spo2`; leaving the OAuth scope parameter blank
+   lets Oura request the scopes enabled on the developer app.
+5. Accept the Oura API Agreement and save the application.
+6. Save the Client ID and Client Secret in your Duckwork env file, or pass them to
+   the connect command once and let the plugin write `~/.duckwork/.env` for you.
+   The variable names are:
+
+```text
+DUCKWORK_OURA_CLIENT_ID
+DUCKWORK_OURA_CLIENT_SECRET
+```
+
+Manual env-file example:
+
+```bash
+mkdir -p ~/.duckwork
+printf 'DUCKWORK_OURA_CLIENT_ID="%s"\nDUCKWORK_OURA_CLIENT_SECRET="%s"\n' \
+  '<CLIENT_ID>' '<CLIENT_SECRET>' >> ~/.duckwork/.env
+chmod 600 ~/.duckwork/.env
+```
+
+One-time CLI storage example:
+
+```bash
+duckwork health connect --client-id '<CLIENT_ID>' --client-secret '<CLIENT_SECRET>'
+```
+
+Then run the short setup/admin flow:
+
+```bash
+duckwork health setup
+duckwork health connect
+duckwork health status
+duckwork health sync
+```
+
+By default, the plugin omits the OAuth `scope` query parameter. Oura documents
+that a blank scope requests the scopes enabled on the developer app, so keep the
+app limited to the health-data scopes above. Advanced users can test explicit
+OAuth scopes with:
+
+```bash
+duckwork health connect --scopes 'email personal daily heartrate tag workout session spo2Daily'
+```
+
+The browser flow handles Oura login and consent. If loopback browser login does
+not work, start the manual flow:
+
+```bash
+duckwork health connect --manual
+```
+
+The command returns an `authorize_url` and `state`; open the URL, approve
+access, then copy the `code` query parameter from the localhost callback URL and
+re-run:
+
+```bash
+duckwork health connect --code '<CODE_FROM_CALLBACK>' --state '<STATE_FROM_PREVIOUS_OUTPUT>'
+```
+
+For debugging browser callback problems without waiting the default two
+minutes, pass `--loopback-timeout <seconds>`.
+
+## WHOOP developer app setup
+
+WHOOP support is not wired into this release yet; there is no
+`duckwork health connect-whoop` command today. This section is for users and
+contributors who want to prepare a WHOOP app before the connector lands.
+
+Official docs:
+<https://developer.whoop.com/docs/developing/getting-started/>
+<https://developer.whoop.com/docs/developing/oauth/>
+<https://developer.whoop.com/api/>
+
+1. Log in to the WHOOP Developer Dashboard at
+   <https://developer-dashboard.whoop.com/> with the WHOOP account you want to
+   authorize.
+2. Create a Team if the dashboard prompts you to do so.
+3. Create a new App.
+4. Select only the scopes the connector will actually need:
+   `read:profile`, `read:body_measurement`, `read:cycles`, `read:recovery`,
+   `read:sleep`, and `read:workout`. Add `offline` when the connector needs
+   refresh tokens for scheduled background sync.
+5. Add the redirect URL that the eventual connector documents. WHOOP requires
+   the OAuth redirect URL to match one registered in the Developer Dashboard.
+   Their docs show HTTPS URLs and custom app-scheme URLs as valid examples; do
+   not assume an arbitrary localhost callback will work until the connector
+   specifies it.
+6. Save the App, then copy the Client ID and Client Secret into your password
+   manager or local secret store. Do not commit them to this repository, paste
+   them into docs, or put them in `.context`, `.omx`, `docs`, `docker`, or
+   `plans`.
+
+When WHOOP support is added, the connector should document its exact redirect
+URL, token file, env var names, and setup command in this section before
+release.
+
+## Google Workspace / Google OAuth setup
+
+Official docs:
+<https://developers.google.com/workspace/calendar/api/quickstart/python>
+<https://developers.google.com/workspace/gmail/api/quickstart/python>
+
+Google Workspace auth is exposed through the health CLI, but you first need a
+Google Cloud OAuth client JSON. Create it in the browser:
+
+1. Open the Google Cloud console and choose or create a project for personal
+   Duckwork use.
+2. Enable the Google Calendar API and Gmail API for that project. The health
+   plugin currently stores calendar and Gmail metadata only; it does not persist
+   message bodies.
+3. Configure the Google Auth platform / OAuth consent screen. For a personal
+   project, a testing app is fine. If the app is `External`, add the Google
+   account you will authorize as a test user.
+4. Go to `Google Auth platform` -> `Clients`, create an OAuth client, and choose
+   `Desktop app` as the application type. Google's Workspace quickstarts use a
+   desktop OAuth client for local Python command-line apps.
+5. Add or confirm the authorized redirect URI `http://localhost:1/`. The Duckwork
+   Google Workspace helper uses that loopback redirect for manual code capture.
+6. Download the JSON credentials file. Keep it outside this repository, for
+   example in `~/Downloads` or a password-manager export folder. Do not commit it
+   or paste its contents into `.context`, `.omx`, `docs`, `docker`, or `plans`.
+
+Before connecting, make sure the Duckwork Google Workspace productivity skill is
+installed and enabled. The health plugin delegates Google OAuth to that helper
+and expects this script to exist:
+
+```text
+~/.duckwork/skills/productivity/google-workspace/scripts/setup.py
+```
+
+A normal Google account is enough for personal calendar/Gmail sync. A Workspace
+admin is only needed if your organization restricts third-party OAuth apps or
+requires admin approval for requested scopes.
+
+Then start the CLI flow:
+
+```bash
+duckwork health connect-google --install-deps --open-browser
+```
+
+If no client secret has been stored yet, the command looks for a downloaded
+Google OAuth JSON in `~/Downloads` or `~/Desktop`, stores it under
+`~/.duckwork/google_client_secret.json`, and opens Google's consent page. You can
+also pass an explicit file:
+
+```bash
+duckwork health connect-google --client-secret /path/to/google_client_secret.json --open-browser
+```
+
+Choose the Google account in the browser, approve access, then copy the full
+`http://localhost:1/...` redirect URL from the address bar. The browser may show
+a connection error because no server is listening on port 1; the code in the
+URL is still valid. Finish the connection with:
+
+```bash
+duckwork health connect-google --auth-code '<FULL_LOCALHOST_REDIRECT_URL>'
+duckwork health connect-google --check-live
+duckwork health sync --days 30
+```
+
+Use `duckwork health connect-google` with no arguments to check the current state.
+If the client secret is already stored, it prints a fresh authorization URL.
+
+This command delegates OAuth to the existing Duckwork Google Workspace skill. That
+shared skill can request broader Workspace scopes than this health plugin
+persists. The health plugin's sync path stores redacted calendar metadata,
+Gmail message metadata/counts, sync status, and provenance in `~/.duckwork/health.db`.
+
+## Sensitive data warning
+
+The plugin stores health and context data in `~/.duckwork/health.db`. That SQLite
+database can contain sensitive health PII, calendar metadata, email counts, and
+food logs. It is protected only by local OS file permissions. Review backups,
+sync tools, and shared-machine access before enabling the plugin.
+
+Plan A adds local sync provenance tables alongside the existing compatibility
+tables: `health_sources`, `source_scopes`, `sync_runs`, `sync_batches`,
+`sync_cursors`, `sync_errors`, `sync_schedules`, `raw_records`, and
+`record_lineage`. Existing `oura_*`, `calendar_daily`, `email_daily`,
+`food_logs`, `sync_state`, and `daily_overview` tables remain the query
+surface.
+
+`raw_records` stores Oura payloads and redacted Google metadata locally so
+future migrations can be traced back to provider records. Gmail body content,
+Gmail snippets, OAuth secrets, credential files, calendar attendee identities,
+conference join details, and precise location coordinates are not persisted by
+default.
+
+## Commands
+
+```bash
+duckwork health setup
+duckwork health connect
+duckwork health connect-google
+duckwork health connect-google --open-browser
+duckwork health connect-google --client-secret /path/to/google_client_secret.json --open-browser
+duckwork health connect-google --auth-code '<FULL_LOCALHOST_REDIRECT_URL>'
+duckwork health sync
+duckwork health sync --days 30
+duckwork health sync --start-date 2026-05-12 --end-date 2026-06-10
+duckwork health status
+duckwork health uninstall
+duckwork health uninstall --purge
+```
+
+Slash command equivalents are exposed under `/health`, including `/health sync`
+and `/health status`.
+
+## Asking questions
+
+Normal product use is just Duckwork chat. Once the plugin is installed and
+enabled, health questions route through the health-coach skill and local
+health-data tools automatically:
+
+```bash
+duckwork
+# then ask: how did I sleep last night?
+
+duckwork -z "Why was I stressed yesterday?"
+duckwork -z "What should I prioritize today based on recovery and schedule?"
+duckwork -z "Did my inbox or meetings line up with my stress this week?"
+```
+
+`duckwork health ask ...` is a lower-level command for debugging the health
+question path:
+
+```bash
+duckwork health ask "Why was I stressed yesterday?"
+duckwork health ask "What is current right now?" --sync
+duckwork health ask "How did I sleep?" --no-sync
+```
+
+`duckwork health sync` uses a short rolling Oura window so routine cron jobs stay
+cheap and includes yesterday plus today for Google email/calendar context. It
+syncs Oura daily summaries, sleep sessions, heart-rate samples,
+workouts, Oura app sessions, tags, enhanced tags, resilience, cardiovascular
+age, VO2 max, sleep-time recommendations, rest-mode periods, ring battery, ring
+configuration, and personal info when the token has the corresponding scopes.
+After first connecting Oura, run `duckwork health sync --days 365` or an explicit
+date range to backfill older rows that were not in the default window.
+
+`duckwork health setup` installs an every-six-hours no-agent cron job named
+`health-data-sync`. Normal health questions use that cron baseline. The
+lower-level `duckwork health ask ...` command only runs `duckwork health sync
+--days 3` before asking when local sync state is older than six hours, missing,
+explicitly requested by `--sync`, or the question asks for current/fresh/latest
+data.
+
+The health sync cron is not a reminder scheduler. For user-visible reminders
+such as "remind me to eat every day at 1pm", use Duckwork cron/reminder scheduling
+explicitly, for example:
+
+```bash
+duckwork cron create --name eat-reminder --deliver local "0 13 * * *" "Remind me to eat."
+```
+
+`duckwork health status` includes this guidance so sync setup is not confused with
+reminder delivery.
+
+Use `--sync` when you want to force a refresh now. Use `--no-sync` when you want
+the fastest possible answer from already-synced local data.
+
+Health questions query the local data through `health_query` using
+`recent`, `date_range`, `stress_days`, `correlate`, `heart_rate`, `workouts`,
+`sessions`, `tags`, and `coverage`. Broad analytical questions should use the
+Plan B analysis tools when available: `health_analysis_plan`, `health_coverage`,
+`health_analyze`, and `health_analysis_explain`.
+
+## Development and verification
+
+### Dev, release, and Duckwork homes
+
+This repository is now the canonical Apollo checkout. Duckwork installs the
+plugin into one active Duckwork home at a time, normally
+`~/.duckwork/plugins/health-data`.
+
+For the normal one-repo setup, just use your default Duckwork home:
+
+```bash
+cd /path/to/duckwork-health-apollo
+make install-local
+make verify-local-install
+duckwork health status
+```
+
+If you ever want a second isolated profile, set `DUCKWORK_HOME` to another path
+such as `~/.duckwork-dev`. That profile gets its own `health.db`, OAuth files,
+installed plugin copy, and sync launcher. Keep all Duckwork homes outside the
+repository and never commit their contents.
+
+After local changes, refresh the active Duckwork plugin copy and verify drift:
+
+```bash
+make install-local
+make verify-local-install
+duckwork health status
+```
+
+`make verify-local-install` compares git-visible workspace files against the
+installed plugin copy, reads only install metadata, and includes cron/gateway
+status guidance. It does not read or export health databases, OAuth tokens, or
+other personal data.
+
+Before pushing public changes, run the current repository gate. This repository
+does not currently track a `uv.lock` file and `.gitignore` ignores generated
+lockfiles, so the local `uv` setup is intentionally non-frozen unless the
+project changes that policy in a separate dependency/lockfile PR. The package
+artifact tests call `python -m pip wheel`, so the local `.venv` must be seeded
+with `pip`.
+
+```bash
+uv venv --seed --clear .venv
+uv sync --extra dev
+uv run --extra dev python -m pytest
+uv run --extra dev python scripts/secret_scan.py
+uv run --extra dev python scripts/secret_scan.py --all-files
+git diff --check
+```
+
+The default scan checks git-tracked files and blocks private workspace paths
+even if they were force-added. Private planning/runtime areas such as `.context`,
+`.omx`, `docs`, `docker`, `plans`, `.private`, `.local`, and `scratch` are
+ignored for normal Git usage and rejected by the scanner if tracked.
+It also blocks local data artifacts that are easy to leak by accident:
+databases, logs, source maps, map/location exports, route files (`.gpx`,
+`.kml`, `.fit`, `.tcx`, `.geojson`, `.mbtiles`, and route/location JSON), and
+credential/token JSON files.
+
+For a clean snapshot or raw directory copy audit, run:
+
+```bash
+python scripts/secret_scan.py --all-files
+```
+
+This also checks ignored local files while skipping vendored/generated
+directories such as `.venv`, `build`, and `dist`. It is expected to fail if
+private local workspace folders contain files; publish from `git archive` or
+remove those folders from the export.
+
+Lane 1 is deterministic and does not call a model:
+
+```bash
+make health-eval
+```
+
+Plan C deterministic UX/eval scaffolding has a separate lane:
+
+```bash
+make health-eval-plan-c
+make health-eval-plan-c-full
+```
+
+The deterministic judge and full local scorecard run on the same fixture without
+calling a model. The baseline target remains available for quick fixture rebuilds:
+
+```bash
+make health-eval-judge
+make health-eval-full
+make health-eval-baseline
+```
+
+The current CI workflow runs the secret tripwire before deterministic health
+evals on push. It also runs an all-files scan, a TruffleHog verified-secret
+scan, full unit tests, Python compile checks, package artifact inspection, and a
+clean snapshot export scan. Run the full local unit suite with
+`python -m pytest` before publishing a release.
+
+## Preparing a clean export
+
+The repository itself is public now, so ordinary changes should be published by
+committing and pushing to `main` or via pull request.
+
+If you ever need a sanitized downstream export or one-off clean snapshot, do not
+use `git clone --mirror` or `git push --mirror`. Export only the current tracked
+`HEAD` instead:
+
+```bash
+python scripts/secret_scan.py
+uv run --extra dev python -m pytest tests/test_secret_scan.py tests/test_context_commands.py tests/test_visual_catalog.py tests/test_register_contract.py
+uv run --with build python scripts/release_safety.py
+scripts/create_public_snapshot.sh ../duckwork-health-data-public
+cd ../duckwork-health-data-public
+git commit -m "Release Duckwork health data plugin"
+git remote add origin <TARGET_REPO_URL>
+git push -u origin main
+```
+
+The snapshot script refuses to run with uncommitted changes, exports only the
+current committed `HEAD` with `git archive`, re-runs the secret scan inside the
+snapshot, and initializes a brand-new Git repository. This keeps private refs,
+ignored folders, and historical local-only blobs out of the exported repo.

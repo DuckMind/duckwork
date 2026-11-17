@@ -1,0 +1,185 @@
+"""Pytest configuration and shared fixtures for Agora tests."""
+from __future__ import annotations
+
+import importlib.util
+import sys
+import tempfile
+import os
+import types
+from pathlib import Path
+
+import pytest
+
+# Load the plugin the way Duckwork does — as ``duckwork_plugins.agora`` with its own
+# search path, executing ``__init__.py`` — so the package's relative imports AND
+# its package-level symbols resolve exactly as they do at runtime. Two things
+# this used to get wrong:
+#
+#   * putting the plugin root on sys.path (as this file first did) shadows core's
+#     own ``tools`` package and leaves the cross-package relative imports
+#     unresolvable;
+#   * registering a bare module without executing ``__init__.py`` hides anything
+#     defined there, which is how a ``from . import deploy_bundled_skills`` that
+#     pointed at the wrong package slipped through.
+_PLUGIN_ROOT = Path(__file__).resolve().parent.parent
+PKG = "duckwork_plugins.agora"
+
+
+def _patch_editable_finder():
+    """Patch the editable-install finder's MAPPING in memory if Duckwork added new top-level modules.
+
+    When Duckwork updates, it sometimes adds new top-level ``.py`` files (e.g.
+    ``duckwork_state_pidns.py``, ``duckwork_state_coverage.py``) without regenerating
+    the editable-install ``__editable___duckwork_agent_*_finder.py`` MAPPING that
+    maps module names to their source paths.  Any lazy import of those modules
+    then fails with ``ModuleNotFoundError`` — not because the code is wrong, but
+    because the finder doesn't know the module exists.
+
+    This function scans the Duckwork installation root for top-level modules/packages
+    that are absent from the finder's MAPPING and patches the in-memory dict
+    (if the finder is already imported) so the fix takes effect immediately in
+    the current process.  It does NOT write to the finder file on disk — the
+    stale file is an upstream issue, and writing to it from a test suite has
+    side effects on the host install.  When the finder is stale the in-memory
+    patch is sufficient; when it isn't imported yet the tests simply skip the
+    affected modules.  No-op when the finder is already up to date.
+    """
+    import re
+
+    # Locate the Duckwork installation root.
+    duckwork_root = None
+    for entry in sys.path:
+        if entry == "/usr/local/lib/duckwork-agent":
+            duckwork_root = Path(entry)
+            break
+    if duckwork_root is None:
+        try:
+            import duckwork_constants
+            duckwork_root = Path(duckwork_constants.__file__).resolve().parent
+        except Exception:
+            return
+
+    # Find the editable finder on disk to read its MAPPING (without writing).
+    venv_site = duckwork_root / "venv/lib"
+    candidates = list(venv_site.glob("**/__editable___duckwork_agent_*_finder.py"))
+    if not candidates:
+        return
+    finder_path = candidates[0]
+    src = finder_path.read_text()
+
+    m = re.search(r"MAPPING\s*(?::\s*dict\[str,\s*str\])?\s*=\s*\{([^}]*)\}", src, re.S)
+    if not m:
+        return
+    mapping_body = m.group(1)
+    registered = set(re.findall(r"'([A-Za-z_][A-Za-z0-9_]*)':", mapping_body))
+
+    mods = {p.stem for p in duckwork_root.glob("*.py") if p.name != "setup.py"}
+    pkgs = {
+        d.name for d in duckwork_root.iterdir()
+        if d.is_dir() and (d / "__init__.py").exists()
+        and d.name not in {"venv", "node_modules", ".git", "__pycache__", "evals", "docs", "tests"}
+    }
+    missing = sorted((mods | pkgs) - registered)
+    if not missing:
+        return
+
+    # Patch the in-memory MAPPING dict so the current process is fixed.
+    # Look the finder up by its own module name (the file stem) rather than
+    # scanning for "some module with a MAPPING dict": any other module that
+    # happens to expose one would be patched instead, silently doing nothing.
+    finder_mod = sys.modules.get(finder_path.stem)
+    mapping = getattr(finder_mod, "MAPPING", None) if finder_mod is not None else None
+    if not isinstance(mapping, dict):
+        return
+    for mod in missing:
+        mapping[mod] = str(duckwork_root / mod)
+
+
+try:
+    _patch_editable_finder()
+except Exception:
+    pass  # not worth failing the test session over
+
+
+if PKG not in sys.modules:
+    if "duckwork_plugins" not in sys.modules:
+        _ns = types.ModuleType("duckwork_plugins")
+        _ns.__path__ = []
+        sys.modules["duckwork_plugins"] = _ns
+    _spec = importlib.util.spec_from_file_location(
+        PKG, _PLUGIN_ROOT / "__init__.py",
+        submodule_search_locations=[str(_PLUGIN_ROOT)],
+    )
+    assert _spec is not None and _spec.loader is not None, "cannot load the plugin package"
+    _pkg = importlib.util.module_from_spec(_spec)
+    _pkg.__package__ = PKG
+    _pkg.__path__ = [str(_PLUGIN_ROOT)]
+    sys.modules[PKG] = _pkg
+    _spec.loader.exec_module(_pkg)
+
+
+@pytest.fixture(autouse=True)
+def _hermetic_kanban_db(tmp_path, monkeypatch):
+    """Pin the whole kanban home inside the test's tmp dir.
+
+    The board fixtures call ``kanban_db.connect(board=...)``, which resolves its
+    path from ``DUCKWORK_KANBAN_DB`` / the Duckwork home. Without this the suite
+    depends on the ambient environment being writable and pre-created — on a
+    machine where it is not, every board fixture errors with "unable to open
+    database file" and the failures look like real ones. Isolating per test also
+    means a test can never touch a real board.
+
+    ``DUCKWORK_KANBAN_DB`` covers only the *default* database. Named boards live
+    under ``kanban_home()/kanban/boards``, and ``kanban_home()`` reads
+    ``DUCKWORK_KANBAN_HOME`` — not ``DUCKWORK_HOME`` — before falling back to the
+    global root that is shared across profiles by design. Without pinning it, a
+    fixture that creates a named board writes into the operator's real
+    ``~/.duckwork/kanban/boards/``.
+    """
+    monkeypatch.setenv("DUCKWORK_KANBAN_DB", str(tmp_path / "kanban.db"))
+    monkeypatch.setenv("DUCKWORK_KANBAN_HOME", str(tmp_path / "kanban-home"))
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path / "duckwork-home"))
+    return tmp_path / "kanban.db"
+
+
+@pytest.fixture()
+def board_connection():
+    """Factory: connect to a named board, creating it first.
+
+    The board fixtures want a board of their own so a test can never reach a
+    real one. Core refuses to open a board that was never created
+    (``ValueError: kanban board '<slug>' does not exist; create it with ...``),
+    which is not what any of these tests are about, so create it. ``create_board``
+    is idempotent (``mkdir -p`` semantics), so reuse across tests is free.
+    """
+    def _connect(name: str):
+        from duckwork_plugins.agora.agora.kanban_compat import kanban_db as kb
+
+        kb.create_board(name)
+        return kb.connect(board=name)
+
+    return _connect
+
+
+@pytest.fixture()
+def temp_db(tmp_path, monkeypatch):
+    """Monkeypatch motions._agora_db_path to return a path in a temp directory.
+
+    This ensures tests never touch the real ~/.duckwork/agora/motions.db.
+    """
+    from duckwork_plugins.agora.agora.storage import motions
+
+    db_path = tmp_path / "motions.db"
+    monkeypatch.setattr(motions, "_agora_db_path", lambda: db_path)
+    return db_path
+
+
+@pytest.fixture()
+def clean_db(temp_db):
+    """Create a fresh DB for each test by ensuring the schema is initialised."""
+    from duckwork_plugins.agora.agora.storage import motions
+
+    # _connect() calls _init_schema() which creates tables if they don't exist.
+    conn = motions._connect()
+    conn.close()
+    yield temp_db

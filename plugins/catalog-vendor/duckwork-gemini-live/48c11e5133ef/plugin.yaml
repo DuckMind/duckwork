@@ -1,0 +1,31 @@
+name: duckwork-gemini-live
+version: 0.1.0
+manifest_version: 1
+kind: standalone
+description: "Full-duplex Gemini Live voice inside Duckwork Desktop: audio relays through the
+  backend so the key never reaches the renderer, and three delegate verbs (start, read the
+  board, answer or redirect) that hand real work to Duckwork while you keep talking."
+author: "Ha Trung"
+license: MIT
+homepage: "https://github.com/DuckMind/duckwork"
+tags: ["voice", "gemini", "live", "desktop", "speech"]
+
+# Declared so `duckwork plugins install` prompts for the key and writes it to the home's .env
+# (plugins_cmd_install.py). This is a prompt, not a load gate — the plugin still fails fast with
+# its own message if the key is missing. GEMINI_LIVE_API_KEY is accepted as an override; see README.
+requires_env:
+  - name: GEMINI_API_KEY
+    description: "Google AI Studio API key for the Gemini Live API (free tier works)"
+    url: "https://aistudio.google.com/apikey"
+    secret: true
+# 0.21.5 is the package version of release v2026.9.24, the first whose Desktop SDK exports
+# resolveSiblingWsUrl (desktop/plugin.js imports it).
+requires_duckwork: ">=0.21.5"
+provides_tools: []
+provides_hooks: []
+
+# Deliberately no `python_dependencies` and no pyproject.toml. websockets, aiohttp and httpx
+# already ship in the runtime venv, and a member-less package stays out of the uv workspace
+# entirely — which is what lets one clone be enabled in five profiles without tripping the
+# "two workspace members are both named X" failure that breaks any *buildable* plugin.
+# Dev/CI installs are documented in README.md and do not need a pyproject either.

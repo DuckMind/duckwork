@@ -1,0 +1,39 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+      - run: python -m pip install "pytest>=8,<10"
+      # Engine tests need a Duckwork install and skip here; run them locally against yours.
+      - run: python -m pytest tests -q -rs
+        env:
+          DUCKWORK_AGENT_DIR: /nonexistent
+      # Faithfulness + negative control on generated transcripts; needs no private data.
+      - run: python bench/proofs.py --synthetic
+
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: no invisible unicode or committed bytecode
+        run: |
+          ! grep -rnP '[\x{200b}-\x{200f}\x{202a}-\x{202e}\x{2066}-\x{2069}\x{feff}]' --include='*.py' .
+          ! find . -name '*.pyc' -o -name '*.pyo' | grep .

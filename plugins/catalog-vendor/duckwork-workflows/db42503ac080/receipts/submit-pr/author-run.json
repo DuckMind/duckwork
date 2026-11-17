@@ -1,0 +1,43 @@
+{
+  "graph": "examples/release/submit-pr.workflow.json",
+  "graph_sha256": "3658c7327772d5a6e71a86b52bab563c5f8a8454489b13bfde01cda1ed7973c7",
+  "source_digest": "3ccb464faf712699dcfce2b69d4505c9a35d662c2243a4557f8d3714004ac5c5",
+  "library_name": "submit-pr",
+  "library_source_digest": "3ccb464faf712699dcfce2b69d4505c9a35d662c2243a4557f8d3714004ac5c5",
+  "fixture": "scratch repo atbrace/wf-submit-pr-sink (real GitHub, private) + local clone /tmp/wf-test/submit-pr/fixclone carrying a one-line add() bugfix on branch fix/add-op; validation_cmds = ./check.sh (python -m unittest)",
+  "door": "branch worktree 1.2.0-dev door (__init__.py at feat/distilled-examples head); act_run with the materialized graph (seeds substituted before launch, not through the tool door)",
+  "laps": [
+    {
+      "run_id": "20261003-135118-submit-pr-hw4r0-lap1",
+      "arm": "submitted",
+      "gate_answer": "submit",
+      "result": "done, 13 nodes terminal (8 done, 5 skipped on the halt arms). preflight ok (head c5c6934, 1 commit ahead, diff clean); validate green (exit 0, run by the workflow itself in a throwaway detached worktree on the exact bytes); honest draft (flagged the intent-vs-reality gap: the test pre-existed at merge-base, no test delta); push origin fix/add-op; gh pr create -> PR #2; verify-pr independently re-read gh pr view: state OPEN, headRefOid == preflight.head_sha, base ok, title/body matched against the submit record's COMMITTED title_sent/body_sent -> verdict verified. This lap ran the review-fixed edges for real: submit takes inputs:[draft] and 'title_sent' appears in verify-pr's spawn prompt (pinned bytes, not remembered prose). Closeout: arm=submitted, verify=verified.",
+      "out_of_band": "PR https://github.com/atbrace/wf-submit-pr-sink/pull/2 existed with the drafted title/body (author atbrace); closed after lap 5."
+    },
+    {
+      "run_id": "20261003-140744-submit-pr-hw4r0-lap2",
+      "arm": "preflight-halt",
+      "result": "done with an untracked .env.staging carrying a SECRET_TOKEN= line in the working tree: preflight refused (dirty tree; diff itself clean), route-preflight-halt fired, the ENTIRE work arm (draft/approve/submit) pruned - zero drafts spent, nothing pushed. verify-pr ran the halt arm without touching gh (verdict none, arm=preflight-halt); closeout named the file and the fix. Proves halt-before-investment: the gate cannot be reached on a refused branch.",
+      "cleanup": "planted file removed after the lap."
+    },
+    {
+      "run_id": "20261003-140917-submit-pr-hw4r0-lap3",
+      "arm": "held",
+      "gate_answer": "hold",
+      "result": "clean preflight + green validate + full draft, then the human gate answered hold: submit executed nothing (skipped='not approved: hold' with title_sent/body_sent EMPTY - the record itself proves the door never opened), verify-pr reported arm=held without gh writes, closeout tallied the hold. Proves the gate is the only door to the external effect - everything before it is local, everything past it needs a human yes."
+    },
+    {
+      "run_id": "20261003-141259-submit-pr-hw4r0-lap4",
+      "arm": "validate-halt",
+      "result": "branch tip carried a committed sabotage (test_flaky_suite -> assertTrue(False) on top of the fix): preflight passed (tree clean, diff clean), the workflow RAN ./check.sh itself, took the exit-1, and pruned draft/approve/submit entirely (draft node status: skipped 'all deps pruned' - zero draft tokens, nothing pushed). verify-pr read the halt arm without touching gh; closeout named the failing command, the offending commit 0e765a6, and the repair ('drop that commit and re-run'). Proves the red arm AND the law that a green claim from upstream work is never believed - validation belongs to this workflow."
+    },
+    {
+      "run_id": "20261003-141620-submit-pr-hw4r0-lap5",
+      "arm": "submitted (dedup clause)",
+      "gate_answer": "submit",
+      "result": "EXERCISES THE FORMERLY-UNPROVEN CLAUSE: an OPEN PR (#2, lap 1's) already covered head fix/add-op at the same SHA. submit found it via gh pr list --state open, did NOT open a second PR, pushed (no-op: 'Everything up-to-date'), and reported the EXISTING url with updated=true. verify-pr applied the dedup excuse honestly: state/head/base verified from the API, title/body recorded 'n/a (updated=true: PR predates this lap, title belongs to earlier author)' - n/a, not mismatch -> verdict verified. closeout reported the no-op push without embellishing. Census: 2 submitted laps, exactly 1 PR created."
+    }
+  ],
+  "unexercised_by_laps": [],
+  "notes": "Round-2 battery at the review-fixed head (B1 graphify-out dropped, B2 README claim scoped, B3 draft->submit->verify pinned as committed bytes). Every clause now has a live lap - the old named gap (existing-PR dedup) closed as lap 5. B3 proof is mechanical, not narrative: title_sent/body_sent ride in submit's committed record and verify-pr's API compare cites them. Env findings: (1) the INSTALLED 1.1.2 door rejects after_partial, so a gate-resume respawn of this graph dies 'crashed: graph invalid' mid-run - the battery completed on the branch worktree's own door (same shape as round 1: 'worktree at feat/distilled-examples'); the installed plugin must reach the grammar carrying after_partial before stock builds can dogfood this template end-to-end. (2) preflight refused honestly twice more under fixture churn (broken fork remote noted not improvised; __pycache__ dirt halted run 20261003-134419 before the planned secret lap) - the no-improvise law holding under load. No forbidden-land vocabulary: scrub sweep clean at this head; the graph was authored blind from the abstract validate-then-gate-then-publish-then-read-back shape."
+}

@@ -1,0 +1,661 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "alans-way",
+  "content_id": "439621d36d7d",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 2695,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "2930e112cefaeffc7ce8eccb2643c72c1ce0811f3aef9715c6dc19f96acdbab2"
+    },
+    {
+      "bytes": 11417,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "77ee2ea35036a0ad5d60a589497bab99c208a81e6d7684fcdc6907d92c7f5249"
+    },
+    {
+      "bytes": 1080,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865"
+    },
+    {
+      "bytes": 89424,
+      "mode": "100644",
+      "path": "cross_bot.py",
+      "sha256": "61428ddff41d286abf0addee3f0a4b3121304e5a0d1586fab05388468ab75bcc"
+    },
+    {
+      "bytes": 1499,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "6311c2791e9668b9bb1d9a126fb381a428f277ec48eb21bd6361f0646a4fedaf"
+    },
+    {
+      "bytes": 33504,
+      "mode": "100644",
+      "path": "proactivity.py",
+      "sha256": "26b26af29989fa0f7a25ddb744be3a40e1c93ec6c4f8f01604f73dbd18837322"
+    },
+    {
+      "bytes": 2529,
+      "mode": "100644",
+      "path": "scripts/commit-patterns.json",
+      "sha256": "3aff0eeaabd08c0de3c526923536bc74d42a61f5406441d866db09b71a614786"
+    },
+    {
+      "bytes": 717,
+      "mode": "100755",
+      "path": "scripts/mac-watch.sh",
+      "sha256": "9442e7fd4726d9317c340cf016f47dc66134cd5dcd50008d1cf9a4cda65f8fed"
+    },
+    {
+      "bytes": 157758,
+      "mode": "100644",
+      "path": "scripts/workspace-router.cjs",
+      "sha256": "f15399324980ac46b799a3efd19c5d5994b14f6b65fade60e6dc45e02e78d0a4"
+    },
+    {
+      "bytes": 8576,
+      "mode": "100644",
+      "path": "skills/integrations/SKILL.md",
+      "sha256": "47f3d35ca195c175f37d82cd2e24dd8e17d3ba0f80facfbb3c36c73f5d135fcc"
+    },
+    {
+      "bytes": 12946,
+      "mode": "100644",
+      "path": "skills/integrations/references/hermes-native.md",
+      "sha256": "89ad34935d5866f243a31af44466a04e83c2e1488b6d8981c3ce867afd879f4d"
+    },
+    {
+      "bytes": 4412,
+      "mode": "100644",
+      "path": "skills/integrations/references/rclone.md",
+      "sha256": "be8c3d4214b310bc48a9bdf4c7d38611afbce0293fea334f6744f1b31edf261e"
+    },
+    {
+      "bytes": 4202,
+      "mode": "100644",
+      "path": "skills/integrations/references/taskwarrior.md",
+      "sha256": "91058e801d6c21c431d89bde6f2791c034a3fc924d4a7c118441605284c9acfc"
+    },
+    {
+      "bytes": 9483,
+      "mode": "100644",
+      "path": "skills/web-errands/SKILL.md",
+      "sha256": "6cc298bfd57e4405164a7fb9d111fdc586286c79bd90ca00f721a4bbc887f5c8"
+    },
+    {
+      "bytes": 5977,
+      "mode": "100644",
+      "path": "skills/web-errands/references/recipes.md",
+      "sha256": "56feae9e6dc6899bfc4a6228b0135aee1ba3200ff04b37f33117f13bbbf87388"
+    },
+    {
+      "bytes": 40672,
+      "mode": "100644",
+      "path": "skills/workspace-operations/SKILL.md",
+      "sha256": "37687389b866ce747bd0ca0a32a4fc6a03a397df3a9cf568f7dad152775c436d"
+    },
+    {
+      "bytes": 1825,
+      "mode": "100644",
+      "path": "skills/workspace-operations/references/vps-desktop.md",
+      "sha256": "9ed6b6f74e84fd5736ac32f83b2347f0d471bef74d8cb670f95178dd828556c8"
+    },
+    {
+      "bytes": 36835,
+      "mode": "100644",
+      "path": "skills/workspace-setup/SKILL.md",
+      "sha256": "dac108c05a073a19cd6ffe683497eca2ed42897b81fe255e165ce454569b2ab1"
+    },
+    {
+      "bytes": 5992,
+      "mode": "100644",
+      "path": "skills/workspace-setup/references/long-chats.md",
+      "sha256": "ac94c49d3b60bcdd8d5df559f7b9fa5e899d7d649f200df49c14851eb2b46cc6"
+    },
+    {
+      "bytes": 12739,
+      "mode": "100644",
+      "path": "voice.py",
+      "sha256": "d760b6fcdc986acc1b65e0c2bc03cc5fe242217c7a488a53d0377f6a2465e67d"
+    }
+  ],
+  "input_manifest_sha256": "439621d36d7ddfe59c6c9b5bb69440247f54b1f3f06486af3154093742ecbbe7",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "cross_bot.py",
+      "plugin.yaml",
+      "proactivity.py",
+      "scripts/mac-watch.sh",
+      "scripts/workspace-router.cjs",
+      "skills/integrations/SKILL.md",
+      "skills/integrations/references/duckwork-native.md",
+      "skills/integrations/references/rclone.md",
+      "skills/integrations/references/taskwarrior.md",
+      "skills/web-errands/SKILL.md",
+      "skills/workspace-operations/SKILL.md",
+      "skills/workspace-operations/references/vps-desktop.md",
+      "skills/workspace-setup/SKILL.md",
+      "skills/workspace-setup/references/long-chats.md",
+      "voice.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/capthvnsen/alans-way-agents",
+    "sha": "0f65549ac1353f6b74b8ac6a22d58f3eb6dea0a3",
+    "subdir": "alans-way"
+  },
+  "original_repo": "https://github.com/capthvnsen/alans-way-agents",
+  "original_sha": "0f65549ac1353f6b74b8ac6a22d58f3eb6dea0a3",
+  "original_subdir": "alans-way",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "b2475ad5aae4423a47f9aadc66e6f2cd095a8218e59e997f7381d6c466ba9004",
+      "bytes": 2709,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "f411f249dc67f3e53fec31c4adcce477d18c13bce8e5a8de2d8b724cbc95f60c",
+      "bytes": 11443,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+      "bytes": 1080,
+      "mode": "100644"
+    },
+    {
+      "path": "cross_bot.py",
+      "sha256": "2215feab13e1186a5c79aa849d30d827f81b004aa09476e62892a7585e143927",
+      "bytes": 89450,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "b465ab4d005a80575d89da8465acb263b79c9030659ae05d0c7f2ea91eb64dd6",
+      "bytes": 1507,
+      "mode": "100644"
+    },
+    {
+      "path": "proactivity.py",
+      "sha256": "115c433bbabf3a395a09f5a865d45f7b9295941f30dcabaaeab67c2db147ffa4",
+      "bytes": 33520,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/commit-patterns.json",
+      "sha256": "3aff0eeaabd08c0de3c526923536bc74d42a61f5406441d866db09b71a614786",
+      "bytes": 2529,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/mac-watch.sh",
+      "sha256": "c9c4ac4e56dbff10dcffb3466e12920a0c7a7c234ac1baa23fa05e1da0a5ae6f",
+      "bytes": 723,
+      "mode": "100755"
+    },
+    {
+      "path": "scripts/workspace-router.cjs",
+      "sha256": "aa900b659b6258f116b26fba6606699a1072720ac9a6259fab06356796920565",
+      "bytes": 157908,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/integrations/SKILL.md",
+      "sha256": "54ca0d66e3d9146b4c9ff60923f912716c1f6859c98a357bd754f1dfa5cf2179",
+      "bytes": 8441,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/integrations/references/duckwork-native.md",
+      "sha256": "deaaeaf10ec3d9c448edf9116752330a8a9421fe3bcf16bae3d65d505010b0c7",
+      "bytes": 11760,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/integrations/references/rclone.md",
+      "sha256": "10223cc8b12d82f80c8ba2818af523e83d98f5b1410e76f38ada173e279077a3",
+      "bytes": 4418,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/integrations/references/taskwarrior.md",
+      "sha256": "f34269c406e9bcd7dde558a3f68d5f72836ab38815cc56a422f67a0fd2cfccc5",
+      "bytes": 4206,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/web-errands/SKILL.md",
+      "sha256": "51b784629c0ed6ac8c4f2f21b78d42f5899743c25e51dc31fbc73510e58aca29",
+      "bytes": 9489,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/web-errands/references/recipes.md",
+      "sha256": "56feae9e6dc6899bfc4a6228b0135aee1ba3200ff04b37f33117f13bbbf87388",
+      "bytes": 5977,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/workspace-operations/SKILL.md",
+      "sha256": "066bb37f45d0a1254c1f0f2ca27bb7244f5bc8ce06ce9e3126696af909413fa8",
+      "bytes": 40722,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/workspace-operations/references/vps-desktop.md",
+      "sha256": "938ab82bd26db64be69cc463d5382d2adcb7e36555194022d9119b622b56f309",
+      "bytes": 1827,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/workspace-setup/SKILL.md",
+      "sha256": "82365bfbee00f516cd6f8b041280bc26b598e6fa5ec7a4198adc6f38d08dfe8b",
+      "bytes": 36338,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/workspace-setup/references/long-chats.md",
+      "sha256": "a143b3d5f33fae57f6d8f8ce182a61db9923f870e798b8aa0a16fbce80438c41",
+      "bytes": 6022,
+      "mode": "100644"
+    },
+    {
+      "path": "voice.py",
+      "sha256": "ac5bdf16e0c11020cd386d0a920bfbd50aae36455ff28c3d79f2f6da15195683",
+      "bytes": 12751,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "7fd960f79ca49024006ec1f442c506d0ed1dada8eba2a49b38fe9609c760f578",
+  "pin_verification": {
+    "archive_bytes": 569910,
+    "archive_sha256": "83e9f9377b95c150737b40fc446176e22d38ab2cc7d099668e8a81ecc688460f",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "0f65549ac1353f6b74b8ac6a22d58f3eb6dea0a3",
+    "verified_commit_marker": "0f65549ac1353f6b74b8ac6a22d58f3eb6dea0a3"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "28765a360aa0f6bb435b37399792519f8228ea7590a17e2b9f2ff9e890707ee9",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "2930e112cefaeffc7ce8eccb2643c72c1ce0811f3aef9715c6dc19f96acdbab2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b2475ad5aae4423a47f9aadc66e6f2cd095a8218e59e997f7381d6c466ba9004",
+        "source": "README.md",
+        "final_output_sha256": "b2475ad5aae4423a47f9aadc66e6f2cd095a8218e59e997f7381d6c466ba9004",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "b2475ad5aae4423a47f9aadc66e6f2cd095a8218e59e997f7381d6c466ba9004"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "77ee2ea35036a0ad5d60a589497bab99c208a81e6d7684fcdc6907d92c7f5249",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f411f249dc67f3e53fec31c4adcce477d18c13bce8e5a8de2d8b724cbc95f60c",
+        "source": "__init__.py",
+        "final_output_sha256": "f411f249dc67f3e53fec31c4adcce477d18c13bce8e5a8de2d8b724cbc95f60c",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "f411f249dc67f3e53fec31c4adcce477d18c13bce8e5a8de2d8b724cbc95f60c"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865"
+      },
+      {
+        "destination": "cross_bot.py",
+        "input_sha256": "61428ddff41d286abf0addee3f0a4b3121304e5a0d1586fab05388468ab75bcc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2215feab13e1186a5c79aa849d30d827f81b004aa09476e62892a7585e143927",
+        "source": "cross_bot.py",
+        "final_output_sha256": "2215feab13e1186a5c79aa849d30d827f81b004aa09476e62892a7585e143927",
+        "cli_destination": "cross_bot.py",
+        "previous_staging_sha256": "2215feab13e1186a5c79aa849d30d827f81b004aa09476e62892a7585e143927"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "6311c2791e9668b9bb1d9a126fb381a428f277ec48eb21bd6361f0646a4fedaf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b465ab4d005a80575d89da8465acb263b79c9030659ae05d0c7f2ea91eb64dd6",
+        "source": "plugin.yaml",
+        "final_output_sha256": "b465ab4d005a80575d89da8465acb263b79c9030659ae05d0c7f2ea91eb64dd6",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "b465ab4d005a80575d89da8465acb263b79c9030659ae05d0c7f2ea91eb64dd6"
+      },
+      {
+        "destination": "proactivity.py",
+        "input_sha256": "26b26af29989fa0f7a25ddb744be3a40e1c93ec6c4f8f01604f73dbd18837322",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "115c433bbabf3a395a09f5a865d45f7b9295941f30dcabaaeab67c2db147ffa4",
+        "source": "proactivity.py",
+        "final_output_sha256": "115c433bbabf3a395a09f5a865d45f7b9295941f30dcabaaeab67c2db147ffa4",
+        "cli_destination": "proactivity.py",
+        "previous_staging_sha256": "115c433bbabf3a395a09f5a865d45f7b9295941f30dcabaaeab67c2db147ffa4"
+      },
+      {
+        "destination": "scripts/commit-patterns.json",
+        "input_sha256": "3aff0eeaabd08c0de3c526923536bc74d42a61f5406441d866db09b71a614786",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3aff0eeaabd08c0de3c526923536bc74d42a61f5406441d866db09b71a614786",
+        "source": "scripts/commit-patterns.json",
+        "final_output_sha256": "3aff0eeaabd08c0de3c526923536bc74d42a61f5406441d866db09b71a614786",
+        "cli_destination": "scripts/commit-patterns.json",
+        "previous_staging_sha256": "3aff0eeaabd08c0de3c526923536bc74d42a61f5406441d866db09b71a614786"
+      },
+      {
+        "destination": "scripts/mac-watch.sh",
+        "input_sha256": "9442e7fd4726d9317c340cf016f47dc66134cd5dcd50008d1cf9a4cda65f8fed",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "c9c4ac4e56dbff10dcffb3466e12920a0c7a7c234ac1baa23fa05e1da0a5ae6f",
+        "source": "scripts/mac-watch.sh",
+        "final_output_sha256": "c9c4ac4e56dbff10dcffb3466e12920a0c7a7c234ac1baa23fa05e1da0a5ae6f",
+        "cli_destination": "scripts/mac-watch.sh",
+        "previous_staging_sha256": "c9c4ac4e56dbff10dcffb3466e12920a0c7a7c234ac1baa23fa05e1da0a5ae6f"
+      },
+      {
+        "destination": "scripts/workspace-router.cjs",
+        "input_sha256": "f15399324980ac46b799a3efd19c5d5994b14f6b65fade60e6dc45e02e78d0a4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "aa900b659b6258f116b26fba6606699a1072720ac9a6259fab06356796920565",
+        "source": "scripts/workspace-router.cjs",
+        "final_output_sha256": "aa900b659b6258f116b26fba6606699a1072720ac9a6259fab06356796920565",
+        "cli_destination": "scripts/workspace-router.cjs",
+        "previous_staging_sha256": "aa900b659b6258f116b26fba6606699a1072720ac9a6259fab06356796920565"
+      },
+      {
+        "destination": "skills/integrations/SKILL.md",
+        "input_sha256": "47f3d35ca195c175f37d82cd2e24dd8e17d3ba0f80facfbb3c36c73f5d135fcc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4e7e29206bc4df469427794a7b856fc16b7aed7b13e080cb2971581f90def15c",
+        "source": "skills/integrations/SKILL.md",
+        "final_output_sha256": "54ca0d66e3d9146b4c9ff60923f912716c1f6859c98a357bd754f1dfa5cf2179",
+        "cli_destination": "skills/integrations/SKILL.md",
+        "previous_staging_sha256": "4e7e29206bc4df469427794a7b856fc16b7aed7b13e080cb2971581f90def15c"
+      },
+      {
+        "destination": "skills/integrations/references/duckwork-native.md",
+        "input_sha256": "89ad34935d5866f243a31af44466a04e83c2e1488b6d8981c3ce867afd879f4d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "429f6186c61eb6b5d4f32c09694af5fca7ee35dc410b7fd265e784141ebe7daf",
+        "source": "skills/integrations/references/hermes-native.md",
+        "final_output_sha256": "deaaeaf10ec3d9c448edf9116752330a8a9421fe3bcf16bae3d65d505010b0c7",
+        "cli_destination": "skills/integrations/references/duckwork-native.md",
+        "previous_staging_sha256": "429f6186c61eb6b5d4f32c09694af5fca7ee35dc410b7fd265e784141ebe7daf"
+      },
+      {
+        "destination": "skills/integrations/references/rclone.md",
+        "input_sha256": "be8c3d4214b310bc48a9bdf4c7d38611afbce0293fea334f6744f1b31edf261e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "10223cc8b12d82f80c8ba2818af523e83d98f5b1410e76f38ada173e279077a3",
+        "source": "skills/integrations/references/rclone.md",
+        "final_output_sha256": "10223cc8b12d82f80c8ba2818af523e83d98f5b1410e76f38ada173e279077a3",
+        "cli_destination": "skills/integrations/references/rclone.md",
+        "previous_staging_sha256": "10223cc8b12d82f80c8ba2818af523e83d98f5b1410e76f38ada173e279077a3"
+      },
+      {
+        "destination": "skills/integrations/references/taskwarrior.md",
+        "input_sha256": "91058e801d6c21c431d89bde6f2791c034a3fc924d4a7c118441605284c9acfc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f34269c406e9bcd7dde558a3f68d5f72836ab38815cc56a422f67a0fd2cfccc5",
+        "source": "skills/integrations/references/taskwarrior.md",
+        "final_output_sha256": "f34269c406e9bcd7dde558a3f68d5f72836ab38815cc56a422f67a0fd2cfccc5",
+        "cli_destination": "skills/integrations/references/taskwarrior.md",
+        "previous_staging_sha256": "f34269c406e9bcd7dde558a3f68d5f72836ab38815cc56a422f67a0fd2cfccc5"
+      },
+      {
+        "destination": "skills/web-errands/SKILL.md",
+        "input_sha256": "6cc298bfd57e4405164a7fb9d111fdc586286c79bd90ca00f721a4bbc887f5c8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "51b784629c0ed6ac8c4f2f21b78d42f5899743c25e51dc31fbc73510e58aca29",
+        "source": "skills/web-errands/SKILL.md",
+        "final_output_sha256": "51b784629c0ed6ac8c4f2f21b78d42f5899743c25e51dc31fbc73510e58aca29",
+        "cli_destination": "skills/web-errands/SKILL.md",
+        "previous_staging_sha256": "51b784629c0ed6ac8c4f2f21b78d42f5899743c25e51dc31fbc73510e58aca29"
+      },
+      {
+        "destination": "skills/web-errands/references/recipes.md",
+        "input_sha256": "56feae9e6dc6899bfc4a6228b0135aee1ba3200ff04b37f33117f13bbbf87388",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "56feae9e6dc6899bfc4a6228b0135aee1ba3200ff04b37f33117f13bbbf87388",
+        "source": "skills/web-errands/references/recipes.md",
+        "final_output_sha256": "56feae9e6dc6899bfc4a6228b0135aee1ba3200ff04b37f33117f13bbbf87388",
+        "cli_destination": "skills/web-errands/references/recipes.md",
+        "previous_staging_sha256": "56feae9e6dc6899bfc4a6228b0135aee1ba3200ff04b37f33117f13bbbf87388"
+      },
+      {
+        "destination": "skills/workspace-operations/SKILL.md",
+        "input_sha256": "37687389b866ce747bd0ca0a32a4fc6a03a397df3a9cf568f7dad152775c436d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "066bb37f45d0a1254c1f0f2ca27bb7244f5bc8ce06ce9e3126696af909413fa8",
+        "source": "skills/workspace-operations/SKILL.md",
+        "final_output_sha256": "066bb37f45d0a1254c1f0f2ca27bb7244f5bc8ce06ce9e3126696af909413fa8",
+        "cli_destination": "skills/workspace-operations/SKILL.md",
+        "previous_staging_sha256": "066bb37f45d0a1254c1f0f2ca27bb7244f5bc8ce06ce9e3126696af909413fa8"
+      },
+      {
+        "destination": "skills/workspace-operations/references/vps-desktop.md",
+        "input_sha256": "9ed6b6f74e84fd5736ac32f83b2347f0d471bef74d8cb670f95178dd828556c8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "938ab82bd26db64be69cc463d5382d2adcb7e36555194022d9119b622b56f309",
+        "source": "skills/workspace-operations/references/vps-desktop.md",
+        "final_output_sha256": "938ab82bd26db64be69cc463d5382d2adcb7e36555194022d9119b622b56f309",
+        "cli_destination": "skills/workspace-operations/references/vps-desktop.md",
+        "previous_staging_sha256": "938ab82bd26db64be69cc463d5382d2adcb7e36555194022d9119b622b56f309"
+      },
+      {
+        "destination": "skills/workspace-setup/SKILL.md",
+        "input_sha256": "dac108c05a073a19cd6ffe683497eca2ed42897b81fe255e165ce454569b2ab1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ceb12274222ba405c64b23113cbbc4efd130f223a483bd461522f7b31c4b25f3",
+        "source": "skills/workspace-setup/SKILL.md",
+        "final_output_sha256": "82365bfbee00f516cd6f8b041280bc26b598e6fa5ec7a4198adc6f38d08dfe8b",
+        "cli_destination": "skills/workspace-setup/SKILL.md",
+        "previous_staging_sha256": "ceb12274222ba405c64b23113cbbc4efd130f223a483bd461522f7b31c4b25f3"
+      },
+      {
+        "destination": "skills/workspace-setup/references/long-chats.md",
+        "input_sha256": "ac94c49d3b60bcdd8d5df559f7b9fa5e899d7d649f200df49c14851eb2b46cc6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a143b3d5f33fae57f6d8f8ce182a61db9923f870e798b8aa0a16fbce80438c41",
+        "source": "skills/workspace-setup/references/long-chats.md",
+        "final_output_sha256": "a143b3d5f33fae57f6d8f8ce182a61db9923f870e798b8aa0a16fbce80438c41",
+        "cli_destination": "skills/workspace-setup/references/long-chats.md",
+        "previous_staging_sha256": "a143b3d5f33fae57f6d8f8ce182a61db9923f870e798b8aa0a16fbce80438c41"
+      },
+      {
+        "destination": "voice.py",
+        "input_sha256": "d760b6fcdc986acc1b65e0c2bc03cc5fe242217c7a488a53d0377f6a2465e67d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ac5bdf16e0c11020cd386d0a920bfbd50aae36455ff28c3d79f2f6da15195683",
+        "source": "voice.py",
+        "final_output_sha256": "ac5bdf16e0c11020cd386d0a920bfbd50aae36455ff28c3d79f2f6da15195683",
+        "cli_destination": "voice.py",
+        "previous_staging_sha256": "ac5bdf16e0c11020cd386d0a920bfbd50aae36455ff28c3d79f2f6da15195683"
+      }
+    ],
+    "manifest_sha256": "c1096be43fae401d73cfdd0c17715686be57fb1e55452d7f9f47904cf578cfbc",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "alans-way/README.md",
+    "__init__.py": "alans-way/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "cross_bot.py": "alans-way/cross_bot.py",
+    "plugin.yaml": "alans-way/plugin.yaml",
+    "proactivity.py": "alans-way/proactivity.py",
+    "scripts/commit-patterns.json": "alans-way/scripts/commit-patterns.json",
+    "scripts/mac-watch.sh": "alans-way/scripts/mac-watch.sh",
+    "scripts/workspace-router.cjs": "alans-way/scripts/workspace-router.cjs",
+    "skills/integrations/SKILL.md": "alans-way/skills/integrations/SKILL.md",
+    "skills/integrations/references/hermes-native.md": "alans-way/skills/integrations/references/hermes-native.md",
+    "skills/integrations/references/rclone.md": "alans-way/skills/integrations/references/rclone.md",
+    "skills/integrations/references/taskwarrior.md": "alans-way/skills/integrations/references/taskwarrior.md",
+    "skills/web-errands/SKILL.md": "alans-way/skills/web-errands/SKILL.md",
+    "skills/web-errands/references/recipes.md": "alans-way/skills/web-errands/references/recipes.md",
+    "skills/workspace-operations/SKILL.md": "alans-way/skills/workspace-operations/SKILL.md",
+    "skills/workspace-operations/references/vps-desktop.md": "alans-way/skills/workspace-operations/references/vps-desktop.md",
+    "skills/workspace-setup/SKILL.md": "alans-way/skills/workspace-setup/SKILL.md",
+    "skills/workspace-setup/references/long-chats.md": "alans-way/skills/workspace-setup/references/long-chats.md",
+    "voice.py": "alans-way/voice.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "alans-way",
+    "python_files_compiled": 4,
+    "secret_findings": 0
+  },
+  "canonical_slug": "alans-way",
+  "catalog_file": "src/plugin-catalog/alans-way.yaml",
+  "identity": {
+    "catalog_id": "alans-way",
+    "canonical_slug": "alans-way",
+    "original_manifest_name": "alans-way",
+    "rebranded_manifest_name": "alans-way",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "a07d39cc3bc8e5278ca03db279d38723aa50ef0ccc61104a7d646542766e38fe",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "skills/integrations/SKILL.md",
+          "after_path": "skills/integrations/SKILL.md",
+          "before_sha256": "4e7e29206bc4df469427794a7b856fc16b7aed7b13e080cb2971581f90def15c",
+          "after_sha256": "54ca0d66e3d9146b4c9ff60923f912716c1f6859c98a357bd754f1dfa5cf2179",
+          "before_bytes": 8608,
+          "after_bytes": 8441,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "skills/integrations/references/duckwork-native.md",
+          "after_path": "skills/integrations/references/duckwork-native.md",
+          "before_sha256": "429f6186c61eb6b5d4f32c09694af5fca7ee35dc410b7fd265e784141ebe7daf",
+          "after_sha256": "deaaeaf10ec3d9c448edf9116752330a8a9421fe3bcf16bae3d65d505010b0c7",
+          "before_bytes": 12990,
+          "after_bytes": 11760,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "skills/workspace-setup/SKILL.md",
+          "after_path": "skills/workspace-setup/SKILL.md",
+          "before_sha256": "ceb12274222ba405c64b23113cbbc4efd130f223a483bd461522f7b31c4b25f3",
+          "after_sha256": "82365bfbee00f516cd6f8b041280bc26b598e6fa5ec7a4198adc6f38d08dfe8b",
+          "before_bytes": 36953,
+          "after_bytes": 36338,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "plugin.yaml": [
+      {
+        "value": "author: \"capthvnsen, Hermes Agent\"",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

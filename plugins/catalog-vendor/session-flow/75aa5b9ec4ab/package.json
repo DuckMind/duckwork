@@ -1,0 +1,34 @@
+{
+  "name": "session-flow",
+  "version": "1.29.1",
+  "description": "Duckwork Desktop plugin — Ctrl+Scroll session cycling, Firefox-style session tab groups, glass readability for chips and the input field, and sidebar-style content tabs. Live-configurable settings page included. Two builds: SDK-only catalog build (desktop/plugin.js) and full standalone build (full/plugin.js).",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "AGANTILA — Deniz Yilmaz (https://agantila.com), contact: info@agantila.com",
+  "keywords": [
+    "duckwork",
+    "duckwork-desktop",
+    "desktop-plugin",
+    "plugin",
+    "ui",
+    "tabs",
+    "glass",
+    "animation"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "build:catalog": "node scripts/build-catalog.mjs",
+    "test": "node tests/render-test.mjs full && node tests/render-test.mjs catalog",
+    "test:full": "node tests/render-test.mjs full",
+    "test:catalog": "node tests/render-test.mjs catalog",
+    "test:surface": "node tests/surface-test.mjs",
+    "install:plugin": "bash install.sh",
+    "install:link": "bash install.sh --link",
+    "uninstall:plugin": "bash uninstall.sh",
+    "test:style": "node tests/style-test.mjs full"
+  }
+}

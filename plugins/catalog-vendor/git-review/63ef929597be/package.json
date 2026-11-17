@@ -1,0 +1,17 @@
+{
+  "name": "git-review",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Git review pane plugin for Duckwork Desktop (development repository)",
+  "scripts": {
+    "postinstall": "node scripts/install-stubs.mjs",
+    "test": "npm run test:unit && node tests/desktop_plugin_smoke.mjs desktop/plugin.js && node tests/import_allowlist.mjs desktop/plugin.js",
+    "test:unit": "node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-test-renderer": "^18.3.1"
+  }
+}

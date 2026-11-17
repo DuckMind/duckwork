@@ -1,0 +1,29 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.db
+*.db-wal
+*.db-shm
+*.log
+.venv/
+venv/
+.env
+dist/
+# The Duckwork dashboard plugin ships a hand-written IIFE under
+# dashboard/dist/ — no build step, so it must be tracked.
+!dashboard/dist/
+!dashboard/dist/**
+build/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Superpowers SDD working artifacts (design specs + implementation plans) are
+# local scratch, not committed to the repo.
+docs/superpowers/
+
+# Agent tooling scratch dirs. Untracked AND unignored means `ruff format .`
+# walks them (1600+ files), so local output stops matching CI's 67.
+.claude/
+.playwright-mcp/

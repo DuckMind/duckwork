@@ -1,0 +1,32 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.photofresco/photofresco",
+  "title": "PhotoFresco",
+  "description": "Let AI agents edit images in a PhotoFresco window you approve: layers, masks, previews and export.",
+  "version": "0.1.0",
+  "websiteUrl": "https://photofresco.com/?pf_ref=mcp-registry",
+  "repository": {
+    "url": "https://github.com/photofresco/photofresco-agent",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "mcpb",
+      "identifier": "https://github.com/photofresco/photofresco-agent/releases/download/v0.1.0/photofresco-mcp-0.1.0.mcpb",
+      "version": "0.1.0",
+      "fileSha256": "20f9166ddc236230362be8a13c6f7619dcfb2b21a7b152c18bd325d6a0bb58c5",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "PHOTOFRESCO_BROWSER",
+          "description": "Path to a Chromium-based browser (Chrome, Edge, Chromium) when none is installed in the standard location",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "filepath"
+        }
+      ]
+    }
+  ]
+}

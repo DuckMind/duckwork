@@ -1,0 +1,25 @@
+{
+  "name": "duckwork-youtube-dock",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "YouTube recommendations and Shorts in the Duckwork Desktop internal Browser",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DuckMind/duckwork"
+  },
+  "engines": {
+    "node": ">=22.22.0 <23 || >=24.11.0 <25 || >=26 <27"
+  },
+  "scripts": {
+    "check": "node --check desktop/plugin.js && npm test",
+    "test": "node --experimental-vm-modules --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  }
+}

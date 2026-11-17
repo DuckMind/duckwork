@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-custom-dangerous-patterns"
+version = "0.5.1"
+description = "Duckwork Agent plugin for custom dangerous command patterns"
+requires-python = ">=3.11"
+dependencies = ["ruamel.yaml>=0.18", "rich>=13.0.0"]
+
+# Not a distributable package — installed by Duckwork via flat file copy to
+# ~/.duckwork/plugins/custom-dangerous-patterns/.  Explicitly declaring no
+# packages prevents setuptools flat-layout discovery errors on uv sync.
+[tool.setuptools]
+packages = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "ruff>=0.9",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "YTT"]
+
+[tool.ruff.lint.per-file-ignores]
+# Project directory must be named with hyphens for Duckwork plugin discovery
+"__init__.py" = ["N999"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*"]

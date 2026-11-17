@@ -1,0 +1,73 @@
+{
+  "service": "fish",
+  "title": "Ace Data Cloud Fish Audio",
+  "kind": "audio",
+  "description": "Text-to-speech with optional saved voice reference through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_fish",
+  "generate_path": "/fish/tts",
+  "task_path": "/fish/tasks",
+  "defaults": {
+    "model": "s2-pro",
+    "format": "mp3"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "text"
+    ],
+    "properties": {
+      "text": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "reference_id": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "format": {
+        "enum": [
+          "mp3",
+          "wav",
+          "pcm"
+        ],
+        "type": "string",
+        "maxLength": 4000
+      },
+      "model": {
+        "type": "string",
+        "enum": [
+          "s2-pro",
+          "s2.1-pro",
+          "s1"
+        ],
+        "maxLength": 4000
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_fish_generate",
+  "tools": [
+    "acedatacloud_fish_generate",
+    "acedatacloud_fish_task"
+  ],
+  "toolset": "acedatacloud-fish"
+}

@@ -1,0 +1,53 @@
+name: Compatibility report
+description: Report a compatibility problem with a Duckwork or Chutes change
+title: "[Compatibility]: "
+labels: ["compatibility"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when the provider stops matching a released Duckwork version or a documented Chutes API behavior.
+        Remove API keys, credentials, private prompts, and account data before submitting.
+  - type: dropdown
+    id: affected-system
+    attributes:
+      label: Affected system
+      options:
+        - Duckwork Agent
+        - Chutes API or model catalog
+        - Both or unclear
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version or commit
+      placeholder: v0.1.5 or a commit SHA
+    validations:
+      required: true
+  - type: input
+    id: upstream-version
+    attributes:
+      label: Duckwork or Chutes version reference
+      description: Provide a release, commit, dated API behavior, or authoritative link.
+    validations:
+      required: true
+  - type: textarea
+    id: observed-behavior
+    attributes:
+      label: Observed compatibility problem
+      description: Explain the regression and provide minimal reproduction steps.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Add relevant logs or links after removing sensitive data.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Sensitive-data check
+      options:
+        - label: I removed API keys, credentials, private prompts, and account data.
+          required: true

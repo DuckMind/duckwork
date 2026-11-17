@@ -1,0 +1,138 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # Catches the v0.4.13 release-day miss: pyproject.toml + plugin.yaml +
+  # CHANGELOG header must all carry the same version, or PyPI ships with
+  # a stale Duckwork-side manifest. Cheap static check, runs once per PR.
+  version-sync:
+    name: Version sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify version surfaces match
+        run: |
+          set -euo pipefail
+          PYPROJECT=$(grep -E '^version = ' pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          PLUGIN_YAML_PKG=$(grep -E '^version: ' yantrikdb/plugin.yaml | head -1 | sed 's/version: //')
+          PLUGIN_YAML_ROOT=$(grep -E '^version: ' plugin.yaml | head -1 | sed 's/version: //')
+          CHANGELOG=$(grep -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' yantrikdb/CHANGELOG.md | head -1 | sed 's/## \[\(.*\)\]/\1/')
+          echo "pyproject.toml         = $PYPROJECT"
+          echo "yantrikdb/plugin.yaml  = $PLUGIN_YAML_PKG  (read by bundled-discovery install)"
+          echo "plugin.yaml (root)     = $PLUGIN_YAML_ROOT  (read by 'duckwork plugins install <gh-repo>')"
+          echo "CHANGELOG.md           = $CHANGELOG"
+          if [ "$PYPROJECT" != "$PLUGIN_YAML_PKG" ] \
+              || [ "$PYPROJECT" != "$PLUGIN_YAML_ROOT" ] \
+              || [ "$PYPROJECT" != "$CHANGELOG" ]; then
+            echo "::error::Version drift — pyproject=$PYPROJECT, plugin_yaml_pkg=$PLUGIN_YAML_PKG, plugin_yaml_root=$PLUGIN_YAML_ROOT, CHANGELOG=$CHANGELOG"
+            echo ""
+            echo "All four surfaces must agree. The repo has bump-my-version configured:"
+            echo "  pipx run bump-my-version bump patch    # 0.4.17 -> 0.4.18"
+            echo "  pipx run bump-my-version bump minor    # 0.4.17 -> 0.5.0"
+            echo "  pipx run bump-my-version bump major    # 0.4.17 -> 1.0.0"
+            echo "Then add a matching CHANGELOG entry."
+            exit 1
+          fi
+          echo "All four version sources match: $PYPROJECT"
+
+          # Surfaces five and six: the ones that have each drifted silently
+          # BECAUSE this job did not read them. bump-my-version's own
+          # current_version drifted twice (see CHANGELOG 0.20.1 and again by
+          # 0.25.1) and refuses to run when it disagrees; the README engine
+          # badge sat at "<0.16" for eight minor pin bumps, telling every
+          # visitor the plugin could not run the current engine.
+          BUMP=$(grep -E '^current_version = ' pyproject.toml | head -1 | sed 's/current_version = "\(.*\)"/\1/')
+          echo "bumpversion current_version = $BUMP"
+          if [ "$PYPROJECT" != "$BUMP" ]; then
+            echo "::error::bump-my-version current_version=$BUMP disagrees with pyproject=$PYPROJECT; bump-my-version will refuse to run"
+            exit 1
+          fi
+
+          # The badge must show the SAME upper bound as the real pin, since
+          # that is the number a visitor reads as "which engines work".
+          PIN_MAX=$(grep -oE '"yantrikdb>=[^"]*"' pyproject.toml | head -1 | grep -oE '<[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          BADGE_MAX=$(grep -oE 'yantrikdb%20engine-[^)]*' README.md | head -1 | sed 's/%3C/</' | grep -oE '<[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1)
+          echo "pin upper bound        = $PIN_MAX"
+          echo "README badge bound     = $BADGE_MAX"
+          if [ "$PIN_MAX" != "$BADGE_MAX" ]; then
+            echo "::error::README engine badge says $BADGE_MAX but the pin says $PIN_MAX — update the badge in README.md"
+            exit 1
+          fi
+          echo "Engine badge matches the pin: $PIN_MAX"
+
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pytest ruff mypy types-requests
+
+      - name: Lint (ruff)
+        run: ruff check yantrikdb/ tests/
+
+      - name: Type check (mypy)
+        run: mypy --ignore-missing-imports yantrikdb/
+
+      - name: Run tests
+        run: python -m pytest tests/ -v
+
+  # Issue #87: think() was broken on the DEFAULT backend for a month and the
+  # suite above stayed green throughout, because it mocks the engine and a
+  # mock accepts any config key. The engine is the only thing that rejects,
+  # so one job installs it for real and asserts the plugin's calls against
+  # it. Deliberately a separate job on a single Python: the matrix above must
+  # keep passing with no engine present, the way a contributor runs it.
+  engine-contract:
+    name: Engine contract (real engine)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install the engine at the pin's ceiling
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pytest
+          # Same range pyproject.toml declares, so this job tests the newest
+          # engine a user can actually install alongside the plugin.
+          pip install "yantrikdb>=0.12.1,!=0.15.0,!=0.15.1,!=0.15.2,<0.24.0"
+          python -c "from importlib import metadata; print('engine', metadata.version('yantrikdb'))"
+
+      - name: Fail if the engine did not actually install
+        # Without this, a resolver failure would leave every real-engine test
+        # SKIPPED and the job green — a gate that sees nothing.
+        run: |
+          set -euo pipefail
+          python -m pytest tests/test_engine_contract.py -v             | tee /tmp/contract.log
+          if grep -q "SKIPPED" /tmp/contract.log; then
+            echo "::error::real-engine tests skipped — the engine is missing in this job"
+            exit 1
+          fi
+
+      - name: Full suite against the real engine
+        run: python -m pytest tests/ -q

@@ -1,0 +1,35 @@
+name: homeassistant-statistics
+label: Home Assistant Statistics
+version: 0.1.0
+author: goncami
+description: Read-only Home Assistant Recorder statistics over WebSocket.
+requires_duckwork: ">=0.21.5"
+provides_tools:
+  - ha_list_statistics
+  - ha_get_statistics
+provides_hooks: []
+provides_middleware: []
+requires_env:
+  - name: HASS_TOKEN
+    description: Home Assistant Long-Lived Access Token
+    prompt: Home Assistant Long-Lived Access Token
+    password: true
+optional_env:
+  - name: HASS_URL
+    description: Home Assistant base URL (default http://homeassistant.local:8123)
+    password: false
+  - name: HASS_ENTITY_ALLOWLIST
+    description: Comma-separated statistic ID allow patterns; denylist wins
+    password: false
+  - name: HASS_ENTITY_DENYLIST
+    description: Comma-separated statistic ID deny patterns; final veto
+    password: false
+  - name: HASS_STATISTICS_MAX_IDS
+    description: Maximum unique IDs per query (positive integer, default 100)
+    password: false
+  - name: HASS_STATISTICS_MAX_ROWS
+    description: Maximum estimated/query result rows or matching discovery entries (default 10000)
+    password: false
+  - name: HASS_STATISTICS_MAX_BYTES
+    description: Maximum serialized successful tool-result bytes (default 1048576)
+    password: false

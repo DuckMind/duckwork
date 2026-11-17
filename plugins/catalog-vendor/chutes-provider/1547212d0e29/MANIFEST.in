@@ -1,0 +1,13 @@
+# The sdist ships tests/, and the offline contract suite reads the manifest,
+# the changelog, the citation record, the directory-plugin entry point, and the
+# CI workflow from the distribution root. Include them so an unpacked sdist is a
+# self-contained, testable snapshot rather than one that fails on missing files.
+include __init__.py
+include plugin.yaml
+include CHANGELOG.md
+include CITATION.cff
+include AGENTS.md
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+include SECURITY.md
+include .github/workflows/ci.yml

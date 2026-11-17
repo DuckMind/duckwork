@@ -1,0 +1,3 @@
+# The Windows shim must reach cmd.exe with CRLF line endings; the POSIX shim with LF.
+*.cmd text eol=crlf
+bin/mixar-mcp text eol=lf

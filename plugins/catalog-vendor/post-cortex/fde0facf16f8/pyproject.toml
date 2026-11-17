@@ -1,0 +1,14 @@
+[project]
+name = "duckwork-plugin-post-cortex"
+version = "0.2.0"
+description = "Duckwork Agent memory provider plugin: post-cortex"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+# Standard library only: the plugin talks to the post-cortex daemon over HTTP.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+post-cortex = "https://github.com/julymetodiev/post-cortex"
+

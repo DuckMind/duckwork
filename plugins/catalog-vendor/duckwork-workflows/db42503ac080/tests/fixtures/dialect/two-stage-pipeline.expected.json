@@ -1,0 +1,43 @@
+{
+  "verdict": "importable",
+  "reason": "literal meta incl. phases (dropped, reported); pipeline over a prior agent's array with TWO stages, each a direct `agent(...)` whose prompt is a template over (item | prev, item) fields only (-> two chained fanout nodes: stage-1 items_from:'extracted.claims', stage-2 items_from:'verify.items' with after:['verify']); per-item stagger becomes a per-node barrier — the named deviation of dialect.md row 3, accepted for replay-skip priceability",
+  "rows": [
+    1,
+    3,
+    4,
+    11
+  ],
+  "graph_sketch": {
+    "name": "two-stage-pipeline",
+    "nodes": [
+      {
+        "id": "extracted",
+        "type": "agent",
+        "goal": "Read investor_update.md and list every factual claim. Return {claims: [{number, text}]}."
+      },
+      {
+        "id": "verify",
+        "type": "agent",
+        "after": [
+          "extracted"
+        ],
+        "fanout": {
+          "items_from": "extracted.claims",
+          "goal": "Verify claim #{number} against the source documents: {text}. Return {number: {number}, verdict, evidence}."
+        }
+      },
+      {
+        "id": "skeptic",
+        "type": "agent",
+        "after": [
+          "verify"
+        ],
+        "fanout": {
+          "items_from": "verify.items",
+          "goal": "A verifier said \"{verdict}\" for claim #{number} citing: {evidence}. Argue the opposite; return {holds, why}."
+        }
+      }
+    ]
+  },
+  "note": "their stage-2 may receive (prev, item); our stage-2 per-item template sees ONLY the stage-1 ITEM OUTPUT fields (items_from:'verify.items'). This fixture keeps stage 2 to `verified.*` and has stage 1 echo `number` through its schema so it is importable as written; a stage-2 template that references an original-item field the stage-1 schema does not return is a refusal (`stage 2 references item.<field> not carried by stage 1`) — pinned by pipeline-glue-stage only indirectly; #33 adds the direct fixture if it implements the carry-through instead."
+}

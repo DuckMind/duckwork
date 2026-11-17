@@ -1,0 +1,156 @@
+# Changelog
+
+All notable changes to Duckwork T3 Control are documented in this file.
+
+## [1.5.0] - 2026-09-13
+
+- Make ordinary sends register automatic completion before dispatch, with an
+  explicit `completion_policy: "none"` escape for intentional unwatched sends.
+- Preserve automatic handoff through native Desktop and gateway callbacks,
+  with conservative recovery and duplicate-delivery protection.
+- Publish the matching experimental host patch for the exact ad03f20d base;
+  its upstream PR is not merged and stock Duckwork needs unwatched sends.
+- Add native callback probes to the release CI gate.
+
+## [1.4.0] - 2026-09-12
+
+- Restore opt-in same-session Desktop continuation with explicit per-turn
+  registration, bounded authority, renewal, and durable consumer ownership.
+- Make the external task reference optional; no Sunsama account or placeholder
+  task ID is needed.
+- Add explicit Telegram completion notices after PM verification and a completed
+  native receipt, using a separate durable outbox without transcript mirroring.
+- Preserve bounded waits, pre-admission retries, cancellation, and historical
+  event audit. Reject unsupported destinations before required dispatch.
+- Publish the exact-base experimental host extension separately. Basic control
+  installation never patches Duckwork or restarts services.
+
+## [1.3.1] - 2026-09-06
+
+### Changed
+
+- Replaced the clone-and-hash onboarding wrapper with a downloadable, readable installer that retains signed-tag verification, profile confirmation, disabled validation, and explicit safe enablement.
+- Published the installer and its detached checksum as deterministic release assets.
+
+## [1.3.0] - 2026-09-06
+
+### Added
+
+- Added optional create-only instance, model, reasoning-effort, and alias defaults while preserving explicit model pairs and every existing-thread operation.
+- Added an off-by-default same-session continuation observer with an authenticated local ledger, exact source and route bindings, bounded replay, and fail-closed delivery.
+- Added a separate experimental Duckwork gateway patch pinned to clean upstream commit `63279301bcbdc185c1b07b98a9312eb0c862f26d`; stock Duckwork remains sufficient for the eleven basic tools.
+
+### Changed
+
+- Reworked public onboarding around a short signer-verified install, a safe first read, stock compatibility, upgrades, removal, and focused advanced guides.
+- Exhausted, fully acknowledged continuation bindings can be renewed explicitly with preserved source and destination authority, new task/scope/budget fields, retained lineage, and cross-generation deduplication.
+
+### Security
+
+- The experimental host patch is manual, exact-base-only, and distributed separately from the basic plugin archive with authenticated checksums and focused host tests.
+- Public release sources and fixtures use synthetic routes and contain no workstation paths, account aliases, credentials, or live binding identifiers.
+
+## [1.2.3] - 2026-08-30
+
+### Fixed
+
+- Discovers T3 0.0.37+ content-hashed WSL runtimes that no longer ship `package.json`, while still failing closed on unversioned trees and malformed live versions.
+
+## [1.2.2] - 2026-08-23
+
+### Added
+
+- Added `t3_thread_settle` so Duckwork can hide a finished inactive thread from T3's in-progress list without deleting it.
+- Added guarded same-thread Codex instance switching so work can move off an exhausted account without replacing the thread.
+
+### Changed
+
+- Moved the long signer-verified installer out of the README into `scripts/install-signed.sh` and left a five-line hash-gated launch in Quick start.
+
+## [1.2.1] - 2026-08-22
+
+### Changed
+
+- Reworked the primary README around purpose, evidence-based compatibility, a signer-verified install, the first non-thread-mutating prompt, and the everyday find/read/send/wait workflow.
+- Added a supported `after-install.md` next-step panel so a disabled installation leads directly to Doctor, explicit enablement, owner-specific restart, and a non-thread-mutating first check without token setup.
+- Moved the complete ten-tool reference, security internals, recovery/release operations, and provider/OS evidence into focused documentation pages.
+- Replaced the personal project selector with a neutral example and made Codex, OpenCode, other-provider, Linux/WSL2, native Windows, and macOS claims explicit.
+
+### Added
+
+- Added validated community-index entry metadata pinned to the immutable v1.2.0 release commit, plus the exact external blocker and submission/readback procedure for a future official index.
+- Added provider and operating-system acceptance gates for the separate v1.3 portability wave; v1.2.1 makes no new non-Codex or native Windows/macOS support claim.
+
+## [1.2.0] - 2026-08-22
+
+### Added
+
+- Added zero-copy local authentication that discovers the active matching T3 CLI, leases one five-minute in-memory session per tool operation, and revokes it on every exit path.
+- Added compact project/title/state thread discovery, material thread readback, bounded per-thread status waiting, and exact typed approval or user-input responses.
+- Added explicit busy-thread `reject`/`queue` handling while preserving exact-thread model, mode, branch, worktree, and model-option continuity.
+
+### Fixed
+
+- Treats an accepted dispatch whose read projection is delayed as `accepted_pending_projection`, with exact command/message identities and a safe exact-read reconciliation recipe, instead of a failure that could invite a duplicate turn.
+- Recognizes T3's persisted queued user message with a null turn link and never redispatches after a successful dispatch response.
+- Waits within the request deadline for a delayed server-side socket accept before authentication and preserves a sanitized cleanup warning even when a handler fails unexpectedly.
+- Makes release output permissions deterministic across caller umasks and isolates the supported-install harness from ambient credentials, Git configuration, hooks, and proxies.
+- Caps cumulative response bodies to 64 MiB per logical operation, rejects non-finite JSON numbers, and preserves accepted-pending reconciliation without redispatch when projection polling exhausts that budget.
+- Reads local T3 metadata through nonblocking, no-follow regular-file descriptors and cleans up newly issued sessions even when post-issuance CLI output is malformed or lacks a safe session ID.
+- Makes `busy_policy: reject` observation-only because pinned T3 has no atomic idle guard; actual sends now require explicit start-or-queue acknowledgement and disclose full-access at the action point.
+- Requires an expected active turn for pending responses, revalidates it twice, labels the immutable-upstream residual race as best-effort, and documents every approval decision scope.
+- Adds bounded compact discovery for projects with no threads and explicit model-facing truncation metadata for messages, errors, plans, pending actions, and plan progress.
+- Uses canonical T3 background liveness and plan progress for terminal waits, caps each complete agent projection to 262144 UTF-8 bytes, and rejects aggregate response answers above 524288 bytes before HTTP.
+- Gives live canonical background work precedence over stopped/error session state, blocks Plan implementation until it clears, and validates the exact pinned plan-progress response shape.
+- Runs normalized public-argument credential-reflection preflight before every local-mode T3 HTTP probe while retaining pinned process, listener, and connected-socket validation.
+
+### Changed
+
+- Expanded the registered surface from eight to ten tools; list/read results now default to bounded compact/material views with explicit `raw` compatibility views.
+- Documented the v1.2 migration for compact/material defaults and the preserved explicit legacy `raw` views.
+- Pinned supported Duckwork CI to each revision's frozen `uv.lock` dependency graph and hardened published-asset verification around a fresh private HTTPS-only download directory.
+
+### Security
+
+- Local T3 credentials remain in process memory and never enter argv, files, logs, or public results; CLI output, HTTP I/O, polling, and response bodies remain bounded. Credentialed connections are pinned to the discovered process, listener, and accepted socket.
+- The current upstream local-session CLI grants eight administrative scopes. The plugin limits exposure with exact live-environment matching, a five-minute TTL, an orchestration-only HTTP route allowlist, and deterministic revocation; external scoped-token mode remains available for headless deployments.
+
+## [1.1.1] - 2026-08-21
+
+### Fixed
+
+- Restored installation on declared Duckwork 0.20.4 and 0.20.5 by using their supported native manifest version.
+- Removed historical development specifications that the default install-time security scanner rejects; they remain available in the v1.1.0 tag and repository history.
+- Rejected active-credential reflection across every normalized public argument before any T3 HTTP request or mutation.
+- Rejected explicit JSON `null` for the non-null `before_cursor`, `branch`, and `worktree_path` string fields.
+
+### Changed
+
+- Added a real pinned-ref install, disabled-state, explicit-enable, fresh-process load, and exact eight-tool verification regression for both supported Duckwork revisions.
+- Streamlined the operator guide around safe installation, common workflows, recovery, compatible rollback, and canonical removal.
+
+## [1.1.0] - 2026-08-21
+
+### Added
+
+- Typed thread-mode updates and a provenance-preserving same-thread Plan to Build workflow.
+- Creation-time runtime defaults, initial turns, checkout metadata, and model option preservation.
+- Reproducible Python 3.11-3.13 CI, pinned Duckwork Plugin Doctor compatibility checks, and deterministic release archives.
+
+### Security
+
+- Retained numeric-loopback-only transport, profile-safe credential resolution, exact-target mutation readback, and sanitized errors.
+- Rejects active-token reflection in request targets or mutation data before any HTTP request.
+- Publishes release artifacts through owner-private, inode-bound no-follow staging and rejects unsafe directories, links, or special files.
+
+[1.4.0]: https://github.com/DuckMind/duckwork
+[1.3.1]: https://github.com/DuckMind/duckwork
+[1.3.0]: https://github.com/DuckMind/duckwork
+[1.2.3]: https://github.com/DuckMind/duckwork
+[1.2.2]: https://github.com/DuckMind/duckwork
+[1.2.1]: https://github.com/DuckMind/duckwork
+[1.2.0]: https://github.com/DuckMind/duckwork
+[1.1.1]: https://github.com/DuckMind/duckwork
+[1.1.0]: https://github.com/DuckMind/duckwork
+
+[1.5.0]: https://github.com/DuckMind/duckwork

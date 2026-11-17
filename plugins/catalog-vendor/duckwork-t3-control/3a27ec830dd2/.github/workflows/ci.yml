@@ -1,0 +1,193 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run unit and mocked integration tests
+        env:
+          PYTHONWARNINGS: "error"
+        run: python -B -m unittest discover -s tests -v
+
+  doctor:
+    name: Supported install + Doctor (Duckwork ${{ matrix.duckwork-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - duckwork-version: "0.20.4"
+            duckwork-commit: e624e9fde561e1add9388384012b295fde669ade
+          - duckwork-version: "0.20.5"
+            duckwork-commit: fcbd1076a93841fa88855acce810e342a5b78101
+          - duckwork-version: "0.21.0"
+            duckwork-commit: 29112bef099274229cadff79cdff7bf7b99c4b77
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Check out pinned Duckwork revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.duckwork-commit }}
+          path: .ci/duckwork-agent
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Set up pinned uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.0"
+          enable-cache: false
+      - name: Sync frozen Duckwork dependency graph
+        run: uv sync --frozen --project .ci/duckwork-agent --python 3.11
+      - name: Run supported pinned-ref install regression
+        env:
+          DUCKWORK_SUPPORTED_INSTALL_TEST: "1"
+          PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONWARNINGS: "error"
+        run: uv run --frozen --project .ci/duckwork-agent python -B -m unittest -v tests.test_supported_install
+
+  gateway-patch:
+    name: Experimental gateway patch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: plugin
+          persist-credentials: false
+      - name: Check out exact Duckwork base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ad03f20dd61919ca2135d6904e787a94284aacaf
+          path: duckwork
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Set up pinned uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.0"
+          enable-cache: false
+      - name: Apply exact-base patch
+        run: |
+          test "$(git -C duckwork rev-parse HEAD)" = "ad03f20dd61919ca2135d6904e787a94284aacaf"
+          test -z "$(git -C duckwork status --porcelain)"
+          git -C duckwork apply --check "$GITHUB_WORKSPACE/plugin/patches/duckwork-gateway-continuation-ad03f20d.patch"
+          git -C duckwork apply "$GITHUB_WORKSPACE/plugin/patches/duckwork-gateway-continuation-ad03f20d.patch"
+          git -C duckwork diff --check
+      - name: Sync frozen Duckwork dependency graph
+        run: uv sync --frozen --project duckwork --python 3.11 --extra dev --extra messaging
+      - name: Run affected host tests
+        working-directory: duckwork
+        run: |
+          uv run --frozen --extra dev --extra messaging bash scripts/run_tests.sh -j 2 --file-timeout 300 \
+            tests/agent/test_codex_responses_adapter.py \
+            tests/agent/test_compression_rotation_state.py \
+            tests/agent/test_engine_preflight_wire.py \
+            tests/agent/test_gateway_event_overflow.py \
+            tests/agent/test_preflight_compression_gate.py \
+            tests/agent/test_preflight_compression_timeout_fail_closed.py \
+            tests/agent/test_turn_context.py \
+            tests/agent/test_turn_facade_lease.py \
+            tests/agent/test_typed_event_turn_boundary.py \
+            tests/gateway/test_active_turn_recovery.py \
+            tests/gateway/test_conversation_scope_funnel.py \
+            tests/gateway/test_plugin_message_injection.py \
+            tests/gateway/test_restart_resume_pending.py \
+            tests/gateway/test_silent_partial_delivery_95382.py \
+            tests/duckwork_cli/test_plugin_message_injection.py \
+            tests/duckwork_cli/test_plugin_notifications.py \
+            tests/test_lazy_session_regressions.py \
+            tests/test_tui_gateway_queue_on_busy.py \
+            tests/test_tui_gateway_server.py \
+            tests/tui_gateway/test_106459_routing_provenance_reopen.py \
+            tests/tui_gateway/test_auto_continue.py \
+            tests/tui_gateway/test_bot_live_owner_delivery.py \
+            tests/tui_gateway/test_compression_config_hot_reload.py \
+            tests/tui_gateway/test_failed_turn_retention.py \
+            tests/tui_gateway/test_finalize_session_persist.py \
+            tests/tui_gateway/test_goal_command.py \
+            tests/tui_gateway/test_heartbeat_tui_tick.py \
+            tests/tui_gateway/test_hosted_room_driver_runtime.py \
+            tests/tui_gateway/test_hosted_room_prompt_fence.py \
+            tests/tui_gateway/test_kanban_notify_poller.py \
+            tests/tui_gateway/test_loop_command.py \
+            tests/tui_gateway/test_plugin_events.py \
+            tests/tui_gateway/test_prompt_accept_logging.py \
+            tests/tui_gateway/test_protocol.py \
+            tests/tui_gateway/test_relay_live_author.py \
+            tests/tui_gateway/test_session_control.py \
+            tests/tui_gateway/test_turn_finished_failure_cause.py
+      - name: Exercise native discovered send and typed callback chains
+        working-directory: duckwork
+        run: |
+          uv run --frozen --extra dev --extra messaging python -B ../plugin/tests/native_handoff_probe.py --host . --surface desktop
+          uv run --frozen --extra dev --extra messaging python -B ../plugin/tests/native_handoff_probe.py --host . --surface gateway
+
+  package:
+    name: Deterministic release package
+    needs: [unit, doctor, gateway-patch]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python 3.11
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.11"
+      - name: Build deterministic archive
+        run: python -B scripts/build_release.py --output-dir dist
+      - name: Verify detached checksum
+        run: |
+          python -B scripts/verify_release.py dist/duckwork-t3-control-1.5.0.tar.gz.sha256
+          python -B scripts/verify_release.py dist/duckwork-gateway-continuation-1.5.0.patch.sha256
+          python -B scripts/verify_release.py dist/install-t3.sh.sha256
+      - name: Verify reproducibility and authenticated release source
+        # Candidate builds have fresh checksums. Only the exact signed v1.5.0
+        # source must reproduce its immutable manifest; tag mismatches fail.
+        run: python -B -m unittest -v tests.test_release.DeterministicArtifactTests.test_builds_are_byte_identical_and_checksum_is_portable
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: duckwork-t3-control-1.5.0
+          path: |
+            dist/duckwork-t3-control-1.5.0.tar.gz
+            dist/duckwork-t3-control-1.5.0.tar.gz.sha256
+            dist/duckwork-gateway-continuation-1.5.0.patch
+            dist/duckwork-gateway-continuation-1.5.0.patch.sha256
+            dist/install-t3.sh
+            dist/install-t3.sh.sha256
+          if-no-files-found: error
+          retention-days: 14

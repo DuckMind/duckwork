@@ -1,0 +1,36 @@
+name: duckwork-jetstream
+version: 1.2.0
+kind: platform
+label: JetStream
+description: >
+  NATS JetStream event-bus integration: publish events from agent sessions,
+  wake sessions on subject matches via durable consumers, and mirror Duckwork
+  lifecycle events onto a duckwork.> subject stream. Works against any
+  nats-server with JetStream enabled — no infrastructure assumptions.
+author: atbrace
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21.4"
+python_dependencies:
+  - nats-py>=2.7,<3
+provides_tools:
+  - nats_publish
+  - nats_fetch
+  - jetstream_watch
+  - jetstream_unwatch
+  - jetstream_list
+  - jetstream_status
+  - jetstream_wake
+config_schema:
+  servers: { type: list, default: ["localhost:4222"] }
+  stream: { type: str, default: "duckwork" }
+  publish_allowed: { type: list, default: [] }
+  subscribe_allowed: { type: list, default: [] }
+  wake: { type: list, default: [] }
+  auth: { type: dict, default: {} }
+  tls: { type: dict, default: {} }
+  max_payload_bytes: { type: int, default: 32768 }
+  lifecycle_emit: { type: list, default: [] }
+  lifecycle_prefix: { type: str, default: "duckwork" }
+  heartbeat_s: { type: int, default: 0 }
+  heartbeat_subject: { type: str, default: "" }

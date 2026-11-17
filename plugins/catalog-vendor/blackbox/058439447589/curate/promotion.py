@@ -1,0 +1,108 @@
+"""Promotion — a threat enters the verified tier (Refine R6; scope: dependency, kind=malware).
+
+Plan §09 PROMOTION WRITE: the promotion is written in the EXISTING verified-rule
+vocabulary the verified reader already compiles (no second reader): a
+``urn:defender:DependencySignal`` threat with identifier, severity, kind,
+package fields, advisory, name — plus the two-signature ``blackbox.promotion``
+envelope over the same fields (R7a), and PROVENANCE as random report ids whose
+mapping to the real report subjects stays curator-private (:class:`ProvenanceMap`).
+Kind is mandatory and must be ``malware``; the scope is exact versions unless
+the checklist's scope reason allows ``*``.
+
+Usage::
+
+    payload = promotion.payload_for(identifier, severity="critical", advisory="MAL-2026-1", report_subjects=[...], provenance=ProvenanceMap())
+    envelope = ctx.sign(PromotionDraft(payload, sequence=n), key)   # first key (curate.context); ctx.cosign adds the second
+    quads = publishing.verified_rule_quads(payload, envelope)  # -> node_routes.publish_to_verified_memory
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import secrets
+import threading
+from pathlib import Path
+from typing import Dict, Iterable, List, Mapping, Optional
+
+from ..kernel import constants, threat_ids
+from . import keys
+
+_PROVENANCE_FILE = "provenance.jsonl"
+
+
+class PromotionError(ValueError):
+    """A promotion outside R6's scope or missing a mandatory field."""
+
+
+class ProvenanceMap:
+    """Curator-PRIVATE mapping random provenance id -> report subject
+    (append-only JSONL in the curate home). The verified graph carries only
+    the random ids, so reporters are credited without being linkable."""
+
+    def __init__(self, path: Optional[Path] = None) -> None:
+        self._path = path or (keys.curate_home() / _PROVENANCE_FILE)
+        self._lock = threading.Lock()
+
+    def credit(self, identifier: str, report_subjects: Iterable[str]) -> list[str]:
+        ids = []
+        with self._lock:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            with os.fdopen(os.open(self._path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600), "a", encoding="utf-8") as fh:  # windows-footgun: ok — a WRITE (mode "w"/"a"); writes stay utf-8
+                for subject in report_subjects:
+                    random_id = secrets.token_hex(8)
+                    fh.write(json.dumps({"id": random_id, "identifier": identifier, "subject": subject}) + "\n")
+                    ids.append(random_id)
+        return ids
+
+
+def payload_for(identifier: str, *, severity: str, advisory: str, report_subjects: Iterable[str],
+                provenance: ProvenanceMap, name: str = "") -> dict[str, str]:
+    """The flat, signed payload of a promotion. Dependency + kind=malware only."""
+    parts = threat_ids.parse_dependency_identifier(identifier)
+    if parts is None:
+        raise PromotionError("R6 promotes dependency threats only (dep:<ecosystem>:<name>@<version>)")
+    ecosystem, package, version = parts
+    if severity.lower() not in constants.SEVERITY_ORDER:
+        raise PromotionError(f"severity must be one of {constants.SEVERITY_ORDER}")
+    return {
+        "identifier": identifier,
+        "severity": severity.lower(),
+        "kind": constants.KIND_MALWARE,
+        "ecosystem": ecosystem,
+        "packageName": package,
+        "packageVersion": version,
+        "advisoryId": advisory.strip(),
+        "name": name.strip() or f"{package}@{version} (malicious {ecosystem} package)",
+        "provenance": ",".join(provenance.credit(identifier, report_subjects)),
+    }
+
+
+def validate_payload(payload: Mapping[str, str]) -> None:
+    """Refuse a promotion payload that is not a well-formed kind=malware
+    dependency rule whose package fields agree with its identifier. Run by
+    the SECOND signer before cosigning and again before the write: the first
+    signer's client may have been modified, and the human approving sees
+    only the summary (KI-195). Raises :class:`PromotionError`."""
+    parts = threat_ids.parse_dependency_identifier(str(payload.get("identifier", "")))
+    if parts is None:
+        raise PromotionError("the payload's identifier is not dep:<ecosystem>:<name>@<version>")
+    ecosystem, package, version = parts
+    expected = {"kind": constants.KIND_MALWARE, "ecosystem": ecosystem, "packageName": package, "packageVersion": version}
+    for field_name, value in expected.items():
+        if payload.get(field_name) != value:
+            raise PromotionError(f"the payload's {field_name} does not match its identifier (or is not malware)")
+    if str(payload.get("severity", "")) not in constants.SEVERITY_ORDER:
+        raise PromotionError(f"severity must be one of {constants.SEVERITY_ORDER}")
+    if not str(payload.get("name", "")).strip():
+        raise PromotionError("the payload has no name")
+
+
+def whole_package(payload: Mapping[str, str]) -> bool:
+    """A name-level promotion (``@*`` — every version): the consent summary says so in words."""
+    return payload.get("packageVersion") == "*"
+
+
+def asset_name(identifier: str) -> str:
+    """The KA name of a promoted threat (deterministic: one asset per threat)."""
+    return f"threat-{threat_ids.stable_hash(identifier, 16)}"

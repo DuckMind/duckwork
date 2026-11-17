@@ -1,0 +1,60 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: duckwork-federated-search
+version: 1.1.2
+manifest_version: 2
+description: "Federated search — aggregate results from multiple search backends (Tavily, SearXNG, custom HTTP endpoints, etc.) with optional LLM-based relevance ranking and per-line multi-card credential pools. Configure via Settings → Plugins (card editor + Agent settings) or by editing the string (docs/agent-config.md)."
+author: kumaxs
+license: Apache-2.0
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21.5"
+tags:
+  - web-search
+  - search
+  - federated
+kind: backend
+provides_web_providers:
+  - federated
+config_schema:
+  backends:
+    type: list
+    default: []
+    label: Search lines
+    description: "Array of host config objects (name / type / base_url / api_key_env / credentials / required, …)"
+  timeout:
+    type: int
+    default: 10
+    label: Timeout (seconds)
+    description: "Overall deadline for all lines to answer; lines that miss it are dropped, the lines that answered make up a partial result"
+  max_results:
+    type: int
+    default: 8
+    label: Output size
+    description: "Maximum number of ranked results returned (effective output = min(limit, max_results))"
+  min_backends:
+    type: int
+    default: 1
+    label: Minimum successful lines
+    description: "A search succeeds only if at least N lines return results; required lines must always succeed (1 ≤ N ≤ line count)"
+  ranking_mode:
+    type: str
+    choices: [auto, keyword, llm]
+    default: auto
+    label: Ranking mode
+    description: "auto = follow the ranker config (unset → keyword; set → LLM with keyword fallback on failure); keyword = force keyword; llm = force LLM (uses the default auxiliary model when ranker.provider is unset)"
+  pool_strategy:
+    type: str
+    choices: [fill_first, round_robin, random]
+    default: fill_first
+    label: Multi-key strategy (global default)
+    description: "Global default rotation strategy: used when a line card does not set pool_strategy (the control now lives on each line card)"
+  ranker:
+    type: dict
+    default: {}
+    label: LLM ranking (ranker)
+    description: "provider/model are written by the card editor; existing keys such as prompt are preserved; rerank requests always set reasoning_effort=off (model thinking off)"
+  ui_language:
+    type: str
+    choices: [en, zh]
+    default: en
+    label: Interface language
+    description: "Language of this plugin's interface copy: en (default) or zh (optional localisation). Does not affect search behaviour."

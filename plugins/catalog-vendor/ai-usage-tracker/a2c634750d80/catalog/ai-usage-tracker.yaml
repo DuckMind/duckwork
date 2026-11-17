@@ -1,0 +1,31 @@
+# Catalog entry for Fordex/duckwork-agent → plugin-catalog/ai-usage-tracker.yaml
+#
+# PR checklist (see plugin-catalog/README.md + the plugin-catalog user guide):
+#   1. owner-submitted — the PR author owns/maintains the repo below
+#   2. public repository — repo is publicly cloneable
+#   3. released — the repo has real releases/tags, not just a default branch
+#   4. validation green — the catalog validation Action passes on the PR
+#   5. settled pin — the pinned commit is at least 2 weeks old at review time
+#   6. capabilities below match what the plugin actually registers at that commit
+#      (this plugin registers no tools/hooks/middleware — `duckwork plugins validate` agrees)
+#
+# REPLACE the placeholder sha with the tagged release commit (40 hex, quoted):
+#   git rev-parse v1.0.1^{commit}
+# Keep the quotes: an all-digit SHA would otherwise parse as a YAML integer and
+# lose leading zeros, failing validation.
+name: ai-usage-tracker
+repo: https://github.com/DuckMind/duckwork
+sha: "98010ea3fb2ce037cc5889bc4787e0152da69745"
+description: Live subscription-quota windows for every AI provider Duckwork can route to, as a
+  desktop page plus status-bar chip, with per-profile picker — Codex, Claude, Copilot, OpenCode
+  Go/Zen, Z.AI, Kimi, MiniMax, Fordex, OpenRouter, DeepSeek.
+maintainer: lvabarajithan
+tier: community
+requires_duckwork: ">=0.21"
+platforms: [linux, macos]
+docs_url: https://github.com/DuckMind/duckwork
+capabilities:
+  provides_tools: []
+  provides_hooks: []
+  provides_middleware: []
+  requires_env: []

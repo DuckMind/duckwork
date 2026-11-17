@@ -1,0 +1,18 @@
+{
+  "file": "cursor-plugin/mcp.json",
+  "host": "Cursor MCP config",
+  "verifiedAgainst": "https://cursor.com/docs/reference/plugins.md",
+  "verifiedOn": "2026-09-23",
+  "checks": [
+    {
+      "name": "url present",
+      "kind": "present",
+      "path": ["mcpServers", "mnemoverse", "url"]
+    },
+    {
+      "name": "no type field (Cursor infers transport)",
+      "kind": "absent",
+      "path": ["mcpServers", "mnemoverse", "type"]
+    }
+  ]
+}

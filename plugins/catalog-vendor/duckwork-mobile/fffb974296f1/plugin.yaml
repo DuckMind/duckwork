@@ -1,0 +1,60 @@
+name: duckwork-mobile
+label: Mobile App (WebSocket)
+kind: platform
+version: 1.1.1
+requires_duckwork: ">=0.21.6"
+description: >
+  Platform adapter for mobile applications: it runs a WebSocket server inside
+  Duckwork Agent and the app connects to the agent directly — text, voice, agent
+  replies and avatar events (thinking / speaking / idle). The only dependency is
+  `websockets` (already shipped with the Duckwork environment). Protocol:
+  site-docs/protocol/index.md.
+author: HermesAI (geniok1980)
+# ``requires_env`` is shown by ``duckwork config`` and ``duckwork gateway setup``.
+requires_env:
+  - name: MOBILE_TOKEN
+    description: "App shared secret (authorizes the WebSocket connection)"
+    prompt: "App token (openssl rand -hex 32)"
+    password: true
+# ``optional_env`` — optional settings with defaults.
+optional_env:
+  - name: MOBILE_HOST
+    description: "Listen address. Default is loopback (127.0.0.1); set 0.0.0.0 only deliberately, behind a wss:// reverse proxy."
+    prompt: "Host (127.0.0.1)"
+    password: false
+  - name: MOBILE_PORT
+    description: "WebSocket server port (default 8787)"
+    prompt: "Port (8787)"
+    password: false
+  - name: MOBILE_PATH
+    description: "WebSocket endpoint path (default /ws)"
+    prompt: "Path (/ws)"
+    password: false
+  - name: MOBILE_AVATAR_URL
+    description: "URL of the avatar HTML page the app opens"
+    prompt: "Avatar URL"
+    password: false
+  - name: MOBILE_HOME_DEVICE
+    description: "Default device for delivery (cron → deliver=mobile)"
+    prompt: "Default device id"
+    password: false
+  - name: MOBILE_ALLOWED_USERS
+    description: "Comma-separated user ids — enforced by Duckwork itself (authorization and pairing)"
+    prompt: "Allowed users"
+    password: false
+  - name: MOBILE_ALLOWED_DEVICES
+    description: "Comma-separated device ids — an extra adapter-level filter (empty = any device with a valid token)"
+    prompt: "Allowed devices"
+    password: false
+  - name: MOBILE_ALLOW_ALL_USERS
+    description: "1/true — accept any user with a valid token without checking the allow list (handy for development; prefer MOBILE_ALLOWED_USERS in production)"
+    prompt: "Allow all users? (1/0)"
+    password: false
+  - name: MOBILE_EXTRA_TOKENS
+    description: "Additional tokens (pairing several devices), comma-separated. An entry may be `device_id=token` to bind a token to one device, so it cannot take over another device id."
+    prompt: "Extra tokens"
+    password: true
+  - name: MOBILE_DELIVER_TOKENS
+    description: "Comma-separated tokens allowed to send the service `deliver` frame (cron from another process or host). From a loopback address delivery is allowed without it."
+    prompt: "Deliver tokens"
+    password: true

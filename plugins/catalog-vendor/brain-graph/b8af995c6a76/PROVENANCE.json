@@ -1,0 +1,272 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/PIR8-Software/hermes-brain-graph/54923ce800fa07d0a81997ad899a3a1c6384d635/docs/images/brain-graph-banner.png": "_catalog_assets/docs/images/brain-graph-banner.png"
+    },
+    "image": "_catalog_assets/docs/images/brain-graph-banner.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "brain-graph",
+  "content_id": "b8af995c6a76",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "plugin.yaml",
+  "input_files": [
+    {
+      "bytes": 28790,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/images/brain-graph-banner.png",
+      "sha256": "2ba656f770707046434ce5bebf057ee673386a07e9d7bb912299c1dc490b5dd0"
+    },
+    {
+      "bytes": 1081,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "e273cfdaed6060dcf7cce1619fdd145b40a4a8040bb555e8c27c02b8e3f86616"
+    },
+    {
+      "bytes": 202,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "08e7f471c4ea31eb8c5486070e4933f69b0a5129d985ea4a5cd8e00fd3ee47f1"
+    },
+    {
+      "bytes": 33077,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "ac86e4e9fb16dcf3b906ac3dc9fa39120343be31e7602141411f17b500a3327b"
+    },
+    {
+      "bytes": 54288,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "ee70096522107a86c342a0d9989813d96a1959240b0b5f14d2b87982b8b3ed75"
+    },
+    {
+      "bytes": 212,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "e2b6d5a73661225ed0589262d970afa9db5252754b7e4b5ba2e34706d3195e0a"
+    }
+  ],
+  "input_manifest_sha256": "b8af995c6a761ba11f5bcce16d0baf071079cdef655a1cadc3ac6dac85be140c",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "e273cfdaed6060dcf7cce1619fdd145b40a4a8040bb555e8c27c02b8e3f86616",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "dashboard/plugin_api.py",
+      "desktop/plugin.js",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/PIR8-Software/hermes-brain-graph",
+    "sha": "54923ce800fa07d0a81997ad899a3a1c6384d635",
+    "subdir": "catalog"
+  },
+  "original_repo": "https://github.com/PIR8-Software/hermes-brain-graph",
+  "original_sha": "54923ce800fa07d0a81997ad899a3a1c6384d635",
+  "original_subdir": "catalog",
+  "output_files": [
+    {
+      "path": "_catalog_assets/docs/images/brain-graph-banner.png",
+      "sha256": "2ba656f770707046434ce5bebf057ee673386a07e9d7bb912299c1dc490b5dd0",
+      "bytes": 28790,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "e273cfdaed6060dcf7cce1619fdd145b40a4a8040bb555e8c27c02b8e3f86616",
+      "bytes": 1081,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "08e7f471c4ea31eb8c5486070e4933f69b0a5129d985ea4a5cd8e00fd3ee47f1",
+      "bytes": 202,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "169a0ba762b3681f073c223b57703bb5e7a0d63da80d3c841dc8698284943d37",
+      "bytes": 33079,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "2ef1acd7c4f797df41c6026d2245c2ef32d6fbfd7271bc5921cd839e25150415",
+      "bytes": 54290,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "225677a45ab33d9c3190208028ad83f2bb9a27acb07ae7f06d7ce6b129f70e59",
+      "bytes": 214,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "5fb5007503d7b2ce2cd76e484a0e69945de23b8c0bc08ecbccf7f224f99d9195",
+  "pin_verification": {
+    "archive_bytes": 85285,
+    "archive_sha256": "68dade1ba811afe2c1fb80ea419e08a66b45ca3a33cd154bbdf29b63dde84c52",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "54923ce800fa07d0a81997ad899a3a1c6384d635",
+    "verified_commit_marker": "54923ce800fa07d0a81997ad899a3a1c6384d635"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "9c0da109c4e8d9a8f302db470c56364ea3187d3453adea898782c272ff1bae5d",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "_catalog_assets/docs/images/brain-graph-banner.png",
+        "input_sha256": "2ba656f770707046434ce5bebf057ee673386a07e9d7bb912299c1dc490b5dd0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2ba656f770707046434ce5bebf057ee673386a07e9d7bb912299c1dc490b5dd0",
+        "source": "_catalog_assets/docs/images/brain-graph-banner.png",
+        "final_output_sha256": "2ba656f770707046434ce5bebf057ee673386a07e9d7bb912299c1dc490b5dd0",
+        "cli_destination": "_catalog_assets/docs/images/brain-graph-banner.png",
+        "previous_staging_sha256": "2ba656f770707046434ce5bebf057ee673386a07e9d7bb912299c1dc490b5dd0"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "e273cfdaed6060dcf7cce1619fdd145b40a4a8040bb555e8c27c02b8e3f86616",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "e273cfdaed6060dcf7cce1619fdd145b40a4a8040bb555e8c27c02b8e3f86616",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "e273cfdaed6060dcf7cce1619fdd145b40a4a8040bb555e8c27c02b8e3f86616",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "e273cfdaed6060dcf7cce1619fdd145b40a4a8040bb555e8c27c02b8e3f86616"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "08e7f471c4ea31eb8c5486070e4933f69b0a5129d985ea4a5cd8e00fd3ee47f1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "08e7f471c4ea31eb8c5486070e4933f69b0a5129d985ea4a5cd8e00fd3ee47f1",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "08e7f471c4ea31eb8c5486070e4933f69b0a5129d985ea4a5cd8e00fd3ee47f1",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "08e7f471c4ea31eb8c5486070e4933f69b0a5129d985ea4a5cd8e00fd3ee47f1"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "ac86e4e9fb16dcf3b906ac3dc9fa39120343be31e7602141411f17b500a3327b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "169a0ba762b3681f073c223b57703bb5e7a0d63da80d3c841dc8698284943d37",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "169a0ba762b3681f073c223b57703bb5e7a0d63da80d3c841dc8698284943d37",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "169a0ba762b3681f073c223b57703bb5e7a0d63da80d3c841dc8698284943d37"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "ee70096522107a86c342a0d9989813d96a1959240b0b5f14d2b87982b8b3ed75",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2ef1acd7c4f797df41c6026d2245c2ef32d6fbfd7271bc5921cd839e25150415",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "2ef1acd7c4f797df41c6026d2245c2ef32d6fbfd7271bc5921cd839e25150415",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "2ef1acd7c4f797df41c6026d2245c2ef32d6fbfd7271bc5921cd839e25150415"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "e2b6d5a73661225ed0589262d970afa9db5252754b7e4b5ba2e34706d3195e0a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "225677a45ab33d9c3190208028ad83f2bb9a27acb07ae7f06d7ce6b129f70e59",
+        "source": "plugin.yaml",
+        "final_output_sha256": "225677a45ab33d9c3190208028ad83f2bb9a27acb07ae7f06d7ce6b129f70e59",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "225677a45ab33d9c3190208028ad83f2bb9a27acb07ae7f06d7ce6b129f70e59"
+      }
+    ],
+    "manifest_sha256": "13d38d7396f39253c19cb954c9b4225517c2e8dd89b1bfaea5fe2d322c584f3a",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "_catalog_assets/docs/images/brain-graph-banner.png": "docs/images/brain-graph-banner.png",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "dashboard/manifest.json": "catalog/dashboard/manifest.json",
+    "dashboard/plugin_api.py": "catalog/dashboard/plugin_api.py",
+    "desktop/plugin.js": "catalog/desktop/plugin.js",
+    "plugin.yaml": "catalog/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "brain-graph",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "brain-graph",
+  "catalog_file": "src/plugin-catalog/brain-graph.yaml",
+  "identity": {
+    "catalog_id": "brain-graph",
+    "canonical_slug": "brain-graph",
+    "original_manifest_name": "brain-graph",
+    "rebranded_manifest_name": "brain-graph",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "b72e88e776b657d05f26be9645b9fc5743fb49550b099f0d5998ceada01afffb",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

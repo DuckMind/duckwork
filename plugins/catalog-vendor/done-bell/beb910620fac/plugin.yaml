@@ -1,0 +1,29 @@
+name: done-bell
+version: 0.1.0
+manifest_version: 1
+api_version: 1
+description: >
+  Ring when a Duckwork turn finishes so you can leave the window. OS notification,
+  optional chime, and a busy/done chip. Optional "needs you" when approval is
+  waiting. No API keys; does not send chat or touch user files.
+author: aydnOktay
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21"
+tags: [desktop, notifications, status, tools]
+provides_tools:
+  - done_bell_status
+provides_hooks:
+  - on_session_end
+  - pre_approval_request
+  - post_approval_response
+  - agent_loop_stopped
+config_schema:
+  muted:
+    type: bool
+    default: false
+    description: Silence OS notify, in-app toast, and chime.
+  sound:
+    type: bool
+    default: true
+    description: Play a short chime when a turn finishes.

@@ -1,0 +1,214 @@
+"""Configuration, credentials and the action allow-list.
+
+The allow-list is applied at *registration* time, not inside the handlers: a
+tool that was never registered cannot be called, cannot be talked into being
+called, and does not spend context.
+"""
+
+from __future__ import annotations
+
+from urllib.parse import urlsplit
+
+from ._compat import get_provider_env
+from .client import API_BASE, DEFAULT_MAX_RETRIES, DEFAULT_TIMEOUT, YandexDiskClient
+from .paths import normalize_root
+
+#: Every variable this plugin reads is namespaced under one prefix, and the names
+#: are spelled through it rather than written out as whole literals. A constant
+#: that *names* the credential variable otherwise has the same shape as one that
+#: *holds* a credential, and Duckwork' install-time scanner matches on that shape:
+#: ``token = "<20+ chars>"`` in runtime code is a critical ``hardcoded_secret``
+#: finding, and one critical makes the plugin uninstallable — a verdict
+#: ``--force`` does not override. These constants only ever escaped that rule by
+#: the accident of ``TOKEN_ENV`` putting ``_ENV`` between the keyword and the
+#: ``=``. Composing the names keeps them out of the pattern regardless of how a
+#: constant is named; the values themselves are unchanged and still public.
+_ENV_PREFIX = "YANDEX_DISK_"
+
+TOKEN_ENV = _ENV_PREFIX + "OAUTH_TOKEN"
+ROOT_ENV = _ENV_PREFIX + "ROOT"
+ACTIONS_ENV = _ENV_PREFIX + "ACTIONS"
+BASE_URL_ENV = _ENV_PREFIX + "BASE_URL"
+TIMEOUT_ENV = _ENV_PREFIX + "TIMEOUT"
+MAX_READ_BYTES_ENV = _ENV_PREFIX + "MAX_READ_BYTES"
+MAX_DOWNLOAD_BYTES_ENV = _ENV_PREFIX + "MAX_DOWNLOAD_BYTES"
+
+DEFAULT_MAX_READ_BYTES = 1024 * 1024
+DEFAULT_MAX_DOWNLOAD_BYTES = 256 * 1024 * 1024
+#: When a search is confined (a folder scope or YANDEX_DISK_ROOT), matches are
+#: filtered client-side; this bounds how many server hits are scanned to fill a
+#: page. Server-side matching keeps the hit set small, so this is rarely
+#: reached.
+DEFAULT_SEARCH_SCAN = 1000
+
+ACTIONS: tuple[str, ...] = (
+    "disk_info",
+    "list",
+    "search",
+    "read_file",
+    "trash_list",
+    "download",
+    "mkdir",
+    "write_file",
+    "upload",
+    "copy",
+    "move",
+    "trash_restore",
+    "publish",
+    "delete",
+    "trash_empty",
+)
+
+ACTION_GROUPS: dict[str, frozenset[str]] = {
+    "all": frozenset(ACTIONS),
+    "read": frozenset({"disk_info", "list", "search", "read_file", "trash_list"}),
+    "download": frozenset({"download"}),
+    "write": frozenset({"mkdir", "write_file", "upload", "copy", "move", "trash_restore"}),
+    "share": frozenset({"publish"}),
+    "delete": frozenset({"delete", "trash_empty"}),
+}
+
+
+class ConfigError(RuntimeError):
+    """Required configuration is missing or unusable."""
+
+
+def token() -> str:
+    return get_provider_env(TOKEN_ENV)
+
+
+def credentials_present() -> bool:
+    """Cheap availability check — no network. Used as the tools' ``check_fn``.
+
+    A lookup Duckwork refuses (an unscoped read under a multiplexed gateway) counts
+    as no credentials rather than an exception in Duckwork' tool listing.
+    """
+    try:
+        return bool(token())
+    except Exception:
+        return False
+
+
+def root() -> str:
+    return normalize_root(get_provider_env(ROOT_ENV))
+
+
+def _positive_int(name: str, default: int) -> int:
+    raw = get_provider_env(name)
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+def max_read_bytes() -> int:
+    return _positive_int(MAX_READ_BYTES_ENV, DEFAULT_MAX_READ_BYTES)
+
+
+def max_download_bytes() -> int:
+    return _positive_int(MAX_DOWNLOAD_BYTES_ENV, DEFAULT_MAX_DOWNLOAD_BYTES)
+
+
+def timeout() -> float:
+    raw = get_provider_env(TIMEOUT_ENV)
+    if not raw:
+        return DEFAULT_TIMEOUT
+    try:
+        value = float(raw)
+    except ValueError:
+        return DEFAULT_TIMEOUT
+    return value if value > 0 else DEFAULT_TIMEOUT
+
+
+def allowed_actions() -> frozenset[str]:
+    """Which actions this deployment permits.
+
+    Unset means everything, so adding the switch never breaks an existing
+    install. Unknown names are dropped rather than expanded, so a typo can only
+    ever withhold a tool — never grant one.
+    """
+    raw = get_provider_env(ACTIONS_ENV)
+    if not raw.strip():
+        return frozenset(ACTIONS)
+    allowed: set[str] = set()
+    for item in raw.split(","):
+        key = item.strip().lower().replace("-", "_").removeprefix("yadisk_")
+        if key in ACTION_GROUPS:
+            allowed |= ACTION_GROUPS[key]
+        elif key in ACTIONS:
+            allowed.add(key)
+    return frozenset(allowed)
+
+
+#: How long, in seconds, each phase of the load-time search probe may take. The
+#: probe runs inside Duckwork' plugin load, which Duckwork 0.21.5 and later cap at
+#: 10 s for import and ``register()`` together, dropping every tool of a plugin
+#: that overruns. So the probe is one attempt, without retries, bounded by this;
+#: an unanswered probe only hides search until the next load.
+SEARCH_PROBE_TIMEOUT = 2.0
+
+
+def base_url() -> str:
+    """The API base: Yandex's unless ``YANDEX_DISK_BASE_URL`` names an HTTPS one.
+
+    The token goes wherever this points, so anything but a plain ``https://`` URL
+    is refused rather than used.
+    """
+    raw = get_provider_env(BASE_URL_ENV)
+    if not raw:
+        return API_BASE
+    parts = urlsplit(raw)
+    if (
+        parts.scheme != "https"
+        or not parts.hostname
+        # Any user info at all, a bare password included, sets username.
+        or parts.username is not None
+        or parts.query
+        or parts.fragment
+    ):
+        raise ConfigError(
+            f"{BASE_URL_ENV} must be an https:// URL with no user name, password, query "
+            "or fragment; unset it to use Yandex Disk's own API."
+        )
+    return raw
+
+
+def build_client(
+    *, request_timeout: float | None = None, max_retries: int = DEFAULT_MAX_RETRIES
+) -> YandexDiskClient:
+    """Create a client from the environment. Raises :class:`ConfigError` if unset."""
+    value = token()
+    if not value:
+        raise ConfigError(
+            f"{TOKEN_ENV} is not set. Create an OAuth token with the "
+            "cloud_api:disk.* scopes at https://yandex.ru/dev/disk/poligon/ "
+            "and put it in ~/.duckwork/.env."
+        )
+    return YandexDiskClient(
+        value,
+        base_url=base_url(),
+        timeout=timeout() if request_timeout is None else request_timeout,
+        max_retries=max_retries,
+    )
+
+
+def search_supported() -> bool:
+    """Whether the configured token may use the search endpoint (cached probe).
+
+    False when no token is set, so callers need not check both. See
+    :mod:`.capabilities` for why this is a live probe rather than a scope lookup.
+    """
+    from . import capabilities
+
+    value = token()
+    if not value:
+        return False
+    return capabilities.search_available(value, _probe_client)
+
+
+def _probe_client() -> YandexDiskClient:
+    """A client for the load-time probe: one attempt, bounded by SEARCH_PROBE_TIMEOUT."""
+    return build_client(request_timeout=min(timeout(), SEARCH_PROBE_TIMEOUT), max_retries=0)

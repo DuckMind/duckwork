@@ -1,0 +1,551 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "watchline",
+  "content_id": "f12a6938ac85",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 563,
+      "mode": "100644",
+      "path": ".github/workflows/check.yml",
+      "sha256": "1c44b5e60ac708cb113a37e6079f9411d94ac3fb6723eb1ff6cd0d814d74f0cd"
+    },
+    {
+      "bytes": 842,
+      "mode": "100644",
+      "path": ".github/workflows/publish.yml",
+      "sha256": "68b854a4dfe23683b9c85ff32f3c9231b5ba8d34687855ce091c1761e39de49f"
+    },
+    {
+      "bytes": 83,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "162d0cb02745f3326956015caf19001922029f37647072e1d724be0d3967714a"
+    },
+    {
+      "bytes": 1066,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "4edee162c58ea44c8477a9ebeaa0cf2572a795912513fa345aab445850e8206f"
+    },
+    {
+      "bytes": 3729,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "b844d7c2341f617745de202649a8d136642d4718d86c048cd971952f6f8f3370"
+    },
+    {
+      "bytes": 207,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "f6b13ad2bd6407e0843372663862a34a8cb8b49e337f5aed6519fbe1712c1a40"
+    },
+    {
+      "bytes": 969,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "619619471cb42433b555e041be2738231ea53fcfd704b27a460428a7c0846035"
+    },
+    {
+      "bytes": 1473,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "e1ff2e94c12810f9853517801e165c687e91f1b9ed22e8aa4cd263e432472211"
+    },
+    {
+      "bytes": 878,
+      "mode": "100644",
+      "path": "tests/test_config.py",
+      "sha256": "024534f7305dedcf5c7e7d50ffffd8ef4618ca460204a64d5a4ab64aa3995312"
+    },
+    {
+      "bytes": 822,
+      "mode": "100644",
+      "path": "tests/test_delivery.py",
+      "sha256": "6d0d5fd21a320b0eaf956cf3f38b7c6b7b86ec577761332b5ddea966fda2bb19"
+    },
+    {
+      "bytes": 39,
+      "mode": "100644",
+      "path": "watchline_hermes_plugin/__init__.py",
+      "sha256": "dd28a06a203ccc29f76109da7074347aca8f58d92f15b0e9e8391258f2e25a64"
+    },
+    {
+      "bytes": 9322,
+      "mode": "100644",
+      "path": "watchline_hermes_plugin/adapter.py",
+      "sha256": "1bd28c412ff7a69dad572fc4fca513c2b2c600c64da460b79bad539f7ad60c99"
+    },
+    {
+      "bytes": 1945,
+      "mode": "100644",
+      "path": "watchline_hermes_plugin/client.py",
+      "sha256": "2582d68cf874019f491ee3164beba30a58db7fc169c543028166089a918f6f31"
+    },
+    {
+      "bytes": 6875,
+      "mode": "100644",
+      "path": "watchline_hermes_plugin/config.py",
+      "sha256": "5f361c17460e9743c9718eb62c162467832c75d681d4ca4e8eee460681cca8bb"
+    },
+    {
+      "bytes": 2365,
+      "mode": "100644",
+      "path": "watchline_hermes_plugin/delivery.py",
+      "sha256": "7abcf649f97dcc533c4204ffe753f865fcdc4ae591f5018cd2507a89afffc8fe"
+    },
+    {
+      "bytes": 3848,
+      "mode": "100644",
+      "path": "watchline_hermes_plugin/watchline_cli.py",
+      "sha256": "21aa7e088b861fe602899bddf62357e748fe392a57d7374f62226a2c5da905e3"
+    }
+  ],
+  "input_manifest_sha256": "f12a6938ac85ced3a70674388d9c4defa4116b271af2774bc70459e7b37b0471",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "4edee162c58ea44c8477a9ebeaa0cf2572a795912513fa345aab445850e8206f",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/check.yml",
+      ".github/workflows/publish.yml",
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/test_config.py",
+      "tests/test_delivery.py",
+      "watchline_duckwork_plugin/__init__.py",
+      "watchline_duckwork_plugin/adapter.py",
+      "watchline_duckwork_plugin/client.py",
+      "watchline_duckwork_plugin/config.py",
+      "watchline_duckwork_plugin/delivery.py",
+      "watchline_duckwork_plugin/watchline_cli.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/qordinate-ai/watchline-hermes-plugin",
+    "sha": "d3d2424336af16cae94e4bbcb47e6edd07a88062",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/qordinate-ai/watchline-hermes-plugin",
+  "original_sha": "d3d2424336af16cae94e4bbcb47e6edd07a88062",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/check.yml",
+      "sha256": "362302976b506ab0f8968f96309fd63ddc3b440e7ee0653404375f6bafbac111",
+      "bytes": 565,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/publish.yml",
+      "sha256": "8b7df8a7fb270c28f7352adb0f710230d065772a2b44747ce431d6552c975bbe",
+      "bytes": 844,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "162d0cb02745f3326956015caf19001922029f37647072e1d724be0d3967714a",
+      "bytes": 83,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "4edee162c58ea44c8477a9ebeaa0cf2572a795912513fa345aab445850e8206f",
+      "bytes": 1066,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "872b5fe6d46d04837cd99d258c0f661bdc3c813a81c71297c4fdfe53e074dee0",
+      "bytes": 3747,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "3f6aa25147bf95fb0b4e620595d5ce4d29209afc980591d3514ca693e1c3aa3f",
+      "bytes": 211,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "ffc59e4fb9467cf788edd8ae5eec0ea6c20d1870c08d042b3d1e2eb9ac5a2f87",
+      "bytes": 979,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "e41d191275ba72dae2c9bdcbf69ff666d6f676119e89f53880ee071efb269af9",
+      "bytes": 1438,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_config.py",
+      "sha256": "5849ea17696d6dc0a0bb7d7d0bbf8354217ada7b094db222c2137088e25264c0",
+      "bytes": 884,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_delivery.py",
+      "sha256": "cfae0050ffea464609a7d686158271d24b250e29260506c1ba1cb3330e2af79e",
+      "bytes": 824,
+      "mode": "100644"
+    },
+    {
+      "path": "watchline_duckwork_plugin/__init__.py",
+      "sha256": "a3dd41cb0e16df5364ef68fa138f8dee80bc8890e7e7adcdffef38b459a6cd03",
+      "bytes": 41,
+      "mode": "100644"
+    },
+    {
+      "path": "watchline_duckwork_plugin/adapter.py",
+      "sha256": "eadb397893e2c5c63061549c204f2f0defa14f33757cd720606a730e39dd264d",
+      "bytes": 9342,
+      "mode": "100644"
+    },
+    {
+      "path": "watchline_duckwork_plugin/client.py",
+      "sha256": "03dbcb5e3d54751dd3665f82c108a5aa5b49ff57a480d97e74112e89b6c1e56d",
+      "bytes": 1949,
+      "mode": "100644"
+    },
+    {
+      "path": "watchline_duckwork_plugin/config.py",
+      "sha256": "f8f294fce226499d00287c8051a98a3ea83c8bd428531872d4e34813d21378e7",
+      "bytes": 6911,
+      "mode": "100644"
+    },
+    {
+      "path": "watchline_duckwork_plugin/delivery.py",
+      "sha256": "958e0be3c78173e357a45fc202279a467e932b2645be97429b5e04c2e1e921e6",
+      "bytes": 2367,
+      "mode": "100644"
+    },
+    {
+      "path": "watchline_duckwork_plugin/watchline_cli.py",
+      "sha256": "2b7a87c324ffd2eba44821ee4057ffce3afec1f3a0f3a4503115731acae3d054",
+      "bytes": 3872,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "6b3b34b69ecc4c3d41b11eefc398cea922a22794cf9cb4bcca89443068758188",
+  "pin_verification": {
+    "archive_bytes": 10638,
+    "archive_sha256": "76cee220d3a61f98f30067acf24295b6290d099c709fd73fcd19565efe8474c4",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "d3d2424336af16cae94e4bbcb47e6edd07a88062",
+    "verified_commit_marker": "d3d2424336af16cae94e4bbcb47e6edd07a88062"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "f30ed89691aacc2d831487097037eeba2bc8d21294c0d36cc7b783e9f1468428",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/check.yml",
+        "input_sha256": "1c44b5e60ac708cb113a37e6079f9411d94ac3fb6723eb1ff6cd0d814d74f0cd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "362302976b506ab0f8968f96309fd63ddc3b440e7ee0653404375f6bafbac111",
+        "source": ".github/workflows/check.yml",
+        "final_output_sha256": "362302976b506ab0f8968f96309fd63ddc3b440e7ee0653404375f6bafbac111",
+        "cli_destination": ".github/workflows/check.yml",
+        "previous_staging_sha256": "362302976b506ab0f8968f96309fd63ddc3b440e7ee0653404375f6bafbac111"
+      },
+      {
+        "destination": ".github/workflows/publish.yml",
+        "input_sha256": "68b854a4dfe23683b9c85ff32f3c9231b5ba8d34687855ce091c1761e39de49f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8b7df8a7fb270c28f7352adb0f710230d065772a2b44747ce431d6552c975bbe",
+        "source": ".github/workflows/publish.yml",
+        "final_output_sha256": "8b7df8a7fb270c28f7352adb0f710230d065772a2b44747ce431d6552c975bbe",
+        "cli_destination": ".github/workflows/publish.yml",
+        "previous_staging_sha256": "8b7df8a7fb270c28f7352adb0f710230d065772a2b44747ce431d6552c975bbe"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "162d0cb02745f3326956015caf19001922029f37647072e1d724be0d3967714a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "162d0cb02745f3326956015caf19001922029f37647072e1d724be0d3967714a",
+        "source": ".gitignore",
+        "final_output_sha256": "162d0cb02745f3326956015caf19001922029f37647072e1d724be0d3967714a",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "162d0cb02745f3326956015caf19001922029f37647072e1d724be0d3967714a"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "4edee162c58ea44c8477a9ebeaa0cf2572a795912513fa345aab445850e8206f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "4edee162c58ea44c8477a9ebeaa0cf2572a795912513fa345aab445850e8206f",
+        "source": "LICENSE",
+        "final_output_sha256": "4edee162c58ea44c8477a9ebeaa0cf2572a795912513fa345aab445850e8206f",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "4edee162c58ea44c8477a9ebeaa0cf2572a795912513fa345aab445850e8206f"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "b844d7c2341f617745de202649a8d136642d4718d86c048cd971952f6f8f3370",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3bdf7784f4c5990572202079678a258afa1403704f46dced2d3133199c8661c0",
+        "source": "README.md",
+        "final_output_sha256": "872b5fe6d46d04837cd99d258c0f661bdc3c813a81c71297c4fdfe53e074dee0",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "3bdf7784f4c5990572202079678a258afa1403704f46dced2d3133199c8661c0"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "f6b13ad2bd6407e0843372663862a34a8cb8b49e337f5aed6519fbe1712c1a40",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3f6aa25147bf95fb0b4e620595d5ce4d29209afc980591d3514ca693e1c3aa3f",
+        "source": "__init__.py",
+        "final_output_sha256": "3f6aa25147bf95fb0b4e620595d5ce4d29209afc980591d3514ca693e1c3aa3f",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "3f6aa25147bf95fb0b4e620595d5ce4d29209afc980591d3514ca693e1c3aa3f"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "619619471cb42433b555e041be2738231ea53fcfd704b27a460428a7c0846035",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ffc59e4fb9467cf788edd8ae5eec0ea6c20d1870c08d042b3d1e2eb9ac5a2f87",
+        "source": "plugin.yaml",
+        "final_output_sha256": "ffc59e4fb9467cf788edd8ae5eec0ea6c20d1870c08d042b3d1e2eb9ac5a2f87",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "ffc59e4fb9467cf788edd8ae5eec0ea6c20d1870c08d042b3d1e2eb9ac5a2f87"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "e1ff2e94c12810f9853517801e165c687e91f1b9ed22e8aa4cd263e432472211",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2272ca2de8442fec253888a3d4284c64a5235a9c84c750c442fb036c8e148a68",
+        "source": "pyproject.toml",
+        "final_output_sha256": "e41d191275ba72dae2c9bdcbf69ff666d6f676119e89f53880ee071efb269af9",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "2272ca2de8442fec253888a3d4284c64a5235a9c84c750c442fb036c8e148a68"
+      },
+      {
+        "destination": "tests/test_config.py",
+        "input_sha256": "024534f7305dedcf5c7e7d50ffffd8ef4618ca460204a64d5a4ab64aa3995312",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5849ea17696d6dc0a0bb7d7d0bbf8354217ada7b094db222c2137088e25264c0",
+        "source": "tests/test_config.py",
+        "final_output_sha256": "5849ea17696d6dc0a0bb7d7d0bbf8354217ada7b094db222c2137088e25264c0",
+        "cli_destination": "tests/test_config.py",
+        "previous_staging_sha256": "5849ea17696d6dc0a0bb7d7d0bbf8354217ada7b094db222c2137088e25264c0"
+      },
+      {
+        "destination": "tests/test_delivery.py",
+        "input_sha256": "6d0d5fd21a320b0eaf956cf3f38b7c6b7b86ec577761332b5ddea966fda2bb19",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cfae0050ffea464609a7d686158271d24b250e29260506c1ba1cb3330e2af79e",
+        "source": "tests/test_delivery.py",
+        "final_output_sha256": "cfae0050ffea464609a7d686158271d24b250e29260506c1ba1cb3330e2af79e",
+        "cli_destination": "tests/test_delivery.py",
+        "previous_staging_sha256": "cfae0050ffea464609a7d686158271d24b250e29260506c1ba1cb3330e2af79e"
+      },
+      {
+        "destination": "watchline_duckwork_plugin/__init__.py",
+        "input_sha256": "dd28a06a203ccc29f76109da7074347aca8f58d92f15b0e9e8391258f2e25a64",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a3dd41cb0e16df5364ef68fa138f8dee80bc8890e7e7adcdffef38b459a6cd03",
+        "source": "watchline_hermes_plugin/__init__.py",
+        "final_output_sha256": "a3dd41cb0e16df5364ef68fa138f8dee80bc8890e7e7adcdffef38b459a6cd03",
+        "cli_destination": "watchline_duckwork_plugin/__init__.py",
+        "previous_staging_sha256": "a3dd41cb0e16df5364ef68fa138f8dee80bc8890e7e7adcdffef38b459a6cd03"
+      },
+      {
+        "destination": "watchline_duckwork_plugin/adapter.py",
+        "input_sha256": "1bd28c412ff7a69dad572fc4fca513c2b2c600c64da460b79bad539f7ad60c99",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "eadb397893e2c5c63061549c204f2f0defa14f33757cd720606a730e39dd264d",
+        "source": "watchline_hermes_plugin/adapter.py",
+        "final_output_sha256": "eadb397893e2c5c63061549c204f2f0defa14f33757cd720606a730e39dd264d",
+        "cli_destination": "watchline_duckwork_plugin/adapter.py",
+        "previous_staging_sha256": "eadb397893e2c5c63061549c204f2f0defa14f33757cd720606a730e39dd264d"
+      },
+      {
+        "destination": "watchline_duckwork_plugin/client.py",
+        "input_sha256": "2582d68cf874019f491ee3164beba30a58db7fc169c543028166089a918f6f31",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "03dbcb5e3d54751dd3665f82c108a5aa5b49ff57a480d97e74112e89b6c1e56d",
+        "source": "watchline_hermes_plugin/client.py",
+        "final_output_sha256": "03dbcb5e3d54751dd3665f82c108a5aa5b49ff57a480d97e74112e89b6c1e56d",
+        "cli_destination": "watchline_duckwork_plugin/client.py",
+        "previous_staging_sha256": "03dbcb5e3d54751dd3665f82c108a5aa5b49ff57a480d97e74112e89b6c1e56d"
+      },
+      {
+        "destination": "watchline_duckwork_plugin/config.py",
+        "input_sha256": "5f361c17460e9743c9718eb62c162467832c75d681d4ca4e8eee460681cca8bb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f8f294fce226499d00287c8051a98a3ea83c8bd428531872d4e34813d21378e7",
+        "source": "watchline_hermes_plugin/config.py",
+        "final_output_sha256": "f8f294fce226499d00287c8051a98a3ea83c8bd428531872d4e34813d21378e7",
+        "cli_destination": "watchline_duckwork_plugin/config.py",
+        "previous_staging_sha256": "f8f294fce226499d00287c8051a98a3ea83c8bd428531872d4e34813d21378e7"
+      },
+      {
+        "destination": "watchline_duckwork_plugin/delivery.py",
+        "input_sha256": "7abcf649f97dcc533c4204ffe753f865fcdc4ae591f5018cd2507a89afffc8fe",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "958e0be3c78173e357a45fc202279a467e932b2645be97429b5e04c2e1e921e6",
+        "source": "watchline_hermes_plugin/delivery.py",
+        "final_output_sha256": "958e0be3c78173e357a45fc202279a467e932b2645be97429b5e04c2e1e921e6",
+        "cli_destination": "watchline_duckwork_plugin/delivery.py",
+        "previous_staging_sha256": "958e0be3c78173e357a45fc202279a467e932b2645be97429b5e04c2e1e921e6"
+      },
+      {
+        "destination": "watchline_duckwork_plugin/watchline_cli.py",
+        "input_sha256": "21aa7e088b861fe602899bddf62357e748fe392a57d7374f62226a2c5da905e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2b7a87c324ffd2eba44821ee4057ffce3afec1f3a0f3a4503115731acae3d054",
+        "source": "watchline_hermes_plugin/watchline_cli.py",
+        "final_output_sha256": "2b7a87c324ffd2eba44821ee4057ffce3afec1f3a0f3a4503115731acae3d054",
+        "cli_destination": "watchline_duckwork_plugin/watchline_cli.py",
+        "previous_staging_sha256": "2b7a87c324ffd2eba44821ee4057ffce3afec1f3a0f3a4503115731acae3d054"
+      }
+    ],
+    "manifest_sha256": "6943b96e4c70cb9f56545d09fc7d8e5d07983204e83666146672f656d48cebe7",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/check.yml": ".github/workflows/check.yml",
+    ".github/workflows/publish.yml": ".github/workflows/publish.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "tests/test_config.py": "tests/test_config.py",
+    "tests/test_delivery.py": "tests/test_delivery.py",
+    "watchline_hermes_plugin/__init__.py": "watchline_hermes_plugin/__init__.py",
+    "watchline_hermes_plugin/adapter.py": "watchline_hermes_plugin/adapter.py",
+    "watchline_hermes_plugin/client.py": "watchline_hermes_plugin/client.py",
+    "watchline_hermes_plugin/config.py": "watchline_hermes_plugin/config.py",
+    "watchline_hermes_plugin/delivery.py": "watchline_hermes_plugin/delivery.py",
+    "watchline_hermes_plugin/watchline_cli.py": "watchline_hermes_plugin/watchline_cli.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "watchline",
+    "python_files_compiled": 9,
+    "secret_findings": 0
+  },
+  "canonical_slug": "watchline",
+  "catalog_file": "src/plugin-catalog/watchline.yaml",
+  "identity": {
+    "catalog_id": "watchline",
+    "canonical_slug": "watchline",
+    "original_manifest_name": "watchline",
+    "rebranded_manifest_name": "watchline",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "88c439e73bac5b3d5ba7a905b2e2c031aa970e677502528a764b664df90456bd",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "3bdf7784f4c5990572202079678a258afa1403704f46dced2d3133199c8661c0",
+          "after_sha256": "872b5fe6d46d04837cd99d258c0f661bdc3c813a81c71297c4fdfe53e074dee0",
+          "before_bytes": 3789,
+          "after_bytes": 3747,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "2272ca2de8442fec253888a3d4284c64a5235a9c84c750c442fb036c8e148a68",
+          "after_sha256": "e41d191275ba72dae2c9bdcbf69ff666d6f676119e89f53880ee071efb269af9",
+          "before_bytes": 1485,
+          "after_bytes": 1438,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    ".github/workflows/publish.yml": [
+      {
+        "value": "https://pypi.org/project/watchline-hermes-plugin/",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "recipe": {
+    "name": "Agent Mixer",
+    "kind": "python-uv",
+    "bootstrap": ["uv sync --locked --group dashboard"],
+    "build": [],
+    "test": ["env -u PYTHONPATH uv run --locked --group dashboard pytest -q"],
+    "start": null
+  },
+  "updatedAt": "2026-10-12T13:55:00Z"
+}

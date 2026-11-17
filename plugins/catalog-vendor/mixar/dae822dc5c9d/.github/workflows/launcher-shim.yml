@@ -1,0 +1,131 @@
+name: Launcher shim
+
+# Starts bin/mixar-mcp exactly as Duckwork does (absolute path, filtered
+# environment, MCP SDK stdio client) against a stub Mixar launcher, so the
+# POSIX and Windows shims are exercised on every platform the plugin declares.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shim:
+    name: shim (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14" # Duckwork bundles 3.14; Windows command lookup depends on shutil.which
+      - name: Install the MCP SDK version Duckwork pins
+        run: python -m pip install "mcp==2.3.0"
+      - name: Start bin/mixar-mcp the way Duckwork does
+        shell: python
+        run: |
+          """Start bin/mixar-mcp the way Duckwork does, against a stub Mixar launcher, on any OS."""
+          import asyncio
+          import os
+          import pathlib
+          import shutil
+          import subprocess
+          import sys
+          import tempfile
+
+          from mcp import ClientSession, StdioServerParameters
+          from mcp.client.stdio import stdio_client
+
+          STUB = r'''
+          import json, sys
+          for line in sys.stdin:
+              msg = json.loads(line)
+              mid, method = msg.get("id"), msg.get("method")
+              if method == "initialize":
+                  result = {"protocolVersion": msg["params"].get("protocolVersion"), "capabilities": {"tools": {}},
+                            "serverInfo": {"name": "mixar-stub", "version": "1"}}
+              elif method == "tools/list":
+                  result = {"tools": [{"name": "mixar_status", "description": "Stub.", "inputSchema": {"type": "object"}}]}
+              elif method == "tools/call":
+                  result = {"content": [{"type": "text", "text": "stub ok"}]}
+              elif mid is None:
+                  continue
+              else:
+                  result = {}
+              sys.stdout.write(json.dumps({"jsonrpc": "2.0", "id": mid, "result": result}) + "\n")
+              sys.stdout.flush()
+          '''
+
+          root = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else pathlib.Path.cwd()
+          windows = sys.platform == "win32"
+
+
+          def fake_home(with_launcher):
+              """A home folder holding the launcher Mixar would write there (or none)."""
+              home = pathlib.Path(tempfile.mkdtemp(prefix="mixar home "))  # a space, as in real profile paths
+              if with_launcher:
+                  connector = home / ".mixar" / "connector"
+                  connector.mkdir(parents=True)
+                  stub = connector / "stub_server.py"
+                  stub.write_text(STUB)
+                  if windows:
+                      (connector / "mixar-mcp.cmd").write_text('@echo off\r\n"%s" "%s" %%*\r\n' % (sys.executable, stub))
+                  else:
+                      launcher = connector / "mixar-mcp"
+                      launcher.write_text('#!/bin/sh\nexec "%s" "%s" "$@"\n' % (sys.executable, stub))
+                      launcher.chmod(0o755)
+              return home
+
+
+          def duckwork_env(home):
+              """The filtered environment Duckwork gives stdio servers (tools/mcp_tool_config.py _build_safe_env)."""
+              keep = {"PATH", "USER", "LANG", "LC_ALL", "TERM", "SHELL", "TMPDIR", "APPDATA", "COMSPEC", "HOMEDRIVE",
+                      "HOMEPATH", "LOCALAPPDATA", "PATHEXT", "PROGRAMDATA", "PROGRAMFILES", "SYSTEMDRIVE", "SYSTEMROOT",
+                      "TEMP", "TMP", "USERNAME", "WINDIR"}
+              env = {k: v for k, v in os.environ.items() if k.upper() in keep}
+              env["HOME" if not windows else "USERPROFILE"] = str(home)
+              return env
+
+
+          # Duckwork turns mcp.json's "./bin/mixar-mcp" into this absolute path and hands it to the MCP SDK.
+          command = str(root / "bin" / "mixar-mcp")
+          resolved = command
+          if windows:
+              from mcp.os.win32.utilities import get_windows_executable_command
+              resolved = get_windows_executable_command(command)
+              assert resolved.lower().endswith("mixar-mcp.cmd"), "Windows resolved %r, not the .cmd shim" % resolved
+          print("command resolves to", resolved)
+
+
+          async def roundtrip(home):
+              params = StdioServerParameters(command=command, args=[], env=duckwork_env(home), cwd=str(root))
+              async with stdio_client(params) as (read, write):
+                  async with ClientSession(read, write) as session:
+                      await session.initialize()
+                      tools = await session.list_tools()
+                      result = await session.call_tool("mixar_status", {})
+              names = [t.name for t in tools.tools]
+              text = result.content[0].text
+              assert names == ["mixar_status"] and text == "stub ok", (names, text)
+              print("initialize, tools/list and tools/call passed through the shim")
+
+
+          asyncio.run(roundtrip(fake_home(with_launcher=True)))
+
+          proc = subprocess.run([resolved], env=duckwork_env(fake_home(with_launcher=False)), cwd=str(root),
+                                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=60)
+          assert proc.returncode == 1, proc.returncode
+          assert proc.stdout == "", repr(proc.stdout)
+          assert "Connect MCP" in proc.stderr and "mixar-mcp" in proc.stderr, proc.stderr
+          print("missing launcher: exit 1, stdout empty, stderr:", proc.stderr.splitlines()[0])
+          print("PASS on", sys.platform)

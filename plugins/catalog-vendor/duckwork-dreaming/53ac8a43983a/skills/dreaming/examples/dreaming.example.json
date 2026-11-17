@@ -1,0 +1,69 @@
+{
+  "_comment": "Copy to ~/.duckwork/dreaming.json and edit. Missing keys fall back to defaults; precedence: CLI flag > DREAM_* env > this file > default.",
+
+  "timezone": "Europe/Berlin",
+
+  "trusted_chat_ids": ["-1001234567890"],
+  "trust_private_chats": true,
+  "trust_sessions_without_chat": true,
+
+  "_comment_excluded_threads": "Threads of a TRUSTED forum chat that are not human talk: the agent's own alerts, an assistant bridge, machine-generated cards. Absent or empty = the whole chat corroborates, as before.",
+  "excluded_threads": {"-1001234567890": ["437"]},
+  "_comment_untrusted_sources": "Session sources whose role=user rows are machine prompts. cron, subagent and tool are always excluded; add cli if a script (backup, sync, report) drives the agent non-interactively.",
+  "untrusted_sources": ["cron", "subagent", "tool"],
+
+  "agent_names": ["duckwork"],
+  "extra_stopwords": [],
+  "token_min_len": {"latin": 4, "other": 5},
+
+  "durable_memory_paths": ["memories/MEMORY.md", "memories/USER.md"],
+  "fact_store_path": "",
+  "memory_char_limits": {"memories/MEMORY.md": 2200, "memories/USER.md": 1375},
+
+  "profile_hint_terms": ["prefer", "likes", "dislikes", "goal", "plans", "works", "lives",
+                         "family", "spouse", "partner", "child", "alice", "bob"],
+  "profile_categories": ["user", "user_pref", "preference", "profile", "personal", "family"],
+
+  "alias_rules": [
+    {"name": "shopping list thread may move between ids",
+     "fact": [["shopping"], ["list", "groceries"]],
+     "memory": [["shopping list"]]},
+    {"name": "alerts thread 437 (old 42)",
+     "fact": [["#437", "#42"], ["alert", "notification"]],
+     "memory": [["#437"], ["alert"]]}
+  ],
+
+  "diary": {"heading": "## Dream", "keep_sections": 90},
+  "pinned_markers": ["📌", "[pinned]"],
+  "memory_loss_alert_fraction": 0.25,
+  "_comment_probes": "Phrases that must stay in MEMORY.md / USER.md; one alert when one disappears.",
+  "probes": [],
+  "reject_reask_days": 180,
+
+  "keywords": {"enabled": false, "cap": 10},
+
+  "_comment_chat_stores": "Only with holographic scope user / chat / thread (one database per user / chat / topic). read: list every database in the report — counts only. promote_from: chats whose facts join the pass, each corroborated by its own chat only — \"telegram:-1001234567890\", \"telegram:-1001234567890:42\" (a topic, scope thread), \"telegram:123456789\" (a user, scope user). Memory files are shared by all chats: a promoted chat's facts reach every chat once written there.",
+  "chat_stores": {"read": false, "promote_from": []},
+
+  "_comment_judge": "Optional cloud judge, off by default: a decision model may take a counted mention out of the count (shadow: only report what would change; veto: apply it). Only what is listed here leaves: send_from (the word trusted, or a list of chat ids), send_sources (e.g. telegram), send_fact_stores, send_no_chat_sessions - the fact text and the person's own words, to OpenRouter (jev) and, listed second, OpenAI (openai) as the fallback. Keys: OPENROUTER_API_KEY / OPENAI_API_KEY in the environment or in ~/.duckwork/.env. See the README, Optional cloud judge.",
+  "judge": {"mode": "off", "providers": ["jev"], "tau": 0.5, "send_from": [], "send_sources": [],
+            "send_fact_stores": [], "send_no_chat_sessions": false, "max_attempts": 250, "max_cost_usd": 0.05},
+
+  "windows": {"themes_days": 14, "corroboration_days": 60, "md_decay_days": 60},
+  "gates": {"min_score": 0.55, "min_mentions": 3, "new_facts_cap": 30,
+            "seen_cooldown_days": 14, "md_ask_cooldown_days": 14,
+            "md_confirmed_cooldown_days": 90, "publish_cap": 15},
+  "weights": {"relevance": 0.30, "frequency": 0.24, "query_diversity": 0.15,
+              "recency": 0.15, "consolidation": 0.10, "conceptual_richness": 0.06},
+
+  "state": {"asked": "cache/dream-asked.json",
+            "rejected": "cache/dream-rejected.json",
+            "seen": "cache/dream-seen.json",
+            "snapshot": "cache/dream-snapshot.json"},
+
+  "precheck": {"max_content": 300,
+               "memory_full_pct": 85,
+               "timeout_sec": 600,
+               "actionable_keys": ["new_facts_reviewed", "promotions", "fact_decays",
+                                   "md_decays", "conflicts", "quarantined", "alerts"]}
+}

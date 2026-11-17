@@ -1,0 +1,165 @@
+---
+name: seo-image-gen
+description: "Create and refine images for SEO use cases."
+author: Daniel Agrici
+license: MIT
+---
+
+# SEO Image Gen: AI Image Generation for SEO Assets (Extension)
+
+Generate production-ready images for SEO use cases using Gemini's image generation
+via the banana Creative Director pipeline. Maps SEO needs to optimized domain modes,
+aspect ratios, and resolution defaults.
+
+## Architecture Note
+
+This extension adapts the Banana Creative Director image-generation workflow for Duckwork SEO use cases.
+
+This skill has two components with distinct roles:
+- **SKILL.md** (this file): Handles interactive `duckwork-seo:seo-image-gen` commands for generating images
+- **Audit role** (`duckwork-seo:role-seo-image-gen`): assesses existing OG/social images and produces a generation plan during `duckwork-seo:seo-audit`; it never auto-generates images
+
+## Prerequisites
+
+This skill requires a compatible Banana MCP server configured in Duckwork. Store `GOOGLE_AI_API_KEY` as a secret in the active Duckwork profile; the parent native tool injects it only for Banana provider scripts. Never place the key in command arguments. See the Banana entry in `docs/EXTENSIONS.md` for the provider setup boundary; this plugin does not ship a provider installer.
+
+**Check availability:** Before using any image generation tool, verify the MCP server
+is connected by checking if `gemini_generate_image` or `set_aspect_ratio` tools are
+available. If tools are not available, report that the provider connection is not configured
+and point to `docs/EXTENSIONS.md` for the setup boundary.
+
+## Quick Reference
+
+| Command | What it does |
+|---------|-------------|
+| `duckwork-seo:seo-image-gen og <description>` | Generate OG/social preview image (1200x630 feel) |
+| `duckwork-seo:seo-image-gen hero <description>` | Blog hero image (widescreen, dramatic) |
+| `duckwork-seo:seo-image-gen product <description>` | Product photography (clean, white BG) |
+| `duckwork-seo:seo-image-gen infographic <description>` | Infographic visual (vertical, data-heavy) |
+| `duckwork-seo:seo-image-gen custom <description>` | Custom image with full Creative Director pipeline |
+| `duckwork-seo:seo-image-gen batch <description> [N]` | Generate N variations (default: 3) |
+
+## SEO Image Use Cases
+
+Each use case maps to pre-configured banana parameters:
+
+| Use Case | Aspect Ratio | Resolution | Domain Mode | Notes |
+|----------|-------------|------------|-------------|-------|
+| **OG/Social Preview** | `16:9` | `1K` | Product or UI/Web | Clean, professional, text-friendly |
+| **Blog Hero** | `16:9` | `2K` | Cinema or Editorial | Dramatic, atmospheric, editorial quality |
+| **Schema Image** | `4:3` | `1K` | Product | Clean, descriptive, schema ImageObject |
+| **Social Square** | `1:1` | `1K` | UI/Web | Platform-optimized square |
+| **Product Photo** | `4:3` | `2K` | Product | White background, studio lighting |
+| **Infographic** | `2:3` | `4K` | Infographic | Data-heavy, vertical layout |
+| **Favicon/Icon** | `1:1` | `512` | Logo | Minimal, scalable, recognizable |
+| **Pinterest Pin** | `2:3` | `2K` | Editorial | Tall vertical card |
+
+## Generation Pipeline
+
+For every generation request:
+
+1. **Identify use case** from command or context (og, hero, product, etc.)
+2. **Apply SEO defaults** from the use cases table above
+3. **Set aspect ratio** via `set_aspect_ratio` MCP tool
+4. **Construct Reasoning Brief** using the banana Creative Director pipeline:
+   - Load `references/prompt-engineering.md` for the 6-component system
+   - Apply domain mode emphasis (Subject 30%, Style 25%, Context 15%, etc.)
+   - Be SPECIFIC and VISCERAL: describe what the camera sees
+5. **Generate** via `gemini_generate_image` MCP tool
+6. **Post-generation SEO checklist** (see below)
+
+### Check for Presets
+
+If the user mentions a brand or has SEO presets configured:
+```bash
+# Use the installed Banana MCP/tool configuration to list presets.
+```
+Load matching preset and apply as defaults. Also check
+`references/seo-image-presets.md` with `skill_view(name="duckwork-seo:seo-image-gen", file_path="references/seo-image-presets.md")`.
+
+## Post-Generation SEO Checklist
+
+After every successful generation, guide the user on:
+
+1. **Alt text**:write_file descriptive, keyword-rich alt text for the generated image
+2. **File naming**:Rename to SEO-friendly format: `keyword-description-widthxheight.webp`
+3. **WebP conversion**:Convert to WebP for optimal page speed:
+   ```bash
+   magick output.png -quality 85 output.webp
+   ```
+4. **File size**:Target under 200KB for hero images, under 100KB for thumbnails
+5. **Schema markup**:Suggest `ImageObject` schema for the generated image:
+   ```json
+   {
+     "@type": "ImageObject",
+     "url": "https://example.com/images/keyword-description.webp",
+     "width": 1200,
+     "height": 630,
+     "caption": "Descriptive caption with target keyword"
+   }
+   ```
+6. **OG meta tags**:For social preview images, remind about:
+   ```html
+   <meta property="og:image" content="https://example.com/images/og-image.webp" />
+   <meta property="og:image:width" content="1200" />
+   <meta property="og:image:height" content="630" />
+   <meta property="og:image:alt" content="Descriptive alt text" />
+   ```
+
+## Cost Awareness
+
+Image generation costs money. Be transparent:
+- Show estimated cost before generating (especially for batch)
+- Log every generation in the installed Banana MCP/tool ledger when available
+- Use the installed Banana MCP/tool usage summary if user asks about usage
+
+Approximate costs:
+- Verify current pricing in the installed MCP/tool configuration before quoting
+
+## Model Routing
+
+| Scenario | Model | Why |
+|----------|-------|-----|
+| OG images, social previews | Installed MCP/tool default @ 1K | Fast, cost-effective |
+| Hero images, product photos | Installed MCP/tool quality model @ 2K | Quality + detail |
+| Infographics with text | Installed MCP/tool text-capable model @ 2K, thinking: high if supported | Better text rendering |
+| Quick drafts | Installed MCP/tool draft model @ 512 | Rapid iteration |
+
+## Error Handling
+
+| Error | Resolution |
+|-------|-----------|
+| MCP not configured | Configure a compatible Banana MCP server in Duckwork; see `docs/EXTENSIONS.md` |
+| API key invalid | New key at https://aistudio.google.com/apikey |
+| Rate limited (429) | Wait 60s, retry. Free tier: ~10 RPM / ~500 RPD |
+| `IMAGE_SAFETY` | Rephrase prompt - see `references/prompt-adaptation-safety.md` |
+| MCP unavailable | Configure a compatible Banana MCP server in Duckwork; this plugin does not vendor a local generation fallback script |
+| Extension not configured | Point the user to the provider setup notes in `docs/EXTENSIONS.md` |
+
+## Cross-Skill Integration
+
+- **seo-images** (analysis) feeds into **seo-image-gen** (generation): audit results from `duckwork-seo:seo-images` identify missing or low-quality images; use those findings to drive `duckwork-seo:seo-image-gen` commands
+- **seo-audit** delegates to `duckwork-seo:role-seo-image-gen` to analyze OG/social images across the site and produce a prioritized generation plan
+- **seo-schema** can consume generated images: after generation, suggest `ImageObject` schema markup pointing to the new assets
+
+## Reference Documentation
+
+Load on-demand. Do NOT load all at startup:
+- `references/prompt-engineering.md`: 6-component system, domain modes, advanced techniques
+- `references/prompt-templates.md`: ready-to-use templates by use case
+- `references/prompt-adaptation-safety.md`: model adaptation rules, common mistakes, safety-filter rephrasing
+- `references/gemini-models.md`:Model specs, rate limits, capabilities
+- `references/mcp-tools.md`:MCP tool parameters and responses
+- `references/post-processing.md`:ImageMagick/FFmpeg pipeline recipes
+- `references/cost-tracking.md`:Pricing, usage tracking
+- `references/presets.md`:Brand preset management
+- `references/seo-image-presets.md`: SEO-specific preset templates
+
+## Response Format
+
+After generating, always provide:
+1. **Image path**:where it was saved
+2. **Crafted prompt**:show what was sent to the API (educational)
+3. **Settings**:model, aspect ratio, resolution
+4. **SEO checklist**:alt text suggestion, file naming, WebP conversion
+5. **Schema snippet**:ImageObject or og:image markup if applicable

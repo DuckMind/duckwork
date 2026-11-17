@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-vector-platform"
+version = "0.5.3"
+description = "Vector (vectorapp.io) messaging platform plugin for Duckwork Agent"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "BonesGit" }]
+dependencies = [
+  # Runtime deps come from Duckwork itself (httpx, gateway.*).
+]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Repository = "https://github.com/DuckMind/duckwork"
+Changelog = "https://github.com/DuckMind/duckwork"
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.entry-points."duckwork_agent.plugins"]
+vector-platform = "duckwork_vector_platform:register"
+
+# Map this package onto the repo root so a pip install still has
+# adapter.py + plugin.yaml + bridge/ next to each other — the same layout
+# Duckwork uses for a git-clone into ~/.duckwork/plugins/vector-platform.
+# Do not declare a top-level module named adapter: that put a generic
+# `adapter` in site-packages and silently dropped package-data.
+[tool.setuptools]
+packages = ["duckwork_vector_platform", "duckwork_vector_platform.internal"]
+include-package-data = false
+
+[tool.setuptools.package-dir]
+duckwork_vector_platform = "."
+"duckwork_vector_platform.internal" = "internal"
+
+[tool.setuptools.package-data]
+duckwork_vector_platform = [
+  "plugin.yaml",
+  "bridge/Cargo.toml",
+  "bridge/Cargo.lock",
+  "bridge/.gitignore",
+  "bridge/src/*.rs",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--import-mode=importlib"

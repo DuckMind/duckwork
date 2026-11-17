@@ -1,0 +1,235 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+"""
+Bridge between Duckwork plugin hooks and tenuo.duckwork.DuckworkGuard.
+
+build_plugin_guard() reads Duckwork config, constructs DuckworkGuard,
+and returns a PluginGuard that wraps hook signatures.
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Any, Optional
+
+from duckwork_tenuo.duckwork_guard import DuckworkGuard
+
+logger = logging.getLogger("duckwork_tenuo._guard")
+
+
+class WarrantLoadError(ValueError):
+    """A warrant is configured but cannot be decoded — never degrade to passthrough."""
+
+
+def build_plugin_guard(ctx: Any) -> Optional["PluginGuard"]:
+    """Read config and build the guard. Returns None if not configured.
+
+    Raises WarrantLoadError when a warrant IS configured but unloadable.
+    """
+    from duckwork_tenuo._config import (
+        get_audit_log_path,
+        get_child_warrant_raw,
+        get_on_denial,
+        get_require_session_warrant,
+        get_signing_key,
+        get_trusted_roots,
+        load_warrant,
+        resolve_warrant_text,
+    )
+
+    try:
+        warrant_raw, source = resolve_warrant_text(ctx)
+    except FileNotFoundError as exc:
+        raise WarrantLoadError(
+            f"TENUO_WARRANT points to {exc}, which does not exist — "
+            "every tool call is blocked until the warrant is fixed"
+        ) from exc
+    except OSError as exc:
+        raise WarrantLoadError(
+            f"TENUO_WARRANT cannot be read ({exc}) — "
+            "every tool call is blocked until the warrant is fixed"
+        ) from exc
+    if not warrant_raw:
+        # Not configured, or a kanban worker with no staged task warrant
+        # (register() blocks that case). Anything else is an empty warrant.
+        if source == "none" or source.startswith("kanban:"):
+            return None
+        raise WarrantLoadError(
+            f"TENUO_WARRANT is set but empty ({source}) — "
+            "every tool call is blocked until the warrant is fixed"
+        )
+
+    warrant = load_warrant(warrant_raw)
+    if warrant is None:
+        raise WarrantLoadError(
+            "TENUO_WARRANT is set but could not be loaded — "
+            "every tool call is blocked until the warrant is fixed"
+        )
+    try:
+        child_raw = get_child_warrant_raw(ctx)
+    except FileNotFoundError as exc:
+        raise WarrantLoadError(
+            f"TENUO_CHILD_WARRANT points to {exc}, which does not exist — "
+            "every tool call is blocked until the warrant is fixed"
+        ) from exc
+    except OSError as exc:
+        raise WarrantLoadError(
+            f"TENUO_CHILD_WARRANT cannot be read ({exc}) — "
+            "every tool call is blocked until the warrant is fixed"
+        ) from exc
+    child_warrant = load_warrant(child_raw)
+    if child_raw is not None and child_warrant is None:
+        raise WarrantLoadError(
+            "TENUO_CHILD_WARRANT is set but could not be loaded — "
+            "every tool call is blocked until the warrant is fixed"
+        )
+    signing_key = get_signing_key(ctx)
+    trusted_roots = get_trusted_roots(ctx)
+    on_denial = get_on_denial(ctx)
+
+    audit_callback = None
+    audit_path = get_audit_log_path(ctx)
+    if audit_path is not None:
+        from duckwork_tenuo.audit import LocalAuditLog
+        audit_callback = LocalAuditLog(audit_path)
+        logger.debug("duckwork-tenuo: audit log at %s", audit_path)
+
+    guard = DuckworkGuard(
+        warrant=warrant,
+        signing_key=signing_key,
+        child_warrant=child_warrant,
+        trusted_roots=trusted_roots,
+        on_denial=on_denial,
+        audit_callback=audit_callback,
+        require_session_warrant=get_require_session_warrant(ctx),
+    )
+
+    return PluginGuard(guard)
+
+
+class PluginGuard:
+    """Adapts Duckwork hook signatures to DuckworkGuard methods."""
+
+    def __init__(self, guard: DuckworkGuard):
+        self._guard = guard
+
+    @property
+    def has_warrant(self) -> bool:
+        return self._guard.has_warrant
+
+    def pre_tool_call_hook(
+        self,
+        tool_name: str = "",
+        args: Optional[dict] = None,
+        task_id: str = "",
+        session_id: str = "",
+        tool_call_id: str = "",
+        **kwargs: Any,
+    ) -> Optional[dict]:
+        result = self._guard.pre_tool_call(
+            tool_name=tool_name,
+            args=args or {},
+            task_id=task_id,
+            session_id=session_id,
+            tool_call_id=tool_call_id,
+        )
+        if result and result.get("action") == "block":
+            self._auto_block_kanban_task(tool_name, result.get("message", ""))
+        return result  # None = allow, {"action": "block", "message": "..."} = block
+
+    @staticmethod
+    def _auto_block_kanban_task(tool_name: str, deny_message: str) -> None:
+        """If this is a kanban worker, mark the task blocked on the board.
+
+        A direct kanban_db write (not a kanban_block tool dispatch) so the
+        system event does not re-enter the enforcement fn and does not need
+        kanban_block to be in the worker's warrant. Idempotent: subsequent
+        denials on an already-blocked task are no-ops.
+        """
+        from duckwork_tenuo.kanban import current_task_id, block_task
+
+        kanban_task = current_task_id()
+        if not kanban_task:
+            return
+        reason = f"warrant denied {tool_name}: {deny_message}".strip()
+        if block_task(kanban_task, reason):
+            logger.warning(
+                "duckwork-tenuo: auto-blocked kanban task %s (%s)",
+                kanban_task, reason,
+            )
+
+    def post_tool_call_hook(
+        self,
+        tool_name: str = "",
+        args: Optional[dict] = None,
+        result: str = "",
+        task_id: str = "",
+        session_id: str = "",
+        tool_call_id: str = "",
+        duration_ms: int = 0,
+        **kwargs: Any,
+    ) -> None:
+        self._guard.post_tool_call(
+            tool_name=tool_name,
+            args=args or {},
+            result=result,
+            task_id=task_id,
+            session_id=session_id,
+            tool_call_id=tool_call_id,
+            duration_ms=duration_ms,
+        )
+
+    def on_session_start_hook(
+        self,
+        session_id: str = "",
+        **kwargs: Any,
+    ) -> None:
+        parent_session_id = kwargs.get("parent_session_id")
+        task_index = kwargs.get("task_index")
+        self._guard.on_session_start(
+            session_id=session_id,
+            parent_session_id=parent_session_id,
+            task_index=task_index,
+        )
+
+    def on_session_end_hook(
+        self,
+        session_id: str = "",
+        **kwargs: Any,
+    ) -> None:
+        self._guard.on_session_end(session_id=session_id)
+
+    def on_subagent_start_hook(
+        self,
+        parent_session_id: str = "",
+        child_session_id: str = "",
+        **kwargs: Any,
+    ) -> None:
+        self._guard.on_subagent_start(
+            parent_session_id=parent_session_id or None,
+            child_session_id=child_session_id or None,
+        )
+
+    # ------------------------------------------------------------------
+    # Gateway proxy helpers (forward to inner DuckworkGuard)
+    # ------------------------------------------------------------------
+
+    def set_session_warrant(
+        self,
+        session_id: str,
+        warrant: Any,
+        signing_key: Optional[Any] = None,
+        *,
+        parent_warrant: Optional[Any] = None,
+    ) -> None:
+        """Forward to DuckworkGuard.set_session_warrant (gateway / child grant)."""
+        self._guard.set_session_warrant(
+            session_id, warrant, signing_key, parent_warrant=parent_warrant
+        )
+
+    def clear_session_warrant(self, session_id: str) -> None:
+        """Forward to DuckworkGuard.clear_session_warrant (gateway use)."""
+        self._guard.clear_session_warrant(session_id)
+
+    def set_trusted_roots(self, roots: Optional[Any]) -> None:
+        """Forward to DuckworkGuard.set_trusted_roots (thread-safe)."""
+        self._guard.set_trusted_roots(roots)

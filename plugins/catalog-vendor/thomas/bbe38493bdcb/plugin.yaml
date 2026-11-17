@@ -1,0 +1,20 @@
+name: thomas
+version: "0.1.2"
+manifest_version: 2
+api_version: 1
+description: >-
+  Fine-tune a calibrated encoder on Modal and rate it with gonogo. GPU
+  launches through the registered training tool require human approval;
+  direct terminal, Python, and Modal launches are outside that hook.
+  Data checks and CPU evaluation run locally.
+author: James Dominguez (keppy)
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags: [training, fine-tuning, encoders, calibration, evals, modal]
+provides_tools:
+  - thomas_check_data
+  - thomas_encoder_train
+  - thomas_run_status
+  - thomas_encoder_eval
+provides_hooks:
+  - pre_tool_call

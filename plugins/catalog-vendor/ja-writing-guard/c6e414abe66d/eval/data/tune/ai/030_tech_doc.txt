@@ -1,0 +1,72 @@
+# 開発環境のデータベースをバックアップから復元する手順
+
+開発環境（dev）の PostgreSQL を、日次バックアップから復元する手順です。テストデータが壊れた場合や、特定の日の状態に戻したい場合に使ってください。
+
+> **この手順は開発環境専用です。本番環境では絶対に実行しないでください。** 本番の復元はインフラチームの承認が必要です。
+
+## 前提条件
+
+- VPN に接続していること
+- `devdb-restore` ロールが付与された AWS アカウントでログインしていること
+- ローカルに `psql` と `pg_restore`（バージョン 16 以上）がインストールされていること
+
+## 手順
+
+### 1. 復元したいバックアップを確認する
+
+バックアップは毎日 4:00 に S3 へ保存されています。以下のコマンドで一覧を表示します。
+
+```bash
+aws s3 ls s3://example-dev-db-backups/daily/
+```
+
+ファイル名は `dev_YYYYMMDD.dump` の形式です。
+
+### 2. バックアップをダウンロードする
+
+```bash
+aws s3 cp s3://example-dev-db-backups/daily/dev_20260930.dump ./
+```
+
+### 3. Slack で復元を周知する
+
+復元中は dev 環境の API が使えなくなります。`#dev-env` チャンネルで、作業開始と終了の予定時刻を共有してください。
+
+### 4. アプリケーションを停止する
+
+DB への接続が残っていると復元に失敗するため、先に dev 環境のアプリを停止します。
+
+```bash
+make dev-stop
+```
+
+### 5. データベースを作り直して復元する
+
+```bash
+dropdb -h devdb.internal -U admin app_dev
+createdb -h devdb.internal -U admin app_dev
+pg_restore -h devdb.internal -U admin -d app_dev --no-owner ./dev_20260930.dump
+```
+
+復元にはおよそ10〜15分かかります。
+
+### 6. マイグレーションを適用する
+
+バックアップの取得以降に追加されたマイグレーションを適用します。
+
+```bash
+make migrate ENV=dev
+```
+
+### 7. アプリケーションを起動して確認する
+
+```bash
+make dev-start
+```
+
+管理画面にログインし、データが復元されていることを確認したら、`#dev-env` で完了を報告してください。
+
+## うまくいかないとき
+
+- **`database "app_dev" is being accessed by other users`**：アプリやほかの人の接続が残っています。手順4を確認し、それでも解消しない場合は `#infra-help` に相談してください。
+- **`pg_restore: error: unsupported version`**：ローカルの `pg_restore` のバージョンが古い可能性があります。`pg_restore --version` で確認してください。

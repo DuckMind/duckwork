@@ -1,0 +1,11 @@
+# duckwork-openspec Python dependencies
+#
+# These are the third-party packages used by the plugin. They are already
+# installed as part of the Duckwork Agent runtime, so you do NOT need to
+# install them separately unless you are developing outside Duckwork.
+#
+# Duckwork-internal modules (duckwork_constants, duckwork_cli.config) are provided
+# by the host Duckwork installation and are not pip-installable.
+
+fastapi>=0.100
+pydantic>=2.0

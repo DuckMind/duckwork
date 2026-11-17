@@ -1,0 +1,20 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: parcel-deliveries
+version: 0.1.0
+description: Track package deliveries with the Parcel app (parcelapp.net). List what's on the way, add tracking numbers, look up carrier codes.
+author: PromptClickRun
+license: Apache-2.0
+homepage: https://github.com/DuckMind/duckwork
+manifest_version: 2
+requires_duckwork: ">=0.21.2"
+tags: [parcel, packages, delivery, tracking, shipping]
+provides_tools:
+  - parcel_deliveries
+  - parcel_add_delivery
+  - parcel_carriers
+provides_hooks: []
+requires_env:
+  - name: PARCEL_API_KEY
+    description: "Parcel API key (needs Parcel Premium). Generate it at web.parcelapp.net."
+    url: "https://web.parcelapp.net"
+    secret: true

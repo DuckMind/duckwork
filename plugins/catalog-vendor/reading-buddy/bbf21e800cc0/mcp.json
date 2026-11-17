@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "rb": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "--allow-git=all",
+        "--package",
+        "git+https://github.com/harrylabsj/reading-buddy#e5f6673790acbcd459c7a51cb428a85393c785e3",
+        "reading-buddy-mcp"
+      ],
+      "env": {
+        "READING_AUTH_MODE": "skill",
+        "READING_DATA_DIR": "${PLUGIN_DATA}/data",
+        "READING_CONFIG_DIR": "${PLUGIN_DATA}/config"
+      }
+    }
+  }
+}

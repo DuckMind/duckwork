@@ -1,0 +1,46 @@
+name: Duckwork Plugin Guard
+description: Statically scan a Duckwork Agent plugin without importing or executing its code
+author: Maurice Mohr
+
+branding:
+  icon: shield
+  color: green
+
+inputs:
+  path:
+    description: Plugin directory or repository containing plugins
+    required: false
+    default: .
+  fail-on:
+    description: Lowest severity that fails the step (critical, high, medium, low, info, or none)
+    required: false
+    default: high
+  format:
+    description: Output format (text, github, json, or sarif)
+    required: false
+    default: github
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: "3.11"
+        cache: pip
+        cache-dependency-path: ${{ github.action_path }}/pyproject.toml
+
+    - name: Install Duckwork Plugin Guard
+      shell: bash
+      run: python -m pip install --disable-pip-version-check "${{ github.action_path }}"
+
+    - name: Scan Duckwork plugins
+      shell: bash
+      env:
+        HPG_INPUT_PATH: ${{ inputs.path }}
+        HPG_FAIL_ON: ${{ inputs.fail-on }}
+        HPG_FORMAT: ${{ inputs.format }}
+      run: |
+        duckwork-plugin-guard scan "$HPG_INPUT_PATH" \
+          --fail-on "$HPG_FAIL_ON" \
+          --format "$HPG_FORMAT"

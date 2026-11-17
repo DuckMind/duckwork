@@ -1,0 +1,700 @@
+"""Leader heartbeat loop — the single entry point for self-driving.
+
+When the heartbeat fires (via cron job), this module:
+  1. Finds all active projects with a heartbeat_member configured
+  2. For each project, spawns the heartbeat member (leader) agent subprocess
+  3. The agent uses project-specific session (--resume) for context isolation
+     while sharing its MEMORY.md across projects (experience reuse)
+  4. The agent follows its SOUL.md heartbeat protocol:
+     - Check stuck/blocked tasks → decide to unblock/split/raise motion
+     - Check if all tasks done → plan next phase or declare PROJECT_COMPLETE
+     - Check stale motions → close them
+  5. After spawn, checks the leader's output for PROJECT_COMPLETE
+
+The Leader is the ONLY thing that needs external triggering.
+Everything else (discussion, task creation, worker dispatch) flows
+from the Leader's decisions.
+"""
+from __future__ import annotations
+
+import json
+import logging
+import os
+import subprocess
+from pathlib import Path
+from typing import Any
+
+from .utils import find_duckwork_binary, now_iso, get_registry_dir, safe_name
+from ..project_planner import project_allows_unattended, agora_board_for
+
+logger = logging.getLogger(__name__)
+
+
+def _leader_in_flight(project_name: str) -> dict | None:
+    """A ``skipped_in_flight`` result when this project's leader is still running.
+
+    The heartbeat cron fires on a fixed interval while a single leader run can
+    outlast it — model contention (503/429) pushes a heartbeat past 20 minutes —
+    so without this gate every fire spawns another leader and they all hammer
+    the same endpoint (reported in #6: ten concurrent leaders for one project).
+    The running leader is the canonical one; it reads current board state
+    itself, so skipping a fire loses no work.
+
+    Fails open: if the liveness check itself errors we spawn as before. The two
+    failure modes are not symmetric — a redundant leader wastes a slot, while a
+    gate that wrongly reports "in flight" leaves the project with no leader at
+    all.
+
+    The script-level ``flock`` in ``leader_heartbeat.sh`` is not a substitute:
+    it only guards the ``subprocess.Popen`` call, which returns immediately,
+    while the leader keeps running detached.
+    """
+    try:
+        from ..project_planner import live_heartbeat_pids
+
+        live = live_heartbeat_pids(project_name)
+    except Exception as exc:
+        logger.debug("heartbeat liveness check failed for '%s': %s", project_name, exc)
+        return None
+    if not live:
+        return None
+    logger.info(
+        "Project '%s': heartbeat skipped — leader already in flight (pid=%s)",
+        project_name, ", ".join(str(p) for p in live),
+    )
+    return {"status": "skipped_in_flight", "project": project_name, "pids": live}
+
+
+def heartbeat(leader_name: str | None = None, project: str | None = None) -> dict:
+    """Trigger a leader heartbeat.
+
+    Can be called with either:
+    - leader_name: specific leader profile to wake (searches all projects)
+    - project: wake the heartbeat member for this project
+
+    If neither is given, wakes ALL active projects' heartbeat members.
+
+    Before spawning, checks if the previous heartbeat output contained
+    PROJECT_COMPLETE. If so, calls on_project_complete to stop the project.
+
+    Returns dict with spawn status.
+    """
+    from ..project_planner import list_projects, get_project, update_heartbeat_status, on_project_complete
+
+    # Wake a specific project
+    if project:
+        # Check if previous heartbeat signaled completion
+        check_project_complete(project)
+
+        proj = get_project(project)
+        if proj is None:
+            return {"error": f"Project '{project}' not found"}
+        if proj.get("status") != "active":
+            return {"error": f"Project '{project}' is not active (status={proj.get('status')})"}
+        member = proj.get("heartbeat_member")
+        if not member:
+            return {"error": f"Project '{project}' has no heartbeat_member configured"}
+        in_flight = _leader_in_flight(project)
+        if in_flight:
+            return in_flight
+        _rescue_stuck_motions(proj)
+        return _spawn_leader_agent(proj)
+
+    # Wake a specific leader (find all projects using this leader)
+    if leader_name:
+        projects = [p for p in list_projects()
+                    if p.get("status") == "active" and p.get("heartbeat_member") == leader_name]
+        if not projects:
+            return {"error": f"No active projects with heartbeat_member='{leader_name}'"}
+        results = []
+        for p in projects:
+            check_project_complete(p["name"])
+            if p.get("status") == "active":  # may have been completed by check
+                in_flight = _leader_in_flight(p["name"])
+                if in_flight:
+                    results.append(in_flight)
+                    continue
+                _rescue_stuck_motions(p)
+                results.append(_spawn_leader_agent(p))
+        return {"status": "batch", "results": results}
+
+    # Wake ALL active projects
+    projects = [p for p in list_projects() if p.get("status") == "active" and p.get("heartbeat_member")]
+    if not projects:
+        return {"error": "No active projects with heartbeat members"}
+    results = []
+    for p in projects:
+        check_project_complete(p["name"])
+        if p.get("status") == "active":  # may have been completed by check
+            in_flight = _leader_in_flight(p["name"])
+            if in_flight:
+                results.append(in_flight)
+                continue
+            _rescue_stuck_motions(p)
+            results.append(_spawn_leader_agent(p))
+    return {"status": "batch", "results": results}
+
+
+def _cleanup_stale_discussion_states(db_module: Any) -> None:
+    """Clean up discussion_state records for closed motions.
+
+    Closed motions should not have 'discussing' or 'investigating' state
+    lingering in the discussion_state table. This runs on every heartbeat
+    to keep the table clean.
+    """
+    try:
+        closed_motions = db_module.list_motions(status_filter="closed", limit=100)
+        for m in closed_motions:
+            state = db_module.get_discussion_state(m["id"])
+            if state and state.get("current_state") != "closed":
+                db_module.save_discussion_state(m["id"], current_state="closed")
+                logger.debug("Cleaned stale state for closed motion %s", m["id"])
+    except Exception as exc:
+        logger.debug("Stale state cleanup failed: %s", exc)
+
+
+def _maybe_cleanup_stale_discussion_states(db_module: Any, project_name: str) -> None:
+    """Throttled wrapper around _cleanup_stale_discussion_states.
+
+    Only runs the cleanup if ``last_stale_cleanup_at`` in the project JSON is
+    more than 10 minutes ago (or absent). Updates the timestamp after running.
+    (M2 fix: previously ran on every heartbeat.)
+    """
+    from datetime import datetime, timezone, timedelta
+
+    pf = get_registry_dir("projects") / f"{safe_name(project_name)}.json"
+    last_cleanup = None
+    if pf.exists():
+        try:
+            data = json.loads(pf.read_text())
+            last_cleanup = data.get("last_stale_cleanup_at")
+        except Exception:
+            pass
+
+    now = datetime.now(timezone.utc)
+    run_cleanup = True
+    if last_cleanup:
+        try:
+            last_dt = datetime.fromisoformat(last_cleanup)
+            if last_dt.tzinfo is None:
+                last_dt = last_dt.replace(tzinfo=timezone.utc)
+            run_cleanup = (now - last_dt) > timedelta(minutes=10)
+        except Exception:
+            run_cleanup = True
+
+    if run_cleanup:
+        _cleanup_stale_discussion_states(db_module)
+        # Update the timestamp in the project JSON
+        try:
+            if pf.exists():
+                data = json.loads(pf.read_text())
+                data["last_stale_cleanup_at"] = now.isoformat()
+                pf.write_text(json.dumps(data, indent=2))
+        except Exception as exc:
+            logger.debug("Failed to update last_stale_cleanup_at: %s", exc)
+
+
+def _rescue_stuck_motions(project: dict) -> None:
+    """Find motions stuck in 'discussing' and re-spawn or close them.
+
+    A motion can get stuck if:
+    - It was created without chair/participants (old hook code)
+    - spawn_discussion_driver failed silently
+    - The discussion process crashed before or after writing messages
+
+    For each stuck motion:
+    - If no messages and no state → re-spawn (never started)
+    - If has messages but driver is dead → re-spawn (crashed mid-discussion)
+    - If no chair/participants can be resolved → close as error
+    """
+    try:
+        from .storage import motions_kanban as db
+        from .discussion.agent_spawn import spawn_discussion_driver
+
+        project_name = project.get("name", "")
+        if not project_name:
+            return
+
+        # Clean up stale discussion_state records for closed motions — but
+        # only once per 10 minutes to avoid running on every heartbeat (M2 fix).
+        _maybe_cleanup_stale_discussion_states(db, project_name)
+
+        # Find discussing motions for this project — filter at the SQL level.
+        # Also include motions with empty project — they may have been created
+        # by the leader before project resolution was fixed (v1.8.3). Without
+        # the empty-project query, these motions are invisible to rescue and
+        # stuck forever.
+        motions = db.list_motions(status_filter="active", limit=50, project=project_name)
+        # Also query motions with empty/NULL project that belong to no
+        # specific project (legacy motions). Only rescue those that have
+        # no messages and no discussion_state — these are truly stuck.
+        try:
+            _conn = db._connect()
+            try:
+                _rows = _conn.execute(
+                    "SELECT * FROM motions WHERE status NOT IN ('closed') "
+                    "AND (project = '' OR project IS NULL) LIMIT 50"
+                ).fetchall()
+                _extra = [db._row_to_motion(dict(r)) for r in _rows]
+            finally:
+                _conn.close()
+            # Dedup by motion id
+            seen_ids = {m["id"] for m in motions}
+            for m in _extra:
+                if m["id"] not in seen_ids:
+                    motions.append(m)
+                    seen_ids.add(m["id"])
+        except Exception as exc:
+            logger.debug("rescue: empty-project motion query failed: %s", exc)
+        for m in motions:
+            if m.get("status") != "discussing":
+                continue
+
+            messages = db.get_messages(m["id"])
+
+            # Check if a discussion_state exists — if it does, the driver
+            # started but may have crashed.
+            state = db.get_discussion_state(m["id"])
+
+            if messages and state and state.get("last_action"):
+                # Driver started, wrote messages, then crashed mid-discussion.
+                # Re-spawn the driver so it can resume from where it left off.
+                # The driver uses the discussion history to avoid repeating.
+                logger.info(
+                    "Rescuing crashed motion %s (%d messages, last_state=%s)",
+                    m["id"], len(messages), state.get("current_state"),
+                )
+                # Fall through to re-spawn below
+            elif messages and not (state and state.get("last_action")):
+                # Has messages but no state record — unusual but treat as
+                # in-progress (someone else may be driving it)
+                continue
+            elif not messages and state and state.get("last_action"):
+                # Driver started but crashed before writing messages.
+                # Check if this motion has been stuck for >5 minutes — if so,
+                # close it as error so the leader can move on. Otherwise skip
+                # to avoid re-spawning in a tight loop.
+                created = m.get("created_at", "")
+                if created:
+                    try:
+                        from datetime import datetime, timezone, timedelta
+                        created_dt = datetime.fromisoformat(created)
+                        if created_dt.tzinfo is None:
+                            created_dt = created_dt.replace(tzinfo=timezone.utc)
+                        age = datetime.now(timezone.utc) - created_dt
+                        if age > timedelta(minutes=5):
+                            logger.warning(
+                                "Stuck motion %s: 0 steps after %d min — closing as error",
+                                m["id"], int(age.total_seconds() // 60),
+                            )
+                            db.update_motion_status(m["id"], status="closed", decision="error")
+                            db.update_motion_state(m["id"], "closed")
+                            db.save_discussion_state(m["id"], current_state="closed")
+                            continue
+                    except Exception:
+                        pass
+                continue
+            # else: no messages, no state → never started, re-spawn below
+
+            # Re-resolve chair and participants
+            chair = m.get("chair", "")
+            participants = m.get("participants")
+            if isinstance(participants, str):
+                try:
+                    participants = json.loads(participants)
+                except Exception:
+                    participants = None
+
+            if not chair:
+                try:
+                    from ..project_planner import get_heartbeat_member
+                    chair = get_heartbeat_member(project_name) or ""
+                except Exception:
+                    pass
+
+            if not participants:
+                try:
+                    from ..project_planner import get_project
+                    from .team_manager import get_team_for_project, get_team
+                    proj = get_project(project_name)
+                    if proj and proj.get("team"):
+                        team = get_team(proj["team"])
+                        if team:
+                            participants = [w["name"] for w in team.get("workers", [])]
+                except Exception:
+                    pass
+
+            if not chair or not participants:
+                logger.warning(
+                    "Stuck motion %s: cannot resolve chair/participants — closing",
+                    m["id"],
+                )
+                db.update_motion_status(m["id"], status="closed", decision="error")
+                db.update_motion_state(m["id"], "closed")
+                db.save_discussion_state(m["id"], current_state="closed")
+                continue
+
+            # Also skip empty-title motions — they have nothing to discuss
+            if not m.get("title", "").strip():
+                db.update_motion_status(m["id"], status="closed", decision="error")
+                db.update_motion_state(m["id"], "closed")
+                db.save_discussion_state(m["id"], current_state="closed")
+                logger.warning("Closed empty-title motion %s", m["id"])
+                continue
+
+            workdir = project.get("workdir", "")
+            logger.info(
+                "Rescuing stuck motion %s (chair=%s, participants=%s)",
+                m["id"], chair, participants,
+            )
+            spawn_discussion_driver(
+                motion_id=m["id"],
+                chair=chair,
+                participants=participants,
+                workdir=workdir,
+                project_name=project_name,
+            )
+    except Exception as exc:
+        logger.debug("rescue_stuck_motions failed: %s", exc)
+
+
+def _spawn_leader_agent(project: dict) -> dict:
+    """Spawn a leader agent subprocess for one heartbeat cycle.
+
+    Non-blocking: spawns the process, writes output to a log file, and
+    returns immediately with status="spawned". PROJECT_COMPLETE detection
+    is done by checking the log file on subsequent runs.
+
+    Fresh session every heartbeat: the leader does NOT use --resume.
+    Context comes from AGENTS.md (auto-injected via TERMINAL_CWD),
+    MEMORY.md, and SOUL.md — no conversation history needed. This
+    prevents attention degradation in long-running projects where
+    accumulated session history causes the leader to lose focus, repeat
+    already-completed motions, or ignore SOUL.md constraints.
+    """
+    from ..project_planner import update_heartbeat_status
+    from .worker_manager import get_worker, get_worker_session, update_worker_session
+
+    project_name = project["name"]
+    member_name = project.get("heartbeat_member", "")
+    if not member_name:
+        return {"error": f"Project '{project_name}' has no heartbeat_member"}
+
+    worker = get_worker(member_name)
+    if worker is None:
+        return {"error": f"Heartbeat member '{member_name}' not found in worker registry"}
+
+    profile_dir = worker.get("profile_dir", "")
+    workdir = project.get("workdir", "")
+    goal = project.get("goal", "")
+
+    # Fresh session every heartbeat — no --resume.
+    # No session_id is stored for the leader (dead code removed).
+
+    # Refresh AGENTS.md so the leader sees current project state
+    try:
+        from ..project_planner import update_project_agents_md
+        update_project_agents_md(project_name)
+    except Exception as exc:
+        logger.warning("Failed to refresh AGENTS.md for project '%s': %s", project_name, exc)
+
+    # Build the heartbeat prompt — context (goal, stop condition, team,
+    # active motions) is in AGENTS.md which Duckwork auto-injects into the
+    # system prompt via TERMINAL_CWD. No need to duplicate it here.
+    # Include stop-condition cooldown info so the leader doesn't re-evaluate
+    # too frequently.
+    extra_hint = ""
+    complete_count = project.get("complete_count", 0) or 0
+    if complete_count > 0:
+        extra_hint = (
+            f"\n\nNOTE: You have output PROJECT_COMPLETE {complete_count} time(s) already. "
+            f"If the stop condition was recently evaluated in a motion, do NOT raise "
+            f"another stop-condition motion. Wait for task results or significant changes."
+        )
+    prompt = _HEARTBEAT_PROMPT.format(
+        leader_name=member_name,
+        project=project_name,
+    ) + extra_hint
+
+    # Find duckwork binary
+    duckwork_bin = find_duckwork_binary()
+    if not duckwork_bin:
+        return {"error": "Cannot find duckwork binary"}
+
+    # Build command. -Q gives quiet mode.
+    # Toolsets: read-only file tools (read_file, search_files, patch) +
+    # web, skills, memory. No terminal, no code_execution, no browser.
+    # The leader must NOT run commands, write code, or modify project files.
+    # file toolset includes patch — constrained by SOUL.md to only edit
+    # own SOUL.md and MEMORY.md.
+    # web: web_search, web_extract
+    # skills: skill_view, skills_list, skill_manage (creates skills via its own write path)
+    # agora: agora_raise_motion, agora_create_task, etc.
+    cmd = [
+        duckwork_bin,
+        "-p", member_name,
+    ]
+    # Approvals: a `-q` subprocess has nobody present to answer an approval
+    # prompt, so flagged actions fail closed. The leader only bypasses them for
+    # a project that explicitly opted in via `allow_unattended`.
+    if project_allows_unattended(project_name):
+        cmd.extend(["--yolo", "--accept-hooks"])
+    cmd.extend([
+        "--toolsets", "file,web,skills,todo,session_search,agora",
+        "--cli",
+        "chat", "-Q", "-q", prompt,
+    ])
+
+    # Resume project-specific session if available
+    # — DISABLED: fresh session every heartbeat for attention quality
+
+    # Environment — do NOT override DUCKWORK_HOME here.
+    # The -p flag makes Duckwork set DUCKWORK_HOME to the profile directory
+    # (~/.duckwork/profiles/<name>/), giving each worker isolated memory,
+    # skills, and sessions. Overriding it back to the global root would
+    # destroy that isolation (all workers sharing one MEMORY.md, one
+    # skills pool, one sessions DB).
+    env = dict(os.environ)
+
+    kanban_db = os.environ.get("DUCKWORK_KANBAN_DB", "")
+    if kanban_db:
+        env["DUCKWORK_KANBAN_DB"] = kanban_db
+
+    if workdir and os.path.isabs(workdir):
+        env["TERMINAL_CWD"] = workdir
+
+    # Log file — per project
+    log_path = get_registry_dir("projects") / f"heartbeat_{safe_name(project_name)}.log"
+
+    try:
+        log_fd = open(log_path, "a")
+        proc = subprocess.Popen(
+            cmd,
+            stdout=log_fd,
+            stderr=log_fd,
+            env=env,
+            cwd=workdir if workdir and os.path.isabs(workdir) else None,
+            start_new_session=True,
+        )
+        # Close parent's copy of the fd — child has its own via dup2.
+        # Without this, every heartbeat leaks a file descriptor.
+        log_fd.close()
+
+        # Update heartbeat record
+        update_heartbeat_status(project_name, pid=proc.pid)
+
+        logger.info(
+            "Leader '%s' heartbeat spawned for project '%s' (PID %d, fresh session, log=%s)",
+            member_name, project_name, proc.pid, log_path,
+        )
+        return {
+            "status": "spawned",
+            "leader": member_name,
+            "project": project_name,
+            "pid": proc.pid,
+            "session_id": None,
+            "log": str(log_path),
+        }
+    except Exception as exc:
+        logger.error("Failed to spawn leader '%s' for project '%s': %s", member_name, project_name, exc)
+        return {"error": f"Failed to spawn leader: {exc}"}
+
+
+def check_project_complete(project_name: str) -> bool:
+    """Check if a project's leader has output PROJECT_COMPLETE in its log.
+
+    Called by the heartbeat() function before spawning a new leader agent.
+    Uses a completion counter to require TWO consecutive PROJECT_COMPLETE
+    signals before actually stopping the project. This prevents premature
+    shutdown when the leader finds temporary idle periods.
+
+    The first PROJECT_COMPLETE increments the counter and lets the heartbeat
+    continue (so the leader gets another chance to find work). The second
+    consecutive one triggers on_project_complete.
+    """
+    try:
+        from ..project_planner import get_project, on_project_complete
+
+        proj = get_project(project_name)
+        if proj is None or proj.get("status") != "active":
+            return False
+
+        log_path = get_registry_dir("projects") / f"heartbeat_{safe_name(project_name)}.log"
+        if not log_path.exists():
+            return False
+
+        # Check if this heartbeat's output contained PROJECT_COMPLETE.
+        # We track the last-seen position so we only detect NEW occurrences.
+        last_pos = proj.get("complete_check_pos", 0)
+        current_size = log_path.stat().st_size
+
+        if current_size <= last_pos:
+            # No new output since last check
+            return False
+
+        # Read only the new portion
+        with open(log_path, "rb") as f:
+            f.seek(last_pos)
+            new_content = f.read().decode("utf-8", errors="replace")
+
+        # Update the check position regardless
+        _update_complete_check_pos(project_name, current_size)
+
+        if "PROJECT_COMPLETE" not in new_content:
+            # Reset counter — leader is actively working
+            if proj.get("complete_count", 0) > 0:
+                _update_complete_count(project_name, 0)
+            return False
+
+        # PROJECT_COMPLETE found in new output.
+        # Verify the board is actually clean. Scoped to this project's board:
+        # Agora sets the tenant on every task it creates, so a NULL tenant means
+        # the task belongs to someone else — counting it here would let an
+        # unrelated board's work block this project's completion.
+        board_name = agora_board_for(project_name)
+        _counts: dict = {}
+        _board_read = False
+        try:
+            from .kanban_compat import kanban_db as _kdb
+            from .utils import PENDING_TASK_STATUSES
+
+            _placeholders = ", ".join("?" * len(PENDING_TASK_STATUSES))
+            _conn = _kdb.connect()
+            try:
+                _rows = _conn.execute(
+                    "SELECT status, COUNT(*) AS n FROM tasks "
+                    f"WHERE status IN ({_placeholders}) AND tenant = ? "
+                    "GROUP BY status",
+                    (*PENDING_TASK_STATUSES, board_name),
+                ).fetchall()
+                _counts = {r["status"]: r["n"] for r in _rows}
+                _board_read = True
+            finally:
+                _conn.close()
+        except Exception as exc:
+            logger.warning("check_project_complete: failed to query kanban for %s: %s", project_name, exc)
+
+        if not _board_read:
+            # Fail closed. An unreadable board is not a clean board: if a
+            # transient failure (SQLite lock contention, missing board) left
+            # this as "no pending tasks", the counter would advance toward
+            # stopping the project with work still on it — the same failure
+            # mode as querying too few statuses. Defer and make the leader
+            # produce two fresh consecutive signals once the board is readable.
+            logger.error(
+                "Project '%s': PROJECT_COMPLETE deferred — could not read the board", project_name,
+            )
+            # Surface it to the leader too, not just the server log. The
+            # transient causes above clear themselves; an environmental one (a
+            # heartbeat process that cannot import duckwork_cli, a moved install)
+            # fails on every heartbeat, and a defer that repeats forever is a
+            # silently disabled completion gate rather than a retry.
+            try:
+                with open(log_path, "a") as _lf:
+                    _lf.write(
+                        "\n[SYSTEM] PROJECT_COMPLETE deferred: the kanban board could not be "
+                        "read on this heartbeat. If this repeats, the heartbeat process "
+                        "cannot import duckwork_cli — look for ModuleNotFoundError in its log.\n"
+                    )
+            except Exception:
+                pass
+            if proj.get("complete_count", 0) > 0:
+                _update_complete_count(project_name, 0)
+            return False
+
+        _pending_count = sum(_counts.values())
+        if _pending_count > 0:
+            _breakdown = ", ".join(f"{s}={n}" for s, n in sorted(_counts.items()))
+            logger.info(
+                "Project '%s': PROJECT_COMPLETE ignored — %d pending tasks (%s)",
+                project_name, _pending_count, _breakdown,
+            )
+            # Append to heartbeat log so leader sees the rejection on next heartbeat
+            try:
+                with open(log_path, "a") as _lf:
+                    _lf.write(
+                        f"\n[SYSTEM] PROJECT_COMPLETE rejected: {_pending_count} pending kanban tasks "
+                        f"({_breakdown}). "
+                        f"Complete or cancel these tasks before declaring project complete.\n"
+                    )
+            except Exception:
+                pass
+            # Reset counter — kanban is not clean
+            if proj.get("complete_count", 0) > 0:
+                _update_complete_count(project_name, 0)
+            return False
+
+        count = proj.get("complete_count", 0) + 1
+        _update_complete_count(project_name, count)
+
+        if count >= 2:
+            logger.info(
+                "Project '%s' complete: %d consecutive PROJECT_COMPLETE signals",
+                project_name, count,
+            )
+            on_project_complete(project_name)
+            return True
+        else:
+            logger.info(
+                "Project '%s': PROJECT_COMPLETE #%d (need 2 to stop) — giving leader another chance",
+                project_name, count,
+            )
+            return False
+
+    except Exception as exc:
+        logger.debug("check_project_complete failed for %s: %s", project_name, exc)
+    return False
+
+
+def _update_complete_count(project_name: str, count: int) -> None:
+    """Update the consecutive PROJECT_COMPLETE counter for a project."""
+    try:
+        from ..project_planner import get_project
+        pf = get_registry_dir("projects") / f"{safe_name(project_name)}.json"
+        if not pf.exists():
+            return
+        data = json.loads(pf.read_text())
+        data["complete_count"] = count
+        pf.write_text(json.dumps(data, indent=2))
+    except Exception as exc:
+        logger.warning("Failed to update complete_count for project '%s': %s", project_name, exc)
+
+
+def _update_complete_check_pos(project_name: str, pos: int) -> None:
+    """Update the last-checked log position for PROJECT_COMPLETE detection."""
+    try:
+        pf = get_registry_dir("projects") / f"{safe_name(project_name)}.json"
+        if not pf.exists():
+            return
+        data = json.loads(pf.read_text())
+        data["complete_check_pos"] = pos
+        pf.write_text(json.dumps(data, indent=2))
+    except Exception as exc:
+        logger.warning("Failed to update complete_check_pos for project '%s': %s", project_name, exc)
+
+
+# --------------------------------------------------------------------------- #
+#  Heartbeat prompt                                                           #
+# --------------------------------------------------------------------------- #
+
+_HEARTBEAT_PROMPT = """\
+Heartbeat wake-up for {leader_name}, project '{project}'.
+
+Read AGENTS.md in the project workdir for current goal, stop condition, \
+team members, and active discussions.
+
+IMPORTANT: If the goal or stop condition has changed since your last \
+heartbeat, treat this as a NEW project phase. Do NOT carry over previous \
+PROJECT_COMPLETE decisions — reassess from scratch against the CURRENT goal.
+
+Check current status and take action per your SOUL.md heartbeat protocol. \
+In Agora 2.0, task creation and dispatch are AUTOMATIC — when a motion is \
+adopted its action items become tasks automatically, and the dispatcher \
+assigns them. Your job is to assess, raise/chair discussions, and arbitrate. \
+Before raising a motion, check existing active motions to avoid duplicates. \
+Never assign tasks to yourself — you are the leader, not an implementer. \
+If everything is running fine, say "ALL_GOOD" with a brief summary. \
+If tasks are all done, assess the project and plan the next valuable work. \
+Only output "PROJECT_COMPLETE" if you've confirmed twice that the stop \
+condition is met and there's truly nothing left to do.
+"""

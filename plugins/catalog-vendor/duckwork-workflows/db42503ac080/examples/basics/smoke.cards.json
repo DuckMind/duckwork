@@ -1,0 +1,22 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why it works",
+      "items": [
+        "Provider smoke test, shortest legal path: agent -> fan-out -> agent",
+        "Fastest path to prove a route answers before trusting a real graph with it",
+        "Fan-out children ride the same seat defaults as the parent"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Contract",
+      "items": [
+        "{{nodes}} nodes, {{fanouts}} fan-out: seed -> lanes -> final",
+        "No gates, no schemas: pure spawn-and-commit sanity shape",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: python -m pip install "ruff>=0.6,<1"
+      - run: ruff check .
+
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install "pytest>=8,<9"
+      - run: python -m pytest -c tests/pytest.ini --rootdir tests tests
+
+  duckwork:
+    name: duckwork validate (Duckwork Agent 0.21.5)
+    runs-on: ubuntu-latest
+    env:
+      DUCKWORK_REF: v2026.9.24
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: plugin
+      - uses: astral-sh/setup-uv@v7
+      - name: Install Duckwork Agent
+        run: |
+          git clone --depth 1 --branch "$DUCKWORK_REF" https://github.com/DuckMind/duckwork duckwork
+          uv venv --python 3.14 .venv
+          uv pip install --python .venv -e ./duckwork
+      - name: Validate like the plugin catalog
+        working-directory: plugin
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: ../.venv/bin/duckwork plugins validate .
+      - name: Check runtime contracts
+        working-directory: plugin
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: ../.venv/bin/duckwork plugins doctor . --ci

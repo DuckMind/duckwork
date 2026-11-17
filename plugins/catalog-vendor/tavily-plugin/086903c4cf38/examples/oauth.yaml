@@ -1,0 +1,10 @@
+# Merge this connection into the active Duckwork profile's config.yaml.
+# Replace any existing mcp_servers.tavily entry; do not merge its old headers.
+mcp_servers:
+  tavily:
+    url: https://mcp.tavily.com/mcp/
+    auth: oauth
+    timeout: 900
+    strict_redirect_headers: true
+    headers:
+      X-Client-Name: "duckwork plugin"

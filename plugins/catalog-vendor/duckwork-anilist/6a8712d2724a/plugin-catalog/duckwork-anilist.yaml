@@ -1,0 +1,42 @@
+# The Duckwork plugin catalog entry for this plugin.
+#
+# THIS FILE IS NOT READ BY DUCKWORK. It is kept here so the submission is a copy,
+# not a reconstruction: the catalog lives in the duckwork-agent repository, and
+# admission is a pull request adding `plugin-catalog/duckwork-anilist.yaml` with
+# exactly these contents. Checklist: that repo's plugin-catalog/README.md.
+#
+#   sha     the reviewed commit — the v0.9.0 release tag's commit, not HEAD.
+#           Bump it in the same PR that bumps `version`, and never point it at a
+#           branch: the pin IS the trust model, and the reviewer reads the diff
+#           of the commit range being adopted. Quote it: an all-digit SHA
+#           unquoted is a YAML number and the loader rejects it. There is no
+#           minimum pin age: the 2-week maturity rule this entry was waiting on
+#           was replaced upstream by the no-self-updater rule (duckwork-agent
+#           48763a4d01, 2026-09-15), so admission turns on the pin not being
+#           able to move itself — which this plugin has never done.
+#   image   optional 2:1 banner on a GitHub host, pinned to `sha` so it cannot
+#           change under the review (not added yet — the card falls back to text).
+name: duckwork-anilist
+repo: https://github.com/DuckMind/duckwork
+sha: "f65b3ede0f50b50f42a2049234b01d8c1f14c743"
+description: AniList tracker for Duckwork Desktop — airing countdowns, a season browser, a local or
+  account-backed watchlist, episode alerts and a daily digest, plus agent tools that read your own
+  list and answer about a single show.
+maintainer: BatataBF
+tier: community
+category: desktop
+requires_duckwork: ">=0.21"
+docs_url: https://github.com/DuckMind/duckwork
+version: "0.9.0"
+platforms: []
+capabilities:
+  # Must match what register(ctx) actually does at `sha`: `duckwork plugins
+  # validate` diffs these against reality and fails the entry on drift.
+  provides_tools:
+    - anilist_list
+    - anilist_show
+  provides_hooks: []
+  provides_middleware: []
+  # No env var is required to install or to read: the AniList token is optional
+  # and lives in the profile's .env only after the user signs in from the pane.
+  requires_env: []

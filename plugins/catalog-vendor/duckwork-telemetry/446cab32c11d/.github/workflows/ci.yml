@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # manual trigger (useful for smoke-testing the workflow)
+  # pull_request_target (not pull_request) so CI runs on PRs from forks without
+  # the manual "Approve and run" gate. The workflow definition always comes from
+  # the base branch (main = trusted); each job explicitly checks out the PR head
+  # to exercise the contributor's code.
+  #
+  # SECURITY — this runs UNTRUSTED fork code in a pull_request_target context, so
+  # the checkout steps set allow-unsafe-pr-checkout: true. That is only safe here
+  # because ALL of the following hold:
+  #   * no secrets are referenced anywhere in this workflow;
+  #   * the token is read-only (permissions: contents: read below);
+  #   * nothing is cached (no actions/cache, no `cache:` on setup-python).
+  # If ANY of those change (add a secret, widen permissions, add a cache), this
+  # becomes a "pwn request" hole — revisit the trigger before doing so.
+  pull_request_target:
+    branches: [main]
+
+# Least privilege: fork code executes here, so the token can only read a public
+# repo (which the fork author can do anyway). Do not widen without re-reading the
+# SECURITY note above.
+permissions:
+  contents: read
+
+concurrency:
+  # Scope by PR number (pull_request_target sets github.ref to the base branch,
+  # so all PRs would otherwise share one group and cancel each other).
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Lint — ruff (format + check)
+  # -----------------------------------------------------------------------
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the PR head under pull_request_target (defaults to base ref
+      # otherwise). On push events the ref is empty → checkout uses the default.
+      # allow-unsafe-pr-checkout is required to fetch fork code here; safe only
+      # under the constraints in the SECURITY note at the top of this file.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          allow-unsafe-pr-checkout: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Pinned deliberately. An unpinned `pip install ruff` makes this job
+      # depend on whatever was released last: ruff 0.16.0 graduated Markdown
+      # formatting out of preview and began formatting the Python blocks inside
+      # README.md / ONBOARDING.md, turning main red with no repo change at all.
+      # Bump .ruff-version in its own PR, together with any reformatting it
+      # implies, so the change is a decision instead of an accident.
+      - name: Install ruff (pinned via .ruff-version)
+        run: pip install "ruff==$(tr -d '[:space:]' < .ruff-version)"
+
+      - name: Check formatting
+        run: ruff format --check .
+
+      - name: Lint
+        run: ruff check .
+
+      - name: JS bundle syntax (plugin IIFE)
+        run: node --check dashboard/dist/index.js
+
+      - name: Dashboard i18n tests
+        run: node --test dashboard/i18n.test.js
+
+      - name: Version sync — pyproject ↔ __init__ ↔ plugin.yaml ↔ manifest.json
+        run: |
+          python - <<'PY'
+          import json, pathlib, re, sys, tomllib
+
+          root = pathlib.Path(".")
+          pyver = tomllib.load(open(root / "pyproject.toml", "rb"))["project"]["version"]
+          init  = re.search(r'^__version__\s*=\s*"([^"]+)"',
+                            (root / "__init__.py").read_text(), re.M).group(1)
+          plug  = re.search(r'^version:\s*"?([\d.]+)"?',
+                            (root / "plugin.yaml").read_text(), re.M).group(1)
+          manif = json.loads((root / "dashboard" / "manifest.json").read_text())["version"]
+
+          versions = {"pyproject": pyver, "__init__": init,
+                      "plugin.yaml": plug, "dashboard/manifest.json": manif}
+          unique = set(versions.values())
+          if len(unique) != 1:
+              for k, v in versions.items():
+                  print(f"  {k}: {v}")
+              sys.exit("::error::version drift across files")
+          print(f"Version OK: {pyver}")
+          PY
+
+  # -----------------------------------------------------------------------
+  # Tests — pytest on Python 3.8–3.12
+  # -----------------------------------------------------------------------
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      # See lint job: check out the PR head so tests run the contributor's code.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          allow-unsafe-pr-checkout: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install pytest pyyaml
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short

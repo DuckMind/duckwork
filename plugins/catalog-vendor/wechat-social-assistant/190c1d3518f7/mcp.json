@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "wsa": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "wechat-social-assistant==1.5.1",
+        "wsa-mcp"
+      ],
+      "env": {
+        "WSA_DB": "${PLUGIN_DATA}/data/social.db",
+        "WSA_CAPTURES_DIR": "${PLUGIN_DATA}/captures",
+        "WSA_ALLOWED_ROOT": "${PLUGIN_DATA}",
+        "WSA_MCP_ENFORCE_PATHS": "1"
+      }
+    }
+  }
+}

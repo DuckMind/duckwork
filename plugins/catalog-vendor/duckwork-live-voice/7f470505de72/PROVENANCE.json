@@ -1,0 +1,1025 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-live-voice",
+  "content_id": "7f470505de72",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 742,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "dfd3a7138ef01ca6aac40e13961214350367163646b2e63d36e42d724ee8d7b2"
+    },
+    {
+      "bytes": 56,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "4f482f0e4682d256df642f233a9805ba7111e8d68dab48924300e45cc5009c69"
+    },
+    {
+      "bytes": 1063,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "1af0e44854d76c07f53cdd2b5a9e00f51db2d96313c4550aadcb6b595010e381"
+    },
+    {
+      "bytes": 770,
+      "mode": "100644",
+      "path": "NOTICE.md",
+      "sha256": "96b61fad7fe2fa36fb724b7a41e122fa5ca3eee4e5befe85a6494c8aee628e7f"
+    },
+    {
+      "bytes": 15220,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "e7264453ddc01636c3d0e0d7970b454d81c580026feca88e47bdc6071277a53b"
+    },
+    {
+      "bytes": 1298,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "15d0530bc2cf5ce478a26ef70718df56d4104ab9371e4dd8ec6b5aea9167a8ce"
+    },
+    {
+      "bytes": 577,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "4fb035fcdfde5bd56366e349d54b98190b08b803eca506efa3b3283551aece4d"
+    },
+    {
+      "bytes": 55,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "52ef05b6cbf54900492b1e82b3ff9ca9d6db194f3d8fab5f82d4833edc9225c6"
+    },
+    {
+      "bytes": 50176,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "ee224f5c07872df024b8acb6bf297461781e411e3c0d351d02eea20e45f2623e"
+    },
+    {
+      "bytes": 266,
+      "mode": "100644",
+      "path": "dashboard/talk_vendor/__init__.py",
+      "sha256": "46d2db08f256739051f76288721b76ae548efef9753c07e844b8a16ec1f7a7d2"
+    },
+    {
+      "bytes": 13984,
+      "mode": "100644",
+      "path": "dashboard/talk_vendor/talk_auth.py",
+      "sha256": "1738c32c01daf9f2d31c4bab7a4c8d7b03b7429ac8c87a83a467160d718c8872"
+    },
+    {
+      "bytes": 375,
+      "mode": "100644",
+      "path": "dashboard/talk_vendor/talk_capabilities.py",
+      "sha256": "6b7f3bd5c49100b7addcfead7bc08d0f7aca788bf99e8cfee7d38c28263d29c8"
+    },
+    {
+      "bytes": 35844,
+      "mode": "100644",
+      "path": "dashboard/talk_vendor/talk_config.py",
+      "sha256": "cc1fcffaa32d6f21a6a790b7225eddda2b52deba6b518fb520747c2b69329246"
+    },
+    {
+      "bytes": 2234,
+      "mode": "100644",
+      "path": "dashboard/talk_vendor/talk_host.py",
+      "sha256": "14734c69725ef285381461748a81a5fca10e0ed229e79cc0ec3fb33fa859eb06"
+    },
+    {
+      "bytes": 14614,
+      "mode": "100644",
+      "path": "dashboard/talk_vendor/talk_identity.py",
+      "sha256": "bcb041a2956f7a5e17fb2fcb98ce447fb1648055ebd1375c3d2e7151ac2d2d11"
+    },
+    {
+      "bytes": 947,
+      "mode": "100644",
+      "path": "dashboard/talk_vendor/talk_tools.py",
+      "sha256": "59b5ba33bf966445dce88c6da09b141360aae1b5b7e92502879f3965290916ab"
+    },
+    {
+      "bytes": 6848,
+      "mode": "100644",
+      "path": "dashboard/talk_vendor/talk_wire.py",
+      "sha256": "a95380e3d411a5adfb5e8acc3d09153ea720194504658a02965ef7abffae4269"
+    },
+    {
+      "bytes": 95044,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "8f904d066cd49cfa484a4b0f65abdf115836b4f3fed4b42936cd567250c74ee5"
+    },
+    {
+      "bytes": 8376,
+      "mode": "100644",
+      "path": "docs/live-voice-recipe.md",
+      "sha256": "0c6f8f50076691152f2abb8c019a7e70d8c3a7bcdd885e4aae50c1020426181a"
+    },
+    {
+      "bytes": 17718,
+      "mode": "100644",
+      "path": "docs/media/composer-controls.png",
+      "sha256": "aea4c8db15f366c322b652a8ac1a25b4424941e1d8b445d93fc39081e6b854f1"
+    },
+    {
+      "bytes": 188305,
+      "mode": "100644",
+      "path": "docs/media/live-transcript.png",
+      "sha256": "8d1ae0c6a436f3d063068541d9558fe78abe91c0f17750a1ea36dcc7e71166cc"
+    },
+    {
+      "bytes": 493747,
+      "mode": "100644",
+      "path": "docs/media/live-voice-demo.gif",
+      "sha256": "1ad35bbd163ef6b9f0a3d86494f7589dcd961acd6a390bcb5c2f8416c7354839"
+    },
+    {
+      "bytes": 594582,
+      "mode": "100644",
+      "path": "docs/media/live-voice-demo.mp4",
+      "sha256": "adfda816db7456a40e049e513f36e8060f9f5e39bb2c8f8c42057bf2cb7d3a2d"
+    },
+    {
+      "bytes": 60510,
+      "mode": "100644",
+      "path": "docs/media/settings-panel.png",
+      "sha256": "93094467a28da1e67905674ce64162cc2be19b904c48f234aff94010d5113b0f"
+    },
+    {
+      "bytes": 2010,
+      "mode": "100644",
+      "path": "docs/model-context-language.md",
+      "sha256": "bb003c1ffe17cbe74d98e75d93f17e6979dd36c7ba4be72a800b8570232b016b"
+    },
+    {
+      "bytes": 630,
+      "mode": "100644",
+      "path": "language_directive.txt",
+      "sha256": "93a77c2f32d3c54cfcbc3aeb9d86e36b76eb8b51aeb896d12227eb1477fcdace"
+    },
+    {
+      "bytes": 574,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "587d9aa7f2fa13564416a56f32a0f5e282d89fbfa48f79cf94c78eca880404c3"
+    },
+    {
+      "bytes": 65,
+      "mode": "100644",
+      "path": "settings.example.json",
+      "sha256": "feebc9b64d597e3f6b3b5c84162573baf44c4c48ecda74d1317cefc5c2b2363a"
+    },
+    {
+      "bytes": 11455,
+      "mode": "100644",
+      "path": "tests/test_core_signed_auth.py",
+      "sha256": "96bc34346734cbddc1fd3542de3850a2f852b8f88f1497b61d9a40b662675645"
+    },
+    {
+      "bytes": 6349,
+      "mode": "100644",
+      "path": "tests/test_desktop_plugin_static.py",
+      "sha256": "447df761c3041f09ffed1a7cb3bacb7c1b7787b4e5ead54891ca91cb5c120f3e"
+    },
+    {
+      "bytes": 18511,
+      "mode": "100644",
+      "path": "tests/test_model_context.py",
+      "sha256": "4e0241684c3aff85088ced89ca56e096b6b5a77b245cabee0337165966cf5c84"
+    },
+    {
+      "bytes": 15164,
+      "mode": "100644",
+      "path": "tests/test_plugin_api.py",
+      "sha256": "fc34414c7ce24e53b52ddfc36754de859e19733fc0f5e101308856f08aec2cd8"
+    },
+    {
+      "bytes": 2078,
+      "mode": "100644",
+      "path": "tests/test_voice_identity.py",
+      "sha256": "5c5a0a16d3f9ee345d81325e376f368f982aa8794b5a83ed28cbc7746eb48ffd"
+    },
+    {
+      "bytes": 2622,
+      "mode": "100755",
+      "path": "tools/plugin-load-test.sh",
+      "sha256": "1375b25a9ce7c371d894b9b0cdc180b893e59d0e1e2dd4354bd844d70d61996f"
+    }
+  ],
+  "input_manifest_sha256": "7f470505de7260dbea7602d9bafe958a12b8de0035157f2585476723e802edac",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "1af0e44854d76c07f53cdd2b5a9e00f51db2d96313c4550aadcb6b595010e381",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "NOTICE.md",
+        "sha256": "96b61fad7fe2fa36fb724b7a41e122fa5ca3eee4e5befe85a6494c8aee628e7f",
+        "source_path": "NOTICE.md"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "SECURITY.md",
+      "__init__.py",
+      "dashboard/plugin_api.py",
+      "dashboard/talk_vendor/__init__.py",
+      "dashboard/talk_vendor/talk_auth.py",
+      "dashboard/talk_vendor/talk_capabilities.py",
+      "dashboard/talk_vendor/talk_config.py",
+      "dashboard/talk_vendor/talk_host.py",
+      "dashboard/talk_vendor/talk_identity.py",
+      "dashboard/talk_vendor/talk_tools.py",
+      "dashboard/talk_vendor/talk_wire.py",
+      "desktop/plugin.js",
+      "docs/live-voice-recipe.md",
+      "plugin.yaml",
+      "tests/test_core_signed_auth.py",
+      "tests/test_model_context.py",
+      "tests/test_plugin_api.py",
+      "tests/test_voice_identity.py",
+      "tools/plugin-load-test.sh"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Synero/hermes-live-voice",
+    "sha": "0578e0cc35022a9dcb469cb9fbfc4d8afc93fc65",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/Synero/hermes-live-voice",
+  "original_sha": "0578e0cc35022a9dcb469cb9fbfc4d8afc93fc65",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "dfd3a7138ef01ca6aac40e13961214350367163646b2e63d36e42d724ee8d7b2",
+      "bytes": 742,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "4f482f0e4682d256df642f233a9805ba7111e8d68dab48924300e45cc5009c69",
+      "bytes": 56,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "1af0e44854d76c07f53cdd2b5a9e00f51db2d96313c4550aadcb6b595010e381",
+      "bytes": 1063,
+      "mode": "100644"
+    },
+    {
+      "path": "NOTICE.md",
+      "sha256": "96b61fad7fe2fa36fb724b7a41e122fa5ca3eee4e5befe85a6494c8aee628e7f",
+      "bytes": 770,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "61f2689ac84c72daf7bb73161557bfbec8cd6f4ee170f5956e18fa6c677aa18c",
+      "bytes": 15130,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "7ef692a0ed7339a2816cf9d31f2fdd7c7824b958dc781450511e9de94237b9f3",
+      "bytes": 1269,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "71efc2a98cc27dbafc13c9bff0ed2ecc67eba25f48dc067febc19fa5cc63c127",
+      "bytes": 581,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "52ef05b6cbf54900492b1e82b3ff9ca9d6db194f3d8fab5f82d4833edc9225c6",
+      "bytes": 55,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "ca83091709b53446b656e983e356c82e4730b876371ba778b5328719974b4e8a",
+      "bytes": 50290,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/talk_vendor/__init__.py",
+      "sha256": "8a8f5af329a5fef4df69914e489319645b66f3eaa29d1564e0968e8e28aae061",
+      "bytes": 266,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/talk_vendor/talk_auth.py",
+      "sha256": "b89f1f786a75cfbd9c3a8749edff5701b4ab869ba81e24749d68a829b2b3f8c8",
+      "bytes": 14012,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/talk_vendor/talk_capabilities.py",
+      "sha256": "b14aadccd01d63ba89533d5958352ea6af56fedad3bb33e57dc62ee61e7c40e4",
+      "bytes": 377,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/talk_vendor/talk_config.py",
+      "sha256": "d803163652921f997e904f40e0b030384cf9bb87b07be8f4e2594575a80893d4",
+      "bytes": 35892,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/talk_vendor/talk_host.py",
+      "sha256": "7a3aa03d0ae58912264237bce83f4e851d608a0509f168b130153b1de2e56ad4",
+      "bytes": 2246,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/talk_vendor/talk_identity.py",
+      "sha256": "5e6988a5dca6e7fb2df505261082d0790bc92770d3af643ea0fa52abc16af4d0",
+      "bytes": 14638,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/talk_vendor/talk_tools.py",
+      "sha256": "20e78a7470926f5185fa92d4f80267514445f56958c925ea990bfc569a79b467",
+      "bytes": 953,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/talk_vendor/talk_wire.py",
+      "sha256": "1613627bbbe0512d54a4fdd516dba35aaa8975a6716cf01fe4f4f0627e128e57",
+      "bytes": 6854,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "eed25194e183dc912fe975845429a409d0a3b754c10834bc9f7e244f962ca644",
+      "bytes": 95094,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/live-voice-recipe.md",
+      "sha256": "ebc2bca577582d377159968ca2d8f7c399a41b35abde8ff3fd8b3159e1caca2f",
+      "bytes": 8382,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/composer-controls.png",
+      "sha256": "aea4c8db15f366c322b652a8ac1a25b4424941e1d8b445d93fc39081e6b854f1",
+      "bytes": 17718,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/live-transcript.png",
+      "sha256": "8d1ae0c6a436f3d063068541d9558fe78abe91c0f17750a1ea36dcc7e71166cc",
+      "bytes": 188305,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/live-voice-demo.gif",
+      "sha256": "1ad35bbd163ef6b9f0a3d86494f7589dcd961acd6a390bcb5c2f8416c7354839",
+      "bytes": 493747,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/live-voice-demo.mp4",
+      "sha256": "adfda816db7456a40e049e513f36e8060f9f5e39bb2c8f8c42057bf2cb7d3a2d",
+      "bytes": 594582,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/settings-panel.png",
+      "sha256": "93094467a28da1e67905674ce64162cc2be19b904c48f234aff94010d5113b0f",
+      "bytes": 60510,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/model-context-language.md",
+      "sha256": "bb003c1ffe17cbe74d98e75d93f17e6979dd36c7ba4be72a800b8570232b016b",
+      "bytes": 2010,
+      "mode": "100644"
+    },
+    {
+      "path": "language_directive.txt",
+      "sha256": "93a77c2f32d3c54cfcbc3aeb9d86e36b76eb8b51aeb896d12227eb1477fcdace",
+      "bytes": 630,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "74c421d9fea7c3ba5f77ac661520bf81d2f8b82e63464e0df93c403ba8437e96",
+      "bytes": 578,
+      "mode": "100644"
+    },
+    {
+      "path": "settings.example.json",
+      "sha256": "feebc9b64d597e3f6b3b5c84162573baf44c4c48ecda74d1317cefc5c2b2363a",
+      "bytes": 65,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_core_signed_auth.py",
+      "sha256": "a9b684bc58a673692f57654991bd1f6262d617d7a0bec06cac65285a8d9052e7",
+      "bytes": 11503,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_desktop_plugin_static.py",
+      "sha256": "447df761c3041f09ffed1a7cb3bacb7c1b7787b4e5ead54891ca91cb5c120f3e",
+      "bytes": 6349,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_model_context.py",
+      "sha256": "7c0886e645a6155c69cbc4c0c8a9a00d5490c6eda84d2bd5057854d2fa9b90b2",
+      "bytes": 18513,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_api.py",
+      "sha256": "38a4438844aa0b9e95f0a0e8e51d973ab65dad693cf8c01cfb12fc3b53dee5c3",
+      "bytes": 15184,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_voice_identity.py",
+      "sha256": "1230bda9bc1b1616b0f9cf3bc5c473915a243d5c78bc514d054310ec7eac5a86",
+      "bytes": 2082,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/plugin-load-test.sh",
+      "sha256": "6a4a37e071f07b8c6a6c24a2f3981791c9349c961c8a50e541a5ecd2cd958dc6",
+      "bytes": 2634,
+      "mode": "100755"
+    }
+  ],
+  "output_manifest_sha256": "fb079dc4bc7d3ca09c808fe118d8d13e83eefcb32e19f965de93836b41a98af5",
+  "pin_verification": {
+    "archive_bytes": 1283929,
+    "archive_sha256": "eb6aea913c0e75f27bf24339b8faaa5ed0e7797f803b749572c681f196279764",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "0578e0cc35022a9dcb469cb9fbfc4d8afc93fc65",
+    "verified_commit_marker": "0578e0cc35022a9dcb469cb9fbfc4d8afc93fc65"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "54cfd2aa65aeb4c86384688698089c2a537dcbe05dd6f15604024f4d4ff11854",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "dfd3a7138ef01ca6aac40e13961214350367163646b2e63d36e42d724ee8d7b2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dfd3a7138ef01ca6aac40e13961214350367163646b2e63d36e42d724ee8d7b2",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "dfd3a7138ef01ca6aac40e13961214350367163646b2e63d36e42d724ee8d7b2",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "dfd3a7138ef01ca6aac40e13961214350367163646b2e63d36e42d724ee8d7b2"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "4f482f0e4682d256df642f233a9805ba7111e8d68dab48924300e45cc5009c69",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4f482f0e4682d256df642f233a9805ba7111e8d68dab48924300e45cc5009c69",
+        "source": ".gitignore",
+        "final_output_sha256": "4f482f0e4682d256df642f233a9805ba7111e8d68dab48924300e45cc5009c69",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "4f482f0e4682d256df642f233a9805ba7111e8d68dab48924300e45cc5009c69"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "1af0e44854d76c07f53cdd2b5a9e00f51db2d96313c4550aadcb6b595010e381",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "1af0e44854d76c07f53cdd2b5a9e00f51db2d96313c4550aadcb6b595010e381",
+        "source": "LICENSE",
+        "final_output_sha256": "1af0e44854d76c07f53cdd2b5a9e00f51db2d96313c4550aadcb6b595010e381",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "1af0e44854d76c07f53cdd2b5a9e00f51db2d96313c4550aadcb6b595010e381"
+      },
+      {
+        "destination": "NOTICE.md",
+        "input_sha256": "96b61fad7fe2fa36fb724b7a41e122fa5ca3eee4e5befe85a6494c8aee628e7f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "96b61fad7fe2fa36fb724b7a41e122fa5ca3eee4e5befe85a6494c8aee628e7f",
+        "source": "NOTICE.md",
+        "final_output_sha256": "96b61fad7fe2fa36fb724b7a41e122fa5ca3eee4e5befe85a6494c8aee628e7f",
+        "cli_destination": "NOTICE.md",
+        "previous_staging_sha256": "96b61fad7fe2fa36fb724b7a41e122fa5ca3eee4e5befe85a6494c8aee628e7f"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "e7264453ddc01636c3d0e0d7970b454d81c580026feca88e47bdc6071277a53b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f5dcf2422c1a5a197acfe5f4ac4f20582c7afe687725c771416cc93ef6fc3593",
+        "source": "README.md",
+        "final_output_sha256": "61f2689ac84c72daf7bb73161557bfbec8cd6f4ee170f5956e18fa6c677aa18c",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "f5dcf2422c1a5a197acfe5f4ac4f20582c7afe687725c771416cc93ef6fc3593"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "15d0530bc2cf5ce478a26ef70718df56d4104ab9371e4dd8ec6b5aea9167a8ce",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0508281169634a3b76258f3024beb728541c7b3a6d686fe69c76aa3403989cb9",
+        "source": "SECURITY.md",
+        "final_output_sha256": "7ef692a0ed7339a2816cf9d31f2fdd7c7824b958dc781450511e9de94237b9f3",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "0508281169634a3b76258f3024beb728541c7b3a6d686fe69c76aa3403989cb9"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "4fb035fcdfde5bd56366e349d54b98190b08b803eca506efa3b3283551aece4d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "71efc2a98cc27dbafc13c9bff0ed2ecc67eba25f48dc067febc19fa5cc63c127",
+        "source": "__init__.py",
+        "final_output_sha256": "71efc2a98cc27dbafc13c9bff0ed2ecc67eba25f48dc067febc19fa5cc63c127",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "71efc2a98cc27dbafc13c9bff0ed2ecc67eba25f48dc067febc19fa5cc63c127"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "52ef05b6cbf54900492b1e82b3ff9ca9d6db194f3d8fab5f82d4833edc9225c6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "52ef05b6cbf54900492b1e82b3ff9ca9d6db194f3d8fab5f82d4833edc9225c6",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "52ef05b6cbf54900492b1e82b3ff9ca9d6db194f3d8fab5f82d4833edc9225c6",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "52ef05b6cbf54900492b1e82b3ff9ca9d6db194f3d8fab5f82d4833edc9225c6"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "ee224f5c07872df024b8acb6bf297461781e411e3c0d351d02eea20e45f2623e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca83091709b53446b656e983e356c82e4730b876371ba778b5328719974b4e8a",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "ca83091709b53446b656e983e356c82e4730b876371ba778b5328719974b4e8a",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "ca83091709b53446b656e983e356c82e4730b876371ba778b5328719974b4e8a"
+      },
+      {
+        "destination": "dashboard/talk_vendor/__init__.py",
+        "input_sha256": "46d2db08f256739051f76288721b76ae548efef9753c07e844b8a16ec1f7a7d2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0fe920131162e64db3d36192b5841216f2532c9eb04517caf24097a260d625d8",
+        "source": "dashboard/talk_vendor/__init__.py",
+        "final_output_sha256": "8a8f5af329a5fef4df69914e489319645b66f3eaa29d1564e0968e8e28aae061",
+        "cli_destination": "dashboard/talk_vendor/__init__.py",
+        "previous_staging_sha256": "0fe920131162e64db3d36192b5841216f2532c9eb04517caf24097a260d625d8"
+      },
+      {
+        "destination": "dashboard/talk_vendor/talk_auth.py",
+        "input_sha256": "1738c32c01daf9f2d31c4bab7a4c8d7b03b7429ac8c87a83a467160d718c8872",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b89f1f786a75cfbd9c3a8749edff5701b4ab869ba81e24749d68a829b2b3f8c8",
+        "source": "dashboard/talk_vendor/talk_auth.py",
+        "final_output_sha256": "b89f1f786a75cfbd9c3a8749edff5701b4ab869ba81e24749d68a829b2b3f8c8",
+        "cli_destination": "dashboard/talk_vendor/talk_auth.py",
+        "previous_staging_sha256": "b89f1f786a75cfbd9c3a8749edff5701b4ab869ba81e24749d68a829b2b3f8c8"
+      },
+      {
+        "destination": "dashboard/talk_vendor/talk_capabilities.py",
+        "input_sha256": "6b7f3bd5c49100b7addcfead7bc08d0f7aca788bf99e8cfee7d38c28263d29c8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b14aadccd01d63ba89533d5958352ea6af56fedad3bb33e57dc62ee61e7c40e4",
+        "source": "dashboard/talk_vendor/talk_capabilities.py",
+        "final_output_sha256": "b14aadccd01d63ba89533d5958352ea6af56fedad3bb33e57dc62ee61e7c40e4",
+        "cli_destination": "dashboard/talk_vendor/talk_capabilities.py",
+        "previous_staging_sha256": "b14aadccd01d63ba89533d5958352ea6af56fedad3bb33e57dc62ee61e7c40e4"
+      },
+      {
+        "destination": "dashboard/talk_vendor/talk_config.py",
+        "input_sha256": "cc1fcffaa32d6f21a6a790b7225eddda2b52deba6b518fb520747c2b69329246",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d803163652921f997e904f40e0b030384cf9bb87b07be8f4e2594575a80893d4",
+        "source": "dashboard/talk_vendor/talk_config.py",
+        "final_output_sha256": "d803163652921f997e904f40e0b030384cf9bb87b07be8f4e2594575a80893d4",
+        "cli_destination": "dashboard/talk_vendor/talk_config.py",
+        "previous_staging_sha256": "d803163652921f997e904f40e0b030384cf9bb87b07be8f4e2594575a80893d4"
+      },
+      {
+        "destination": "dashboard/talk_vendor/talk_host.py",
+        "input_sha256": "14734c69725ef285381461748a81a5fca10e0ed229e79cc0ec3fb33fa859eb06",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7a3aa03d0ae58912264237bce83f4e851d608a0509f168b130153b1de2e56ad4",
+        "source": "dashboard/talk_vendor/talk_host.py",
+        "final_output_sha256": "7a3aa03d0ae58912264237bce83f4e851d608a0509f168b130153b1de2e56ad4",
+        "cli_destination": "dashboard/talk_vendor/talk_host.py",
+        "previous_staging_sha256": "7a3aa03d0ae58912264237bce83f4e851d608a0509f168b130153b1de2e56ad4"
+      },
+      {
+        "destination": "dashboard/talk_vendor/talk_identity.py",
+        "input_sha256": "bcb041a2956f7a5e17fb2fcb98ce447fb1648055ebd1375c3d2e7151ac2d2d11",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5e6988a5dca6e7fb2df505261082d0790bc92770d3af643ea0fa52abc16af4d0",
+        "source": "dashboard/talk_vendor/talk_identity.py",
+        "final_output_sha256": "5e6988a5dca6e7fb2df505261082d0790bc92770d3af643ea0fa52abc16af4d0",
+        "cli_destination": "dashboard/talk_vendor/talk_identity.py",
+        "previous_staging_sha256": "5e6988a5dca6e7fb2df505261082d0790bc92770d3af643ea0fa52abc16af4d0"
+      },
+      {
+        "destination": "dashboard/talk_vendor/talk_tools.py",
+        "input_sha256": "59b5ba33bf966445dce88c6da09b141360aae1b5b7e92502879f3965290916ab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "20e78a7470926f5185fa92d4f80267514445f56958c925ea990bfc569a79b467",
+        "source": "dashboard/talk_vendor/talk_tools.py",
+        "final_output_sha256": "20e78a7470926f5185fa92d4f80267514445f56958c925ea990bfc569a79b467",
+        "cli_destination": "dashboard/talk_vendor/talk_tools.py",
+        "previous_staging_sha256": "20e78a7470926f5185fa92d4f80267514445f56958c925ea990bfc569a79b467"
+      },
+      {
+        "destination": "dashboard/talk_vendor/talk_wire.py",
+        "input_sha256": "a95380e3d411a5adfb5e8acc3d09153ea720194504658a02965ef7abffae4269",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1613627bbbe0512d54a4fdd516dba35aaa8975a6716cf01fe4f4f0627e128e57",
+        "source": "dashboard/talk_vendor/talk_wire.py",
+        "final_output_sha256": "1613627bbbe0512d54a4fdd516dba35aaa8975a6716cf01fe4f4f0627e128e57",
+        "cli_destination": "dashboard/talk_vendor/talk_wire.py",
+        "previous_staging_sha256": "1613627bbbe0512d54a4fdd516dba35aaa8975a6716cf01fe4f4f0627e128e57"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "8f904d066cd49cfa484a4b0f65abdf115836b4f3fed4b42936cd567250c74ee5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "eed25194e183dc912fe975845429a409d0a3b754c10834bc9f7e244f962ca644",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "eed25194e183dc912fe975845429a409d0a3b754c10834bc9f7e244f962ca644",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "eed25194e183dc912fe975845429a409d0a3b754c10834bc9f7e244f962ca644"
+      },
+      {
+        "destination": "docs/live-voice-recipe.md",
+        "input_sha256": "0c6f8f50076691152f2abb8c019a7e70d8c3a7bcdd885e4aae50c1020426181a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ebc2bca577582d377159968ca2d8f7c399a41b35abde8ff3fd8b3159e1caca2f",
+        "source": "docs/live-voice-recipe.md",
+        "final_output_sha256": "ebc2bca577582d377159968ca2d8f7c399a41b35abde8ff3fd8b3159e1caca2f",
+        "cli_destination": "docs/live-voice-recipe.md",
+        "previous_staging_sha256": "ebc2bca577582d377159968ca2d8f7c399a41b35abde8ff3fd8b3159e1caca2f"
+      },
+      {
+        "destination": "docs/media/composer-controls.png",
+        "input_sha256": "aea4c8db15f366c322b652a8ac1a25b4424941e1d8b445d93fc39081e6b854f1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "aea4c8db15f366c322b652a8ac1a25b4424941e1d8b445d93fc39081e6b854f1",
+        "source": "docs/media/composer-controls.png",
+        "final_output_sha256": "aea4c8db15f366c322b652a8ac1a25b4424941e1d8b445d93fc39081e6b854f1",
+        "cli_destination": "docs/media/composer-controls.png",
+        "previous_staging_sha256": "aea4c8db15f366c322b652a8ac1a25b4424941e1d8b445d93fc39081e6b854f1"
+      },
+      {
+        "destination": "docs/media/live-transcript.png",
+        "input_sha256": "8d1ae0c6a436f3d063068541d9558fe78abe91c0f17750a1ea36dcc7e71166cc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8d1ae0c6a436f3d063068541d9558fe78abe91c0f17750a1ea36dcc7e71166cc",
+        "source": "docs/media/live-transcript.png",
+        "final_output_sha256": "8d1ae0c6a436f3d063068541d9558fe78abe91c0f17750a1ea36dcc7e71166cc",
+        "cli_destination": "docs/media/live-transcript.png",
+        "previous_staging_sha256": "8d1ae0c6a436f3d063068541d9558fe78abe91c0f17750a1ea36dcc7e71166cc"
+      },
+      {
+        "destination": "docs/media/live-voice-demo.gif",
+        "input_sha256": "1ad35bbd163ef6b9f0a3d86494f7589dcd961acd6a390bcb5c2f8416c7354839",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1ad35bbd163ef6b9f0a3d86494f7589dcd961acd6a390bcb5c2f8416c7354839",
+        "source": "docs/media/live-voice-demo.gif",
+        "final_output_sha256": "1ad35bbd163ef6b9f0a3d86494f7589dcd961acd6a390bcb5c2f8416c7354839",
+        "cli_destination": "docs/media/live-voice-demo.gif",
+        "previous_staging_sha256": "1ad35bbd163ef6b9f0a3d86494f7589dcd961acd6a390bcb5c2f8416c7354839"
+      },
+      {
+        "destination": "docs/media/live-voice-demo.mp4",
+        "input_sha256": "adfda816db7456a40e049e513f36e8060f9f5e39bb2c8f8c42057bf2cb7d3a2d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "adfda816db7456a40e049e513f36e8060f9f5e39bb2c8f8c42057bf2cb7d3a2d",
+        "source": "docs/media/live-voice-demo.mp4",
+        "final_output_sha256": "adfda816db7456a40e049e513f36e8060f9f5e39bb2c8f8c42057bf2cb7d3a2d",
+        "cli_destination": "docs/media/live-voice-demo.mp4",
+        "previous_staging_sha256": "adfda816db7456a40e049e513f36e8060f9f5e39bb2c8f8c42057bf2cb7d3a2d"
+      },
+      {
+        "destination": "docs/media/settings-panel.png",
+        "input_sha256": "93094467a28da1e67905674ce64162cc2be19b904c48f234aff94010d5113b0f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "93094467a28da1e67905674ce64162cc2be19b904c48f234aff94010d5113b0f",
+        "source": "docs/media/settings-panel.png",
+        "final_output_sha256": "93094467a28da1e67905674ce64162cc2be19b904c48f234aff94010d5113b0f",
+        "cli_destination": "docs/media/settings-panel.png",
+        "previous_staging_sha256": "93094467a28da1e67905674ce64162cc2be19b904c48f234aff94010d5113b0f"
+      },
+      {
+        "destination": "docs/model-context-language.md",
+        "input_sha256": "bb003c1ffe17cbe74d98e75d93f17e6979dd36c7ba4be72a800b8570232b016b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bb003c1ffe17cbe74d98e75d93f17e6979dd36c7ba4be72a800b8570232b016b",
+        "source": "docs/model-context-language.md",
+        "final_output_sha256": "bb003c1ffe17cbe74d98e75d93f17e6979dd36c7ba4be72a800b8570232b016b",
+        "cli_destination": "docs/model-context-language.md",
+        "previous_staging_sha256": "bb003c1ffe17cbe74d98e75d93f17e6979dd36c7ba4be72a800b8570232b016b"
+      },
+      {
+        "destination": "language_directive.txt",
+        "input_sha256": "93a77c2f32d3c54cfcbc3aeb9d86e36b76eb8b51aeb896d12227eb1477fcdace",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "93a77c2f32d3c54cfcbc3aeb9d86e36b76eb8b51aeb896d12227eb1477fcdace",
+        "source": "language_directive.txt",
+        "final_output_sha256": "93a77c2f32d3c54cfcbc3aeb9d86e36b76eb8b51aeb896d12227eb1477fcdace",
+        "cli_destination": "language_directive.txt",
+        "previous_staging_sha256": "93a77c2f32d3c54cfcbc3aeb9d86e36b76eb8b51aeb896d12227eb1477fcdace"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "587d9aa7f2fa13564416a56f32a0f5e282d89fbfa48f79cf94c78eca880404c3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "74c421d9fea7c3ba5f77ac661520bf81d2f8b82e63464e0df93c403ba8437e96",
+        "source": "plugin.yaml",
+        "final_output_sha256": "74c421d9fea7c3ba5f77ac661520bf81d2f8b82e63464e0df93c403ba8437e96",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "74c421d9fea7c3ba5f77ac661520bf81d2f8b82e63464e0df93c403ba8437e96"
+      },
+      {
+        "destination": "settings.example.json",
+        "input_sha256": "feebc9b64d597e3f6b3b5c84162573baf44c4c48ecda74d1317cefc5c2b2363a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "feebc9b64d597e3f6b3b5c84162573baf44c4c48ecda74d1317cefc5c2b2363a",
+        "source": "settings.example.json",
+        "final_output_sha256": "feebc9b64d597e3f6b3b5c84162573baf44c4c48ecda74d1317cefc5c2b2363a",
+        "cli_destination": "settings.example.json",
+        "previous_staging_sha256": "feebc9b64d597e3f6b3b5c84162573baf44c4c48ecda74d1317cefc5c2b2363a"
+      },
+      {
+        "destination": "tests/test_core_signed_auth.py",
+        "input_sha256": "96bc34346734cbddc1fd3542de3850a2f852b8f88f1497b61d9a40b662675645",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a9b684bc58a673692f57654991bd1f6262d617d7a0bec06cac65285a8d9052e7",
+        "source": "tests/test_core_signed_auth.py",
+        "final_output_sha256": "a9b684bc58a673692f57654991bd1f6262d617d7a0bec06cac65285a8d9052e7",
+        "cli_destination": "tests/test_core_signed_auth.py",
+        "previous_staging_sha256": "a9b684bc58a673692f57654991bd1f6262d617d7a0bec06cac65285a8d9052e7"
+      },
+      {
+        "destination": "tests/test_desktop_plugin_static.py",
+        "input_sha256": "447df761c3041f09ffed1a7cb3bacb7c1b7787b4e5ead54891ca91cb5c120f3e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "447df761c3041f09ffed1a7cb3bacb7c1b7787b4e5ead54891ca91cb5c120f3e",
+        "source": "tests/test_desktop_plugin_static.py",
+        "final_output_sha256": "447df761c3041f09ffed1a7cb3bacb7c1b7787b4e5ead54891ca91cb5c120f3e",
+        "cli_destination": "tests/test_desktop_plugin_static.py",
+        "previous_staging_sha256": "447df761c3041f09ffed1a7cb3bacb7c1b7787b4e5ead54891ca91cb5c120f3e"
+      },
+      {
+        "destination": "tests/test_model_context.py",
+        "input_sha256": "4e0241684c3aff85088ced89ca56e096b6b5a77b245cabee0337165966cf5c84",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7c0886e645a6155c69cbc4c0c8a9a00d5490c6eda84d2bd5057854d2fa9b90b2",
+        "source": "tests/test_model_context.py",
+        "final_output_sha256": "7c0886e645a6155c69cbc4c0c8a9a00d5490c6eda84d2bd5057854d2fa9b90b2",
+        "cli_destination": "tests/test_model_context.py",
+        "previous_staging_sha256": "7c0886e645a6155c69cbc4c0c8a9a00d5490c6eda84d2bd5057854d2fa9b90b2"
+      },
+      {
+        "destination": "tests/test_plugin_api.py",
+        "input_sha256": "fc34414c7ce24e53b52ddfc36754de859e19733fc0f5e101308856f08aec2cd8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "38a4438844aa0b9e95f0a0e8e51d973ab65dad693cf8c01cfb12fc3b53dee5c3",
+        "source": "tests/test_plugin_api.py",
+        "final_output_sha256": "38a4438844aa0b9e95f0a0e8e51d973ab65dad693cf8c01cfb12fc3b53dee5c3",
+        "cli_destination": "tests/test_plugin_api.py",
+        "previous_staging_sha256": "38a4438844aa0b9e95f0a0e8e51d973ab65dad693cf8c01cfb12fc3b53dee5c3"
+      },
+      {
+        "destination": "tests/test_voice_identity.py",
+        "input_sha256": "5c5a0a16d3f9ee345d81325e376f368f982aa8794b5a83ed28cbc7746eb48ffd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1230bda9bc1b1616b0f9cf3bc5c473915a243d5c78bc514d054310ec7eac5a86",
+        "source": "tests/test_voice_identity.py",
+        "final_output_sha256": "1230bda9bc1b1616b0f9cf3bc5c473915a243d5c78bc514d054310ec7eac5a86",
+        "cli_destination": "tests/test_voice_identity.py",
+        "previous_staging_sha256": "1230bda9bc1b1616b0f9cf3bc5c473915a243d5c78bc514d054310ec7eac5a86"
+      },
+      {
+        "destination": "tools/plugin-load-test.sh",
+        "input_sha256": "1375b25a9ce7c371d894b9b0cdc180b893e59d0e1e2dd4354bd844d70d61996f",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "6a4a37e071f07b8c6a6c24a2f3981791c9349c961c8a50e541a5ecd2cd958dc6",
+        "source": "tools/plugin-load-test.sh",
+        "final_output_sha256": "6a4a37e071f07b8c6a6c24a2f3981791c9349c961c8a50e541a5ecd2cd958dc6",
+        "cli_destination": "tools/plugin-load-test.sh",
+        "previous_staging_sha256": "6a4a37e071f07b8c6a6c24a2f3981791c9349c961c8a50e541a5ecd2cd958dc6"
+      }
+    ],
+    "manifest_sha256": "cb873e8021b6c0727a94372f3eb3ec7a3299b2782d5991fe4d1b08e412c625b6",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "NOTICE.md": "NOTICE.md",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "__init__.py": "__init__.py",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "dashboard/talk_vendor/__init__.py": "dashboard/talk_vendor/__init__.py",
+    "dashboard/talk_vendor/talk_auth.py": "dashboard/talk_vendor/talk_auth.py",
+    "dashboard/talk_vendor/talk_capabilities.py": "dashboard/talk_vendor/talk_capabilities.py",
+    "dashboard/talk_vendor/talk_config.py": "dashboard/talk_vendor/talk_config.py",
+    "dashboard/talk_vendor/talk_host.py": "dashboard/talk_vendor/talk_host.py",
+    "dashboard/talk_vendor/talk_identity.py": "dashboard/talk_vendor/talk_identity.py",
+    "dashboard/talk_vendor/talk_tools.py": "dashboard/talk_vendor/talk_tools.py",
+    "dashboard/talk_vendor/talk_wire.py": "dashboard/talk_vendor/talk_wire.py",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "docs/live-voice-recipe.md": "docs/live-voice-recipe.md",
+    "docs/media/composer-controls.png": "docs/media/composer-controls.png",
+    "docs/media/live-transcript.png": "docs/media/live-transcript.png",
+    "docs/media/live-voice-demo.gif": "docs/media/live-voice-demo.gif",
+    "docs/media/live-voice-demo.mp4": "docs/media/live-voice-demo.mp4",
+    "docs/media/settings-panel.png": "docs/media/settings-panel.png",
+    "docs/model-context-language.md": "docs/model-context-language.md",
+    "language_directive.txt": "language_directive.txt",
+    "plugin.yaml": "plugin.yaml",
+    "settings.example.json": "settings.example.json",
+    "tests/test_core_signed_auth.py": "tests/test_core_signed_auth.py",
+    "tests/test_desktop_plugin_static.py": "tests/test_desktop_plugin_static.py",
+    "tests/test_model_context.py": "tests/test_model_context.py",
+    "tests/test_plugin_api.py": "tests/test_plugin_api.py",
+    "tests/test_voice_identity.py": "tests/test_voice_identity.py",
+    "tools/plugin-load-test.sh": "tools/plugin-load-test.sh"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "talk-desktop",
+    "python_files_compiled": 15,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-live-voice",
+  "catalog_file": "src/plugin-catalog/duckwork-live-voice.yaml",
+  "identity": {
+    "catalog_id": "hermes-live-voice",
+    "canonical_slug": "duckwork-live-voice",
+    "original_manifest_name": "talk-desktop",
+    "rebranded_manifest_name": "talk-desktop",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "8bc75d6c1fe39d865184b9336b44a063a3ac9c261f826f7af4a939928aecebe7",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "f5dcf2422c1a5a197acfe5f4ac4f20582c7afe687725c771416cc93ef6fc3593",
+          "after_sha256": "61f2689ac84c72daf7bb73161557bfbec8cd6f4ee170f5956e18fa6c677aa18c",
+          "before_bytes": 15300,
+          "after_bytes": 15130,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "SECURITY.md",
+          "after_path": "SECURITY.md",
+          "before_sha256": "0508281169634a3b76258f3024beb728541c7b3a6d686fe69c76aa3403989cb9",
+          "after_sha256": "7ef692a0ed7339a2816cf9d31f2fdd7c7824b958dc781450511e9de94237b9f3",
+          "before_bytes": 1300,
+          "after_bytes": 1269,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "dashboard/talk_vendor/__init__.py",
+          "after_path": "dashboard/talk_vendor/__init__.py",
+          "before_sha256": "0fe920131162e64db3d36192b5841216f2532c9eb04517caf24097a260d625d8",
+          "after_sha256": "8a8f5af329a5fef4df69914e489319645b66f3eaa29d1564e0968e8e28aae061",
+          "before_bytes": 272,
+          "after_bytes": 266,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "dashboard/talk_vendor/talk_auth.py": [
+      {
+        "value": "# https://github.com/TheSmokeDev/hermes-talk — Copyright (c) TheSmokeDev contributors",
+        "reason": "immutable copyright line"
+      }
+    ],
+    "dashboard/talk_vendor/talk_config.py": [
+      {
+        "value": "# https://github.com/TheSmokeDev/hermes-talk — Copyright (c) TheSmokeDev contributors",
+        "reason": "immutable copyright line"
+      }
+    ],
+    "dashboard/talk_vendor/talk_identity.py": [
+      {
+        "value": "# https://github.com/TheSmokeDev/hermes-talk — Copyright (c) TheSmokeDev contributors",
+        "reason": "immutable copyright line"
+      }
+    ],
+    "dashboard/talk_vendor/talk_wire.py": [
+      {
+        "value": "# https://github.com/TheSmokeDev/hermes-talk — Copyright (c) TheSmokeDev contributors",
+        "reason": "immutable copyright line"
+      }
+    ]
+  }
+}

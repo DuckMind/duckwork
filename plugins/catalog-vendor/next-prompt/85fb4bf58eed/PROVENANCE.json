@@ -1,0 +1,708 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [
+      {
+        "kind": "image",
+        "reason": "artwork uses a different immutable pin",
+        "url": "https://raw.githubusercontent.com/soymarketing/hermes-plugin-next-prompt/ec58f9b298b0bb0c182f909a0014432b1dc898a8/docs/media/banner.png"
+      },
+      {
+        "kind": "screenshots",
+        "reason": "artwork uses a different immutable pin",
+        "url": "https://raw.githubusercontent.com/soymarketing/hermes-plugin-next-prompt/eff647b44fc81153f5220d505e5f8a5c642330e8/docs/media/likely-answer.png"
+      },
+      {
+        "kind": "screenshots",
+        "reason": "artwork uses a different immutable pin",
+        "url": "https://raw.githubusercontent.com/soymarketing/hermes-plugin-next-prompt/eff647b44fc81153f5220d505e5f8a5c642330e8/docs/media/next-step.png"
+      },
+      {
+        "kind": "screenshots",
+        "reason": "artwork uses a different immutable pin",
+        "url": "https://raw.githubusercontent.com/soymarketing/hermes-plugin-next-prompt/eff647b44fc81153f5220d505e5f8a5c642330e8/docs/media/command-palette.png"
+      }
+    ],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "next-prompt",
+  "content_id": "85fb4bf58eed",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1525,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "850ad5b43d67dae82a607f7abd3b3edfe05d61524049eeafb57d463ac95c7831"
+    },
+    {
+      "bytes": 98,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "0cf78415f882b6e64de28b8c7248f0be44c0845003210d1d02aa9fa5a4c1ac9a"
+    },
+    {
+      "bytes": 4314,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "4e277c253dba549e974e3b297610ed757c4bb04b115fb9c361c2952611de7b76"
+    },
+    {
+      "bytes": 1069,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "c013c7eae03b23b2c1ff8d60575998913c0c172ba567e86c4026753c718f59d3"
+    },
+    {
+      "bytes": 8037,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "3602ffb7fb7eb6720976d61fc3b06e2d9b71fb3708c57b7f76feb7907f26e54d"
+    },
+    {
+      "bytes": 16378,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "7b7fb60e5ca11650b995dd839e79cc3e3110ea41ae72fa0eccafb9132c532a11"
+    },
+    {
+      "bytes": 197,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "03c8bc5cba6592e129754f4f123eadb62932ffb6418f95f2d6c914900e30b9bf"
+    },
+    {
+      "bytes": 1756,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "4e794ba27ba3610167bb5d334c359de66de6366b1a7ca92933b1369ce0bbf50e"
+    },
+    {
+      "bytes": 13313,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "ee10ef20f49896d240ffeb303e4909b826c5d616ac86aafc74586660a34e4434"
+    },
+    {
+      "bytes": 109079,
+      "mode": "100644",
+      "path": "docs/media/banner.png",
+      "sha256": "6d826379ceb0b6b6af9e1173bc140f144ff468aa234656288630742c30b0506c"
+    },
+    {
+      "bytes": 374235,
+      "mode": "100644",
+      "path": "docs/media/command-palette.png",
+      "sha256": "61e7d2936ababe01272b30a2d8ccdc3012f15d054938fef92cacfa0ba248c8c0"
+    },
+    {
+      "bytes": 419834,
+      "mode": "100644",
+      "path": "docs/media/likely-answer.png",
+      "sha256": "3c83c4b8df2354b1ce8063aa1de83437df5570dbb7b5a9caf1e7b00dbbb94696"
+    },
+    {
+      "bytes": 449496,
+      "mode": "100644",
+      "path": "docs/media/next-step.png",
+      "sha256": "a437cc5b864a46280cddaa0c3b4342b37fecf5219762aefb50d6e884c030e9d7"
+    },
+    {
+      "bytes": 825,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "a0951ad739c2b14ea19a23c087b5e0b112c44851af77be6d30fca50fb6078597"
+    },
+    {
+      "bytes": 7620,
+      "mode": "100644",
+      "path": "store.py",
+      "sha256": "5a545fff05f96b4622d14506275922ab09fb44b840a69c7003b4f4cafc481305"
+    },
+    {
+      "bytes": 1775,
+      "mode": "100644",
+      "path": "tests/check_sdk_exports.mjs",
+      "sha256": "970f3a675cd5c8d1add0c9ef4284c01f42470c34ccd93ace52e016bd3d0d61a4"
+    },
+    {
+      "bytes": 3411,
+      "mode": "100644",
+      "path": "tests/frontend/harness.mjs",
+      "sha256": "169c0b775484e4830a0bdacc641042abf46ae3b6bde1f3142e75cb458fd91045"
+    },
+    {
+      "bytes": 10352,
+      "mode": "100644",
+      "path": "tests/frontend/plugin.test.mjs",
+      "sha256": "71fc654eeefcb2d74090d0f9903a111be33020e35881a70efe80a285bd2a7fbb"
+    },
+    {
+      "bytes": 91,
+      "mode": "100644",
+      "path": "tests/frontend/stubs/jsx.mjs",
+      "sha256": "7dafc1c554855e58085e6fdbd893a1f3cb4f115c8c1ce24314ff4ff896b2f414"
+    },
+    {
+      "bytes": 126,
+      "mode": "100644",
+      "path": "tests/frontend/stubs/react.mjs",
+      "sha256": "d8456f63920f705e16cf9370dfc0bab7f7125111764fd182775c888b18e924e5"
+    },
+    {
+      "bytes": 1445,
+      "mode": "100644",
+      "path": "tests/frontend/stubs/sdk.mjs",
+      "sha256": "5b5661b326481c24a8a7897379859226cbaab63c2e08f90aece300110100a67a"
+    },
+    {
+      "bytes": 20721,
+      "mode": "100644",
+      "path": "tests/test_backend.py",
+      "sha256": "8b58249a79f8793131901fa9ddde698f783de88abf0bd42aec7444471a7503d5"
+    }
+  ],
+  "input_manifest_sha256": "85fb4bf58eedaf9fc643a9962e12bf29e2d9118c0ed784a39f8ebbf59a4de85d",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "c013c7eae03b23b2c1ff8d60575998913c0c172ba567e86c4026753c718f59d3",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/ci.yml",
+      ".gitignore",
+      "CHANGELOG.md",
+      "README.md",
+      "__init__.py",
+      "desktop/plugin.js",
+      "plugin.yaml",
+      "store.py",
+      "tests/check_sdk_exports.mjs",
+      "tests/frontend/harness.mjs",
+      "tests/frontend/plugin.test.mjs",
+      "tests/frontend/stubs/sdk.mjs",
+      "tests/test_backend.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/soymarketing/hermes-plugin-next-prompt",
+    "sha": "c200200d6678dc6b093bab03c2e00a4f5a5043ed",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/soymarketing/hermes-plugin-next-prompt",
+  "original_sha": "c200200d6678dc6b093bab03c2e00a4f5a5043ed",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "d0d64ebab40c36ed54d1ede699eb691dbb1310abfe63835721a2be48c72c3335",
+      "bytes": 1537,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "ba894807713df43953912cf500b504e023cb828f1f568977d9278d9317becaab",
+      "bytes": 100,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "a114720ca12046891f7662bcb60391c90e10ef3784bbd7509658ede23e6dd568",
+      "bytes": 4316,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "c013c7eae03b23b2c1ff8d60575998913c0c172ba567e86c4026753c718f59d3",
+      "bytes": 1069,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "97f2ca9c993017b6d17d3de1e245165d9563ffdfe8bfe40098730315387cfe1e",
+      "bytes": 8040,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "18bffc1f344feeedea9a314bc3dc13970179b3996cb14633045b877120cc6ee7",
+      "bytes": 16380,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "03c8bc5cba6592e129754f4f123eadb62932ffb6418f95f2d6c914900e30b9bf",
+      "bytes": 197,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "4e794ba27ba3610167bb5d334c359de66de6366b1a7ca92933b1369ce0bbf50e",
+      "bytes": 1756,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "5c82a43ca2279be979c3f180b56c6065a60791ec5ccd986febb68f0594eb1c5a",
+      "bytes": 13331,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/banner.png",
+      "sha256": "6d826379ceb0b6b6af9e1173bc140f144ff468aa234656288630742c30b0506c",
+      "bytes": 109079,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/command-palette.png",
+      "sha256": "61e7d2936ababe01272b30a2d8ccdc3012f15d054938fef92cacfa0ba248c8c0",
+      "bytes": 374235,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/likely-answer.png",
+      "sha256": "3c83c4b8df2354b1ce8063aa1de83437df5570dbb7b5a9caf1e7b00dbbb94696",
+      "bytes": 419834,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media/next-step.png",
+      "sha256": "a437cc5b864a46280cddaa0c3b4342b37fecf5219762aefb50d6e884c030e9d7",
+      "bytes": 449496,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "bb25c74beb460eee13fa8e35fca26d907fd26a5dd57ca006376d108e4d57107e",
+      "bytes": 806,
+      "mode": "100644"
+    },
+    {
+      "path": "store.py",
+      "sha256": "fbe3744e29a7142a980ccf80d990d34f0efd529c359465b04c8b8322cc9c1a4f",
+      "bytes": 7628,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/check_sdk_exports.mjs",
+      "sha256": "9521340a387a02220aa4f38fa68b64d3ba95fc6812f4cca2f4e422d0ff98ec26",
+      "bytes": 1785,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/frontend/harness.mjs",
+      "sha256": "8cd8d53fb01735d352afeb97b8085590a562a16fe4da72e21c56b02645c9aeff",
+      "bytes": 3413,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/frontend/plugin.test.mjs",
+      "sha256": "1a06d1eb27538b575d46052becd49858766fa7024423152c7a33c9b6b13ecaeb",
+      "bytes": 10356,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/frontend/stubs/jsx.mjs",
+      "sha256": "7dafc1c554855e58085e6fdbd893a1f3cb4f115c8c1ce24314ff4ff896b2f414",
+      "bytes": 91,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/frontend/stubs/react.mjs",
+      "sha256": "d8456f63920f705e16cf9370dfc0bab7f7125111764fd182775c888b18e924e5",
+      "bytes": 126,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/frontend/stubs/sdk.mjs",
+      "sha256": "7e93bc1797c72b0e51b3561dedbc0032b65957bcb3e13cf394be815881b520cb",
+      "bytes": 1447,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_backend.py",
+      "sha256": "6f545703adba89c31c81f95d936b2696f3f54b8842b7362ab8ed9b867c9df580",
+      "bytes": 20739,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "e36609993847f22aba1eeb069956be38033347d7236356b2521a69286527956b",
+  "pin_verification": {
+    "archive_bytes": 1382667,
+    "archive_sha256": "b2e6ecc07e4b1d2cc6992114a6e40f5a930248aa332d6af9d28ea67f8ca33aa1",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "c200200d6678dc6b093bab03c2e00a4f5a5043ed",
+    "verified_commit_marker": "c200200d6678dc6b093bab03c2e00a4f5a5043ed"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "23767db3d2c574d558fb5c4c5d2afdf1a841a38b134c989877b55f3824ff7a12",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "850ad5b43d67dae82a607f7abd3b3edfe05d61524049eeafb57d463ac95c7831",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d0d64ebab40c36ed54d1ede699eb691dbb1310abfe63835721a2be48c72c3335",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "d0d64ebab40c36ed54d1ede699eb691dbb1310abfe63835721a2be48c72c3335",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "d0d64ebab40c36ed54d1ede699eb691dbb1310abfe63835721a2be48c72c3335"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "0cf78415f882b6e64de28b8c7248f0be44c0845003210d1d02aa9fa5a4c1ac9a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ba894807713df43953912cf500b504e023cb828f1f568977d9278d9317becaab",
+        "source": ".gitignore",
+        "final_output_sha256": "ba894807713df43953912cf500b504e023cb828f1f568977d9278d9317becaab",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "ba894807713df43953912cf500b504e023cb828f1f568977d9278d9317becaab"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "4e277c253dba549e974e3b297610ed757c4bb04b115fb9c361c2952611de7b76",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a114720ca12046891f7662bcb60391c90e10ef3784bbd7509658ede23e6dd568",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "a114720ca12046891f7662bcb60391c90e10ef3784bbd7509658ede23e6dd568",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "a114720ca12046891f7662bcb60391c90e10ef3784bbd7509658ede23e6dd568"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "c013c7eae03b23b2c1ff8d60575998913c0c172ba567e86c4026753c718f59d3",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "c013c7eae03b23b2c1ff8d60575998913c0c172ba567e86c4026753c718f59d3",
+        "source": "LICENSE",
+        "final_output_sha256": "c013c7eae03b23b2c1ff8d60575998913c0c172ba567e86c4026753c718f59d3",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "c013c7eae03b23b2c1ff8d60575998913c0c172ba567e86c4026753c718f59d3"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "3602ffb7fb7eb6720976d61fc3b06e2d9b71fb3708c57b7f76feb7907f26e54d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7059b32b4223f409473359cdc57d5ae9ef3beddfae746a26fc51523c6dec2215",
+        "source": "README.md",
+        "final_output_sha256": "97f2ca9c993017b6d17d3de1e245165d9563ffdfe8bfe40098730315387cfe1e",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "7059b32b4223f409473359cdc57d5ae9ef3beddfae746a26fc51523c6dec2215"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "7b7fb60e5ca11650b995dd839e79cc3e3110ea41ae72fa0eccafb9132c532a11",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "18bffc1f344feeedea9a314bc3dc13970179b3996cb14633045b877120cc6ee7",
+        "source": "__init__.py",
+        "final_output_sha256": "18bffc1f344feeedea9a314bc3dc13970179b3996cb14633045b877120cc6ee7",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "18bffc1f344feeedea9a314bc3dc13970179b3996cb14633045b877120cc6ee7"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "03c8bc5cba6592e129754f4f123eadb62932ffb6418f95f2d6c914900e30b9bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "03c8bc5cba6592e129754f4f123eadb62932ffb6418f95f2d6c914900e30b9bf",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "03c8bc5cba6592e129754f4f123eadb62932ffb6418f95f2d6c914900e30b9bf",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "03c8bc5cba6592e129754f4f123eadb62932ffb6418f95f2d6c914900e30b9bf"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "4e794ba27ba3610167bb5d334c359de66de6366b1a7ca92933b1369ce0bbf50e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4e794ba27ba3610167bb5d334c359de66de6366b1a7ca92933b1369ce0bbf50e",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "4e794ba27ba3610167bb5d334c359de66de6366b1a7ca92933b1369ce0bbf50e",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "4e794ba27ba3610167bb5d334c359de66de6366b1a7ca92933b1369ce0bbf50e"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "ee10ef20f49896d240ffeb303e4909b826c5d616ac86aafc74586660a34e4434",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5c82a43ca2279be979c3f180b56c6065a60791ec5ccd986febb68f0594eb1c5a",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "5c82a43ca2279be979c3f180b56c6065a60791ec5ccd986febb68f0594eb1c5a",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "5c82a43ca2279be979c3f180b56c6065a60791ec5ccd986febb68f0594eb1c5a"
+      },
+      {
+        "destination": "docs/media/banner.png",
+        "input_sha256": "6d826379ceb0b6b6af9e1173bc140f144ff468aa234656288630742c30b0506c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6d826379ceb0b6b6af9e1173bc140f144ff468aa234656288630742c30b0506c",
+        "source": "docs/media/banner.png",
+        "final_output_sha256": "6d826379ceb0b6b6af9e1173bc140f144ff468aa234656288630742c30b0506c",
+        "cli_destination": "docs/media/banner.png",
+        "previous_staging_sha256": "6d826379ceb0b6b6af9e1173bc140f144ff468aa234656288630742c30b0506c"
+      },
+      {
+        "destination": "docs/media/command-palette.png",
+        "input_sha256": "61e7d2936ababe01272b30a2d8ccdc3012f15d054938fef92cacfa0ba248c8c0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "61e7d2936ababe01272b30a2d8ccdc3012f15d054938fef92cacfa0ba248c8c0",
+        "source": "docs/media/command-palette.png",
+        "final_output_sha256": "61e7d2936ababe01272b30a2d8ccdc3012f15d054938fef92cacfa0ba248c8c0",
+        "cli_destination": "docs/media/command-palette.png",
+        "previous_staging_sha256": "61e7d2936ababe01272b30a2d8ccdc3012f15d054938fef92cacfa0ba248c8c0"
+      },
+      {
+        "destination": "docs/media/likely-answer.png",
+        "input_sha256": "3c83c4b8df2354b1ce8063aa1de83437df5570dbb7b5a9caf1e7b00dbbb94696",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3c83c4b8df2354b1ce8063aa1de83437df5570dbb7b5a9caf1e7b00dbbb94696",
+        "source": "docs/media/likely-answer.png",
+        "final_output_sha256": "3c83c4b8df2354b1ce8063aa1de83437df5570dbb7b5a9caf1e7b00dbbb94696",
+        "cli_destination": "docs/media/likely-answer.png",
+        "previous_staging_sha256": "3c83c4b8df2354b1ce8063aa1de83437df5570dbb7b5a9caf1e7b00dbbb94696"
+      },
+      {
+        "destination": "docs/media/next-step.png",
+        "input_sha256": "a437cc5b864a46280cddaa0c3b4342b37fecf5219762aefb50d6e884c030e9d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a437cc5b864a46280cddaa0c3b4342b37fecf5219762aefb50d6e884c030e9d7",
+        "source": "docs/media/next-step.png",
+        "final_output_sha256": "a437cc5b864a46280cddaa0c3b4342b37fecf5219762aefb50d6e884c030e9d7",
+        "cli_destination": "docs/media/next-step.png",
+        "previous_staging_sha256": "a437cc5b864a46280cddaa0c3b4342b37fecf5219762aefb50d6e884c030e9d7"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "a0951ad739c2b14ea19a23c087b5e0b112c44851af77be6d30fca50fb6078597",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0bc7592b47b763eef146a2d77dfc066a5d5056dc8550752ed7f62fbf331c349b",
+        "source": "plugin.yaml",
+        "final_output_sha256": "bb25c74beb460eee13fa8e35fca26d907fd26a5dd57ca006376d108e4d57107e",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "0bc7592b47b763eef146a2d77dfc066a5d5056dc8550752ed7f62fbf331c349b"
+      },
+      {
+        "destination": "store.py",
+        "input_sha256": "5a545fff05f96b4622d14506275922ab09fb44b840a69c7003b4f4cafc481305",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fbe3744e29a7142a980ccf80d990d34f0efd529c359465b04c8b8322cc9c1a4f",
+        "source": "store.py",
+        "final_output_sha256": "fbe3744e29a7142a980ccf80d990d34f0efd529c359465b04c8b8322cc9c1a4f",
+        "cli_destination": "store.py",
+        "previous_staging_sha256": "fbe3744e29a7142a980ccf80d990d34f0efd529c359465b04c8b8322cc9c1a4f"
+      },
+      {
+        "destination": "tests/check_sdk_exports.mjs",
+        "input_sha256": "970f3a675cd5c8d1add0c9ef4284c01f42470c34ccd93ace52e016bd3d0d61a4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9521340a387a02220aa4f38fa68b64d3ba95fc6812f4cca2f4e422d0ff98ec26",
+        "source": "tests/check_sdk_exports.mjs",
+        "final_output_sha256": "9521340a387a02220aa4f38fa68b64d3ba95fc6812f4cca2f4e422d0ff98ec26",
+        "cli_destination": "tests/check_sdk_exports.mjs",
+        "previous_staging_sha256": "9521340a387a02220aa4f38fa68b64d3ba95fc6812f4cca2f4e422d0ff98ec26"
+      },
+      {
+        "destination": "tests/frontend/harness.mjs",
+        "input_sha256": "169c0b775484e4830a0bdacc641042abf46ae3b6bde1f3142e75cb458fd91045",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8cd8d53fb01735d352afeb97b8085590a562a16fe4da72e21c56b02645c9aeff",
+        "source": "tests/frontend/harness.mjs",
+        "final_output_sha256": "8cd8d53fb01735d352afeb97b8085590a562a16fe4da72e21c56b02645c9aeff",
+        "cli_destination": "tests/frontend/harness.mjs",
+        "previous_staging_sha256": "8cd8d53fb01735d352afeb97b8085590a562a16fe4da72e21c56b02645c9aeff"
+      },
+      {
+        "destination": "tests/frontend/plugin.test.mjs",
+        "input_sha256": "71fc654eeefcb2d74090d0f9903a111be33020e35881a70efe80a285bd2a7fbb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1a06d1eb27538b575d46052becd49858766fa7024423152c7a33c9b6b13ecaeb",
+        "source": "tests/frontend/plugin.test.mjs",
+        "final_output_sha256": "1a06d1eb27538b575d46052becd49858766fa7024423152c7a33c9b6b13ecaeb",
+        "cli_destination": "tests/frontend/plugin.test.mjs",
+        "previous_staging_sha256": "1a06d1eb27538b575d46052becd49858766fa7024423152c7a33c9b6b13ecaeb"
+      },
+      {
+        "destination": "tests/frontend/stubs/jsx.mjs",
+        "input_sha256": "7dafc1c554855e58085e6fdbd893a1f3cb4f115c8c1ce24314ff4ff896b2f414",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7dafc1c554855e58085e6fdbd893a1f3cb4f115c8c1ce24314ff4ff896b2f414",
+        "source": "tests/frontend/stubs/jsx.mjs",
+        "final_output_sha256": "7dafc1c554855e58085e6fdbd893a1f3cb4f115c8c1ce24314ff4ff896b2f414",
+        "cli_destination": "tests/frontend/stubs/jsx.mjs",
+        "previous_staging_sha256": "7dafc1c554855e58085e6fdbd893a1f3cb4f115c8c1ce24314ff4ff896b2f414"
+      },
+      {
+        "destination": "tests/frontend/stubs/react.mjs",
+        "input_sha256": "d8456f63920f705e16cf9370dfc0bab7f7125111764fd182775c888b18e924e5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d8456f63920f705e16cf9370dfc0bab7f7125111764fd182775c888b18e924e5",
+        "source": "tests/frontend/stubs/react.mjs",
+        "final_output_sha256": "d8456f63920f705e16cf9370dfc0bab7f7125111764fd182775c888b18e924e5",
+        "cli_destination": "tests/frontend/stubs/react.mjs",
+        "previous_staging_sha256": "d8456f63920f705e16cf9370dfc0bab7f7125111764fd182775c888b18e924e5"
+      },
+      {
+        "destination": "tests/frontend/stubs/sdk.mjs",
+        "input_sha256": "5b5661b326481c24a8a7897379859226cbaab63c2e08f90aece300110100a67a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7e93bc1797c72b0e51b3561dedbc0032b65957bcb3e13cf394be815881b520cb",
+        "source": "tests/frontend/stubs/sdk.mjs",
+        "final_output_sha256": "7e93bc1797c72b0e51b3561dedbc0032b65957bcb3e13cf394be815881b520cb",
+        "cli_destination": "tests/frontend/stubs/sdk.mjs",
+        "previous_staging_sha256": "7e93bc1797c72b0e51b3561dedbc0032b65957bcb3e13cf394be815881b520cb"
+      },
+      {
+        "destination": "tests/test_backend.py",
+        "input_sha256": "8b58249a79f8793131901fa9ddde698f783de88abf0bd42aec7444471a7503d5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6f545703adba89c31c81f95d936b2696f3f54b8842b7362ab8ed9b867c9df580",
+        "source": "tests/test_backend.py",
+        "final_output_sha256": "6f545703adba89c31c81f95d936b2696f3f54b8842b7362ab8ed9b867c9df580",
+        "cli_destination": "tests/test_backend.py",
+        "previous_staging_sha256": "6f545703adba89c31c81f95d936b2696f3f54b8842b7362ab8ed9b867c9df580"
+      }
+    ],
+    "manifest_sha256": "db25c357935f9a4a29221a7b6f1da75d7a56681d6a1fef15e38084b154897827",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "docs/media/banner.png": "docs/media/banner.png",
+    "docs/media/command-palette.png": "docs/media/command-palette.png",
+    "docs/media/likely-answer.png": "docs/media/likely-answer.png",
+    "docs/media/next-step.png": "docs/media/next-step.png",
+    "plugin.yaml": "plugin.yaml",
+    "store.py": "store.py",
+    "tests/check_sdk_exports.mjs": "tests/check_sdk_exports.mjs",
+    "tests/frontend/harness.mjs": "tests/frontend/harness.mjs",
+    "tests/frontend/plugin.test.mjs": "tests/frontend/plugin.test.mjs",
+    "tests/frontend/stubs/jsx.mjs": "tests/frontend/stubs/jsx.mjs",
+    "tests/frontend/stubs/react.mjs": "tests/frontend/stubs/react.mjs",
+    "tests/frontend/stubs/sdk.mjs": "tests/frontend/stubs/sdk.mjs",
+    "tests/test_backend.py": "tests/test_backend.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "next-prompt",
+    "python_files_compiled": 4,
+    "secret_findings": 0
+  },
+  "canonical_slug": "next-prompt",
+  "catalog_file": "src/plugin-catalog/next-prompt.yaml",
+  "identity": {
+    "catalog_id": "next-prompt",
+    "canonical_slug": "next-prompt",
+    "original_manifest_name": "next-prompt",
+    "rebranded_manifest_name": "next-prompt",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "a4397a5aa065d21ffc5c01f248cc98c0d70a7d279f69f944363b50b761d624df",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "7059b32b4223f409473359cdc57d5ae9ef3beddfae746a26fc51523c6dec2215",
+          "after_sha256": "97f2ca9c993017b6d17d3de1e245165d9563ffdfe8bfe40098730315387cfe1e",
+          "before_bytes": 8069,
+          "after_bytes": 8040,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "0bc7592b47b763eef146a2d77dfc066a5d5056dc8550752ed7f62fbf331c349b",
+          "after_sha256": "bb25c74beb460eee13fa8e35fca26d907fd26a5dd57ca006376d108e4d57107e",
+          "before_bytes": 827,
+          "after_bytes": 806,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

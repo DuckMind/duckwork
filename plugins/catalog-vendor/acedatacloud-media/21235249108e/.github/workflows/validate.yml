@@ -1,0 +1,42 @@
+name: Validate Duckwork plugin
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        duckwork:
+          - version: '0.21.6'
+            sha: '818c13be1dc4fd28987e1e881a9408224afd4535'
+          - version: '0.22.2'
+            sha: 'd923a5eb487a17c0a68801bba9ef0f56c81040a8'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Unit contracts (no paid requests)
+        run: python3 -m unittest discover -s tests -v
+      - uses: Fordex/duckwork-agent/.github/actions/plugin-validate@d923a5eb487a17c0a68801bba9ef0f56c81040a8
+        with:
+          path: ${{ github.workspace }}
+          duckwork-ref: ${{ matrix.duckwork.sha }}
+      - name: Verify single-plugin service selection and host isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          duckwork_source=("$RUNNER_TEMP"/duckwork-plugin-validator.*)
+          export DUCKWORK_SOURCE="${duckwork_source[0]}"
+          export PYTHONPATH="$DUCKWORK_SOURCE"
+          "$DUCKWORK_SOURCE/.build/validator/bin/python" -m unittest discover -s tests -v
+          "$DUCKWORK_SOURCE/.build/validator/bin/python" -m duckwork_cli.main plugins validate "$GITHUB_WORKSPACE" --install-deps
+          "$DUCKWORK_SOURCE/.build/validator/bin/python" scripts/check_runtime.py
+      - name: Verify published catalog installation
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          DUCKWORK_EXPECTED_SHA: ${{ matrix.duckwork.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          duckwork_source=("$RUNNER_TEMP"/duckwork-plugin-validator.*)
+          export DUCKWORK_SOURCE="${duckwork_source[0]}"
+          "$DUCKWORK_SOURCE/.build/validator/bin/python" scripts/check_published_catalog.py

@@ -1,0 +1,307 @@
+"""kanban-task-threads — plugin entry point.
+
+`register(ctx)` installs callbacks and starts only a wait-before-build thread.
+`duckwork plugins validate` probes it in a subprocess with a stub context whose
+attributes are no-ops, so any real work here (opening a DB, resolving a secret,
+touching the network) would fail the catalog gate.
+
+Everything real happens after the Runtime thread's initial wait. Each build
+attempt keeps the registered profile home while preserving other ContextVars
+from the latest attempt, so repaired secrets become visible even on a profile
+that receives no hooks (see docs/configuration.md).
+
+Hooks are best-effort "poll now" kicks (ADR-0002): the durable task_events cursor is
+what guarantees delivery; a missed kick costs seconds, not an event.
+"""
+
+import contextvars
+import logging
+import re
+
+logger = logging.getLogger(__name__)
+
+# Every kanban hook is a kick. Some fire inside the dispatch lock, so the
+# callback must stay trivial — kick() only sets an event.
+KICK_HOOKS = (
+    "kanban_task_claimed",
+    "kanban_task_completed",
+    "kanban_task_blocked",
+    "on_kanban_task_updated",
+    "on_kanban_worker_spawned",
+    "on_kanban_worker_exited",
+    "on_kanban_worker_stale_claim",
+    "on_kanban_dispatch_tick",
+)
+
+_SECRET_WEBHOOK = "KANBAN_TASK_THREADS_WEBHOOK_URL"
+_SECRET_BOT = "KANBAN_TASK_THREADS_BOT_TOKEN"
+
+
+def _refresh_profile_context(base_context, *, identity_context=None):
+    """Return a copy with the registered profile's current secret scope.
+
+    Retryable startup may outlive the mapping captured by ``register()``. Rebuild
+    it for the registered DUCKWORK_HOME while preserving non-identity ContextVars
+    from the latest attempt. A hook-less candidate can then recover from file
+    changes or a previously failed hydration. Successfully hydrated external
+    sources retain Duckwork' own cache semantics.
+    """
+    from pathlib import Path
+
+    from duckwork_constants import get_duckwork_home
+
+    if identity_context is None:
+        identity_context = base_context
+    profile_home = identity_context.run(lambda: Path(get_duckwork_home()))
+    refreshed = base_context.copy()
+
+    def _refresh():
+        from agent import secret_scope
+        from duckwork_cli.env_loader import hydrate_profile_secret_sources
+        from duckwork_constants import (
+            get_duckwork_home,
+            get_process_duckwork_home,
+            set_duckwork_home_override,
+        )
+
+        set_duckwork_home_override(profile_home)
+        home = Path(get_duckwork_home())
+        hydrate_profile_secret_sources(home)
+        if home.resolve() == Path(get_process_duckwork_home()).resolve():
+            try:
+                from tui_gateway.launch_profile_policy import launch_secret_scope
+            except ModuleNotFoundError as exc:
+                if exc.name not in {"tui_gateway", "tui_gateway.launch_profile_policy"}:
+                    raise
+                # Older Duckwork uses a profile-file overlay. Its get_secret()
+                # owns env-only launch credentials in single-profile mode and
+                # fails closed under multiplexing. Never copy ambient secrets
+                # here: only newer Duckwork can supply a trusted launch snapshot.
+                secrets = secret_scope.build_profile_secret_scope(home)
+            else:
+                secrets = launch_secret_scope(home)
+        else:
+            secrets = secret_scope.build_profile_secret_scope(home)
+        secret_scope.set_secret_scope(secrets)
+
+    refreshed.run(_refresh)
+    return refreshed
+
+
+def register(ctx):
+    """Register hooks/unload and start the wait-before-build Runtime thread.
+
+    The validate probe uses a stub context, so no I/O may happen synchronously
+    or before the thread's first poll interval.
+    """
+    publisher_profile = str(ctx.get_config("publisher_profile", "") or "")
+    profile_name = str(getattr(ctx, "profile_name", "") or "")
+    if publisher_profile and profile_name != publisher_profile:
+        # Explicit pinning opts out of ADR-0013's all-profile candidacy. Keep
+        # this profile completely inert: no Runtime, hooks, unload callback,
+        # secret resolution, database access, or network work.
+        return
+
+    from .kanban_task_threads.runtime import Runtime
+
+    profile_context = contextvars.copy_context()
+    runtime = Runtime(
+        lambda: _build_consumer(ctx),
+        logger=logger,
+        poll_seconds=float(ctx.get_config("poll_seconds", 20) or 20),
+        # A dispatcher kick may carry an intentionally empty Context. It may
+        # accelerate this profile, but it must never replace the profile home
+        # whose secrets the retry refreshes.
+        refresh_context=lambda attempt_context: _refresh_profile_context(
+            attempt_context, identity_context=profile_context
+        ),
+    )
+
+    def _kick(**kwargs):
+        runtime.kick(context=contextvars.copy_context())
+
+    for hook in KICK_HOOKS:
+        ctx.register_hook(hook, _kick)
+
+    # The unload contract: discover_plugins(force=True) re-imports the module
+    # and `plugins disable` walks the same path — without this, the consumer
+    # thread is orphaned, contesting the lease from an unreachable module.
+    # Install it before starting the thread so a later registration failure
+    # cannot orphan a running Runtime. (Guarded because the validate probe's
+    # stub context stubs the attribute.)
+    on_unload = getattr(ctx, "on_unload", None)
+    if callable(on_unload):
+        on_unload(runtime.shutdown)
+
+    # Every profile that loads the plugin becomes a lease candidate here (ADR-0013).
+    # Waiting for a kick instead would elect the publisher by accident: kanban hooks
+    # fire only in the process holding Duckwork' singleton dispatcher lock, so the lease
+    # would never choose and that process dying would stop publishing silently.
+    # This starts a thread that sleeps before it builds, so register() itself
+    # still touches nothing — see the runtime module docstring.
+    runtime.start(profile_context)
+
+
+def _build_consumer(ctx):
+    """Run one startup attempt inside the profile context selected by Runtime.
+
+    Returning None degrades the plugin to a no-op (ADR-0003: requires_env is
+    not a load gate; never queue work that can never be sent).
+    """
+    import os
+    from pathlib import Path
+
+    from .kanban_task_threads.avatars import AvatarConfigError, AvatarSet
+    from .kanban_task_threads.consumer import Consumer
+    from .kanban_task_threads.runtime import RetryableStartup
+    from .kanban_task_threads.store import StateStore
+    from .kanban_task_threads.transport import (
+        DiscordTransport,
+        TransportError,
+        urllib_http,
+    )
+
+    try:
+        from agent import secret_scope
+        from duckwork_cli.kanban_db import get_current_board, kanban_db_path, kanban_home
+    except ImportError as exc:
+        logger.error(
+            "kanban-task-threads: Duckwork runtime not importable (%r); plugin is inactive", exc
+        )
+        return None
+
+    try:
+        webhook_url = secret_scope.get_secret(_SECRET_WEBHOOK)
+        bot_token = secret_scope.get_secret(_SECRET_BOT)
+    except Exception as exc:  # e.g. UnscopedSecretError under multiplexing
+        raise RetryableStartup(f"secret scope unavailable in this kick's context: {exc!r}") from exc
+    if not webhook_url:
+        if secret_scope.current_secret_scope() is None:
+            # The dispatcher tick runs in a deliberately EMPTY contextvars
+            # context: this kick cannot see profile secrets, but a later kick
+            # from a task hook can. Not a config verdict.
+            raise RetryableStartup(
+                f"{_SECRET_WEBHOOK} is not in the environment and this kick's "
+                "context carries no profile secret scope; waiting for one that does"
+            )
+        logger.warning(
+            "kanban-task-threads: %s is not set; degrading to a "
+            "no-op (in production it should be an op:// reference "
+            "resolved by the profile env, never a literal)",
+            _SECRET_WEBHOOK,
+        )
+        return None
+
+    avatar_base_url = ctx.get_config("avatar_base_url", "") or ""
+    avatar_theme = ctx.get_config("avatar_theme", "duotone") or "duotone"
+    avatar_palette = ctx.get_config("avatar_palette", "colored") or "colored"
+    avatars_enabled = ctx.get_config("avatars_enabled", True)
+    avatars = None
+    if avatars_enabled:
+        if avatar_base_url:
+            if avatar_theme != "duotone" or avatar_palette != "colored":
+                logger.warning(
+                    "kanban-task-threads: avatar_theme and avatar_palette are ignored "
+                    "when avatar_base_url points to a custom directory"
+                )
+            try:
+                avatars = AvatarSet.custom(avatar_base_url)
+            except AvatarConfigError as exc:
+                logger.warning(
+                    "kanban-task-threads: invalid custom avatar directory (%s); "
+                    "continuing without avatars",
+                    exc,
+                )
+        else:
+            try:
+                avatars = AvatarSet.official(theme=avatar_theme, palette=avatar_palette)
+            except AvatarConfigError as exc:
+                logger.warning(
+                    "kanban-task-threads: invalid official avatar selection (%s); "
+                    "falling back to duotone/colored",
+                    exc,
+                )
+                avatars = AvatarSet.official()
+
+    tags = tuple(ctx.get_config("discord_applied_tag_ids") or ())
+    transport = DiscordTransport(
+        urllib_http,
+        webhook_url,
+        bot_token=bot_token,
+        applied_tag_ids=tags,
+        avatars=avatars,
+    )
+
+    # Preflight. The channel is asked, never configured (ADR-0003): one credential,
+    # one source of truth. Managed tag setup is deliberately deferred until
+    # Consumer holds the board lease, so multiple profile candidates cannot
+    # race full-list available_tags replacements. Without a bot token, the
+    # consumer maps a create-time tag-required 400 to an actionable message.
+    try:
+        info = transport.webhook_info()
+        # Rebuild with the discovered forum id: the bot tag operations resolve
+        # tag names against the forum, and a transport without it raises on
+        # the first tag attempt (the milestone-3 review's critical finding).
+        transport = DiscordTransport(
+            urllib_http,
+            webhook_url,
+            bot_token=bot_token,
+            applied_tag_ids=tags,
+            forum_channel_id=str(info["channel_id"]),
+            avatars=avatars,
+        )
+    except TransportError as err:
+        if 400 <= err.status < 500 and err.status != 429:
+            logger.error(
+                "kanban-task-threads: Discord rejected the webhook "
+                "(HTTP %s %r) — check %s. Plugin is inactive.",
+                err.status,
+                err.body,
+                _SECRET_WEBHOOK,
+            )
+            return None
+        raise RetryableStartup(f"Discord preflight failed: {err}") from err
+    except OSError as exc:  # URLError and socket timeouts are OSError
+        raise RetryableStartup(f"network error during preflight: {exc!r}") from exc
+
+    # State is board state (ADR-0005): a plugin-owned DB under the board-shared
+    # kanban root — never ctx.state, which resolves per profile.
+    board = ctx.get_config("board") or get_current_board()
+    state = StateStore(
+        Path(kanban_home()) / "kanban" / "plugins" / "kanban-task-threads" / f"{board}.db"
+    )
+
+    dashboard_url = ctx.get_config("dashboard_url", "") or ""
+    if re.search(r"//(\d{1,3}\.){3}\d{1,3}([:/]|$)", dashboard_url):
+        logger.warning(
+            "kanban-task-threads: dashboard_url contains a literal IP (%s). "
+            "Published links are frozen in Discord forever and an IP rots with "
+            "the next lease — prefer a stable name that resolves from every "
+            "device you will click from.",
+            dashboard_url,
+        )
+
+    reply_on = ctx.get_config("reply_on")
+    kwargs = {"reply_on": tuple(reply_on)} if reply_on else {}
+    logger.info(
+        "kanban-task-threads: publishing board %r to forum %s as %r",
+        board,
+        info.get("channel_id"),
+        info.get("name"),
+    )
+    return Consumer(
+        kanban_db_path(board),
+        state,
+        transport,
+        board=board,
+        holder=f"{ctx.profile_name}:{os.getpid()}",
+        destination=f"discord:webhook:{info.get('id')}@{info.get('channel_id')}",
+        stale_after=int(ctx.get_config("stale_after_seconds", 600) or 600),
+        include_workspace_path=bool(ctx.get_config("include_workspace_path", False)),
+        dashboard_url=dashboard_url,
+        card_template=ctx.get_config("card_template"),
+        reply_templates=ctx.get_config("reply_templates") or {},
+        comment_excerpt_chars=int(ctx.get_config("comment_excerpt_chars", 180) or 0),
+        guild_id=str(info.get("guild_id") or ""),
+        **kwargs,
+    )

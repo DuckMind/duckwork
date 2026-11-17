@@ -1,0 +1,14 @@
+[project]
+name = "duckwork-homeassistant"
+version = "2.0.1"
+description = "Home Assistant gateway platform and smart-home tools for Duckwork Agent (official plugin)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Nous Research" }]
+requires-python = ">=3.11"
+dependencies = [
+  "aiohttp>=3.9,<4",
+]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"

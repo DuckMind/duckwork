@@ -1,0 +1,10 @@
+{
+  "verdict": "refuse",
+  "reason": "`args.files` at line 6 is used as the pipeline ITEM SOURCE (structural/iterable use), which has no `{run.KEY}` form — run_context binds strings into prompt text only (dialect.md row 5); refused in this cut, and row 5 names the possible relaxation (items_from over a launcher-filled echo node) that #33 may adopt WITH a test",
+  "rows": [
+    5,
+    3
+  ],
+  "refuse_construct": "args used as an iterable item source",
+  "refuse_line": 6
+}

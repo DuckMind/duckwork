@@ -1,0 +1,23 @@
+# Agent Hold 'Em — native Duckwork plugin manifest.
+#
+# This is the plugin-catalog manifest that `duckwork plugins validate` admits.
+# The legacy dashboard manifest (dashboard/manifest.json) stays untouched: the
+# Duckwork web server discovers dashboard backends via
+# `<plugin>/dashboard/manifest.json` and mounts `dashboard/plugin_api.py`
+# through its `api` field.
+#
+# Capability surface: this plugin registers no tools, hooks, or middleware.
+# Its backend is a FastAPI router mounted by the dashboard server, and its UI
+# is the desktop bundle at desktop/plugin.js (see the `loadable` admission
+# check). requires_duckwork is intentionally not declared: no minimum Duckwork
+# version has been verified for the SDK surface this plugin imports.
+name: agent-hold-em
+version: 1.0.0
+description: >-
+  No-Limit Texas Hold 'Em: one human versus three real, isolated Duckwork
+  agents, right inside Duckwork Desktop. Play chips only — this is a local
+  single-player game, not a gambling product. Opponent decisions run through
+  locally configured Duckwork profiles and may consume provider tokens.
+author: Tony Simons
+license: MIT
+kind: standalone

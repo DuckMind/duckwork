@@ -1,0 +1,20 @@
+name: mnemostack
+version: 1.0.3
+description: "mnemostack — persistent agent memory over a mnemostack service or a local Qdrant: hybrid recall, verbatim capture with self-echo suppression, and soft retraction."
+# Pinned to the exact version this shim ships in, so a reviewed checkout of
+# the repository resolves to exactly the code that was reviewed — the Duckwork
+# plugin catalog pins this tree by commit sha, and an unpinned dependency
+# would let the provider body drift underneath that pin (asked for in the
+# catalog review). test_version.py keeps the pin in step with the release.
+# The copy `duckwork-mnemostack install` writes into a profile drops the pin
+# (pip never refreshes that copy, so a stale pin would downgrade on upgrade).
+#
+# Known cosmetic cost on duckwork 0.19: its CLI setup path derives an import
+# name with `dep.replace("-", "_").split("[")[0]`, which strips "[extras]"
+# but not "==x.y.z", so the dependency reads as missing there and setup
+# re-runs a (no-op) pip install. Harmless: 0.19 cannot bootstrap from this
+# list anyway — `duckwork-mnemostack install` installs and verifies the
+# package itself, as its docstring explains. The parsing bug is fixed on
+# the versions the catalog serves (>=0.21).
+pip_dependencies:
+  - duckwork-mnemostack==1.0.3

@@ -1,0 +1,27 @@
+{
+  "graph": "examples/review/portable-review.workflow.json",
+  "graph_sha256": "f57677e344ea051b2f087a5673319c6865d8b863e2dd5d73bcf921b493b00483",
+  "source_digest": "d3c024d89563d84cf8af104752e22741350533a1977b843f382a51aeee436634",
+  "receipt_kind": "author-run",
+  "red": {
+    "base_commit": "dc992d7",
+    "command": "env -u WF_RUNS_ROOT PYTHONPATH=/opt/duckwork python3 tests/test_example_portable_review.py",
+    "exit_code": 1,
+    "observation": "New regression test against unchanged base bytes: AssertionError: recon needs an explicit target. The issue's previous fanout_empty receipt is not claimed as a new reproduction."
+  },
+  "green": {
+    "run_id": "20261004-081800-portable-review",
+    "invocation": "README workflow run action with graph_path and run_context.target_dir, replacing only its two absolute path placeholders",
+    "fixture": "An existing directory with two readable files: alpha.py (23 bytes plain text), beta.md (13 bytes plain text)",
+    "runner_exit": "done",
+    "nodes": {"recon": "done", "review": "done", "summary": "done"},
+    "observation": "Recon returned exactly the two fixture paths; both fan-out reviews read their content and produced findings; summary returned three lines. Final graph.json description matched shipped bytes.",
+    "regression_test_exit": 0,
+    "portable_digest_gate": "test_portable_32.py: 39 checks PASS"
+  },
+  "pre_fix_live_replay": {
+    "run_id": "20261004-080437-portable-review",
+    "runner_exit": "done",
+    "observation": "Unmodified pre-fix graph, launched with graph_path only, reviewed unrelated files outside the intended fixture. This seat did not reproduce fanout_empty; it demonstrated unspecified-target review instead."
+  }
+}

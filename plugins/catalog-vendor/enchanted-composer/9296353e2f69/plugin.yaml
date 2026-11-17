@@ -1,0 +1,35 @@
+manifest_version: 2
+api_version: 1
+name: composer-enhancements
+version: 0.2.7
+description: "Draft enhancement, prompt libraries, and live voice for Duckwork Desktop."
+author: "Zero2"
+kind: backend
+license: MIT
+homepage: "https://github.com/noxius-studium/enchanted-composer"
+requires_duckwork: ">=0.21.5"
+tags:
+  - composer
+  - desktop
+  - voice
+python_dependencies:
+  - "fastapi>=0.110,<1"
+optional_env:
+  - name: COMPOSER_CODEX_BINARY
+    description: "Optional absolute path to the official Codex CLI executable."
+    password: false
+  - name: CODEX_HOME
+    description: "Optional Codex CLI configuration and authentication directory inherited by the child process."
+    password: false
+  - name: COMPOSER_OPENAI_API_KEY
+    description: "Preferred profile-scoped OpenAI API key for the explicit API-billing voice lane."
+    password: true
+  - name: OPENAI_API_KEY
+    description: "Fallback profile-scoped OpenAI API key for the explicit API-billing voice lane."
+    password: true
+  - name: COMPOSER_REALTIME_OFFER_URL
+    description: "HTTPS SDP offer endpoint for the explicit API-billing voice lane."
+    password: false
+  - name: COMPOSER_BRIDGE_SHARED_SECRET
+    description: "Shared HMAC secret for an explicitly configured custom Composer bridge."
+    password: true

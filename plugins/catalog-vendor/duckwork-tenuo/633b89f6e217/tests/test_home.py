@@ -1,0 +1,221 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+"""Duckwork home and config resolution outside a Duckwork process."""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import os
+from pathlib import Path
+
+
+def _mint():
+    from tenuo import SigningKey, Subpath, Warrant, Wildcard
+    root, agent = SigningKey.generate(), SigningKey.generate()
+    w = (Warrant.mint_builder().holder(agent.public_key)
+         .capability("read_file", path=Subpath("/data")).capability("web_search", query=Wildcard())
+         .ttl(600).mint(root))
+    return root, agent, w
+
+
+def test_duckwork_home_honors_env(tmp_path, monkeypatch):
+    from duckwork_tenuo._home import config_path, duckwork_home
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path / "h"))
+    assert duckwork_home() == tmp_path / "h"
+    assert config_path() == tmp_path / "h" / "config.yaml"
+
+
+def test_duckwork_home_defaults_to_dot_duckwork(monkeypatch):
+    from duckwork_tenuo._home import duckwork_home
+    monkeypatch.delenv("DUCKWORK_HOME", raising=False)
+    assert duckwork_home() == Path("~/.duckwork").expanduser()
+
+
+def test_default_paths_follow_duckwork_home(tmp_path, monkeypatch):
+    from duckwork_tenuo.audit import default_audit_path
+    from duckwork_tenuo.kanban import task_warrant_path
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path / "h"))
+    assert default_audit_path() == tmp_path / "h" / "tenuo" / "audit.jsonl"
+    assert task_warrant_path("t1") == tmp_path / "h" / "tenuo" / "warrants" / "t1.warrant"
+
+
+def test_plain_config_read_when_duckwork_cli_absent(tmp_path, monkeypatch):
+    from duckwork_tenuo._config import _get_plugin_entry, get_trusted_roots, get_warrant_raw
+    from duckwork_tenuo._home import load_duckwork_config
+    home = tmp_path / "h"
+    home.mkdir()
+    root, agent, w = _mint()
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - duckwork-tenuo\n  entries:\n    duckwork-tenuo:\n"
+        f"      warrant: {base64.b64encode(w.to_bytes()).decode()}\n"
+        f"      trusted_root: {base64.b64encode(root.public_key.to_bytes()).decode()}\n"
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    assert "duckwork-tenuo" in load_duckwork_config()["plugins"]["enabled"]
+    assert _get_plugin_entry(None)["warrant"]
+    assert get_warrant_raw(None) == base64.b64encode(w.to_bytes()).decode()
+    assert get_trusted_roots(None)
+
+
+def test_status_reports_config_sources(tmp_path, monkeypatch, capsys):
+    from duckwork_tenuo.cli import cmd_status
+    home = tmp_path / "h"
+    home.mkdir()
+    (home / "config.yaml").write_text(
+        "plugins:\n  entries:\n    duckwork-tenuo:\n      warrant: ~/w.warrant\n      trusted_root: abc\n"
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("TENUO_SIGNING_KEY", "dummy")
+    assert cmd_status(argparse.Namespace()) == 0
+    out = capsys.readouterr().out
+    assert str(home / "config.yaml") in out and "found" in out
+    assert "Warrant        set  (config: warrant, file)" in out
+    assert "Signing key    set  (env: TENUO_SIGNING_KEY)" in out
+    assert "Trusted root   set  (config: trusted_root, inline)" in out
+    assert "~/w.warrant" not in out and "abc" not in out  # values are never echoed
+    assert "Ready for enforcement" in out
+
+
+def test_verify_reads_config_then_home_file(tmp_path, monkeypatch, capsys):
+    from duckwork_tenuo.cli import cmd_verify
+    home = tmp_path / "h"
+    (home / "tenuo").mkdir(parents=True)
+    root, agent, w = _mint()
+    b64 = base64.b64encode(w.to_bytes()).decode()
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+
+    assert cmd_verify(argparse.Namespace()) == 1
+    assert str(home / "tenuo" / "warrant") in capsys.readouterr().err
+
+    (home / "tenuo" / "warrant").write_text(b64)
+    assert cmd_verify(argparse.Namespace()) == 0
+    out = capsys.readouterr().out
+    assert f"Source:      file: {home / 'tenuo' / 'warrant'}" in out and "Expired:     no" in out
+
+    other = tmp_path / "other.warrant"
+    other.write_text(b64)
+    (home / "config.yaml").write_text(f"plugins:\n  entries:\n    duckwork-tenuo:\n      warrant: {other}\n")
+    assert cmd_verify(argparse.Namespace()) == 0
+    assert f"Source:      config: warrant -> {other}" in capsys.readouterr().out
+
+    monkeypatch.setenv("TENUO_WARRANT", b64)
+    assert cmd_verify(argparse.Namespace()) == 0
+    # Same order as the plugin: config wins over env.
+    assert f"Source:      config: warrant -> {other}" in capsys.readouterr().out
+
+    (home / "config.yaml").unlink()
+    assert cmd_verify(argparse.Namespace()) == 0
+    assert "Source:      env: TENUO_WARRANT" in capsys.readouterr().out
+
+
+def test_suite_never_touches_real_home():
+    assert "duckwork-home" in os.environ["DUCKWORK_HOME"]
+    assert os.environ["DUCKWORK_HOME"] != str(Path("~/.duckwork").expanduser())
+
+
+def _configured_home(tmp_path, monkeypatch, signing_key):
+    home = tmp_path / "h"
+    home.mkdir(exist_ok=True)
+    root, agent, w = _mint()
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - duckwork-tenuo\n  entries:\n    duckwork-tenuo:\n"
+        f"      warrant: {base64.b64encode(w.to_bytes()).decode()}\n"
+        f"      trusted_root: {base64.b64encode(root.public_key.to_bytes()).decode()}\n"
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    key = agent if signing_key == "matching" else root
+    monkeypatch.setenv("TENUO_SIGNING_KEY", base64.b64encode(key.secret_key_bytes()).decode())
+
+
+def test_verify_rejects_untrusted_issuer(tmp_path, monkeypatch, capsys):
+    from duckwork_tenuo.cli import cmd_verify
+    from tenuo import SigningKey
+    home = tmp_path / "h"
+    (home / "tenuo").mkdir(parents=True)
+    root, agent, w = _mint()
+    other = SigningKey.generate()
+    (home / "config.yaml").write_text(
+        "plugins:\n  entries:\n    duckwork-tenuo:\n"
+        f"      warrant: {base64.b64encode(w.to_bytes()).decode()}\n"
+        f"      trusted_root: {base64.b64encode(other.public_key.to_bytes()).decode()}\n"
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    assert cmd_verify(argparse.Namespace()) == 1
+    assert "Signature:   INVALID" in capsys.readouterr().out
+
+
+def test_verify_accepts_matching_root_and_reports_unchecked_without_one(tmp_path, monkeypatch, capsys):
+    """The positive half of the signature check.
+
+    Without this, a regression that rejected every root would still pass
+    the untrusted-issuer test above.
+    """
+    from duckwork_tenuo.cli import cmd_verify
+    home = tmp_path / "h"
+    (home / "tenuo").mkdir(parents=True)
+    root, agent, w = _mint()
+    b64 = base64.b64encode(w.to_bytes()).decode()
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+
+    # Matching trusted_root: valid, exit 0.
+    (home / "config.yaml").write_text(
+        "plugins:\n  entries:\n    duckwork-tenuo:\n"
+        f"      warrant: {b64}\n"
+        f"      trusted_root: {base64.b64encode(root.public_key.to_bytes()).decode()}\n"
+    )
+    assert cmd_verify(argparse.Namespace()) == 0
+    out = capsys.readouterr().out
+    assert "Signature:   valid" in out and "INVALID" not in out
+
+    # No trusted_root anywhere: says so explicitly rather than claiming valid.
+    (home / "config.yaml").write_text(
+        f"plugins:\n  entries:\n    duckwork-tenuo:\n      warrant: {b64}\n"
+    )
+    assert cmd_verify(argparse.Namespace()) == 0
+    out = capsys.readouterr().out
+    assert "Signature:   not checked (no trusted_root)" in out and "valid" not in out.split("Signature:")[1]
+
+
+def test_doctor_uses_kanban_task_warrant(tmp_path, monkeypatch, capsys):
+    from duckwork_tenuo.cli import cmd_doctor
+    from duckwork_tenuo.kanban import task_warrant_path
+    home = tmp_path / "h"
+    home.mkdir()
+    root, agent, w = _mint()
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_KANBAN_TASK", "card-1")
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - duckwork-tenuo\n  entries:\n    duckwork-tenuo:\n"
+        f"      warrant: {base64.b64encode(w.to_bytes()).decode()}\n"
+        f"      trusted_root: {base64.b64encode(root.public_key.to_bytes()).decode()}\n"
+    )
+    monkeypatch.setenv("TENUO_SIGNING_KEY", base64.b64encode(agent.secret_key_bytes()).decode())
+    cmd_doctor(argparse.Namespace())
+    out = capsys.readouterr().out
+    assert "kanban:" in out
+    assert "plugin configured" in out and "✗" in out
+
+    path = task_warrant_path("card-1")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(base64.b64encode(w.to_bytes()).decode())
+    cmd_doctor(argparse.Namespace())
+    out = capsys.readouterr().out
+    assert "kanban card-1" in out
+    assert "✓  plugin configured" in out
+
+
+def test_doctor_holder_match_true_positive(tmp_path, monkeypatch, capsys):
+    from duckwork_tenuo.cli import cmd_doctor
+    _configured_home(tmp_path, monkeypatch, "matching")
+    cmd_doctor(argparse.Namespace())
+    out = capsys.readouterr().out
+    assert "✓  signing key matches warrant holder" in out
+    assert "does not match" not in out
+    assert "reading" in out and "config.yaml directly" in out
+
+
+def test_doctor_holder_match_true_negative(tmp_path, monkeypatch, capsys):
+    from duckwork_tenuo.cli import cmd_doctor
+    _configured_home(tmp_path, monkeypatch, "wrong")
+    cmd_doctor(argparse.Namespace())
+    assert "✗  signing key does not match warrant holder" in capsys.readouterr().out

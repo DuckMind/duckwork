@@ -1,0 +1,55 @@
+"""One process-wide HTTP pool for Kiro's OIDC, REST and streaming requests."""
+from __future__ import annotations
+
+import json
+from typing import Any
+
+# Provider discovery may run before plugin dependencies are activated during an update.
+POOL = None
+
+
+def _pool():
+    global POOL
+    import urllib3
+
+    if POOL is None:
+        POOL = urllib3.PoolManager(num_pools=4, maxsize=20, block=True, retries=False)
+    return urllib3, POOL
+
+
+class KiroHTTPError(RuntimeError):
+    def __init__(self, status: int, body: bytes) -> None:
+        self.status = status
+        self.body = body
+        self.access_token = ""
+        super().__init__(f"HTTP {status}: {body.decode('utf-8', 'replace')[:500]}")
+
+
+def request(method: str, url: str, *, body: bytes | None = None, headers: dict[str, str] | None = None, timeout: float = 30, stream: bool = False):
+    urllib3, pool = _pool()
+    response = pool.request(
+        method,
+        url,
+        body=body,
+        headers=headers,
+        preload_content=not stream,
+        timeout=urllib3.Timeout(connect=10, read=timeout),
+    )
+    if 200 <= response.status < 300:
+        return response
+    try:
+        data = response.read() if stream else response.data
+    finally:
+        response.release_conn()
+    raise KiroHTTPError(response.status, data or b"")
+
+
+def request_json(method: str, url: str, *, body: bytes | None = None, headers: dict[str, str] | None = None, timeout: float = 30) -> dict[str, Any]:
+    response = request(method, url, body=body, headers=headers, timeout=timeout)
+    try:
+        data = json.loads(response.data or b"{}")
+    finally:
+        response.release_conn()
+    if not isinstance(data, dict):
+        raise KiroHTTPError(200, b"Kiro returned malformed JSON")
+    return data

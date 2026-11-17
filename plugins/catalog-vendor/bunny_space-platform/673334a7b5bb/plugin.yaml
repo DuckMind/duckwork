@@ -1,0 +1,50 @@
+name: bunny_space-platform
+label: Bunny Space
+kind: platform
+version: 1.0.6
+description: >
+  Bunny Space gateway adapter for Duckwork Agent. Connects a Duckwork profile (the
+  bot brain) to the Bunny Space relay so the bot joins private rooms and
+  responds to its owner. Outbound pull transport; no external dependencies.
+author: Bunny Space
+requires_env:
+  - name: BUNNY_SPACE_BOT_KEY
+    description: "Access key of the bot (bt_...) from /settings/developers"
+    prompt: "Bunny bot access key"
+    password: true
+  - name: BUNNY_SPACE_SLUG
+    description: "Bot slug (what appears as @bot:<slug>)"
+    prompt: "Bunny bot slug"
+    password: false
+optional_env:
+  - name: BUNNY_SPACE_BASE_URL
+    description: "Bunny Space relay URL (production: https://bunny-space.com)"
+    prompt: "Bunny Space relay URL"
+    password: false
+  - name: BUNNY_SPACE_POLL_MS
+    description: >-
+      Fallback poll interval in milliseconds when the relay sends no cadence
+      hint (default 15000). The relay governs the live cadence; a task wake
+      stream, when provided, triggers immediate polls.
+    prompt: "Fallback poll interval (ms)"
+    password: false
+  - name: BUNNY_SPACE_ASSISTANCE
+    description: >-
+      Opt-in (0/1) for the private assistance worker (ISOLATED_ASSISTANCE_V1).
+      Unset = off. Also requires platform_toolsets.bunny_space to list only
+      read-only tools (add no_mcp if any MCP server is enabled), otherwise the
+      worker stays off (fail-closed).
+    prompt: "Enable private assistance worker? (0/1, empty = off)"
+    password: false
+  - name: BUNNY_SPACE_ASSISTANCE_RENEW_MS
+    description: "Lease renewal interval for assistance tasks (default 25000, minimum 1000)"
+    prompt: "Lease renew interval (ms)"
+    password: false
+  - name: BUNNY_SPACE_HOME_CHANNEL
+    description: "Default room for cron / notification delivery (optional)"
+    prompt: "Home room (or empty)"
+    password: false
+  - name: BUNNY_SPACE_ALLOWED_USERS
+    description: "Comma-separated user IDs allowed to talk to the bot"
+    prompt: "Allowed users (comma-separated)"
+    password: false

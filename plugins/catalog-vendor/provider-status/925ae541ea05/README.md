@@ -1,0 +1,55 @@
+<div align="center">
+  <a href="https://github.com/DuckMind/duckwork"><img src="https://github.com/user-attachments/assets/ac2f5702-c842-4b2e-9340-737481fa0ece" width="96" height="96" alt="Fordex Duckwork mark" /></a>
+  <h1>Provider Quota Status</h1>
+  <strong>See provider quota without leaving Duckwork.</strong>
+  <p>Status-bar used/remaining and user-managed provider pools. Polling is read-only for vendor credentials.</p>
+  <p>
+    <a href="plugin.yaml"><img src="https://img.shields.io/badge/version-1.6.3-2ea44f" alt="Version 1.6.3" /></a>
+    <a href="../../LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license" /></a>
+  </p>
+</div>
+
+<div align="center">
+  <img src="docs/hero.png" width="100%" alt="Provider Quota Status" />
+</div>
+
+## Screenshot
+
+<div align="center">
+  <img src="docs/screenshot.png" alt="Providers dialog with quota dots, extra keys, and key rotation" />
+</div>
+
+## What You Can Do
+
+- Read used and remaining quota in the status bar for each enabled provider.
+- Publish this session's tokens/sec, context occupancy, and the backing provider's remaining quota (or credit balance) as the Discord bot presence. `/pulse` and `duckwork session-pulse` report the same numbers. Disable the standalone `discord-presence` plugin while this one is publishing so two bots do not fight over the status.
+- When a pet is on screen, one quota line appears in its speech bubble: the active model's remaining balance, or the worst enabled provider if none is active. Near a ceiling it uses a wait tone; at exhaustion it uses an error tone. Turn the bubble off, pick current vs worst, and rewrite the line under Settings → Plugins → Provider Quota Status (the pet settings sit above the Discord ones). Older hosts without the pet door keep the status-bar chips only.
+- Keep multiple accounts per provider and inspect their status.
+- Use an access token that is already configured in the plugin. Expired OAuth tokens require a new login.
+- Provider polling does not read vendor CLI auth files, refresh vendor tokens, write Duckwork `.env` or `config.yaml`, or copy secrets into a plugin-owned `library.env`.
+- See [DeepSeek's pricing window](https://api-docs.deepseek.com/quick_start/pricing) beside its name, including full-day Chinese public-holiday overrides. The plugin applies official 2025 and 2026 State Council holiday dates; the built-in calendar ends on 2026-12-31.
+- The GLM chip shows its peak/off-peak speedometer even when the quota response omits a weekly window. Z.AI lists Coding Plan peak hours as Monday-Friday 14:00-18:00 Singapore time (UTC+8); off-peak use consumes half the standard credit rate. See [Z.AI Coding Plan usage](https://docs.z.ai/devpack/overview).
+
+**Disclosure:** quota checks for Codex and Grok use the documented client identity and user-agent expected by their CLI-compatible endpoints. The public edition sends keys only to their own provider endpoints and does not collect telemetry.
+
+Supported providers: Tavily, OpenCode Go, DeepSeek, GLM (z.ai), OpenRouter, Grok (xAI), Codex (OpenAI), OpenAI, Anthropic, Groq, Cerebras, Moonshot Kimi, MiniMax, Google Gemini, Hugging Face, Mistral, and Qwen.
+
+## Install
+
+Requires [Duckwork Agent](https://github.com/DuckMind/duckwork) **0.21.0 or newer**.
+
+```bash
+duckwork plugins pack install https://github.com/DuckMind/duckwork
+```
+
+Enable **Provider Quota Status** under **Capabilities → Plugins**. Open the status-bar gear to configure providers. Never commit real keys.
+
+The public edition keeps quota chips, provider probes, device login, and plugin-owned configuration. It does not perform automatic key rotation into Duckwork configuration. An expired OAuth token requires logging in again.
+
+## Requirements / Limits
+
+Desktop plus gateway. Quota numbers come from each provider's API. Discord presence uses the Discord platform plugin already in Duckwork; it is observer-only. OAuth availability, reset behavior, and account limits follow the provider. This plugin manages configured credentials; it does not remove billing or usage caps.
+
+## License
+
+[MIT](../../LICENSE)

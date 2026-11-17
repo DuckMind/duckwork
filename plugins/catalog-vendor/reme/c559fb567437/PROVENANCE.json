@@ -1,0 +1,560 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "reme",
+  "content_id": "c559fb567437",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 12219,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "2ec6e22bb51eb888db34751e776ff9ddc9dd87d1fe79d9cf975ea6521372e151"
+    },
+    {
+      "bytes": 10428,
+      "mode": "100644",
+      "path": "README_ZH.md",
+      "sha256": "356cf8c4935f840e1503f5260330c4318493776e580943959b6eb420b23b297f"
+    },
+    {
+      "bytes": 24649,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "6044880988955a9c0522988dc5c96fca1c1c66160cd765c41c43e33b2f106800"
+    },
+    {
+      "bytes": 11343,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "cc54d679aaced751c096f120b666355c106d9394d28f93f6df353973f6cd7dbe"
+    },
+    {
+      "bytes": 2136,
+      "mode": "100644",
+      "path": "backend.py",
+      "sha256": "503417f19dece836adbe0eebae5608b3b4a82705dce8b44e9b32ab21666cef98"
+    },
+    {
+      "bytes": 3751,
+      "mode": "100644",
+      "path": "client.py",
+      "sha256": "204a0a04577a426163d15dac87f7108447de74bc6dfd0305c68aee46434fe217"
+    },
+    {
+      "bytes": 7155,
+      "mode": "100644",
+      "path": "config.py",
+      "sha256": "9985056c65dc3dd5e22f9cecec7662143d986f7e0042028073f58772b609b4f6"
+    },
+    {
+      "bytes": 3328,
+      "mode": "100644",
+      "path": "config_schema.py",
+      "sha256": "9fe10a7d654060f5e862ff3b26cd54c1ae150a87b0db842d77f3c4104dfd16e0"
+    },
+    {
+      "bytes": 12238,
+      "mode": "100644",
+      "path": "embedded_backend.py",
+      "sha256": "c646a0d8e48bf050014e87ebc3243720e6d2018740a6ac36addcf59cb54cdd34"
+    },
+    {
+      "bytes": 545612,
+      "mode": "100644",
+      "path": "figures/hermes-embedded-recall.png",
+      "sha256": "c89fea1f08cdce627ba34edbd093692603e0264048d230807c57d22ad1c13ddb"
+    },
+    {
+      "bytes": 360141,
+      "mode": "100644",
+      "path": "figures/hermes-http-recall.png",
+      "sha256": "a32d8174a94e81a2b58838d8278c70bfc131828d35f863e2dcc3e03c19db37a0"
+    },
+    {
+      "bytes": 308738,
+      "mode": "100644",
+      "path": "figures/hermes-http-sessions.png",
+      "sha256": "c232fc64b38c0b85bc79cbaac00967db4ca877bfb33ce9787673ad8ecc93922f"
+    },
+    {
+      "bytes": 365419,
+      "mode": "100644",
+      "path": "figures/hermes-provider-settings.png",
+      "sha256": "0c66e1eaae13d188e70e2323b89b3e0535fcf2a8218b61ccbd69f2c93fc3b255"
+    },
+    {
+      "bytes": 209446,
+      "mode": "100644",
+      "path": "figures/hermes-reme-daily-note.png",
+      "sha256": "67d09cfd164158e558b6e806fbc4d393666d7b9cb4d46c5e9e7e49dd592d0ea2"
+    },
+    {
+      "bytes": 1945,
+      "mode": "100644",
+      "path": "http_backend.py",
+      "sha256": "b2bfb366a151b8ac77d4cb057e2aa65c968db498c0ca0f1ade75dbd7d00bb74d"
+    },
+    {
+      "bytes": 333,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "dde348de30f4aad87504122c46bccebcbaab40fbc7079331555534a926db1a21"
+    }
+  ],
+  "input_manifest_sha256": "c559fb567437c223f2aee290e16cc02ff1a456b1c1f6bc359a68f91f08fedd63",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "cc54d679aaced751c096f120b666355c106d9394d28f93f6df353973f6cd7dbe",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "README_ZH.md",
+      "__init__.py",
+      "backend.py",
+      "client.py",
+      "config.py",
+      "config_schema.py",
+      "http_backend.py",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      "README.md",
+      "README_ZH.md",
+      "__init__.py",
+      "backend.py",
+      "client.py",
+      "config.py",
+      "config_schema.py",
+      "http_backend.py",
+      "plugin.yaml"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/agentscope-ai/ReMe",
+    "sha": "5231f3970c550bb0bc5d1bc7fbc85534274ca530",
+    "subdir": "integrations/hermes_agent"
+  },
+  "original_repo": "https://github.com/agentscope-ai/ReMe",
+  "original_sha": "5231f3970c550bb0bc5d1bc7fbc85534274ca530",
+  "original_subdir": "integrations/hermes_agent",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "58b78a5791ec5f98e8fcfee4a7f2e7dfdec0277e4a031ee47244368494e4c069",
+      "bytes": 12538,
+      "mode": "100644"
+    },
+    {
+      "path": "README_ZH.md",
+      "sha256": "78bfc6dd9a33d92d0bcda2179c2ca49a8a76019c5659b3802dc93772f5ba7a46",
+      "bytes": 10731,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "3dc842697e886a528e1065479aa2a4ed654b840b01f9d78811ba8021c313675c",
+      "bytes": 24825,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "cc54d679aaced751c096f120b666355c106d9394d28f93f6df353973f6cd7dbe",
+      "bytes": 11343,
+      "mode": "100644"
+    },
+    {
+      "path": "backend.py",
+      "sha256": "6dcf2937de499d546b16ff9ba9d39a5f3b826dd286e6dd81188f9217d25c4f36",
+      "bytes": 2284,
+      "mode": "100644"
+    },
+    {
+      "path": "client.py",
+      "sha256": "f1b482da6630672d8b7cafc97b47d962237cf733017f71a19f61d21e729cef91",
+      "bytes": 3895,
+      "mode": "100644"
+    },
+    {
+      "path": "config.py",
+      "sha256": "214f3d12f0eca6fb56fe1fce605ce256fc73a6f341a000e1dee2d15bc817b1b9",
+      "bytes": 7339,
+      "mode": "100644"
+    },
+    {
+      "path": "config_schema.py",
+      "sha256": "ddbab20cbab7ff31ee8eaf35d7db212dfef1ccb4f5f3cb9c32a007b9b1ed0154",
+      "bytes": 3441,
+      "mode": "100644"
+    },
+    {
+      "path": "embedded_backend.py",
+      "sha256": "c646a0d8e48bf050014e87ebc3243720e6d2018740a6ac36addcf59cb54cdd34",
+      "bytes": 12238,
+      "mode": "100644"
+    },
+    {
+      "path": "figures/duckwork-embedded-recall.png",
+      "sha256": "c89fea1f08cdce627ba34edbd093692603e0264048d230807c57d22ad1c13ddb",
+      "bytes": 545612,
+      "mode": "100644"
+    },
+    {
+      "path": "figures/duckwork-http-recall.png",
+      "sha256": "a32d8174a94e81a2b58838d8278c70bfc131828d35f863e2dcc3e03c19db37a0",
+      "bytes": 360141,
+      "mode": "100644"
+    },
+    {
+      "path": "figures/duckwork-http-sessions.png",
+      "sha256": "c232fc64b38c0b85bc79cbaac00967db4ca877bfb33ce9787673ad8ecc93922f",
+      "bytes": 308738,
+      "mode": "100644"
+    },
+    {
+      "path": "figures/duckwork-provider-settings.png",
+      "sha256": "0c66e1eaae13d188e70e2323b89b3e0535fcf2a8218b61ccbd69f2c93fc3b255",
+      "bytes": 365419,
+      "mode": "100644"
+    },
+    {
+      "path": "figures/duckwork-reme-daily-note.png",
+      "sha256": "67d09cfd164158e558b6e806fbc4d393666d7b9cb4d46c5e9e7e49dd592d0ea2",
+      "bytes": 209446,
+      "mode": "100644"
+    },
+    {
+      "path": "http_backend.py",
+      "sha256": "d8c72b09bd212782976d3d5a6f91ddec536c574ccec2ceafd721ca1f7483f421",
+      "bytes": 2089,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "f6259e7edd5aa1e28328dcb822f90cf3555ef75f784c7eae780265b80ef7fd83",
+      "bytes": 479,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "d89607fb96ef671527ebb5ba13c3e9b65818092f991994100d386488a62cec1f",
+  "pin_verification": {
+    "archive_bytes": 21304981,
+    "archive_sha256": "c6db61b2955ee61af3cb3906ab72746ce3645f3675a122c98e944e608a53a9b8",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "5231f3970c550bb0bc5d1bc7fbc85534274ca530",
+    "verified_commit_marker": "5231f3970c550bb0bc5d1bc7fbc85534274ca530"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "341b2387f5d3c4c0f0533974ae38e6ad333b0c0d9f29ad1b8642ceac37c42723",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "2ec6e22bb51eb888db34751e776ff9ddc9dd87d1fe79d9cf975ea6521372e151",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f0f0bcc738597b305bdfb2627b6c7cdd37bd50bf2b83a5abf35fafa324e6f36c",
+        "source": "README.md",
+        "final_output_sha256": "58b78a5791ec5f98e8fcfee4a7f2e7dfdec0277e4a031ee47244368494e4c069",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "fcbf651af4ad6f01e6d06885253851217854412a5f4e029ca25ff1cfbbc6b705"
+      },
+      {
+        "destination": "README_ZH.md",
+        "input_sha256": "356cf8c4935f840e1503f5260330c4318493776e580943959b6eb420b23b297f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d87abd07f8d2e140a279fb3118a2f95f9d7f1afe86cf92ad4b8ab2306c863b80",
+        "source": "README_ZH.md",
+        "final_output_sha256": "78bfc6dd9a33d92d0bcda2179c2ca49a8a76019c5659b3802dc93772f5ba7a46",
+        "cli_destination": "README_ZH.md",
+        "previous_staging_sha256": "c58687f1a2cdd1329f8ab33591b9bf4d6d773fbd8e3535a53d07180870d751b4"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "6044880988955a9c0522988dc5c96fca1c1c66160cd765c41c43e33b2f106800",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "202edbab6625d7db3b5ff5adfe83a59bc81ddd383d0c4a74141461d2c0b462a9",
+        "source": "__init__.py",
+        "final_output_sha256": "3dc842697e886a528e1065479aa2a4ed654b840b01f9d78811ba8021c313675c",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "3dc842697e886a528e1065479aa2a4ed654b840b01f9d78811ba8021c313675c"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "cc54d679aaced751c096f120b666355c106d9394d28f93f6df353973f6cd7dbe",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "cc54d679aaced751c096f120b666355c106d9394d28f93f6df353973f6cd7dbe",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "cc54d679aaced751c096f120b666355c106d9394d28f93f6df353973f6cd7dbe",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "cc54d679aaced751c096f120b666355c106d9394d28f93f6df353973f6cd7dbe"
+      },
+      {
+        "destination": "backend.py",
+        "input_sha256": "503417f19dece836adbe0eebae5608b3b4a82705dce8b44e9b32ab21666cef98",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4c602901271ca1a3f64fd4d62f2e36972117c19b7b39ff2bc27e309ad4d19814",
+        "source": "backend.py",
+        "final_output_sha256": "6dcf2937de499d546b16ff9ba9d39a5f3b826dd286e6dd81188f9217d25c4f36",
+        "cli_destination": "backend.py",
+        "previous_staging_sha256": "6dcf2937de499d546b16ff9ba9d39a5f3b826dd286e6dd81188f9217d25c4f36"
+      },
+      {
+        "destination": "client.py",
+        "input_sha256": "204a0a04577a426163d15dac87f7108447de74bc6dfd0305c68aee46434fe217",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8dee8989fc2afe798e9471e39bf9f258913cc6f8c6df8e71e75e6d4635cd1a65",
+        "source": "client.py",
+        "final_output_sha256": "f1b482da6630672d8b7cafc97b47d962237cf733017f71a19f61d21e729cef91",
+        "cli_destination": "client.py",
+        "previous_staging_sha256": "f1b482da6630672d8b7cafc97b47d962237cf733017f71a19f61d21e729cef91"
+      },
+      {
+        "destination": "config.py",
+        "input_sha256": "9985056c65dc3dd5e22f9cecec7662143d986f7e0042028073f58772b609b4f6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d10d18238d5b08989d280ea77f8267fede80fe53a9b896337b4e7fd973719d73",
+        "source": "config.py",
+        "final_output_sha256": "214f3d12f0eca6fb56fe1fce605ce256fc73a6f341a000e1dee2d15bc817b1b9",
+        "cli_destination": "config.py",
+        "previous_staging_sha256": "214f3d12f0eca6fb56fe1fce605ce256fc73a6f341a000e1dee2d15bc817b1b9"
+      },
+      {
+        "destination": "config_schema.py",
+        "input_sha256": "9fe10a7d654060f5e862ff3b26cd54c1ae150a87b0db842d77f3c4104dfd16e0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ee8b8f8006fdff1e2191a7d424e5fe0ddbd42dce27dc057382c6e75c8c2528fb",
+        "source": "config_schema.py",
+        "final_output_sha256": "ddbab20cbab7ff31ee8eaf35d7db212dfef1ccb4f5f3cb9c32a007b9b1ed0154",
+        "cli_destination": "config_schema.py",
+        "previous_staging_sha256": "0db06d004b0af5f7a8d9f0daf32955f2babb5b64b2e43dbd16c994b0e8401c62"
+      },
+      {
+        "destination": "embedded_backend.py",
+        "input_sha256": "c646a0d8e48bf050014e87ebc3243720e6d2018740a6ac36addcf59cb54cdd34",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c646a0d8e48bf050014e87ebc3243720e6d2018740a6ac36addcf59cb54cdd34",
+        "source": "embedded_backend.py",
+        "final_output_sha256": "c646a0d8e48bf050014e87ebc3243720e6d2018740a6ac36addcf59cb54cdd34",
+        "cli_destination": "embedded_backend.py",
+        "previous_staging_sha256": "c646a0d8e48bf050014e87ebc3243720e6d2018740a6ac36addcf59cb54cdd34"
+      },
+      {
+        "destination": "figures/duckwork-embedded-recall.png",
+        "input_sha256": "c89fea1f08cdce627ba34edbd093692603e0264048d230807c57d22ad1c13ddb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c89fea1f08cdce627ba34edbd093692603e0264048d230807c57d22ad1c13ddb",
+        "source": "figures/hermes-embedded-recall.png",
+        "final_output_sha256": "c89fea1f08cdce627ba34edbd093692603e0264048d230807c57d22ad1c13ddb",
+        "cli_destination": "figures/duckwork-embedded-recall.png",
+        "previous_staging_sha256": "c89fea1f08cdce627ba34edbd093692603e0264048d230807c57d22ad1c13ddb"
+      },
+      {
+        "destination": "figures/duckwork-http-recall.png",
+        "input_sha256": "a32d8174a94e81a2b58838d8278c70bfc131828d35f863e2dcc3e03c19db37a0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a32d8174a94e81a2b58838d8278c70bfc131828d35f863e2dcc3e03c19db37a0",
+        "source": "figures/hermes-http-recall.png",
+        "final_output_sha256": "a32d8174a94e81a2b58838d8278c70bfc131828d35f863e2dcc3e03c19db37a0",
+        "cli_destination": "figures/duckwork-http-recall.png",
+        "previous_staging_sha256": "a32d8174a94e81a2b58838d8278c70bfc131828d35f863e2dcc3e03c19db37a0"
+      },
+      {
+        "destination": "figures/duckwork-http-sessions.png",
+        "input_sha256": "c232fc64b38c0b85bc79cbaac00967db4ca877bfb33ce9787673ad8ecc93922f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c232fc64b38c0b85bc79cbaac00967db4ca877bfb33ce9787673ad8ecc93922f",
+        "source": "figures/hermes-http-sessions.png",
+        "final_output_sha256": "c232fc64b38c0b85bc79cbaac00967db4ca877bfb33ce9787673ad8ecc93922f",
+        "cli_destination": "figures/duckwork-http-sessions.png",
+        "previous_staging_sha256": "c232fc64b38c0b85bc79cbaac00967db4ca877bfb33ce9787673ad8ecc93922f"
+      },
+      {
+        "destination": "figures/duckwork-provider-settings.png",
+        "input_sha256": "0c66e1eaae13d188e70e2323b89b3e0535fcf2a8218b61ccbd69f2c93fc3b255",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c66e1eaae13d188e70e2323b89b3e0535fcf2a8218b61ccbd69f2c93fc3b255",
+        "source": "figures/hermes-provider-settings.png",
+        "final_output_sha256": "0c66e1eaae13d188e70e2323b89b3e0535fcf2a8218b61ccbd69f2c93fc3b255",
+        "cli_destination": "figures/duckwork-provider-settings.png",
+        "previous_staging_sha256": "0c66e1eaae13d188e70e2323b89b3e0535fcf2a8218b61ccbd69f2c93fc3b255"
+      },
+      {
+        "destination": "figures/duckwork-reme-daily-note.png",
+        "input_sha256": "67d09cfd164158e558b6e806fbc4d393666d7b9cb4d46c5e9e7e49dd592d0ea2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "67d09cfd164158e558b6e806fbc4d393666d7b9cb4d46c5e9e7e49dd592d0ea2",
+        "source": "figures/hermes-reme-daily-note.png",
+        "final_output_sha256": "67d09cfd164158e558b6e806fbc4d393666d7b9cb4d46c5e9e7e49dd592d0ea2",
+        "cli_destination": "figures/duckwork-reme-daily-note.png",
+        "previous_staging_sha256": "67d09cfd164158e558b6e806fbc4d393666d7b9cb4d46c5e9e7e49dd592d0ea2"
+      },
+      {
+        "destination": "http_backend.py",
+        "input_sha256": "b2bfb366a151b8ac77d4cb057e2aa65c968db498c0ca0f1ade75dbd7d00bb74d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "73584e104d628df40507c72018639748862e6c2118174a782cc0086203186d86",
+        "source": "http_backend.py",
+        "final_output_sha256": "d8c72b09bd212782976d3d5a6f91ddec536c574ccec2ceafd721ca1f7483f421",
+        "cli_destination": "http_backend.py",
+        "previous_staging_sha256": "d8c72b09bd212782976d3d5a6f91ddec536c574ccec2ceafd721ca1f7483f421"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "dde348de30f4aad87504122c46bccebcbaab40fbc7079331555534a926db1a21",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "035c75e45d1784ad9a265bd3baa4c4652d57de5894048dfbb8166db71fccd390",
+        "source": "plugin.yaml",
+        "final_output_sha256": "f6259e7edd5aa1e28328dcb822f90cf3555ef75f784c7eae780265b80ef7fd83",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "f6259e7edd5aa1e28328dcb822f90cf3555ef75f784c7eae780265b80ef7fd83"
+      }
+    ],
+    "manifest_sha256": "1765e938fca8c0962ab20a3df02cc06d184ac7baca839ad35b7eba267e117322",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "integrations/hermes_agent/README.md",
+    "README_ZH.md": "integrations/hermes_agent/README_ZH.md",
+    "__init__.py": "integrations/hermes_agent/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "backend.py": "integrations/hermes_agent/backend.py",
+    "client.py": "integrations/hermes_agent/client.py",
+    "config.py": "integrations/hermes_agent/config.py",
+    "config_schema.py": "integrations/hermes_agent/config_schema.py",
+    "embedded_backend.py": "integrations/hermes_agent/embedded_backend.py",
+    "figures/hermes-embedded-recall.png": "integrations/hermes_agent/figures/hermes-embedded-recall.png",
+    "figures/hermes-http-recall.png": "integrations/hermes_agent/figures/hermes-http-recall.png",
+    "figures/hermes-http-sessions.png": "integrations/hermes_agent/figures/hermes-http-sessions.png",
+    "figures/hermes-provider-settings.png": "integrations/hermes_agent/figures/hermes-provider-settings.png",
+    "figures/hermes-reme-daily-note.png": "integrations/hermes_agent/figures/hermes-reme-daily-note.png",
+    "http_backend.py": "integrations/hermes_agent/http_backend.py",
+    "plugin.yaml": "integrations/hermes_agent/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "reme",
+    "python_files_compiled": 7,
+    "secret_findings": 0
+  },
+  "canonical_slug": "reme",
+  "catalog_file": "src/plugin-catalog/reme.yaml",
+  "identity": {
+    "catalog_id": "reme",
+    "canonical_slug": "reme",
+    "original_manifest_name": "reme",
+    "rebranded_manifest_name": "reme",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "5d3d8e0c54a28dfa38c1f39c4224276a27f637fbd20695fb9a1d6931db012f33",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "fcbf651af4ad6f01e6d06885253851217854412a5f4e029ca25ff1cfbbc6b705",
+          "after_sha256": "58b78a5791ec5f98e8fcfee4a7f2e7dfdec0277e4a031ee47244368494e4c069",
+          "before_bytes": 12536,
+          "after_bytes": 12538,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "README_ZH.md",
+          "after_path": "README_ZH.md",
+          "before_sha256": "c58687f1a2cdd1329f8ab33591b9bf4d6d773fbd8e3535a53d07180870d751b4",
+          "after_sha256": "78bfc6dd9a33d92d0bcda2179c2ca49a8a76019c5659b3802dc93772f5ba7a46",
+          "before_bytes": 10727,
+          "after_bytes": 10731,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "config_schema.py",
+          "after_path": "config_schema.py",
+          "before_sha256": "0db06d004b0af5f7a8d9f0daf32955f2babb5b64b2e43dbd16c994b0e8401c62",
+          "after_sha256": "ddbab20cbab7ff31ee8eaf35d7db212dfef1ccb4f5f3cb9c32a007b9b1ed0154",
+          "before_bytes": 3478,
+          "after_bytes": 3441,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

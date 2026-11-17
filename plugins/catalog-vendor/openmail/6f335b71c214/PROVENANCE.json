@@ -1,0 +1,766 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [
+      {
+        "kind": "image",
+        "reason": "external artwork license not established at source pin",
+        "url": "https://raw.githubusercontent.com/openmailsh/.github/f9d07f18a90a75e8b29f96cbc8d17154ce254828/profile/assets/banner.png"
+      }
+    ],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "openmail",
+  "content_id": "6f335b71c214",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 979,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "bfb3e76d6bb3f03d3a9a8562a09ee0cc8c09e320430fc421f833fc52b28d7033"
+    },
+    {
+      "bytes": 41,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "ee2adf428a0fac045ec2bac7955bef235213e9a53a0032e418b21b33996404f8"
+    },
+    {
+      "bytes": 1065,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "a72e487aa0efb7317c366fc8d8ef9d274ab751b3a0a3488172d7b553ffead399"
+    },
+    {
+      "bytes": 6553,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "315eaa815e15611d2843fca9202fb8ce0dfd5aff99543dd108adf50a04a8b01d"
+    },
+    {
+      "bytes": 4567,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "3325d9dc66e11fd6f801e321f7c74098455b12b75bd24acc93720a27d656b067"
+    },
+    {
+      "bytes": 21329,
+      "mode": "100644",
+      "path": "adapter.py",
+      "sha256": "3fc17ac7eb8c11441771fa9ff86569cde34640fa08f2b21df4f185247d166a69"
+    },
+    {
+      "bytes": 545,
+      "mode": "100644",
+      "path": "after-install.md",
+      "sha256": "bdfdbfdde41a073a54bbfd0f47b86b51fd75932b722cdf7f4c81f65c1c9f34f6"
+    },
+    {
+      "bytes": 9475,
+      "mode": "100644",
+      "path": "api.py",
+      "sha256": "7f9392e1491781530d354eb997ffdc0668798d0d1efe3f13ce2f86d23feeb889"
+    },
+    {
+      "bytes": 16016,
+      "mode": "100644",
+      "path": "cli.py",
+      "sha256": "2683055c01b43483922f6fdbd63705d11d403a88d5a7fd971341f95f3e754f5a"
+    },
+    {
+      "bytes": 3512,
+      "mode": "100644",
+      "path": "config.py",
+      "sha256": "3c3d209915345dd793a99e2c47bfcb35c43b433bec337e4a910ad8bfee3b146c"
+    },
+    {
+      "bytes": 5257,
+      "mode": "100644",
+      "path": "inbound.py",
+      "sha256": "78309add699811d03d765f908133d8bdc219baed2533d14efb7f1924a8bd70c0"
+    },
+    {
+      "bytes": 2205,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "5025d4c6902c93d70834beb8e20e572dbb7fda525571283830a1ab3b4a3bc96b"
+    },
+    {
+      "bytes": 6838,
+      "mode": "100644",
+      "path": "skills/openmail/SKILL.md",
+      "sha256": "15b197b8c898a6b77899c531db827856dc47b4cdb5655a6df24efe9d47a740fd"
+    },
+    {
+      "bytes": 4640,
+      "mode": "100644",
+      "path": "skills/openmail/references/api.md",
+      "sha256": "4729eefda8a0a6d61b40e630ca7cfd9eddd24e1733e82ddbfd3233bac75dc3fa"
+    },
+    {
+      "bytes": 3942,
+      "mode": "100644",
+      "path": "skills/openmail/references/errors.md",
+      "sha256": "cbfe682c2a6fe0b7c63f2095f0df3979e38e802e864c87120024d208d45223a2"
+    },
+    {
+      "bytes": 1440,
+      "mode": "100644",
+      "path": "skills/openmail/references/setup.md",
+      "sha256": "1a5abc3e09b44e303bdf50d740433c5c994849ecdf3be14f5228264718a50b1a"
+    },
+    {
+      "bytes": 7069,
+      "mode": "100644",
+      "path": "stream.py",
+      "sha256": "99d9521b5944e4e3769258234066835f7a04983a44e8d8d8320401de18e8fe8c"
+    },
+    {
+      "bytes": 571,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "27b4f49e4babe0e69463bd4799087327f1401654c36697d0bda8239a9b3e0c6e"
+    },
+    {
+      "bytes": 63,
+      "mode": "100644",
+      "path": "tests/pytest.ini",
+      "sha256": "145180fdd72e702439d3e1342918d84fd40f0a194ee85e89ba1a0f85c970b9c1"
+    },
+    {
+      "bytes": 8292,
+      "mode": "100644",
+      "path": "tests/test_adapter.py",
+      "sha256": "ecb34ca060205b3ac791a9a20f8672802cbde2fabbd978278d52ee310dad53c1"
+    },
+    {
+      "bytes": 11073,
+      "mode": "100644",
+      "path": "tests/test_cli.py",
+      "sha256": "c02e03c890e90ef6f4fb2e1a31dc82cf4ca98962faaf896c1f87601dbc15d500"
+    },
+    {
+      "bytes": 3280,
+      "mode": "100644",
+      "path": "tests/test_inbound.py",
+      "sha256": "6e6fba4986d9ce489f938848f0dca01d0b2618eb70da2b4131490201f07d5079"
+    },
+    {
+      "bytes": 2583,
+      "mode": "100644",
+      "path": "tests/test_tools.py",
+      "sha256": "d3e772471d7419656c8cd28af31d8779672f4545145261f6a29601ad15a27916"
+    },
+    {
+      "bytes": 11805,
+      "mode": "100644",
+      "path": "tools.py",
+      "sha256": "bab8a24e476a37ebede708b51f857ff2ec148a913b3814f27226d11c23f31bd5"
+    }
+  ],
+  "input_manifest_sha256": "6f335b71c2143f6de0e227c4a420929f67aff5de5a1f333b02cfce596971a0d2",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "a72e487aa0efb7317c366fc8d8ef9d274ab751b3a0a3488172d7b553ffead399",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/ci.yml",
+      "README.md",
+      "__init__.py",
+      "adapter.py",
+      "after-install.md",
+      "api.py",
+      "cli.py",
+      "config.py",
+      "plugin.yaml",
+      "skills/openmail/SKILL.md",
+      "skills/openmail/references/errors.md",
+      "tests/conftest.py",
+      "tests/test_adapter.py",
+      "tests/test_cli.py",
+      "tests/test_tools.py",
+      "tools.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/openmailsh/hermes-plugin",
+    "sha": "4035b7d1f8775304443f60f67bcd636acb1a325d",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/openmailsh/hermes-plugin",
+  "original_sha": "4035b7d1f8775304443f60f67bcd636acb1a325d",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "9ecbf333b2f3e0dbfcff677244464d3ed1efa16b4a74830e5bc36b634e5ce683",
+      "bytes": 985,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "ee2adf428a0fac045ec2bac7955bef235213e9a53a0032e418b21b33996404f8",
+      "bytes": 41,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "a72e487aa0efb7317c366fc8d8ef9d274ab751b3a0a3488172d7b553ffead399",
+      "bytes": 1065,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4d87d78ce07fb7aabe0dba463d88cefb0f5b2b96593ab23e27ac9f82d2e583ba",
+      "bytes": 6593,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "928b9d59f1c6605f4102953c96b62f322e83c1da6f804e926d054382652a3023",
+      "bytes": 4575,
+      "mode": "100644"
+    },
+    {
+      "path": "adapter.py",
+      "sha256": "82fd550558b752eda5629fce773224527c138a588579c3c0d44dcec62b80880e",
+      "bytes": 21345,
+      "mode": "100644"
+    },
+    {
+      "path": "after-install.md",
+      "sha256": "f2efb63eb5dc6b0a76dccb17912cc944b7463fe49bbd8bf302219ee1cf56d42c",
+      "bytes": 545,
+      "mode": "100644"
+    },
+    {
+      "path": "api.py",
+      "sha256": "e2e469360c5056c1a9eda03f366a843f1cc1fa5b5f7336493e66247368cac8b6",
+      "bytes": 9477,
+      "mode": "100644"
+    },
+    {
+      "path": "cli.py",
+      "sha256": "eb4f5a4d4653ee1af8dbd1e7f33f16f30435c40cfc4e4c9b9444a309e2ded0de",
+      "bytes": 16064,
+      "mode": "100644"
+    },
+    {
+      "path": "config.py",
+      "sha256": "cf82722ce2405b6db620e218e6b9c8b2efa70652dd0e29c46f055b86308dd65a",
+      "bytes": 3516,
+      "mode": "100644"
+    },
+    {
+      "path": "inbound.py",
+      "sha256": "78309add699811d03d765f908133d8bdc219baed2533d14efb7f1924a8bd70c0",
+      "bytes": 5257,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "482c2e7c514762cd071a16d9547e0e6823d149400b34fcad70d2f61647c7e95f",
+      "bytes": 2201,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/openmail/SKILL.md",
+      "sha256": "6d6521fad2b3a3c9796aae4cb97278936e1da55fea05cfa3fa6f8bd1826fe3b2",
+      "bytes": 6852,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/openmail/references/api.md",
+      "sha256": "4729eefda8a0a6d61b40e630ca7cfd9eddd24e1733e82ddbfd3233bac75dc3fa",
+      "bytes": 4640,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/openmail/references/errors.md",
+      "sha256": "08f8f03f9100c6e51943302da45ab060f7d341d33f230f0b562527f731c3198d",
+      "bytes": 3944,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/openmail/references/setup.md",
+      "sha256": "1a5abc3e09b44e303bdf50d740433c5c994849ecdf3be14f5228264718a50b1a",
+      "bytes": 1440,
+      "mode": "100644"
+    },
+    {
+      "path": "stream.py",
+      "sha256": "99d9521b5944e4e3769258234066835f7a04983a44e8d8d8320401de18e8fe8c",
+      "bytes": 7069,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "2966977c46e8f8d94ae5bf987d3fca3c67dee7d89200e2e49c8ccf9f6ae759e6",
+      "bytes": 579,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/pytest.ini",
+      "sha256": "145180fdd72e702439d3e1342918d84fd40f0a194ee85e89ba1a0f85c970b9c1",
+      "bytes": 63,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_adapter.py",
+      "sha256": "1380beb5dc47e0cd21733f430f8cf20b86714405ffed15d6802d8e3c423bc3b0",
+      "bytes": 8296,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cli.py",
+      "sha256": "dda67da88aab2c5a9fe8524c58c2789712bebf08ebf7d6fa8d710bde6255bd27",
+      "bytes": 11075,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_inbound.py",
+      "sha256": "6e6fba4986d9ce489f938848f0dca01d0b2618eb70da2b4131490201f07d5079",
+      "bytes": 3280,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tools.py",
+      "sha256": "245aa012af664814d8e46d0268f699a03a0180753fe1127e0fbdab7b0149b421",
+      "bytes": 2585,
+      "mode": "100644"
+    },
+    {
+      "path": "tools.py",
+      "sha256": "8d7c117456b49b430d705efddb891234b4881e0aaa5070ddf1b739b4fb00de3b",
+      "bytes": 11827,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "40280f80b6819876682b1d70b95f33a3acdba5bc211ede0a28b3e4055d7447d6",
+  "pin_verification": {
+    "archive_bytes": 38888,
+    "archive_sha256": "c496f41d3b4c4952cec0b16b78c78f0a7a55aeab16d1fe2aad42164e37158c2a",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "4035b7d1f8775304443f60f67bcd636acb1a325d",
+    "verified_commit_marker": "4035b7d1f8775304443f60f67bcd636acb1a325d"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "2ba31a25194b4456858fe3b11b80302cd864ea4458d6d6471aded4f6a1d83004",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "bfb3e76d6bb3f03d3a9a8562a09ee0cc8c09e320430fc421f833fc52b28d7033",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9ecbf333b2f3e0dbfcff677244464d3ed1efa16b4a74830e5bc36b634e5ce683",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "9ecbf333b2f3e0dbfcff677244464d3ed1efa16b4a74830e5bc36b634e5ce683",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "9ecbf333b2f3e0dbfcff677244464d3ed1efa16b4a74830e5bc36b634e5ce683"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "ee2adf428a0fac045ec2bac7955bef235213e9a53a0032e418b21b33996404f8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ee2adf428a0fac045ec2bac7955bef235213e9a53a0032e418b21b33996404f8",
+        "source": ".gitignore",
+        "final_output_sha256": "ee2adf428a0fac045ec2bac7955bef235213e9a53a0032e418b21b33996404f8",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "ee2adf428a0fac045ec2bac7955bef235213e9a53a0032e418b21b33996404f8"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "a72e487aa0efb7317c366fc8d8ef9d274ab751b3a0a3488172d7b553ffead399",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "a72e487aa0efb7317c366fc8d8ef9d274ab751b3a0a3488172d7b553ffead399",
+        "source": "LICENSE",
+        "final_output_sha256": "a72e487aa0efb7317c366fc8d8ef9d274ab751b3a0a3488172d7b553ffead399",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "a72e487aa0efb7317c366fc8d8ef9d274ab751b3a0a3488172d7b553ffead399"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "315eaa815e15611d2843fca9202fb8ce0dfd5aff99543dd108adf50a04a8b01d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c75e1764d4422a5d13c475a37b1f8fd0428e74bfce9a91a2292e4a3d86ea86a7",
+        "source": "README.md",
+        "final_output_sha256": "4d87d78ce07fb7aabe0dba463d88cefb0f5b2b96593ab23e27ac9f82d2e583ba",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "c75e1764d4422a5d13c475a37b1f8fd0428e74bfce9a91a2292e4a3d86ea86a7"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "3325d9dc66e11fd6f801e321f7c74098455b12b75bd24acc93720a27d656b067",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "928b9d59f1c6605f4102953c96b62f322e83c1da6f804e926d054382652a3023",
+        "source": "__init__.py",
+        "final_output_sha256": "928b9d59f1c6605f4102953c96b62f322e83c1da6f804e926d054382652a3023",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "928b9d59f1c6605f4102953c96b62f322e83c1da6f804e926d054382652a3023"
+      },
+      {
+        "destination": "adapter.py",
+        "input_sha256": "3fc17ac7eb8c11441771fa9ff86569cde34640fa08f2b21df4f185247d166a69",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "82fd550558b752eda5629fce773224527c138a588579c3c0d44dcec62b80880e",
+        "source": "adapter.py",
+        "final_output_sha256": "82fd550558b752eda5629fce773224527c138a588579c3c0d44dcec62b80880e",
+        "cli_destination": "adapter.py",
+        "previous_staging_sha256": "82fd550558b752eda5629fce773224527c138a588579c3c0d44dcec62b80880e"
+      },
+      {
+        "destination": "after-install.md",
+        "input_sha256": "bdfdbfdde41a073a54bbfd0f47b86b51fd75932b722cdf7f4c81f65c1c9f34f6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "82f84f2af236a7da0beb2571c1d7c4b746c71c84628a03d9f6876c582a1cfab8",
+        "source": "after-install.md",
+        "final_output_sha256": "f2efb63eb5dc6b0a76dccb17912cc944b7463fe49bbd8bf302219ee1cf56d42c",
+        "cli_destination": "after-install.md",
+        "previous_staging_sha256": "82f84f2af236a7da0beb2571c1d7c4b746c71c84628a03d9f6876c582a1cfab8"
+      },
+      {
+        "destination": "api.py",
+        "input_sha256": "7f9392e1491781530d354eb997ffdc0668798d0d1efe3f13ce2f86d23feeb889",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e2e469360c5056c1a9eda03f366a843f1cc1fa5b5f7336493e66247368cac8b6",
+        "source": "api.py",
+        "final_output_sha256": "e2e469360c5056c1a9eda03f366a843f1cc1fa5b5f7336493e66247368cac8b6",
+        "cli_destination": "api.py",
+        "previous_staging_sha256": "e2e469360c5056c1a9eda03f366a843f1cc1fa5b5f7336493e66247368cac8b6"
+      },
+      {
+        "destination": "cli.py",
+        "input_sha256": "2683055c01b43483922f6fdbd63705d11d403a88d5a7fd971341f95f3e754f5a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "63ab3f03069d4a5a7e69186a5de8ad9f6d34e8857c3d7e7e2fb5bfa921e13f7b",
+        "source": "cli.py",
+        "final_output_sha256": "eb4f5a4d4653ee1af8dbd1e7f33f16f30435c40cfc4e4c9b9444a309e2ded0de",
+        "cli_destination": "cli.py",
+        "previous_staging_sha256": "63ab3f03069d4a5a7e69186a5de8ad9f6d34e8857c3d7e7e2fb5bfa921e13f7b"
+      },
+      {
+        "destination": "config.py",
+        "input_sha256": "3c3d209915345dd793a99e2c47bfcb35c43b433bec337e4a910ad8bfee3b146c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cf82722ce2405b6db620e218e6b9c8b2efa70652dd0e29c46f055b86308dd65a",
+        "source": "config.py",
+        "final_output_sha256": "cf82722ce2405b6db620e218e6b9c8b2efa70652dd0e29c46f055b86308dd65a",
+        "cli_destination": "config.py",
+        "previous_staging_sha256": "cf82722ce2405b6db620e218e6b9c8b2efa70652dd0e29c46f055b86308dd65a"
+      },
+      {
+        "destination": "inbound.py",
+        "input_sha256": "78309add699811d03d765f908133d8bdc219baed2533d14efb7f1924a8bd70c0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "78309add699811d03d765f908133d8bdc219baed2533d14efb7f1924a8bd70c0",
+        "source": "inbound.py",
+        "final_output_sha256": "78309add699811d03d765f908133d8bdc219baed2533d14efb7f1924a8bd70c0",
+        "cli_destination": "inbound.py",
+        "previous_staging_sha256": "78309add699811d03d765f908133d8bdc219baed2533d14efb7f1924a8bd70c0"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "5025d4c6902c93d70834beb8e20e572dbb7fda525571283830a1ab3b4a3bc96b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6c776a9befed02dfc0b77d7e229987abe0abbb4faa52bd5376c88c488f881bcd",
+        "source": "plugin.yaml",
+        "final_output_sha256": "482c2e7c514762cd071a16d9547e0e6823d149400b34fcad70d2f61647c7e95f",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "6c776a9befed02dfc0b77d7e229987abe0abbb4faa52bd5376c88c488f881bcd"
+      },
+      {
+        "destination": "skills/openmail/SKILL.md",
+        "input_sha256": "15b197b8c898a6b77899c531db827856dc47b4cdb5655a6df24efe9d47a740fd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6d6521fad2b3a3c9796aae4cb97278936e1da55fea05cfa3fa6f8bd1826fe3b2",
+        "source": "skills/openmail/SKILL.md",
+        "final_output_sha256": "6d6521fad2b3a3c9796aae4cb97278936e1da55fea05cfa3fa6f8bd1826fe3b2",
+        "cli_destination": "skills/openmail/SKILL.md",
+        "previous_staging_sha256": "6d6521fad2b3a3c9796aae4cb97278936e1da55fea05cfa3fa6f8bd1826fe3b2"
+      },
+      {
+        "destination": "skills/openmail/references/api.md",
+        "input_sha256": "4729eefda8a0a6d61b40e630ca7cfd9eddd24e1733e82ddbfd3233bac75dc3fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4729eefda8a0a6d61b40e630ca7cfd9eddd24e1733e82ddbfd3233bac75dc3fa",
+        "source": "skills/openmail/references/api.md",
+        "final_output_sha256": "4729eefda8a0a6d61b40e630ca7cfd9eddd24e1733e82ddbfd3233bac75dc3fa",
+        "cli_destination": "skills/openmail/references/api.md",
+        "previous_staging_sha256": "4729eefda8a0a6d61b40e630ca7cfd9eddd24e1733e82ddbfd3233bac75dc3fa"
+      },
+      {
+        "destination": "skills/openmail/references/errors.md",
+        "input_sha256": "cbfe682c2a6fe0b7c63f2095f0df3979e38e802e864c87120024d208d45223a2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "08f8f03f9100c6e51943302da45ab060f7d341d33f230f0b562527f731c3198d",
+        "source": "skills/openmail/references/errors.md",
+        "final_output_sha256": "08f8f03f9100c6e51943302da45ab060f7d341d33f230f0b562527f731c3198d",
+        "cli_destination": "skills/openmail/references/errors.md",
+        "previous_staging_sha256": "08f8f03f9100c6e51943302da45ab060f7d341d33f230f0b562527f731c3198d"
+      },
+      {
+        "destination": "skills/openmail/references/setup.md",
+        "input_sha256": "1a5abc3e09b44e303bdf50d740433c5c994849ecdf3be14f5228264718a50b1a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1a5abc3e09b44e303bdf50d740433c5c994849ecdf3be14f5228264718a50b1a",
+        "source": "skills/openmail/references/setup.md",
+        "final_output_sha256": "1a5abc3e09b44e303bdf50d740433c5c994849ecdf3be14f5228264718a50b1a",
+        "cli_destination": "skills/openmail/references/setup.md",
+        "previous_staging_sha256": "1a5abc3e09b44e303bdf50d740433c5c994849ecdf3be14f5228264718a50b1a"
+      },
+      {
+        "destination": "stream.py",
+        "input_sha256": "99d9521b5944e4e3769258234066835f7a04983a44e8d8d8320401de18e8fe8c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "99d9521b5944e4e3769258234066835f7a04983a44e8d8d8320401de18e8fe8c",
+        "source": "stream.py",
+        "final_output_sha256": "99d9521b5944e4e3769258234066835f7a04983a44e8d8d8320401de18e8fe8c",
+        "cli_destination": "stream.py",
+        "previous_staging_sha256": "99d9521b5944e4e3769258234066835f7a04983a44e8d8d8320401de18e8fe8c"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "27b4f49e4babe0e69463bd4799087327f1401654c36697d0bda8239a9b3e0c6e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2966977c46e8f8d94ae5bf987d3fca3c67dee7d89200e2e49c8ccf9f6ae759e6",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "2966977c46e8f8d94ae5bf987d3fca3c67dee7d89200e2e49c8ccf9f6ae759e6",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "2966977c46e8f8d94ae5bf987d3fca3c67dee7d89200e2e49c8ccf9f6ae759e6"
+      },
+      {
+        "destination": "tests/pytest.ini",
+        "input_sha256": "145180fdd72e702439d3e1342918d84fd40f0a194ee85e89ba1a0f85c970b9c1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "145180fdd72e702439d3e1342918d84fd40f0a194ee85e89ba1a0f85c970b9c1",
+        "source": "tests/pytest.ini",
+        "final_output_sha256": "145180fdd72e702439d3e1342918d84fd40f0a194ee85e89ba1a0f85c970b9c1",
+        "cli_destination": "tests/pytest.ini",
+        "previous_staging_sha256": "145180fdd72e702439d3e1342918d84fd40f0a194ee85e89ba1a0f85c970b9c1"
+      },
+      {
+        "destination": "tests/test_adapter.py",
+        "input_sha256": "ecb34ca060205b3ac791a9a20f8672802cbde2fabbd978278d52ee310dad53c1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1380beb5dc47e0cd21733f430f8cf20b86714405ffed15d6802d8e3c423bc3b0",
+        "source": "tests/test_adapter.py",
+        "final_output_sha256": "1380beb5dc47e0cd21733f430f8cf20b86714405ffed15d6802d8e3c423bc3b0",
+        "cli_destination": "tests/test_adapter.py",
+        "previous_staging_sha256": "1380beb5dc47e0cd21733f430f8cf20b86714405ffed15d6802d8e3c423bc3b0"
+      },
+      {
+        "destination": "tests/test_cli.py",
+        "input_sha256": "c02e03c890e90ef6f4fb2e1a31dc82cf4ca98962faaf896c1f87601dbc15d500",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dda67da88aab2c5a9fe8524c58c2789712bebf08ebf7d6fa8d710bde6255bd27",
+        "source": "tests/test_cli.py",
+        "final_output_sha256": "dda67da88aab2c5a9fe8524c58c2789712bebf08ebf7d6fa8d710bde6255bd27",
+        "cli_destination": "tests/test_cli.py",
+        "previous_staging_sha256": "dda67da88aab2c5a9fe8524c58c2789712bebf08ebf7d6fa8d710bde6255bd27"
+      },
+      {
+        "destination": "tests/test_inbound.py",
+        "input_sha256": "6e6fba4986d9ce489f938848f0dca01d0b2618eb70da2b4131490201f07d5079",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6e6fba4986d9ce489f938848f0dca01d0b2618eb70da2b4131490201f07d5079",
+        "source": "tests/test_inbound.py",
+        "final_output_sha256": "6e6fba4986d9ce489f938848f0dca01d0b2618eb70da2b4131490201f07d5079",
+        "cli_destination": "tests/test_inbound.py",
+        "previous_staging_sha256": "6e6fba4986d9ce489f938848f0dca01d0b2618eb70da2b4131490201f07d5079"
+      },
+      {
+        "destination": "tests/test_tools.py",
+        "input_sha256": "d3e772471d7419656c8cd28af31d8779672f4545145261f6a29601ad15a27916",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "245aa012af664814d8e46d0268f699a03a0180753fe1127e0fbdab7b0149b421",
+        "source": "tests/test_tools.py",
+        "final_output_sha256": "245aa012af664814d8e46d0268f699a03a0180753fe1127e0fbdab7b0149b421",
+        "cli_destination": "tests/test_tools.py",
+        "previous_staging_sha256": "245aa012af664814d8e46d0268f699a03a0180753fe1127e0fbdab7b0149b421"
+      },
+      {
+        "destination": "tools.py",
+        "input_sha256": "bab8a24e476a37ebede708b51f857ff2ec148a913b3814f27226d11c23f31bd5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8d7c117456b49b430d705efddb891234b4881e0aaa5070ddf1b739b4fb00de3b",
+        "source": "tools.py",
+        "final_output_sha256": "8d7c117456b49b430d705efddb891234b4881e0aaa5070ddf1b739b4fb00de3b",
+        "cli_destination": "tools.py",
+        "previous_staging_sha256": "8d7c117456b49b430d705efddb891234b4881e0aaa5070ddf1b739b4fb00de3b"
+      }
+    ],
+    "manifest_sha256": "1419a6f45789a5feb8494298779002a06a34bf584084cbe6e9a9c6e1c4cd361b",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "adapter.py": "adapter.py",
+    "after-install.md": "after-install.md",
+    "api.py": "api.py",
+    "cli.py": "cli.py",
+    "config.py": "config.py",
+    "inbound.py": "inbound.py",
+    "plugin.yaml": "plugin.yaml",
+    "skills/openmail/SKILL.md": "skills/openmail/SKILL.md",
+    "skills/openmail/references/api.md": "skills/openmail/references/api.md",
+    "skills/openmail/references/errors.md": "skills/openmail/references/errors.md",
+    "skills/openmail/references/setup.md": "skills/openmail/references/setup.md",
+    "stream.py": "stream.py",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/pytest.ini": "tests/pytest.ini",
+    "tests/test_adapter.py": "tests/test_adapter.py",
+    "tests/test_cli.py": "tests/test_cli.py",
+    "tests/test_inbound.py": "tests/test_inbound.py",
+    "tests/test_tools.py": "tests/test_tools.py",
+    "tools.py": "tools.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "openmail",
+    "python_files_compiled": 13,
+    "secret_findings": 0
+  },
+  "canonical_slug": "openmail",
+  "catalog_file": "src/plugin-catalog/openmail.yaml",
+  "identity": {
+    "catalog_id": "openmail",
+    "canonical_slug": "openmail",
+    "original_manifest_name": "openmail",
+    "rebranded_manifest_name": "openmail",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "918a361e460914a7ba85e701f77b77bae6db7284a425b1aad79fec66231d21c4",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "c75e1764d4422a5d13c475a37b1f8fd0428e74bfce9a91a2292e4a3d86ea86a7",
+          "after_sha256": "4d87d78ce07fb7aabe0dba463d88cefb0f5b2b96593ab23e27ac9f82d2e583ba",
+          "before_bytes": 6601,
+          "after_bytes": 6593,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "after-install.md",
+          "after_path": "after-install.md",
+          "before_sha256": "82f84f2af236a7da0beb2571c1d7c4b746c71c84628a03d9f6876c582a1cfab8",
+          "after_sha256": "f2efb63eb5dc6b0a76dccb17912cc944b7463fe49bbd8bf302219ee1cf56d42c",
+          "before_bytes": 553,
+          "after_bytes": 545,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "cli.py",
+          "after_path": "cli.py",
+          "before_sha256": "63ab3f03069d4a5a7e69186a5de8ad9f6d34e8857c3d7e7e2fb5bfa921e13f7b",
+          "after_sha256": "eb4f5a4d4653ee1af8dbd1e7f33f16f30435c40cfc4e4c9b9444a309e2ded0de",
+          "before_bytes": 16072,
+          "after_bytes": 16064,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "6c776a9befed02dfc0b77d7e229987abe0abbb4faa52bd5376c88c488f881bcd",
+          "after_sha256": "482c2e7c514762cd071a16d9547e0e6823d149400b34fcad70d2f61647c7e95f",
+          "before_bytes": 2209,
+          "after_bytes": 2201,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

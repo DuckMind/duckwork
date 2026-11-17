@@ -1,0 +1,2688 @@
+"""Enforced plan mode for Duckwork tool dispatch.
+
+The one sanctioned Duckwork-internal dependency is imported lazily in
+``_session_reader``.  Upstream binds ``gateway.session_context.get_session_env``
+around plugin command handlers in ``gateway/run_inbound.py:1062-1072`` and
+propagates that ContextVar state to tool workers.  Keeping the import lazy lets
+the plugin load on older Duckwork versions and refuse activation cleanly.
+"""
+
+from __future__ import annotations
+
+from collections import OrderedDict
+from dataclasses import dataclass
+from datetime import datetime, timezone
+import difflib
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import secrets
+import sys
+import threading
+from typing import Any, Callable
+import uuid
+
+from .approval import (
+    DecisionLedger, approval_text, clarify_answer, edit_review_text, gate_bypassed,
+    is_human_approval, make_rule_key, plan_digest, _title, _unfenced,
+)
+from .render import (
+    AGENT_HINT, AGENT_HINT_BRIDGE, BLOCKED_TOOL_MESSAGE, BRIDGE_TODO, BUILTIN_OVERRIDE, LEAN_EXECUTION, LOCAL_PLATFORMS,
+    BRIEF_FINAL, EDIT_BATCH, EXEC_SKILL_GUARD_MESSAGE, SKILL_EXECUTION, executing_pointer, light_note,
+    no_commits, plan_file_stamp, plan_text, planning_note, response_footer, todo_progress,
+)
+
+READ_ONLY_TOOLS = frozenset(
+    {
+        "browser_get_images",
+        "browser_snapshot",
+        "browser_vision",
+        "clarify",
+        "read_file",
+        "read_terminal",
+        "read_window_below",
+        "search_files",
+        "session_search",
+        "skills_list",
+        "todo_list",
+        # Tool Search meta-tools only list and describe deferred tools; tool_call is not listed
+        # because Duckwork unwraps it and runs this hook on the inner tool.
+        "tool_describe",
+        "tool_search",
+        "video_analyze",
+        "vision_analyze",
+        "web_extract",
+        "web_search",
+    }
+)
+PLAN_WRITERS = frozenset({"write_file", "patch"})
+PLAN_MODE_TOOL = "plan_mode"
+REPORT_SKILL = "plan-mode-report-problem"
+REPORT_SKILL_DESCRIPTION = "Plan Mode: report a bug or problem"
+REPORT_SKILL_PATH = Path(__file__).resolve().parent.parent / "skills" / REPORT_SKILL / "SKILL.md"
+_TOOL_DESCRIPTION = (
+    "Enter plan mode with action='on'. When the plan file is written and shown to the user, "
+    "call action='submit' ALONE (not batched with other tool calls) to ask for approval. "
+    "Approval or denial is the user's act. action='off' ends only an agent-entered plan mode. "
+    "While on, writes are allowed only under the session's plans directory; other mutating "
+    "tools are blocked. action='status' reports state. submit defaults to the newest tracked "
+    "plan; path selects a plan and summary gives the approval prompt a title."
+)
+_TOOL_SCHEMA = {
+    "name": PLAN_MODE_TOOL,
+    "description": _TOOL_DESCRIPTION,
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "action": {"type": "string", "enum": ["on", "status", "off", "submit"]},
+            "reason": {"type": "string", "description": "What the plan is for."},
+            "path": {"type": "string", "description": "Absolute path or file name of a plan written in this plan mode; default: the newest one"},
+            "summary": {"type": "string", "description": "Optional one-line title for the approval prompt"},
+        },
+        "required": ["action"],
+    },
+}
+_AGENT_NOTE = (
+    "You entered plan mode yourself: if the task turns out not to need a plan, you may call "
+    "plan_mode(action='off') before submitting. Once you submit a plan, only the user can end plan mode."
+)
+_AGENT_NOTE_BRIDGE = (
+    "You entered plan mode yourself: if the task turns out not to need a plan, you may call "
+    "plan_mode(action='off') (through tool_call if plan_mode is not in your tool list) before submitting. "
+    "Once you submit a plan, only the user can end plan mode."
+)
+_ACTIVE_INDEX_KEY = "active-index"
+_EXECUTING_INDEX_KEY = "executing-index"
+_SESSION_INDEX_KEY = "session-index"
+_SESSION_BACKFILL_KEY = "session-index-backfill"
+_EXECUTION_FIELDS = ("phase", "approved_path", "approved_revision", "approved_snapshot", "approved_at", "executing_turns", "progress",
+                     "user_asked_process")
+# Mirrored to every linked copy of a TUI/Desktop state; approved_while_open is read after an approval, too.
+_FAMILY_FIELDS = _EXECUTION_FIELDS + ("approved_while_open", "edit_review")
+_FOOTER_MAX_CHARS = 1800  # below Discord's ~1.9k streaming split, so a footer edit never re-sends a chunk
+_NO_TURN_NOTE_PLATFORMS = frozenset({"subagent", "curator"})
+_NO_CLARIFY_PLATFORMS = frozenset({"acp", "api_server", "cron", "webhook", "msgraph_webhook"})
+_TODO_HINT = (
+    "mirror the plan's steps into todo_list, called as todo_list(todos=[{\"id\": \"1\", \"content\": \"...\", "
+    "\"status\": \"in_progress\"}, ...]), and update the statuses with merge=true as you work."
+)
+_BATCH_TODO_HINT = (
+    "mirror steps into todo_list only when the plan has 4 or more steps; update statuses in the same response "
+    "as the next real tool call, never in a response by itself; batch independent read-only checks."
+)
+_INLINE_TODO_HINT = (
+    "mirror steps into todo_list only when the plan has 4 or more steps. Never call todo_list in a response by itself: "
+    "create the list in the same response as your first edit, send status updates with your next edit or test call, "
+    "and mark the last items completed in the same response as the final test run; batch independent read-only checks."
+)
+_LEVERS = frozenset({"plan_once", "write_once", "lean_craft", "todo_batch", "codex_compact", "question_shape",
+                     "sticky", "reentry", "approved_text", "light_notes", "plan_budget",
+                     "commit_override", "approval_ask", "bridge_calls", "blocked_tools", "skill_policy",
+                     "test_commands", "choice_fidelity", "refactor_scope", "todo_inline",
+                     "rename_scope", "test_plan_only", "choice_record", "edit_batch", "brief_final", "exec_skill_guard", "approval_card"})
+EXEC_PROCESS_SKILLS = frozenset({"test-driven-development", "tdd", "requesting-code-review", "receiving-code-review",
+                                 "code-review", "writing-plans", "plan", "planning", "brainstorming", "executing-plans"})
+_USER_ASKED_PROCESS = re.compile(
+    r"\b(tdd|test[- ]driven|red[- /]?green|red[- ]first|tests?[- ]first|code[- ]reviews?)\b", re.I)
+# Asking for TDD or a code review lifts the guard for those skills only; the approved plan stays the plan.
+_EXEC_PLANNING_SKILLS = frozenset({"writing-plans", "plan", "planning", "brainstorming", "executing-plans"})
+_IMPLEMENT_PREFIX = "Implement the approved plan at "  # plan-mode's own injected turn; never a user request
+# Core /plan puts its plan-craft text right after the task (agent/plan_prompt.py, v0.21.6 and main); its first words
+# end the user's task. Without it, only the task's first paragraph is read.
+_PLAN_CRAFT_START = "\n\nWrite the plan for an implementer with zero context"
+
+
+def _user_message_text(message: Any) -> str | None:
+    """The text of a turn's user message (multimodal parts joined), or None."""
+    if isinstance(message, list):
+        return "".join(part if isinstance(part, str) else part["text"] for part in message
+                       if isinstance(part, str) or (isinstance(part, dict) and isinstance(part.get("text"), str)))
+    return message if isinstance(message, str) else None
+_APPROVAL_ASK = ("Ask it even if the user said not to ask questions: only the user can approve the plan, and this is "
+                 "the approval, not a clarifying question. ")
+# Lean applies only with compact style and no plan skill; classic, core and plan_skill keep 0.3.5 behaviour.
+# 0.4.5: rename_scope and test_plan_only joined lean after S45 (each met its bar; the T8 test guard held).
+# choice_record, edit_batch and brief_final stay opt-in (README, Experimental levers).
+# 0.6.0: approval_card joined lean after PROOF-060 (approval correctness, results and revision uptake held).
+LEAN_LEVERS = frozenset({"lean_craft", "todo_batch", "codex_compact", "sticky", "reentry", "approved_text",
+                         "light_notes", "question_shape", "bridge_calls", "blocked_tools", "skill_policy",
+                         "test_commands", "choice_fidelity", "todo_inline", "rename_scope", "test_plan_only",
+                         "approval_card", "edit_batch"})
+PROFILE_DEFAULT = "lean"
+
+_PLAN_STYLES = frozenset({"compact", "core"})
+_DEFAULT_PLAN_STYLE = "compact"
+_DEFAULT_ALLOW_COMMITS = False
+_PLAN_SKILL_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,99}")
+
+_V4A_HEADER_RE = re.compile(
+    r"^\*\*\*\s*(Update|Add|Delete|Move)\s+File:", re.MULTILINE
+)
+_V4A_SPACE_RE = re.compile(r"\s*")
+
+
+@dataclass(frozen=True)
+class SessionIdentity:
+    """A stable plugin state key or a reason it cannot be derived."""
+
+    key: str | None
+    unsupported: bool = False
+    non_cli_without_key: bool = False
+    surface: str = ""
+    fallback_key: str | None = None
+    inherited_env: bool = False
+
+
+def _session_reader() -> Callable[[str, str], str] | None:
+    """Return the addendum-sanctioned identity reader when Duckwork provides it."""
+    try:
+        # Sanctioned by WS2 Addendum 1.  This exact seam is bound around gateway
+        # plugin handlers at gateway/run_inbound.py:1062-1072 (#108698).
+        from gateway.session_context import get_session_env
+    except Exception:
+        return None
+    return get_session_env
+
+
+def _session_context_is_engaged() -> bool:
+    """Return whether Duckwork has ever bound server session context in this process."""
+    try:
+        # Sanctioned alongside get_session_env by WS2 FIXROUND-2 N1/F7.  Unlike
+        # imported-module heuristics this distinguishes a CLI importing gateway.run
+        # from a server process that has actually entered a bound session path.
+        from gateway.session_context import session_context_engaged
+    except Exception:
+        return False
+    try:
+        return bool(session_context_engaged())
+    except Exception:
+        return False
+
+
+def _cron_session_is_active() -> bool:
+    """Return whether Duckwork marked this ContextVar-scoped turn as cron."""
+    reader = _session_reader()
+    if reader is None:
+        return False
+    return str(reader("DUCKWORK_CRON_SESSION", "") or "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _gateway_process_is_admitted() -> bool:
+    """Return whether Duckwork admitted this process as a gateway runtime."""
+    truthy = {"1", "true", "yes", "on"}
+    if str(os.environ.get("DUCKWORK_GATEWAY_SESSION") or "").strip().lower() in truthy:
+        return True
+    gateway_run = sys.modules.get("gateway.run")
+    runner_ref = getattr(gateway_run, "_gateway_runner_ref", None)
+    if not callable(runner_ref):
+        return False
+    try:
+        return runner_ref() is not None
+    except Exception:
+        return False
+
+
+def _skill_view_block_reason() -> str | None:
+    """Return why ``skill_view`` must stay blocked, or ``None`` when it is safe.
+
+    ``skill_view`` preprocesses SKILL.md through
+    ``agent.skill_preprocessing.preprocess_skill_content`` without an explicit
+    ``skills_cfg`` (``tools/skills_tool_plugin.py:117``), so the tool reads the
+    same ``load_skills_config()`` this hook calls in the same process and
+    context.  Inline shell runs only when that value is truthy.  Anything the
+    plugin cannot read through Duckwork' own loader fails closed.
+    """
+    try:
+        from agent.skill_preprocessing import load_skills_config
+    except Exception:
+        return (
+            "Duckwork' skill config loader (agent.skill_preprocessing.load_skills_config) "
+            "is unavailable, so inline shell cannot be ruled out."
+        )
+    try:
+        skills_cfg = load_skills_config()
+    except Exception as exc:
+        return f"Reading skills.inline_shell failed ({type(exc).__name__})."
+    if not isinstance(skills_cfg, dict):
+        return "Duckwork returned an unreadable skills config, so inline shell cannot be ruled out."
+    if skills_cfg.get("inline_shell", False):
+        return "skills.inline_shell is enabled, so viewing a skill can run shell snippets."
+    return None
+
+
+def _runtime_cwd_reader() -> Callable[[], Path] | None:
+    """Return Duckwork' turn-scoped cwd resolver required by FIXROUND-1 W3."""
+    try:
+        # W3 explicitly requires the cwd bound by _set_session_context(..., cwd=...).
+        # Import lazily so unsupported Duckwork versions refuse/fallback cleanly.
+        from agent.runtime_cwd import resolve_agent_cwd
+    except Exception:
+        return None
+    return resolve_agent_cwd
+
+
+def derive_session_identity(platform_hint: str = "") -> SessionIdentity:
+    """Derive one key identically for commands and all registered hooks."""
+    reader = _session_reader()
+    if reader is None:
+        return SessionIdentity(None, unsupported=True)
+
+    surface = (
+        str(reader("DUCKWORK_SESSION_PLATFORM", "") or "").strip()
+        or str(reader("DUCKWORK_SESSION_SOURCE", "") or "").strip()
+        or str(platform_hint or "").strip()
+    )
+    session_key = str(reader("DUCKWORK_SESSION_KEY", "") or "").strip()
+    ui_session_id = str(reader("DUCKWORK_UI_SESSION_ID", "") or "").strip()
+    context_engaged = _session_context_is_engaged()
+    inherited_cli_identity = bool(
+        not context_engaged
+        and (
+            (
+                session_key
+                and session_key
+                == str(os.environ.get("DUCKWORK_SESSION_KEY") or "").strip()
+            )
+            or (
+                ui_session_id
+                and ui_session_id
+                == str(os.environ.get("DUCKWORK_UI_SESSION_ID") or "").strip()
+            )
+        )
+    )
+    if inherited_cli_identity:
+        return SessionIdentity(
+            f"cli:{os.getpid()}",
+            surface=surface or "cli",
+            inherited_env=True,
+        )
+    if ui_session_id:
+        return SessionIdentity(
+            f"ui:{ui_session_id}",
+            surface=surface,
+            fallback_key=f"sk:{session_key}" if session_key else None,
+        )
+    if session_key:
+        return SessionIdentity(f"sk:{session_key}", surface=surface)
+
+    if context_engaged or _gateway_process_is_admitted():
+        return SessionIdentity(
+            None,
+            non_cli_without_key=True,
+            surface=surface or "server",
+        )
+    if surface and surface.lower() not in {"cli", "terminal"}:
+        return SessionIdentity(None, non_cli_without_key=True, surface=surface)
+    return SessionIdentity(f"cli:{os.getpid()}", surface=surface or "cli")
+
+
+def _state_storage_key(session_key: str) -> str:
+    digest = hashlib.sha256(session_key.encode("utf-8")).hexdigest()
+    return f"session:{digest}"
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _block_message(tool_name: str, detail: str = "") -> dict[str, str]:
+    base = (
+        f"Plan mode is on: {tool_name} is blocked until you approve the plan "
+        "(/planmode approve). You may write the plan under .duckwork/plans/."
+    )
+    return {"action": "block", "message": f"{base} {detail}".strip()}
+
+
+def _path_is_inside(target: str, plans_dir: str) -> bool:
+    """Return true only for an absolute target resolving below ``plans_dir``."""
+    if not isinstance(target, str) or not target.strip() or not os.path.isabs(target):
+        return False
+    if ".." in Path(target).parts:
+        return False
+    try:
+        resolved_target = os.path.realpath(target)
+        resolved_plans = os.path.realpath(plans_dir)
+        return (
+            resolved_target != resolved_plans
+            and os.path.commonpath((resolved_target, resolved_plans)) == resolved_plans
+        )
+    except (OSError, ValueError):
+        return False
+
+
+def _plans_dir_is_still_safe(plans_dir: str) -> bool:
+    """Revalidate the fixed plan root immediately before a writer is allowed."""
+    if not isinstance(plans_dir, str) or not os.path.isabs(plans_dir):
+        return False
+    duckwork_dir = os.path.dirname(plans_dir)
+    try:
+        return (
+            not os.path.islink(duckwork_dir)
+            and not os.path.islink(plans_dir)
+            and os.path.realpath(plans_dir) == plans_dir
+        )
+    except OSError:
+        return False
+
+
+def _tui_ui_session_id() -> str:
+    """The UI session id of a tui_gateway session (TUI, Desktop, `duckwork serve`); empty anywhere else."""
+    try:
+        reader = _session_reader()
+        if sys.modules.get("tui_gateway.server") is None or reader is None or not _session_context_is_engaged():
+            return ""
+        return str(reader("DUCKWORK_UI_SESSION_ID", "") or "")
+    except Exception:
+        return ""
+
+
+_PLAN_ONCE_DISPLAY_SNAPSHOTS: dict[str, tuple[bool, bool]] = {}
+_PLAN_ONCE_DISPLAY_LOCK = threading.Lock()
+
+
+def _reset_plan_once_visibility() -> None:
+    """Clear the in-process session snapshots (for isolated tests)."""
+    with _PLAN_ONCE_DISPLAY_LOCK:
+        _PLAN_ONCE_DISPLAY_SNAPSHOTS.clear()
+
+
+def _plan_once_visible(*, provider: str = "", codex: bool = False) -> bool:
+    """Require both the session's initial and current interim display policy."""
+    try:
+        session_id = _tui_ui_session_id()
+        if not session_id:
+            return False
+        server = sys.modules["tui_gateway.server"]
+        # Capture needs this (Duckwork v2026.9.24+); without it the note must not promise a saved reply.
+        from agent.history_commentary import visible_commentary  # noqa: F401
+        from duckwork_cli.config import require_readable_config_before_write
+        from duckwork_cli.config_effective import load_user_config_effective
+        from utils import is_truthy_value
+
+        path = server._active_config_path()
+        # This public guard only reads: unlike the behavioral loader it rejects
+        # unreadable/non-mapping YAML rather than recovering last-known-good policy.
+        require_readable_config_before_write(path)
+        config = load_user_config_effective(path, fail_closed=True)
+        display = config.get("display", {})
+        if not isinstance(display, dict):
+            return False
+        model = config.get("model")
+        provider = provider or (model.get("provider", "") if isinstance(model, dict) else "")
+        # pre_llm_call has no provider kwarg; unknown providers fail conservatively.
+        needs_commentary = codex or not provider or provider == "openai-codex"
+        interim = bool(is_truthy_value(display.get("interim_assistant_messages", True)))
+        # Duckwork reads this flag with bool() for the agent and is_truthy_value() for history; require both.
+        commentary = (bool(display.get("show_commentary", True))
+                      and bool(is_truthy_value(display.get("show_commentary", True))))
+        # Duckwork retains its agent's display flags across turns. Never treat a
+        # newly enabled flag as visible on that existing session's agent.
+        with _PLAN_ONCE_DISPLAY_LOCK:
+            snapshot = _PLAN_ONCE_DISPLAY_SNAPSHOTS.get(session_id)
+            if snapshot is None:
+                snapshot = (interim, commentary)
+                _PLAN_ONCE_DISPLAY_SNAPSHOTS[session_id] = snapshot
+                if len(_PLAN_ONCE_DISPLAY_SNAPSHOTS) > 256:
+                    _PLAN_ONCE_DISPLAY_SNAPSHOTS.pop(next(iter(_PLAN_ONCE_DISPLAY_SNAPSHOTS)))
+        interim = snapshot[0] and interim
+        commentary = snapshot[1] and commentary
+        return interim and (not needs_commentary or commentary)
+    except Exception:
+        return False
+
+
+def _patch_targets(args: dict[str, Any]) -> list[str] | None:
+    """Extract every replace/V4A patch target; ``None`` means not explicit/safe."""
+    mode = str(args.get("mode") or "replace").strip().lower()
+    if mode == "replace":
+        path = args.get("path")
+        return [path] if isinstance(path, str) and path.strip() else None
+    if mode != "patch" or not isinstance(args.get("patch"), str):
+        return None
+
+    patch = args["patch"]
+    targets = []
+
+    def line_end(start: int) -> int:
+        end = patch.find("\n", start)
+        return len(patch) if end < 0 else end
+
+    # Prefixes and whitespace scans have no overlapping quantified alternatives.
+    # Each header scans only its payload line and adjacent whitespace, so total
+    # work is linear. Scan headers independently, even in malformed patches.
+    for match in _V4A_HEADER_RE.finditer(patch):
+        start = _V4A_SPACE_RE.match(patch, match.end()).end()
+        if match.group(1) != "Move":
+            # Preserve the old regex's conservative newline-crossing targets,
+            # including an empty target when whitespace was its only payload.
+            targets.append(patch[start:line_end(start)].strip())
+            continue
+        end = line_end(start)
+        arrow = patch.find("->", start + 1, end)
+        if arrow < 0 and end > start:
+            # An arrow on the next line still counts: the host's path rewrite joins
+            # "*** Move File: a\n-> b" into one Move line before it parses the patch.
+            after_space = _V4A_SPACE_RE.match(patch, end).end()
+            if patch.startswith("->", after_space):
+                arrow = after_space
+        if arrow >= 0:
+            destination = _V4A_SPACE_RE.match(patch, arrow + 2).end()
+            # .+ cannot consume a destination made solely of newlines. Such an
+            # arrow fails before the legacy leading-whitespace fallback.
+            if destination == len(patch) and not patch[arrow + 2:destination].strip("\n"):
+                arrow = -1
+        # Prefer a later arrow when the source starts with '->'. Only if that
+        # fails may leading whitespace supply the old .+?'s required character.
+        if arrow < 0 and patch.startswith("->", start):
+            whitespace = patch[match.end():start].rstrip("\n")
+            if whitespace:
+                arrow = start
+                start = match.end() + len(whitespace) - 1
+        if arrow >= 0:
+            destination = _V4A_SPACE_RE.match(patch, arrow + 2).end()
+            targets.extend((patch[start:arrow].strip(),
+                            patch[destination:line_end(destination)].strip()))
+    return targets or None
+
+
+def _write_targets(tool_name: str, args: dict[str, Any]) -> list[str] | None:
+    if tool_name == "write_file":
+        path = args.get("path")
+        return [path] if isinstance(path, str) and path.strip() else None
+    if tool_name == "patch":
+        return _patch_targets(args)
+    return None
+
+
+# Session platforms whose approval prompt is the CLI panel or the TUI/Desktop card, not a chat message.
+_LOCAL_PROMPT_PLATFORMS = frozenset({"", "cli", "terminal", "tui", "desktop", "local"})
+
+
+def _delegated_child() -> bool:
+    """delegate_task children auto-deny approvals, so edit review covers only the user's own session."""
+    try:
+        from agent.delegation_context import is_delegated_child_context
+
+        return bool(is_delegated_child_context())
+    except Exception:
+        return False
+
+
+def _edit_review_available() -> bool:
+    """Missing/raising host probes never offer a review the host cannot prompt for."""
+    try:
+        from tools.approval import is_approval_bypass_active
+
+        return callable(is_approval_bypass_active) and is_approval_bypass_active() is False
+    except Exception:
+        return False
+
+
+class PlanModePlugin:
+    """State machine and dispatch guard registered by the plugin."""
+
+    def __init__(self, ctx) -> None:
+        self.ctx = ctx
+        self._lock = threading.RLock()
+        self._ledger = DecisionLedger()
+        self._active_keys: set[str] = set()
+        # (session_id, tool_call_id) -> (state key, targets, activation id, fresh candidates).
+        self._pending_plan_writes: dict[tuple[str, str], tuple[str, list[str], Any, dict[str, bool]]] = {}
+        self._clarify_notes: dict[tuple[str, str], tuple[Any, str]] = {}
+        self._open_asks: set[tuple[str, str]] = set()
+        self._card_baselines: OrderedDict[str, dict] = OrderedDict()
+        self._hook_platforms: OrderedDict[str, str] = OrderedDict()
+        self._reply_captures: dict[tuple[str, str], tuple[Any, str, bool, str, str]] = {}
+        manager_home = getattr(getattr(ctx, "_manager", None), "home_path", None)
+        self._registration_profile = self._profile_name_for_home(manager_home)
+
+    @staticmethod
+    def _profile_name_for_home(home: Any) -> str | None:
+        if home is None or not str(home).strip():
+            return None
+        path = Path(str(home)).expanduser()
+        if path.parent.name == "profiles":
+            return path.name
+        try:
+            from duckwork_cli.profiles import get_active_profile_name
+
+            return str(get_active_profile_name() or "").strip() or None
+        except Exception:
+            # Unknown, not "default": a bound session then refuses every
+            # state-mutating command instead of storing state no copy reads.
+            return None
+
+    def register(self) -> None:
+        self.ctx.register_command(
+            "planmode",
+            self.command,
+            "Enforce plan-only tool access for this session",
+            args_hint="[on|status|show|edit|approve|reject|done|off] [task]",
+        )
+        self.ctx.register_tool(
+            name=PLAN_MODE_TOOL,
+            toolset="plan-mode",
+            schema=_TOOL_SCHEMA,
+            handler=self.tool,
+            description=_TOOL_DESCRIPTION,
+        )
+        self.ctx.register_hook("pre_tool_call", self.pre_tool_call)
+        self.ctx.register_hook("post_tool_call", self.post_tool_call)
+        self.ctx.register_hook("pre_llm_call", self.pre_llm_call)
+        self.ctx.register_hook("transform_llm_output", self.transform_llm_output)
+        # Always registered: settings are read per call, so a profile switch needs no restart; each hook no-ops
+        # unless its lever is on.
+        self.ctx.register_hook("post_api_request", self.post_api_request)
+        self.ctx.register_hook("post_llm_call", self.post_llm_call)
+        self.ctx.register_hook("transform_tool_result", self.transform_tool_result)
+        self.ctx.register_hook("pre_approval_request", self._ledger.record_presented)
+        self.ctx.register_hook("post_approval_response", self.post_approval_response)
+        self.ctx.register_hook("on_session_finalize", self.on_session_finalize)
+        self.ctx.register_hook("on_session_reset", self.on_session_reset)
+        try:
+            register_section = getattr(self.ctx, "register_system_prompt_section", None)
+            if self._config("agent_hint", True) is not False and callable(register_section):
+                hint = AGENT_HINT_BRIDGE if "bridge_calls" in self._levers() else AGENT_HINT
+                register_section("plan-mode.hint", hint, position="after_memory", max_chars=200)
+        except Exception:
+            pass  # A cosmetic discovery hint must not prevent enforcement registration.
+        try:
+            # Duckwork reads no frontmatter for plugin skills, so the name and description are passed here as well.
+            register_skill = getattr(self.ctx, "register_skill", None)
+            if callable(register_skill):
+                register_skill(REPORT_SKILL, REPORT_SKILL_PATH, description=REPORT_SKILL_DESCRIPTION,
+                               frontmatter={"name": REPORT_SKILL, "description": REPORT_SKILL_DESCRIPTION})
+        except Exception:
+            pass  # The report-a-problem skill is optional; it must not prevent enforcement registration.
+
+    def _load_state(self, key: str) -> dict[str, Any]:
+        return self._load_storage_state(_state_storage_key(key))
+
+    def _load_storage_state(self, storage_key: str) -> dict[str, Any]:
+        value = self.ctx.state.get(storage_key, {})
+        return dict(value) if isinstance(value, dict) else {}
+
+    def _active_storage_keys(self) -> list[str]:
+        value = self.ctx.state.get(_ACTIVE_INDEX_KEY, [])
+        if not isinstance(value, list):
+            return []
+        return [item for item in value[:256] if isinstance(item, str) and item.startswith("session:")]
+
+    def _set_active_storage_keys(self, values: list[str]) -> None:
+        self.ctx.state.set(_ACTIVE_INDEX_KEY, sorted(set(values))[:256])
+
+    def _executing_storage_keys(self) -> list[str]:
+        value = self.ctx.state.get(_EXECUTING_INDEX_KEY, [])
+        if not isinstance(value, list):
+            return []
+        return [item for item in value[:256] if isinstance(item, str) and item.startswith("session:")]
+
+    def _mark_executing(self, storage_key: str, executing: bool) -> None:
+        current = self._executing_storage_keys()
+        if executing == (storage_key in current):
+            return
+        values = current + [storage_key] if executing else [item for item in current if item != storage_key]
+        self.ctx.state.set(_EXECUTING_INDEX_KEY, values[-256:])
+
+    def _session_storage_keys(self) -> list[str]:
+        value = self.ctx.state.get(_SESSION_INDEX_KEY, [])
+        if not isinstance(value, list):
+            return []
+        return [item for item in value[-256:] if isinstance(item, str) and item.startswith("session:")]
+
+    def _mark_session(self, storage_key: str, present: bool) -> None:
+        if not storage_key.startswith("session:"):
+            return
+        current = self._session_storage_keys()
+        if (current[-1:] == [storage_key]) if present else (storage_key not in current):
+            return  # already the most recent entry (or already absent): no write
+        values = [item for item in current if item != storage_key]
+        if present:
+            values.append(storage_key)
+        self.ctx.state.set(_SESSION_INDEX_KEY, values[-256:])
+
+    def _backfill_session_index(self) -> None:
+        """Index states that recorded a session id before 0.6.8 kept the session index (once per profile)."""
+        if self.ctx.state.get(_SESSION_BACKFILL_KEY):
+            return
+        path = getattr(self.ctx.state, "path", None)
+        found: list[str] = []
+        if path is not None:
+            try:
+                with open(path, encoding="utf-8-sig") as handle:
+                    data = json.load(handle)
+            except FileNotFoundError:
+                data = {}
+            except (OSError, ValueError):
+                return  # unreadable now: leave the marker unset and try again at the next reset
+            if isinstance(data, dict):
+                found = [key for key, value in data.items()
+                         if isinstance(key, str) and key.startswith("session:")
+                         and isinstance(value, dict) and value.get("session_id_hash")]
+        current = self._session_storage_keys()
+        if found:
+            # Older states go first, so entries indexed since the upgrade stay the most recent.
+            values = [key for key in found if key not in current] + current
+            self.ctx.state.set(_SESSION_INDEX_KEY, values[-256:])
+        self.ctx.state.set(_SESSION_BACKFILL_KEY, True)
+
+    def _clear_storage_key(self, storage_key: str) -> None:
+        self.ctx.state.set(storage_key, {})
+        self._mark_executing(storage_key, False)
+        self._mark_session(storage_key, False)
+        self._set_active_storage_keys(
+            [item for item in self._active_storage_keys() if item != storage_key]
+        )
+        self._active_keys = {
+            key for key in self._active_keys if _state_storage_key(key) != storage_key
+        }
+
+    def _clear_state_family(
+        self, storage_key: str, state: dict[str, Any] | None = None
+    ) -> None:
+        state = state or self._load_storage_state(storage_key)
+        related = {storage_key, *self._linked_command_storage_keys(state)}
+        canonical = state.get("canonical_ui_storage_key")
+        if isinstance(canonical, str) and canonical.startswith("session:"):
+            related.add(canonical)
+        for candidate in related:
+            if candidate != storage_key and not self._same_family(candidate, canonical):
+                continue  # a stale link to a key another tab has since claimed
+            self._clear_storage_key(candidate)
+
+    def _same_family(self, storage_key: str, canonical: Any) -> bool:
+        """Whether a linked copy still names this family's canonical UI state (or names none)."""
+        theirs = self._load_storage_state(storage_key).get("canonical_ui_storage_key")
+        return not isinstance(theirs, str) or not isinstance(canonical, str) or theirs == canonical
+
+    @staticmethod
+    def _pid_is_alive(pid: int) -> bool:
+        if pid <= 0:
+            return False
+        if pid == os.getpid():
+            return True
+        if os.name == "nt":
+            # os.kill(pid, 0) is not a harmless probe on Windows.  Keep the
+            # bounded durable entry rather than risk signaling the process.
+            return True
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+        except OSError:
+            return False
+        return True
+
+    def _prune_dead_cli_states(self) -> None:
+        for storage_key in list(self._active_storage_keys()):
+            state = self.ctx.state.get(storage_key, {})
+            pid = state.get("cli_pid") if isinstance(state, dict) else None
+            if isinstance(pid, int) and not self._pid_is_alive(pid):
+                self._clear_storage_key(storage_key)
+
+    def _current_process_has_active_state(self) -> bool:
+        current_pid = os.getpid()
+        for storage_key in self._active_storage_keys():
+            state = self._load_storage_state(storage_key)
+            if state.get("active") and state.get("owner_pid") == current_pid:
+                return True
+        return False
+
+    def _save_state(self, key: str, state: dict[str, Any]) -> None:
+        self._save_storage_state(_state_storage_key(key), state, key_hint=key)
+
+    def _save_storage_state(
+        self, storage_key: str, state: dict[str, Any], *, key_hint: str | None = None
+    ) -> None:
+        state = dict(state)
+        self.ctx.state.set(storage_key, state)
+        # Review mode outlives automatic execution clears, so a session reset must still find it.
+        self._mark_executing(storage_key, state.get("phase") == "executing" or isinstance(state.get("edit_review"), dict))
+        active_storage = self._active_storage_keys()
+        if state.get("active"):
+            if key_hint and state.get("owner_pid") == os.getpid():
+                self._active_keys.add(key_hint)
+            if storage_key not in active_storage:
+                active_storage.append(storage_key)
+        else:
+            self._active_keys = {
+                key
+                for key in self._active_keys
+                if _state_storage_key(key) != storage_key
+            }
+            if key_hint:
+                self._active_keys.discard(key_hint)
+            active_storage = [item for item in active_storage if item != storage_key]
+        self._set_active_storage_keys(active_storage)
+
+    @staticmethod
+    def _linked_command_storage_keys(state: dict[str, Any]) -> list[str]:
+        value = state.get("command_session_storage_keys")
+        if not isinstance(value, list):
+            return []
+        return [
+            item
+            for item in value[:256]
+            if isinstance(item, str) and item.startswith("session:")
+        ]
+
+    def _save_command_state(
+        self, raw_key: str, storage_key: str, state: dict[str, Any]
+    ) -> None:
+        """Save a command mutation to its canonical UI state and linked sk copies."""
+        self._save_storage_state(storage_key, state, key_hint=raw_key)
+        for linked_storage in self._linked_command_storage_keys(state):
+            if linked_storage != storage_key:
+                self._save_storage_state(linked_storage, state)
+
+    def _command_state(
+        self, raw_key: str, surface: str = ""
+    ) -> tuple[str, dict[str, Any], bool]:
+        """Resolve a command-only sk key to the one UI state that linked it."""
+        storage_key = _state_storage_key(raw_key)
+        if raw_key.startswith("sk:"):
+            matches = []
+            canonical_active = False
+            for candidate in self._active_storage_keys():
+                state = self._load_storage_state(candidate)
+                if (
+                    state.get("active")
+                    and state.get("canonical_ui_storage_key") == candidate
+                ):
+                    canonical_active = True
+                    if storage_key in self._linked_command_storage_keys(state):
+                        matches.append((candidate, state))
+            if len(matches) == 1:
+                candidate, state = matches[0]
+                return candidate, state, False
+            direct = self._load_storage_state(storage_key)
+            ui_surface = str(surface or "").strip().lower() in {
+                "tui",
+                "desktop",
+                "dashboard",
+            }
+            return storage_key, direct, bool(
+                ui_surface and canonical_active and not direct.get("active")
+            )
+        return storage_key, self._load_storage_state(storage_key), False
+
+    def _link_command_key(
+        self, state_key: str, state: dict[str, Any], command_key: str | None
+    ) -> None:
+        if not command_key or not command_key.startswith("sk:"):
+            return
+        linked = self._linked_command_storage_keys(state)
+        command_storage = _state_storage_key(command_key)
+        canonical_storage = _state_storage_key(state_key)
+        if (
+            command_storage in linked
+            and state.get("canonical_ui_storage_key") == canonical_storage
+        ):
+            return
+        if command_storage not in linked:
+            linked.append(command_storage)
+        for evicted in linked[:-256]:
+            if evicted != canonical_storage:
+                self._clear_storage_key(evicted)
+        state["command_session_storage_keys"] = linked[-256:]
+        state["canonical_ui_storage_key"] = canonical_storage
+        self._save_state(state_key, state)
+
+    @staticmethod
+    def _session_id_hash(value: Any) -> str:
+        text = str(value or "").strip()
+        return hashlib.sha256(text.encode("utf-8")).hexdigest() if text else ""
+
+    def _remember_session_id(self, key: str, state: dict[str, Any], value: Any) -> None:
+        digest = self._session_id_hash(value)
+        if digest and state.get("session_id_hash") != digest:
+            state["session_id_hash"] = digest
+            self._save_state(key, state)
+        if digest:
+            self._mark_session(_state_storage_key(key), True)
+
+    def _claim_state_for_current_process(
+        self, key: str, state: dict[str, Any]
+    ) -> None:
+        if state.get("active") and state.get("owner_pid") != os.getpid():
+            state["owner_pid"] = os.getpid()
+            self._save_state(key, state)
+
+    def _identity_or_reply(self) -> tuple[SessionIdentity, str | None]:
+        identity = derive_session_identity()
+        if identity.unsupported:
+            return identity, (
+                "Plan mode is unavailable: this Duckwork version does not provide the "
+                "required session identity seam (gateway.session_context.get_session_env)."
+            )
+        if identity.non_cli_without_key or not identity.key:
+            return identity, (
+                "Plan mode activation was refused: this server surface lacks the required "
+                "session binding. Upgrade Duckwork to a version containing the TUI/gateway "
+                "plugin-command session-binding fix."
+            )
+        return identity, None
+
+    def _state_for_hook(self, identity: SessionIdentity) -> tuple[str | None, dict[str, Any]]:
+        """Return active state, including the required legacy CLI fail-closed fallback."""
+        if identity.key:
+            state = self._load_state(identity.key)
+            if state.get("active"):
+                self._claim_state_for_current_process(identity.key, state)
+                self._link_command_key(identity.key, state, identity.fallback_key)
+                return identity.key, state
+        if identity.key and identity.fallback_key:
+            fallback_state = self._load_state(identity.fallback_key)
+            if fallback_state.get("active"):
+                self._claim_state_for_current_process(
+                    identity.fallback_key, fallback_state
+                )
+                self._link_command_key(
+                    identity.key, fallback_state, identity.fallback_key
+                )
+                self._save_state(identity.key, fallback_state)
+                return identity.key, fallback_state
+        cli_key = f"cli:{os.getpid()}"
+        if identity.key != cli_key:
+            cli_state = self._load_state(cli_key)
+            if cli_state.get("active"):
+                self._claim_state_for_current_process(cli_key, cli_state)
+                if identity.key and identity.key.startswith("ui:"):
+                    linked = self._linked_command_storage_keys(cli_state)
+                    cli_storage = _state_storage_key(cli_key)
+                    if cli_storage not in linked:
+                        linked.append(cli_storage)
+                    cli_state["command_session_storage_keys"] = linked[-256:]
+                    cli_state.pop("cli_pid", None)
+                    self._link_command_key(
+                        identity.key, cli_state, identity.fallback_key
+                    )
+                    self._save_state(identity.key, cli_state)
+                    return identity.key, cli_state
+                return cli_key, cli_state
+        return identity.key, self._load_state(identity.key) if identity.key else {}
+
+    def _session_cwd(self) -> str:
+        cwd_reader = _runtime_cwd_reader()
+        raw = str(cwd_reader() if cwd_reader else "").strip()
+        reader = _session_reader()
+        if not raw:
+            raw = str(reader("TERMINAL_CWD", "") if reader else "").strip()
+        if not raw or not os.path.isabs(raw) or not os.path.isdir(raw):
+            raw = os.getcwd()
+        return os.path.realpath(raw)
+
+    def _fixed_plans_dir(self) -> str:
+        base = self._session_cwd()
+        duckwork_path = os.path.join(base, ".duckwork")
+        plan_path = os.path.join(duckwork_path, "plans")
+        if os.path.islink(duckwork_path) or os.path.islink(plan_path):
+            raise ValueError("the .duckwork plan path contains a symlink")
+        os.makedirs(plan_path, exist_ok=True)
+        expected = os.path.join(os.path.realpath(base), ".duckwork", "plans")
+        if (
+            os.path.islink(duckwork_path)
+            or os.path.islink(plan_path)
+            or os.path.realpath(plan_path) != expected
+        ):
+            raise ValueError("the .duckwork plan path contains a symlink")
+        return expected
+
+    @staticmethod
+    def _plan_files(state: dict[str, Any]) -> list[str]:
+        plans_dir = state.get("plans_dir")
+        if not isinstance(plans_dir, str) or not os.path.isdir(plans_dir):
+            return []
+        remembered = state.get("plan_files")
+        if not isinstance(remembered, list):
+            return []
+        files = []
+        for value in remembered[:256]:
+            if (
+                isinstance(value, str)
+                and value.endswith(".md")
+                and _path_is_inside(value, plans_dir)
+                and os.path.isfile(value)
+            ):
+                files.append(os.path.realpath(value))
+        return files
+
+    def _remember_plan_targets(
+        self, key: str, state: dict[str, Any], targets: list[str]
+    ) -> None:
+        remembered = state.get("plan_files")
+        files = [item for item in remembered if isinstance(item, str)] if isinstance(remembered, list) else []
+        for target in targets:
+            resolved = os.path.realpath(target)
+            if not resolved.endswith(".md"):
+                continue
+            files = [item for item in files if item != resolved]
+            files.append(resolved)
+        state["plan_files"] = files[-256:]
+        self._save_state(key, state)
+
+    def _status_text(self, state: dict[str, Any], files: list[str]) -> str:
+        mode = "on" if state.get("active") else "off"
+        entered = state.get("entered_at") or "not set"
+        plans_dir = state.get("plans_dir") or "not set"
+        rendered = "\n".join(f"- {path}" for path in files) or "- none"
+        submission = state.get("submission") or {}
+        if state.get("phase") == "executing":
+            phase = f"executing (rev {state.get('approved_revision') or '?'}: {state.get('approved_path')})"
+        elif state.get("active") and submission.get("status") in {"pending", "awaiting"}:
+            asked = ", asked in chat" if submission.get("status") == "awaiting" and submission.get("clarify") else ""
+            phase = f"awaiting approval (rev {submission['revision']}{asked})"
+        else:
+            phase = "planning" if state.get("active") else "off"
+        last = f"\nLast submission: rev {submission['revision']} {submission['status']}" if submission else ""
+        custom = " (custom levers)" if self._lever_override() else ""
+        return (
+            f"Plan mode: {mode}\nPlan profile: {self._plan_profile()}{custom}\nEntered at: {entered}\n"
+            f"Phase: {phase}{last}\nPlans directory: {plans_dir}\nPlan files:\n{rendered}"
+        )
+
+    @staticmethod
+    def _agent_owned(state: dict[str, Any]) -> bool:
+        """True only for the activation the agent's own ``plan_mode`` call created."""
+        activation = state.get("activation_id")
+        return bool(
+            state.get("active")
+            and state.get("entered_by") == "agent"
+            and activation
+            and state.get("agent_activation_id") == activation
+        )
+
+    def tool(self, args: Any = None, **kwargs: Any) -> str:
+        """Agent-callable plan mode, including completion of a human-approved submission."""
+        call_args = args if isinstance(args, dict) else {}
+        action = str(call_args.get("action") or "").strip().lower()
+        if action in {"on", "status", "off", "submit"}:
+            reason = str(call_args.get("reason") or "").strip()
+            message = self._run_command(action, reason, entered_by="agent")
+        else:
+            message = (
+                "Unsupported plan_mode action: use on, status, off or submit. Approving or "
+                "rejecting a plan is the user's act (/planmode approve or /planmode reject)."
+            )
+        return json.dumps(message if isinstance(message, dict) else {"message": message}, ensure_ascii=False)
+
+    def _forget_submission(self, state: dict[str, Any], storage_key: str = "") -> None:
+        if "approval_card" in self._levers() and storage_key:
+            self._card_baselines.pop(storage_key, None)
+        submission = state.get("submission")
+        if isinstance(submission, dict):
+            self._ledger.take(submission.get("rule_key"))
+            if "approval_card" in self._levers() and submission.get("card"):
+                clarify = submission.get("clarify") or {}
+                self._open_asks.discard((clarify.get("nonce", ""), clarify.get("tool_call_id", "")))
+
+    @staticmethod
+    def _snapshot_name(stem: str, revision: int, digest: str, tag: str = "") -> str:
+        suffix = f"-rev{revision}-{digest[:12]}{tag}.md"
+        if len(os.fsencode(suffix)) >= 255:
+            raise ValueError("the approved snapshot name is too long")
+        while stem and len(os.fsencode(stem + suffix)) > 255:  # one path component on common filesystems
+            stem = stem[:-1]
+        return stem + suffix
+
+    def _approve_submission(self, state: dict[str, Any], submission: dict, via: str | None = None, storage_key: str = "", review: dict | None = None) -> None:
+        """The shared transition after a correlated human decision and digest check."""
+        state.pop("approved_snapshot", None)  # set again below only for a reviewed replacement
+        if review is not None:
+            revision = int(state.get("revision") or 0) + 1
+            approved = Path(state["plans_dir"]) / "approved"
+            if not _plans_dir_is_still_safe(state["plans_dir"]) or os.path.islink(approved):
+                raise ValueError("the approved snapshot path is unsafe")
+            approved.mkdir(exist_ok=True)
+            for attempt in range(8):
+                # A taken name (another session, a reset) gets a random tag: an existing file is never reused or replaced.
+                tag = f"-{secrets.token_hex(3)}" if attempt else ""
+                snapshot = approved / self._snapshot_name(Path(review["path"]).stem, revision, review["digest"], tag)
+                try:
+                    stream = snapshot.open("x", encoding="utf-8", newline="")  # exact captured text, no newline translation
+                except FileExistsError:
+                    continue
+                try:
+                    with stream:
+                        stream.write(review["text"])
+                except BaseException:
+                    snapshot.unlink(missing_ok=True)  # only our own partial file; a retry then starts clean
+                    raise
+                break
+            else:
+                raise ValueError("no free approved snapshot name")
+            submission.update(replaces_revision=review["revision"], revision=revision, path=review["path"],
+                              digest=review["digest"], review_text=review["text"], snapshot_path=str(snapshot))
+            state["revision"] = revision
+            state["submission"] = submission
+            state["approved_snapshot"] = str(snapshot)  # the executing pointer re-reads this after a compaction
+        state["active"] = False
+        state.pop("fresh_writes", None)
+        state.pop("review", None)
+        state.pop("edit_review", None)
+        for field in ("activation_id", "entered_by", "agent_activation_id"):
+            state.pop(field, None)
+        state.update(phase="executing", approved_path=submission["path"],
+                     approved_revision=submission["revision"], approved_at=_utc_now(), pending_note="")
+        submission["status"] = "approved"
+        if via:
+            submission["approved_via"] = via
+        submission.pop("clarify", None)
+        if submission.get("card"):
+            self._card_baselines.pop(storage_key, None)
+        if review is not None:
+            state["pending_note"] = (
+                f"The user approved revised plan rev {submission['revision']} of {submission['path']} "
+                f"(it replaces rev {submission['replaces_revision']}). Implement this approved text; preserve its changes; "
+                "if something conflicts, ask rather than restoring the old plan." + self._approved_excerpt(submission)
+                + self._typed_todo_hint() + self._commit_rule())
+            if "lean_craft" in self._note_levers():
+                state["pending_note"] += " " + LEAN_EXECUTION
+            if "skill_policy" in self._note_levers():
+                state["pending_note"] += " " + SKILL_EXECUTION
+
+    @staticmethod
+    def _changed_plan_note(state: dict) -> str:
+        submission = state.get("submission") or {}
+        if not submission:
+            return ""
+        try:
+            unchanged = plan_digest(submission["path"])[0] == submission["digest"]
+        except (OSError, ValueError):
+            unchanged = False  # an unreadable or oversized (> 1 MiB) plan cannot be shown unchanged
+        if unchanged:
+            return ""
+        return (f"The plan file changed after rev {submission['revision']} was submitted (writer unknown). "
+                "Read the current file, keep its changes, apply the feedback, and submit a complete new revision.")
+
+    @staticmethod
+    def _stale_note(revision) -> str:
+        return f"The plan file changed after rev {revision} was submitted; show the updated plan and submit again."
+
+    @staticmethod
+    def _rejection_note(revision) -> str:
+        return (f"The user did not approve plan rev {revision}. A plan denial is review feedback, not a safety refusal: "
+                "if no reason was given, ask what to change; then revise the plan file and submit a complete new revision.")
+
+    def _complete_submission(self, raw_key: str, storage_key: str, state: dict[str, Any]) -> dict:
+        state.pop("review", None)
+        submission = state.get("submission")
+        opened = state.pop("approved_while_open", None)
+        if (opened and isinstance(submission, dict) and opened == submission.get("rule_key")
+                and submission.get("status") == "approved" and not state.get("active")):
+            state["pending_note"] = ""
+            self._save_command_state(raw_key, storage_key, state)
+            return {"message": self._saved_plan_note(submission) + f"The user approved plan rev {submission['revision']} at {submission['path']} with "
+                    f"/planmode approve. Plan mode is off. Implement it now: {self._execute_hint()}" + self._approved_excerpt(submission),
+                    "approved": True, "path": submission["path"], "revision": submission["revision"]}
+        if opened:
+            self._save_command_state(raw_key, storage_key, state)
+        if not state.get("active") or not submission or submission.get("status") != "pending":
+            return {"message": "There is nothing awaiting approval."}
+        entry = self._ledger.take(submission["rule_key"])
+        revision, path = submission["revision"], submission["path"]
+        card = submission.get("card") and "approval_card" in self._levers()
+        if not card and is_human_approval(entry, submission.get("tool_call_id")):
+            try:
+                unchanged = plan_digest(path)[0] == submission["digest"]
+            except (OSError, ValueError):
+                unchanged = False
+            if unchanged:
+                self._approve_submission(state, submission)
+                self._save_command_state(raw_key, storage_key, state)
+                return {"message": self._saved_plan_note(submission) + f"The user approved plan rev {revision} at {path}. Plan mode is off. "
+                        f"Implement it now: {self._execute_hint()}" + self._approved_excerpt(submission),
+                        "approved": True, "path": path, "revision": revision}
+            submission["status"] = "stale"
+            message = self._stale_note(revision)
+        else:
+            submission["status"] = "awaiting"
+            if card or gate_bypassed(entry):
+                nonce = secrets.token_hex(4)
+                approve, keep = f"Approve plan rev {revision}", "Keep planning"
+                choices = [approve, keep]
+                question = (f"Approve plan rev {revision} ({os.path.basename(path)}) and start implementing it? "
+                            f"[plan-mode {nonce}]")
+                if card:
+                    approve = "Approve, auto-accept edits"
+                    choices = [approve, keep]
+                    if self._card_path(storage_key) and _edit_review_available():
+                        choices.insert(1, "Approve, review each file edit")
+                    summary = submission.get("change_summary", "")
+                    question = (f"Approve plan rev {revision} ({os.path.basename(path)})? "
+                                f"{summary + '. ' if summary else ''}Full plan: /planmode show [plan-mode {nonce}]")
+                submission["clarify"] = {
+                    "nonce": nonce, "question": question, "choices": choices,
+                    "tool_call_id": "", "activation_id": state.get("activation_id"),
+                }
+                message = (
+                    (f"No human has approved plan rev {revision} yet. Plan mode stays on. "
+                     + ("The user has already seen the complete plan file in the terminal; do not restate it. "
+                        if submission.get("shown_in_full") else "Show the complete plan file verbatim, not a summary. ")
+                     + (f"Show this diff excerpt too:\n{submission['diff_excerpt']}\n\n" if submission.get("diff_excerpt") else "")
+                     + "Then ask once with the clarify tool, passing exactly one question: " if card else
+                     "Duckwork approved this call automatically on this host (yolo, approvals.mode: off, or an unattended surface such as the API server or a webhook), "
+                     f"so no human has approved plan rev {revision} yet. Plan mode stays on. "
+                     + ("The user has already seen the complete plan file in the terminal; do not restate it. Then ask"
+                        if submission.get("shown_in_full") else "Make sure the plan is shown, then ask")
+                     + " once with the clarify tool, passing exactly one question: ") +
+                    f"question={question} and choices={choices} "
+                    "(these exact strings, this order, not multi-select). "
+                    + (_APPROVAL_ASK if "approval_ask" in self._levers() else "") +
+                    f"If the user picks {'either approval choice' if len(choices) == 3 else approve}, plan mode turns off automatically; implement the plan in this turn: {self._execute_hint()} "
+                    f"If they pick {keep} or answer otherwise, ask what to change and revise. "
+                    "If clarify is unavailable, ask the user to run /planmode approve."
+                )
+                self._save_command_state(raw_key, storage_key, state)
+                return {"message": message, "clarify": {"question": question, "choices": choices}}
+            message = (f"No human approval was recorded for plan rev {revision}: this host approved the call "
+                       "automatically (yolo, approvals.mode: off, or an unattended surface such as the API server or a webhook) or does not route plugin approvals. "
+                       "Plan mode stays on. Show the plan and ask the user to run /planmode approve "
+                       "(or /planmode reject <feedback>).")
+        self._save_command_state(raw_key, storage_key, state)
+        return {"message": message}
+
+    def command(self, raw_args: str) -> str:
+        raw = str(raw_args or "").strip()
+        action, _, remainder = raw.partition(" ")
+        return self._run_command(action.lower() or "status", remainder.strip(), deliver_task=True)
+
+    def _run_command(self, action: str, remainder: str, entered_by: str = "user",
+                     deliver_task: bool = False) -> str | dict:
+        """Resolve identity like the slash command, then apply one plan-mode action."""
+        identity, error = self._identity_or_reply()
+        if error:
+            if action == "status":
+                reason = error.removeprefix("Plan mode activation was refused: ")
+                reason = reason.removeprefix("Plan mode is unavailable: ")
+                return f"Plan mode is unavailable on this surface: {reason}"
+            return error
+        assert identity.key is not None
+
+        if action == "on" and identity.inherited_env and _gateway_process_is_admitted():
+            return (
+                "Plan mode activation was refused: this gateway/slash-worker process "
+                "only exposed inherited session identity, so activation cannot be "
+                "bound safely to one session."
+            )
+        if action in {"on", "off", "approve", "reject", "submit", "done", "show", "edit"}:
+            # Every state-mutating command, and show (it prints plan contents), must run in the plugin
+            # instance of the session's own profile; status stays read-only and is not gated.
+            refused = (
+                "Plan mode activation was refused"
+                if action == "on"
+                else f"Plan mode command '{action}' was refused"
+            )
+            reader = _session_reader()
+            session_profile = str(
+                reader("DUCKWORK_SESSION_PROFILE", "") if reader else ""
+            ).strip()
+            if session_profile and self._registration_profile is None:
+                return (
+                    f"{refused}: the plugin registration profile "
+                    "is unknown, so it cannot be matched safely to the bound session "
+                    f"profile '{session_profile}'."
+                )
+            if (
+                session_profile
+                and self._registration_profile
+                and session_profile != self._registration_profile
+            ):
+                return (
+                    f"{refused}: this plugin instance is registered "
+                    f"for profile '{self._registration_profile}', but the session belongs "
+                    f"to profile '{session_profile}'."
+                )
+
+        with self._lock:
+            command_storage_key, state, unresolved_ui_command = self._command_state(
+                identity.key, identity.surface
+            )
+            if action == "status" and unresolved_ui_command:
+                return (
+                    "Plan mode: unresolved\nA TUI/Desktop plan-mode state is active, but "
+                    "Duckwork did not bind the stable UI session ID, so this command's session "
+                    "key is not linked to it and enforcement may apply to this tab. Run one "
+                    "turn in the owning tab, then retry; the plugin will not guess across tabs."
+                )
+            if action != "status" and unresolved_ui_command:
+                return (
+                    "Plan mode command was refused: Duckwork did not bind the stable UI "
+                    "session ID, so this command cannot be matched safely to the tab that "
+                    "owns plan mode. Retry from that tab after Duckwork exposes its stable UI "
+                    "identity; the plugin will not guess across tabs."
+                )
+            if action == "on":
+                if entered_by == "agent" and state.get("active"):
+                    return self._status_text(state, self._plan_files(state))
+                try:
+                    plans_dir = self._fixed_plans_dir()
+                except (OSError, ValueError) as exc:
+                    return f"Plan mode activation was refused: {exc}."
+                self._forget_submission(state, command_storage_key)
+                preserved = {
+                    key: state[key]
+                    for key in (
+                        "canonical_ui_storage_key",
+                        "command_session_storage_keys",
+                        "cli_pid",
+                        "session_id_hash",
+                    )
+                    if key in state
+                }
+                if "reentry" in self._levers():
+                    previous = state.get("approved_path") or (state.get("submission") or {}).get("path") or state.get("previous_plan")
+                    if (isinstance(previous, str) and _plans_dir_is_still_safe(plans_dir)
+                            and _path_is_inside(previous, plans_dir) and os.path.isfile(previous)):
+                        preserved["previous_plan"] = previous
+                state = {
+                    "active": True,
+                    "entered_at": _utc_now(),
+                    "plans_dir": plans_dir,
+                    "task": remainder,
+                    "pending_note": "",
+                    "plan_files": state.get("plan_files", []),
+                    "owner_pid": os.getpid(),
+                    "activation_id": uuid.uuid4().hex,
+                    "entered_by": entered_by,
+                    "revision": int(state.get("revision") or 0),
+                    **preserved,
+                }
+                if deliver_task and remainder:
+                    # The slash reply goes to the user only; the next turn's note carries the task to the model.
+                    state["pending_note"] = f"The user's task for this plan (from /planmode on): {remainder[:2000]}"
+                if entered_by == "user" and _USER_ASKED_PROCESS.search(remainder):
+                    state["user_asked_process"] = True
+                if entered_by == "agent":
+                    state["agent_activation_id"] = state["activation_id"]
+                if identity.key.startswith("cli:"):
+                    state["cli_pid"] = os.getpid()
+                self._save_command_state(identity.key, command_storage_key, state)
+                # A UI turn's tool call links its sk: alias now, so the tab's slash commands find it.
+                self._link_command_key(identity.key, state, identity.fallback_key)
+                task_text = f" Task: {remainder}" if remainder else ""
+                message = (
+                    f"Plan mode is on for this session.{task_text}\n"
+                    f"Write plans only to absolute paths under {plans_dir}.\n"
+                    f"Use {plan_file_stamp()}-<slug>.md. Read-only planning tools are allowed; "
+                    "terminal, code execution, delegation, connectors/MCP, messaging, browser "
+                    "mutations, and unknown tools are blocked until /planmode approve."
+                )
+                allowed = sorted(self._extra_allowed_tools())
+                if allowed:  # the operator's allowlist is the effective policy; say so instead of claiming a block
+                    message += f" Exception: this configuration allows {', '.join(allowed)}."
+                if entered_by == "agent":
+                    # The turn's pre_llm_call note has already run, so the plan format and commit rule come with the result.
+                    agent_note = _AGENT_NOTE_BRIDGE if "bridge_calls" in self._note_levers() else _AGENT_NOTE
+                    message += "\n" + self._planning_note(state, identity.surface, command_storage_key) + f" {agent_note}"
+                    if "light_notes" in self._levers():
+                        state["light_note_seen"] = True
+                        self._save_command_state(identity.key, command_storage_key, state)
+                return message
+
+            if action == "status":
+                return self._status_text(state, self._plan_files(state))
+
+            if action in {"show", "edit"}:
+                files = self._plan_files(state)
+                submission = state.get("submission") or {}
+                path = (os.path.realpath(remainder if os.path.isabs(remainder) else
+                        os.path.join(str(state.get("plans_dir") or ""), remainder))
+                        if remainder else submission.get("path") or (files[-1] if files else ""))
+                if action == "show":
+                    state.pop("review", None)
+                    self._save_command_state(identity.key, command_storage_key, state)
+                if not path:
+                    return "This session has no tracked plan to show."
+                if path not in files:
+                    return "Plan display was refused: the requested file was not written by this session."
+                if action == "edit":
+                    return (f"{path}\nEdit and save it in your editor (GUI editors: wait for the save). "
+                            f"Then /planmode show {path}, then /planmode approve {path}.")
+                try:
+                    with open(path, "rb") as stream:
+                        data = stream.read(65537)
+                        size = os.fstat(stream.fileno()).st_size
+                    text = data[:65536].decode("utf-8", errors="replace")
+                except OSError:
+                    return "The tracked plan file could not be read."
+                matched = submission.get("path") == path
+                revision = submission.get("revision", 0) if matched else state.get("revision", 0)
+                status = submission.get("status", "planning") if matched else (
+                    "planning" if state.get("active") else state.get("phase") or "off")
+                result = plan_text(path, text, revision, status, cap=65536)
+                local = (identity.key.startswith("ui:") or state.get("canonical_ui_storage_key") == command_storage_key
+                         or identity.surface.lower() in {"", "cli", "terminal", "local"})
+                if len(data) > 65536:
+                    result += f"\n…(truncated: showing 65536 of {size} bytes; full file: {path})"
+                elif local:
+                    state["review"] = dict(activation_id=state.get("activation_id"), path=path,
+                                           revision=revision, digest=hashlib.sha256(data).hexdigest(), text=text)
+                    self._save_command_state(identity.key, command_storage_key, state)
+                if not local:
+                    result += "\nEdited-plan approval is not armed on chat platforms; complete delivery is unverified."
+                return result
+
+            if action == "done":
+                state.pop("review", None)
+                self._save_command_state(identity.key, command_storage_key, state)
+                if state.get("phase") != "executing" and not ("approval_card" in self._levers() and state.get("edit_review")):
+                    return "There is no executing plan to finish."
+                state.pop("edit_review", None)
+                self._clear_execution(state)
+                # Neither a still-open approval card nor a queued note may say "implement it now" after done.
+                state.pop("approved_while_open", None)
+                state["pending_note"] = ""
+                self._save_command_state(identity.key, command_storage_key, state)
+                self._sync_execution_family(command_storage_key, state)
+                return "The executing plan is done."
+
+            if action == "submit" and entered_by == "agent":
+                return self._complete_submission(identity.key, command_storage_key, state)
+
+            if action == "approve":
+                if not state.get("active"):
+                    return "Plan mode is not on for this session."
+                files = self._plan_files(state)
+                submission = state.get("submission") or {}
+                pinned = not remainder and bool(submission) and submission.get("status") != "approved"
+                card_open = pinned and self._ledger.is_inflight(submission.get("rule_key"))
+                if pinned:
+                    if submission.get("path") not in files:
+                        return (f"Plan approval was refused: the submitted plan rev {submission.get('revision')}, "
+                                f"{submission.get('path')}, is no longer a tracked plan file (deleted or moved). "
+                                "Ask the agent to submit the plan again, or use /planmode approve <file> after reviewing it with /planmode show.")
+                    if files[-1] != submission.get("path"):
+                        return (f"Plan approval was refused: the newest tracked plan, {files[-1]}, was never submitted. "
+                                "Ask the agent to submit it, or use /planmode approve <file> after reviewing it with /planmode show.")
+                if not files:
+                    return (
+                        "Plan approval was refused: this session has no tracked plan file. "
+                        f"Write the plan under {state.get('plans_dir') or '.duckwork/plans'} "
+                        "first, or use /planmode off."
+                    )
+                if remainder:
+                    candidate = remainder if os.path.isabs(remainder) else os.path.join(
+                        str(state.get("plans_dir") or ""), remainder
+                    )
+                    candidate = os.path.realpath(candidate)
+                    if candidate not in files:
+                        return (
+                            "Plan approval was refused: the requested file was not written "
+                            "by this session."
+                        )
+                    approved_path = candidate
+                elif pinned:
+                    approved_path = submission["path"]
+                    if approved_path not in files:
+                        return "Plan approval was refused: the submitted file is not a tracked plan file."
+                else:
+                    approved_path = files[-1]
+                digest, text = None, None
+                try:
+                    digest, text = plan_digest(approved_path)
+                except (OSError, ValueError):
+                    pass
+                unchanged = submission.get("path") == approved_path and digest is not None and digest == submission.get("digest")
+                if not unchanged and (submission or remainder):
+                    clarify = submission.get("clarify") or {}
+                    if (self._ledger.is_inflight(submission.get("rule_key"))
+                            or (clarify.get("nonce", ""), clarify.get("tool_call_id", "")) in self._open_asks):
+                        return "Plan approval was refused: finish or dismiss the open approval first."
+                    review = state.get("review") or {}
+                    if (not state.get("activation_id") or review.get("activation_id") != state.get("activation_id")
+                            or review.get("path") != approved_path or digest is None or review.get("digest") != digest):
+                        baseline = self._card_baselines.get(command_storage_key)
+                        summary = (self._card_diff(baseline, text)[0] if text is not None and baseline
+                                   and baseline.get("revision") == submission.get("revision") else "")
+                        return (f"Plan rev {submission.get('revision', 0)} changed after it was submitted. "
+                                + (summary + ". " if summary else "")
+                                + "Review it with /planmode show [file], then approve, resubmit or use /planmode approve <file>.")
+                    try:
+                        self._approve_submission(state, submission, via="review", storage_key=command_storage_key, review=review)
+                    except (OSError, ValueError):
+                        return "Plan approval was refused: the approved snapshot could not be saved."
+                    self._forget_submission(state, command_storage_key)
+                    self._save_command_state(identity.key, command_storage_key, state)
+                    started = self._start_implementation(approved_path)
+                    return f"Plan approved. Plan mode is off. Next turn will implement {approved_path}. " + ("Starting implementation now." if started else "Send any message to start.")
+                if "approval_card" in self._levers() and submission.get("card"):
+                    self._forget_submission(state, command_storage_key)
+                submission.pop("clarify", None)
+                state["active"] = False
+                state.pop("fresh_writes", None)
+                state.pop("review", None)
+                state.pop("edit_review", None)
+                for field in ("activation_id", "entered_by", "agent_activation_id"):
+                    state.pop(field, None)
+                state["pending_note"] = (
+                    f"The user approved the plan at {approved_path}. Implement it now."
+                    + self._typed_todo_hint() + self._commit_rule()
+                )
+                if "lean_craft" in self._note_levers():
+                    state["pending_note"] += " " + LEAN_EXECUTION
+                if "skill_policy" in self._note_levers():
+                    state["pending_note"] += " " + SKILL_EXECUTION
+                state.update(phase="executing", approved_path=approved_path, approved_at=_utc_now())
+                state.pop("approved_revision", None)
+                state.pop("approved_snapshot", None)
+                if submission.get("path") == approved_path:
+                    if unchanged:
+                        submission["status"] = "approved"
+                        state["approved_revision"] = submission["revision"]
+                        if card_open:
+                            # The open card's call resumes and reports this approval once.
+                            state["approved_while_open"] = submission["rule_key"]
+                if submission.get("path") == approved_path:
+                    state["pending_note"] = self._saved_plan_note(submission) + state["pending_note"]
+                self._forget_submission(state)
+                state["pending_note"] += self._approved_excerpt({"path": approved_path, "revision": state.get("approved_revision", 0)})
+                self._save_command_state(identity.key, command_storage_key, state)
+                if card_open and "approved_while_open" in state:
+                    # Approving the open prompt resumes this turn; a deny or timeout starts the work from post_tool_call.
+                    return (f"Plan approved. Plan mode is off. Approving the open prompt continues this turn with "
+                            f"{approved_path}; denying it or letting it time out does not cancel this approval, and the "
+                            "work then starts in the next turn.")
+                started = self._start_implementation(approved_path)
+                ending = "Starting implementation now." if started else "Send any message to start."
+                return f"Plan approved. Plan mode is off. Next turn will implement {approved_path}. {ending}"
+
+            if action == "reject":
+                state.pop("review", None)
+                if not state.get("active"):
+                    return "Plan mode is not on for this session."
+                feedback = remainder or "No additional feedback was provided."
+                state["pending_note"] = f"The user rejected the plan: {feedback}. Revise it."
+                if "light_notes" in self._levers():
+                    state.pop("light_note_seen", None)
+                submission = state.get("submission") or {}
+                if "approval_card" in self._levers() and submission.get("card"):
+                    self._forget_submission(state)
+                submission.pop("clarify", None)
+                if submission.get("status") in {"pending", "awaiting"}:
+                    submission["status"] = "rejected"
+                    self._forget_submission(state)
+                # Once the user weighs in, approve/reject governs: the agent can no longer end it.
+                state["entered_by"] = "user"
+                state.pop("agent_activation_id", None)
+                self._save_command_state(identity.key, command_storage_key, state)
+                return (
+                    "Plan rejected. Plan mode remains on; the feedback will be injected next turn. "
+                    "Plan mode is now user-owned; only /planmode approve, reject or off can end it."
+                )
+
+            if action == "off":
+                if entered_by == "agent" and not state.get("active"):
+                    return "Plan mode is not on for this session."
+                if entered_by == "agent" and not self._agent_owned(state):
+                    return (
+                        "Plan mode was entered by the user; only /planmode approve, "
+                        "reject or off can end it."
+                    )
+                state["active"] = False
+                state.pop("fresh_writes", None)
+                state.pop("review", None)
+                for field in ("activation_id", "entered_by", "agent_activation_id"):
+                    state.pop(field, None)
+                state["pending_note"] = ""
+                self._forget_submission(state, command_storage_key)
+                state.pop("submission", None)
+                state.pop("approved_while_open", None)
+                state.pop("edit_review", None)
+                self._clear_execution(state)
+                self._save_command_state(identity.key, command_storage_key, state)
+                self._sync_execution_family(command_storage_key, state)
+                return "Plan mode is off for this session. No approval note will be injected."
+
+        return "Usage: /planmode on [task] | status | show [file] | edit [file] | approve [file] | reject [feedback] | done | off"
+
+    @staticmethod
+    def _clear_execution(state: dict[str, Any]) -> None:
+        for field in _EXECUTION_FIELDS:
+            state.pop(field, None)
+
+    def _start_implementation(self, approved_path: str) -> bool:
+        """Ask Duckwork to queue the implementation turn; False when the host cannot inject."""
+        try:
+            inject = getattr(self.ctx, "inject_message", None)
+            if not callable(inject):
+                return False
+            reader = _session_reader()
+            session_key = reader("DUCKWORK_SESSION_KEY", "") if reader else None
+            content = f"{_IMPLEMENT_PREFIX}{approved_path}." + self._commit_rule()
+            return bool(inject(content, session_key=session_key) if session_key else inject(content))
+        except Exception:
+            return False
+
+    def _sync_execution_family(self, storage_key: str, state: dict[str, Any]) -> None:
+        """Copy the execution fields to the state's linked copies.
+
+        TUI/Desktop keep a ``ui:`` copy that hooks read and ``sk:`` copies that commands read; only an active state
+        links them, so the executing phase is mirrored here explicitly. Planning copies are never touched.
+        """
+        related = set(self._linked_command_storage_keys(state))
+        canonical = state.get("canonical_ui_storage_key")
+        if isinstance(canonical, str) and canonical.startswith("session:"):
+            related.add(canonical)
+        related.discard(storage_key)
+        for other in related:
+            copy = self._load_storage_state(other)
+            if not copy or copy.get("active") or not self._same_family(other, canonical):
+                continue
+            for field in _FAMILY_FIELDS:
+                if field in state:
+                    copy[field] = state[field]
+                else:
+                    copy.pop(field, None)
+            self._save_storage_state(other, copy)
+
+    def _clear_delivered_note(self, storage_key: str, state: dict[str, Any], note: str) -> None:
+        """Clear a delivered note from the state's linked copies too.
+
+        A TUI/Desktop cold resume adopts a linked sk: copy into a fresh UI state, which would replay the note. Only
+        a copy holding this exact note is changed, so a different queued note is never dropped. A copy from the same
+        activation counts even when its family marker is stale (a reused session key keeps the previous tab's).
+        """
+        related = set(self._linked_command_storage_keys(state))
+        canonical = state.get("canonical_ui_storage_key")
+        if isinstance(canonical, str) and canonical.startswith("session:"):
+            related.add(canonical)
+        related.discard(storage_key)
+        for other in related:
+            copy = self._load_storage_state(other)
+            same_activation = bool(state.get("activation_id")) and copy.get("activation_id") == state.get("activation_id")
+            if copy.get("pending_note") == note and (same_activation or self._same_family(other, canonical)):
+                copy["pending_note"] = ""
+                self._save_storage_state(other, copy)
+
+    def _config(self, name: str, default: Any) -> Any:
+        # Flat keys are what Settings ▸ Plugins writes (plugin.yaml config_schema); the nested plan_mode.<key> layout
+        # documented before 0.3.3 is still read, but only when the flat key is unset.
+        value = self.ctx.get_config(name, None)
+        if value is None:
+            value = self.ctx.get_config(f"plan_mode.{name}", None)
+        return default if value is None else value
+
+    def _plan_style(self) -> str:
+        style = str(self._config("plan_style", _DEFAULT_PLAN_STYLE)).strip().lower()
+        return style if style in _PLAN_STYLES else _DEFAULT_PLAN_STYLE
+
+    def _plan_profile(self) -> str:
+        profile = str(self._config("plan_profile", PROFILE_DEFAULT)).strip().lower()
+        return profile if profile in {"lean", "classic"} else PROFILE_DEFAULT
+
+    def _lever_override(self) -> Any:
+        value = self._config("levers", "")
+        if value is None or (isinstance(value, str) and not value.strip()):
+            value = os.environ.get("PLAN_MODE_LEVERS", "")
+        return value.strip() if isinstance(value, str) else value
+
+    def _levers(self) -> set[str]:
+        value = self._lever_override()
+        if isinstance(value, str) and not value:
+            lean = self._plan_profile() == "lean" and self._plan_style() == "compact" and not self._plan_skill()
+            if not lean:
+                return set()
+            # plan_once was measured on tui_gateway sessions only (rounds 7 and 8), so it joins lean only there.
+            levers = set(LEAN_LEVERS) | ({"plan_once"} if _tui_ui_session_id() else set())
+            if self._classic_cli() is not None:
+                levers.add("write_once")
+        else:
+            names = set(re.split(r"[,\s]+", value.strip().lower())) if isinstance(value, str) else set()
+            levers = set(_LEVERS) if "all" in names else names & _LEVERS
+        # The Settings switch wins over both the profile and custom lever overrides.
+        # YAML 1.1 reads a bare off/no as False; accept the quoted allow_commits off-words too.
+        card = self._config("approval_card", True)
+        if card is False or (isinstance(card, str) and card.strip().lower() in {"false", "off", "no", "0"}):
+            levers.discard("approval_card")
+        return levers
+
+    def _classic_cli(self):
+        """Use the same manager seam as ctx.dispatch_tool; gateway and one-shot calls never qualify."""
+        try:
+            reader = _session_reader()
+            platform = str(reader("DUCKWORK_SESSION_PLATFORM", "") or "").strip().lower() if reader else ""
+            if platform not in {"", "cli", "terminal", "local"} or _tui_ui_session_id() or _cron_session_is_active():
+                return None
+            cli = self.ctx._manager._cli_ref
+            return cli if cli is not None and not getattr(cli, "_single_query_mode", False) else None
+        except Exception:
+            return None
+
+    def _track_fresh_write(self, state_key: str, state: dict, name: str, targets: list[str]) -> dict[str, bool]:
+        """Mark which plan targets a write_file creates; any other write to a path drops its receipt.
+
+        Fails open to "not fresh": an error here must never block the plan write itself.
+        """
+        fresh: dict[str, bool] = {}
+        try:
+            receipts = state.get("fresh_writes")
+            dropped = False
+            for target in targets:
+                path = os.path.realpath(target)
+                if isinstance(receipts, dict) and receipts.pop(path, None) is not None:
+                    dropped = True
+                collision = False
+                for _, pending_targets, _, candidates in self._pending_plan_writes.values():
+                    if any(os.path.realpath(item) == path for item in pending_targets):
+                        candidates[path] = False
+                        collision = True
+                fresh[path] = (name == "write_file" and len(targets) == 1
+                               and "write_once" in self._levers()
+                               and not os.path.lexists(target) and not collision)
+            if dropped:
+                self._save_state(state_key, state)
+        except Exception:
+            return {}
+        return fresh
+
+    def _shown_in_full(self, state: dict, path: str, digest: str) -> bool:
+        """A structural display guarantee only; never changes approval or its digest checks."""
+        try:
+            if "write_once" not in self._levers():
+                return False
+            cli = self._classic_cli()
+            if cli is None or (os.getenv("TERMINAL_ENV") or "local").lower() != "local":
+                return False
+            for name in ("start", "complete"):
+                callback = getattr(cli.agent, f"tool_{name}_callback")
+                if (getattr(callback, "__self__", None) is not cli
+                        or getattr(callback, "__func__", None) is not getattr(type(cli), f"_on_tool_{name}")):
+                    return False
+            data = Path(path).read_bytes()
+            # The receipt, the bytes read now and the digest being approved must all be the same bytes.
+            if not (state.get("fresh_writes", {}).get(path) == hashlib.sha256(data).hexdigest() == digest):
+                return False
+            text = data.decode("utf-8", errors="strict")
+            from agent.display import _MAX_INLINE_DIFF_LINES
+
+            return bool(text) and len(text.splitlines()) <= _MAX_INLINE_DIFF_LINES - 2 and not (
+                any((ord(c) < 32 and c not in "\n\t") or 127 <= ord(c) <= 159
+                    or c in "\ufeff\u2028\u2029" for c in text)
+                or any(line.startswith("++ ") for line in text.splitlines()))
+        except Exception:
+            return False
+
+    def _note_levers(self) -> set[str]:
+        levers = self._levers()
+        if "lean_craft" in levers and (self._plan_style() != "compact" or self._plan_skill()):
+            levers.remove("lean_craft")
+        if self._plan_skill():
+            levers.discard("skill_policy")
+        if self._configured_plan_skill():
+            levers.discard("exec_skill_guard")  # a configured plan skill opts into skill-driven process
+        if any(name in {"terminal", "execute_code"} or name.startswith(("delegate", "mcp"))
+               for name in self._extra_allowed_tools()):
+            levers.discard("blocked_tools")  # the note must not call a tool the operator allowed blocked
+        return levers
+
+    def _planning_note(self, state: dict, platform: str = "", storage_key: str = "") -> str:
+        previous, plans_dir = state.get("previous_plan"), state.get("plans_dir")
+        if not (isinstance(previous, str) and isinstance(plans_dir, str)
+                and _plans_dir_is_still_safe(plans_dir) and _path_is_inside(previous, plans_dir)
+                and os.path.isfile(previous)):
+            previous = ""
+        return planning_note(plans_dir, style=self._plan_style(), plan_skill=self._plan_skill(),
+                             commits=self._allow_commits(), levers=self._note_levers(), previous_plan=previous, platform=platform,
+                             reply_plan="plan_once" in self._levers() and _plan_once_visible(), card_path=self._card_path(storage_key),
+                             ui_session=bool(_tui_ui_session_id()), classic_cli=self._classic_cli() is not None)
+
+    def _card_path(self, storage_key: str = "") -> bool:
+        reader = _session_reader()
+        platform = reader("DUCKWORK_SESSION_PLATFORM", "") if reader else ""
+        return ("approval_card" in self._levers() and not _cron_session_is_active()
+                and str(platform).strip().lower() not in _NO_CLARIFY_PLATFORMS
+                and self._hook_platforms.get(storage_key, "") not in _NO_CLARIFY_PLATFORMS)
+
+    @staticmethod
+    def _card_diff(baseline: dict, text: str) -> tuple[str, str]:
+        before, after = baseline["text"].splitlines(), text.splitlines()
+        if max(len(before), len(after)) > 2000:
+            return "", ""
+        added = removed = 0
+        headings = []
+        groups = list(difflib.SequenceMatcher(None, before, after).get_grouped_opcodes(1))
+        changes = [change for group in groups for change in group]
+        for lines, side in ((before, 0), (after, 1)):
+            changed = set()
+            for tag, a, b, c, d in changes:
+                if tag != "equal":
+                    changed.update(range(a, b) if side == 0 else range(c, d))
+                    if side == 0:
+                        removed += b - a
+                        added += d - c
+            heading = ""
+            for index, line in enumerate(lines):
+                match = re.match(r"^\s{0,3}#{1,6}\s+(\S.*)", line)  # linear; the lazy/trailing form backtracks cubically
+                if match:
+                    heading = match[1].rstrip().rstrip("#").rstrip()
+                if index in changed and heading and heading not in headings:
+                    headings.append(heading)
+        summary = f"Changed since rev {baseline['revision']}: +{added}/−{removed} lines"
+        if headings:
+            summary += " in " + ", ".join(headings[:3])
+        def span(start, end):
+            size = end - start
+            return str(start + 1) if size == 1 else f"{start + bool(size)},{size}"
+        lines = ["--- ", "+++ "] if groups else []
+        for group in groups:
+            lines.append(f"@@ -{span(group[0][1], group[-1][2])} +{span(group[0][3], group[-1][4])} @@")
+            for tag, a, b, c, d in group:
+                if tag != "insert":
+                    lines.extend((" " if tag == "equal" else "-") + line for line in before[a:b])
+                if tag in {"replace", "insert"}:
+                    lines.extend("+" + line for line in after[c:d])
+        diff = "\n".join(lines)
+        if len(diff) > 2000:
+            diff = diff[:1998].rsplit("\n", 1)[0] + "\n…"
+        return summary[:300], diff
+
+    @staticmethod
+    def _reply_plan(text: str) -> tuple[str, str]:
+        """Extract one public plan block, using approval's fence rules."""
+        lines = text.splitlines(keepends=True)
+        tags = [(index, match[1]) for index, line in enumerate(_unfenced(text))
+                if (match := re.fullmatch(r" {0,3}(<proposed_plan>|</proposed_plan>)[ \t]*", line))]
+        opening = [index for index, tag in tags if tag == "<proposed_plan>"]
+        closing = [index for index, tag in tags if tag == "</proposed_plan>"]
+        if not tags:
+            return "", "There are no proposed_plan tag lines."
+        if len(opening) > 1 or len(closing) > 1:
+            return "", "There is more than one proposed_plan opening or closing tag."
+        if len(opening) != 1 or len(closing) != 1:
+            return "", "The proposed_plan tags are unbalanced."
+        if opening[0] >= closing[0]:
+            return "", "The proposed_plan tags are in the wrong order."
+        inner = lines[opening[0] + 1:closing[0]]
+        while inner and not inner[0].strip():
+            inner.pop(0)
+        while inner and not inner[-1].strip():
+            inner.pop()
+        text = "".join(inner).rstrip("\r\n")
+        if not text:
+            return "", "The proposed_plan block is empty."
+        if len(text) < 80:
+            return "", "The proposed_plan inner text is under 80 characters."
+        if len(text.encode("utf-8")) > 65536:
+            return "", "The proposed_plan inner text exceeds 64 KiB."
+        return text + "\n", ""
+
+    def post_api_request(self, assistant_message: Any = None, **kwargs: Any) -> None:
+        """Capture only public reply text, paired with dispatch's effective call IDs."""
+        if "plan_once" not in self._levers():
+            return
+        try:
+            from agent.agent_runtime_helpers import strip_think_blocks
+            from agent.history_commentary import _commentary_items, visible_commentary
+            from agent.message_sanitization import coalesce_tool_call_id
+
+            def field(name):
+                return (assistant_message.get(name) if isinstance(assistant_message, dict)
+                        else getattr(assistant_message, name, None))
+
+            provider = str(kwargs.get("provider") or "")
+            codex = field("codex_message_items") is not None or provider == "openai-codex"
+            identity = derive_session_identity(str(kwargs.get("platform") or ""))
+            if not identity.key or identity.unsupported or identity.non_cli_without_key:
+                return
+            with self._lock:
+                key, state = self._state_for_hook(identity)
+                if not key or not state.get("active"):
+                    return
+                # Clear reused IDs even when the new response is ineligible.
+                ids = [coalesce_tool_call_id(call) for call in field("tool_calls") or []]
+                for call_id in ids:
+                    self._reply_captures.pop((key, call_id), None)
+                if not _plan_once_visible(provider=provider, codex=codex):
+                    return
+                if codex:
+                    parts = _commentary_items({"codex_message_items": field("codex_message_items")})
+                    text = "\n\n".join(part for raw in parts if (part := visible_commentary(raw)))
+                else:
+                    content = field("content")
+                    text = strip_think_blocks(None, content).strip() if isinstance(content, str) else ""
+                # Cache only bounded inner text (or the reason it cannot be saved).
+                text, error = self._reply_plan(text)
+                for call_id in ids:
+                    if call_id:
+                        self._reply_captures[(key, call_id)] = (state.get("activation_id"), text, codex, provider, error)
+                while len(self._reply_captures) > 256:
+                    self._reply_captures.pop(next(iter(self._reply_captures)))
+        except Exception:
+            return  # No trustworthy host stripping/correlation helper: no capture.
+
+    def _save_reply_plan(self, key: str, state: dict, call_id: str) -> dict:
+        """Materialize the correlated reply, then reuse the existing digest-bound gate."""
+        capture = self._reply_captures.get((key, call_id))
+        plans_dir = state["plans_dir"]
+        fallback = _block_message(PLAN_MODE_TOOL, (
+            f"No usable visible reply was captured. Write the complete plan to an absolute path under "
+            f"{plans_dir}, then call plan_mode(action=\"submit\", path=\"<absolute target path>\")."))
+        if not capture or capture[0] != state.get("activation_id"):
+            return fallback
+        _, text, codex, provider, error = capture
+        if not _plan_once_visible(provider=provider, codex=codex):
+            return fallback
+        if error:
+            return _block_message(PLAN_MODE_TOOL, error +
+                " Please wrap the plan in one <proposed_plan> … </proposed_plan> block and submit again. " +
+                fallback["message"])
+        submission = state.get("submission") or {}
+        if submission.get("status") == "pending" and self._ledger.is_inflight(submission.get("rule_key")):
+            return _block_message(PLAN_MODE_TOOL, "A plan approval prompt is already open; wait for the user's answer.")
+        slug = re.sub(r"[^a-z0-9]+", "-", _title(text, "", "").lower()).strip("-")[:60]
+        slug = slug or hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+        path = os.path.join(plans_dir, f"{plan_file_stamp()}-{slug}-{secrets.token_hex(6)}.md")
+        temporary = os.path.join(plans_dir, f".plan-once-{secrets.token_hex(12)}.tmp")
+        if not _plans_dir_is_still_safe(plans_dir) or not _path_is_inside(path, plans_dir):
+            return _block_message(PLAN_MODE_TOOL, "The plans directory changed or contains a symlink; restore the plan root.")
+        try:
+            fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8", newline="") as stream:
+                    stream.write(text)
+                if (not _plans_dir_is_still_safe(plans_dir) or not _path_is_inside(path, plans_dir)
+                        or os.path.lexists(path)):
+                    return _block_message(PLAN_MODE_TOOL, "The plan target changed; restore the plan root and retry.")
+                os.replace(temporary, path)
+            finally:
+                if os.path.exists(temporary):
+                    os.unlink(temporary)
+        except OSError:
+            return _block_message(PLAN_MODE_TOOL, "Saving the visible reply failed; write the plan and submit with its path.")
+        self._remember_plan_targets(key, state, [path])
+        state["plugin_saved_plans"] = (state.get("plugin_saved_plans") or [])[-255:] + [path]
+        return {"path": path}
+
+    def _saved_plan_note(self, submission: dict) -> str:
+        # plugin_saved is set at submit only while plan_once was on. Typed commands run without the UI
+        # session id, so re-deriving the default lever set here would drop the note.
+        if submission.get("plugin_saved"):
+            return ("The plan was saved for you from your reply; saving it is done. Your task now is to "
+                    "implement it in this turn. ")
+        return ""
+
+    def _approved_excerpt(self, submission: dict) -> str:
+        if "review_text" in submission:
+            return (f"\nIf this note was shortened, read {submission['snapshot_path']} in full before implementing.\n\n"
+                    + submission["review_text"])
+        if "approved_text" not in self._levers():
+            return ""
+        try:
+            with open(submission["path"], encoding="utf-8", errors="replace") as stream:
+                text = stream.read(3501)
+            return "\n\n" + plan_text(submission["path"], text, submission.get("revision", 0), "approved")
+        except OSError:
+            return ""  # Keep the already-approved path when the file can no longer be read.
+
+    def _configured_plan_skill(self) -> str:
+        # A skill name only; anything else (paths with spaces, prose, oversized values) is ignored.
+        name = self._config("plan_skill", "")
+        name = name.strip() if isinstance(name, str) else ""
+        return name if _PLAN_SKILL_RE.fullmatch(name) else ""
+
+    def _plan_skill(self) -> str:
+        name = self._configured_plan_skill()
+        # Plan mode blocks skill_view while inline shell may run; then the skill can't be loaded, so use Plan style.
+        return "" if not name or _skill_view_block_reason() else name
+
+    def _allow_commits(self) -> bool:
+        # YAML 1.1 reads a bare `off`/`no` as False; quoted strings are accepted as well.
+        # Anything unrecognised falls back to the default rather than turning commits on.
+        value = self._config("allow_commits", _DEFAULT_ALLOW_COMMITS)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            word = value.strip().lower()
+            if word in {"true", "on", "yes", "1"}:
+                return True
+            if word in {"false", "off", "no", "0"}:
+                return False
+        return _DEFAULT_ALLOW_COMMITS
+
+    def _commit_rule(self) -> str:
+        return "" if self._allow_commits() else f" {no_commits(self._levers())}"
+
+    def _typed_todo_hint(self) -> str:
+        """The typed-approve note's todo guidance: lean carries the same qualifier as the gate path, then the bridge form."""
+        levers = self._note_levers()
+        if "bridge_calls" not in levers:
+            return ""
+        hint = _INLINE_TODO_HINT if "todo_inline" in levers else _BATCH_TODO_HINT if "todo_batch" in levers else ""
+        return (f" {hint[0].upper()}{hint[1:]}" if hint else "") + BRIDGE_TODO
+
+    def _execute_hint(self) -> str:
+        levers = self._note_levers()
+        hint = _BATCH_TODO_HINT if "todo_batch" in levers else _TODO_HINT
+        if "todo_inline" in levers:
+            hint = _INLINE_TODO_HINT
+        if "bridge_calls" in levers:
+            hint += BRIDGE_TODO
+        hint += self._commit_rule()
+        if "lean_craft" in levers:
+            hint += " " + LEAN_EXECUTION
+        if "skill_policy" in levers:
+            hint += " " + SKILL_EXECUTION
+        if "edit_batch" in levers:
+            hint += " " + EDIT_BATCH
+        if "brief_final" in levers:
+            hint += " " + BRIEF_FINAL
+        return hint
+
+    def post_llm_call(self, **kwargs: Any) -> None:
+        """Turn-end hook (after the tool loop), including local surfaces without footers."""
+        if not {"todo_batch", "todo_inline"} & self._levers() or str(kwargs.get("platform") or "").lower() in _NO_TURN_NOTE_PLATFORMS:
+            return
+        try:
+            identity = derive_session_identity(str(kwargs.get("platform") or ""))
+            if not identity.key or identity.unsupported or identity.non_cli_without_key:
+                return
+            with self._lock:
+                key, state = self._state_for_hook(identity)
+                if key and state.get("phase") == "executing" and not (state.get("progress") or {}).get("total"):
+                    self._clear_execution(state)
+                    self._save_state(key, state)
+                    self._sync_execution_family(_state_storage_key(key), state)
+        except Exception:
+            return
+
+    def transform_tool_result(self, tool_name: str = "", args: Any = None, **kwargs: Any) -> str | None:
+        """Deliver the correlated clarify approval in the same turn, after post_tool_call."""
+        if tool_name != "clarify" or not self._clarify_notes:
+            return None  # no note to deliver: touch no session state (classic never stores one)
+        try:
+            identity = derive_session_identity(str(kwargs.get("platform") or ""))
+            if not identity.key or identity.unsupported or identity.non_cli_without_key:
+                return None
+            with self._lock:
+                key, _ = self._state_for_hook(identity)
+                note = self._clarify_notes.pop((key, str(kwargs.get("tool_call_id") or "")), None)
+                if not note or note[0] != kwargs.get("result"):
+                    return None
+                value = json.loads(kwargs["result"])
+                if not isinstance(value, dict):
+                    value = {"result": value}  # legacy hosts return a bare list of answers
+                value["plan_mode_approval"] = note[1]
+                return json.dumps(value, ensure_ascii=False)
+        except Exception:
+            return None
+
+    def _footer_off(self) -> bool:
+        # Duckwork reads config.yaml as YAML 1.1, where a bare `footer: off` is the boolean False.
+        footer = self._config("footer", "auto")
+        return footer is False or str(footer).strip().lower() == "off"
+
+    def _extra_allowed_tools(self) -> set[str]:
+        value = self._config("extra_allowed_tools", [])
+        if not isinstance(value, list):
+            return set()
+        return {item.strip() for item in value if isinstance(item, str) and item.strip()}
+
+    def _prepare_submission(
+        self, state_key: str, state: dict[str, Any], args: dict, tool_call_id: str,
+        identity: SessionIdentity | None = None,
+    ) -> dict | None:
+        submission = state.get("submission") or {}
+        if submission.get("status") == "pending" and self._ledger.is_inflight(submission.get("rule_key")):
+            return _block_message(PLAN_MODE_TOOL, "A plan approval prompt is already open; wait for the user's answer.")
+        files = self._plan_files(state)
+        requested = args.get("path")
+        if requested:
+            if not isinstance(requested, str) or (not os.path.isabs(requested) and Path(requested).name != requested):
+                return _block_message(PLAN_MODE_TOOL, "This is not a plan written in this plan mode.")
+            path = os.path.realpath(requested if os.path.isabs(requested) else os.path.join(state["plans_dir"], requested))
+        else:
+            path = files[-1] if files else ""
+        if path not in files:
+            return _block_message(PLAN_MODE_TOOL, f"Write the plan under {state['plans_dir']} first; this is not a plan written in this plan mode.")
+        try:
+            digest, text = plan_digest(path)
+        except ValueError as exc:
+            return _block_message(PLAN_MODE_TOOL, str(exc))
+        revision = int(state.get("revision") or 0) + 1
+        state.pop("review", None)
+        rule_key = make_rule_key(state.get("activation_id") or "", revision, digest)
+        self._forget_submission(state)
+        state["revision"] = revision
+        state["submission"] = {
+            "revision": revision, "digest": digest, "path": path, "rule_key": rule_key,
+            "tool_call_id": tool_call_id or None, "status": "pending", "submitted_at": _utc_now(),
+            "shown_in_full": self._shown_in_full(state, path, digest),
+        }
+        storage_key = _state_storage_key(state_key)
+        if self._card_path(storage_key):
+            state["submission"]["card"] = True
+            baseline = self._card_baselines.pop(storage_key, None)
+            if len(text.encode("utf-8")) <= 65536:
+                if baseline:
+                    summary, excerpt = self._card_diff(baseline, text)
+                    state["submission"].update(change_summary=summary, diff_excerpt=excerpt)
+                self._card_baselines[storage_key] = {"text": text, "revision": revision}
+                while len(self._card_baselines) > 32:
+                    self._card_baselines.popitem(last=False)
+        if "plan_once" in self._levers() and path in state.get("plugin_saved_plans", []):
+            state["submission"]["plugin_saved"] = True
+        # Submitting asks the user, so from here only the user's approve, reject or off ends plan mode.
+        state["entered_by"] = "user"
+        state.pop("agent_activation_id", None)
+        state.pop("approved_while_open", None)
+        self._save_state(state_key, state)
+        if state["submission"].get("card"):
+            return None
+        self._ledger.mark_inflight(rule_key, tool_call_id)
+        reader = _session_reader()
+        platform = reader("DUCKWORK_SESSION_PLATFORM", "") if reader else ""
+        if str(platform).strip().lower() in _LOCAL_PROMPT_PLATFORMS:
+            # No gateway platform (or a local one): the classic CLI panel or the TUI/Desktop card. Both show this
+            # text as one prompt line (the TUI prints it as the card's title), so a full plan would push the choices
+            # off-screen; the turn note already put the full plan in the reply above.
+            platform = "cli"
+        return {"action": "approve", "message": approval_text(text, path, revision, platform, args.get("summary") or ""), "rule_key": rule_key, "allow_permanent": False}
+
+    def pre_tool_call(
+        self, tool_name: str = "", args: Any = None, **kwargs: Any
+    ) -> dict[str, str] | None:
+        """Enforce the plan-mode allowlist, failing closed on internal errors."""
+        try:
+            call_args = args if isinstance(args, dict) else {}
+            is_submit = tool_name == PLAN_MODE_TOOL and str(call_args.get("action") or "").strip().lower() == "submit"
+            with self._lock:
+                self._prune_dead_cli_states()
+            identity = derive_session_identity(str(kwargs.get("platform") or ""))
+            if identity.unsupported:
+                return _block_message(PLAN_MODE_TOOL, "Cannot submit: session identity is unavailable on this host.") if is_submit else None
+            if identity.non_cli_without_key or not identity.key:
+                if is_submit:
+                    return _block_message(PLAN_MODE_TOOL, "Cannot submit: the session key could not be derived.")
+                if _cron_session_is_active():
+                    return None
+                with self._lock:
+                    cli_active = self._load_state(f"cli:{os.getpid()}").get("active")
+                    durable_active = self._current_process_has_active_state()
+                    process_active = bool(self._active_keys)
+                if process_active or durable_active or cli_active:
+                    return _block_message(
+                        tool_name or "unknown tool",
+                        "The active session key could not be derived, so this request was blocked fail-closed.",
+                    )
+                return None
+
+            with self._lock:
+                state_key, state = self._state_for_hook(identity)
+                if not state.get("active"):
+                    self._active_keys.discard(identity.key)
+                    # User-requested edit review fails open without changing planning's write lock.
+                    try:
+                        review = state.get("edit_review")
+                        if (tool_name in {"write_file", "patch"} and isinstance(review, dict) and review.get("key")
+                                and "approval_card" in self._levers() and not _delegated_child()):
+                            if not _edit_review_available():
+                                if not review.get("paused"):
+                                    review["paused"] = True
+                                    self._save_state(state_key, state)
+                                    self._sync_execution_family(_state_storage_key(state_key), state)
+                                return None
+                            reader = _session_reader()
+                            platform = (reader("DUCKWORK_SESSION_PLATFORM", "") if reader else "") or kwargs.get("platform", "")
+                            return {"action": "approve", "rule_key": review["key"],
+                                    "message": edit_review_text(tool_name, call_args, platform, revision=review.get("rev", 0),
+                                                              targets=_write_targets(tool_name, call_args) or [],
+                                                              session_key=identity.key, cwd=self._session_cwd())}
+                    except Exception:
+                        return None
+                    # This optional speed guard fails open, independently of planning's safety checks.
+                    try:
+                        if (tool_name == "skill_view" and state.get("phase") == "executing"
+                                and "exec_skill_guard" in self._note_levers()):
+                            name = str(call_args.get("name") or "")
+                            normalized = name.strip().lower().rstrip("/").rsplit(":", 1)[-1].rsplit("/", 1)[-1].strip()
+                            if normalized in EXEC_PROCESS_SKILLS and (not state.get("user_asked_process")
+                                                                      or normalized in _EXEC_PLANNING_SKILLS):
+                                return {"action": "block", "message": EXEC_SKILL_GUARD_MESSAGE.format(name=name)}
+                    except Exception:
+                        return None
+                    return _block_message(PLAN_MODE_TOOL, "Cannot submit: plan mode is not active for this session.") if is_submit else None
+                assert state_key is not None
+                self._active_keys.add(state_key)
+                self._remember_session_id(state_key, state, kwargs.get("session_id"))
+                if is_submit:
+                    submission = state.get("submission") or {}
+                    if ("approval_card" in self._levers() and submission.get("card")
+                            and submission.get("status") == "awaiting"
+                            and ((submission.get("clarify") or {}).get("nonce", ""),
+                                 (submission.get("clarify") or {}).get("tool_call_id", "")) in self._open_asks):
+                        return _block_message(PLAN_MODE_TOOL, "Answer the open approval card first.")
+                    capture = self._reply_captures.get((state_key, str(kwargs.get("tool_call_id") or "")))
+                    if ("plan_once" in self._levers() and not call_args.get("path")
+                            and _plan_once_visible(provider=capture[3] if capture else "",
+                                                   codex=capture[2] if capture else False)):
+                        saved = self._save_reply_plan(state_key, state, str(kwargs.get("tool_call_id") or ""))
+                        if saved.get("action") == "block":
+                            return saved
+                        call_args = {**call_args, **saved}
+                    return self._prepare_submission(
+                        state_key, state, call_args, str(kwargs.get("tool_call_id") or ""), identity)
+
+                name = str(tool_name or "")
+                call_args = args if isinstance(args, dict) else {}
+                submission = state.get("submission") or {}
+                clarify = submission.get("clarify")
+                if name == "clarify" and submission.get("status") == "awaiting" and clarify:
+                    questions = call_args.get("questions")
+                    if not isinstance(questions, list) or not questions:
+                        questions = [call_args] if "question" in call_args else []
+                    texts = [item if isinstance(item, str) else item.get("question", "")
+                             if isinstance(item, dict) else "" for item in questions]
+                    tag = f"[plan-mode {clarify['nonce']}]"
+                    if not any(isinstance(text, str) and tag in text for text in texts):
+                        return None
+                    required = {"questions": [{"question": clarify["question"],
+                                               "choices": clarify["choices"], "multi_select": False}]}
+                    blocked = {"action": "block", "message": "Use exactly these clarify args: " + json.dumps(required)}
+                    if len(questions) != 1 or not isinstance(questions[0], dict):
+                        return blocked
+                    question = questions[0]
+                    choices = question.get("choices")
+                    if (question.get("question") != clarify["question"] or question.get("multi_select")
+                            or not isinstance(choices, list) or not all(isinstance(item, str) for item in choices)
+                            or [item.strip() for item in choices] != clarify["choices"]):
+                        return blocked
+                    call_id = str(kwargs.get("tool_call_id") or "")
+                    card = submission.get("card") and "approval_card" in self._levers()
+                    live = clarify.get("tool_call_id")
+                    if not call_id or (live and live != call_id and (not card or (clarify["nonce"], live) in self._open_asks)):
+                        return blocked
+                    clarify["tool_call_id"] = call_id
+                    if card:
+                        self._open_asks.add((clarify["nonce"], call_id))
+                    self._save_state(state_key, state)
+                    return None
+                if (
+                    name in READ_ONLY_TOOLS
+                    or name == PLAN_MODE_TOOL
+                    or name in self._extra_allowed_tools()
+                ):
+                    return None
+                if name == "skill_view":
+                    reason = _skill_view_block_reason()
+                    return _block_message(name, reason) if reason else None
+                if name in PLAN_WRITERS:
+                    targets = _write_targets(name, call_args)
+                    plans_dir = state.get("plans_dir")
+                    if not targets or not isinstance(plans_dir, str):
+                        return _block_message(name, "Every write target must be explicit and absolute.")
+                    if not _plans_dir_is_still_safe(plans_dir):
+                        return _block_message(
+                            name,
+                            "The plans directory changed after activation; reactivate plan mode "
+                            "only after restoring a non-symlink plan root.",
+                        )
+                    if all(_path_is_inside(target, plans_dir) for target in targets):
+                        fresh = self._track_fresh_write(state_key, state, name, targets)
+                        call_id = str(kwargs.get("tool_call_id") or "")
+                        if not call_id:
+                            # Hosts without tool_call_id keep 0.1.6 pre-write tracking.
+                            self._remember_plan_targets(state_key, state, targets)
+                            return None
+                        pending = self._pending_plan_writes
+                        pending_key = (str(kwargs.get("session_id") or ""), call_id)
+                        pending[pending_key] = (state_key, list(targets), state.get("activation_id"), fresh)
+                        while len(pending) > 256:
+                            pending.pop(next(iter(pending)))
+                        return None
+                    return _block_message(
+                        name,
+                        f"Use only absolute paths resolving inside {plans_dir}; relative, outside, "
+                        "traversal, and symlink-escaping targets are refused.",
+                    )
+                if "blocked_tools" in self._note_levers():
+                    return {"action": "block", "message": BLOCKED_TOOL_MESSAGE.format(name=name or "unknown tool")}
+                return _block_message(name or "unknown tool")
+        except Exception as exc:
+            return _block_message(
+                str(tool_name or "unknown tool"),
+                f"The plan-mode safety check failed closed ({type(exc).__name__}).",
+            )
+
+    def post_tool_call(self, tool_name: str = "", args: Any = None, **kwargs: Any) -> None:
+        """Make a pending plan write approvable only after Duckwork reports ``ok``."""
+        try:
+            call_id = str(kwargs.get("tool_call_id") or "")
+            with self._lock:
+                if tool_name == "clarify":
+                    identity = derive_session_identity(str(kwargs.get("platform") or ""))
+                    if not identity.key or identity.unsupported or identity.non_cli_without_key:
+                        return
+                    state_key, state = self._state_for_hook(identity)
+                    submission = state.get("submission") or {}
+                    clarify = submission.get("clarify")
+                    if not call_id or not clarify or clarify.get("tool_call_id") != call_id:
+                        return
+                    card = submission.get("card") and "approval_card" in self._levers()
+                    clarify["tool_call_id"] = ""
+                    if card:
+                        self._open_asks.discard((clarify["nonce"], call_id))
+                    assert state_key is not None
+                    self._save_state(state_key, state)
+                    if kwargs.get("status") != "ok":
+                        return
+                    answer = clarify_answer(kwargs.get("result"), clarify["question"], clarify["choices"])
+                    if card:
+                        try:
+                            value = json.loads(kwargs.get("result"))
+                        except (TypeError, ValueError):
+                            value = {}
+                        outcome = value.get("outcome") if isinstance(value, dict) else None
+                        if (outcome is not None and outcome != "submitted") or not answer:
+                            self._clarify_notes[(state_key, call_id)] = (
+                                kwargs.get("result"), "The user did not answer the approval card. Stop and wait for the user.")
+                            while len(self._clarify_notes) > 256:
+                                self._clarify_notes.pop(next(iter(self._clarify_notes)))
+                            return
+                    if not answer:
+                        return
+                    answer_label = answer.removesuffix(" (Recommended)")
+                    review_choice = (clarify["choices"][1] if card and len(clarify["choices"]) == 3 else None)
+                    if answer_label == clarify["choices"][0] or (review_choice is not None and answer_label == review_choice):
+                        if (not state.get("active") or submission.get("status") != "awaiting"
+                                or not clarify.get("activation_id")
+                                or state.get("activation_id") != clarify["activation_id"]):
+                            return
+                        try:
+                            digest = plan_digest(submission["path"])[0]
+                        except (OSError, ValueError):
+                            digest = None  # a deleted or unreadable plan is stale, not silently left awaiting
+                        if digest != submission["digest"]:
+                            submission["status"] = "stale"
+                            state["pending_note"] = self._stale_note(submission["revision"])
+                            if card:
+                                self._clarify_notes[(state_key, call_id)] = (
+                                    kwargs.get("result"), "The plan file changed after the approval card was asked, so the approval did not apply. "
+                                    "Plan mode is still on; show the current plan and submit it again.")
+                                while len(self._clarify_notes) > 256:
+                                    self._clarify_notes.pop(next(iter(self._clarify_notes)))
+                        else:
+                            self._approve_submission(state, submission, via="card" if card else "clarify", storage_key=_state_storage_key(state_key))
+                            if review_choice is not None and answer_label == review_choice:
+                                state["edit_review"] = {"key": "plan-mode-edit:" + secrets.token_hex(8),
+                                                        "path": submission["path"], "rev": submission["revision"]}
+                            if (card or "approved_text" in self._levers() or "lean_craft" in self._note_levers()
+                                    or {"bridge_calls", "skill_policy", "edit_batch", "brief_final"} & self._note_levers()
+                                    or self._saved_plan_note(submission)):
+                                note = (self._saved_plan_note(submission) + f"The user approved plan rev {submission['revision']}. "
+                                        f"Implement it now: {self._execute_hint()}" + self._approved_excerpt(submission))
+                                self._clarify_notes[(state_key, call_id)] = (kwargs.get("result"), note)
+                                while len(self._clarify_notes) > 256:
+                                    self._clarify_notes.pop(next(iter(self._clarify_notes)))
+                    else:
+                        state.pop("review", None)
+                        submission["status"] = "rejected"
+                        if "light_notes" in self._levers():
+                            state.pop("light_note_seen", None)
+                        state["pending_note"] = self._rejection_note(submission["revision"])
+                        if answer != clarify["choices"][-1]:
+                            state["pending_note"] += f' Feedback: "{answer[:2000 if card else 280]}"'
+                        changed = self._changed_plan_note(state)
+                        if changed:
+                            state["pending_note"] += " " + changed
+                            if card:
+                                self._clarify_notes[(state_key, call_id)] = (kwargs.get("result"), state["pending_note"])
+                                while len(self._clarify_notes) > 256:
+                                    self._clarify_notes.pop(next(iter(self._clarify_notes)))
+                        submission.pop("clarify", None)
+                    self._save_command_state(identity.key, _state_storage_key(state_key), state)
+                    self._sync_execution_family(_state_storage_key(state_key), state)
+                    return
+                if tool_name in {"todo_list", "todo"} and kwargs.get("status") == "ok":
+                    if not isinstance((args if isinstance(args, dict) else {}).get("todos"), list):
+                        return  # A read can return an earlier task's finished list; only writes count.
+                    identity = derive_session_identity(str(kwargs.get("platform") or ""))
+                    if not identity.key or identity.unsupported or identity.non_cli_without_key:
+                        return
+                    state_key, state = self._state_for_hook(identity)
+                    if state.get("phase") == "executing" or ("approval_card" in self._levers() and state.get("edit_review")):
+                        progress = todo_progress(kwargs.get("result"))
+                        if progress is not None:
+                            state["progress"] = progress
+                            if progress["total"] > 0 and progress["completed"] + progress["cancelled"] == progress["total"]:
+                                state.pop("edit_review", None)
+                                self._clear_execution(state)
+                            assert state_key is not None
+                            self._save_state(state_key, state)
+                            self._sync_execution_family(_state_storage_key(state_key), state)
+                    return
+                call_args = args if isinstance(args, dict) else {}
+                if tool_name == PLAN_MODE_TOOL and str(call_args.get("action") or "").strip().lower() == "submit":
+                    identity = derive_session_identity(str(kwargs.get("platform") or ""))
+                    if not identity.key or identity.unsupported or identity.non_cli_without_key:
+                        return
+                    state_key, state = self._state_for_hook(identity)
+                    submission = state.get("submission") or {}
+                    if not submission or str(submission.get("tool_call_id") or "") != call_id:
+                        return
+                    entry = self._ledger.take(submission["rule_key"])
+                    opened = state.pop("approved_while_open", None)
+                    if opened:
+                        assert state_key is not None
+                        self._save_state(state_key, state)
+                        self._sync_execution_family(_state_storage_key(state_key), state)
+                        if (kwargs.get("status") != "ok" and opened == submission.get("rule_key")
+                                and submission.get("status") == "approved" and not state.get("active")
+                                and state.get("phase") == "executing" and state.get("approved_path")):
+                            # Typed approve while the prompt was open, then deny or timeout: start the approved work.
+                            self._start_implementation(str(state["approved_path"]))
+                    if state.get("active") and kwargs.get("status") != "ok" and submission.get("status") == "pending":
+                        revision = submission["revision"]
+                        if entry and entry.get("choice") == "deny":
+                            submission["status"] = "rejected"
+                            if "light_notes" in self._levers():
+                                state.pop("light_note_seen", None)
+                            state["pending_note"] = (
+                                f"The user did not approve plan rev {revision}. A plan denial is review feedback, not a safety refusal: "
+                                "if no reason was given, ask what to change; then revise the plan file and submit a complete new revision.")
+                        else:
+                            submission["status"] = "awaiting"
+                            state["pending_note"] = (
+                                f"Plan rev {revision} was not answered (the approval prompt timed out or was withdrawn). "
+                                f"Tell the user they can run /planmode approve to approve rev {revision}, or reply with changes.")
+                        assert state_key is not None
+                        self._save_state(state_key, state)
+                    return
+                pending = self._pending_plan_writes.pop(
+                    (str(kwargs.get("session_id") or ""), call_id), None
+                )
+                if pending is None or kwargs.get("status") != "ok":
+                    return
+                state_key, targets, activation_id, fresh = pending
+                call_args = args if isinstance(args, dict) else {}
+                if _write_targets(str(tool_name or ""), call_args) != targets:
+                    return
+                state = self._load_state(state_key)
+                # Only the activation that allowed the write may track it.
+                if state.get("active") and state.get("activation_id") == activation_id:
+                    if tool_name == "write_file" and len(targets) == 1:
+                        path = os.path.realpath(targets[0])
+                        if fresh.get(path):
+                            receipts = state.setdefault("fresh_writes", {})
+                            receipts[path] = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                            while len(receipts) > 32:
+                                receipts.pop(next(iter(receipts)))
+                    self._remember_plan_targets(state_key, state, targets)
+        except Exception:
+            return  # An observer failure leaves the write unapprovable (fail-closed).
+
+    def pre_llm_call(self, **kwargs: Any) -> dict[str, str] | None:
+        try:
+            with self._lock:
+                self._prune_dead_cli_states()
+            identity = derive_session_identity(str(kwargs.get("platform") or ""))
+            if identity.unsupported:
+                return None
+            if str(kwargs.get("platform") or "").strip().lower() in _NO_TURN_NOTE_PLATFORMS:
+                return None  # Delegate children share the parent's identity; the parent's turn owns notes.
+            if identity.non_cli_without_key or not identity.key:
+                if _cron_session_is_active():
+                    return None
+                with self._lock:
+                    cli_active = self._load_state(f"cli:{os.getpid()}").get(
+                        "active"
+                    )
+                    durable_active = self._current_process_has_active_state()
+                    process_active = bool(self._active_keys)
+                if process_active or durable_active or cli_active:
+                    return {
+                        "context": (
+                            "Plan mode is active in this process, but this turn's session key "
+                            "could not be derived. Tool calls will be blocked fail-closed."
+                        )
+                    }
+                return None
+
+            with self._lock:
+                state_key, state = self._state_for_hook(identity)
+                if "approval_card" in self._levers() and state_key:
+                    self._hook_platforms.pop(_state_storage_key(state_key), None)  # re-insert: most recently used last
+                    self._hook_platforms[_state_storage_key(state_key)] = str(kwargs.get("platform") or "").strip().lower()
+                    while len(self._hook_platforms) > 1024:
+                        self._hook_platforms.popitem(last=False)
+                message = kwargs.get("user_message")
+                builtin = (self._config("enforce_builtin_plan", True) is not False
+                           and isinstance(message, str) and "[/plan — plan mode]" in message
+                           and "For this turn, you are in PLAN MODE — planning only." in message)
+                # The marker can only restrict this session, never relax it. Delegate goals (model-authored)
+                # are excluded above by platform.
+                if builtin and not state.get("active"):
+                    task = message.partition("Task to plan:")[2]
+                    task = re.split(r"\n\s*\n", task.lstrip("\r\n"), maxsplit=1)[0].strip()[:500]
+                    self._run_command("on", task, entered_by="user")
+                    state_key, state = self._state_for_hook(identity)
+                    if not state.get("active"):
+                        return None  # Refusal text is never injected into a turn.
+                # exec_skill_guard's escape: record a user request for TDD or a code review. It can only relax a
+                # speed lever, so any failure here is ignored and never changes this hook's result.
+                try:
+                    if state_key is not None and (state.get("active") or state.get("phase") == "executing"):
+                        user_text = _user_message_text(message)
+                        if isinstance(user_text, str) and not user_text.strip().startswith(_IMPLEMENT_PREFIX):
+                            if ("[/plan — plan mode]" in user_text
+                                    and "For this turn, you are in PLAN MODE — planning only." in user_text):
+                                task = user_text.partition("Task to plan:")[2].lstrip("\r\n")
+                                user_text = (task.partition(_PLAN_CRAFT_START)[0] if _PLAN_CRAFT_START in task
+                                             else re.split(r"\n\s*\n", task, maxsplit=1)[0])
+                            pending_note = state.get("pending_note")
+                            if isinstance(pending_note, str) and pending_note.strip():
+                                user_text = user_text.replace(pending_note.strip(), "")
+                            if _USER_ASKED_PROCESS.search(user_text):
+                                state["user_asked_process"] = True
+                                self._save_state(state_key, state)
+                except Exception:
+                    pass
+                parts: list[str] = []
+                changed = self._changed_plan_note(state) if state.get("active") else ""
+                if changed and changed not in state.get("pending_note", ""):
+                    state["pending_note"] = (state.get("pending_note") or "") + " " + changed
+                pending = state.get("pending_note")
+                if isinstance(pending, str) and pending.strip():
+                    parts.append(pending.strip())
+                    state["pending_note"] = ""
+                    assert state_key is not None
+                    self._save_state(state_key, state)
+                    self._clear_delivered_note(_state_storage_key(state_key), state, pending)
+                if state.get("active"):
+                    assert state_key is not None
+                    self._active_keys.add(state_key)
+                    self._remember_session_id(state_key, state, kwargs.get("session_id"))
+                    short = "light_notes" in self._levers() and state.get("light_note_seen")
+                    note = (light_note(state.get("plans_dir"), levers=self._note_levers()) if short
+                            else self._planning_note(state, identity.surface, _state_storage_key(state_key)))
+                    if "light_notes" in self._levers():
+                        state["light_note_seen"] = True
+                        self._save_state(state_key, state)
+                    if self._agent_owned(state) and not short:
+                        note += " " + (_AGENT_NOTE_BRIDGE if "bridge_calls" in self._note_levers() else _AGENT_NOTE)
+                    if builtin and not short:
+                        note += f" {BUILTIN_OVERRIDE}"
+                    submission = state.get("submission") or {}
+                    clarify = submission.get("clarify")
+                    if submission.get("status") == "awaiting" and clarify:
+                        awaiting = (f"Plan rev {submission['revision']} awaits approval: ask with clarify using exactly "
+                                    f"question={clarify['question']}, choices={clarify['choices']}, "
+                                    "or the user can run /planmode approve.")
+                        awaiting = awaiting if "approval_card" in self._levers() and submission.get("card") else awaiting[:399]
+                        if short:
+                            parts.append(awaiting)
+                        else:
+                            note += "\n" + awaiting
+                    parts.append(note)
+                elif state.get("phase") == "executing":
+                    state["executing_turns"] = int(state.get("executing_turns") or 0) + 1
+                    if state["executing_turns"] > 100:
+                        self._clear_execution(state)
+                    else:
+                        parts.append(executing_pointer(state, commits=self._allow_commits(), levers=self._note_levers()))
+                    assert state_key is not None
+                    digest = self._session_id_hash(kwargs.get("session_id"))
+                    if digest:
+                        state["session_id_hash"] = digest  # lets an unbound gateway reset find this state
+                        self._mark_session(_state_storage_key(state_key), True)
+                    self._save_state(state_key, state)
+                    self._sync_execution_family(_state_storage_key(state_key), state)
+                review = state.get("edit_review")
+                if not state.get("active") and "approval_card" in self._levers() and isinstance(review, dict):
+                    changed = False
+                    if review.get("paused") and not review.get("paused_note_seen"):
+                        parts.append("Edit review is paused: Duckwork approvals are off (yolo or approvals.mode off), so edits apply without a prompt.")
+                        review["paused_note_seen"] = True
+                        changed = True
+                    if review.pop("denied", False):
+                        parts.append("The user denied an edit; ask what to change before retrying it.")
+                        changed = True
+                    if changed:
+                        self._save_state(state_key, state)
+                        self._sync_execution_family(_state_storage_key(state_key), state)
+                return {"context": "\n\n".join(parts)} if parts else None
+        except Exception as exc:
+            return {
+                "context": (
+                    "Plan-mode state could not be read safely "
+                    f"({type(exc).__name__}); if plan mode is on, its tool checks still fail closed."
+                )
+            }
+
+    def post_approval_response(self, **kwargs: Any) -> None:
+        """Preserve ledger delivery; only a denial for this plan's edit key adds feedback."""
+        self._ledger.record_response(**kwargs)
+        try:
+            if kwargs.get("choice") != "deny" or "approval_card" not in self._levers() or _delegated_child():
+                return
+            identity = derive_session_identity(str(kwargs.get("platform") or ""))
+            if not identity.key or identity.unsupported or identity.non_cli_without_key:
+                return
+            with self._lock:
+                key, state = self._state_for_hook(identity)
+                review = state.get("edit_review")
+                if (key and isinstance(review, dict) and review.get("key")
+                        and kwargs.get("pattern_key") == "plugin_rule:" + review["key"]):
+                    review["denied"] = True
+                    self._save_state(key, state)
+                    self._sync_execution_family(_state_storage_key(key), state)
+        except Exception:
+            return
+
+    def transform_llm_output(self, response_text: str = "", **kwargs: Any) -> str | None:
+        try:
+            platform = str(kwargs.get("platform") or "").strip().lower()
+            if self._footer_off() or platform in _NO_TURN_NOTE_PLATFORMS:
+                return None  # `footer: off` opts out of every plan-mode output transform; child turns belong to the parent.
+            identity = derive_session_identity(platform)
+            if identity.unsupported or identity.non_cli_without_key or not identity.key:
+                return None
+            with self._lock:
+                # Match hook lookup precedence without claiming or linking state just to render a reply.
+                state = self._load_state(identity.key)
+                if not state.get("active") and identity.fallback_key:
+                    fallback = self._load_state(identity.fallback_key)
+                    if fallback.get("active"):
+                        state = fallback
+                cli_key = f"cli:{os.getpid()}"
+                if not state.get("active") and identity.key != cli_key:
+                    fallback = self._load_state(cli_key)
+                    if fallback.get("active"):
+                        state = fallback
+                submission = state.get("submission") or {}
+                if state.get("active") and submission.get("status") == "awaiting":
+                    last_line = response_text.rstrip().split("\n")[-1]
+                    if last_line.startswith(("⏸ Plan mode", "Plan progress", "Executing approved plan", "⏸ Plan rev")):
+                        return None
+                    clarify = submission.get("clarify") or {}
+                    if (not clarify.get("tool_call_id")
+                            and not any(nonce == clarify.get("nonce") for nonce, _ in self._open_asks)
+                            and "/planmode approve" not in response_text):
+                        # A pure append: the streamed reply must stay an exact prefix of the transformed text.
+                        sep = ("" if not response_text or response_text.endswith("\n\n")
+                               else "\n" if response_text.endswith("\n") else "\n\n")
+                        return response_text + sep + (
+                            f"⏸ Plan rev {submission['revision']} is waiting for your approval: "
+                            "type /planmode approve to approve it, or say what to change.")
+                if (not platform or platform in LOCAL_PLATFORMS
+                        or len(response_text) > _FOOTER_MAX_CHARS or identity.key.startswith("ui:")):
+                    return None
+                return response_footer(response_text, state)
+        except Exception:
+            return None  # Output transforms fail open; approval and enforcement are unchanged.
+
+    def on_session_reset(self, **kwargs: Any) -> None:
+        identity = derive_session_identity(str(kwargs.get("platform") or ""))
+        if identity.unsupported:
+            return
+        platform = str(kwargs.get("platform") or "").strip().lower()
+        with self._lock:
+            if platform in {"cli", "terminal"}:
+                cli_key = f"cli:{os.getpid()}"
+                cli_storage = _state_storage_key(cli_key)
+                self._forget_submission(self._load_storage_state(cli_storage), cli_storage)
+                self._clear_state_family(
+                    cli_storage, self._load_storage_state(cli_storage)
+                )
+                if identity.key == cli_key:
+                    return
+            if identity.key and not identity.non_cli_without_key:
+                if identity.key.startswith("sk:"):
+                    storage_key, state, _ = self._command_state(
+                        identity.key, identity.surface
+                    )
+                else:
+                    storage_key = _state_storage_key(identity.key)
+                    state = self._load_storage_state(storage_key)
+                self._forget_submission(state, storage_key)
+                self._clear_state_family(storage_key, state)
+                return
+
+            # Gateway's reset callback may run outside the command's bound
+            # ContextVar scope. Match the hashed old session id when possible;
+            # never guess from active-session count because another session's
+            # reset must not disable this one.
+            self._backfill_session_index()
+            active_storage = list(dict.fromkeys(
+                self._active_storage_keys() + self._executing_storage_keys() + self._session_storage_keys()
+            ))
+            old_digest = self._session_id_hash(
+                kwargs.get("old_session_id")
+            )
+            matches: dict[str, dict[str, Any]] = {}
+            if old_digest:
+                for storage_key in active_storage:
+                    state = self.ctx.state.get(storage_key, {})
+                    if isinstance(state, dict) and state.get("session_id_hash") == old_digest:
+                        canonical = state.get("canonical_ui_storage_key")
+                        family_key = (
+                            canonical
+                            if isinstance(canonical, str)
+                            and canonical.startswith("session:")
+                            else storage_key
+                        )
+                        matches[family_key] = state
+            if len(matches) == 1:
+                storage_key, state = next(iter(matches.items()))
+                self._forget_submission(state, storage_key)
+                self._clear_state_family(storage_key, state)
+
+    def on_session_finalize(self, **kwargs: Any) -> None:
+        identity = derive_session_identity(str(kwargs.get("platform") or ""))
+        if identity.unsupported:
+            return
+        cli_key = f"cli:{os.getpid()}"
+        platform = str(kwargs.get("platform") or "").strip().lower()
+        if identity.key == cli_key or platform in {"cli", "terminal"}:
+            with self._lock:
+                self._forget_submission(self._load_state(cli_key))
+                self._clear_storage_key(_state_storage_key(cli_key))

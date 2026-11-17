@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # duckwork-agent supports >=3.11,<3.14
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out Duckwork 0.21.1 capability floor
+        uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: 2237be355906fbe6065ce1815711eee52b2d646e
+          path: .duckwork-agent-0.21.1
+
+      - name: Check out Duckwork 0.21.4 minimum supported release
+        uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: d337b736aa1e8ebecfab043842d13e4a2d2f48a3
+          path: .duckwork-agent-0.21.4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # The plugin and its tests only need the host source tree on
+      # PYTHONPATH plus pytest/pyyaml — no duckwork runtime dependencies,
+      # no network, no credentials.
+      - name: Install test dependencies
+        run: python -m pip install pytest pyyaml
+
+      - name: Test Duckwork 0.21.1 capability floor
+        env:
+          DUCKWORK_AGENT_REPO: ${{ github.workspace }}/.duckwork-agent-0.21.1
+        run: python -m pytest tests -q
+
+      - name: Test Duckwork 0.21.4 minimum supported release
+        env:
+          DUCKWORK_AGENT_REPO: ${{ github.workspace }}/.duckwork-agent-0.21.4
+        run: python -m pytest tests -q

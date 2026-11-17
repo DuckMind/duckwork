@@ -1,0 +1,74 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cognee-integration-duckwork-agent"
+version = "1.3.2"
+description = "Standalone Cognee memory provider plugin for Duckwork Agent."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [
+    {name = "Cognee team"}
+]
+dependencies = [
+    # Exact pin: the installed package doubles as the local server this plugin
+    # spawns. 1.5.4 is the floor (code-graph indexing moved its repo-spec form
+    # field to raw_data there; per-document forget invalidation arrived in
+    # 1.5.3); 1.6.0 is what the plugin is written against: the password-less
+    # default user (SDK-740) and the only_context prompt contract (SDK-741).
+    "cognee==1.6.5",
+]
+
+# The group Duckwork' memory-provider loader actually scans
+# (plugins/memory ENTRY_POINTS_GROUP): with this, a plain pip install activates
+# the provider via `register(ctx)` even before cognee-duckwork-install runs.
+# 1.0.0–1.2.0 declared only the generic group below, which the memory loader
+# never reads (issue #382).
+[project.entry-points."duckwork_agent.memory_providers"]
+cognee = "cognee_integration_duckwork"
+
+# Duckwork' generic plugin system; kept so existing `plugins.enabled` entries
+# keep resolving.
+[project.entry-points."duckwork_agent.plugins"]
+cognee = "cognee_integration_duckwork"
+
+[project.scripts]
+# Copies the installed package into $DUCKWORK_HOME/plugins/cognee, which gets the
+# directory-scan discovery path plus the plugin-root cli.py/plugin.yaml
+# (dashboard config panel, `duckwork cognee` subcommands). See installer.py.
+cognee-duckwork-install = "cognee_integration_duckwork.installer:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cognee_integration_duckwork*"]
+
+[tool.setuptools.package-data]
+# The plugin-root files (plugin.yaml, cli.py shim, after-install.md, and
+# plugin_init.py — installed as the plugin root's __init__.py) that the
+# installer lays down next to the package. Kept byte-identical to the repo-root
+# canonical copies by tests/test_installer.py.
+cognee_integration_duckwork = ["_plugin_root/*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-timeout>=2.3",
+    "ruff>=0.14.6",
+]
+
+[tool.pytest.ini_options]
+# Without a pytest section here, rootdir resolution walks up to the monorepo
+# root's pyproject.toml and this suite adopts its `asyncio_mode = "auto"` — an
+# option pytest-asyncio owns and duckwork does not install, so every run, local
+# and CI alike, printed a PytestConfigWarning about it.
+testpaths = ["tests"]
+
+# A hung run is the failure mode this suite was reported for (SDK-454), and a
+# hang has no natural bound: a socket that never answers or a child that is
+# never reaped just sits there until CI's 6h default gives up. The slowest
+# honest test here is the exit-watcher's ~2s poll, so 60s only ever fires on a
+# genuine hang — and fires as a named, stack-dumping failure instead of silence.
+timeout = 60

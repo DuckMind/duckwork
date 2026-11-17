@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "fr": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/harrylabsj/freight-reconciliation@e8cd259c43f3607250eda4074ce3e8ab0e6e1bf5",
+        "freight-mcp"
+      ],
+      "env": {
+        "FREIGHT_RECON_ROOT": "${PLUGIN_DATA}/freight-reconciliation"
+      }
+    }
+  }
+}

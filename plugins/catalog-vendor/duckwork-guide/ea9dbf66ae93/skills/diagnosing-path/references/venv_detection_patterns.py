@@ -1,0 +1,172 @@
+"""Virtual environment detection patterns for Duckwork Agent.
+
+Copy-paste-ready functions for scripts and plugins that need to detect
+which venv is active, or whether a venv exists in a project.
+"""
+
+import os
+import sys
+from pathlib import Path
+from typing import Optional
+
+
+def is_venv_active() -> bool:
+    """Return True if the current Python is running inside a virtual environment."""
+    return (
+        hasattr(sys, "real_prefix")  # virtualenv
+        or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix)  # venv
+    )
+
+
+def active_venv_path() -> Optional[Path]:
+    """Return the path to the active venv, or None if not in a venv."""
+    if not is_venv_active():
+        return None
+    prefix = Path(sys.prefix)
+    if prefix.is_dir() and (prefix / "pyvenv.cfg").exists():
+        return prefix
+    return None
+
+
+def find_venv_dirs(project_root: Path) -> list[Path]:
+    """Return existing venv directories in resolution order.
+
+    Checks `venv` (installer default) first, then `.venv` (uv default) —
+    mirroring duckwork_constants.py::project_venv_dir, whose in-tree scan
+    resolves `venv` before `.venv` ("venv wins when both exist"). The
+    pyvenv.cfg filter here is deliberately stricter than the upstream
+    resolver: this function lists only *valid* venvs.
+    """
+    candidates = [project_root / "venv", project_root / ".venv"]
+    return [c for c in candidates if c.is_dir() and (c / "pyvenv.cfg").exists()]
+
+
+def resolve_venv(project_root: Optional[Path] = None) -> Optional[Path]:
+    """Resolve the active or canonical venv for a Duckwork Agent checkout.
+
+    Resolution order:
+    1. VIRTUAL_ENV environment variable (if set and valid)
+    2. sys.prefix (if running inside a venv)
+    3. venv/ (installer default — project_venv_dir() resolves this first)
+    4. .venv/ (uv default)
+    5. None (system Python, no venv)
+
+    Prefer importing project_venv_dir() from duckwork_constants when Duckwork
+    core is importable; this replica is for use outside the checkout.
+    Steps 1-2 are active-venv detection, not ownership: when a script runs
+    inside *another* install's venv they return that venv even though Duckwork
+    would not adopt it — the upstream out-of-tree fallback requires the
+    venv's direct_url.json to record *this* checkout, a proof this replica
+    cannot make. For "which venv does Duckwork use for this checkout", prefer
+    project_venv_dir() — or read steps 3-4 first. Those two steps mirror
+    upstream's candidate scan exactly (is_dir() alone, no manifest check),
+    so on a dual-layout checkout they agree with Duckwork (an empty stray
+    directory wins the same way it does upstream); steps 1-2 remain a
+    best-effort approximation of upstream's running-venv fallback.
+    """
+    # 1. Explicit override
+    env_venv = os.environ.get("VIRTUAL_ENV")
+    if env_venv:
+        p = Path(env_venv)
+        if p.is_dir() and (p / "pyvenv.cfg").exists():
+            return p
+
+    # 2. Running inside a venv
+    if is_venv_active():
+        prefix = active_venv_path()
+        if prefix is not None:
+            return prefix
+
+    # 3 & 4. Check project root candidates — venv first, is_dir() only,
+    # mirroring project_venv_dir() exactly
+    root = project_root or Path.cwd()
+    for name in ("venv", ".venv"):
+        candidate = root / name
+        if candidate.is_dir():
+            return candidate
+
+    # 5. No venv found
+    return None
+
+
+def venv_bin_dir(venv_path: Path) -> Path:
+    """Return the binary directory for a venv.
+    
+    Windows uses Scripts/, POSIX uses bin/.
+    """
+    return venv_path / ("Scripts" if sys.platform == "win32" else "bin")
+
+
+def venv_python_path(venv_path: Path) -> Path:
+    """Return the path to the Python executable inside a venv."""
+    bin_dir = venv_bin_dir(venv_path)
+    exe = "python.exe" if sys.platform == "win32" else "python"
+    return bin_dir / exe
+
+
+def activate_venv_command(venv_path: Path, shell: str = "cmd") -> str:
+    """Return the shell command to activate a venv (for scripts/docs).
+    
+    Args:
+        venv_path: Path to the virtual environment
+        shell: "cmd" for Command Prompt, "powershell" for PowerShell, "posix" for bash/zsh
+    """
+    if shell == "powershell":
+        # PowerShell: use single quotes to prevent variable/subexpression expansion
+        # Double any single quotes in the path to escape them
+        activate = str(venv_path / "Scripts" / "Activate.ps1").replace("'", "''")
+        return f"& '{activate}'"
+    elif shell == "win" or sys.platform == "win32":
+        # cmd: use double quotes for paths with spaces; escape percent signs; use `call` to return to caller
+        activate = venv_path / "Scripts" / "activate.bat"
+        return f'call "{str(activate).replace("%", "%%")}"'
+    else:
+        # POSIX: use shlex.quote for shell-safe quoting
+        import shlex
+        activate = venv_path / "bin" / "activate"
+        return f"source {shlex.quote(str(activate))}"
+
+
+def probe_shell() -> Optional[Path]:
+    """Detect the active venv from shell environment (when not inside Python).
+    
+    Returns None if no venv is active.
+    """
+    env_venv = os.environ.get("VIRTUAL_ENV")
+    if env_venv:
+        p = Path(env_venv)
+        if p.is_dir() and (p / "pyvenv.cfg").exists():
+            return p
+    return None
+
+
+if __name__ == "__main__":
+    print(f"Python: {sys.executable}")
+    print(f"In venv: {is_venv_active()}")
+    print(f"Active venv: {active_venv_path()}")
+    
+    # Resolve the checkout portably — never hardcode a username or a single
+    # platform layout. DUCKWORK_HOME wins; otherwise mirror Duckwork' own default:
+    # %LOCALAPPDATA%\duckwork on native Windows, ~/.duckwork elsewhere. Run
+    # `duckwork config path` for ground truth on any given machine.
+    if sys.platform == "win32":
+        default_home = Path(
+            os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local"
+        ) / "duckwork"
+    else:
+        default_home = Path.home() / ".duckwork"
+    duckwork_home = Path(os.environ.get("DUCKWORK_HOME") or default_home)
+    root = duckwork_home / "duckwork-agent"
+    print(f"\nProject root: {root}")
+    print(f"Venv dirs found: {find_venv_dirs(root)}")
+    print(f"Resolved venv: {resolve_venv(root)}")
+    
+    venv = resolve_venv(root)
+    if venv:
+        print(f"Bin dir: {venv_bin_dir(venv)}")
+        print(f"Python: {venv_python_path(venv)}")
+        print(f"Activate: {activate_venv_command(venv)}")
+    
+    # Verify quoting works for paths with spaces
+    test_venv = Path("/tmp/test path/venv")
+    print(f"\nQuoted activate (space in path): {activate_venv_command(test_venv)}")

@@ -1,0 +1,79 @@
+# Development and testing
+
+[Documentation](../README.md)
+
+The plugin is plain Python 3.11+ with no dependencies beyond Duckwork itself.
+
+## Layout
+
+| File | What it holds |
+| --- | --- |
+| `__init__.py` | `register(ctx)`: wires tools, hooks, the slash command and shutdown |
+| `plugin.yaml` | Manifest and `config_schema` for Desktop |
+| `config.py` | Settings: defaults, parsing and validation |
+| `core.py` | Tool handlers, argument checks and the `pre_tool_call` / `post_approval_response` hooks |
+| `approval.py` | Approval prompt text, rule keys and single-use tickets |
+| `runner.py` | Run manager: preflight, workers, concurrency, timeouts, notices |
+| `backends.py` | ACP and print backends |
+| `jsonrpc.py` | JSON-RPC 2.0 over stdio |
+| `process.py` | Process tree: Job Object, `taskkill`, process groups and tracked POSIX descendants |
+| `models.py` | Run record, states, errors, capped output |
+| `events.py` | Event envelope and fan-out |
+| `store.py` | Snapshot persistence, pruning, orphans |
+| `schemas.py` | Tool schemas |
+| `session_controls.py` | ACP model discovery, sanitized options and single-use launch selections |
+| `slash.py` | `/devin` command |
+| `dashboard/plugin_api.py` | Runs API for the Desktop half; `plugin.yaml` mounts it |
+| `desktop/plugin.js` | Desktop half: live run card, Devin page, status-bar chip |
+
+## Running the tests
+
+The tests never run the real Devin CLI. `tests/fake_devin.py` stands in for it: it speaks the same ACP and print interfaces, and its behaviour is chosen by the `FAKE_DEVIN_SCENARIO` environment variable. Scenarios cover success, slow and hanging agents, a child process tree, crashes, missing login, large output, refusals, permission prompts, failures and untrusted folders.
+
+Run pytest from `tests/`:
+
+```bash
+cd tests
+python -m pytest
+```
+
+On Windows, use the Duckwork venv's Python:
+
+```powershell
+cd tests
+E:\Dev\Duckwork\duckwork-agent\.venv\Scripts\python.exe -m pytest
+```
+
+Pytest's scratch files go to `.pytest_tmp/` inside the plugin folder. If you use an isolated
+test environment rather than Duckwork' Python, install `psutil==7.2.2` alongside `pytest`;
+Duckwork already provides it at runtime.
+
+What the suite covers:
+
+- **Approval:** the gate, tickets, rule keys and denial paths
+- **Runs:** foreground runs for every error code, output caps and argument checks
+- **Background:** background runs, notices, the concurrency limit and yielding
+- **Permissions:** permission modes and in-run permission requests
+- **Stopping:** interrupts, cancels, timeouts and real process-tree kills, including descendants in separate POSIX groups/sessions, normal-exit cleanup, unrelated-process protection and PID reuse, plus mocked Windows kill paths
+- **Parts:** settings, the run model, events, the store, the slash command and the dashboard API
+- **Models:** discovery without prompts, Fusion, conditional thinking, canonical IDs,
+  approval identity, workspace/settings binding, saved defaults, stale values and fallback cancellation
+
+`tests/test_desktop_half.py` renders the Desktop half under Node: it loads `desktop/plugin.js` with a stub `@duckwork/plugin-sdk` and the real React from a Duckwork Agent install, feeds it run events and renders the card, the page and the status-bar chip, so a typo in a `jsx()` call fails here instead of in Desktop. It needs `node` and a `node_modules` with `react` and `react-dom` (set `DUCKWORK_DESKTOP_NODE_MODULES`, or it looks in the usual Duckwork install folders); otherwise it is skipped. Run it directly with `node tests/desktop_smoke.mjs <node_modules>`.
+
+The Devin trioexagon is a bundled SVG mask in `desktop/plugin.js`, tinted with the current
+theme's text colour. It renders before REST settles and needs neither an installed Desktop
+app nor network access. The smoke test checks that the mark never asks the dashboard for one.
+It also checks profile and connection isolation and that a live card fetches its
+persisted output when the run finishes, without a renderer reload.
+
+`tests/test_duckwork_contract.py` checks the Duckwork APIs the plugin relies on, in a subprocess. It runs when Duckwork is importable from the Python in use, or when `DUCKWORK_AGENT_DIR` points to a Duckwork checkout. Otherwise it is skipped. On a Duckwork venv on Windows the whole suite runs, with one POSIX-only test skipped.
+
+## Lint
+
+```bash
+ruff check .
+ruff format --check .
+```
+
+`ruff.toml` holds the settings.

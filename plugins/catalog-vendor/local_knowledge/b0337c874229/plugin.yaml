@@ -1,0 +1,16 @@
+name: local_knowledge
+version: 0.4.20
+description: "Native Duckwork tools for a configurable local capability index: search/get/neighbors plus local usage feedback/reporting."
+author: Alex Stepanov
+kind: standalone
+provides_tools:
+  - knowledge_search
+  - knowledge_get
+  - knowledge_neighbors
+  - knowledge_feedback
+  - knowledge_usage_report
+provides_hooks:
+  - pre_llm_call
+  - post_tool_call
+  - on_session_end
+  - on_session_finalize

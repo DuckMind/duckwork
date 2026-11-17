@@ -1,0 +1,875 @@
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import sys
+from types import SimpleNamespace
+
+import pytest
+
+from wsp_core import provider_registry
+
+# Any existing executable satisfies the binary check; the tests patch the call.
+TRUE_BIN = shutil.which("true") or "/bin/true"
+
+
+def _provider():
+    spec = provider_registry.PROVIDER_SPECS["donsetch"]
+    return spec, spec.execute_search.__globals__
+
+
+def _search_args(**overrides):
+    values = {
+        "query": "Rust Tokio official tutorial",
+        "max_results": 3,
+        "search_type": "search",
+        "time_range": None,
+        "freshness": None,
+        "images": False,
+        "include_domains": [],
+        "exclude_domains": [],
+        "category": None,
+    }
+    values.update(overrides)
+    return SimpleNamespace(**values)
+
+
+def test_donsetch_registers_as_explicit_only_search_and_extract_provider():
+    spec, _module = _provider()
+    assert spec.kind == "both"
+    assert spec.env_var == "DONSETCH_BIN"
+    assert spec.keyless is False
+    assert spec.auto_allowed_by_default is False
+    assert spec.supports_freshness is False
+    assert "donsetch" in provider_registry.SEARCH_PROVIDER_IDS
+    assert "donsetch" in provider_registry.EXTRACT_PROVIDER_IDS
+    assert "donsetch" not in provider_registry.DEFAULT_PROVIDER_PRIORITY
+    assert provider_registry.DEFAULT_AUTO_ALLOW["donsetch"] is False
+    assert "hound" not in provider_registry.PROVIDER_SPECS
+
+
+def test_donsetch_binary_resolution_is_explicit_and_fail_closed(tmp_path, monkeypatch):
+    monkeypatch.delenv("DONSETCH_BIN", raising=False)
+    _spec, module = _provider()
+    monkeypatch.setattr(module["shutil"], "which", lambda _name: None)
+    with pytest.raises(RuntimeError, match="donsetch_binary_not_configured"):
+        module["_resolve_binary"](None, {})
+    binary = tmp_path / "donsetch"
+    binary.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    binary.chmod(0o700)
+    assert module["_resolve_binary"](str(binary), {}) == str(binary)
+
+
+def test_mcp_response_parser_extracts_structured_content():
+    _spec, module = _provider()
+    response = {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+            "content": [{"type": "text", "text": "body"}],
+            "structuredContent": {"content_ok": True, "status": 200},
+            "_meta": {"com.donsetch/fetch-debug": {"title": "Example", "status": 200}},
+        },
+    }
+    parsed = module["_mcp_response_from_stdout"](json.dumps(response), 2)
+    assert parsed == {
+        "structured": {"content_ok": True, "status": 200},
+        "text": "body",
+        "meta": {"com.donsetch/fetch-debug": {"title": "Example", "status": 200}},
+    }
+
+
+def test_stdio_handshake_waits_for_initialize_response(tmp_path):
+    _spec, module = _provider()
+    binary = tmp_path / "strict-mcp"
+    binary.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json, sys\n"
+        "def receive(method):\n"
+        "    message = json.loads(sys.stdin.readline())\n"
+        "    assert message.get('method') == method, message\n"
+        "    return message\n"
+        "initialize = receive('initialize')\n"
+        "print(json.dumps({'jsonrpc': '2.0', 'id': initialize['id'], 'result': {}}), flush=True)\n"
+        "receive('notifications/initialized')\n"
+        "call = receive('tools/call')\n"
+        "print(json.dumps({'jsonrpc': '2.0', 'id': call['id'], 'result': {'content': [{'type': 'text', 'text': 'body'}], 'structuredContent': {'ok': True}}}), flush=True)\n",
+        encoding="utf-8",
+    )
+    binary.chmod(0o700)
+    result = module["_call_donsetch_tool"](str(binary), "web_search", {"query": "test"}, 5)
+    assert result == {"structured": {"ok": True}, "text": "body", "meta": {}}
+
+
+def test_search_projects_donsetch_results_and_metadata(monkeypatch):
+    spec, module = _provider()
+    calls = []
+
+    def fake_call(binary, tool, arguments, timeout):
+        calls.append((binary, tool, arguments, timeout))
+        return {
+            "structured": {
+                "intent": "Code",
+                "cached": False,
+                "weak": False,
+                "elapsed_ms": 321,
+                "engines": [
+                    {"engine": "ddg", "status": "ok"},
+                    {"engine": "brave", "status": "blocked:429"},
+                ],
+                "results": [
+                    {
+                        "url": "https://tokio.rs/tokio/tutorial",
+                        "title": "Tutorial | Tokio",
+                        "snippet": "Tokio tutorial",
+                        "score": 1.5,
+                        "consensus": 3,
+                        "engines": ["ddg", "brave"],
+                    },
+                    {
+                        "url": "https://example.org/nope",
+                        "title": "Nope",
+                        "snippet": "",
+                        "score": "bad",
+                    },
+                ],
+            },
+            "text": "",
+        }
+
+    monkeypatch.setitem(module, "_call_donsetch_tool", fake_call)
+    result = spec.execute_search(
+        None,
+        "donsetch",
+        _search_args(include_domains=["tokio.rs"]),
+        TRUE_BIN,
+        {"donsetch": {"timeout": 30}},
+        {},
+    )
+    assert calls[0][1] == "web_search"
+    assert calls[0][2]["query"] == "Rust Tokio official tutorial"
+    assert calls[0][2]["max_results"] == 3
+    assert result["provider"] == "donsetch"
+    assert [item["url"] for item in result["results"]] == [
+        "https://tokio.rs/tokio/tutorial"
+    ]
+    assert result["results"][0]["engines_consensus"] == "3"
+    assert result["metadata"]["engines_used"] == ["ddg"]
+    assert result["metadata"]["engine_blocked"] == ["brave"]
+    assert result["metadata"]["duration_ms"] == 321.0
+
+
+def test_search_rejects_unsupported_freshness_before_network(monkeypatch):
+    spec, module = _provider()
+    monkeypatch.setitem(module, "_call_donsetch_tool", lambda *_args: pytest.fail("network"))
+    with pytest.raises(RuntimeError, match="donsetch_freshness_unsupported"):
+        spec.execute_search(
+            None,
+            "donsetch",
+            _search_args(freshness="day"),
+            TRUE_BIN,
+            {},
+            {},
+        )
+
+
+def test_extract_projects_markdown_and_marks_raw_html_as_unsupported(monkeypatch):
+    spec, module = _provider()
+    calls = []
+
+    class FakeSession:
+        def __init__(self, _binary, _timeout):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_exc):
+            return False
+
+        def call(self, tool, arguments):
+            calls.append((tool, arguments))
+            return {
+                "structured": {
+                    "url": "https://example.org/page",
+                    "title": "Example",
+                    "status": 200,
+                    "content_ok": True,
+                    "content_kind": "Article",
+                    "quality": 0.8,
+                    "lang": "en",
+                    "site": "example.org",
+                    "verdict": "ContentOk",
+                    "pdf": None,
+                },
+                "text": "# Example\n\nBody",
+            }
+
+    monkeypatch.setitem(module, "DonsetchSession", FakeSession)
+    result = spec.execute_extract(
+        None,
+        "donsetch",
+        ["https://example.org/page"],
+        TRUE_BIN,
+        "markdown",
+        True,
+        True,
+        False,
+        {"donsetch": {"timeout": 30}},
+        False,
+    )
+    assert calls[0][0] == "web_fetch"
+    assert calls[0][1]["tier"] == "auto"
+    assert calls[0][1]["media"] is True
+    assert result["results"][0]["content"] == "# Example\n\nBody"
+    assert result["results"][0]["fetcher"] == "donsetch"
+    assert result["results"][0]["raw_error"] == "donsetch_raw_html_unsupported"
+
+
+def test_extract_render_js_requests_browser_tier(monkeypatch):
+    spec, module = _provider()
+    seen = []
+
+    class FakeSession:
+        def __init__(self, _binary, _timeout):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_exc):
+            return False
+
+        def call(self, _tool, arguments):
+            seen.append(arguments)
+            return {
+                "structured": {
+                    "url": arguments["url"],
+                    "status": 200,
+                    "content_ok": True,
+                    "content_kind": "Page",
+                    "verdict": "ContentOk",
+                },
+                "text": "content",
+            }
+
+    monkeypatch.setitem(module, "DonsetchSession", FakeSession)
+    spec.execute_extract(
+        None,
+        "donsetch",
+        ["https://example.org/page"],
+        TRUE_BIN,
+        "markdown",
+        False,
+        False,
+        True,
+        {},
+        False,
+    )
+    assert seen[0]["tier"] == "2"
+
+
+def test_extract_rejects_non_markdown_without_network(monkeypatch):
+    spec, module = _provider()
+    monkeypatch.setitem(module, "_call_donsetch_tool", lambda *_args: pytest.fail("network"))
+    with pytest.raises(RuntimeError, match="donsetch_output_format_unsupported"):
+        spec.execute_extract(
+            None,
+            "donsetch",
+            ["https://example.org/page"],
+            sys.executable,
+            "html",
+            False,
+            False,
+            False,
+            {},
+            False,
+        )
+
+
+_FAKE_MCP = r'''#!/usr/bin/env python3
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+mode = os.environ.get("DONSETCH_FAKE_MODE", "ok")
+state = Path(os.environ["DONSETCH_FAKE_STATE"])
+pid_path = state / "pid"
+init_path = state / "initialize_count"
+call_path = state / "call_count"
+pid_path.write_text(str(os.getpid()), encoding="utf-8")
+
+def bump(path):
+    current = int(path.read_text(encoding="utf-8")) if path.exists() else 0
+    path.write_text(str(current + 1), encoding="utf-8")
+    return current + 1
+
+def reply(message, payload):
+    print(json.dumps({"jsonrpc": "2.0", "id": message["id"], **payload}), flush=True)
+
+def fetch_ok(url):
+    return {
+        "result": {
+            "content": [{"type": "text", "text": f"body:{url}"}],
+            "structuredContent": {
+                "url": url,
+                "status": 200,
+                "content_ok": True,
+                "content_kind": "Page",
+                "verdict": "ContentOk",
+                "title": "ok",
+            },
+        }
+    }
+
+if mode == "stderr":
+    sys.stderr.write("token=supersecretvalue " + ("x" * 4000) + "\n")
+    sys.stderr.flush()
+
+while True:
+    line = sys.stdin.readline()
+    if not line:
+        break
+    try:
+        message = json.loads(line)
+    except json.JSONDecodeError:
+        continue
+    method = message.get("method")
+    if method == "initialize":
+        bump(init_path)
+        if mode == "init-error":
+            reply(message, {"error": {"code": -32000, "message": "nope"}})
+            break
+        if mode == "malformed":
+            print("{not-json", flush=True)
+            continue
+        reply(message, {"result": {}})
+        if mode == "hang":
+            time.sleep(30)
+    elif method == "notifications/initialized":
+        continue
+    elif method == "tools/call":
+        bump(call_path)
+        if mode == "tool-error":
+            reply(message, {"result": {"isError": True, "content": [{"type": "text", "text": "boom"}]}})
+            continue
+        if mode == "broken-json":
+            print("[[[", flush=True)
+            continue
+        args = message.get("params", {}).get("arguments", {})
+        url = args.get("url") or "https://example.org/search"
+        reply(message, fetch_ok(url) if message["params"]["name"] == "web_fetch" else {
+            "result": {
+                "content": [{"type": "text", "text": "hits"}],
+                "structuredContent": {
+                    "results": [{"url": url, "title": "hit", "snippet": "s"}],
+                    "engines": [],
+                    "intent": "auto",
+                    "cached": False,
+                    "weak": False,
+                    "elapsed_ms": 1,
+                },
+            }
+        })
+'''
+
+
+def _write_fake(tmp_path, mode="ok"):
+    state = tmp_path / "state"
+    state.mkdir()
+    binary = tmp_path / "donsetch"
+    binary.write_text(_FAKE_MCP, encoding="utf-8")
+    binary.chmod(0o700)
+    env = {
+        "DONSETCH_FAKE_MODE": mode,
+        "DONSETCH_FAKE_STATE": str(state),
+    }
+    return binary, state, env
+
+
+def _alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def test_multi_url_extract_reuses_one_initialized_mcp_session(tmp_path, monkeypatch):
+    spec, _module = _provider()
+    binary, state, env = _write_fake(tmp_path)
+    monkeypatch.setenv("DONSETCH_FAKE_MODE", env["DONSETCH_FAKE_MODE"])
+    monkeypatch.setenv("DONSETCH_FAKE_STATE", env["DONSETCH_FAKE_STATE"])
+    result = spec.execute_extract(
+        None,
+        "donsetch",
+        ["https://example.org/a", "https://example.org/b", "https://example.org/c"],
+        str(binary),
+        "markdown",
+        False,
+        False,
+        False,
+        {"donsetch": {"timeout": 5}},
+        False,
+    )
+    assert (state / "initialize_count").read_text(encoding="utf-8") == "1"
+    assert (state / "call_count").read_text(encoding="utf-8") == "3"
+    assert [item["url"] for item in result["results"]] == [
+        "https://example.org/a",
+        "https://example.org/b",
+        "https://example.org/c",
+    ]
+    pid = int((state / "pid").read_text(encoding="utf-8"))
+    assert _alive(pid) is False
+
+
+def test_session_closes_after_successful_search(tmp_path, monkeypatch):
+    spec, _module = _provider()
+    binary, state, env = _write_fake(tmp_path)
+    monkeypatch.setenv("DONSETCH_FAKE_MODE", env["DONSETCH_FAKE_MODE"])
+    monkeypatch.setenv("DONSETCH_FAKE_STATE", env["DONSETCH_FAKE_STATE"])
+    result = spec.execute_search(
+        None,
+        "donsetch",
+        _search_args(),
+        str(binary),
+        {"donsetch": {"timeout": 5}},
+        {},
+    )
+    assert result["provider"] == "donsetch"
+    assert (state / "initialize_count").read_text(encoding="utf-8") == "1"
+    assert (state / "call_count").read_text(encoding="utf-8") == "1"
+    pid = int((state / "pid").read_text(encoding="utf-8"))
+    assert _alive(pid) is False
+
+
+@pytest.mark.parametrize(
+    ("mode", "error"),
+    [
+        ("hang", "donsetch_timeout"),
+        ("malformed", "donsetch_timeout|donsetch_mcp_failed|donsetch_mcp_contract_failed"),
+        ("init-error", "donsetch_mcp_initialize_failed"),
+        ("tool-error", "donsetch_tool_error"),
+        ("broken-json", "donsetch_mcp_failed|donsetch_mcp_contract_failed|donsetch_timeout"),
+    ],
+)
+def test_failed_mcp_paths_raise_typed_errors_and_reap_child(tmp_path, monkeypatch, mode, error):
+    spec, _module = _provider()
+    binary, state, env = _write_fake(tmp_path, mode=mode)
+    monkeypatch.setenv("DONSETCH_FAKE_MODE", mode)
+    monkeypatch.setenv("DONSETCH_FAKE_STATE", env["DONSETCH_FAKE_STATE"])
+    with pytest.raises(RuntimeError, match=error):
+        spec.execute_extract(
+            None,
+            "donsetch",
+            ["https://example.org/page"],
+            str(binary),
+            "markdown",
+            False,
+            False,
+            False,
+            {"donsetch": {"timeout": 1}},
+            False,
+        )
+    pid = int((state / "pid").read_text(encoding="utf-8"))
+    assert _alive(pid) is False
+
+
+def test_stderr_capture_is_bounded_sanitized_and_absent_from_success(tmp_path, monkeypatch):
+    spec, module = _provider()
+    binary, state, env = _write_fake(tmp_path, mode="stderr")
+    monkeypatch.setenv("DONSETCH_FAKE_MODE", "stderr")
+    monkeypatch.setenv("DONSETCH_FAKE_STATE", env["DONSETCH_FAKE_STATE"])
+    result = spec.execute_search(
+        None,
+        "donsetch",
+        _search_args(),
+        str(binary),
+        {"donsetch": {"timeout": 5}},
+        {},
+    )
+    dumped = json.dumps(result)
+    assert "supersecretvalue" not in dumped
+    excerpt = module["sanitize_stderr"](module["_last_stderr_excerpt"]())
+    assert len(excerpt) <= module["STDERR_LIMIT"] + 1
+    assert "supersecretvalue" not in excerpt
+    assert "token=[redacted]" in excerpt
+
+
+def test_version_detection_classifies_missing_tested_compatible_and_incompatible(tmp_path):
+    _spec, module = _provider()
+    missing = module["inspect_donsetch_readiness"](binary="")
+    assert missing["state"] == "missing"
+
+    blocked = tmp_path / "blocked"
+    blocked.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    blocked.chmod(0o600)
+    not_exec = module["inspect_donsetch_readiness"](binary=str(blocked))
+    assert not_exec["state"] == "not_executable"
+
+    def _version_bin(text: str):
+        path = tmp_path / f"bin-{text.replace('.', '-')}"
+        path.write_text(f"#!/bin/sh\necho 'DonSeTch {text}'\n", encoding="utf-8")
+        path.chmod(0o700)
+        return str(path)
+
+    tested = module["inspect_donsetch_readiness"](binary=_version_bin("4.10.1"))
+    assert tested["state"] == "executable"
+    assert tested["version"] == "4.10.1"
+    assert tested["compatibility"] == "tested"
+    assert tested["tested_version"] == "4.10.1"
+    assert "api_key" not in tested
+
+    older = module["inspect_donsetch_readiness"](binary=_version_bin("4.7.0"))
+    assert older["compatibility"] == "compatible_unverified"
+
+    other = module["inspect_donsetch_readiness"](binary=_version_bin("4.2.8"))
+    assert other["compatibility"] == "compatible_unverified"
+    assert other["version"] == "4.2.8"
+
+    other_major = module["inspect_donsetch_readiness"](binary=_version_bin("3.6.1"))
+    assert other_major["compatibility"] == "compatible_unverified"
+    assert other_major["version"] == "3.6.1"
+    assert other_major["state"] == "executable"
+
+
+def test_child_env_pins_stdio_transport_even_when_host_sets_http(monkeypatch):
+    _spec, module = _provider()
+    monkeypatch.setenv("DONSETCH_TRANSPORT", "http")
+    monkeypatch.setenv("OTHER_HOST_VAR", "keep-me")
+    env = module["_child_env"]()
+    assert env["DONSETCH_TRANSPORT"] == "stdio"
+    assert "OTHER_HOST_VAR" not in env
+    assert os.environ.get("DONSETCH_TRANSPORT") == "http"
+
+
+def test_parse_search_evidence_handles_handles_urls_colon_titles_and_footers():
+    _spec, module = _provider()
+    structured = [
+        {
+            "rank": 1,
+            "url": "https://docs.rs/tokio/latest/tokio/",
+            "handle": "So9aiJHFd",
+        },
+        {
+            "rank": 2,
+            "url": "https://example.com/path",
+        },
+        {
+            "rank": 3,
+            "url": "https://tokio.rs/tokio/tutorial",
+            "handle": "SUYE3n6Qg",
+        },
+    ]
+    text = "\n".join(
+        [
+            "# Search results",
+            "1. So9aiJHFd · tokio - Rust - Docs.rs : docs.rs",
+            "   Tokio is an event-driven runtime",
+            "   second snippet line",
+            "2. https://example.com/path · Title: with: colons : example.com",
+            "   Example snippet",
+            "3. SUYE3n6Qg · Tutorial | Tokio : tokio.rs · ⚠ needs browser (~+6s)",
+            "   Tutorial body",
+            "Degraded retrieval : 8/9 backends available.",
+            "Weak results : low cross-source agreement.",
+            "4. SBAD · stray should not bind without structured rank : evil.com",
+            "   bad",
+        ]
+    )
+    evidence = module["parse_search_evidence"](text, structured)
+    assert evidence[1]["title"] == "tokio - Rust - Docs.rs"
+    assert evidence[1]["snippet"] == "Tokio is an event-driven runtime\nsecond snippet line"
+    assert evidence[2]["title"] == "Title: with: colons"
+    assert evidence[2]["reference"] == "https://example.com/path"
+    assert evidence[3]["title"] == "Tutorial | Tokio"
+    assert evidence[3]["snippet"] == "Tutorial body"
+    assert 4 not in evidence
+
+
+def test_parse_search_evidence_rejects_mismatched_reference_for_rank():
+    _spec, module = _provider()
+    structured = [
+        {"rank": 1, "url": "https://a.example/x", "handle": "Sreal1"},
+        {"rank": 2, "url": "https://b.example/y", "handle": "Sreal2"},
+    ]
+    text = "\n".join(
+        [
+            "1. Swrong · Stolen title : a.example",
+            "   should not attach to rank 1",
+            "2. Sreal2 · Keep me : b.example",
+            "   ok",
+        ]
+    )
+    evidence = module["parse_search_evidence"](text, structured)
+    assert 1 not in evidence
+    assert evidence[2]["title"] == "Keep me"
+
+
+def test_compact_search_projects_text_evidence_and_debug_meta_before_domain_filter(monkeypatch):
+    spec, module = _provider()
+    calls = []
+
+    def fake_call(binary, tool, arguments, timeout):
+        calls.append((binary, tool, arguments, timeout))
+        return {
+            "structured": {
+                "weak": False,
+                "results": [
+                    {
+                        "rank": 1,
+                        "url": "https://example.org/nope",
+                        "handle": "Snope1",
+                    },
+                    {
+                        "rank": 2,
+                        "url": "https://tokio.rs/tokio/tutorial",
+                        "handle": "Skeep2",
+                    },
+                    {
+                        "rank": 3,
+                        "url": "https://docs.rs/tokio",
+                        "handle": "Sdrop3",
+                    },
+                ],
+            },
+            "text": "\n".join(
+                [
+                    "# Search results",
+                    "1. Snope1 · Nope Title : example.org",
+                    "   nope snippet",
+                    "2. Skeep2 · Tutorial | Tokio : tokio.rs",
+                    "   keep snippet",
+                    "3. Sdrop3 · Docs : docs.rs",
+                    "   other",
+                    "Degraded retrieval : 1/2 backends available.",
+                ]
+            ),
+            "meta": {
+                "com.donsetch/search-debug": {
+                    "intent": "Code",
+                    "cached": False,
+                    "elapsed_ms": 321,
+                    "weak": False,
+                    "engines": [
+                        {"engine": "ddg", "status": "ok"},
+                        {"engine": "brave", "status": "blocked:429"},
+                    ],
+                    "results": [
+                        {"score": 9.9, "consensus": 1, "engines": ["ddg"]},
+                        {"score": 1.5, "consensus": 3, "engines": ["ddg", "brave"]},
+                        {"score": 0.1, "consensus": 1, "engines": ["brave"]},
+                    ],
+                    "noise_field": "must-not-leak",
+                }
+            },
+        }
+
+    monkeypatch.setitem(module, "_call_donsetch_tool", fake_call)
+    result = spec.execute_search(
+        None,
+        "donsetch",
+        _search_args(include_domains=["tokio.rs"]),
+        TRUE_BIN,
+        {"donsetch": {"timeout": 30}},
+        {},
+    )
+    assert [item["url"] for item in result["results"]] == [
+        "https://tokio.rs/tokio/tutorial"
+    ]
+    hit = result["results"][0]
+    assert hit["title"] == "Tutorial | Tokio"
+    assert hit["snippet"] == "keep snippet"
+    assert hit["score"] == 1.5
+    assert hit["engines_consensus"] == "3"
+    assert hit["engines"] == ["ddg", "brave"]
+    assert hit["position"] == 2
+    assert result["metadata"]["engines_used"] == ["ddg"]
+    assert result["metadata"]["engine_blocked"] == ["brave"]
+    assert result["metadata"]["duration_ms"] == 321.0
+    assert result["metadata"]["intent"] == "Code"
+    dumped = json.dumps(result)
+    assert "noise_field" not in dumped
+    assert "must-not-leak" not in dumped
+
+
+def test_compact_fetch_uses_debug_whitelist_and_ignores_foreign_meta(monkeypatch):
+    spec, module = _provider()
+
+    class FakeSession:
+        def __init__(self, _binary, _timeout):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_exc):
+            return False
+
+        def call(self, tool, arguments):
+            assert tool == "web_fetch"
+            return {
+                "structured": {
+                    "url": "https://example.org/page",
+                    "content_ok": True,
+                    "content_kind": "Article",
+                    "lang": "en",
+                    "next_offset": 1000,
+                },
+                "text": "# Example\nhttps://example.org/page\n\nBody",
+                "meta": {
+                    "com.donsetch/fetch-debug": {
+                        "status": 200,
+                        "title": "Example",
+                        "quality": 0.8,
+                        "site": "example.org",
+                        "verdict": "ContentOk",
+                        "tokens_est": 99,
+                    },
+                    "com.other/noise": {"secret": "nope"},
+                },
+            }
+
+    monkeypatch.setitem(module, "DonsetchSession", FakeSession)
+    result = spec.execute_extract(
+        None,
+        "donsetch",
+        ["https://example.org/page"],
+        TRUE_BIN,
+        "markdown",
+        False,
+        False,
+        False,
+        {"donsetch": {"timeout": 30}},
+        False,
+    )
+    item = result["results"][0]
+    assert item["title"] == "Example"
+    assert item["status"] == 200
+    assert item["quality"] == 0.8
+    assert item["site"] == "example.org"
+    assert item["content"].startswith("# Example")
+    assert item["next_offset"] == 1000
+    dumped = json.dumps(result)
+    assert "tokens_est" not in dumped
+    assert "com.other/noise" not in dumped
+    assert "nope" not in dumped
+
+
+def test_legacy_search_and_fetch_shapes_still_project(monkeypatch):
+    """Pre-3.6 structured title/snippet/status remain valid."""
+    spec, module = _provider()
+
+    def fake_call(binary, tool, arguments, timeout):
+        return {
+            "structured": {
+                "intent": "Code",
+                "cached": False,
+                "weak": False,
+                "elapsed_ms": 10,
+                "engines": [{"engine": "ddg", "status": "ok"}],
+                "results": [
+                    {
+                        "url": "https://tokio.rs/tokio/tutorial",
+                        "title": "Legacy Title",
+                        "snippet": "Legacy snippet",
+                        "score": 2.0,
+                        "consensus": 2,
+                        "engines": ["ddg"],
+                    }
+                ],
+            },
+            "text": "",
+            "meta": {},
+        }
+
+    monkeypatch.setitem(module, "_call_donsetch_tool", fake_call)
+    search = spec.execute_search(
+        None,
+        "donsetch",
+        _search_args(),
+        TRUE_BIN,
+        {"donsetch": {"timeout": 5}},
+        {},
+    )
+    assert search["results"][0]["title"] == "Legacy Title"
+    assert search["results"][0]["snippet"] == "Legacy snippet"
+
+    class FakeSession:
+        def __init__(self, *_a):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_e):
+            return False
+
+        def call(self, tool, arguments):
+            return {
+                "structured": {
+                    "url": arguments["url"],
+                    "title": "Legacy Fetch",
+                    "status": 200,
+                    "content_ok": True,
+                    "content_kind": "Page",
+                    "verdict": "ContentOk",
+                    "quality": 0.5,
+                    "site": "example.org",
+                },
+                "text": "legacy body",
+                "meta": {},
+            }
+
+    monkeypatch.setitem(module, "DonsetchSession", FakeSession)
+    extract = spec.execute_extract(
+        None,
+        "donsetch",
+        ["https://example.org/page"],
+        TRUE_BIN,
+        "markdown",
+        False,
+        False,
+        False,
+        {},
+        False,
+    )
+    assert extract["results"][0]["title"] == "Legacy Fetch"
+    assert extract["results"][0]["content"] == "legacy body"
+
+
+def test_indented_footer_words_remain_source_snippets():
+    _, module = _provider()
+    rows = [{"rank": 1, "url": "https://example.org/", "handle": "Sone"}]
+    text = "1. Sone · Study : example.org\n   Weak results are discussed in this study.\nDegraded retrieval : 1/2 backends available."
+    result = module["parse_search_evidence"](text, rows)
+    assert result[1]["snippet"] == "Weak results are discussed in this study."
+
+
+def test_donsetch_470_fetch_failure_keeps_code_and_next_action():
+    _spec, module = _provider()
+    payload = {
+        "structured": {
+            "ok": False, "content_ok": False, "read_status": "blocked",
+            "code": "ssrf_blocked", "errorKind": "invalid_input",
+            "next_action": "pass a public http(s) URL\n without embedded credentials",
+            "url": "http://127.0.0.1:9/x",
+        },
+        "text": "blocked: 127.0.0.1 is a private/loopback address",
+        "meta": {},
+    }
+    item = module["_project_fetch_item"](payload, "http://127.0.0.1:9/x")
+    assert item["error"] == "donsetch_fetch_failed"
+    assert item["donsetch_code"] == "ssrf_blocked"
+    assert item["donsetch_error_kind"] == "invalid_input"
+    assert item["next_action"] == "pass a public http(s) URL without embedded credentials"
+
+
+def test_donsetch_fetch_failure_drops_malformed_codes():
+    _spec, module = _provider()
+    payload = {"structured": {"content_ok": False, "code": "x" * 200, "errorKind": "bad kind!"}, "text": "", "meta": {}}
+    item = module["_project_fetch_item"](payload, "https://example.com/")
+    assert "donsetch_code" not in item and "donsetch_error_kind" not in item

@@ -1,0 +1,679 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "little-canary",
+  "content_id": "dc7c7b25d47c",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 10762,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153"
+    },
+    {
+      "bytes": 1704,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "d52419f38589bddd9913f6a4da25dd8850656751ef46a671a79fe4830a60f980"
+    },
+    {
+      "bytes": 398,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "6921978c6736d882e100cd589e8f0420f2130ec1f23db6de84a71d803113b7fd"
+    },
+    {
+      "bytes": 10762,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153"
+    },
+    {
+      "bytes": 1499,
+      "mode": "100755",
+      "path": "little_canary/__init__.py",
+      "sha256": "07987779f008bfde7efe415b2f4a7c69c3b8589fa3d164a975211ae0913d2ac0"
+    },
+    {
+      "bytes": 26083,
+      "mode": "100755",
+      "path": "little_canary/analyzer.py",
+      "sha256": "b586c405e53b508977882839ac1d51a2a861f4b6ea0f99d314f826e07a9425e1"
+    },
+    {
+      "bytes": 3747,
+      "mode": "100644",
+      "path": "little_canary/audit_logger.py",
+      "sha256": "bc2638a07bc117cd0ba6b76da166d794e4aaf20af3f27de441355d7df093fb57"
+    },
+    {
+      "bytes": 10001,
+      "mode": "100755",
+      "path": "little_canary/canary.py",
+      "sha256": "d90248eaa2eb181001b13ebddffbdf1f59640be7b4a19afd56c940ef1bc52ea7"
+    },
+    {
+      "bytes": 10802,
+      "mode": "100644",
+      "path": "little_canary/canary_guard.py",
+      "sha256": "0f9f45f81395f77c8e11728f7b75187b60ab748c01380e565087ac794bcbf738"
+    },
+    {
+      "bytes": 6935,
+      "mode": "100644",
+      "path": "little_canary/cli.py",
+      "sha256": "4031f936c640afeaf25f21fe020c3a8719fd47ccba1a791e7db5559619f1d9bf"
+    },
+    {
+      "bytes": 1798,
+      "mode": "100644",
+      "path": "little_canary/data/demo_replay.json",
+      "sha256": "67fd46ab6b38102e7e339a8d40428873b2d85325e47f378317bc56aa357f6e5e"
+    },
+    {
+      "bytes": 25153,
+      "mode": "100644",
+      "path": "little_canary/demo.py",
+      "sha256": "b3defab4cd9fe50b2b08eeedac64f601d97754b7d7c8cda05c6706be5dc91807"
+    },
+    {
+      "bytes": 29121,
+      "mode": "100644",
+      "path": "little_canary/hermes_agent_plugin.py",
+      "sha256": "90fabb00e7b6b64dc148e94267c32efafe04feb875fdace40c0a5ee69ee269a4"
+    },
+    {
+      "bytes": 9902,
+      "mode": "100755",
+      "path": "little_canary/judge.py",
+      "sha256": "41e5786c16c19b888974246d4ad043229b7f0fc87cff994f991a0fd307fe5407"
+    },
+    {
+      "bytes": 12276,
+      "mode": "100644",
+      "path": "little_canary/openai_agents.py",
+      "sha256": "9c4babc7c3c246960918c88e2eb67c69bcf8148060dd1dff4e6f40a97dbabfff"
+    },
+    {
+      "bytes": 17702,
+      "mode": "100644",
+      "path": "little_canary/openai_provider.py",
+      "sha256": "ec57087ec01f39acadfad3dc7615062d44335d4904f88a510bed03e1a3b96b2c"
+    },
+    {
+      "bytes": 31721,
+      "mode": "100755",
+      "path": "little_canary/pipeline.py",
+      "sha256": "d4763a62ea139f7ce4f754c7632cf6b48d42a0cde823c2541245824eea5e8750"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "little_canary/py.typed",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 7235,
+      "mode": "100644",
+      "path": "little_canary/server.py",
+      "sha256": "73fb8c88fe0f6b18927385cd01d3a8f86d44add3f63473a7aae4fe3f57b0cf20"
+    },
+    {
+      "bytes": 11776,
+      "mode": "100755",
+      "path": "little_canary/structural_filter.py",
+      "sha256": "75178c6c86bd888d5b1c7b20c6808ce8b8d4aeb43d9c99c11c0e802ad2fb7cd3"
+    },
+    {
+      "bytes": 411,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "40ed95bc9f44d199e09525611a96d73dac413ca0230591fa2174a3e1b7ced133"
+    }
+  ],
+  "input_manifest_sha256": "dc7c7b25d47c8a653cb9902803ef5a06fe753860b891e72d8caa59fbc5812286",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "LICENSE",
+        "sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+        "source_path": "integrations/hermes-agent/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "little_canary/duckwork_agent_plugin.py",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      "README.md",
+      "__init__.py",
+      "little_canary/duckwork_agent_plugin.py",
+      "plugin.yaml"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/hermes-labs-ai/little-canary",
+    "sha": "61855a940a66fb8319742756c3ff72c720a89160",
+    "subdir": "integrations/hermes-agent"
+  },
+  "original_repo": "https://github.com/hermes-labs-ai/little-canary",
+  "original_sha": "61855a940a66fb8319742756c3ff72c720a89160",
+  "original_subdir": "integrations/hermes-agent",
+  "output_files": [
+    {
+      "path": "LICENSE",
+      "sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+      "bytes": 10762,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "27cd51c3189e9d9cec3f42c9d5a83c6e1c4c51f4db706066536612f87fff2dd9",
+      "bytes": 1863,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "92c3dcd0cf8fcc6e72d47d2ad03db0739f60003758a459100167411c2398a762",
+      "bytes": 548,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+      "bytes": 10762,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/__init__.py",
+      "sha256": "07987779f008bfde7efe415b2f4a7c69c3b8589fa3d164a975211ae0913d2ac0",
+      "bytes": 1499,
+      "mode": "100755"
+    },
+    {
+      "path": "little_canary/analyzer.py",
+      "sha256": "b586c405e53b508977882839ac1d51a2a861f4b6ea0f99d314f826e07a9425e1",
+      "bytes": 26083,
+      "mode": "100755"
+    },
+    {
+      "path": "little_canary/audit_logger.py",
+      "sha256": "bc2638a07bc117cd0ba6b76da166d794e4aaf20af3f27de441355d7df093fb57",
+      "bytes": 3747,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/canary.py",
+      "sha256": "d90248eaa2eb181001b13ebddffbdf1f59640be7b4a19afd56c940ef1bc52ea7",
+      "bytes": 10001,
+      "mode": "100755"
+    },
+    {
+      "path": "little_canary/canary_guard.py",
+      "sha256": "0f9f45f81395f77c8e11728f7b75187b60ab748c01380e565087ac794bcbf738",
+      "bytes": 10802,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/cli.py",
+      "sha256": "4031f936c640afeaf25f21fe020c3a8719fd47ccba1a791e7db5559619f1d9bf",
+      "bytes": 6935,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/data/demo_replay.json",
+      "sha256": "67fd46ab6b38102e7e339a8d40428873b2d85325e47f378317bc56aa357f6e5e",
+      "bytes": 1798,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/demo.py",
+      "sha256": "b3defab4cd9fe50b2b08eeedac64f601d97754b7d7c8cda05c6706be5dc91807",
+      "bytes": 25153,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/duckwork_agent_plugin.py",
+      "sha256": "90bc4de25a7665e2a7d024de43885174956058aa5821276540ad0e6e6fd276e4",
+      "bytes": 29284,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/judge.py",
+      "sha256": "41e5786c16c19b888974246d4ad043229b7f0fc87cff994f991a0fd307fe5407",
+      "bytes": 9902,
+      "mode": "100755"
+    },
+    {
+      "path": "little_canary/openai_agents.py",
+      "sha256": "9c4babc7c3c246960918c88e2eb67c69bcf8148060dd1dff4e6f40a97dbabfff",
+      "bytes": 12276,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/openai_provider.py",
+      "sha256": "ec57087ec01f39acadfad3dc7615062d44335d4904f88a510bed03e1a3b96b2c",
+      "bytes": 17702,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/pipeline.py",
+      "sha256": "d4763a62ea139f7ce4f754c7632cf6b48d42a0cde823c2541245824eea5e8750",
+      "bytes": 31721,
+      "mode": "100755"
+    },
+    {
+      "path": "little_canary/py.typed",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/server.py",
+      "sha256": "73fb8c88fe0f6b18927385cd01d3a8f86d44add3f63473a7aae4fe3f57b0cf20",
+      "bytes": 7235,
+      "mode": "100644"
+    },
+    {
+      "path": "little_canary/structural_filter.py",
+      "sha256": "75178c6c86bd888d5b1c7b20c6808ce8b8d4aeb43d9c99c11c0e802ad2fb7cd3",
+      "bytes": 11776,
+      "mode": "100755"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "f9677a345ea414e45617ff98b6e181014b8bad8db4728811cb9721daa032bdd8",
+      "bytes": 546,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "69e979196bd123eb58f8d9a98949044dfcdd03b40f099ba55a21a5c6a5c87935",
+  "pin_verification": {
+    "archive_bytes": 2138141,
+    "archive_sha256": "850d8b90e0eaeb82494bc1173ee277e099dd7f2fa631fa32bacb9bd6649b826b",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "61855a940a66fb8319742756c3ff72c720a89160",
+    "verified_commit_marker": "61855a940a66fb8319742756c3ff72c720a89160"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "589e6558e0d16d51fca4ab7f4c819eda77b1fc2e0a41c5cb073ec3796b71868e",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "LICENSE",
+        "input_sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+        "source": "LICENSE",
+        "final_output_sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "d52419f38589bddd9913f6a4da25dd8850656751ef46a671a79fe4830a60f980",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "589e099ca1733d56b92e105853fdac380ca94ae4eaa757407f12f5b4e74c1856",
+        "source": "README.md",
+        "final_output_sha256": "27cd51c3189e9d9cec3f42c9d5a83c6e1c4c51f4db706066536612f87fff2dd9",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "cc11e1ac21f1833b2bf6badad37e9683fd3b7b1276cff4aae225f807f39f81d7"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "6921978c6736d882e100cd589e8f0420f2130ec1f23db6de84a71d803113b7fd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2ca89ea8420939b52244b9ff30d70cd5d5517779f0d0bf5f1ab50c540adeda39",
+        "source": "__init__.py",
+        "final_output_sha256": "92c3dcd0cf8fcc6e72d47d2ad03db0739f60003758a459100167411c2398a762",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "92c3dcd0cf8fcc6e72d47d2ad03db0739f60003758a459100167411c2398a762"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "0dc0a166306baadec0457c778a1ec59dd583fe6999840f94b2cdbefdc8362153"
+      },
+      {
+        "destination": "little_canary/__init__.py",
+        "input_sha256": "07987779f008bfde7efe415b2f4a7c69c3b8589fa3d164a975211ae0913d2ac0",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "07987779f008bfde7efe415b2f4a7c69c3b8589fa3d164a975211ae0913d2ac0",
+        "source": "little_canary/__init__.py",
+        "final_output_sha256": "07987779f008bfde7efe415b2f4a7c69c3b8589fa3d164a975211ae0913d2ac0",
+        "cli_destination": "little_canary/__init__.py",
+        "previous_staging_sha256": "07987779f008bfde7efe415b2f4a7c69c3b8589fa3d164a975211ae0913d2ac0"
+      },
+      {
+        "destination": "little_canary/analyzer.py",
+        "input_sha256": "b586c405e53b508977882839ac1d51a2a861f4b6ea0f99d314f826e07a9425e1",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "b586c405e53b508977882839ac1d51a2a861f4b6ea0f99d314f826e07a9425e1",
+        "source": "little_canary/analyzer.py",
+        "final_output_sha256": "b586c405e53b508977882839ac1d51a2a861f4b6ea0f99d314f826e07a9425e1",
+        "cli_destination": "little_canary/analyzer.py",
+        "previous_staging_sha256": "b586c405e53b508977882839ac1d51a2a861f4b6ea0f99d314f826e07a9425e1"
+      },
+      {
+        "destination": "little_canary/audit_logger.py",
+        "input_sha256": "bc2638a07bc117cd0ba6b76da166d794e4aaf20af3f27de441355d7df093fb57",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bc2638a07bc117cd0ba6b76da166d794e4aaf20af3f27de441355d7df093fb57",
+        "source": "little_canary/audit_logger.py",
+        "final_output_sha256": "bc2638a07bc117cd0ba6b76da166d794e4aaf20af3f27de441355d7df093fb57",
+        "cli_destination": "little_canary/audit_logger.py",
+        "previous_staging_sha256": "bc2638a07bc117cd0ba6b76da166d794e4aaf20af3f27de441355d7df093fb57"
+      },
+      {
+        "destination": "little_canary/canary.py",
+        "input_sha256": "d90248eaa2eb181001b13ebddffbdf1f59640be7b4a19afd56c940ef1bc52ea7",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "d90248eaa2eb181001b13ebddffbdf1f59640be7b4a19afd56c940ef1bc52ea7",
+        "source": "little_canary/canary.py",
+        "final_output_sha256": "d90248eaa2eb181001b13ebddffbdf1f59640be7b4a19afd56c940ef1bc52ea7",
+        "cli_destination": "little_canary/canary.py",
+        "previous_staging_sha256": "d90248eaa2eb181001b13ebddffbdf1f59640be7b4a19afd56c940ef1bc52ea7"
+      },
+      {
+        "destination": "little_canary/canary_guard.py",
+        "input_sha256": "0f9f45f81395f77c8e11728f7b75187b60ab748c01380e565087ac794bcbf738",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0f9f45f81395f77c8e11728f7b75187b60ab748c01380e565087ac794bcbf738",
+        "source": "little_canary/canary_guard.py",
+        "final_output_sha256": "0f9f45f81395f77c8e11728f7b75187b60ab748c01380e565087ac794bcbf738",
+        "cli_destination": "little_canary/canary_guard.py",
+        "previous_staging_sha256": "0f9f45f81395f77c8e11728f7b75187b60ab748c01380e565087ac794bcbf738"
+      },
+      {
+        "destination": "little_canary/cli.py",
+        "input_sha256": "4031f936c640afeaf25f21fe020c3a8719fd47ccba1a791e7db5559619f1d9bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4031f936c640afeaf25f21fe020c3a8719fd47ccba1a791e7db5559619f1d9bf",
+        "source": "little_canary/cli.py",
+        "final_output_sha256": "4031f936c640afeaf25f21fe020c3a8719fd47ccba1a791e7db5559619f1d9bf",
+        "cli_destination": "little_canary/cli.py",
+        "previous_staging_sha256": "4031f936c640afeaf25f21fe020c3a8719fd47ccba1a791e7db5559619f1d9bf"
+      },
+      {
+        "destination": "little_canary/data/demo_replay.json",
+        "input_sha256": "67fd46ab6b38102e7e339a8d40428873b2d85325e47f378317bc56aa357f6e5e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "67fd46ab6b38102e7e339a8d40428873b2d85325e47f378317bc56aa357f6e5e",
+        "source": "little_canary/data/demo_replay.json",
+        "final_output_sha256": "67fd46ab6b38102e7e339a8d40428873b2d85325e47f378317bc56aa357f6e5e",
+        "cli_destination": "little_canary/data/demo_replay.json",
+        "previous_staging_sha256": "67fd46ab6b38102e7e339a8d40428873b2d85325e47f378317bc56aa357f6e5e"
+      },
+      {
+        "destination": "little_canary/demo.py",
+        "input_sha256": "b3defab4cd9fe50b2b08eeedac64f601d97754b7d7c8cda05c6706be5dc91807",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b3defab4cd9fe50b2b08eeedac64f601d97754b7d7c8cda05c6706be5dc91807",
+        "source": "little_canary/demo.py",
+        "final_output_sha256": "b3defab4cd9fe50b2b08eeedac64f601d97754b7d7c8cda05c6706be5dc91807",
+        "cli_destination": "little_canary/demo.py",
+        "previous_staging_sha256": "b3defab4cd9fe50b2b08eeedac64f601d97754b7d7c8cda05c6706be5dc91807"
+      },
+      {
+        "destination": "little_canary/duckwork_agent_plugin.py",
+        "input_sha256": "90fabb00e7b6b64dc148e94267c32efafe04feb875fdace40c0a5ee69ee269a4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "efcffcf397c420652ae3a998b5cb0d30422bb9cbe79073d71f3f2be42844a724",
+        "source": "little_canary/hermes_agent_plugin.py",
+        "final_output_sha256": "90bc4de25a7665e2a7d024de43885174956058aa5821276540ad0e6e6fd276e4",
+        "cli_destination": "little_canary/duckwork_agent_plugin.py",
+        "previous_staging_sha256": "90bc4de25a7665e2a7d024de43885174956058aa5821276540ad0e6e6fd276e4"
+      },
+      {
+        "destination": "little_canary/judge.py",
+        "input_sha256": "41e5786c16c19b888974246d4ad043229b7f0fc87cff994f991a0fd307fe5407",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "41e5786c16c19b888974246d4ad043229b7f0fc87cff994f991a0fd307fe5407",
+        "source": "little_canary/judge.py",
+        "final_output_sha256": "41e5786c16c19b888974246d4ad043229b7f0fc87cff994f991a0fd307fe5407",
+        "cli_destination": "little_canary/judge.py",
+        "previous_staging_sha256": "41e5786c16c19b888974246d4ad043229b7f0fc87cff994f991a0fd307fe5407"
+      },
+      {
+        "destination": "little_canary/openai_agents.py",
+        "input_sha256": "9c4babc7c3c246960918c88e2eb67c69bcf8148060dd1dff4e6f40a97dbabfff",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9c4babc7c3c246960918c88e2eb67c69bcf8148060dd1dff4e6f40a97dbabfff",
+        "source": "little_canary/openai_agents.py",
+        "final_output_sha256": "9c4babc7c3c246960918c88e2eb67c69bcf8148060dd1dff4e6f40a97dbabfff",
+        "cli_destination": "little_canary/openai_agents.py",
+        "previous_staging_sha256": "9c4babc7c3c246960918c88e2eb67c69bcf8148060dd1dff4e6f40a97dbabfff"
+      },
+      {
+        "destination": "little_canary/openai_provider.py",
+        "input_sha256": "ec57087ec01f39acadfad3dc7615062d44335d4904f88a510bed03e1a3b96b2c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec57087ec01f39acadfad3dc7615062d44335d4904f88a510bed03e1a3b96b2c",
+        "source": "little_canary/openai_provider.py",
+        "final_output_sha256": "ec57087ec01f39acadfad3dc7615062d44335d4904f88a510bed03e1a3b96b2c",
+        "cli_destination": "little_canary/openai_provider.py",
+        "previous_staging_sha256": "ec57087ec01f39acadfad3dc7615062d44335d4904f88a510bed03e1a3b96b2c"
+      },
+      {
+        "destination": "little_canary/pipeline.py",
+        "input_sha256": "d4763a62ea139f7ce4f754c7632cf6b48d42a0cde823c2541245824eea5e8750",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "d4763a62ea139f7ce4f754c7632cf6b48d42a0cde823c2541245824eea5e8750",
+        "source": "little_canary/pipeline.py",
+        "final_output_sha256": "d4763a62ea139f7ce4f754c7632cf6b48d42a0cde823c2541245824eea5e8750",
+        "cli_destination": "little_canary/pipeline.py",
+        "previous_staging_sha256": "d4763a62ea139f7ce4f754c7632cf6b48d42a0cde823c2541245824eea5e8750"
+      },
+      {
+        "destination": "little_canary/py.typed",
+        "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "little_canary/py.typed",
+        "final_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cli_destination": "little_canary/py.typed",
+        "previous_staging_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "destination": "little_canary/server.py",
+        "input_sha256": "73fb8c88fe0f6b18927385cd01d3a8f86d44add3f63473a7aae4fe3f57b0cf20",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "73fb8c88fe0f6b18927385cd01d3a8f86d44add3f63473a7aae4fe3f57b0cf20",
+        "source": "little_canary/server.py",
+        "final_output_sha256": "73fb8c88fe0f6b18927385cd01d3a8f86d44add3f63473a7aae4fe3f57b0cf20",
+        "cli_destination": "little_canary/server.py",
+        "previous_staging_sha256": "73fb8c88fe0f6b18927385cd01d3a8f86d44add3f63473a7aae4fe3f57b0cf20"
+      },
+      {
+        "destination": "little_canary/structural_filter.py",
+        "input_sha256": "75178c6c86bd888d5b1c7b20c6808ce8b8d4aeb43d9c99c11c0e802ad2fb7cd3",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "75178c6c86bd888d5b1c7b20c6808ce8b8d4aeb43d9c99c11c0e802ad2fb7cd3",
+        "source": "little_canary/structural_filter.py",
+        "final_output_sha256": "75178c6c86bd888d5b1c7b20c6808ce8b8d4aeb43d9c99c11c0e802ad2fb7cd3",
+        "cli_destination": "little_canary/structural_filter.py",
+        "previous_staging_sha256": "75178c6c86bd888d5b1c7b20c6808ce8b8d4aeb43d9c99c11c0e802ad2fb7cd3"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "40ed95bc9f44d199e09525611a96d73dac413ca0230591fa2174a3e1b7ced133",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f7d8c16949dd141a195f488c46713e59db7424bfc82cde582326f4f3a0b967c5",
+        "source": "plugin.yaml",
+        "final_output_sha256": "f9677a345ea414e45617ff98b6e181014b8bad8db4728811cb9721daa032bdd8",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "0555721c75c14f1ac66f50cace92bb1ad9a3b6e7fbac3c7355d3c05728878d03"
+      }
+    ],
+    "manifest_sha256": "0a9a810a7eee9d6ef3e9718971c58cd3504293de74f2565641688c9fac2fb1f9",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "LICENSE": "integrations/hermes-agent/LICENSE",
+    "README.md": "integrations/hermes-agent/README.md",
+    "__init__.py": "integrations/hermes-agent/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "little_canary/__init__.py": "integrations/hermes-agent/little_canary/__init__.py",
+    "little_canary/analyzer.py": "integrations/hermes-agent/little_canary/analyzer.py",
+    "little_canary/audit_logger.py": "integrations/hermes-agent/little_canary/audit_logger.py",
+    "little_canary/canary.py": "integrations/hermes-agent/little_canary/canary.py",
+    "little_canary/canary_guard.py": "integrations/hermes-agent/little_canary/canary_guard.py",
+    "little_canary/cli.py": "integrations/hermes-agent/little_canary/cli.py",
+    "little_canary/data/demo_replay.json": "integrations/hermes-agent/little_canary/data/demo_replay.json",
+    "little_canary/demo.py": "integrations/hermes-agent/little_canary/demo.py",
+    "little_canary/hermes_agent_plugin.py": "integrations/hermes-agent/little_canary/hermes_agent_plugin.py",
+    "little_canary/judge.py": "integrations/hermes-agent/little_canary/judge.py",
+    "little_canary/openai_agents.py": "integrations/hermes-agent/little_canary/openai_agents.py",
+    "little_canary/openai_provider.py": "integrations/hermes-agent/little_canary/openai_provider.py",
+    "little_canary/pipeline.py": "integrations/hermes-agent/little_canary/pipeline.py",
+    "little_canary/py.typed": "integrations/hermes-agent/little_canary/py.typed",
+    "little_canary/server.py": "integrations/hermes-agent/little_canary/server.py",
+    "little_canary/structural_filter.py": "integrations/hermes-agent/little_canary/structural_filter.py",
+    "plugin.yaml": "integrations/hermes-agent/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "little-canary",
+    "python_files_compiled": 15,
+    "secret_findings": 0
+  },
+  "canonical_slug": "little-canary",
+  "catalog_file": "src/plugin-catalog/little-canary.yaml",
+  "identity": {
+    "catalog_id": "little-canary",
+    "canonical_slug": "little-canary",
+    "original_manifest_name": "little-canary",
+    "rebranded_manifest_name": "little-canary",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "10fc67ee06b66e54fafbe23afbe2757979f64921a5630096ee4bb62e8811f81c",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "cc11e1ac21f1833b2bf6badad37e9683fd3b7b1276cff4aae225f807f39f81d7",
+          "after_sha256": "27cd51c3189e9d9cec3f42c9d5a83c6e1c4c51f4db706066536612f87fff2dd9",
+          "before_bytes": 1881,
+          "after_bytes": 1863,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "0555721c75c14f1ac66f50cace92bb1ad9a3b6e7fbac3c7355d3c05728878d03",
+          "after_sha256": "f9677a345ea414e45617ff98b6e181014b8bad8db4728811cb9721daa032bdd8",
+          "before_bytes": 557,
+          "after_bytes": 546,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "little_canary/__init__.py": [
+      {
+        "value": "Author: Hermes Labs",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ],
+    "plugin.yaml": [
+      {
+        "value": "author: roli-lpci (Hermes Labs; independent of Nous Research)",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

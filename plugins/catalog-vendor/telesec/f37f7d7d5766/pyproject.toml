@@ -1,0 +1,44 @@
+[project]
+name = "telesec"
+version = "0.16.1"
+description = "Telesec — Telegram Business secretary for Duckwork."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "neoromantic" }]
+
+[project.urls]
+Homepage = "https://github.com/neoromantic/telesec"
+Source = "https://github.com/neoromantic/telesec"
+Issues = "https://github.com/neoromantic/telesec/issues"
+Changelog = "https://github.com/neoromantic/telesec/blob/main/CHANGELOG.md"
+
+# Telesec runs inside a Duckwork gateway and has no runtime dependencies of its own.
+# The dev group mirrors what Duckwork provides (PTB, YAML) plus the test and lint tools.
+# Duckwork resolves this group together with its own pins when it installs the plugin,
+# and disables the plugin if they conflict, so it names packages only: uv.lock pins
+# the versions for development and CI.
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "python-telegram-bot",
+    "pyyaml",
+    "ruamel.yaml",
+    "ruff",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --confcutdir=tests"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint.per-file-ignores]
+# The plugin directory is named by the installer (plugins/telesec) or the clone, not by us.
+"__init__.py" = ["N999"]

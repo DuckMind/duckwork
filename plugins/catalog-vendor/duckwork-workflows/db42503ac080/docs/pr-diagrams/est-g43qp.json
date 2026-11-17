@@ -1,0 +1,200 @@
+{
+ "schema_version": 2,
+ "diagram_type": "workflow",
+ "meta": {
+  "title": "PR Digest \u2014 v0.3 C8 composition: prose on top, before-then-after on canvas",
+  "quality_profile": "showcase",
+  "output": "pr-diagram-c9.html",
+  "subtitle": "Problem: the digest opens cold \u2014 no why on the post, and fix-diagrams draw the cure without the disease. Story: prose leads every post, the canvas shows broken state before the new one."
+ },
+ "lanes": [
+  {
+   "id": "broken",
+   "label": "Broken today"
+  },
+  {
+   "id": "fixed",
+   "label": "After C9"
+  }
+ ],
+ "phases": [
+  {
+   "id": "submit",
+   "label": "submit door",
+   "fromCol": 0,
+   "toCol": 2,
+   "variant": "emphasis"
+  },
+  {
+   "id": "digest",
+   "label": "digest render",
+   "fromCol": 3,
+   "toCol": 4,
+   "variant": "dashed"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "author",
+   "lane": "fixed",
+   "col": 0,
+   "type": "external",
+   "label": "Bot / Agent",
+   "sublabel": "## Problem first",
+   "width": 126
+  },
+  {
+   "id": "baregate",
+   "lane": "broken",
+   "col": 1,
+   "type": "backend",
+   "label": "diagram-check",
+   "sublabel": "file exists = green",
+   "width": 134
+  },
+  {
+   "id": "gate9",
+   "lane": "fixed",
+   "col": 1,
+   "type": "security",
+   "label": "diagram-check C9",
+   "sublabel": "PNG + prose header",
+   "width": 132
+  },
+  {
+   "id": "coldpng",
+   "lane": "broken",
+   "col": 2,
+   "type": "frontend",
+   "label": "canvas alone",
+   "sublabel": "no why, no before",
+   "width": 132
+  },
+  {
+   "id": "red",
+   "lane": "fixed",
+   "col": 2,
+   "type": "security",
+   "label": "RED",
+   "sublabel": "merge blocked",
+   "width": 128
+  },
+  {
+   "id": "coldrev",
+   "lane": "broken",
+   "col": 3,
+   "type": "external",
+   "label": "reviewer",
+   "sublabel": "reads the diff",
+   "width": 130
+  },
+  {
+   "id": "prolog",
+   "lane": "fixed",
+   "col": 3,
+   "type": "backend",
+   "label": "feed prose_prologue",
+   "sublabel": "first para verbatim",
+   "width": 132
+  },
+  {
+   "id": "gap",
+   "lane": "broken",
+   "col": 4,
+   "type": "security",
+   "label": "context gap",
+   "sublabel": "guessed 10%+",
+   "width": 120
+  },
+  {
+   "id": "post",
+   "lane": "fixed",
+   "col": 4,
+   "type": "messagebus",
+   "label": "digest post",
+   "sublabel": "prose \u2192 before \u2192 after",
+   "width": 138
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "from": "author",
+   "to": "baregate",
+   "label": "pre-C9"
+  },
+  {
+   "id": "e5",
+   "from": "author",
+   "to": "gate9",
+   "label": "C9",
+   "variant": "emphasis"
+  },
+  {
+   "id": "e2",
+   "from": "baregate",
+   "to": "coldpng",
+   "label": "file exists"
+  },
+  {
+   "id": "e6",
+   "from": "gate9",
+   "to": "red",
+   "label": "no prose",
+   "variant": "security"
+  },
+  {
+   "id": "e7",
+   "from": "gate9",
+   "to": "prolog",
+   "label": "prose ok",
+   "variant": "emphasis"
+  },
+  {
+   "id": "e3",
+   "from": "coldpng",
+   "to": "coldrev",
+   "label": "title-first post"
+  },
+  {
+   "id": "e4",
+   "from": "coldrev",
+   "to": "gap",
+   "label": "opens diff",
+   "variant": "security"
+  },
+  {
+   "id": "e8",
+   "from": "prolog",
+   "to": "post",
+   "label": "top line",
+   "variant": "emphasis"
+  }
+ ],
+ "mainPath": [
+  "author",
+  "gate9",
+  "prolog",
+  "post"
+ ],
+ "cards": [
+  {
+   "dot": "rose",
+   "title": "broken today",
+   "items": [
+    "gate checks file, not story",
+    "fix PNGs hide the disease",
+    "reviewer context = diff re-read"
+   ]
+  },
+  {
+   "dot": "emerald",
+   "title": "after C9",
+   "items": [
+    "machine: prose header presence",
+    "reader: 90/90 judgement",
+    "canvas carries its own why"
+   ]
+  }
+ ]
+}

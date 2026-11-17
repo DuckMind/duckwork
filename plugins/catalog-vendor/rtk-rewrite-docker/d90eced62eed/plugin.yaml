@@ -1,0 +1,23 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: rtk-rewrite-docker
+version: "0.1.0"
+description: Rewrite Duckwork terminal commands through RTK, with Docker and remote backend support.
+author: RTK Contributors
+license: Apache-2.0
+homepage: https://github.com/rtk-ai/rtk
+hooks:
+  - pre_tool_call
+provides_hooks:
+  - pre_tool_call
+# No Python dependencies: all rewrite logic lives in the external `rtk` binary,
+# which must be present on PATH (or pointed to via RTK_BIN) on the Duckwork host.
+# The adapter fails open to the original command when the binary is missing.
+python_dependencies: []
+# Per-profile setting: plugins.entries.rtk-rewrite-docker.settings.backends
+# Default is local only. Add docker (or ssh, ...) only when the execution
+# environment ALSO contains `rtk` (see container/Containerfile).
+config_schema:
+  backends:
+    type: list
+    default: [local]
+    description: Terminal backends whose commands may be rewritten. Needs rtk inside that backend.

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=77,<85"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-plugin-qdrant-memory"
+version = "0.2.2"
+description = "Durable Qdrant memory for Duckwork, standalone CLI and local MCP"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = ["qdrant-client>=1.15,<2", "httpx>=0.28,<1", "portalocker>=3.2,<4"]
+
+[project.scripts]
+qdrant-memory = "qdrant_memory.standalone:main"
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.30,<3"]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Repository = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+Changelog = "https://github.com/DuckMind/duckwork"
+MCP = "https://github.com/cnkang/qdrant-memory-mcp"
+Skill = "https://github.com/cnkang/skills/tree/main/qdrant-memory"
+
+[project.entry-points."duckwork_agent.memory_providers"]
+qdrant-memory = "qdrant_memory:register"
+
+[dependency-groups]
+test = ["pytest>=8,<10", "pytest-cov>=6,<8", "ruamel.yaml>=0.18.16,<0.20", "mcp>=1.30,<3"]
+
+[tool.setuptools.packages.find]
+include = ["qdrant_memory*"]
+
+[tool.setuptools.package-data]
+qdrant_memory = ["plugin.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

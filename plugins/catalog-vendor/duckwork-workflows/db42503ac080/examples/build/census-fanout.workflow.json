@@ -1,0 +1,85 @@
+{
+  "grammar": "wf/1",
+  "name": "census-fanout",
+  "description": "Deterministic-tally census: a fan-out auditing N generic machine items where the ONLY law is that every dispatched item is answered or NAMED missing, computed from the machine record and never from prose. The census-roster echo node carries the MASTER ITEM LIST (five portable audit items, each answerable with one stock shell command - nothing estate-specific). The audit fan-out dispatches every item (NO quorum: a census is a barrier) and each child replies against the per-item contract {item, observed, ok}. The tally synth node READS audit.all_results (every dispatched item WITH its status) and reconciles it against roster.master: it counts committed vs dispatched, names every dispatched-but-unanswered or missing item VERBATIM from the record, prints the tally table (item -> ok/missing/failed) and a verdict line. battery-gauge is a DESIGNED dead gauge: on a machine with no battery no stock command answers it, so the honest child reports observed 'NO_GAUGE_FOUND' and marks ok:false - the tally MUST surface that row loudly, and an ok:true on battery-gauge is itself a red row ('dead gauge reported alive'), never a green pass. The report node opts into the tally's harvest (after_partial) so even a damaged tally cannot silently darken the census. This drills a distinct muscle beside quorum-probe's speed/coverage contrast: nobody races, nobody reconciles two shapes - one roster, one barrier, one tally computed from the record.",
+  "provenance": {
+    "owner": "duckwork-workflows",
+    "source": "duckwork-workflows/examples/census-fanout.workflow.json"
+  },
+  "nodes": [
+    {
+      "id": "census-roster",
+      "type": "echo",
+      "output": {
+        "items": [
+          {"item": "kernel-release", "cmd": "uname -r"},
+          {"item": "root-disk-space", "cmd": "df -k / | tail -1"},
+          {"item": "machine-arch", "cmd": "uname -m"},
+          {"item": "utc-clock", "cmd": "date -u +%FT%TZ"},
+          {"item": "battery-gauge", "cmd": "cat /sys/class/power_supply/*/capacity 2>/dev/null || echo NO_GAUGE_FOUND"}
+        ],
+        "master": ["kernel-release", "root-disk-space", "machine-arch", "utc-clock", "battery-gauge"],
+        "law": "master item list for the barrier census: every name in 'master' must be answered by an audit item whose envelope carries a REAL observation, or be named by the tally as missing/failed - never a silent loss, never a green row nobody dispatched."
+      }
+    },
+    {
+      "id": "audit",
+      "type": "agent",
+      "after": ["census-roster"],
+      "max_turns": 5,
+      "timeout": 600,
+      "fanout": {
+        "items_from": "census-roster.items",
+        "goal": "Audit item '{item}'. Run the command listed for this item EXACTLY as written, with your terminal tool, then answer honestly against the contract. Reply with ONLY fenced json {\"item\": \"{item}\", \"observed\": \"<first line of stdout, verbatim>\", \"ok\": <true|false>} and nothing else. ok means: the command ran AND its output is a real observation of the thing this item names. If the command finds nothing to observe (for example it prints the NO_GAUGE_FOUND marker), set observed to that verbatim line and ok:false - an honest dead gauge is worth more than a fabricated reading, and a later tally node reads your fields from the record.",
+        "schema": {
+          "type": "object",
+          "required": ["item", "observed", "ok"],
+          "properties": {
+            "item": {"type": "string"},
+            "observed": {"type": "string"},
+            "ok": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    {
+      "id": "tally",
+      "type": "agent",
+      "after": ["census-roster", "audit"],
+      "max_turns": 8,
+      "timeout": 600,
+      "inputs": ["census-roster.master", "audit.all_results"],
+      "schema": {
+        "type": "object",
+        "required": ["dispatched", "committed", "missing", "rows", "verdict"],
+        "properties": {
+          "dispatched": {"type": "integer"},
+          "committed": {"type": "integer"},
+          "missing": {"type": "array", "items": {"type": "string"}},
+          "rows": {"type": "array"},
+          "verdict": {"type": "string"}
+        }
+      },
+      "goal": "You are the census tally: the census is honest ONLY if every dispatched item is accounted for - answered, failed, or NAMED missing - and the counting happens from the record, never from prose. Under ## Inputs you have census-roster.master (the MASTER ITEM LIST - every item name the census declared) and audit.all_results (EVERY dispatched item WITH its status - read the dispatched set FROM this list, do not assume it). For each master item decide from the record: committed-ok (status done/partial AND output.ok true), committed-failed (status done/partial AND output.ok false - a failed audit is still an answer; battery-gauge is designed to be this row on a machine with no battery, and an ok:true on it is suspicious: quote what the child claimed and call the row 'dead gauge reported alive'), or missing (no item carries that name, or its status is failed/schema-dead - name it and quote its recorded error). Build rows covering EVERY master item: one entry per item {item, state: ok|failed|missing, evidence: <the child's observed line or error, quoted verbatim from the record>}; an item nobody dispatched must appear with state 'missing', never dropped. dispatched = the count of items actually present in all_results; committed = the count with status done or partial; missing = the master names with no committed answer. verdict: one line - if any row is missing or failed it MUST name those items (e.g. 'TALLY: 3 ok / 1 failed(battery-gauge: NO_GAUGE_FOUND) / 1 missing'); only a full roster of ok rows may read as a clean census. Do not run commands or verify beyond ## Inputs - judge only what the record gives, then answer once with ONLY that fenced json."
+    },
+    {
+      "id": "report",
+      "type": "agent",
+      "after": ["tally"],
+      "after_partial": true,
+      "max_turns": 8,
+      "timeout": 600,
+      "inputs": ["tally"],
+      "schema": {
+        "type": "object",
+        "required": ["tally", "verdict", "honest_statement"],
+        "properties": {
+          "tally": {"type": "object"},
+          "verdict": {"type": "string"},
+          "honest_statement": {"type": "string"}
+        }
+      },
+      "goal": "Publish the census result HONESTLY from the committed record. Under ## Inputs you have tally - the machine tally computed from the fan-out record. Copy its dispatched/committed/missing numbers and rows VERBATIM (do not recount, invent, or round anything), reprint its verdict line, and write honest_statement: one paragraph stating the census exactly as the tally states it - every failed and every missing item named by name with its evidence (the designed dead gauge battery-gauge reads as a failed row or an alive-reported dead row, never as a pass); if the tally is absent or incomplete, say so plainly and name what is unknown - never upgrade an unfinished census into a green one. Reply with ONLY fenced json {\"tally\": <the tally object copied verbatim>, \"verdict\": \"<the tally verdict copied verbatim>\", \"honest_statement\": \"<the paragraph>\"} and nothing else. Do not explore or verify beyond ## Inputs - report only what is given, then answer once."
+    }
+  ]
+}

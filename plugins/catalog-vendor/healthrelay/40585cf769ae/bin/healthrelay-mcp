@@ -1,0 +1,197 @@
+#!/bin/sh
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+# Starts the read-only HealthRelay MCP server over stdio for your own receiver database.
+# The database path is never stored in this package. Resolution order:
+#   1. $HEALTHRELAY_DB  (only matters when you run this script by hand: Duckwork does not pass it to MCP servers)
+#   2. first line of ~/.config/healthrelay/db-path  (the route Duckwork uses)
+# The server is `health-bridge` on PATH.
+set -eu
+
+# Renders a value as a JSON string, quotes included. NULL when the value is empty.
+# POSIX sh has no JSON encoder, so the escaping is done with awk: backslash, quote, the
+# line breaks and every other control character (as \u00xx) are escaped.
+json_value() {
+  if [ -z "$1" ]; then printf 'null'; return 0; fi
+  printf '%s' "$1" | LC_ALL=C awk '
+    BEGIN {
+      ORS = ""
+      # Control characters get \u00xx escapes, except tab, newline and carriage return,
+      # which get the short forms below. Indexed by position, never by the character itself.
+      ctrl = ""
+      n = 0
+      for (code = 1; code < 32; code++) {
+        if (code == 9 || code == 10 || code == 13) continue
+        ctrl = ctrl sprintf("%c", code)
+        codes[++n] = code
+      }
+    }
+    {
+      if (NR > 1) printf "\\n"
+      len = length($0)
+      for (i = 1; i <= len; i++) {
+        c = substr($0, i, 1)
+        if (c == "\\") printf "\\\\"
+        else if (c == "\"") printf "\\\""
+        else if (c == "\t") printf "\\t"
+        else if (c == "\r") printf "\\r"
+        else {
+          p = index(ctrl, c)
+          if (p > 0) printf "\\u%04x", codes[p]
+          else printf "%s", c
+        }
+      }
+    }' | sed 's/^/"/; s/$/"/'
+}
+json_bool() { if [ "$1" = true ]; then printf 'true'; else printf 'false'; fi; }
+
+# --check mode: diagnose without starting the server. --check --json prints the same
+# checks as one JSON object on stdout instead of the text report (exit codes are equal).
+if [ "${1:-}" = "--check" ]; then
+  json=0
+  for arg in "$@"; do
+    if [ "$arg" = "--json" ]; then json=1; fi
+  done
+
+  home_dir="$HOME"
+  db_path_file="$home_dir/.config/healthrelay/db-path"
+  db_path_file_found=false
+  if [ -r "$db_path_file" ]; then
+    db_path_file_found=true
+  fi
+
+  db="${HEALTHRELAY_DB:-}"
+  db_source="none"
+  if [ -n "$db" ]; then
+    db_source="environment"
+  elif [ "$db_path_file_found" = true ]; then
+    db="$(head -n 1 "$db_path_file")"
+    db_source="db_path_file"
+  fi
+
+  db_readable=false
+  db_readable_reason="no (no path configured)"
+  if [ -n "$db" ]; then
+    if [ -f "$db" ] && [ -r "$db" ]; then
+      db_readable=true
+      db_readable_reason="yes"
+    elif [ -f "$db" ]; then
+      db_readable_reason="no (permission denied)"
+    else
+      db_readable_reason="no (file not found)"
+    fi
+  fi
+
+  # Schema readiness (informational only: never changes the exit code or the result below).
+  # Reads only the migration bookkeeping, never a data table, and never prints a data value.
+  schema="not_checked"
+  schema_reason="not checked (database unreadable as SQLite)"
+  if [ "$db_readable" = true ]; then
+    if ! command -v sqlite3 >/dev/null 2>&1; then
+      schema_reason="not checked (sqlite3 not found)"
+    elif applied="$(sqlite3 -readonly "$db" "select migration_id from schema_migrations where migration_id in ('013_intake_context','014_intake_context_tokens');" 2>/dev/null)"; then
+      has13=0; has14=0
+      case "$applied" in *013_intake_context*) has13=1;; esac
+      case "$applied" in *014_intake_context_tokens*) has14=1;; esac
+      if [ "$has13" = 1 ] && [ "$has14" = 1 ]; then
+        schema="ready"
+        schema_reason="intake context ready (migrations 013, 014)"
+      else
+        schema="not_available"
+        schema_reason="intake context not available (receiver older than migration 013/014)"
+      fi
+    fi
+  fi
+
+  # Launcher detection
+  launcher=""
+  if command -v health-bridge >/dev/null 2>&1; then
+    launcher="$(command -v health-bridge)"
+  fi
+
+  # Version
+  version=""
+  if [ -n "$launcher" ]; then
+    version="$(health-bridge --version 2>/dev/null || true)"
+  fi
+
+  # Final result
+  if [ "$db_readable" = true ] && [ -n "$launcher" ]; then
+    result="ok"
+    rc=0
+  else
+    result="not_ready"
+    rc=2
+  fi
+
+  if [ "$json" = 1 ]; then
+    printf '{'
+    printf '"home": %s, ' "$(json_value "$home_dir")"
+    printf '"db_path_file": %s, ' "$(json_value "$db_path_file")"
+    printf '"db_path_file_found": %s, ' "$(json_bool "$db_path_file_found")"
+    printf '"database_source": %s, ' "$(json_value "$db_source")"
+    printf '"database_path": %s, ' "$(json_value "$db")"
+    printf '"database_readable": %s, ' "$(json_bool "$db_readable")"
+    printf '"launcher": %s, ' "$(json_value "$launcher")"
+    printf '"health_bridge_version": %s, ' "$(json_value "$version")"
+    printf '"schema": %s, ' "$(json_value "$schema")"
+    printf '"result": %s' "$(json_value "$result")"
+    printf '}\n'
+    exit "$rc"
+  fi
+
+  echo "healthrelay check"
+  # The db-path file is read from the HOME of the Duckwork process (the MCP server's HOME). If this check
+  # runs from another shell (or, in Docker, the agent terminal) the HOME can differ: compare this line.
+  echo "home used for db-path: $home_dir"
+  if [ "$db_path_file_found" = true ]; then
+    echo "db-path file: $db_path_file (found)"
+  else
+    echo "db-path file: $db_path_file (missing)"
+  fi
+
+  case "$db_source" in
+    environment) echo "database source: environment (HEALTHRELAY_DB)";;
+    db_path_file) echo "database source: db-path file (~/.config/healthrelay/db-path)";;
+    *) echo "database source: none";;
+  esac
+
+  if [ -n "$db" ]; then
+    echo "database path: $db"
+  else
+    echo "database path: (not set)"
+  fi
+  echo "database readable: $db_readable_reason"
+
+  if [ "$db_readable" = true ]; then
+    echo "schema: $schema_reason"
+  fi
+
+  if [ -n "$launcher" ]; then
+    echo "launcher: $launcher"
+  else
+    echo "launcher: none"
+  fi
+  echo "health-bridge version: ${version:-unknown}"
+
+  if [ "$rc" = 0 ]; then
+    echo "result: OK (could start)"
+  else
+    echo "result: NOT READY - write your receiver database path to ~/.config/healthrelay/db-path and make sure health-bridge is on PATH"
+  fi
+  exit "$rc"
+fi
+
+db="${HEALTHRELAY_DB:-}"
+if [ -z "$db" ] && [ -r "$HOME/.config/healthrelay/db-path" ]; then
+  db="$(head -n 1 "$HOME/.config/healthrelay/db-path")"
+fi
+if [ -z "$db" ] || [ ! -f "$db" ]; then
+  echo "healthrelay: write your receiver database path to ~/.config/healthrelay/db-path (then start a new session)" >&2
+  exit 2
+fi
+
+if command -v health-bridge >/dev/null 2>&1; then
+  exec health-bridge mcp start --db "$db"
+fi
+echo "healthrelay: install the receiver (health-bridge) so it is on the PATH Duckwork runs with" >&2
+exit 2

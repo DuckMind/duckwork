@@ -1,0 +1,570 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/cybertecla/hermes-telemetry-dashboard/1399a77f8096c536e51dbd5e732da44ff345c354/assets/screenshot-drilldown.png": "assets/screenshot-drilldown.png",
+      "https://raw.githubusercontent.com/cybertecla/hermes-telemetry-dashboard/1399a77f8096c536e51dbd5e732da44ff345c354/assets/screenshot-overview.png": "assets/screenshot-overview.png"
+    },
+    "image": null,
+    "omitted": [],
+    "screenshots": [
+      "assets/screenshot-overview.png",
+      "assets/screenshot-drilldown.png"
+    ],
+    "deduplicated": [
+      {
+        "before_path": "_catalog_assets/assets/screenshot-drilldown.png",
+        "after_path": "assets/screenshot-drilldown.png",
+        "before_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "after_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "before_bytes": 98599,
+        "after_bytes": 98599,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      },
+      {
+        "before_path": "_catalog_assets/assets/screenshot-overview.png",
+        "after_path": "assets/screenshot-overview.png",
+        "before_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "after_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "before_bytes": 95267,
+        "after_bytes": 95267,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      }
+    ]
+  },
+  "catalog_id": "hermes-telemetry-dashboard",
+  "content_id": "dda3bd199a0a",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 180,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "00c74bc571aa93270ab3baf51866f29c3f74ee4460b691b5cd8da3b7f1a81ce4"
+    },
+    {
+      "bytes": 1067,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "48b5995988797f0b78849d5c77cebb2c1f6a702d3dbd0914a588923d58ab7fe8"
+    },
+    {
+      "bytes": 1805,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "55f0cea34d05081ec11a7cc2b2d7c30d7ee7a048dec08c0470a40007462754d4"
+    },
+    {
+      "bytes": 408,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "91cc109743322fba35c3048cf8faa42d783135d3f5a5be4a8f620920c0095a31"
+    },
+    {
+      "bytes": 98599,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/screenshot-drilldown.png",
+      "sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a"
+    },
+    {
+      "bytes": 95267,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/screenshot-overview.png",
+      "sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07"
+    },
+    {
+      "bytes": 98599,
+      "mode": "100644",
+      "path": "assets/screenshot-drilldown.png",
+      "sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a"
+    },
+    {
+      "bytes": 95267,
+      "mode": "100644",
+      "path": "assets/screenshot-overview.png",
+      "sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07"
+    },
+    {
+      "bytes": 14739,
+      "mode": "100644",
+      "path": "dashboard/dist/index.js",
+      "sha256": "5590912aee317d51ddf4f4a8f8412c1b6e1a62ea219411a8cc447e608089decd"
+    },
+    {
+      "bytes": 4507,
+      "mode": "100644",
+      "path": "dashboard/dist/style.css",
+      "sha256": "4cc1184f20aeb999cdbf5a590d6a827ffa4862fe965a09a11fb3785a73a5f956"
+    },
+    {
+      "bytes": 503,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "ec2de8741355374e5b19b283aba579f8d0165b12bbc4fdea6aa184d3a70dbf4a"
+    },
+    {
+      "bytes": 14698,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "c34b99a1e64bd168df2991326e24aa983396cf7da1c800e840973a1855ef8882"
+    },
+    {
+      "bytes": 9305,
+      "mode": "100644",
+      "path": "docs/telemetry-inventory.md",
+      "sha256": "3bf0f2f3cc40e9f2a85ce4c96914dcb2630fcb9aac254b5db391581e10715a5c"
+    },
+    {
+      "bytes": 227,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "2d559a6613c69cae1136226763cd56377bd8e8961e478e2bd37ffba0afb62408"
+    },
+    {
+      "bytes": 16150,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "977a74cfcf7f5c5e1a05e19bf8aef35882f842c423075cd654cb72315400a05f"
+    },
+    {
+      "bytes": 20050,
+      "mode": "100644",
+      "path": "tests/test_plugin_api.py",
+      "sha256": "507af8ddb8fe74f28a4b5cda00bf04cc0bbb7a7537a94d0fa38dcbfbf223e3ea"
+    }
+  ],
+  "input_manifest_sha256": "dda3bd199a0a27b5543d048eae3879547e2865b28ce859ff1756363ec9237f27",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "48b5995988797f0b78849d5c77cebb2c1f6a702d3dbd0914a588923d58ab7fe8",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "dashboard/dist/index.js",
+      "dashboard/dist/style.css",
+      "dashboard/manifest.json",
+      "dashboard/plugin_api.py",
+      "docs/telemetry-inventory.md",
+      "plugin.yaml",
+      "tests/conftest.py",
+      "tests/test_plugin_api.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/cybertecla/hermes-telemetry-dashboard",
+    "sha": "1399a77f8096c536e51dbd5e732da44ff345c354",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/cybertecla/hermes-telemetry-dashboard",
+  "original_sha": "1399a77f8096c536e51dbd5e732da44ff345c354",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "00c74bc571aa93270ab3baf51866f29c3f74ee4460b691b5cd8da3b7f1a81ce4",
+      "bytes": 180,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "48b5995988797f0b78849d5c77cebb2c1f6a702d3dbd0914a588923d58ab7fe8",
+      "bytes": 1067,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "72b6da5a62cb0e317f24717747ca7b201a1417c03a6155cc5bab025d0726debc",
+      "bytes": 1799,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "f74a9f29f850e0e49b19331167bff744b777e949eeb4e0bcc1955c3a1ec0b81e",
+      "bytes": 414,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/screenshot-drilldown.png",
+      "sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+      "bytes": 98599,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/screenshot-overview.png",
+      "sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+      "bytes": 95267,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/index.js",
+      "sha256": "caa2d70bfa6f3b65aef359b20e345d2c39adebdaf5fe50bde5cab2ee20d0c53f",
+      "bytes": 14761,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/style.css",
+      "sha256": "5c88f23c0e1bb8a75856232843c83be4907ce865f7f3f860ea4c6143edb91275",
+      "bytes": 4509,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "919c6df2af1dff04f7b986d27462d6563f29144bd640217780ffbc52ab05627f",
+      "bytes": 509,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "721925be7e49f67b9624fa346a0dc3e1f8c34250ca668ee6cf646ac243b76a6d",
+      "bytes": 14748,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/telemetry-inventory.md",
+      "sha256": "e9aede0a74a80c999627a854671a91d3586c1f3d0432ede7785dcbd904b5199b",
+      "bytes": 9451,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "f3c76ec616b9aa2b38279125fd17d2f1f8d13fc0d692e43c264823a5198e3a2f",
+      "bytes": 231,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "301a4293b999195755cdf6dcedc200c5d4b4049508ba60a8d955c133dcdf6078",
+      "bytes": 16238,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_api.py",
+      "sha256": "9907792130bac0cc2c4f3ec0d4a06fcdedaba41b80cf4d068d9c95e654310add",
+      "bytes": 20090,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "f668ec889609e0b511ca64893984be20ba831cde4cd1dff0542b52a090153390",
+  "pin_verification": {
+    "archive_bytes": 200220,
+    "archive_sha256": "1a361cf0126f44bd237dc1782ec83e274f77c15360460b0bb89f20396200dba1",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "1399a77f8096c536e51dbd5e732da44ff345c354",
+    "verified_commit_marker": "1399a77f8096c536e51dbd5e732da44ff345c354"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "96523fd47cffc1cec2cdab9919437704e23a578c400f27807063bd5d1885f9fd",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "00c74bc571aa93270ab3baf51866f29c3f74ee4460b691b5cd8da3b7f1a81ce4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "00c74bc571aa93270ab3baf51866f29c3f74ee4460b691b5cd8da3b7f1a81ce4",
+        "source": ".gitignore",
+        "final_output_sha256": "00c74bc571aa93270ab3baf51866f29c3f74ee4460b691b5cd8da3b7f1a81ce4",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "00c74bc571aa93270ab3baf51866f29c3f74ee4460b691b5cd8da3b7f1a81ce4"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "48b5995988797f0b78849d5c77cebb2c1f6a702d3dbd0914a588923d58ab7fe8",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "48b5995988797f0b78849d5c77cebb2c1f6a702d3dbd0914a588923d58ab7fe8",
+        "source": "LICENSE",
+        "final_output_sha256": "48b5995988797f0b78849d5c77cebb2c1f6a702d3dbd0914a588923d58ab7fe8",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "48b5995988797f0b78849d5c77cebb2c1f6a702d3dbd0914a588923d58ab7fe8"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "55f0cea34d05081ec11a7cc2b2d7c30d7ee7a048dec08c0470a40007462754d4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c05f83a8c003bd4755e6900a470bb32cab6f0462c98933181319aa8ca1ebd286",
+        "source": "README.md",
+        "final_output_sha256": "72b6da5a62cb0e317f24717747ca7b201a1417c03a6155cc5bab025d0726debc",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "c05f83a8c003bd4755e6900a470bb32cab6f0462c98933181319aa8ca1ebd286"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "91cc109743322fba35c3048cf8faa42d783135d3f5a5be4a8f620920c0095a31",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f74a9f29f850e0e49b19331167bff744b777e949eeb4e0bcc1955c3a1ec0b81e",
+        "source": "__init__.py",
+        "final_output_sha256": "f74a9f29f850e0e49b19331167bff744b777e949eeb4e0bcc1955c3a1ec0b81e",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "f74a9f29f850e0e49b19331167bff744b777e949eeb4e0bcc1955c3a1ec0b81e"
+      },
+      {
+        "destination": "assets/screenshot-drilldown.png",
+        "input_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "source": "_catalog_assets/assets/screenshot-drilldown.png",
+        "final_output_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "cli_destination": "_catalog_assets/assets/screenshot-drilldown.png",
+        "previous_staging_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "assets/screenshot-overview.png",
+        "input_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "source": "_catalog_assets/assets/screenshot-overview.png",
+        "final_output_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "cli_destination": "_catalog_assets/assets/screenshot-overview.png",
+        "previous_staging_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "assets/screenshot-drilldown.png",
+        "input_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "source": "assets/screenshot-drilldown.png",
+        "final_output_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+        "cli_destination": "assets/screenshot-drilldown.png",
+        "previous_staging_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a"
+      },
+      {
+        "destination": "assets/screenshot-overview.png",
+        "input_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "source": "assets/screenshot-overview.png",
+        "final_output_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+        "cli_destination": "assets/screenshot-overview.png",
+        "previous_staging_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07"
+      },
+      {
+        "destination": "dashboard/dist/index.js",
+        "input_sha256": "5590912aee317d51ddf4f4a8f8412c1b6e1a62ea219411a8cc447e608089decd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "caa2d70bfa6f3b65aef359b20e345d2c39adebdaf5fe50bde5cab2ee20d0c53f",
+        "source": "dashboard/dist/index.js",
+        "final_output_sha256": "caa2d70bfa6f3b65aef359b20e345d2c39adebdaf5fe50bde5cab2ee20d0c53f",
+        "cli_destination": "dashboard/dist/index.js",
+        "previous_staging_sha256": "caa2d70bfa6f3b65aef359b20e345d2c39adebdaf5fe50bde5cab2ee20d0c53f"
+      },
+      {
+        "destination": "dashboard/dist/style.css",
+        "input_sha256": "4cc1184f20aeb999cdbf5a590d6a827ffa4862fe965a09a11fb3785a73a5f956",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5c88f23c0e1bb8a75856232843c83be4907ce865f7f3f860ea4c6143edb91275",
+        "source": "dashboard/dist/style.css",
+        "final_output_sha256": "5c88f23c0e1bb8a75856232843c83be4907ce865f7f3f860ea4c6143edb91275",
+        "cli_destination": "dashboard/dist/style.css",
+        "previous_staging_sha256": "5c88f23c0e1bb8a75856232843c83be4907ce865f7f3f860ea4c6143edb91275"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "ec2de8741355374e5b19b283aba579f8d0165b12bbc4fdea6aa184d3a70dbf4a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "919c6df2af1dff04f7b986d27462d6563f29144bd640217780ffbc52ab05627f",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "919c6df2af1dff04f7b986d27462d6563f29144bd640217780ffbc52ab05627f",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "919c6df2af1dff04f7b986d27462d6563f29144bd640217780ffbc52ab05627f"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "c34b99a1e64bd168df2991326e24aa983396cf7da1c800e840973a1855ef8882",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "721925be7e49f67b9624fa346a0dc3e1f8c34250ca668ee6cf646ac243b76a6d",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "721925be7e49f67b9624fa346a0dc3e1f8c34250ca668ee6cf646ac243b76a6d",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "721925be7e49f67b9624fa346a0dc3e1f8c34250ca668ee6cf646ac243b76a6d"
+      },
+      {
+        "destination": "docs/telemetry-inventory.md",
+        "input_sha256": "3bf0f2f3cc40e9f2a85ce4c96914dcb2630fcb9aac254b5db391581e10715a5c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e9aede0a74a80c999627a854671a91d3586c1f3d0432ede7785dcbd904b5199b",
+        "source": "docs/telemetry-inventory.md",
+        "final_output_sha256": "e9aede0a74a80c999627a854671a91d3586c1f3d0432ede7785dcbd904b5199b",
+        "cli_destination": "docs/telemetry-inventory.md",
+        "previous_staging_sha256": "e9aede0a74a80c999627a854671a91d3586c1f3d0432ede7785dcbd904b5199b"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "2d559a6613c69cae1136226763cd56377bd8e8961e478e2bd37ffba0afb62408",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f3c76ec616b9aa2b38279125fd17d2f1f8d13fc0d692e43c264823a5198e3a2f",
+        "source": "plugin.yaml",
+        "final_output_sha256": "f3c76ec616b9aa2b38279125fd17d2f1f8d13fc0d692e43c264823a5198e3a2f",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "f3c76ec616b9aa2b38279125fd17d2f1f8d13fc0d692e43c264823a5198e3a2f"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "977a74cfcf7f5c5e1a05e19bf8aef35882f842c423075cd654cb72315400a05f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "301a4293b999195755cdf6dcedc200c5d4b4049508ba60a8d955c133dcdf6078",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "301a4293b999195755cdf6dcedc200c5d4b4049508ba60a8d955c133dcdf6078",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "301a4293b999195755cdf6dcedc200c5d4b4049508ba60a8d955c133dcdf6078"
+      },
+      {
+        "destination": "tests/test_plugin_api.py",
+        "input_sha256": "507af8ddb8fe74f28a4b5cda00bf04cc0bbb7a7537a94d0fa38dcbfbf223e3ea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9907792130bac0cc2c4f3ec0d4a06fcdedaba41b80cf4d068d9c95e654310add",
+        "source": "tests/test_plugin_api.py",
+        "final_output_sha256": "9907792130bac0cc2c4f3ec0d4a06fcdedaba41b80cf4d068d9c95e654310add",
+        "cli_destination": "tests/test_plugin_api.py",
+        "previous_staging_sha256": "9907792130bac0cc2c4f3ec0d4a06fcdedaba41b80cf4d068d9c95e654310add"
+      }
+    ],
+    "manifest_sha256": "345f518f44901b59e5f5ec67e0485d95d542ca85bb91732297a8e6bd5d548a02",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "_catalog_assets/assets/screenshot-drilldown.png": "assets/screenshot-drilldown.png",
+    "_catalog_assets/assets/screenshot-overview.png": "assets/screenshot-overview.png",
+    "assets/screenshot-drilldown.png": "assets/screenshot-drilldown.png",
+    "assets/screenshot-overview.png": "assets/screenshot-overview.png",
+    "dashboard/dist/index.js": "dashboard/dist/index.js",
+    "dashboard/dist/style.css": "dashboard/dist/style.css",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "docs/telemetry-inventory.md": "docs/telemetry-inventory.md",
+    "plugin.yaml": "plugin.yaml",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/test_plugin_api.py": "tests/test_plugin_api.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-telemetry-dashboard",
+    "python_files_compiled": 4,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-telemetry-dashboard",
+  "catalog_file": "src/plugin-catalog/duckwork-telemetry-dashboard.yaml",
+  "identity": {
+    "catalog_id": "hermes-telemetry-dashboard",
+    "canonical_slug": "duckwork-telemetry-dashboard",
+    "original_manifest_name": "hermes-telemetry-dashboard",
+    "rebranded_manifest_name": "duckwork-telemetry-dashboard",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "a25fd7665585a11e6087e753b4a12ae0547ae9cbe1daa1a9024448d242754580",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "c05f83a8c003bd4755e6900a470bb32cab6f0462c98933181319aa8ca1ebd286",
+          "after_sha256": "72b6da5a62cb0e317f24717747ca7b201a1417c03a6155cc5bab025d0726debc",
+          "before_bytes": 1823,
+          "after_bytes": 1799,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "_catalog_assets/assets/screenshot-drilldown.png",
+          "after_path": "assets/screenshot-drilldown.png",
+          "before_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+          "after_sha256": "1616b5be563a9d5dffbe66a452591c4d305da42ca959990b1893015b9ee60b3a",
+          "before_bytes": 98599,
+          "after_bytes": 98599,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "_catalog_assets/assets/screenshot-overview.png",
+          "after_path": "assets/screenshot-overview.png",
+          "before_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+          "after_sha256": "9a411d0a861bb6ed16bb6360d9904f0b438bfcef1a66f6cfdf69eaadfb60df07",
+          "before_bytes": 95267,
+          "after_bytes": 95267,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

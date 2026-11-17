@@ -1,0 +1,77 @@
+# Curated stand-in for Duckwork's tools/approval_detection.DANGEROUS_PATTERNS.
+#
+# WHY THIS EXISTS
+# ---------------
+# The startup "BUILT-IN OVERLAP" warning is estimated by comparing a user's
+# regex SOURCE against Duckwork's regex SOURCES. Measuring how noisy that
+# warning is therefore requires a real built-in table -- but Duckwork is not
+# importable from the test suite (no host package on sys.path), so the suite
+# stubs it. A one-entry stub makes any count assertion vacuous: `warned` is
+# always 0 and `<= 5` can never fail.
+#
+# Plan 020 / CHANGELOG 0.4.x deliberately stopped shipping a full bundled
+# snapshot of Duckwork's table, so vendoring all 107 entries here would undo
+# that. Instead this is a MINIMAL, SCAN-SAFE subset chosen for what it
+# exercises, not for completeness.
+#
+# WHAT CHANGED, 2026-10-04 (plan 041)
+# ------------------------------------
+# The two entries formerly labelled "genuine overlap sources" -- "stop/delete
+# service (sc)" and the docker-compose lifecycle rule -- were REMOVED, because
+# they were false positives: measured against the real table, `colima stop`,
+# `colima delete`, `limactl delete` and every `podman` probe never defer to
+# them. They paired only over shared bigrams like `stop` and `delete`, so they
+# trained the suite to accept warnings that teach users to ignore the message.
+#
+# They could not simply be replaced by the real `package manager uninstall`
+# built-ins either. Those share ZERO adjacent token pairs with any shipped
+# example rule, because brace expansion fragments `uninstall` into
+# `':uninstall'` -- so adding them would drive the measured count to 0 and
+# break the lower bound. The genuine-overlap entries are therefore SYNTHETIC:
+# a near-duplicate pair that spells the same command twice, which is the shape
+# of a real deferral without depending on which shipped rule happens to
+# collide with which upstream built-in today.
+#
+# This corpus is NOT a scale model of upstream noise. It is built around the
+# shipped behaviour -- the number that actually reaches a user -- and is pinned
+# as a two-sided bound (at most 3 warnings over the shipped examples, at least
+# 2 before plan 041) so a future Duckwork table that legitimately adds a
+# bigram-sharing built-in relaxes the bound instead of failing an unrelated
+# PR's test run.
+#
+# >>> If you change this corpus, re-measure against the real table and update
+#     tests/test_overlap.py and the figures quoted in
+#     patterns.py::_regexes_suspect_overlap. That instruction is load-bearing.
+#
+# Provenance: copied verbatim from Duckwork origin/main
+# tools/approval_detection.py. Descriptions are kept because the startup
+# warning prints them and the CLI test asserts on them.
+#
+# Block style, not flow sequences: a regex alternation like (?:stop|delete)
+# contains ", " which YAML reads as a flow-sequence item separator.
+#
+#   entries: 6      (2 synthetic genuine + 4 original false-positive sources)
+
+# --- genuine overlap sources -------------------------------------------
+# Synthetic, deliberately. A corpus of only the real built-ins that shipped
+# example rules touch cannot work: the bigram heuristic matches nothing against
+# them (the package-manager uninstall rules share no adjacent token pair with
+# any shipped rule, because brace expansion fragments `uninstall` into
+# `':uninstall'`). These two are the genuine-overlap case the matcher must
+# still detect. They mirror the shape of a real deferral -- a custom rule and a
+# built-in spelling the same command differently -- without depending on which
+# shipped rule happens to collide today.
+- pattern: '\bkubectl\s+(?:delete|destroy)\b'
+  description: 'delete kubernetes resources (kubectl)'
+- pattern: '\bkubectl\s+(?:delete|destroy)\b(?![\w-])'
+  description: 'delete kubernetes resources (kubectl, boundary variant)'
+
+# --- original false-positive sources ----------------------------------
+- pattern: '\A(?=[\s\S]*\blaunchctl\s+(?:stop|kickstart|bootout|unload|kill|disable|remove)\b)(?=[\s\S]*\b(?:duckwork|ai\.duckwork)\b)'
+  description: 'stop/restart duckwork launchd service (kills running agents)'
+- pattern: '\bnohup\b.*gateway\s+run\b'
+  description: 'start gateway outside systemd (use ''systemctl --user restart duckwork-gateway'')'
+- pattern: 'gateway\s+run\b.*(&\s*$|&\s*;|\bdisown\b|\bsetsid\b)'
+  description: 'start gateway outside systemd (use ''systemctl --user restart duckwork-gateway'')'
+- pattern: '(?:^|[\n`]|\$\()\s*(?:sudo\s+(?:-[^\s]+\s+)*)?(?:env\s+(?:\w+=\S*\s+)*)?(?:(?:exec|nohup|setsid|time)\s+)*\s*brew\s+(?:-[^\s]+(?:\s+[^-\s][^\s]*)?\s+)*(?:uninstall|remove|rm)\b'
+  description: 'package manager uninstall'

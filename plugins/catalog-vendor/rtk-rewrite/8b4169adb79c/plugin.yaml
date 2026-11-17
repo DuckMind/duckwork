@@ -1,0 +1,16 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: rtk-rewrite
+version: "1.0.1"
+description: >-
+  Community (non-official) Duckwork plugin that rewrites terminal commands through
+  RTK (rtk-ai/rtk, Apache-2.0) before execution, so Duckwork sees compact command
+  output. Adds a pre_tool_call hook, an optional desktop pane and update
+  scripts. Not affiliated with the upstream RTK project.
+author: kerrz2020
+license: Apache-2.0
+homepage: https://github.com/DuckMind/duckwork
+tags: [rtk, tokens, terminal, proxy, duckwork]
+hooks:
+  - pre_tool_call
+provides_hooks:
+  - pre_tool_call

@@ -1,0 +1,178 @@
+name: CI
+
+# The backend and browser suites both need a real Duckwork checkout on sys.path
+# (tests/conftest.py imports agent.secret_scope; tests/real_app.py imports
+# duckwork_constants / duckwork_cli). Without it every pytest test errors at set-up
+# and the browser suite cannot start its real backend — that is a hard failure,
+# not a skip. Both jobs below clone the pinned tested revision for this.
+#
+# A bare clone is all that is needed: the adapter's runtime probe is
+# CAPABILITY-based (every required public seam must import and be callable), so
+# there is no install-stamp.json to write and no version string to compare. See
+# CONTRIBUTING.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: this workflow only reads the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DUCKWORK_TESTED_TAG: v0.22.3
+  DUCKWORK_TESTED_SHA: 5b147ab036d6d19131bff8d20701b5001eab844a
+
+jobs:
+  backend:
+    name: backend (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # The Duckwork checkout the suite imports requires Python >=3.11.
+        python-version: ["3.11", "3.13"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set isolated test paths
+        run: printf 'DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO=%s/duckwork-agent\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install plugin test dependencies
+        run: python -m pip install -e '.[test]'
+
+      - name: Fetch the pinned Duckwork reference checkout
+        run: |
+          git init "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO"
+          git -C "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO" remote add origin \
+            https://github.com/DuckMind/duckwork
+          git -C "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO" fetch --depth 1 origin "$DUCKWORK_TESTED_SHA"
+          git -C "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO" checkout -q FETCH_HEAD
+          test "$(git -C "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO" rev-parse HEAD)" = "$DUCKWORK_TESTED_SHA"
+
+      # A bare clone needs no install stamp: gating is capability-based.
+      - name: Run the backend suite
+        run: python -m pytest tests/ -q
+
+  browser:
+    name: browser (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        # Node >=18 is the effective floor (esbuild); package.json declares no engines.
+        node-version: ["22", "24"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set isolated test paths
+        run: printf 'DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO=%s/duckwork-agent\nTMPDIR=%s\n' "$RUNNER_TEMP" "$RUNNER_TEMP" >> "$GITHUB_ENV"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Set up Python (real backend for the browser suite)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install plugin test dependencies
+        run: python -m pip install -e '.[test]'
+
+      - name: Fetch the pinned Duckwork reference checkout
+        run: |
+          git init "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO"
+          git -C "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO" remote add origin \
+            https://github.com/DuckMind/duckwork
+          git -C "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO" fetch --depth 1 origin "$DUCKWORK_TESTED_SHA"
+          git -C "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO" checkout -q FETCH_HEAD
+          test "$(git -C "$DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO" rev-parse HEAD)" = "$DUCKWORK_TESTED_SHA"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build the Dashboard bundle
+        run: npm run build
+
+      # tests/host-css-guard.spec.mjs renders the plugin under the host's REAL
+      # stylesheet; duckwork_cli/web_dist is git-ignored upstream, so build it
+      # from the pinned checkout (tests/server.mjs answers 500 without it).
+      - name: Build the pinned Duckwork dashboard stylesheet
+        working-directory: ${{ env.DUCKWORK_MODEL_SWITCHER_DUCKWORK_REPO }}/web
+        run: npm ci && npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # Bare `npm test` shares real-server.mjs's interpreter resolver:
+      # HMS_PYTHON override, local .venv/bin/python, then python3 on PATH.
+      - name: Run the browser suite
+        run: npm test
+
+  package:
+    name: package build (Python 3.10, declared floor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install plugin test dependencies
+        run: python -m pip install -e '.[test]'
+
+      - name: Compile Python sources
+        run: >-
+          python -m compileall -q
+          src dashboard duckwork_adapter.py route_inventory.py __init__.py
+
+      - name: Install Node dependencies and build the UI
+        run: |
+          npm ci
+          npm run build
+
+      # The committed bundle is what a git install loads; fail on drift instead
+      # of shipping stale dashboard/dist assets.
+      - name: Verify committed bundles match a fresh build
+        run: |
+          git diff --exit-code -- dashboard/dist \
+            || { echo "::error::dashboard/dist is stale — run npm run build and commit the rebuilt assets"; exit 1; }
+
+      # D9: the release assembly itself must never break silently — run the
+      # real packager against a temp dir (outside the checkout) so a missing
+      # input or a manifest regression fails CI, not a user's install.
+      - name: Assemble the release package
+        run: python scripts/build_package.py --out "${RUNNER_TEMP}/assembled-package"
+
+      - name: Privacy gate
+        run: python scripts/privacy_guard.py

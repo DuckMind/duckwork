@@ -1,0 +1,29 @@
+name: blackbox
+version: "1.0.0"
+# The Duckwork release this plugin is built and tested against (pm-managed installs,
+# duckwork_yaml, the register_* routes it uses). SemVer floor, as the catalog requires.
+requires_duckwork: ">=0.21.7"
+# The libraries Blackbox imports that are not the standard library: report signing, the
+# local dashboard, and the DKG node's process supervision. Duckwork ships them in its core
+# today; declared so Blackbox keeps working if that ever changes.
+python_dependencies:
+  - "cryptography>=41,<52"
+  - "fastapi>=0.104,<1"
+  - "uvicorn>=0.31,<1"
+  - "psutil>=5.9,<9"   # Duckwork pins 7.2.2, and 8.0.0 on Android (resolved for every platform at once)
+# `backend` is the only bundled kind Duckwork auto-loads without a per-home
+# `plugins.enabled` entry (duckwork_cli/plugins.py load gate). Blackbox must watch
+# every session with zero setup, so it opts into eager auto-load this way. It
+# registers no tool backend — only the lifecycle hooks below — so the load path
+# is otherwise identical to a standalone plugin.
+kind: backend
+description: "Agent Blackbox — graph-driven agent security. Syncs a threat ruleset from the curated public Verifiable Memory graph and matches every tool call and model request against it: prompt-injection patterns, privilege-escalation tool shapes, and vulnerable dependency installs. Audit mode records findings locally; block mode refuses tool calls at/above a configured severity. It also shares privacy-safe threat reports (never prompt or command text, never secrets) with a community graph in DKG shared working memory and flags (never blocks) what other nodes report; sharing is on by default and turned off with report: false (or BLACKBOX_REPORT=0). Fail-open everywhere."
+author: Umanitek
+# Every hook register() installs, declared so `duckwork plugins validate` can check
+# the plugin registers nothing it did not declare (catalog admission rule 6).
+provides_hooks:
+  - pre_tool_call
+  - post_tool_call
+  - pre_api_request
+  - on_session_start
+  - on_session_end

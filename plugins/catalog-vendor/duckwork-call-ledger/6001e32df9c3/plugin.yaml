@@ -1,0 +1,43 @@
+{
+  "name": "duckwork-call-ledger",
+  "version": "1.0.0",
+  "requires_duckwork": ">=0.21.6",
+  "description": "Per-call cost ledger for Duckwork Desktop: every call, priced against the real bill.",
+  "author": "skappafrost",
+  "manifest_version": 1,
+  "kind": "standalone",
+  "provides_tools": [],
+  "provides_hooks": ["post_api_request", "post_auxiliary_call", "api_request_error"],
+  "provides_middleware": [],
+  "requires_env": [
+    {
+      "name": "VILAO_PAT",
+      "description": "Optional. vilao.ai Personal Access Token, used read-only to attach the real charge to each call. Skip it and every call still lands, priced by Duckwork' own estimate where the price book knows the model.",
+      "secret": true
+    }
+  ],
+  "config_schema": {
+    "language": {
+      "type": "str",
+      "default": "auto",
+      "choices": ["auto", "en", "vi"],
+      "description": "Page language. auto follows the Desktop language setting (English when a bundle is missing)."
+    },
+    "currency": {
+      "type": "str",
+      "default": "auto",
+      "choices": ["auto", "vnd", "usd"],
+      "description": "Money unit. auto uses the billing feed's own currency, else the converted estimate."
+    },
+    "lookback_days": {
+      "type": "int",
+      "default": 30,
+      "description": "Days the deep bill walk reads on first run."
+    },
+    "vilao_pat": {
+      "type": "secret",
+      "env": "VILAO_PAT",
+      "description": "Personal Access Token for vilao.ai. Read-only use; stored in the home's .env, never in config.yaml."
+    }
+  }
+}

@@ -1,0 +1,236 @@
+name: CI
+
+on:
+  push:
+    branches: [pre-release, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pr-policy:
+    name: Main PR policy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require promotion or Release Please for main
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${EVENT_NAME}" != "pull_request" ] || [ "${BASE_REF}" != "main" ]; then
+            exit 0
+          fi
+          if [ "${HEAD_REPOSITORY}" = "${REPOSITORY}" ] && \
+             [ "${HEAD_REF}" = "pre-release" ]; then
+            exit 0
+          fi
+          if [ "${HEAD_REPOSITORY}" = "${REPOSITORY}" ] && \
+             [ "${HEAD_REF}" = "release-please--branches--main" ] && \
+             [ "${PR_AUTHOR}" = "github-actions[bot]" ]; then
+            exit 0
+          fi
+          echo "Only the pre-release promotion or Release Please may target main." >&2
+          exit 1
+
+  quality:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          check-latest: false
+      - name: Install pinned quality tools
+        run: python -m pip install pytest==9.1.1 ruff==0.16.8
+      - name: Ruff check
+        run: ruff check .
+      - name: Ruff format check
+        run: ruff format --check .
+      - name: Unit tests
+        run: python -m pytest tests/
+
+  duckwork-compatibility:
+    name: Duckwork runtime compatibility
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        duckwork-ref:
+          - 3c27eb6234bf91b8ceee9e9071591b31e9b148cb # v2026.8.3 / Duckwork 0.20.0
+          - 345cd2b057a452236de401d3534b8502a7465e8d # v2026.9.14 / Duckwork 0.21.3
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: plugin
+      - name: Check out pinned Duckwork validator
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.duckwork-ref }}
+          path: duckwork-agent
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.13"
+          check-latest: false
+      - name: Install pinned Duckwork
+        run: python -m pip install -e duckwork-agent
+      - name: Check deferred startup with real Duckwork APIs
+        run: python plugin/scripts/check_startup.py
+      - name: Validate plugin contract
+        # Duckwork 0.20.0 predates this CLI command; startup is checked above on both pins.
+        if: matrix.duckwork-ref == '345cd2b057a452236de401d3534b8502a7465e8d'
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+          DUCKWORK_KANBAN_HOME: ${{ runner.temp }}/duckwork-home
+          OP_LOAD_DESKTOP_APP_SETTINGS: "false"
+          OP_BIOMETRIC_UNLOCK_ENABLED: "false"
+        run: duckwork plugins validate plugin --json
+
+  duckwork-validate:
+    name: Duckwork plugin validation
+    needs: duckwork-compatibility
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every Duckwork compatibility check to pass
+        env:
+          COMPATIBILITY_RESULT: ${{ needs.duckwork-compatibility.result }}
+        run: |
+          test "$COMPATIBILITY_RESULT" = success
+
+  plugin-scanner:
+    name: HOL plugin scanner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Scan public plugin tree
+        uses: hashgraph-online/ai-plugin-scanner-action@15c88627e5d1bced0f9b1ca162e449b421438558 # v1.2.692
+        with:
+          plugin_dir: "."
+          mode: scan
+          profile: public-marketplace
+          format: sarif
+          output: plugin-scanner.sarif
+          min_score: 80
+          fail_on_severity: high
+          upload_sarif: false
+      - name: Upload scanner SARIF
+        if: ${{ always() && hashFiles('plugin-scanner.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          sarif_file: plugin-scanner.sarif
+          category: ai-plugin-scanner
+
+  promotion-pr:
+    name: Open pre-release promotion PR
+    needs: [pr-policy, quality, duckwork-validate, plugin-scanner]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/pre-release' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Open or reuse the promotion PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROMOTION_TITLE="chore(release): promote pre-release to main"
+          PROMOTION_BODY="Promotes the validated pre-release branch to main. Merge this PR with **Create a merge commit** (not squash or rebase) so pre-release remains an ancestor of main. After the merge, Release Please will open the separate version and changelog PR; no release is published until that second PR is merged. The Duckwork catalog handoff remains manual."
+
+          CURRENT_SHA="$(
+            gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/pre-release" --jq '.object.sha'
+          )"
+          if [ "${CURRENT_SHA}" != "${GITHUB_SHA}" ]; then
+            echo "pre-release advanced while this run was validating; the newer run owns promotion."
+            exit 0
+          fi
+
+          AHEAD_BY="$(
+            gh api "repos/${GITHUB_REPOSITORY}/compare/main...pre-release" --jq '.ahead_by'
+          )"
+          if [ "${AHEAD_BY}" -eq 0 ]; then
+            echo "pre-release has no commits to promote."
+            exit 0
+          fi
+
+          OPEN_PRS="$(
+            gh api --method GET "repos/${GITHUB_REPOSITORY}/pulls" \
+              -f state=open \
+              -f base=main \
+              -f "head=${GITHUB_REPOSITORY_OWNER}:pre-release" \
+              -f per_page=100 \
+              --paginate --slurp | \
+              jq \
+                --arg repo "${GITHUB_REPOSITORY}" \
+                '[.[][] | select(
+                  .head.repo.full_name == $repo and
+                  .head.ref == "pre-release" and
+                  .base.ref == "main"
+                ) | {url: .html_url}]'
+          )"
+          OPEN_PR_COUNT="$(printf '%s' "${OPEN_PRS}" | jq 'length')"
+          if [ "${OPEN_PR_COUNT}" -gt 1 ]; then
+            echo "More than one pre-release promotion PR is open; refusing." >&2
+            exit 1
+          fi
+          if [ "${OPEN_PR_COUNT}" -eq 1 ]; then
+            PROMOTION_PR_URL="$(printf '%s' "${OPEN_PRS}" | jq -r '.[0].url')"
+            gh pr edit "${PROMOTION_PR_URL}" \
+              --title "${PROMOTION_TITLE}" \
+              --body "${PROMOTION_BODY}"
+            printf 'Promotion PR already open and normalized: %s\n' "${PROMOTION_PR_URL}"
+            exit 0
+          fi
+
+          gh pr create \
+            --repo "${GITHUB_REPOSITORY}" \
+            --base main \
+            --head pre-release \
+            --title "${PROMOTION_TITLE}" \
+            --body "${PROMOTION_BODY}"
+
+  release-please:
+    name: Release Please
+    needs: [pr-policy, quality, duckwork-validate, plugin-scanner]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      version: ${{ steps.release.outputs.version }}
+      sha: ${{ steps.release.outputs.sha }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Open or update the release PR, or publish a merged release
+        id: release
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

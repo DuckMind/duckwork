@@ -1,0 +1,419 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "ai-usage-tracker",
+  "content_id": "a2c634750d80",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 29,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "60c9bdd905fcf45ac485c680d32e9773962cf061b6f041dcddd033911558a672"
+    },
+    {
+      "bytes": 1068,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "6604867ae75c6441bb1c1cad369a74bd2083dd305a730b33504ff966db6d3643"
+    },
+    {
+      "bytes": 4457,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "ff58771046110d09dea9a122d02b7a6e963d1eea2effe783583ad3bfb9aaf1d6"
+    },
+    {
+      "bytes": 744,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "4884c1fd9b8e9ba719448c620c7523adf7df58cee1c07c70301c5858b9dc7f17"
+    },
+    {
+      "bytes": 2081,
+      "mode": "100644",
+      "path": "catalog/PR-body.md",
+      "sha256": "347e68fcb7dbe6c790f427572f8e18224fa31db7d14a3e5f878119c888280f9e"
+    },
+    {
+      "bytes": 1588,
+      "mode": "100644",
+      "path": "catalog/ai-usage-tracker.yaml",
+      "sha256": "cb80992a63bce473209f0306f345be7f0d34191c08d73134882ca5e5628d3b90"
+    },
+    {
+      "bytes": 2097,
+      "mode": "100755",
+      "path": "catalog/open-pr.sh",
+      "sha256": "fc22066985efdbe59671a8f92e47a3cc88c36dd2b59404eeef5809cf083e3000"
+    },
+    {
+      "bytes": 238,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "78ce859d34490f9d0d48e6064b2efcdcca4bab5d348305d64b2c7258c80ee8c9"
+    },
+    {
+      "bytes": 32723,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "27a46e3eb4a4d5a4b36abfd97347f8577d08291301752fa083c6d8f578f5cbca"
+    },
+    {
+      "bytes": 21331,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "183f56bb68a2afa8369f5e20b3d1a0a09133434a8524bc945638ce52e646fa9f"
+    },
+    {
+      "bytes": 140,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "755ceaec0b940dc629f54ee2f3f7d8ca836a4ce06b28173bc963f79bb61915eb"
+    }
+  ],
+  "input_manifest_sha256": "a2c634750d80d84e4b5173d4cf834e2c5f085b4fdf508b9f028643669ce0ea3f",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "6604867ae75c6441bb1c1cad369a74bd2083dd305a730b33504ff966db6d3643",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "catalog/PR-body.md",
+      "catalog/ai-usage-tracker.yaml",
+      "catalog/open-pr.sh",
+      "dashboard/manifest.json",
+      "dashboard/plugin_api.py",
+      "desktop/plugin.js",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/lvabarajithan/hermes-ai-usage-tracker",
+    "sha": "14e844f6ced5e0d618c767d726330a78c5cadadd",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/lvabarajithan/hermes-ai-usage-tracker",
+  "original_sha": "14e844f6ced5e0d618c767d726330a78c5cadadd",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "60c9bdd905fcf45ac485c680d32e9773962cf061b6f041dcddd033911558a672",
+      "bytes": 29,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "6604867ae75c6441bb1c1cad369a74bd2083dd305a730b33504ff966db6d3643",
+      "bytes": 1068,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "85adce5871dabcd0de48c620d8a195e713495f532fa0e96f2d5e9f4271e3528a",
+      "bytes": 4487,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "9a1cb571aeda29d8005a961612b6d20368d81d86eee5bf8ecc402cc8c002cc45",
+      "bytes": 748,
+      "mode": "100644"
+    },
+    {
+      "path": "catalog/PR-body.md",
+      "sha256": "679fcf0fc563984221bb761d7ae87a131f8b9f063952d22ac07614558037fbaa",
+      "bytes": 2085,
+      "mode": "100644"
+    },
+    {
+      "path": "catalog/ai-usage-tracker.yaml",
+      "sha256": "320f454145b0828ada272f4433e72647220bbe4fb6cce04956a745fb5587fa62",
+      "bytes": 1552,
+      "mode": "100644"
+    },
+    {
+      "path": "catalog/open-pr.sh",
+      "sha256": "4dee4c7869b0d136833506b87d8651e807c7546ba5ce2f9a116f265b21aae415",
+      "bytes": 2095,
+      "mode": "100755"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "a102ee88738bea0c9917e760317b97f4cc3567111a8b4ebe6b442588f0a86fa5",
+      "bytes": 240,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "42c49f1a5d6982e32b386121bb28caae0e05837105cf8aa130e29546a379c63d",
+      "bytes": 32815,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "b88a8419545a525151c11c4d75ed7970c712699525d7506e9d2ba7f3da1e4695",
+      "bytes": 21345,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "e393cf015f9f8fa28c3eacd911596acf568d6f6d1fd3ca3f1cca7727813ae23b",
+      "bytes": 142,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "114d0d82bc308d5bc96463555ae6d24f06f81297e6fdd03b0b39211d4f3baa7d",
+  "pin_verification": {
+    "archive_bytes": 19783,
+    "archive_sha256": "eb5a2f9a280af174f6bfa17744f6191e884f99080dc482ed511b057f43943649",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "14e844f6ced5e0d618c767d726330a78c5cadadd",
+    "verified_commit_marker": "14e844f6ced5e0d618c767d726330a78c5cadadd"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "af9e45edfd33f78e7e15cdad933c43772347f8dc021bb7a000d9e5be9cef2bf6",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "60c9bdd905fcf45ac485c680d32e9773962cf061b6f041dcddd033911558a672",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "60c9bdd905fcf45ac485c680d32e9773962cf061b6f041dcddd033911558a672",
+        "source": ".gitignore",
+        "final_output_sha256": "60c9bdd905fcf45ac485c680d32e9773962cf061b6f041dcddd033911558a672",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "60c9bdd905fcf45ac485c680d32e9773962cf061b6f041dcddd033911558a672"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "6604867ae75c6441bb1c1cad369a74bd2083dd305a730b33504ff966db6d3643",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "6604867ae75c6441bb1c1cad369a74bd2083dd305a730b33504ff966db6d3643",
+        "source": "LICENSE",
+        "final_output_sha256": "6604867ae75c6441bb1c1cad369a74bd2083dd305a730b33504ff966db6d3643",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "6604867ae75c6441bb1c1cad369a74bd2083dd305a730b33504ff966db6d3643"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "ff58771046110d09dea9a122d02b7a6e963d1eea2effe783583ad3bfb9aaf1d6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "85adce5871dabcd0de48c620d8a195e713495f532fa0e96f2d5e9f4271e3528a",
+        "source": "README.md",
+        "final_output_sha256": "85adce5871dabcd0de48c620d8a195e713495f532fa0e96f2d5e9f4271e3528a",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "85adce5871dabcd0de48c620d8a195e713495f532fa0e96f2d5e9f4271e3528a"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "4884c1fd9b8e9ba719448c620c7523adf7df58cee1c07c70301c5858b9dc7f17",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9a1cb571aeda29d8005a961612b6d20368d81d86eee5bf8ecc402cc8c002cc45",
+        "source": "__init__.py",
+        "final_output_sha256": "9a1cb571aeda29d8005a961612b6d20368d81d86eee5bf8ecc402cc8c002cc45",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "9a1cb571aeda29d8005a961612b6d20368d81d86eee5bf8ecc402cc8c002cc45"
+      },
+      {
+        "destination": "catalog/PR-body.md",
+        "input_sha256": "347e68fcb7dbe6c790f427572f8e18224fa31db7d14a3e5f878119c888280f9e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "45ed676c8752a1e083c7ad334f75acb68ef71ffc5fe0fbb748eb4196a99de507",
+        "source": "catalog/PR-body.md",
+        "final_output_sha256": "679fcf0fc563984221bb761d7ae87a131f8b9f063952d22ac07614558037fbaa",
+        "cli_destination": "catalog/PR-body.md",
+        "previous_staging_sha256": "45ed676c8752a1e083c7ad334f75acb68ef71ffc5fe0fbb748eb4196a99de507"
+      },
+      {
+        "destination": "catalog/ai-usage-tracker.yaml",
+        "input_sha256": "cb80992a63bce473209f0306f345be7f0d34191c08d73134882ca5e5628d3b90",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "35a9f76121fb5d86e1b2c309c6077aa33b7aa3318825d19b6b381c6747e5eee2",
+        "source": "catalog/ai-usage-tracker.yaml",
+        "final_output_sha256": "320f454145b0828ada272f4433e72647220bbe4fb6cce04956a745fb5587fa62",
+        "cli_destination": "catalog/ai-usage-tracker.yaml",
+        "previous_staging_sha256": "35a9f76121fb5d86e1b2c309c6077aa33b7aa3318825d19b6b381c6747e5eee2"
+      },
+      {
+        "destination": "catalog/open-pr.sh",
+        "input_sha256": "fc22066985efdbe59671a8f92e47a3cc88c36dd2b59404eeef5809cf083e3000",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "4dee4c7869b0d136833506b87d8651e807c7546ba5ce2f9a116f265b21aae415",
+        "source": "catalog/open-pr.sh",
+        "final_output_sha256": "4dee4c7869b0d136833506b87d8651e807c7546ba5ce2f9a116f265b21aae415",
+        "cli_destination": "catalog/open-pr.sh",
+        "previous_staging_sha256": "4dee4c7869b0d136833506b87d8651e807c7546ba5ce2f9a116f265b21aae415"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "78ce859d34490f9d0d48e6064b2efcdcca4bab5d348305d64b2c7258c80ee8c9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a102ee88738bea0c9917e760317b97f4cc3567111a8b4ebe6b442588f0a86fa5",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "a102ee88738bea0c9917e760317b97f4cc3567111a8b4ebe6b442588f0a86fa5",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "a102ee88738bea0c9917e760317b97f4cc3567111a8b4ebe6b442588f0a86fa5"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "27a46e3eb4a4d5a4b36abfd97347f8577d08291301752fa083c6d8f578f5cbca",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "42c49f1a5d6982e32b386121bb28caae0e05837105cf8aa130e29546a379c63d",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "42c49f1a5d6982e32b386121bb28caae0e05837105cf8aa130e29546a379c63d",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "42c49f1a5d6982e32b386121bb28caae0e05837105cf8aa130e29546a379c63d"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "183f56bb68a2afa8369f5e20b3d1a0a09133434a8524bc945638ce52e646fa9f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b88a8419545a525151c11c4d75ed7970c712699525d7506e9d2ba7f3da1e4695",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "b88a8419545a525151c11c4d75ed7970c712699525d7506e9d2ba7f3da1e4695",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "b88a8419545a525151c11c4d75ed7970c712699525d7506e9d2ba7f3da1e4695"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "755ceaec0b940dc629f54ee2f3f7d8ca836a4ce06b28173bc963f79bb61915eb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e393cf015f9f8fa28c3eacd911596acf568d6f6d1fd3ca3f1cca7727813ae23b",
+        "source": "plugin.yaml",
+        "final_output_sha256": "e393cf015f9f8fa28c3eacd911596acf568d6f6d1fd3ca3f1cca7727813ae23b",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "e393cf015f9f8fa28c3eacd911596acf568d6f6d1fd3ca3f1cca7727813ae23b"
+      }
+    ],
+    "manifest_sha256": "7b68e207098e699be64923b5bc1bee28d4eafb79c6b3b5828b624a5aafecffcd",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "catalog/PR-body.md": "catalog/PR-body.md",
+    "catalog/ai-usage-tracker.yaml": "catalog/ai-usage-tracker.yaml",
+    "catalog/open-pr.sh": "catalog/open-pr.sh",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "plugin.yaml": "plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "ai-usage-tracker",
+    "python_files_compiled": 2,
+    "secret_findings": 0
+  },
+  "canonical_slug": "ai-usage-tracker",
+  "catalog_file": "src/plugin-catalog/ai-usage-tracker.yaml",
+  "identity": {
+    "catalog_id": "ai-usage-tracker",
+    "canonical_slug": "ai-usage-tracker",
+    "original_manifest_name": "ai-usage-tracker",
+    "rebranded_manifest_name": "ai-usage-tracker",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "801759fdefe2d0b6b06bb44840b2a968cd830d1c9e37078678e8364cb1ccc46b",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "catalog/PR-body.md",
+          "after_path": "catalog/PR-body.md",
+          "before_sha256": "45ed676c8752a1e083c7ad334f75acb68ef71ffc5fe0fbb748eb4196a99de507",
+          "after_sha256": "679fcf0fc563984221bb761d7ae87a131f8b9f063952d22ac07614558037fbaa",
+          "before_bytes": 2105,
+          "after_bytes": 2085,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "catalog/ai-usage-tracker.yaml",
+          "after_path": "catalog/ai-usage-tracker.yaml",
+          "before_sha256": "35a9f76121fb5d86e1b2c309c6077aa33b7aa3318825d19b6b381c6747e5eee2",
+          "after_sha256": "320f454145b0828ada272f4433e72647220bbe4fb6cce04956a745fb5587fa62",
+          "before_bytes": 1592,
+          "after_bytes": 1552,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

@@ -1,0 +1,363 @@
+import { authPopupFeatures } from './state-model.mjs';
+import { buildKpiCards, summarizeProjectHeader, summarizeTimeframe } from './summary-model.mjs';
+import { DUCKWORK_THEME_TOKENS, heroBranding, resolveDuckworkThemeTokens } from './theme-model.mjs';
+import { derivePluginView } from './view-model.mjs';
+import {
+  trackDuckworkPluginCta,
+  trackDuckworkPluginFeature,
+  trackDuckworkPluginImpression,
+} from './telemetry.mjs';
+
+(function () {
+  const SDK = window.__DUCKWORK_PLUGIN_SDK__;
+  const { React } = SDK;
+  const { useEffect, useState } = SDK.hooks;
+  const { Card, CardHeader, CardTitle, CardContent, Button, Badge } = SDK.components;
+
+  const STATUS_URL = '/api/plugins/agent-analytics/status';
+  const SUMMARY_URL = '/api/plugins/agent-analytics/summary';
+  const AUTH_START_URL = '/api/plugins/agent-analytics/auth/start';
+  const AUTH_POLL_URL = '/api/plugins/agent-analytics/auth/poll';
+  const AUTH_DISCONNECT_URL = '/api/plugins/agent-analytics/auth/disconnect';
+  const DUCKWORK_SKILL_DOCS_URL = 'https://github.com/DuckMind/duckwork';
+  const LOGO_SRC = `/dashboard-plugins/agent-analytics/dist/${heroBranding.logoFile}`;
+  const ICON_SRC = `/dashboard-plugins/agent-analytics/dist/${heroBranding.iconFile}`;
+
+  function postJSON(url, body) {
+    return SDK.fetchJSON(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+    });
+  }
+
+  function BrandLockup() {
+    return React.createElement('div', { className: 'aa-duckwork-brand-lockup' },
+      React.createElement('img', {
+        alt: `${heroBranding.wordmark} icon`,
+        className: 'aa-duckwork-brand-icon',
+        src: ICON_SRC,
+      }),
+      React.createElement('img', {
+        alt: heroBranding.wordmark,
+        className: 'aa-duckwork-brand-image aa-duckwork-brand-image-wordmark',
+        src: LOGO_SRC,
+      })
+    );
+  }
+
+  function EmptyState({ children, kicker, title, actions }) {
+    return React.createElement(Card, { className: 'aa-duckwork-card aa-duckwork-empty' },
+      React.createElement(CardHeader, { className: 'aa-duckwork-header-row aa-duckwork-header-row-top' },
+        React.createElement('div', { className: 'aa-duckwork-stack aa-duckwork-stack-tight' },
+          React.createElement('p', { className: 'aa-duckwork-kicker' }, kicker),
+          React.createElement(CardTitle, { className: 'aa-duckwork-title' }, title)
+        ),
+        React.createElement(BrandLockup, null)
+      ),
+      React.createElement(CardContent, { className: 'aa-duckwork-stack' },
+        children,
+        actions ? React.createElement('div', { className: 'aa-duckwork-actions' }, actions) : null,
+      ),
+    );
+  }
+
+  function SummaryView({ summary, onRefresh, accountEmail, accountTier, onDisconnect }) {
+    const timeframe = summarizeTimeframe(summary);
+    const projectSummaries = Array.isArray(summary.projects) ? summary.projects : [];
+
+    return React.createElement('div', { className: 'aa-duckwork-stack aa-duckwork-plugin' },
+      React.createElement(Card, { className: 'aa-duckwork-card aa-duckwork-card-hero' },
+        React.createElement(CardHeader, { className: 'aa-duckwork-header-row' },
+          React.createElement('div', { className: 'aa-duckwork-stack' },
+            React.createElement(BrandLockup, null),
+            React.createElement('div', { className: 'aa-duckwork-stack aa-duckwork-stack-tight' },
+              React.createElement('div', { className: 'aa-duckwork-timeframe' },
+                React.createElement('span', { className: 'aa-duckwork-timeframe-label' }, timeframe.label),
+                React.createElement('span', { className: 'aa-duckwork-timeframe-range' }, timeframe.range)
+              )
+            )
+          ),
+          React.createElement('div', { className: 'aa-duckwork-account-row aa-duckwork-account-row-hero' },
+            React.createElement('span', { className: 'aa-duckwork-muted aa-duckwork-account-email' }, accountEmail || 'Connected'),
+            React.createElement(Badge, { variant: 'outline', className: 'aa-duckwork-badge' }, accountTier || 'connected'),
+            React.createElement(Button, { className: 'aa-duckwork-button aa-duckwork-button-light', onClick: onDisconnect }, 'Disconnect'),
+            React.createElement(Button, { className: 'aa-duckwork-button aa-duckwork-button-light', onClick: onRefresh }, 'Refresh')
+          )
+        )
+      ),
+      projectSummaries.length
+        ? React.createElement('div', { className: 'aa-duckwork-grid aa-duckwork-grid-projects' },
+            projectSummaries.map((projectSummary, index) => {
+              const header = summarizeProjectHeader(projectSummary);
+              const kpis = buildKpiCards(projectSummary);
+              const topEvents = ((projectSummary.stats || {}).events || []).slice(0, 4);
+              const topPages = ((projectSummary.pages || {}).rows || (projectSummary.pages || {}).pages || []).slice(0, 4);
+
+              return React.createElement(Card, { className: 'aa-duckwork-card', key: `${header.name}-${index}` },
+                React.createElement(CardHeader, { className: 'aa-duckwork-stack aa-duckwork-stack-tight' },
+                  React.createElement(CardTitle, { className: 'aa-duckwork-subtitle' }, header.name),
+                  React.createElement('span', { className: 'aa-duckwork-muted' }, header.originsLabel)
+                ),
+                React.createElement(CardContent, { className: 'aa-duckwork-stack' },
+                  React.createElement('div', { className: 'aa-duckwork-grid aa-duckwork-grid-kpis' },
+                    kpis.map((card) => {
+                      const metricClass = `aa-duckwork-kpi aa-duckwork-kpi-${String(card.label || '').toLowerCase()}`;
+                      return React.createElement('div', { className: metricClass, key: `${header.name}-${card.label}` },
+                        React.createElement('span', { className: 'aa-duckwork-label' }, card.label),
+                        React.createElement('strong', null, card.value)
+                      );
+                    })
+                  ),
+                  React.createElement('div', { className: 'aa-duckwork-grid aa-duckwork-grid-panels' },
+                    React.createElement(Card, { className: 'aa-duckwork-card' },
+                      React.createElement(CardHeader, null, React.createElement(CardTitle, { className: 'aa-duckwork-subtitle' }, 'Top Pages')),
+                      React.createElement(CardContent, { className: 'aa-duckwork-stack aa-duckwork-stack-tight' },
+                        topPages.length
+                          ? topPages.map((row, rowIndex) => React.createElement('div', { className: 'aa-duckwork-list-row', key: `${row.path || row.page || 'page'}-${rowIndex}` },
+                              React.createElement('span', null, row.path || row.page || '(unknown)'),
+                              React.createElement('strong', null, String(row.visitors || row.count || 0))
+                            ))
+                          : React.createElement('p', { className: 'aa-duckwork-muted' }, 'No page data yet.')
+                      )
+                    ),
+                    React.createElement(Card, { className: 'aa-duckwork-card' },
+                      React.createElement(CardHeader, null, React.createElement(CardTitle, { className: 'aa-duckwork-subtitle' }, 'Top Events')),
+                      React.createElement(CardContent, { className: 'aa-duckwork-stack aa-duckwork-stack-tight' },
+                        topEvents.length
+                          ? topEvents.map((row, rowIndex) => React.createElement('div', { className: 'aa-duckwork-list-row', key: `${row.event || 'event'}-${rowIndex}` },
+                              React.createElement('span', null, row.event || '(unknown)'),
+                              React.createElement('strong', null, String(row.count || 0))
+                            ))
+                          : React.createElement('p', { className: 'aa-duckwork-muted' }, 'No event data yet.')
+                      )
+                    )
+                  )
+                )
+              );
+            })
+          )
+        : React.createElement(Card, { className: 'aa-duckwork-card' },
+            React.createElement(CardContent, { className: 'aa-duckwork-stack' },
+              React.createElement('p', { className: 'aa-duckwork-muted' }, 'No projects found for this account.')
+            )
+          )
+    );
+  }
+
+  function AgentAnalyticsPage() {
+    const [status, setStatus] = useState(null);
+    const [summary, setSummary] = useState(null);
+    const [error, setError] = useState('');
+    const [loadingStatus, setLoadingStatus] = useState(true);
+    const [loadingSummary, setLoadingSummary] = useState(false);
+
+    const view = derivePluginView(status || {});
+    const telemetryView = loadingStatus && !status ? 'loading_status' : view;
+
+    useEffect(function () {
+      trackDuckworkPluginImpression(`view_${telemetryView}`, {
+        connected: Boolean(status && status.auth && status.auth.connected),
+      });
+    }, [telemetryView]);
+
+    useEffect(function () {
+      if (!summary) return;
+      trackDuckworkPluginFeature('summary_loaded', {
+        projectCount: Array.isArray(summary.projects) ? summary.projects.length : 0,
+      });
+    }, [summary]);
+
+    useEffect(function () {
+      const tokens = resolveDuckworkThemeTokens(document);
+      document.documentElement.style.setProperty('--aa-duckwork-shell-bg', tokens.shellBg || DUCKWORK_THEME_TOKENS.shellBg);
+      document.documentElement.style.setProperty('--aa-duckwork-panel-bg', tokens.panelBg || DUCKWORK_THEME_TOKENS.panelBg);
+      document.documentElement.style.setProperty('--aa-duckwork-panel-border', tokens.panelBorder || DUCKWORK_THEME_TOKENS.panelBorder);
+      document.documentElement.style.setProperty('--aa-duckwork-panel-text', tokens.panelText || DUCKWORK_THEME_TOKENS.panelText);
+      document.documentElement.style.setProperty('--aa-duckwork-panel-text-muted', tokens.panelTextMuted || DUCKWORK_THEME_TOKENS.panelTextMuted);
+      document.documentElement.style.setProperty('--aa-duckwork-panel-heading', tokens.panelHeading || DUCKWORK_THEME_TOKENS.panelHeading);
+      document.documentElement.style.setProperty('--aa-duckwork-kicker', tokens.kicker || DUCKWORK_THEME_TOKENS.kicker);
+      document.documentElement.style.setProperty('--aa-duckwork-link', tokens.link || DUCKWORK_THEME_TOKENS.link);
+      document.documentElement.style.setProperty('--aa-duckwork-metric-visitors', tokens.metricVisitors || DUCKWORK_THEME_TOKENS.metricVisitors);
+      document.documentElement.style.setProperty('--aa-duckwork-metric-events', tokens.metricEvents || DUCKWORK_THEME_TOKENS.metricEvents);
+      document.documentElement.style.setProperty('--aa-duckwork-metric-sessions', tokens.metricSessions || DUCKWORK_THEME_TOKENS.metricSessions);
+      document.documentElement.style.setProperty('--aa-duckwork-metric-today', tokens.metricToday || DUCKWORK_THEME_TOKENS.metricToday);
+      return function cleanup() {
+        document.documentElement.style.removeProperty('--aa-duckwork-shell-bg');
+        document.documentElement.style.removeProperty('--aa-duckwork-panel-bg');
+        document.documentElement.style.removeProperty('--aa-duckwork-panel-border');
+        document.documentElement.style.removeProperty('--aa-duckwork-panel-text');
+        document.documentElement.style.removeProperty('--aa-duckwork-panel-text-muted');
+        document.documentElement.style.removeProperty('--aa-duckwork-panel-heading');
+        document.documentElement.style.removeProperty('--aa-duckwork-kicker');
+        document.documentElement.style.removeProperty('--aa-duckwork-link');
+        document.documentElement.style.removeProperty('--aa-duckwork-metric-visitors');
+        document.documentElement.style.removeProperty('--aa-duckwork-metric-events');
+        document.documentElement.style.removeProperty('--aa-duckwork-metric-sessions');
+        document.documentElement.style.removeProperty('--aa-duckwork-metric-today');
+      };
+    }, []);
+
+    function loadStatus() {
+      setLoadingStatus(true);
+      setError('');
+      return SDK.fetchJSON(STATUS_URL)
+        .then((data) => setStatus(data))
+        .catch((err) => setError(err.message || 'Failed to load Agent Analytics plugin status.'))
+        .finally(() => setLoadingStatus(false));
+    }
+
+    function loadSummary() {
+      setLoadingSummary(true);
+      setError('');
+      return SDK.fetchJSON(SUMMARY_URL)
+        .then((data) => setSummary(data))
+        .catch((err) => setError(err.message || 'Failed to load project summary.'))
+        .finally(() => setLoadingSummary(false));
+    }
+
+    useEffect(function () {
+      loadStatus();
+    }, []);
+
+    useEffect(function () {
+      if (!status) return undefined;
+      if (derivePluginView(status) === 'pending') {
+        const interval = setInterval(function () {
+          postJSON(AUTH_POLL_URL, {})
+            .then((data) => setStatus(data))
+            .catch(() => {});
+        }, 2500);
+        return function cleanup() { clearInterval(interval); };
+      }
+      return undefined;
+    }, [status]);
+
+    useEffect(function () {
+      if (!status) return;
+      if (derivePluginView(status) === 'ready') {
+        loadSummary();
+      } else {
+        setSummary(null);
+      }
+    }, [status && status.auth && status.auth.connected ? 'connected' : 'signed_out']);
+
+    function handleStartAuth(trackTelemetry = true) {
+      if (trackTelemetry) {
+        trackDuckworkPluginCta('sign_in', { view });
+      }
+      setError('');
+      postJSON(AUTH_START_URL, {})
+        .then((data) => {
+          setStatus(data);
+          const authorizeUrl = data && data.auth && data.auth.pendingAuthRequest && data.auth.pendingAuthRequest.authorizeUrl;
+          if (authorizeUrl) window.open(authorizeUrl, 'agent_analytics_auth', authPopupFeatures());
+        })
+        .catch((err) => setError(err.message || 'Failed to start login.'));
+    }
+
+    function handleRefreshStatus() {
+      trackDuckworkPluginCta('refresh_status', { view });
+      return loadStatus();
+    }
+
+    function handleRefreshSummary() {
+      trackDuckworkPluginCta('refresh_data', { view });
+      return loadSummary();
+    }
+
+    function handleDisconnect(trackTelemetry = true) {
+      if (trackTelemetry) {
+        trackDuckworkPluginCta('disconnect', { view });
+      }
+      postJSON(AUTH_DISCONNECT_URL, {})
+        .then((data) => setStatus(data))
+        .catch((err) => setError(err.message || 'Failed to disconnect.'));
+    }
+
+    function handleStartOver() {
+      trackDuckworkPluginCta('start_over', { view });
+      handleDisconnect(false);
+      setTimeout(function () {
+        handleStartAuth(false);
+      }, 150);
+    }
+
+    function handleStartSetup() {
+      trackDuckworkPluginCta('start_setup', { view });
+    }
+
+    function handleOpenApprovalPage() {
+      trackDuckworkPluginCta('open_approval_page', { view });
+    }
+
+    if (loadingStatus && !status) {
+      return React.createElement('div', { className: 'aa-duckwork-stack aa-duckwork-plugin' },
+        React.createElement(Card, { className: 'aa-duckwork-card' },
+          React.createElement(CardContent, { className: 'aa-duckwork-stack' },
+            React.createElement('p', { className: 'aa-duckwork-muted' }, 'Loading account status…')
+          )
+        )
+      );
+    }
+
+    return React.createElement('div', { className: 'aa-duckwork-stack aa-duckwork-plugin' },
+      error ? React.createElement('div', { className: 'aa-duckwork-error' }, error) : null,
+      view === 'login'
+        ? React.createElement(Card, { className: 'aa-duckwork-card aa-duckwork-empty' },
+            React.createElement(CardContent, { className: 'aa-duckwork-stack aa-duckwork-login-shell' },
+              React.createElement('div', { className: 'aa-duckwork-stack aa-duckwork-stack-tight aa-duckwork-login-hero' },
+                React.createElement(BrandLockup, null),
+                React.createElement(CardTitle, { className: 'aa-duckwork-title' }, 'Link your Agent Analytics workspace')
+              ),
+              React.createElement('p', { className: 'aa-duckwork-muted aa-duckwork-login-note' }, 'Agent Analytics opens a hosted sign-in page in your browser. After approval, this dashboard updates automatically.'),
+              React.createElement('div', { className: 'aa-duckwork-path-grid' },
+                React.createElement('div', { className: 'aa-duckwork-path-card' },
+                  React.createElement('p', { className: 'aa-duckwork-label' }, 'I already have an account'),
+                  React.createElement('p', { className: 'aa-duckwork-muted' }, 'Sign in and connect your existing workspace.'),
+                  React.createElement(Button, { className: 'aa-duckwork-button', key: 'login', onClick: handleStartAuth }, 'Sign in')
+                ),
+                React.createElement('div', { className: 'aa-duckwork-path-card' },
+                  React.createElement('p', { className: 'aa-duckwork-label' }, 'I am new to Agent Analytics'),
+                  React.createElement('p', { className: 'aa-duckwork-muted' }, 'Run setup first, then come back here to connect.'),
+                  React.createElement('a', { className: 'aa-duckwork-button aa-duckwork-button-secondary aa-duckwork-link-button', href: DUCKWORK_SKILL_DOCS_URL, key: 'docs', target: '_blank', rel: 'noreferrer', onClick: handleStartSetup }, 'Start setup')
+                )
+              )
+            )
+          )
+        : null,
+      view === 'pending'
+        ? React.createElement(EmptyState, {
+            kicker: 'Hosted approval pending',
+            title: 'Finish login on Agent Analytics',
+            actions: [
+              React.createElement(Button, { className: 'aa-duckwork-button aa-duckwork-button-light', key: 'refresh', onClick: handleRefreshStatus }, 'Refresh status'),
+              React.createElement(Button, { className: 'aa-duckwork-button', key: 'restart', onClick: handleStartOver }, 'Start over')
+            ]
+          },
+            React.createElement('p', { className: 'aa-duckwork-muted' }, 'Complete approval on the hosted Agent Analytics page. This dashboard keeps polling and updates automatically when login is approved.'),
+            status && status.auth && status.auth.pendingAuthRequest && status.auth.pendingAuthRequest.authorizeUrl
+              ? React.createElement('a', { className: 'aa-duckwork-doc-link', href: status.auth.pendingAuthRequest.authorizeUrl, target: '_blank', rel: 'noreferrer', onClick: handleOpenApprovalPage }, 'Open hosted approval page')
+              : null
+          )
+        : null,
+      view === 'ready'
+        ? (loadingSummary && !summary
+            ? React.createElement(Card, { className: 'aa-duckwork-card' },
+                React.createElement(CardContent, { className: 'aa-duckwork-stack' },
+                  React.createElement('p', { className: 'aa-duckwork-muted' }, 'Loading project summaries…')
+                )
+              )
+            : React.createElement(SummaryView, {
+                summary: summary || {},
+                onRefresh: handleRefreshSummary,
+                accountEmail: status && status.auth && status.auth.accountSummary ? status.auth.accountSummary.email : '',
+                accountTier: status && status.auth ? status.auth.tier : '',
+                onDisconnect: handleDisconnect,
+              }))
+        : null
+    );
+  }
+
+  window.__DUCKWORK_PLUGINS__.register('agent-analytics', AgentAnalyticsPage);
+})();

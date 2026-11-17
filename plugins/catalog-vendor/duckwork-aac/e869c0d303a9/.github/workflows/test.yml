@@ -1,0 +1,38 @@
+name: Developer tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        duckwork-ref: ['71d34bad1045610252eda02ee79549436896e784', '6e7b83a2f1c093e992a8d838ed77ea320fbd8e51']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: npm ci
+      - run: npm run check
+      - run: python scripts/verify.py
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.duckwork-ref }}
+          path: duckwork-source
+      - name: Actual pinned stable/latest SDK contracts and provider fixtures (not live providers)
+        shell: pwsh
+        run: |
+          $env:DUCKWORK_SOURCE = (Resolve-Path duckwork-source).Path
+          python scripts/check-duckwork-contract.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests -p test_verify.py

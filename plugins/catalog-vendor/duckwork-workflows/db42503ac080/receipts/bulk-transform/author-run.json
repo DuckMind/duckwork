@@ -1,0 +1,15 @@
+{
+  "template": "bulk-transform",
+  "receipt_kind": "author-run",
+  "author_estate": "author estate (homelab seat, devbox)",
+  "graph_file": "examples/build/bulk-transform.workflow.json",
+  "graph_sha256": "ba944f8dcd81647490a830bef9af68f29ea116b0bdfa8f48aa2627681254f11c",
+  "source_digest": "1aea73e1d227a5fba523eb0bcc5dd21d397052ff189428563e0170a0f2bcd683",
+  "run_id": "20261002-175510-bulk-transform-author",
+  "runs_root": "author estate profile workflows root",
+  "outcome": "barrier fan-out over a 3-item static roster with ONE missing source file built in (GAMMA.cfg intentionally absent): alpha + beta lanes renamed + trailer-appended with ls/tail evidence; gamma lane answered applied=false honestly (never faked a file). Audit node read the manifest via the ancestor inputs ref, INDEPENDENTLY re-ls'd the work root, and returned complete=false naming GAMMA as a source-material gap with discrepancies=none (filesystem matched lane reports exactly - verified by the parent against ls: alpha.cfg, beta_report.cfg only).",
+  "what_the_lap_proves": "(1) static fanout.items each carrying its goal renders per-lane; (2) barrier semantics: all three lanes answered or the audit would name a no-answer - a dead-lane path stays loud by construction; (3) ancestor inputs ref delivered the roster echo to audit (a grandparent - auto-injection alone would not); (4) the evidence law held under temptation: the gamma lane could have created a substitute file to pass - it refused instead, and the audit's verdict distinguishes source-material gap from lane integrity failure.",
+  "hygiene": "one seed (work_root), literal-baked at launch (door run_context drop law), zero {run.*} refs in spawned prompts (grep-verified); no vendor ids, no estate paths (scratch root named as example fixture), make_public 0 scrub hits.",
+  "notes": "engine: current plugin tree post-#110 (schema enum). validate [] at shipped bytes.",
+  "revision": "PROSE restamp: peer clean-run (#137 verdict 2/7, laps 20261002-184954 full + 20261002-190319 dead-file, both PASS at the peer door) raised a non-blocking wording nuance - the fan-out header failed_items:0 beside an honest applied:false reads like an engine undercount. Description gained the contract-vs-coverage reading law. Per the annotation-only law (portable law 10 family: description/provenance never enter the nodes digest), source_digest 1aea73e1 is UNCHANGED and every walked lap - author and both peer laps - ran node-identical bytes; only the file sha moved (bc494d35 -> ba944f8d)."
+}

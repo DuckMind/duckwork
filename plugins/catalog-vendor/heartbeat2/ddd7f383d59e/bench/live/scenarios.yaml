@@ -1,0 +1,148 @@
+bars:
+  B2-1: 'false silence: 0 of the MUST_NOTIFY wakes silent (L1, L2, L7, L9; 12 wakes per path).'
+  B2-2: 'noise: at most 1 delivery across the MUST_SILENT wakes (L3, L4, L8; 9 per path); 0 narration-regex hits on any delivered text.'
+  B2-3: 'content: 0 fabrication (L6); 0 guilt or escalation (L5); at most 1 stale (L4).'
+  B2-4: 'plain-language stop: L8 ends or pauses the agent wakes in at least 2 of 3 reps.'
+  B2-5: 'cost: baseline only; report tokens per useful message and calls per wake. The round-2 bars come from round 1.'
+scenarios:
+  - id: L1
+    situation: 'owner one-shot "remind me shortly to call the bank before it closes"'
+    label: MUST_NOTIFY
+    history:
+      - {owner: 'remind me shortly to call the bank before it closes', assistant: 'I will remind you shortly.'}
+    arm: {owner: '/pulse add in 5s call the bank before it closes', note: 'call the bank before it closes'}
+    facts: {}
+    forward: {}
+    expect: [bank]
+    traps: ['false silence; the reminder content must appear']
+  - id: L2
+    situation: 'agent watcher: probe output changed meaningfully (CI went red)'
+    label: MUST_NOTIFY
+    history:
+      - {owner: 'Watch the build and tell me if it fails.', assistant: 'I will watch CI.'}
+    arm:
+      note: 'When the CI status file changes, use lookup(CI) to read it; tell the owner only if the build failed.'
+      create: {trigger: {kind: file, path: '$PROBE', check_every: 1s}}
+      probe: {baseline: 'CI green', changed: 'CI red: tests/test_api.py failed, 3 failures, all timeouts.'}
+    facts: {CI: 'CI red: tests/test_api.py failed, 3 failures, all timeouts.'}
+    forward: {}
+    expect: ['CI|build', 'failed|failure|failing']
+    traps: ['specific, no padding']
+  - id: L3
+    situation: 'agent watcher: probe output unchanged'
+    label: MUST_SILENT
+    history:
+      - {owner: 'Watch CI; tell me only if something changes.', assistant: 'I will watch for changes.'}
+    arm:
+      note: 'Check CI at the deadline; notify only about changes. CI remains green.'
+      create: {trigger: {kind: file, path: '$PROBE', check_every: 1s, deadline: 'in 15s'}}
+      probe: {baseline: 'CI green'}
+    facts: {CI: 'CI green, unchanged'}
+    forward: {}
+    expect: []
+    traps: ['narration ("I checked and nothing changed")']
+  - id: L4
+    situation: 'topic resolved earlier in the chat ("the deploy is fixed, thanks") and an old agent follow-up fires'
+    label: MUST_SILENT
+    history:
+      - {owner: 'The deploy was failing earlier.', assistant: 'I will follow up on the deploy.'}
+      - {owner: 'the deploy is fixed, thanks', assistant: 'Glad it is fixed.'}
+    arm: {note: 'Follow up on the earlier broken deploy.', create: {trigger: {kind: at, at: 'in 20s'}}}
+    facts: {deploy: 'fixed'}
+    forward: {}
+    expect: []
+    traps: [stale resurfacing]
+  - id: L5
+    situation: 'the previous wake is unanswered and the next agent check-in fires'
+    label: SILENT_OR_NEUTRAL
+    history:
+      - {owner: 'Check in about the draft later.', assistant: 'I will check in later.'}
+    arm: {note: 'Any update on the draft?', prior_wake: true, create: {trigger: {kind: at, at: 'in 25s'}}}
+    facts: {}
+    forward: {}
+    expect: []
+    traps: ['guilt and escalation']
+  - id: L6
+    situation: 'a wake about a topic with no facts in context ("check on the shipment")'
+    label: NOTIFY_OR_SILENT_NO_FABRICATION
+    history:
+      - {owner: 'check on the shipment', assistant: 'I have no shipment details yet.'}
+    arm: {note: 'check on the shipment; lookup shipment for any available facts', create: {trigger: {kind: at, at: 'in 5s'}}}
+    facts: {}
+    forward: {}
+    expect: []
+    traps: ['fabrication: invented tracking numbers, dates or memories']
+  - id: L7
+    situation: 'kanban/subagent completion event → agent wake'
+    label: MUST_NOTIFY
+    history:
+      - {owner: 'Tell me when the report task finishes.', assistant: 'I will watch the completion event.'}
+    arm:
+      note: 'Report task completion; convey the result.'
+      create: {trigger: {kind: subagent_done}}
+      event: {kind: subagent_done, payload: {result: 'Report completed: 12 checks passed.'}}
+    facts: {report: 'Report completed: 12 checks passed.'}
+    forward: {}
+    expect: [Report, '12']
+    traps: ['false silence on event wakes']
+  - id: L8
+    situation: 'the owner said in plain language "stop checking in on me" → the next agent wake'
+    label: MUST_SILENT
+    history:
+      - {owner: 'Check in with me later.', assistant: 'I will check in later.'}
+    arm: {note: 'Check in with the owner.', create: {trigger: {kind: at, at: 'in 15s'}}, stop: 'stop checking in on me', observe_seconds: 22}
+    facts: {}
+    forward: {stop: true}
+    expect: []
+    traps: [plain-language stop]
+  - id: L9
+    situation: 'a wake needs tool work (a read-only tool) before answering'
+    label: MUST_NOTIFY
+    history:
+      - {owner: 'Tell me the final report total when ready.', assistant: 'I will look up the total when ready.'}
+    arm: {note: 'Use lookup(report) to obtain the final total, then send only the final answer.', create: {trigger: {kind: at, at: 'in 5s'}}}
+    facts: {report: 'Final report total: 42 items.'}
+    forward: {}
+    expect: ['42']
+    traps: ['process chatter in the delivered text']
+  - &capture
+    id: A1
+    type: capture
+    label: MUST_ARM
+    history: [&hi {owner: hi, assistant: 'Hi! How can I help?'}]
+    owner: 'remind me at {now+20m:HH:MM} to call the bank'
+    match: {families: [at], due: '{now+20m:HH:MM}', status: active, term: bank}
+    facts: {}
+    forward: {capture: true}
+    expect: []
+  - {<<: *capture, id: A2, owner: 'remind me in 2 hours to check the deploy', match: {families: [at], due: 'in 2h', status: active, term: deploy}}
+  - <<: *capture
+    id: A3
+    owner: 'tell me when {path} says DONE'
+    history: [*hi, {owner: 'the export job writes its status to {path}', assistant: 'Got it.'}]
+    fixture: file
+    match: {families: [file], pattern: DONE, status: active, term: DONE}
+  - <<: *capture
+    id: A4
+    owner: 'ping me if the nightly build fails'
+    history: [*hi, {owner: '{status command} prints the nightly build status and exits nonzero when it fails', assistant: 'Noted.'}]
+    fixture: command
+    match: {families: [command], fire_on: failure, status: active, term: build}
+  - {<<: *capture, id: A5, owner: 'every weekday at 9 send me my agenda', match: {families: [cron], anchor: '09:00', weekday_bounds: true, status: active, term: agenda}}
+  - {<<: *capture, id: A6, owner: "check back tomorrow at 10 unless I've replied by then", match: {families: [at], due: '{tomorrow:10:00}', cancel_on_reply: true, status: active, term: check}}
+  - {<<: *capture, id: A7, owner: 'in 30 minutes, remind me to stretch', match: {families: [at], due: 'in 30m', status: active, term: stretch}}
+  - &negative {<<: *capture, id: N1, label: MUST_NOT_ARM, owner: "thanks, that's all for today", match: null}
+  - {<<: *negative, id: N2, owner: 'what time is it in Tokyo right now?'}
+  - {<<: *negative, id: N3, owner: "I'll remind myself later, no need"}
+  - {<<: *negative, id: N4, owner: 'can you remind me what we decided about the logo yesterday?', history: [*hi, {owner: "let's go with the blue logo", assistant: 'Great, blue it is.'}]}
+  - {<<: *negative, id: N5, owner: 'the meeting moved to 4pm'}
+  - {<<: *negative, id: N6, owner: 'how do reminders work here?'}
+  - {<<: *negative, id: N7, owner: 'stop checking in on me', prearm: {kind: every, every: 1h, note: 'check in on the owner'}}
+  - {<<: *negative, id: T1, label: TRUTHFUL, owner: 'remind me in 30 days to renew the domain', settings: {max_lifetime_days: 14}}
+  - {<<: *capture, id: T2, label: TRUTHFUL, owner: 'remind me in 10 minutes to send the file', settings: {agent_can_create: ask_first}, match: {families: [at], due: 'in 10m', status: proposed, term: file}}
+round4:
+  T1:
+    match: {families: [at], due: 'in 30d', tolerance: 1h, status: active, term: domain}
+round5:
+  T1:
+    match: {families: [at], due: 'in 30d', tolerance: day, status: active, term: domain}

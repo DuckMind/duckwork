@@ -1,0 +1,104 @@
+"""Tests for the yantrikdb-duckwork installer CLI."""
+
+from __future__ import annotations
+
+import importlib.util
+from pathlib import Path
+
+CLI_PATH = Path(__file__).resolve().parents[1] / "yantrikdb" / "cli.py"
+
+
+def _load_cli():
+    spec = importlib.util.spec_from_file_location("yantrikdb_cli_under_test", CLI_PATH)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_install_defaults_to_user_plugin_shim(tmp_path, capsys):
+    cli = _load_cli()
+    duckwork_home = tmp_path / "home"
+
+    rc = cli.main(["install", "--duckwork-home", str(duckwork_home)])
+
+    assert rc == 0
+    target = duckwork_home / "plugins" / "yantrikdb"
+    assert target.is_dir()
+    assert not target.is_symlink()
+    init_text = (target / "__init__.py").read_text(encoding="utf-8")
+    assert "from yantrikdb_duckwork_plugin import YantrikDBMemoryProvider" in init_text
+    assert "register_memory_provider(YantrikDBMemoryProvider())" in init_text
+    assert (target / "plugin.yaml").exists()
+    out = capsys.readouterr().out
+    assert "registered yantrikdb plugin into" in out
+    assert "duckwork config set memory.provider yantrikdb" in out
+
+
+def test_install_copy_mode_creates_user_plugin_directory(tmp_path):
+    cli = _load_cli()
+    duckwork_home = tmp_path / "home"
+
+    rc = cli.main(["install", "--duckwork-home", str(duckwork_home), "--copy"])
+
+    assert rc == 0
+    target = duckwork_home / "plugins" / "yantrikdb"
+    assert target.is_dir()
+    assert not target.is_symlink()
+    assert (target / "__init__.py").exists()
+    assert (target / "plugin.yaml").exists()
+
+
+def test_install_refuses_existing_target_without_force(tmp_path, capsys):
+    cli = _load_cli()
+    duckwork_home = tmp_path / "home"
+    target = duckwork_home / "plugins" / "yantrikdb"
+    target.mkdir(parents=True)
+
+    rc = cli.main(["install", "--duckwork-home", str(duckwork_home)])
+
+    assert rc == 3
+    err = capsys.readouterr().err
+    assert "already exists" in err
+    assert "--force" in err
+
+
+def test_legacy_positional_path_still_installs_into_checkout(tmp_path):
+    cli = _load_cli()
+    duckwork_root = tmp_path / "duckwork-agent"
+    (duckwork_root / "plugins" / "memory").mkdir(parents=True)
+
+    rc = cli.main(["install", str(duckwork_root)])
+
+    assert rc == 0
+    target = duckwork_root / "plugins" / "memory" / "yantrikdb"
+    assert target.is_dir()
+    assert (target / "__init__.py").exists()
+    assert (target / "plugin.yaml").exists()
+
+
+def test_uninstall_removes_user_plugin_registration(tmp_path, capsys):
+    cli = _load_cli()
+    duckwork_home = tmp_path / "home"
+    assert cli.main(["install", "--duckwork-home", str(duckwork_home)]) == 0
+    capsys.readouterr()
+
+    rc = cli.main(["uninstall", "--duckwork-home", str(duckwork_home)])
+
+    assert rc == 0
+    target = duckwork_home / "plugins" / "yantrikdb"
+    assert not target.exists()
+    out = capsys.readouterr().out
+    assert "removed yantrikdb plugin registration" in out
+    assert "pip uninstall yantrikdb-duckwork-plugin yantrikdb" in out
+
+
+def test_uninstall_is_idempotent_when_not_installed(tmp_path, capsys):
+    cli = _load_cli()
+    duckwork_home = tmp_path / "home"
+
+    rc = cli.main(["uninstall", "--duckwork-home", str(duckwork_home)])
+
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "not found" in out

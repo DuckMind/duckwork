@@ -1,0 +1,303 @@
+name: Semantic Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: "Base ref for release planning; reuse the same base when publishing a previously bumped release"
+        required: false
+        default: HEAD~1
+      droid_advice:
+        description: "Ask Droid to review the release plan"
+        required: false
+        type: boolean
+        default: true
+      apply_versions:
+        description: "Apply version bumps from the generated release plan"
+        required: false
+        type: boolean
+        default: false
+      publish_artifacts:
+        description: "Publish npm and ClawHub artifacts; with apply_versions=false, publish the current workflow ref"
+        required: false
+        type: boolean
+        default: false
+      publish_npm:
+        description: "Publish changed npm packages when publish_artifacts is enabled"
+        required: false
+        type: boolean
+        default: true
+      publish_clawhub:
+        description: "Publish changed ClawHub packages when publish_artifacts is enabled"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  plan:
+    name: Plan release
+    runs-on: ubuntu-latest
+    outputs:
+      has_npm: ${{ steps.outputs.outputs.has_npm }}
+      has_clawhub: ${{ steps.outputs.outputs.has_clawhub }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Create release plan
+        env:
+          BASE_REF: ${{ inputs.base_ref || 'HEAD~1' }}
+        run: bun scripts/semver-release.ts plan --base "$BASE_REF" --out release-plan.json
+
+      - name: Set release outputs
+        id: outputs
+        run: |
+          {
+            echo "has_npm=$(jq -r 'any(.units.npm[]?; .bump != "none")' release-plan.json)"
+            echo "has_clawhub=$(jq -r 'any(.units.clawhub[]?; .bump != "none")' release-plan.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload release plan
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-plan
+          path: release-plan.json
+
+  droid-advice:
+    name: Droid release advice
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.droid_advice }}
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Download release plan
+        uses: actions/download-artifact@v8
+        with:
+          name: release-plan
+
+      - name: Ask Droid for semver advice
+        continue-on-error: true
+        run: |
+          curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL https://app.factory.ai/cli | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/bin:$PATH"
+          droid exec --auto medium "Review release-plan.json and the current git diff. Recommend any semver changes needed for cohesive releases across skills, plugins, npm packages, and ClawHub. Do not edit files. Return concise markdown."
+        env:
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+
+  apply:
+    name: Prepare release commit
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.apply_versions || inputs.publish_artifacts) }}
+    needs: plan
+    runs-on: ubuntu-latest
+    outputs:
+      release_sha: ${{ steps.commit.outputs.release_sha }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.PUBLISH_TOKEN }}
+          fetch-depth: 0
+
+      - name: Download release plan
+        if: ${{ inputs.apply_versions }}
+        uses: actions/download-artifact@v8
+        with:
+          name: release-plan
+
+      - name: Setup Bun
+        if: ${{ inputs.apply_versions }}
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        if: ${{ inputs.apply_versions }}
+        run: bun install --frozen-lockfile
+
+      - name: Apply release plan
+        if: ${{ inputs.apply_versions }}
+        run: |
+          bun scripts/semver-release.ts apply --plan release-plan.json
+          rm release-plan.json
+          bun run check:write
+
+      - name: Validate release changes
+        if: ${{ inputs.apply_versions }}
+        env:
+          YDC_API_KEY: ${{ secrets.YDC_API_KEY }}
+        run: |
+          bun run build
+          bun run check
+          bun run test
+
+      - name: Resolve release commit
+        id: commit
+        env:
+          APPLY_VERSIONS: ${{ inputs.apply_versions }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ "${APPLY_VERSIONS}" == "true" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add skills packages plugin.json .plugin .claude-plugin .codex-plugin .cursor-plugin .kimi-plugin .grok-plugin .agents/plugins .github/plugin
+            if git diff --staged --quiet; then
+              echo "No version changes to commit"
+            else
+              git commit -m "chore(release): apply semantic release plan [skip ci]"
+              git pull origin "$REF_NAME" --rebase
+              git push origin "HEAD:$REF_NAME"
+            fi
+          else
+            echo "Publishing current workflow ref without applying version changes"
+          fi
+          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  publish-npm:
+    name: Publish npm packages
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_npm && needs.plan.outputs.has_npm == 'true' }}
+    needs: [plan, apply]
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.apply.outputs.release_sha }}
+
+      - name: Download release plan
+        uses: actions/download-artifact@v8
+        with:
+          name: release-plan
+
+      - name: Setup Node for npm trusted publishing
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Publish changed npm packages
+        run: |
+          packages=(
+            "@youdotcom-oss/opencode=packages/opencode"
+            "@youdotcom-oss/pi=packages/pi"
+            "@youdotcom-oss/openclaw=packages/openclaw"
+            "@youdotcom-oss/dsh-plugin=packages/dsh-plugin"
+          )
+
+          for entry in "${packages[@]}"; do
+            package="${entry%%=*}"
+            directory="${entry#*=}"
+            if jq -e --arg package "$package" '(.units.npm[$package].bump // "none") != "none"' release-plan.json >/dev/null; then
+              npm publish --provenance --access public "./$directory"
+            fi
+          done
+
+  publish-clawhub:
+    name: Publish ClawHub package
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_clawhub && needs.plan.outputs.has_clawhub == 'true' }}
+    needs: [plan, apply]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.apply.outputs.release_sha }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build OpenClaw package
+        run: bun run build
+        working-directory: packages/openclaw
+
+      - name: Publish to ClawHub
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+        run: |
+          VERSION=$(jq -r '.version' packages/openclaw/package.json)
+          SOURCE_COMMIT="$(git rev-parse HEAD)"
+          CLAWHUB_PACKAGE_DIR="$(mktemp -d)/openclaw"
+          cp -R packages/openclaw "${CLAWHUB_PACKAGE_DIR}"
+          jq '.name = "you"' "${CLAWHUB_PACKAGE_DIR}/package.json" > "${CLAWHUB_PACKAGE_DIR}/package.json.tmp"
+          mv "${CLAWHUB_PACKAGE_DIR}/package.json.tmp" "${CLAWHUB_PACKAGE_DIR}/package.json"
+          bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
+          for attempt in 1 2 3; do
+            if bunx clawhub package publish "${CLAWHUB_PACKAGE_DIR}" \
+              --source-path packages/openclaw \
+              --source-repo youdotcom-oss/agent-skills \
+              --family bundle-plugin \
+              --owner youdotcom-oss \
+              --name you \
+              --version "${VERSION}" \
+              --source-commit "${SOURCE_COMMIT}"; then
+              break
+            fi
+            if [[ "${attempt}" == 3 ]]; then
+              exit 1
+            fi
+            echo "ClawHub publish failed (attempt ${attempt}/3); retrying in 30s"
+            sleep 30
+          done
+
+  release:
+    name: Create dated release
+    if: ${{ !cancelled() && inputs.publish_artifacts && contains(needs.*.result, 'failure') == false && contains(needs.*.result, 'cancelled') == false }}
+    needs: [plan, apply, publish-npm, publish-clawhub]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create dated tag and GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_SHA: ${{ needs.apply.outputs.release_sha }}
+        run: |
+          tag="v$(date -u +%Y.%m.%d)-${RELEASE_SHA:0:7}"
+          gh release create "${tag}" \
+            --target "${RELEASE_SHA}" \
+            --title "${tag}" \
+            --generate-notes

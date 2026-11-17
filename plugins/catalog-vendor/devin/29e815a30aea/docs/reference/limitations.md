@@ -1,0 +1,34 @@
+# Known limitations
+
+[Documentation](../README.md)
+
+- **Model catalogs are not entitlements.** Local model controls show current ACP choices,
+  but the account may reject a model at launch. Missing pricing is unknown, not free.
+  Saved values that become unavailable fail closed; they are never silently replaced.
+  Cloud execution requires the separate target selector and Cloud consent, not a Local
+  model selection. A live Lite/no-repository Cloud launch and confirmed cancellation
+  passed. Cloud follow-ups and reconnect remain covered by fake-CLI tests, not live
+  execution. See [validation scope](../guides/cloud-sessions.md#validation-scope).
+
+- **Cloud permissions are remote.** Local permission modes, sandboxing, fenced folders
+  and per-tool approval cards do not govern Cloud actions. A relay disconnect does
+  not prove remote cancellation. Unknown remote activity blocks follow-ups; a read-only
+  reconnect does not prove it is idle. No arbitrary-session attach, handoff or pickup
+  is implemented. See [Cloud sessions](../guides/cloud-sessions.md).
+
+- **Concurrent runs are refused, not queued.** When `max_concurrent_runs` is reached, a new run is refused, and the model is told to wait or cancel one.
+- **Background runs outside Duckwork Desktop cannot ask you anything.** There, Devin's in-run permission prompts are denied. Background runs started from Desktop ask on their run card instead, and are denied if nobody answers in time. Use `accept-edits` or a wider mode if background runs need to edit files on their own.
+- **Background notices need a way in.** Outside the classic CLI, completion notices need `allow_gateway_injection: true` on the plugin entry. Without it, results are still available through `devin_run_result` and `/devin status`.
+- **Plan mode needs ACP**, and a Devin build that advertises a read-only session mode. If none is offered, the run is refused rather than run with more rights.
+- **`normal` is refused over ACP on current Devin.** Devin CLI 3000.x offers the ACP session modes `accept-edits`, `smart`, `ask`, `plan` and `bypass`. None of them asks before every edit, and Devin starts in `accept-edits`. So an ACP run with `permission_mode: normal` (or any mode Devin does not offer) is refused rather than run with more rights. Use `backend: print`, where `--permission-mode normal` makes Devin reject actions that need confirmation, or choose a mode Devin offers.
+- **Print mode cannot say which action it rejected.** Devin only warns on stderr that it rejected a tool call. Each warning is recorded as a denied permission without the action's name. If Devin then gives no answer, the run fails with `permission_denied`.
+- **Sandboxed modes are not on native Windows.** `sandbox: true` and `autonomous` are rejected there, matching the Devin CLI. Use WSL 2.
+- **Matching approvals.** Duckwork does not pass a tool-call id to tool handlers, so the approval ticket is matched on session and arguments. Two identical calls in the same session share one ticket slot.
+- **The first instant on Windows.** A process Devin spawned before it joined its Job Object would escape the job. See [Process trees](../development/process-tree.md#limits).
+- **POSIX and a killed Duckwork.** If Duckwork is killed outright on macOS or Linux, a background run's process group is not signalled. The run is marked failed the next time the plugin starts.
+- **POSIX ancestry tracking is best-effort.** A parent that spawns and exits between observations can orphan a helper before it is recorded. Separate process groups and sessions are cleaned up once tracked; this is not OS-level containment. See [Process trees](../development/process-tree.md#limits).
+- **Login output.** `devin auth status` output is read for clear yes/no answers. Anything the plugin does not recognise never blocks a run; Devin then reports a missing login itself.
+- **Older Desktop builds skip linked plugins.** Some Duckwork Desktop builds (one from 3 October 2026, for example) do not follow a symlink or junction in `plugins/`, so a checkout linked there gets no Desktop half. Newer builds follow the link. Update Duckwork Desktop, or install from Git instead.
+- **Follow-ups start after a run finishes.** A follow-up continues Devin's session from the run card once the run is done; you cannot steer a run while it works. Follow-ups need the ACP backend, and Devin must still have the session.
+- **The live card needs the model's cooperation.** In Desktop sessions `delegate_to_devin` returns a `card` line, and the tool description asks the model to put it in its reply. A model that leaves it out still gets the result; the Devin page and the status-bar chip show the run either way.
+- **Tested against a fake CLI.** The tests use a stand-in for the Devin CLI, built from Devin's documented flags and the ACP specification, plus the session modes and edit reports seen from Devin CLI 3000.11.3. Other Devin versions may differ.

@@ -1,0 +1,11 @@
+name: reka-provider
+kind: model-provider
+version: 1.0.3
+description: Reka as a Duckwork model provider - the Reka models that can run an agent turn, with their context windows and image input declared, and reasoning effort sent as Reka's top-level reasoning_effort.
+author: Reka
+requires_duckwork: ">=0.21.6"
+requires_env:
+  - name: REKA_API_KEY
+    description: Reka API key
+    url: https://developer.reka.ai/keys
+    secret: true

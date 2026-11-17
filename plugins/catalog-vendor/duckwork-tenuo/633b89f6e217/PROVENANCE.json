@@ -1,0 +1,1393 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-tenuo",
+  "content_id": "633b89f6e217",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 630,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "a2928e628960e209b3b681eefce4e9cff30926ca8be9d087715f944fda09a843"
+    },
+    {
+      "bytes": 1509,
+      "mode": "100644",
+      "path": ".github/workflows/publish.yml",
+      "sha256": "912a7c509ee550a9556d76281d249c292c7965293ec9ff011c1b8c05af024aaa"
+    },
+    {
+      "bytes": 1845,
+      "mode": "100644",
+      "path": ".github/workflows/upstream-hermes.yml",
+      "sha256": "713a3864cef1ed6965675800e810de83fb33ea0d4f71e1f2493b85e7b14f7baa"
+    },
+    {
+      "bytes": 117,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "cc52b822832e027769176c445278655be81787d3e9c64625199e53cedf606d9a"
+    },
+    {
+      "bytes": 11338,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "87d3aab19aa1192b830ba7aaf6124f75c3d9430b1a01bc18a33915aaef44d699"
+    },
+    {
+      "bytes": 14916,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "37beda2dbf05e957a7bfc451d486738e3b59c532bce72ab79dd09e5f1e08ffb0"
+    },
+    {
+      "bytes": 1986,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "cd7c0f7eb9c5ff69f111661b717fe8e118a5148690a0b213fd26aa2e34a1a096"
+    },
+    {
+      "bytes": 1160,
+      "mode": "100644",
+      "path": "docs/plugin-catalog-entry.yaml",
+      "sha256": "a7a60298003e19f71f031611b0f537eae506cf09b2d99cf84e9497554290cbdf"
+    },
+    {
+      "bytes": 6323,
+      "mode": "100644",
+      "path": "docs/walkthrough.md",
+      "sha256": "1fbee3f2c0c501e8922f3d55ec25f60710c1990049d0d65f0f35f5ee02874772"
+    },
+    {
+      "bytes": 728,
+      "mode": "100644",
+      "path": "examples/README.md",
+      "sha256": "bde2fe4a20285c495e24ba515f142a0f4f8994db1301ef2f84d692d7c709e2d4"
+    },
+    {
+      "bytes": 2038,
+      "mode": "100644",
+      "path": "examples/cron_warrant.py",
+      "sha256": "abfa664cde6f55ae97664e12709f340eea252c679684cbc38e19227d6ca1e3e0"
+    },
+    {
+      "bytes": 223,
+      "mode": "100644",
+      "path": "examples/demo.py",
+      "sha256": "516ecfe58cc8e399c952684909970d0b0676679fb3e60529a048aca7e5a901e2"
+    },
+    {
+      "bytes": 3318,
+      "mode": "100644",
+      "path": "examples/gateway_multiuser.py",
+      "sha256": "2497416779378f6857dc48c9dfe94e3672a0e6005b097e469e254eec87a226b2"
+    },
+    {
+      "bytes": 2587,
+      "mode": "100644",
+      "path": "examples/subagent_scope.py",
+      "sha256": "5d492948a3950b85ef139339d7ae41213faee8e5170c0471f2ae93df593534d4"
+    },
+    {
+      "bytes": 619,
+      "mode": "100644",
+      "path": "examples/walkthrough/notes.md",
+      "sha256": "46c4e48c6d2ed3442b666eda6309c92813e7d3727dcce003ed16000575d46bb9"
+    },
+    {
+      "bytes": 2510,
+      "mode": "100755",
+      "path": "examples/walkthrough/setup.sh",
+      "sha256": "c5e1124a365dfaeb3791d04ea02b9e16a93c36d9a80d3c127226e4b2c6a77185"
+    },
+    {
+      "bytes": 3745,
+      "mode": "100644",
+      "path": "examples/walkthrough/wire_profile.py",
+      "sha256": "4fdfd946971da3f8bd3ee4af60a8ed3fe2ff12a9d8dbed74758e8955b1a3f891"
+    },
+    {
+      "bytes": 8125,
+      "mode": "100644",
+      "path": "hermes_tenuo/__init__.py",
+      "sha256": "004a191180ded9ea00566adf164644cd3b92ccb0ef8360dc856caa2d7a84e25d"
+    },
+    {
+      "bytes": 8284,
+      "mode": "100644",
+      "path": "hermes_tenuo/_config.py",
+      "sha256": "4cd0bdd38c3014cc381eda1a3af51ca6355192f0d8d205b7420ac45c953c4b25"
+    },
+    {
+      "bytes": 7900,
+      "mode": "100644",
+      "path": "hermes_tenuo/_guard.py",
+      "sha256": "c3ebb55c11e86b7b4f1350d3e671b2d7173044f89f0c2293fad7982d1208f71e"
+    },
+    {
+      "bytes": 2252,
+      "mode": "100644",
+      "path": "hermes_tenuo/_home.py",
+      "sha256": "82d385c42e0738da3e0634503215379bfa7e2efcdbd361482072dc9d627b925b"
+    },
+    {
+      "bytes": 4721,
+      "mode": "100644",
+      "path": "hermes_tenuo/audit.py",
+      "sha256": "616ea741fa7f32c5ff78ca1e2fbbb4e38334f9fc3a602074872ba35bf706f6af"
+    },
+    {
+      "bytes": 26000,
+      "mode": "100644",
+      "path": "hermes_tenuo/cli.py",
+      "sha256": "e1519f1f7eb8e876412003eb3acc296eb8040c5be6be9e0d2368dce9cb96085e"
+    },
+    {
+      "bytes": 7852,
+      "mode": "100644",
+      "path": "hermes_tenuo/demo.py",
+      "sha256": "e085c3e0194d7e030241fb65a7ed55d1b0995a5dd8bb268af260df57bec625e2"
+    },
+    {
+      "bytes": 33126,
+      "mode": "100644",
+      "path": "hermes_tenuo/hermes_guard.py",
+      "sha256": "228f1995d78f395fcd07a15373da459f4ccf52f22fc3468ebc5eef9c0ac19f09"
+    },
+    {
+      "bytes": 6163,
+      "mode": "100644",
+      "path": "hermes_tenuo/kanban.py",
+      "sha256": "f516b49968437a11802433566900fc37623aed57446526fa563cfefee2133be0"
+    },
+    {
+      "bytes": 8671,
+      "mode": "100644",
+      "path": "hermes_tenuo/skills/tenuo-scope/SKILL.md",
+      "sha256": "7eb0801381f82b1d3e3d7aa20582f470e172da19b8f490e0730cdcc70400bb6f"
+    },
+    {
+      "bytes": 1005,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "cb3b3d0cac9fce68abc78fcaf5221ecd7d58f5fe3108b5eb04eb440de3a5506c"
+    },
+    {
+      "bytes": 1706,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "25b307f3701ebddab02f710b80c8e2df163eb4dcfe7b7256f8c40faac9985613"
+    },
+    {
+      "bytes": 70,
+      "mode": "100644",
+      "path": "pytest.ini",
+      "sha256": "82982065fc69775e2e41ec5d44bcad76534a97392b066d20e9fdf64d31c2fa4c"
+    },
+    {
+      "bytes": 46,
+      "mode": "100644",
+      "path": "tests/__init__.py",
+      "sha256": "ee7766cbdb31f04a7f93b57753e6e576907f23add7ff92244bea17c0c56c41c4"
+    },
+    {
+      "bytes": 654,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "93e093596f98d1ea4a8068438df789244888011af6f84117b0455b2f30e74694"
+    },
+    {
+      "bytes": 10016,
+      "mode": "100644",
+      "path": "tests/test_audit.py",
+      "sha256": "d80b76d71b8dff9b28f0bc3fe955d22777ecb09d027e8253180fddf91dace08d"
+    },
+    {
+      "bytes": 11490,
+      "mode": "100644",
+      "path": "tests/test_cli.py",
+      "sha256": "23ed87f6d5d1dc79deccb3ed21ce12df477f3371bd520d21fbb22bf25ddd0f1a"
+    },
+    {
+      "bytes": 12761,
+      "mode": "100644",
+      "path": "tests/test_config.py",
+      "sha256": "8cd405b9b2be19063b06b5734d65be78f47ce4f2ed06d237400033b1a16d0294"
+    },
+    {
+      "bytes": 2132,
+      "mode": "100644",
+      "path": "tests/test_demo.py",
+      "sha256": "6eee7965ef56f0f7f996dfcd115a4cdd85060d718ced446dfa946f93dd44de0e"
+    },
+    {
+      "bytes": 2025,
+      "mode": "100644",
+      "path": "tests/test_directory_plugin.py",
+      "sha256": "13d0cf42586aa1c464ab1449a5b99383ac462d6fa6666a1034ff5fcae5b8a0c7"
+    },
+    {
+      "bytes": 22214,
+      "mode": "100644",
+      "path": "tests/test_hermes.py",
+      "sha256": "9ecabc2778b38e2f33207892d49586627bf47b2b816d2c2ccea8e0dd4b32477f"
+    },
+    {
+      "bytes": 9240,
+      "mode": "100644",
+      "path": "tests/test_home.py",
+      "sha256": "8fffc9940ee5b06fd33484efc0e3e0009ccdbd9d2f242f31766145de6c887291"
+    },
+    {
+      "bytes": 29601,
+      "mode": "100644",
+      "path": "tests/test_integration_smoke.py",
+      "sha256": "392d622223cadc1c1f58e04dc97d17e1b396e35ecd85d7a29ee8058d0c7293dc"
+    },
+    {
+      "bytes": 2815,
+      "mode": "100644",
+      "path": "tests/test_public_surface.py",
+      "sha256": "5acf514fe25046ef89222d354464f27c558e964705b4c1bca8e37fef1c8c3668"
+    },
+    {
+      "bytes": 23403,
+      "mode": "100644",
+      "path": "tests/test_security_invariants.py",
+      "sha256": "9dd82d5b41fa592c45b1479661e0ff8930e9c50c407f0ddd55dd1dbe7e83f36c"
+    },
+    {
+      "bytes": 5761,
+      "mode": "100644",
+      "path": "tests/test_upstream_hermes.py",
+      "sha256": "4de9e48828160ee459f9b2950e327adb0975f99f277267789bfa2141f701f62d"
+    },
+    {
+      "bytes": 2480,
+      "mode": "100644",
+      "path": "tests/test_walkthrough_wire.py",
+      "sha256": "8f817b5e825492f0553f0944891bda87a53f67af140887bc59c9f951392f5ada"
+    },
+    {
+      "bytes": 86458,
+      "mode": "100644",
+      "path": "uv.lock",
+      "sha256": "996c5eabf969623e6649f217fdf8e54683c968c8d3d5e65a6643ad3740650d20"
+    }
+  ],
+  "input_manifest_sha256": "633b89f6e217d0f06fa2987d4e423894d7caa32263d4c2a8c2709e014b4326ff",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "LICENSE",
+        "sha256": "87d3aab19aa1192b830ba7aaf6124f75c3d9430b1a01bc18a33915aaef44d699",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/publish.yml",
+      ".github/workflows/upstream-duckwork.yml",
+      "README.md",
+      "__init__.py",
+      "docs/plugin-catalog-entry.yaml",
+      "docs/walkthrough.md",
+      "duckwork_tenuo/__init__.py",
+      "duckwork_tenuo/_config.py",
+      "duckwork_tenuo/_guard.py",
+      "duckwork_tenuo/_home.py",
+      "duckwork_tenuo/audit.py",
+      "duckwork_tenuo/cli.py",
+      "duckwork_tenuo/demo.py",
+      "duckwork_tenuo/duckwork_guard.py",
+      "duckwork_tenuo/kanban.py",
+      "duckwork_tenuo/skills/tenuo-scope/SKILL.md",
+      "examples/README.md",
+      "examples/cron_warrant.py",
+      "examples/demo.py",
+      "examples/gateway_multiuser.py",
+      "examples/subagent_scope.py",
+      "examples/walkthrough/notes.md",
+      "examples/walkthrough/setup.sh",
+      "examples/walkthrough/wire_profile.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/__init__.py",
+      "tests/conftest.py",
+      "tests/test_audit.py",
+      "tests/test_cli.py",
+      "tests/test_config.py",
+      "tests/test_demo.py",
+      "tests/test_directory_plugin.py",
+      "tests/test_duckwork.py",
+      "tests/test_home.py",
+      "tests/test_integration_smoke.py",
+      "tests/test_public_surface.py",
+      "tests/test_security_invariants.py",
+      "tests/test_upstream_duckwork.py",
+      "tests/test_walkthrough_wire.py",
+      "uv.lock"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      ".github/workflows/publish.yml",
+      ".github/workflows/upstream-duckwork.yml",
+      "README.md",
+      "__init__.py",
+      "docs/plugin-catalog-entry.yaml",
+      "docs/walkthrough.md",
+      "examples/README.md",
+      "examples/cron_warrant.py",
+      "examples/demo.py",
+      "examples/gateway_multiuser.py",
+      "examples/subagent_scope.py",
+      "examples/walkthrough/notes.md",
+      "examples/walkthrough/setup.sh",
+      "examples/walkthrough/wire_profile.py",
+      "duckwork_tenuo/__init__.py",
+      "duckwork_tenuo/_config.py",
+      "duckwork_tenuo/_guard.py",
+      "duckwork_tenuo/_home.py",
+      "duckwork_tenuo/audit.py",
+      "duckwork_tenuo/cli.py",
+      "duckwork_tenuo/demo.py",
+      "duckwork_tenuo/duckwork_guard.py",
+      "duckwork_tenuo/kanban.py",
+      "duckwork_tenuo/skills/tenuo-scope/SKILL.md",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/__init__.py",
+      "tests/conftest.py",
+      "tests/test_audit.py",
+      "tests/test_cli.py",
+      "tests/test_config.py",
+      "tests/test_demo.py",
+      "tests/test_directory_plugin.py",
+      "tests/test_duckwork.py",
+      "tests/test_home.py",
+      "tests/test_integration_smoke.py",
+      "tests/test_public_surface.py",
+      "tests/test_security_invariants.py",
+      "tests/test_upstream_duckwork.py",
+      "tests/test_walkthrough_wire.py",
+      "uv.lock"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/tenuo-ai/hermes-tenuo",
+    "sha": "8bce830c5df9dcd06d16688a954146d8edc0c562",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/tenuo-ai/hermes-tenuo",
+  "original_sha": "8bce830c5df9dcd06d16688a954146d8edc0c562",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "a2928e628960e209b3b681eefce4e9cff30926ca8be9d087715f944fda09a843",
+      "bytes": 630,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/publish.yml",
+      "sha256": "9a7db76de151db8016818000892af0f45a34fedc8355ec781f4b900620d41d47",
+      "bytes": 1657,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/upstream-duckwork.yml",
+      "sha256": "deb89a9a613fe05f5ed58162e53f0ccfe944058484b62dc01711d461ddafb8c8",
+      "bytes": 2013,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "cc52b822832e027769176c445278655be81787d3e9c64625199e53cedf606d9a",
+      "bytes": 117,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "87d3aab19aa1192b830ba7aaf6124f75c3d9430b1a01bc18a33915aaef44d699",
+      "bytes": 11338,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "e897d5e13e5364ce12984bca8ed578ed886f631a5127e94286cc27b8393db1c6",
+      "bytes": 14985,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "8fa175d1416972cce5fc1ddeb50092567cbdb50d9718f0377dff4bc0ba720f12",
+      "bytes": 2182,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/plugin-catalog-entry.yaml",
+      "sha256": "f8b898da6a508a4f56bfe0b197cdb72c23bc1cc15362daf6d143f3ef81e8f2b9",
+      "bytes": 1293,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/walkthrough.md",
+      "sha256": "8bdb398e63793bdcb2f62344ecbc64537083e795f9c1ed6a1dd2be8f22259d06",
+      "bytes": 6530,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/__init__.py",
+      "sha256": "49afbeddd7236e63570a2e3cfdf3e53eb71a6a5db4b492b0252b5e40737f8cd7",
+      "bytes": 8331,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/_config.py",
+      "sha256": "14016fe24f0a17b2914c99d226b5d2592be3179c6db7b8e476270373e443adbe",
+      "bytes": 8476,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/_guard.py",
+      "sha256": "222a03362cc5c409f745c1cca63859168708967a4b17e4b6e76609073a794554",
+      "bytes": 8086,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/_home.py",
+      "sha256": "b388eae4239c93f60a7152ba00c48e3276bcc0da067ff8130fd56042494b98cd",
+      "bytes": 2460,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/audit.py",
+      "sha256": "3848a071fe71a33575248e32f9048d1afdfa5c43c67b64a71d7700de90238101",
+      "bytes": 4891,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/cli.py",
+      "sha256": "ab75dbfe8e925c26f6ae266e4609e71afaf058f6aa6925495b07d30d30b3e736",
+      "bytes": 26243,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/demo.py",
+      "sha256": "94fa1eef6439017b5b3c7f9324d3987a93220dde2f83fcd922936f5507bb18d0",
+      "bytes": 8012,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/duckwork_guard.py",
+      "sha256": "91686a29c3250db8ec2f7a05992712ec4c9a8c00230c55ed566df53369a3dc87",
+      "bytes": 33338,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/kanban.py",
+      "sha256": "6a29e6e85aacd135573e1b4c5036f0486217b0a9608373c0b17030911bd932d0",
+      "bytes": 6337,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_tenuo/skills/tenuo-scope/SKILL.md",
+      "sha256": "ce2730636153597ba01f6d98ed562aceca3eac414dbcceb05103d07e81863f1c",
+      "bytes": 8872,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/README.md",
+      "sha256": "3b0be0f8db30b6c23fdf3d9de1d70f0a46038badb847ad6341a66ee6cb2577bd",
+      "bytes": 887,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/cron_warrant.py",
+      "sha256": "04ea0c9430c6207c3b1289d78922a1066e0669dc69429fc884d200974538ba84",
+      "bytes": 2192,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/demo.py",
+      "sha256": "66546264c6b517ce891cd984dea26d46138deed89a2aec574bd03e5972df1054",
+      "bytes": 371,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/gateway_multiuser.py",
+      "sha256": "dd83a31e6588d62728a395f87eb28c93891748c7081b16a443964b829e773ec0",
+      "bytes": 3466,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/subagent_scope.py",
+      "sha256": "e9bb510c6c582eb0db492f140699d8d29385fcde023fc55345cf5af9fd0f9b4f",
+      "bytes": 2735,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/walkthrough/notes.md",
+      "sha256": "0a9d7722ec3f7376a8600008195cfa6fd82b9b2dc59ec87f5e8eccaa4c550a30",
+      "bytes": 774,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/walkthrough/setup.sh",
+      "sha256": "f32772abc36e65b672c79c379e31fb46c5da858a592727d5d91dc69a4980d529",
+      "bytes": 2706,
+      "mode": "100755"
+    },
+    {
+      "path": "examples/walkthrough/wire_profile.py",
+      "sha256": "dec8f030b2f03c626be5b91a4c384b069a2c4976cc162eb369c30d10d268e07e",
+      "bytes": 3899,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "8eda55211e62cf4613510a3805e6f1e50e7d19aaad1d764521617e0df184be2c",
+      "bytes": 1155,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "1d6e718ea3afa62519931213771767985cee038f4062f9778a97ed3bdf6ac1e5",
+      "bytes": 1838,
+      "mode": "100644"
+    },
+    {
+      "path": "pytest.ini",
+      "sha256": "82982065fc69775e2e41ec5d44bcad76534a97392b066d20e9fdf64d31c2fa4c",
+      "bytes": 70,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/__init__.py",
+      "sha256": "0589f1db18a63033a525265827aee8bf52ad809afe4590a1a4742fcfb9b8bc52",
+      "bytes": 190,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "6a9a0b67bfb8fa0b1cbedc8545af763c44138040b28df6728f91acd27f485ab6",
+      "bytes": 808,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_audit.py",
+      "sha256": "67ee3349b6d72287d55d1ce6b7a31201373f5db070552f754d54b5ccb85ee88d",
+      "bytes": 10232,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cli.py",
+      "sha256": "aa51b18bf35dd72753e26f62e8988fb9e9030b0543f43261f9b88dd385eac92b",
+      "bytes": 11694,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_config.py",
+      "sha256": "3415906d8c18322c86bcdc099d11965ad2fda2a5270c222ec3aba0e8f816de7a",
+      "bytes": 12985,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_demo.py",
+      "sha256": "69ff4bd53795fe60d3259f083bfdbc0cc7c8b7c43869e51b70c683cb8a1e332b",
+      "bytes": 2280,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_directory_plugin.py",
+      "sha256": "dd59b1c2d0c781ab6c6a5ea60ec2c7bf590d3f0f4be02fc9b457e96ec70d8c89",
+      "bytes": 2197,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_duckwork.py",
+      "sha256": "9ecf93d8bac204278095dd65d166dbcc4b36fc97175088c1baeb9bf9807ad9c8",
+      "bytes": 22422,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_home.py",
+      "sha256": "efa5c14e03ff5e7b2344422dee2548aaccc4f24755e45971ee7a4d3546020e07",
+      "bytes": 9492,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_integration_smoke.py",
+      "sha256": "4354b56cd747f7d6b36a1032ebce823a3ab8731d0645b6fb0ba3b57a052f82b1",
+      "bytes": 29875,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_public_surface.py",
+      "sha256": "d8548cebdf50e53d3c7939c75a1c3cdafc9930b5f8aca0c03aece4109fec900f",
+      "bytes": 2969,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_security_invariants.py",
+      "sha256": "40291ccd62c2d6cbb0392a72cb1bf04586e37fb91e417b74556c8f616bbd31ee",
+      "bytes": 23599,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_upstream_duckwork.py",
+      "sha256": "8bcb159a6828c3ca154f247b3005a24f4c4a2ec24740f90e9ae885171a65d98e",
+      "bytes": 5955,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_walkthrough_wire.py",
+      "sha256": "bd0a08ca51a8bcd52ec03ea56e5d481064051fb81597eb587fe4b655d41d95dd",
+      "bytes": 2630,
+      "mode": "100644"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "c5f03fe8ec67c5fa674d4a71f635a232bd1c256d9f8c292627ff32bce495dd0b",
+      "bytes": 86602,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "858175929cff726b098ba8292d42e923dd88afd625478bdd040d0316a6443b16",
+  "pin_verification": {
+    "archive_bytes": 103821,
+    "archive_sha256": "50f3d4c14327e3aecdd2556fcf5b9fbe100391eb562455a040372ed554709b5f",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "8bce830c5df9dcd06d16688a954146d8edc0c562",
+    "verified_commit_marker": "8bce830c5df9dcd06d16688a954146d8edc0c562"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "7ea2facba5a7f98ecfd257697704d32caa180345fd5521c9bf9775bfdc07b389",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "a2928e628960e209b3b681eefce4e9cff30926ca8be9d087715f944fda09a843",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a2928e628960e209b3b681eefce4e9cff30926ca8be9d087715f944fda09a843",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "a2928e628960e209b3b681eefce4e9cff30926ca8be9d087715f944fda09a843",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "a2928e628960e209b3b681eefce4e9cff30926ca8be9d087715f944fda09a843"
+      },
+      {
+        "destination": ".github/workflows/publish.yml",
+        "input_sha256": "912a7c509ee550a9556d76281d249c292c7965293ec9ff011c1b8c05af024aaa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "514e46548f0638bfcf49c9c8aadb37b922597a6676ed2ad3ec11e05f09c68188",
+        "source": ".github/workflows/publish.yml",
+        "final_output_sha256": "9a7db76de151db8016818000892af0f45a34fedc8355ec781f4b900620d41d47",
+        "cli_destination": ".github/workflows/publish.yml",
+        "previous_staging_sha256": "9a7db76de151db8016818000892af0f45a34fedc8355ec781f4b900620d41d47"
+      },
+      {
+        "destination": ".github/workflows/upstream-duckwork.yml",
+        "input_sha256": "713a3864cef1ed6965675800e810de83fb33ea0d4f71e1f2493b85e7b14f7baa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8416bfc146a559dd8ea01a674d9fa81a6fc446111f16d4db0d587544b279d1d8",
+        "source": ".github/workflows/upstream-hermes.yml",
+        "final_output_sha256": "deb89a9a613fe05f5ed58162e53f0ccfe944058484b62dc01711d461ddafb8c8",
+        "cli_destination": ".github/workflows/upstream-duckwork.yml",
+        "previous_staging_sha256": "deb89a9a613fe05f5ed58162e53f0ccfe944058484b62dc01711d461ddafb8c8"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "cc52b822832e027769176c445278655be81787d3e9c64625199e53cedf606d9a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cc52b822832e027769176c445278655be81787d3e9c64625199e53cedf606d9a",
+        "source": ".gitignore",
+        "final_output_sha256": "cc52b822832e027769176c445278655be81787d3e9c64625199e53cedf606d9a",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "cc52b822832e027769176c445278655be81787d3e9c64625199e53cedf606d9a"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "87d3aab19aa1192b830ba7aaf6124f75c3d9430b1a01bc18a33915aaef44d699",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "87d3aab19aa1192b830ba7aaf6124f75c3d9430b1a01bc18a33915aaef44d699",
+        "source": "LICENSE",
+        "final_output_sha256": "87d3aab19aa1192b830ba7aaf6124f75c3d9430b1a01bc18a33915aaef44d699",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "87d3aab19aa1192b830ba7aaf6124f75c3d9430b1a01bc18a33915aaef44d699"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "37beda2dbf05e957a7bfc451d486738e3b59c532bce72ab79dd09e5f1e08ffb0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "912148256a53c824a47066955863897e2c0a74dcec9809c4117c781c7b54b99c",
+        "source": "README.md",
+        "final_output_sha256": "e897d5e13e5364ce12984bca8ed578ed886f631a5127e94286cc27b8393db1c6",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "37541227c39dfe2acc6355db3cc51c23fcdac326beb80a7e24ad42815cea6315"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "cd7c0f7eb9c5ff69f111661b717fe8e118a5148690a0b213fd26aa2e34a1a096",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ffc4c6b231f002a0de7ffedabcdd0e825186111e7fc9b80da505aa2f2017190e",
+        "source": "__init__.py",
+        "final_output_sha256": "8fa175d1416972cce5fc1ddeb50092567cbdb50d9718f0377dff4bc0ba720f12",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "8fa175d1416972cce5fc1ddeb50092567cbdb50d9718f0377dff4bc0ba720f12"
+      },
+      {
+        "destination": "docs/plugin-catalog-entry.yaml",
+        "input_sha256": "a7a60298003e19f71f031611b0f537eae506cf09b2d99cf84e9497554290cbdf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ecf8be6ac2cd8b1cff6044417fd9f0c56ca5a9bb55da37f86a238890486c6fba",
+        "source": "docs/plugin-catalog-entry.yaml",
+        "final_output_sha256": "f8b898da6a508a4f56bfe0b197cdb72c23bc1cc15362daf6d143f3ef81e8f2b9",
+        "cli_destination": "docs/plugin-catalog-entry.yaml",
+        "previous_staging_sha256": "b656a89e6d8a749a6af1bf09f162af900611adda4fed1ab2c9cf6a7dfaef505b"
+      },
+      {
+        "destination": "docs/walkthrough.md",
+        "input_sha256": "1fbee3f2c0c501e8922f3d55ec25f60710c1990049d0d65f0f35f5ee02874772",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2e71479898c6f441b156f5206a2e61957e9f6a20f37c1cea00ee72e0e1e6bc41",
+        "source": "docs/walkthrough.md",
+        "final_output_sha256": "8bdb398e63793bdcb2f62344ecbc64537083e795f9c1ed6a1dd2be8f22259d06",
+        "cli_destination": "docs/walkthrough.md",
+        "previous_staging_sha256": "9ca1601d499c21b96d2750e5b362c99e644e4757195b18c92363234cfaf28b35"
+      },
+      {
+        "destination": "examples/README.md",
+        "input_sha256": "bde2fe4a20285c495e24ba515f142a0f4f8994db1301ef2f84d692d7c709e2d4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "792db4a87090d45afb01ac0b5154f242ad69c6a19f32e17499ac3868b4ab9327",
+        "source": "examples/README.md",
+        "final_output_sha256": "3b0be0f8db30b6c23fdf3d9de1d70f0a46038badb847ad6341a66ee6cb2577bd",
+        "cli_destination": "examples/README.md",
+        "previous_staging_sha256": "3b0be0f8db30b6c23fdf3d9de1d70f0a46038badb847ad6341a66ee6cb2577bd"
+      },
+      {
+        "destination": "examples/cron_warrant.py",
+        "input_sha256": "abfa664cde6f55ae97664e12709f340eea252c679684cbc38e19227d6ca1e3e0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b97954a421ccae641b07b9a782511dd0f5c6cb3cff1e86fe68b8d5dd24a0637f",
+        "source": "examples/cron_warrant.py",
+        "final_output_sha256": "04ea0c9430c6207c3b1289d78922a1066e0669dc69429fc884d200974538ba84",
+        "cli_destination": "examples/cron_warrant.py",
+        "previous_staging_sha256": "04ea0c9430c6207c3b1289d78922a1066e0669dc69429fc884d200974538ba84"
+      },
+      {
+        "destination": "examples/demo.py",
+        "input_sha256": "516ecfe58cc8e399c952684909970d0b0676679fb3e60529a048aca7e5a901e2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b02edb7a7c5d2de49081e0286544cfda3d0d4c138881e2196b87f6f522663782",
+        "source": "examples/demo.py",
+        "final_output_sha256": "66546264c6b517ce891cd984dea26d46138deed89a2aec574bd03e5972df1054",
+        "cli_destination": "examples/demo.py",
+        "previous_staging_sha256": "66546264c6b517ce891cd984dea26d46138deed89a2aec574bd03e5972df1054"
+      },
+      {
+        "destination": "examples/gateway_multiuser.py",
+        "input_sha256": "2497416779378f6857dc48c9dfe94e3672a0e6005b097e469e254eec87a226b2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2a9e03dafb8d187dca14d0f50bdbc04c35ce96a5e68245fd5df4b1cd3e7a6a45",
+        "source": "examples/gateway_multiuser.py",
+        "final_output_sha256": "dd83a31e6588d62728a395f87eb28c93891748c7081b16a443964b829e773ec0",
+        "cli_destination": "examples/gateway_multiuser.py",
+        "previous_staging_sha256": "dd83a31e6588d62728a395f87eb28c93891748c7081b16a443964b829e773ec0"
+      },
+      {
+        "destination": "examples/subagent_scope.py",
+        "input_sha256": "5d492948a3950b85ef139339d7ae41213faee8e5170c0471f2ae93df593534d4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b6b6da4816ecfc0044d708f26644a0c6659f0b09ff57ad722be51f2b09511f8",
+        "source": "examples/subagent_scope.py",
+        "final_output_sha256": "e9bb510c6c582eb0db492f140699d8d29385fcde023fc55345cf5af9fd0f9b4f",
+        "cli_destination": "examples/subagent_scope.py",
+        "previous_staging_sha256": "e9bb510c6c582eb0db492f140699d8d29385fcde023fc55345cf5af9fd0f9b4f"
+      },
+      {
+        "destination": "examples/walkthrough/notes.md",
+        "input_sha256": "46c4e48c6d2ed3442b666eda6309c92813e7d3727dcce003ed16000575d46bb9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "25138395baa2b881b4cea44c5be8ab9ce93bbc594af8f0d22cd7274564d4c638",
+        "source": "examples/walkthrough/notes.md",
+        "final_output_sha256": "0a9d7722ec3f7376a8600008195cfa6fd82b9b2dc59ec87f5e8eccaa4c550a30",
+        "cli_destination": "examples/walkthrough/notes.md",
+        "previous_staging_sha256": "0a9d7722ec3f7376a8600008195cfa6fd82b9b2dc59ec87f5e8eccaa4c550a30"
+      },
+      {
+        "destination": "examples/walkthrough/setup.sh",
+        "input_sha256": "c5e1124a365dfaeb3791d04ea02b9e16a93c36d9a80d3c127226e4b2c6a77185",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "c340e40177d158809aac237d642535879c52b416be4bb44cb11bfb80e066c821",
+        "source": "examples/walkthrough/setup.sh",
+        "final_output_sha256": "f32772abc36e65b672c79c379e31fb46c5da858a592727d5d91dc69a4980d529",
+        "cli_destination": "examples/walkthrough/setup.sh",
+        "previous_staging_sha256": "f32772abc36e65b672c79c379e31fb46c5da858a592727d5d91dc69a4980d529"
+      },
+      {
+        "destination": "examples/walkthrough/wire_profile.py",
+        "input_sha256": "4fdfd946971da3f8bd3ee4af60a8ed3fe2ff12a9d8dbed74758e8955b1a3f891",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e7775e619d91fa19cda7583efd2d5ce7e731f82874c0cd8c11c320acfa1050c7",
+        "source": "examples/walkthrough/wire_profile.py",
+        "final_output_sha256": "dec8f030b2f03c626be5b91a4c384b069a2c4976cc162eb369c30d10d268e07e",
+        "cli_destination": "examples/walkthrough/wire_profile.py",
+        "previous_staging_sha256": "dec8f030b2f03c626be5b91a4c384b069a2c4976cc162eb369c30d10d268e07e"
+      },
+      {
+        "destination": "duckwork_tenuo/__init__.py",
+        "input_sha256": "004a191180ded9ea00566adf164644cd3b92ccb0ef8360dc856caa2d7a84e25d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e6f8f1f4eb5243667fde8ae2dccb916cfce72dc081398acdd419897bf9561fd9",
+        "source": "hermes_tenuo/__init__.py",
+        "final_output_sha256": "49afbeddd7236e63570a2e3cfdf3e53eb71a6a5db4b492b0252b5e40737f8cd7",
+        "cli_destination": "duckwork_tenuo/__init__.py",
+        "previous_staging_sha256": "49afbeddd7236e63570a2e3cfdf3e53eb71a6a5db4b492b0252b5e40737f8cd7"
+      },
+      {
+        "destination": "duckwork_tenuo/_config.py",
+        "input_sha256": "4cd0bdd38c3014cc381eda1a3af51ca6355192f0d8d205b7420ac45c953c4b25",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec99ac011fe9915467aa9678f17314a72c583523b83dc0500b33f7fad82fa45d",
+        "source": "hermes_tenuo/_config.py",
+        "final_output_sha256": "14016fe24f0a17b2914c99d226b5d2592be3179c6db7b8e476270373e443adbe",
+        "cli_destination": "duckwork_tenuo/_config.py",
+        "previous_staging_sha256": "14016fe24f0a17b2914c99d226b5d2592be3179c6db7b8e476270373e443adbe"
+      },
+      {
+        "destination": "duckwork_tenuo/_guard.py",
+        "input_sha256": "c3ebb55c11e86b7b4f1350d3e671b2d7173044f89f0c2293fad7982d1208f71e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a3a08c3e12cd0f529aa0ea72fad0453f926d47cbc794ec0fb62a0e4ecdf99ebd",
+        "source": "hermes_tenuo/_guard.py",
+        "final_output_sha256": "222a03362cc5c409f745c1cca63859168708967a4b17e4b6e76609073a794554",
+        "cli_destination": "duckwork_tenuo/_guard.py",
+        "previous_staging_sha256": "222a03362cc5c409f745c1cca63859168708967a4b17e4b6e76609073a794554"
+      },
+      {
+        "destination": "duckwork_tenuo/_home.py",
+        "input_sha256": "82d385c42e0738da3e0634503215379bfa7e2efcdbd361482072dc9d627b925b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5de33e6189fa831147aa20f0f7a8912ee620deaf7deb2dd73bd8ef66250a8d3f",
+        "source": "hermes_tenuo/_home.py",
+        "final_output_sha256": "b388eae4239c93f60a7152ba00c48e3276bcc0da067ff8130fd56042494b98cd",
+        "cli_destination": "duckwork_tenuo/_home.py",
+        "previous_staging_sha256": "b388eae4239c93f60a7152ba00c48e3276bcc0da067ff8130fd56042494b98cd"
+      },
+      {
+        "destination": "duckwork_tenuo/audit.py",
+        "input_sha256": "616ea741fa7f32c5ff78ca1e2fbbb4e38334f9fc3a602074872ba35bf706f6af",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "24456b4456415e7108f07d4b420be2aaa5962ce71b66f5a5ad3d3996f34c5717",
+        "source": "hermes_tenuo/audit.py",
+        "final_output_sha256": "3848a071fe71a33575248e32f9048d1afdfa5c43c67b64a71d7700de90238101",
+        "cli_destination": "duckwork_tenuo/audit.py",
+        "previous_staging_sha256": "3848a071fe71a33575248e32f9048d1afdfa5c43c67b64a71d7700de90238101"
+      },
+      {
+        "destination": "duckwork_tenuo/cli.py",
+        "input_sha256": "e1519f1f7eb8e876412003eb3acc296eb8040c5be6be9e0d2368dce9cb96085e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9186d40a900cf0f7862882bbf414cac1c19f4ee34184438b5ba9d52f1114007c",
+        "source": "hermes_tenuo/cli.py",
+        "final_output_sha256": "ab75dbfe8e925c26f6ae266e4609e71afaf058f6aa6925495b07d30d30b3e736",
+        "cli_destination": "duckwork_tenuo/cli.py",
+        "previous_staging_sha256": "1e04d95c3c7915ae002a6b91f8f1b0e8867aee6fa656cac20afff909e3580b04"
+      },
+      {
+        "destination": "duckwork_tenuo/demo.py",
+        "input_sha256": "e085c3e0194d7e030241fb65a7ed55d1b0995a5dd8bb268af260df57bec625e2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f4892a0415007f34ef7febceeb0abfd64abbc9f14848e42528b214db24780bf6",
+        "source": "hermes_tenuo/demo.py",
+        "final_output_sha256": "94fa1eef6439017b5b3c7f9324d3987a93220dde2f83fcd922936f5507bb18d0",
+        "cli_destination": "duckwork_tenuo/demo.py",
+        "previous_staging_sha256": "94fa1eef6439017b5b3c7f9324d3987a93220dde2f83fcd922936f5507bb18d0"
+      },
+      {
+        "destination": "duckwork_tenuo/duckwork_guard.py",
+        "input_sha256": "228f1995d78f395fcd07a15373da459f4ccf52f22fc3468ebc5eef9c0ac19f09",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "79dcae6388a306ccdf3a59c27e09ef4b08e85f836e8f6aa7dd9e0e47e474ed9d",
+        "source": "hermes_tenuo/hermes_guard.py",
+        "final_output_sha256": "91686a29c3250db8ec2f7a05992712ec4c9a8c00230c55ed566df53369a3dc87",
+        "cli_destination": "duckwork_tenuo/duckwork_guard.py",
+        "previous_staging_sha256": "91686a29c3250db8ec2f7a05992712ec4c9a8c00230c55ed566df53369a3dc87"
+      },
+      {
+        "destination": "duckwork_tenuo/kanban.py",
+        "input_sha256": "f516b49968437a11802433566900fc37623aed57446526fa563cfefee2133be0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ffc5140aedc2d85ce59f0c325e623e4cbbf296fee57b8c45ae9b40f6ae45903b",
+        "source": "hermes_tenuo/kanban.py",
+        "final_output_sha256": "6a29e6e85aacd135573e1b4c5036f0486217b0a9608373c0b17030911bd932d0",
+        "cli_destination": "duckwork_tenuo/kanban.py",
+        "previous_staging_sha256": "6a29e6e85aacd135573e1b4c5036f0486217b0a9608373c0b17030911bd932d0"
+      },
+      {
+        "destination": "duckwork_tenuo/skills/tenuo-scope/SKILL.md",
+        "input_sha256": "7eb0801381f82b1d3e3d7aa20582f470e172da19b8f490e0730cdcc70400bb6f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a1287e897282fb72a839f52a0ec8434ff735716c84875d2f845708393dd785a3",
+        "source": "hermes_tenuo/skills/tenuo-scope/SKILL.md",
+        "final_output_sha256": "ce2730636153597ba01f6d98ed562aceca3eac414dbcceb05103d07e81863f1c",
+        "cli_destination": "duckwork_tenuo/skills/tenuo-scope/SKILL.md",
+        "previous_staging_sha256": "ce2730636153597ba01f6d98ed562aceca3eac414dbcceb05103d07e81863f1c"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "cb3b3d0cac9fce68abc78fcaf5221ecd7d58f5fe3108b5eb04eb440de3a5506c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a68ca385096b86a83a3903af200c4797d600d4ea84dbe2ad7eaafd18ae8c1b20",
+        "source": "plugin.yaml",
+        "final_output_sha256": "8eda55211e62cf4613510a3805e6f1e50e7d19aaad1d764521617e0df184be2c",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "a5f215be8fcc25007249c4083f79936d49c559e08824f94058817f67d360e73d"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "25b307f3701ebddab02f710b80c8e2df163eb4dcfe7b7256f8c40faac9985613",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6347ca4c9f26c63b166e749b93cf70182fbeb511261d919cbfa6e9bb5d98c148",
+        "source": "pyproject.toml",
+        "final_output_sha256": "1d6e718ea3afa62519931213771767985cee038f4062f9778a97ed3bdf6ac1e5",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "59e3bfbf4701c2ebe7296d97e77b9bb903b637ea3a0b7fd0657112de8f2f0321"
+      },
+      {
+        "destination": "pytest.ini",
+        "input_sha256": "82982065fc69775e2e41ec5d44bcad76534a97392b066d20e9fdf64d31c2fa4c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "82982065fc69775e2e41ec5d44bcad76534a97392b066d20e9fdf64d31c2fa4c",
+        "source": "pytest.ini",
+        "final_output_sha256": "82982065fc69775e2e41ec5d44bcad76534a97392b066d20e9fdf64d31c2fa4c",
+        "cli_destination": "pytest.ini",
+        "previous_staging_sha256": "82982065fc69775e2e41ec5d44bcad76534a97392b066d20e9fdf64d31c2fa4c"
+      },
+      {
+        "destination": "tests/__init__.py",
+        "input_sha256": "ee7766cbdb31f04a7f93b57753e6e576907f23add7ff92244bea17c0c56c41c4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "04c65013aef9755d1bdd7e49c2aa058fd47cd447cdfe1ee17c252de9e0688c10",
+        "source": "tests/__init__.py",
+        "final_output_sha256": "0589f1db18a63033a525265827aee8bf52ad809afe4590a1a4742fcfb9b8bc52",
+        "cli_destination": "tests/__init__.py",
+        "previous_staging_sha256": "0589f1db18a63033a525265827aee8bf52ad809afe4590a1a4742fcfb9b8bc52"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "93e093596f98d1ea4a8068438df789244888011af6f84117b0455b2f30e74694",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2d246825afc6df516f68d5d750f095913d99856cf4ed98e44e558dc1e36c6ff0",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "6a9a0b67bfb8fa0b1cbedc8545af763c44138040b28df6728f91acd27f485ab6",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "6a9a0b67bfb8fa0b1cbedc8545af763c44138040b28df6728f91acd27f485ab6"
+      },
+      {
+        "destination": "tests/test_audit.py",
+        "input_sha256": "d80b76d71b8dff9b28f0bc3fe955d22777ecb09d027e8253180fddf91dace08d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c81ba82ef0a9442171612a498628ec8866109031358ba46919fbfe63981e3d9c",
+        "source": "tests/test_audit.py",
+        "final_output_sha256": "67ee3349b6d72287d55d1ce6b7a31201373f5db070552f754d54b5ccb85ee88d",
+        "cli_destination": "tests/test_audit.py",
+        "previous_staging_sha256": "2cd34584a5beb5505112d46379010552fcdbc0ee162e04b0a80d04203bf05dc6"
+      },
+      {
+        "destination": "tests/test_cli.py",
+        "input_sha256": "23ed87f6d5d1dc79deccb3ed21ce12df477f3371bd520d21fbb22bf25ddd0f1a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a67e1adc85448f5ea7ebd78e9e22e4e2901c8fece32ceefa8d66cf408379053e",
+        "source": "tests/test_cli.py",
+        "final_output_sha256": "aa51b18bf35dd72753e26f62e8988fb9e9030b0543f43261f9b88dd385eac92b",
+        "cli_destination": "tests/test_cli.py",
+        "previous_staging_sha256": "aa51b18bf35dd72753e26f62e8988fb9e9030b0543f43261f9b88dd385eac92b"
+      },
+      {
+        "destination": "tests/test_config.py",
+        "input_sha256": "8cd405b9b2be19063b06b5734d65be78f47ce4f2ed06d237400033b1a16d0294",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "09840e6df642db09c8383c7a712e5de0081181e0e2b8706c1a841fb9332d683d",
+        "source": "tests/test_config.py",
+        "final_output_sha256": "3415906d8c18322c86bcdc099d11965ad2fda2a5270c222ec3aba0e8f816de7a",
+        "cli_destination": "tests/test_config.py",
+        "previous_staging_sha256": "3415906d8c18322c86bcdc099d11965ad2fda2a5270c222ec3aba0e8f816de7a"
+      },
+      {
+        "destination": "tests/test_demo.py",
+        "input_sha256": "6eee7965ef56f0f7f996dfcd115a4cdd85060d718ced446dfa946f93dd44de0e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8e5b5f3efc8b8b6df04f5dbb0bf86b5f0e656163b04f612fd664787f5ff392dd",
+        "source": "tests/test_demo.py",
+        "final_output_sha256": "69ff4bd53795fe60d3259f083bfdbc0cc7c8b7c43869e51b70c683cb8a1e332b",
+        "cli_destination": "tests/test_demo.py",
+        "previous_staging_sha256": "69ff4bd53795fe60d3259f083bfdbc0cc7c8b7c43869e51b70c683cb8a1e332b"
+      },
+      {
+        "destination": "tests/test_directory_plugin.py",
+        "input_sha256": "13d0cf42586aa1c464ab1449a5b99383ac462d6fa6666a1034ff5fcae5b8a0c7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4bcce7861880658c681b2ec164f96a7fddda99f68005bc0fb381e111095e5b67",
+        "source": "tests/test_directory_plugin.py",
+        "final_output_sha256": "dd59b1c2d0c781ab6c6a5ea60ec2c7bf590d3f0f4be02fc9b457e96ec70d8c89",
+        "cli_destination": "tests/test_directory_plugin.py",
+        "previous_staging_sha256": "dd59b1c2d0c781ab6c6a5ea60ec2c7bf590d3f0f4be02fc9b457e96ec70d8c89"
+      },
+      {
+        "destination": "tests/test_duckwork.py",
+        "input_sha256": "9ecabc2778b38e2f33207892d49586627bf47b2b816d2c2ccea8e0dd4b32477f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "212cbeebd68b935c3b862a069a21a5605111064bd0c65312971d5295119962b1",
+        "source": "tests/test_hermes.py",
+        "final_output_sha256": "9ecf93d8bac204278095dd65d166dbcc4b36fc97175088c1baeb9bf9807ad9c8",
+        "cli_destination": "tests/test_duckwork.py",
+        "previous_staging_sha256": "9ecf93d8bac204278095dd65d166dbcc4b36fc97175088c1baeb9bf9807ad9c8"
+      },
+      {
+        "destination": "tests/test_home.py",
+        "input_sha256": "8fffc9940ee5b06fd33484efc0e3e0009ccdbd9d2f242f31766145de6c887291",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "509d0f35fa957e95e6f3810dedc5f0c747ccc44afc6c1741b7b2646d680467cf",
+        "source": "tests/test_home.py",
+        "final_output_sha256": "efa5c14e03ff5e7b2344422dee2548aaccc4f24755e45971ee7a4d3546020e07",
+        "cli_destination": "tests/test_home.py",
+        "previous_staging_sha256": "efa5c14e03ff5e7b2344422dee2548aaccc4f24755e45971ee7a4d3546020e07"
+      },
+      {
+        "destination": "tests/test_integration_smoke.py",
+        "input_sha256": "392d622223cadc1c1f58e04dc97d17e1b396e35ecd85d7a29ee8058d0c7293dc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f2eb0d513b2a1b6758e1be65852e4e7de4c45908f9b5f5773f4ee635d5c34a98",
+        "source": "tests/test_integration_smoke.py",
+        "final_output_sha256": "4354b56cd747f7d6b36a1032ebce823a3ab8731d0645b6fb0ba3b57a052f82b1",
+        "cli_destination": "tests/test_integration_smoke.py",
+        "previous_staging_sha256": "4354b56cd747f7d6b36a1032ebce823a3ab8731d0645b6fb0ba3b57a052f82b1"
+      },
+      {
+        "destination": "tests/test_public_surface.py",
+        "input_sha256": "5acf514fe25046ef89222d354464f27c558e964705b4c1bca8e37fef1c8c3668",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fa7eb727ab00233ce1ae96869cf568f64678d607682285b93855b68cfc8fa622",
+        "source": "tests/test_public_surface.py",
+        "final_output_sha256": "d8548cebdf50e53d3c7939c75a1c3cdafc9930b5f8aca0c03aece4109fec900f",
+        "cli_destination": "tests/test_public_surface.py",
+        "previous_staging_sha256": "d8548cebdf50e53d3c7939c75a1c3cdafc9930b5f8aca0c03aece4109fec900f"
+      },
+      {
+        "destination": "tests/test_security_invariants.py",
+        "input_sha256": "9dd82d5b41fa592c45b1479661e0ff8930e9c50c407f0ddd55dd1dbe7e83f36c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d875e98d341d0b633a55a61712c32ff50624b5585db2247e1941395acaa3e9bb",
+        "source": "tests/test_security_invariants.py",
+        "final_output_sha256": "40291ccd62c2d6cbb0392a72cb1bf04586e37fb91e417b74556c8f616bbd31ee",
+        "cli_destination": "tests/test_security_invariants.py",
+        "previous_staging_sha256": "40291ccd62c2d6cbb0392a72cb1bf04586e37fb91e417b74556c8f616bbd31ee"
+      },
+      {
+        "destination": "tests/test_upstream_duckwork.py",
+        "input_sha256": "4de9e48828160ee459f9b2950e327adb0975f99f277267789bfa2141f701f62d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "929e8c31282861e1fed5d723b9b8099a91401878f7e1cd0620a748304a79c818",
+        "source": "tests/test_upstream_hermes.py",
+        "final_output_sha256": "8bcb159a6828c3ca154f247b3005a24f4c4a2ec24740f90e9ae885171a65d98e",
+        "cli_destination": "tests/test_upstream_duckwork.py",
+        "previous_staging_sha256": "8bcb159a6828c3ca154f247b3005a24f4c4a2ec24740f90e9ae885171a65d98e"
+      },
+      {
+        "destination": "tests/test_walkthrough_wire.py",
+        "input_sha256": "8f817b5e825492f0553f0944891bda87a53f67af140887bc59c9f951392f5ada",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "224d0a11d0b14fb26e17ffd679d91bfef9343dd75e1478e5263e9cd645d899e0",
+        "source": "tests/test_walkthrough_wire.py",
+        "final_output_sha256": "bd0a08ca51a8bcd52ec03ea56e5d481064051fb81597eb587fe4b655d41d95dd",
+        "cli_destination": "tests/test_walkthrough_wire.py",
+        "previous_staging_sha256": "bd0a08ca51a8bcd52ec03ea56e5d481064051fb81597eb587fe4b655d41d95dd"
+      },
+      {
+        "destination": "uv.lock",
+        "input_sha256": "996c5eabf969623e6649f217fdf8e54683c968c8d3d5e65a6643ad3740650d20",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "33fc1d1f6f444b3a53d39058824beb4bfcf5b4283766c8e46cc73ecaf8df7dab",
+        "source": "uv.lock",
+        "final_output_sha256": "c5f03fe8ec67c5fa674d4a71f635a232bd1c256d9f8c292627ff32bce495dd0b",
+        "cli_destination": "uv.lock",
+        "previous_staging_sha256": "c5f03fe8ec67c5fa674d4a71f635a232bd1c256d9f8c292627ff32bce495dd0b"
+      }
+    ],
+    "manifest_sha256": "f769ff5ec8f5ff78d6c3949592bf8cf8f08a27e7a7948e0c71d139c4719ac1e7",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml": ".github/workflows/publish.yml",
+    ".github/workflows/upstream-hermes.yml": ".github/workflows/upstream-hermes.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "docs/plugin-catalog-entry.yaml": "docs/plugin-catalog-entry.yaml",
+    "docs/walkthrough.md": "docs/walkthrough.md",
+    "examples/README.md": "examples/README.md",
+    "examples/cron_warrant.py": "examples/cron_warrant.py",
+    "examples/demo.py": "examples/demo.py",
+    "examples/gateway_multiuser.py": "examples/gateway_multiuser.py",
+    "examples/subagent_scope.py": "examples/subagent_scope.py",
+    "examples/walkthrough/notes.md": "examples/walkthrough/notes.md",
+    "examples/walkthrough/setup.sh": "examples/walkthrough/setup.sh",
+    "examples/walkthrough/wire_profile.py": "examples/walkthrough/wire_profile.py",
+    "hermes_tenuo/__init__.py": "hermes_tenuo/__init__.py",
+    "hermes_tenuo/_config.py": "hermes_tenuo/_config.py",
+    "hermes_tenuo/_guard.py": "hermes_tenuo/_guard.py",
+    "hermes_tenuo/_home.py": "hermes_tenuo/_home.py",
+    "hermes_tenuo/audit.py": "hermes_tenuo/audit.py",
+    "hermes_tenuo/cli.py": "hermes_tenuo/cli.py",
+    "hermes_tenuo/demo.py": "hermes_tenuo/demo.py",
+    "hermes_tenuo/hermes_guard.py": "hermes_tenuo/hermes_guard.py",
+    "hermes_tenuo/kanban.py": "hermes_tenuo/kanban.py",
+    "hermes_tenuo/skills/tenuo-scope/SKILL.md": "hermes_tenuo/skills/tenuo-scope/SKILL.md",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "pytest.ini": "pytest.ini",
+    "tests/__init__.py": "tests/__init__.py",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/test_audit.py": "tests/test_audit.py",
+    "tests/test_cli.py": "tests/test_cli.py",
+    "tests/test_config.py": "tests/test_config.py",
+    "tests/test_demo.py": "tests/test_demo.py",
+    "tests/test_directory_plugin.py": "tests/test_directory_plugin.py",
+    "tests/test_hermes.py": "tests/test_hermes.py",
+    "tests/test_home.py": "tests/test_home.py",
+    "tests/test_integration_smoke.py": "tests/test_integration_smoke.py",
+    "tests/test_public_surface.py": "tests/test_public_surface.py",
+    "tests/test_security_invariants.py": "tests/test_security_invariants.py",
+    "tests/test_upstream_hermes.py": "tests/test_upstream_hermes.py",
+    "tests/test_walkthrough_wire.py": "tests/test_walkthrough_wire.py",
+    "uv.lock": "uv.lock"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-tenuo",
+    "python_files_compiled": 29,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-tenuo",
+  "catalog_file": "src/plugin-catalog/duckwork-tenuo.yaml",
+  "identity": {
+    "catalog_id": "hermes-tenuo",
+    "canonical_slug": "duckwork-tenuo",
+    "original_manifest_name": "hermes-tenuo",
+    "rebranded_manifest_name": "duckwork-tenuo",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "382956176dbdad3e2e3e56c356b759c300a0789d0a069ac30e982669350fa120",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "37541227c39dfe2acc6355db3cc51c23fcdac326beb80a7e24ad42815cea6315",
+          "after_sha256": "8fd35294f907e1449bd08e08923cb389c345f41bf566bde962bbddb2937d4991",
+          "before_bytes": 15189,
+          "after_bytes": 14973,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "docs/plugin-catalog-entry.yaml",
+          "after_path": "docs/plugin-catalog-entry.yaml",
+          "before_sha256": "b656a89e6d8a749a6af1bf09f162af900611adda4fed1ab2c9cf6a7dfaef505b",
+          "after_sha256": "f8b898da6a508a4f56bfe0b197cdb72c23bc1cc15362daf6d143f3ef81e8f2b9",
+          "before_bytes": 1308,
+          "after_bytes": 1293,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "docs/walkthrough.md",
+          "after_path": "docs/walkthrough.md",
+          "before_sha256": "9ca1601d499c21b96d2750e5b362c99e644e4757195b18c92363234cfaf28b35",
+          "after_sha256": "8bdb398e63793bdcb2f62344ecbc64537083e795f9c1ed6a1dd2be8f22259d06",
+          "before_bytes": 6528,
+          "after_bytes": 6530,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "duckwork_tenuo/cli.py",
+          "after_path": "duckwork_tenuo/cli.py",
+          "before_sha256": "1e04d95c3c7915ae002a6b91f8f1b0e8867aee6fa656cac20afff909e3580b04",
+          "after_sha256": "ab75dbfe8e925c26f6ae266e4609e71afaf058f6aa6925495b07d30d30b3e736",
+          "before_bytes": 26262,
+          "after_bytes": 26243,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "a5f215be8fcc25007249c4083f79936d49c559e08824f94058817f67d360e73d",
+          "after_sha256": "8eda55211e62cf4613510a3805e6f1e50e7d19aaad1d764521617e0df184be2c",
+          "before_bytes": 1159,
+          "after_bytes": 1155,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "59e3bfbf4701c2ebe7296d97e77b9bb903b637ea3a0b7fd0657112de8f2f0321",
+          "after_sha256": "1d6e718ea3afa62519931213771767985cee038f4062f9778a97ed3bdf6ac1e5",
+          "before_bytes": 1868,
+          "after_bytes": 1838,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "tests/test_audit.py",
+          "after_path": "tests/test_audit.py",
+          "before_sha256": "2cd34584a5beb5505112d46379010552fcdbc0ee162e04b0a80d04203bf05dc6",
+          "after_sha256": "67ee3349b6d72287d55d1ce6b7a31201373f5db070552f754d54b5ccb85ee88d",
+          "before_bytes": 10230,
+          "after_bytes": 10232,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    },
+    {
+      "revision": "r46-external-package-wire-review",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "117cfcc2ba41502bb1bc11b8aca4e756f5beab5236a60023176deb33420e715e",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "8fd35294f907e1449bd08e08923cb389c345f41bf566bde962bbddb2937d4991",
+          "after_sha256": "e897d5e13e5364ce12984bca8ed578ed886f631a5127e94286cc27b8393db1c6",
+          "before_bytes": 14973,
+          "after_bytes": 14985,
+          "operation": "preserve-external-package-and-wire-contract",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "README.md": [
+      {
+        "value": "git+https://github.com/tenuo-ai/hermes-tenuo.git",
+        "reason": "external npm/PyPI Git dependency source coordinate; renaming would request a different package"
+      }
+    ]
+  }
+}

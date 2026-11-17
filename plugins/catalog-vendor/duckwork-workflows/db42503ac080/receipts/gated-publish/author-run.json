@@ -1,0 +1,30 @@
+{
+  "template": "gated-publish",
+  "receipt_kind": "author-run",
+  "author_estate": "repo-owner estate (WOFS Core-10 #4 author)",
+  "graph_file": "examples/release/gated-publish.workflow.json",
+  "template_sha256": "ec265a01a78d120d03c22d9f06023099731a4f7c2a6edc22e2674a527e032ba2",
+  "source_digest": "97b75a8624c5850e257876e4da6d3ea2563921252911f7b038ef32d7439ac3b4",
+  "graph_fingerprint": "28410e79d55eee2f",
+  "run_id": "20261002-061109-gated-publish",
+  "status": "done",
+  "gate_answer": "publish",
+  "nodes_status": {
+    "draft": "done",
+    "approve": "done",
+    "publish_gate": "done",
+    "rewrite_gate": "skipped",
+    "publish": "done",
+    "rewrite": "skipped"
+  },
+  "runner_exit": {
+    "reason": "done",
+    "at": "2026-10-02T06:23:57+00:00"
+  },
+  "ts": "2026-10-02T06:23:57+00:00",
+  "launch": "COLD LAP under ruling wf-101-disposition: door handle({action:'run'}) from a python import of the INSTALLED plugin door (~/.duckwork/plugins/duckwork-workflows/__init__.py, the shipped v1.1.2-line engine — the same code a fresh adopter gets), with DUCKWORK_HOME and WF_RUNS_ROOT pinned to throwaway scratch dirs (WF_RUNS_ROOT=<scratch>/wt98-fold-runs; clean env: both vars unset before launch); graph loaded BYTE-IDENTICAL from the committed file (sha256 above, verified via git hash-object of both the scratch copy and the committed blob); run_context seed {\"artifact\": \"report-v3\"}; the ONLY prompt context was the graph path plus the required seed — zero leaked context; gate answered via the door's release action with 'publish'; waited to done via the door's wait action. template_sha256 = sha256 of the committed file bytes; source_digest = wfcommon.source_digest(nodes) computed with the lane's own wfcommon; graph_fingerprint read from the runner's own runner_exit.json.",
+  "happy_path_proof": "THE PEER-REPORTED DEFECT (PR #101 peer-clean-run v2 lap A) CLOSED ON THESE BYTES: the publish node's ## Inputs carried BOTH the route gate's machine timer answer ({answer:'timer',_machine:true}) AND approve.answer:'publish' (captured verbatim from logs/publish.a0.prompt.md); the seat followed the decision law — the committed output is {\"result\": \"published\"}, not a refusal — the authorized path no longer no-ops. The goals now name approve.answer as the sole decision payload and declare the route-gate timer block scheduling plumbing.",
+  "prune_proof": "rewrite_gate and rewrite committed 'skipped' (default on_skip:prune) with ZERO spawns (node.skipped 'all deps pruned' in events.jsonl); publish_gate parked on wait_s=0.01 and released; exactly one arm ran, matching the SKILL.md branching law.",
+  "model_law": "no node carries model/tier/provider — the run's models table echoed {draft,publish,rewrite}: (seat default) for every agent; role names seat-fast/seat-strong/judge appear only in goals/context/description prose.",
+  "hygiene": "zero estate vocabulary in the template; make_public.py with the merged scripts/scrub-list.txt prints 0 scrub hits on the tree including this receipt; duckwork plugins validate passed; full suite green on the branch."
+}

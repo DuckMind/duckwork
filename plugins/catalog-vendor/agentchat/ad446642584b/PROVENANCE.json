@@ -1,0 +1,1943 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "agentchat",
+  "content_id": "ad446642584b",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1102,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+      "sha256": "5cd2a05e08cf41a3c6c35a58e6a0d6d9192ae6e531d3cf4439152100df35076b"
+    },
+    {
+      "bytes": 645,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+      "sha256": "cc83339beba92b283d58eb7cea7674b629ec49a040dc142b4267c3751ddecb0a"
+    },
+    {
+      "bytes": 1331,
+      "mode": "100644",
+      "path": ".github/dependabot.yml",
+      "sha256": "7b78243f46524f0e52d033378e4cf95a8cd8d94c2018d66f129c22bdb57eef69"
+    },
+    {
+      "bytes": 1286,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "58ae9ab39c355b21a074f62a4377b27fba72b2d6af9138e7eea7081dd31d6374"
+    },
+    {
+      "bytes": 1711,
+      "mode": "100644",
+      "path": ".github/workflows/publish.yml",
+      "sha256": "64e87f8b176d1acabf65fa44df12aa09dc6195b20d61b2cbd9c0f1010e2f00bc"
+    },
+    {
+      "bytes": 684,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "e1aa1e34d1e3a9636dac758519eeff8b3babec8c5d40d067a01822227d4c59d2"
+    },
+    {
+      "bytes": 10005,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "19ac92a66ef44d2b32f8bb113c2d97e87d703c141ea041a9864d5688f8f66769"
+    },
+    {
+      "bytes": 2682,
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "b1a13de0f3325d3229f87b6f4a38d95e8175e3349891e604bec0224bf5ca41c6"
+    },
+    {
+      "bytes": 1066,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "e0a047e758a57473ec8f80f9205ea3a78d013983308e68d0076a97f104585ec9"
+    },
+    {
+      "bytes": 18581,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "e047e9f45baec331b6d1c0e5f1c08eb56ff9160dd24bd340a32743e8f413e8a7"
+    },
+    {
+      "bytes": 2972,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "09443c195900697491071b171144d07ed3962ab12b51080ebb48b870c8e366e9"
+    },
+    {
+      "bytes": 4246,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "5c7830cda0b3e284c85ff1ea49b98e03d1277c8414facaa003b471f51ec9ec34"
+    },
+    {
+      "bytes": 1009,
+      "mode": "100644",
+      "path": "agentchatme_hermes/__init__.py",
+      "sha256": "843dc522c4929c10ec1492c183cef75650a6bb4852606e7cac5491fd419cfed5"
+    },
+    {
+      "bytes": 10565,
+      "mode": "100644",
+      "path": "agentchatme_hermes/_register.py",
+      "sha256": "d0d17411e3d2f42b9198add23d1ae035833c7b6f7d6fd31ae7a0a6bc4fa99a46"
+    },
+    {
+      "bytes": 223,
+      "mode": "100644",
+      "path": "agentchatme_hermes/_version.py",
+      "sha256": "c9f35d382f2d82802e903a18170e7d56e870c03619f4b63ab22eb56feec3b8cd"
+    },
+    {
+      "bytes": 37921,
+      "mode": "100644",
+      "path": "agentchatme_hermes/agent_invoker.py",
+      "sha256": "341c824e3519e645d8341e32c5ba608651a63de979262909793183a578758b36"
+    },
+    {
+      "bytes": 37569,
+      "mode": "100644",
+      "path": "agentchatme_hermes/cli.py",
+      "sha256": "10c60f9a95d6b6ef9225bdecd06ff1731ed3953b7483b9344bccdc906d94235e"
+    },
+    {
+      "bytes": 642,
+      "mode": "100644",
+      "path": "agentchatme_hermes/client_identity.py",
+      "sha256": "b334f87c431d9a5bbc4bc602ba06b231fabe779a9f92f55a4229989b0a9c19b8"
+    },
+    {
+      "bytes": 7614,
+      "mode": "100644",
+      "path": "agentchatme_hermes/config.py",
+      "sha256": "20ec34cd945a4ae8bb22b64a44f08e47de0b4c21122cc26ee2efd70980e8205e"
+    },
+    {
+      "bytes": 4075,
+      "mode": "100644",
+      "path": "agentchatme_hermes/group_participants.py",
+      "sha256": "e4cf2ae4bcbac69ba4e952e8cd2e4aa817292925f6f21f022527e08fffe2d96b"
+    },
+    {
+      "bytes": 12254,
+      "mode": "100644",
+      "path": "agentchatme_hermes/leader_lock.py",
+      "sha256": "b700f1f0a8e5ef22ff59299b4e522923299af00db7e802e2d8eae3c50a3dbcd9"
+    },
+    {
+      "bytes": 1383,
+      "mode": "100644",
+      "path": "agentchatme_hermes/lookup_cache.py",
+      "sha256": "09a51b93ed2711c5a55f962af6c29dfb92e83ffe6e08574c9fa09888236d330e"
+    },
+    {
+      "bytes": 6203,
+      "mode": "100644",
+      "path": "agentchatme_hermes/message_queue.py",
+      "sha256": "709960e17a07a54a760774cf85f478741a229208e86f31896540c95d01509168"
+    },
+    {
+      "bytes": 392,
+      "mode": "100644",
+      "path": "agentchatme_hermes/plugin.yaml",
+      "sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e"
+    },
+    {
+      "bytes": 6013,
+      "mode": "100644",
+      "path": "agentchatme_hermes/prompts.py",
+      "sha256": "d88a9c2518fd1559fe791936853e9adf551e327313bfa98e65afdfb67e125614"
+    },
+    {
+      "bytes": 20512,
+      "mode": "100644",
+      "path": "agentchatme_hermes/reply_gate.py",
+      "sha256": "aeee520c8d22706fd0ad92dc919d611c5cf7d084bbbb26709f5b6530c89aefcb"
+    },
+    {
+      "bytes": 14745,
+      "mode": "100644",
+      "path": "agentchatme_hermes/runtime.py",
+      "sha256": "619d07b6dc51b0fa194198397a750a67eceff3e429c33969b6670b2aa24ba595"
+    },
+    {
+      "bytes": 15847,
+      "mode": "100644",
+      "path": "agentchatme_hermes/skills/SKILL.md",
+      "sha256": "18f0488178e3443fea6c043e52055b3539280f257228d4a587ef304779985295"
+    },
+    {
+      "bytes": 1542,
+      "mode": "100644",
+      "path": "agentchatme_hermes/skills/__init__.py",
+      "sha256": "3c93c9ee864f173ba3c95a06f3c3958d424a0ed8ec939ff2f08a2f33e8a2d1bf"
+    },
+    {
+      "bytes": 11549,
+      "mode": "100644",
+      "path": "agentchatme_hermes/soul_anchor.py",
+      "sha256": "b86c605850501e8878e4ec90856583b4dba66d61450c826e50e197afdee2b532"
+    },
+    {
+      "bytes": 4168,
+      "mode": "100644",
+      "path": "agentchatme_hermes/thread_closures.py",
+      "sha256": "a5a98a4092a752ce29fa4060b68cdfffad291176c764461b66ab0c00c0d5bd19"
+    },
+    {
+      "bytes": 2048,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/__init__.py",
+      "sha256": "c446b43a8559328869d9b37ac33385dcbda3e71117a899bcc533723b4fc8a201"
+    },
+    {
+      "bytes": 8187,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/_common.py",
+      "sha256": "d2a9d79cc188bdfbdfea973f94cddf1c455adebfe440585e0895717c3347394d"
+    },
+    {
+      "bytes": 1969,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/attachments.py",
+      "sha256": "1c8c3e46c223915eb6f25bb8adb17423a9b73b63880452fe3801c5abd3a82f85"
+    },
+    {
+      "bytes": 13216,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/contacts.py",
+      "sha256": "484dc915bf69620db6d91441f8b802c493dcc78ffc3011c638f2192f547216bf"
+    },
+    {
+      "bytes": 23267,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/conversations.py",
+      "sha256": "cecf7c776d4bd06a231d3810b7eec6916b45a28644b72c798936f304d1002f7b"
+    },
+    {
+      "bytes": 3314,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/directory.py",
+      "sha256": "70c78e1064495cf78b7c75e7daf9098954cc6072e158c45ef117790bb285e0ba"
+    },
+    {
+      "bytes": 32309,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/groups.py",
+      "sha256": "7ffaa87221d8f6f6f3669de2d1cd723966e1c22f0b981f6cde66decdf7f8e5d7"
+    },
+    {
+      "bytes": 11261,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/messages.py",
+      "sha256": "c66e106dd753df0004990893e0f9ab7c130a1b8e3f94ff38cbf45d7d05425cf1"
+    },
+    {
+      "bytes": 4106,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/mutes.py",
+      "sha256": "d5768c7c9e7d29a0c7d64172d34957b48d5d20d15403c6f39617163280821091"
+    },
+    {
+      "bytes": 5346,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/presence.py",
+      "sha256": "ee027d5ed201f64d43bac8e48bd77f10e20cec975bbcdaa447502ae8a0deb3bd"
+    },
+    {
+      "bytes": 5500,
+      "mode": "100644",
+      "path": "agentchatme_hermes/tools/profile.py",
+      "sha256": "667991fa7205523f2eec431227e2cfe8aad400384c9a7308e562a84a85550fe6"
+    },
+    {
+      "bytes": 9159,
+      "mode": "100644",
+      "path": "agentchatme_hermes/types.py",
+      "sha256": "7d1477e5acb98fe1060de2bb6d1aa6aa703b43b9821efc826d1dbf5a18c507d3"
+    },
+    {
+      "bytes": 43103,
+      "mode": "100644",
+      "path": "agentchatme_hermes/wizard.py",
+      "sha256": "9a64eac855c23c94aa1f7b0c5a0c3585146b6fbcef86811c856148517b575362"
+    },
+    {
+      "bytes": 22194,
+      "mode": "100644",
+      "path": "agentchatme_hermes/ws_daemon.py",
+      "sha256": "adfe0fa7f8423cb09a6e0f2324159922e9b0f789ed951d799a6731b4d40410e9"
+    },
+    {
+      "bytes": 392,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e"
+    },
+    {
+      "bytes": 4551,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "6e9b9a183fe0035cd03e317505834d4b89ca4eb6e25ce8c99b392742ee946609"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 24282,
+      "mode": "100644",
+      "path": "tests/test_agent_invoker.py",
+      "sha256": "921eec132864844e874dffea4397f6589c7e27004788ae17fed8519004279422"
+    },
+    {
+      "bytes": 16103,
+      "mode": "100644",
+      "path": "tests/test_cli_recover.py",
+      "sha256": "249cdb034476093c76cea1a1e4efeaf31d5c461ed794b8b9067080f08de03570"
+    },
+    {
+      "bytes": 7450,
+      "mode": "100644",
+      "path": "tests/test_cli_validation.py",
+      "sha256": "477cee20f58ab4bd5af98111097f7eb4f7dfa85fafc3893b26783bdde7c52839"
+    },
+    {
+      "bytes": 910,
+      "mode": "100644",
+      "path": "tests/test_client_identity.py",
+      "sha256": "426f49fd9b777fd10cffcdbba1dd4135ca90b939dd17b5462b586c12bb10192b"
+    },
+    {
+      "bytes": 10612,
+      "mode": "100644",
+      "path": "tests/test_config.py",
+      "sha256": "07247e9d4ba67fddc3221624ce48c6a1f95e863ea305f60f61f87227b6f77b9f"
+    },
+    {
+      "bytes": 7343,
+      "mode": "100644",
+      "path": "tests/test_conversation_tools.py",
+      "sha256": "c74319080484cc3550d5506a10d75161d820db469d4db0efb1f5e5a36a6846ad"
+    },
+    {
+      "bytes": 2927,
+      "mode": "100644",
+      "path": "tests/test_group_participant_cache.py",
+      "sha256": "11e15c89023ade6a9617d04919be85de6d8bda187579d10076e831a4d73dea66"
+    },
+    {
+      "bytes": 8723,
+      "mode": "100644",
+      "path": "tests/test_group_tools.py",
+      "sha256": "c95efadba4e1500b5ccceefcac4715139d0cdf401d041d86eec1f3a12f94439f"
+    },
+    {
+      "bytes": 10004,
+      "mode": "100644",
+      "path": "tests/test_leader_lock.py",
+      "sha256": "54f9834672f9358828c8558ab402fd5a0b554273975b137552317a90af13e580"
+    },
+    {
+      "bytes": 1102,
+      "mode": "100644",
+      "path": "tests/test_lookup_cache.py",
+      "sha256": "baa2020d082fcad1596000c909e7bd1b2ece4c3648291ebb0fb2b97973abecd6"
+    },
+    {
+      "bytes": 3945,
+      "mode": "100644",
+      "path": "tests/test_lookup_caching_tools.py",
+      "sha256": "f6d21b5ddf5c35f9b6e781cebee8c7341ca10bdaade0210c1d00dcc145ae2b50"
+    },
+    {
+      "bytes": 5807,
+      "mode": "100644",
+      "path": "tests/test_message_queue.py",
+      "sha256": "e8b3b7fee3fee1fbbed73846b840fbcb15a2803ce927249ea855adf2d4ec0c7f"
+    },
+    {
+      "bytes": 3835,
+      "mode": "100644",
+      "path": "tests/test_register.py",
+      "sha256": "5ec94303261037713f17906359f85bb628d9412c7cb5ff17aba62fa657675c37"
+    },
+    {
+      "bytes": 17142,
+      "mode": "100644",
+      "path": "tests/test_reply_gate.py",
+      "sha256": "9f30277fe41091a6ae87431e18c5c1548bdcfb638b532dba4f806e44b212d77a"
+    },
+    {
+      "bytes": 7346,
+      "mode": "100644",
+      "path": "tests/test_runtime.py",
+      "sha256": "bf8d28b0734d0f6d8a95d609b20f201cf64a0bf35296e9fe440663d385fe830e"
+    },
+    {
+      "bytes": 14734,
+      "mode": "100644",
+      "path": "tests/test_soul_anchor.py",
+      "sha256": "d6ab4731667a3130b194a4a816973fa9dba25c88c9af670f2b50b0169cc72632"
+    },
+    {
+      "bytes": 1480,
+      "mode": "100644",
+      "path": "tests/test_thread_closures.py",
+      "sha256": "31fbf408661754a3ba8966fb1d78c02ec2e1b992cff7dc6278328db8f25beabf"
+    },
+    {
+      "bytes": 9287,
+      "mode": "100644",
+      "path": "tests/test_tool_common.py",
+      "sha256": "423336f62847a7e5f7f37526fd76e1875eff69238779f586b0f8a8df9cdb8db1"
+    },
+    {
+      "bytes": 8827,
+      "mode": "100644",
+      "path": "tests/test_types.py",
+      "sha256": "b081b8f1959d76c77f0f8270f6b65dcd83ac0c33b1a5bb6724eec42f406a5f99"
+    },
+    {
+      "bytes": 4232,
+      "mode": "100644",
+      "path": "tests/test_wizard.py",
+      "sha256": "9c32f7e9703d836915bfb1de5a9130b45f3360c0571839b98efe4fd50a595403"
+    },
+    {
+      "bytes": 11087,
+      "mode": "100644",
+      "path": "tests/test_wizard_email_policy.py",
+      "sha256": "ca71b8f6599fa6c095e3bea5f61f126d44b88013259302bfa287278c40b40157"
+    },
+    {
+      "bytes": 23800,
+      "mode": "100644",
+      "path": "tests/test_wizard_recovery.py",
+      "sha256": "c01e427099c27b91a4c005db7e8fa9f3ddcaa162ed33a48382deb77fff3f739a"
+    },
+    {
+      "bytes": 14596,
+      "mode": "100644",
+      "path": "tests/test_ws_daemon.py",
+      "sha256": "b6617d3f73da011daecc777891afb00a4d64eb04342e618ac4fb9bb55d7735b5"
+    }
+  ],
+  "input_manifest_sha256": "ad446642584b39e19aeeee5fb3ba8979ca8bd3135ca74bf352d6592d10b9d33b",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "e0a047e758a57473ec8f80f9205ea3a78d013983308e68d0076a97f104585ec9",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/ISSUE_TEMPLATE/bug_report.md",
+      ".github/ISSUE_TEMPLATE/feature_request.md",
+      ".github/workflows/ci.yml",
+      ".github/workflows/publish.yml",
+      ".gitignore",
+      "CHANGELOG.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "SECURITY.md",
+      "__init__.py",
+      "agentchatme_duckwork/__init__.py",
+      "agentchatme_duckwork/_register.py",
+      "agentchatme_duckwork/agent_invoker.py",
+      "agentchatme_duckwork/cli.py",
+      "agentchatme_duckwork/client_identity.py",
+      "agentchatme_duckwork/config.py",
+      "agentchatme_duckwork/leader_lock.py",
+      "agentchatme_duckwork/prompts.py",
+      "agentchatme_duckwork/reply_gate.py",
+      "agentchatme_duckwork/runtime.py",
+      "agentchatme_duckwork/skills/SKILL.md",
+      "agentchatme_duckwork/skills/__init__.py",
+      "agentchatme_duckwork/soul_anchor.py",
+      "agentchatme_duckwork/thread_closures.py",
+      "agentchatme_duckwork/tools/__init__.py",
+      "agentchatme_duckwork/tools/_common.py",
+      "agentchatme_duckwork/tools/contacts.py",
+      "agentchatme_duckwork/tools/conversations.py",
+      "agentchatme_duckwork/wizard.py",
+      "agentchatme_duckwork/ws_daemon.py",
+      "pyproject.toml",
+      "tests/test_agent_invoker.py",
+      "tests/test_cli_recover.py",
+      "tests/test_cli_validation.py",
+      "tests/test_client_identity.py",
+      "tests/test_config.py",
+      "tests/test_conversation_tools.py",
+      "tests/test_group_participant_cache.py",
+      "tests/test_group_tools.py",
+      "tests/test_leader_lock.py",
+      "tests/test_lookup_cache.py",
+      "tests/test_lookup_caching_tools.py",
+      "tests/test_message_queue.py",
+      "tests/test_register.py",
+      "tests/test_reply_gate.py",
+      "tests/test_runtime.py",
+      "tests/test_soul_anchor.py",
+      "tests/test_thread_closures.py",
+      "tests/test_tool_common.py",
+      "tests/test_types.py",
+      "tests/test_wizard.py",
+      "tests/test_wizard_email_policy.py",
+      "tests/test_wizard_recovery.py",
+      "tests/test_ws_daemon.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/agentchatme/agentchat-hermes",
+    "sha": "8322d5c97fc81b1493c2ccfc83c19cee03173196",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/agentchatme/agentchat-hermes",
+  "original_sha": "8322d5c97fc81b1493c2ccfc83c19cee03173196",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+      "sha256": "0973d10b6aa00957a89dd1d7b81530e85b8f4556415f19e481f550ec14f3a190",
+      "bytes": 1110,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+      "sha256": "9d51f56e82a5f31c1fcec719fd54cc192466efb6c1dd5f51b316263a2ac03662",
+      "bytes": 647,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "sha256": "7b78243f46524f0e52d033378e4cf95a8cd8d94c2018d66f129c22bdb57eef69",
+      "bytes": 1331,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "01f84cfda878323d8965a64603bac35b1e278176810a42e7675c3b4a61926165",
+      "bytes": 1290,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/publish.yml",
+      "sha256": "4b4acb374a6984c9acbc806048da787af9ad870717bf94cb33a20dd832ab919d",
+      "bytes": 1713,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "f1e6afc24df2218ad5d68681dbad67a04553ad201f456472ec62e5e10bb55f0b",
+      "bytes": 686,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "ed51624b991689f7fbd5b3f4e84cecd381c0c4742e15d23e0904a9ca9679e3ed",
+      "bytes": 10020,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "31dfa4a66ae315dc168ae90d1d2b0506ad8aa233ccea537018d5d93650bad66e",
+      "bytes": 2683,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "e0a047e758a57473ec8f80f9205ea3a78d013983308e68d0076a97f104585ec9",
+      "bytes": 1066,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "a54d6e6191ffc6802865ed3c5d0bd7cf561dbf6c8e8ad26e01a617a48cee9a4e",
+      "bytes": 18614,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "ddf9816ae58fff24e9b58a32eefb9ad0d256b9fdc396c23ebb636881c8359355",
+      "bytes": 2981,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "9468aad79d73dd204074b790bfcc1ddddfd19af82363ff1e5ff655af17cab958",
+      "bytes": 4286,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/__init__.py",
+      "sha256": "f14d72c9c79754e1dadfec7608a7e720f0d57f5fdd05ee49bf010af352955f75",
+      "bytes": 1015,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/_register.py",
+      "sha256": "fc00a023b0d2c7164fc32be9bc33cade01b1e308efc82c143883c7786ba0521e",
+      "bytes": 10645,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/_version.py",
+      "sha256": "c9f35d382f2d82802e903a18170e7d56e870c03619f4b63ab22eb56feec3b8cd",
+      "bytes": 223,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/agent_invoker.py",
+      "sha256": "5c70b9fbd159a26c6653179cc789ff005f32a1b496918797fea1df1ccfcdd44f",
+      "bytes": 37993,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/cli.py",
+      "sha256": "87eb788e613976811b805bf2de74f4855872a82e35d7ba35b7057e5c8be1e9bd",
+      "bytes": 37683,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/client_identity.py",
+      "sha256": "272b4b60e238e24783bb8421ab6aa2be2187023bd65bebb5b2025c4cd649b964",
+      "bytes": 652,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/config.py",
+      "sha256": "04517459cc300cb2b41697bb7d67cf77950a5f1bf2e6724bcf6bd259c32d6f29",
+      "bytes": 7624,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/group_participants.py",
+      "sha256": "e4cf2ae4bcbac69ba4e952e8cd2e4aa817292925f6f21f022527e08fffe2d96b",
+      "bytes": 4075,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/leader_lock.py",
+      "sha256": "9d52a45595a3468d403237e504b70e84b0594896fda61d2396986ed7458f46bf",
+      "bytes": 12342,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/lookup_cache.py",
+      "sha256": "09a51b93ed2711c5a55f962af6c29dfb92e83ffe6e08574c9fa09888236d330e",
+      "bytes": 1383,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/message_queue.py",
+      "sha256": "709960e17a07a54a760774cf85f478741a229208e86f31896540c95d01509168",
+      "bytes": 6203,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/plugin.yaml",
+      "sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e",
+      "bytes": 392,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/prompts.py",
+      "sha256": "f312b250ae88697ac2340edb22ee78da44c761150c121dfe10a993f3ddb0f457",
+      "bytes": 6017,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/reply_gate.py",
+      "sha256": "2d7f7e09a9e336854c373b5082672f002adda15c089696a91063db2e98ac2dbe",
+      "bytes": 20518,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/runtime.py",
+      "sha256": "90150091e2dca9799f229f71ccf914ad33fcd1c61b8093e4e208b94b42c260be",
+      "bytes": 14759,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/skills/SKILL.md",
+      "sha256": "638edd9d897f0f3ec83bf4d3cacac8653d3f7768b2b232e836062f49846f9784",
+      "bytes": 15851,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/skills/__init__.py",
+      "sha256": "02b6a68c8a8c40b812a836820520727349b6e122bd504a3d19d48abcd8c4fd6e",
+      "bytes": 1548,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/soul_anchor.py",
+      "sha256": "5077357147296aca89cbf61883c16718e040240959e8646d49e7fbeb4725b408",
+      "bytes": 11587,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/thread_closures.py",
+      "sha256": "e55a4eafbbb49b25d6a59be21119d6b01ea4626f8bbec12081a242dd5454909f",
+      "bytes": 4180,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/__init__.py",
+      "sha256": "2daf9218aeef1783a7d23a0348809f4204c1061d7afe0a6a277a18680fe2cd13",
+      "bytes": 2060,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/_common.py",
+      "sha256": "bc7ff92726e89e6be535b27926b534c023084c5dba4847ddb841b82563641b3a",
+      "bytes": 8191,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/attachments.py",
+      "sha256": "1c8c3e46c223915eb6f25bb8adb17423a9b73b63880452fe3801c5abd3a82f85",
+      "bytes": 1969,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/contacts.py",
+      "sha256": "9299aee9bd2f82fd671c13bcdf1dabc922eee00b1f2f071cb64df8d8292fdc67",
+      "bytes": 13218,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/conversations.py",
+      "sha256": "a89105c520e110be595b36c240a0e56fc8a2e8f1825319faa455c73ee81f26da",
+      "bytes": 23271,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/directory.py",
+      "sha256": "70c78e1064495cf78b7c75e7daf9098954cc6072e158c45ef117790bb285e0ba",
+      "bytes": 3314,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/groups.py",
+      "sha256": "7ffaa87221d8f6f6f3669de2d1cd723966e1c22f0b981f6cde66decdf7f8e5d7",
+      "bytes": 32309,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/messages.py",
+      "sha256": "c66e106dd753df0004990893e0f9ab7c130a1b8e3f94ff38cbf45d7d05425cf1",
+      "bytes": 11261,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/mutes.py",
+      "sha256": "d5768c7c9e7d29a0c7d64172d34957b48d5d20d15403c6f39617163280821091",
+      "bytes": 4106,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/presence.py",
+      "sha256": "ee027d5ed201f64d43bac8e48bd77f10e20cec975bbcdaa447502ae8a0deb3bd",
+      "bytes": 5346,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/tools/profile.py",
+      "sha256": "667991fa7205523f2eec431227e2cfe8aad400384c9a7308e562a84a85550fe6",
+      "bytes": 5500,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/types.py",
+      "sha256": "7d1477e5acb98fe1060de2bb6d1aa6aa703b43b9821efc826d1dbf5a18c507d3",
+      "bytes": 9159,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/wizard.py",
+      "sha256": "75238f0f6c93968a8ffa782c441cadba49e1b79eb6209cef5c1cac6971ae0d59",
+      "bytes": 43167,
+      "mode": "100644"
+    },
+    {
+      "path": "agentchatme_duckwork/ws_daemon.py",
+      "sha256": "0835ccbc2fdacbda712ab7f2b4a67abd0bd8f9a5d24f81ac0dceadeac029f48b",
+      "bytes": 22200,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e",
+      "bytes": 392,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "60a3d455e3ae6460172a525fd1990c5c518d914edfab12ff8adf22a669254839",
+      "bytes": 4523,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_agent_invoker.py",
+      "sha256": "b51deb1127deaba29160cfa43371f6aade663a3131c843358caaa5567d7c946c",
+      "bytes": 24340,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cli_recover.py",
+      "sha256": "8a19c8df1bc48379586ce5efab9e95233819eff46f6fb0f4f7168fc9d54a31ae",
+      "bytes": 16119,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cli_validation.py",
+      "sha256": "734a11851a26ce1a1e65019c6c164044611a5c77af97120de2bdf1fe44263d78",
+      "bytes": 7480,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_client_identity.py",
+      "sha256": "5cef3982b7667522eb3eacf9932b79abfc510fa80f43d30daa97ff8ee5e949ad",
+      "bytes": 932,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_config.py",
+      "sha256": "5d9d7d5d82a4ee6ddaee00c07b1dd34719f9ae96d4bfa98a4f30432b656cafb5",
+      "bytes": 10616,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_conversation_tools.py",
+      "sha256": "8928c3bb80cc415dcc33296182382469c515483a442bcd0be3a2219b2489ab41",
+      "bytes": 7347,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_group_participant_cache.py",
+      "sha256": "e6736d0064cc8e52f013aa0a289824ecdbaf847fabe46c89f1d11530bc8e8322",
+      "bytes": 2931,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_group_tools.py",
+      "sha256": "064108b2018f6e41e8e0c718a3412c9e32cc7cff815b39f3d2df2217b8a7cea0",
+      "bytes": 8727,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_leader_lock.py",
+      "sha256": "5758fe072e37019a75f3ea61a62fad66d771797acc67738cff4db3821c2688ab",
+      "bytes": 10076,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_lookup_cache.py",
+      "sha256": "6dece7f210bc6ece4b47e1dfad76ee8920498fc3ce071602e77cf945a34dd836",
+      "bytes": 1104,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_lookup_caching_tools.py",
+      "sha256": "d34ce16c5bba966100ff3c3dd5cfc6324065653f4fd79859937ea23a34441eb2",
+      "bytes": 3953,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_message_queue.py",
+      "sha256": "61ddfec35db2e85f44ff79ca29d5cb6414ee5a5526bf2908351edc53a9a5724f",
+      "bytes": 5813,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_register.py",
+      "sha256": "1367165ce2384f8675fe4632b32393952ad8d5bdbc05c3175fa7a7c38f15bc69",
+      "bytes": 3851,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_reply_gate.py",
+      "sha256": "78f87a91ab7cf880ede3228b71ec8b8cb4381998f344de7fc3a8e2b1691fae72",
+      "bytes": 17146,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_runtime.py",
+      "sha256": "f5c7cf5061d7fe229c737a74d10f8845c80df897a232795ae81e2c039d74dd0b",
+      "bytes": 7376,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_soul_anchor.py",
+      "sha256": "de8c994e122dce48ddcc3192640e86db585c40dacdc2e851b97d3f16066d5311",
+      "bytes": 14744,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_thread_closures.py",
+      "sha256": "86348317c83277007e29f1a0c23622aaefc912ed3c3a596e860a7e70043c8aa1",
+      "bytes": 1482,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tool_common.py",
+      "sha256": "9c6e660b5cc48f8c7016d84c4187d060d30b77c7bc632b3d11cdea604b5c7e01",
+      "bytes": 9291,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_types.py",
+      "sha256": "f8ddff8ac5381fb3a2602f6b360d62f5f0986dc352eb6de5a677b1f96e03158f",
+      "bytes": 8831,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_wizard.py",
+      "sha256": "4788d898d20ae6fc48c6e758a373638a58237cf71bf0a74fcdefaac2fecf2973",
+      "bytes": 4240,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_wizard_email_policy.py",
+      "sha256": "8e6971a781fbe3a666f0c54f55b2ebe068b851aab822b4cd2afb93a43a933fe2",
+      "bytes": 11089,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_wizard_recovery.py",
+      "sha256": "479fff910e72c0ecb75a0edf3e510843b989c74a9113846904ad348a2f600ff5",
+      "bytes": 23820,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_ws_daemon.py",
+      "sha256": "dccd6328fde6443033124f927707b23fe46c211f057a1d1db21a249939c64b17",
+      "bytes": 14616,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "a0d022b955d8e5d9e46964d85bbf3f4c3ace28b43f1c2a3899e4274f016d5e0a",
+  "pin_verification": {
+    "archive_bytes": 161650,
+    "archive_sha256": "919eef9476c45d6bb1da4b5c69909a616d502dc39de4c5806f8389879601970c",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "8322d5c97fc81b1493c2ccfc83c19cee03173196",
+    "verified_commit_marker": "8322d5c97fc81b1493c2ccfc83c19cee03173196"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "d430e61be018321ca740dc3e375f7b1c894e2464a7590c6580a9f2a663974e20",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/ISSUE_TEMPLATE/bug_report.md",
+        "input_sha256": "5cd2a05e08cf41a3c6c35a58e6a0d6d9192ae6e531d3cf4439152100df35076b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0973d10b6aa00957a89dd1d7b81530e85b8f4556415f19e481f550ec14f3a190",
+        "source": ".github/ISSUE_TEMPLATE/bug_report.md",
+        "final_output_sha256": "0973d10b6aa00957a89dd1d7b81530e85b8f4556415f19e481f550ec14f3a190",
+        "cli_destination": ".github/ISSUE_TEMPLATE/bug_report.md",
+        "previous_staging_sha256": "0973d10b6aa00957a89dd1d7b81530e85b8f4556415f19e481f550ec14f3a190"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/feature_request.md",
+        "input_sha256": "cc83339beba92b283d58eb7cea7674b629ec49a040dc142b4267c3751ddecb0a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9d51f56e82a5f31c1fcec719fd54cc192466efb6c1dd5f51b316263a2ac03662",
+        "source": ".github/ISSUE_TEMPLATE/feature_request.md",
+        "final_output_sha256": "9d51f56e82a5f31c1fcec719fd54cc192466efb6c1dd5f51b316263a2ac03662",
+        "cli_destination": ".github/ISSUE_TEMPLATE/feature_request.md",
+        "previous_staging_sha256": "9d51f56e82a5f31c1fcec719fd54cc192466efb6c1dd5f51b316263a2ac03662"
+      },
+      {
+        "destination": ".github/dependabot.yml",
+        "input_sha256": "7b78243f46524f0e52d033378e4cf95a8cd8d94c2018d66f129c22bdb57eef69",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7b78243f46524f0e52d033378e4cf95a8cd8d94c2018d66f129c22bdb57eef69",
+        "source": ".github/dependabot.yml",
+        "final_output_sha256": "7b78243f46524f0e52d033378e4cf95a8cd8d94c2018d66f129c22bdb57eef69",
+        "cli_destination": ".github/dependabot.yml",
+        "previous_staging_sha256": "7b78243f46524f0e52d033378e4cf95a8cd8d94c2018d66f129c22bdb57eef69"
+      },
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "58ae9ab39c355b21a074f62a4377b27fba72b2d6af9138e7eea7081dd31d6374",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "01f84cfda878323d8965a64603bac35b1e278176810a42e7675c3b4a61926165",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "01f84cfda878323d8965a64603bac35b1e278176810a42e7675c3b4a61926165",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "01f84cfda878323d8965a64603bac35b1e278176810a42e7675c3b4a61926165"
+      },
+      {
+        "destination": ".github/workflows/publish.yml",
+        "input_sha256": "64e87f8b176d1acabf65fa44df12aa09dc6195b20d61b2cbd9c0f1010e2f00bc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4b4acb374a6984c9acbc806048da787af9ad870717bf94cb33a20dd832ab919d",
+        "source": ".github/workflows/publish.yml",
+        "final_output_sha256": "4b4acb374a6984c9acbc806048da787af9ad870717bf94cb33a20dd832ab919d",
+        "cli_destination": ".github/workflows/publish.yml",
+        "previous_staging_sha256": "4b4acb374a6984c9acbc806048da787af9ad870717bf94cb33a20dd832ab919d"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "e1aa1e34d1e3a9636dac758519eeff8b3babec8c5d40d067a01822227d4c59d2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f1e6afc24df2218ad5d68681dbad67a04553ad201f456472ec62e5e10bb55f0b",
+        "source": ".gitignore",
+        "final_output_sha256": "f1e6afc24df2218ad5d68681dbad67a04553ad201f456472ec62e5e10bb55f0b",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "f1e6afc24df2218ad5d68681dbad67a04553ad201f456472ec62e5e10bb55f0b"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "19ac92a66ef44d2b32f8bb113c2d97e87d703c141ea041a9864d5688f8f66769",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6a85dd9a840eb0a68029affbd6752e9bc2a3bdcc979b71a5af0eff23295da139",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "ed51624b991689f7fbd5b3f4e84cecd381c0c4742e15d23e0904a9ca9679e3ed",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "6a85dd9a840eb0a68029affbd6752e9bc2a3bdcc979b71a5af0eff23295da139"
+      },
+      {
+        "destination": "CONTRIBUTING.md",
+        "input_sha256": "b1a13de0f3325d3229f87b6f4a38d95e8175e3349891e604bec0224bf5ca41c6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5758c801bc011413113867dbcf33ef608218cb8ec09299e13050560da15b105f",
+        "source": "CONTRIBUTING.md",
+        "final_output_sha256": "31dfa4a66ae315dc168ae90d1d2b0506ad8aa233ccea537018d5d93650bad66e",
+        "cli_destination": "CONTRIBUTING.md",
+        "previous_staging_sha256": "5758c801bc011413113867dbcf33ef608218cb8ec09299e13050560da15b105f"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "e0a047e758a57473ec8f80f9205ea3a78d013983308e68d0076a97f104585ec9",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "e0a047e758a57473ec8f80f9205ea3a78d013983308e68d0076a97f104585ec9",
+        "source": "LICENSE",
+        "final_output_sha256": "e0a047e758a57473ec8f80f9205ea3a78d013983308e68d0076a97f104585ec9",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "e0a047e758a57473ec8f80f9205ea3a78d013983308e68d0076a97f104585ec9"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "e047e9f45baec331b6d1c0e5f1c08eb56ff9160dd24bd340a32743e8f413e8a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "374614d014298d86e8cdd8b576911046b4e6d50672536b749b63282564ab7418",
+        "source": "README.md",
+        "final_output_sha256": "a54d6e6191ffc6802865ed3c5d0bd7cf561dbf6c8e8ad26e01a617a48cee9a4e",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "374614d014298d86e8cdd8b576911046b4e6d50672536b749b63282564ab7418"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "09443c195900697491071b171144d07ed3962ab12b51080ebb48b870c8e366e9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ddf9816ae58fff24e9b58a32eefb9ad0d256b9fdc396c23ebb636881c8359355",
+        "source": "SECURITY.md",
+        "final_output_sha256": "ddf9816ae58fff24e9b58a32eefb9ad0d256b9fdc396c23ebb636881c8359355",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "ddf9816ae58fff24e9b58a32eefb9ad0d256b9fdc396c23ebb636881c8359355"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "5c7830cda0b3e284c85ff1ea49b98e03d1277c8414facaa003b471f51ec9ec34",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9468aad79d73dd204074b790bfcc1ddddfd19af82363ff1e5ff655af17cab958",
+        "source": "__init__.py",
+        "final_output_sha256": "9468aad79d73dd204074b790bfcc1ddddfd19af82363ff1e5ff655af17cab958",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "9468aad79d73dd204074b790bfcc1ddddfd19af82363ff1e5ff655af17cab958"
+      },
+      {
+        "destination": "agentchatme_duckwork/__init__.py",
+        "input_sha256": "843dc522c4929c10ec1492c183cef75650a6bb4852606e7cac5491fd419cfed5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f14d72c9c79754e1dadfec7608a7e720f0d57f5fdd05ee49bf010af352955f75",
+        "source": "agentchatme_hermes/__init__.py",
+        "final_output_sha256": "f14d72c9c79754e1dadfec7608a7e720f0d57f5fdd05ee49bf010af352955f75",
+        "cli_destination": "agentchatme_duckwork/__init__.py",
+        "previous_staging_sha256": "f14d72c9c79754e1dadfec7608a7e720f0d57f5fdd05ee49bf010af352955f75"
+      },
+      {
+        "destination": "agentchatme_duckwork/_register.py",
+        "input_sha256": "d0d17411e3d2f42b9198add23d1ae035833c7b6f7d6fd31ae7a0a6bc4fa99a46",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc00a023b0d2c7164fc32be9bc33cade01b1e308efc82c143883c7786ba0521e",
+        "source": "agentchatme_hermes/_register.py",
+        "final_output_sha256": "fc00a023b0d2c7164fc32be9bc33cade01b1e308efc82c143883c7786ba0521e",
+        "cli_destination": "agentchatme_duckwork/_register.py",
+        "previous_staging_sha256": "fc00a023b0d2c7164fc32be9bc33cade01b1e308efc82c143883c7786ba0521e"
+      },
+      {
+        "destination": "agentchatme_duckwork/_version.py",
+        "input_sha256": "c9f35d382f2d82802e903a18170e7d56e870c03619f4b63ab22eb56feec3b8cd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c9f35d382f2d82802e903a18170e7d56e870c03619f4b63ab22eb56feec3b8cd",
+        "source": "agentchatme_hermes/_version.py",
+        "final_output_sha256": "c9f35d382f2d82802e903a18170e7d56e870c03619f4b63ab22eb56feec3b8cd",
+        "cli_destination": "agentchatme_duckwork/_version.py",
+        "previous_staging_sha256": "c9f35d382f2d82802e903a18170e7d56e870c03619f4b63ab22eb56feec3b8cd"
+      },
+      {
+        "destination": "agentchatme_duckwork/agent_invoker.py",
+        "input_sha256": "341c824e3519e645d8341e32c5ba608651a63de979262909793183a578758b36",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5c70b9fbd159a26c6653179cc789ff005f32a1b496918797fea1df1ccfcdd44f",
+        "source": "agentchatme_hermes/agent_invoker.py",
+        "final_output_sha256": "5c70b9fbd159a26c6653179cc789ff005f32a1b496918797fea1df1ccfcdd44f",
+        "cli_destination": "agentchatme_duckwork/agent_invoker.py",
+        "previous_staging_sha256": "5c70b9fbd159a26c6653179cc789ff005f32a1b496918797fea1df1ccfcdd44f"
+      },
+      {
+        "destination": "agentchatme_duckwork/cli.py",
+        "input_sha256": "10c60f9a95d6b6ef9225bdecd06ff1731ed3953b7483b9344bccdc906d94235e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "87eb788e613976811b805bf2de74f4855872a82e35d7ba35b7057e5c8be1e9bd",
+        "source": "agentchatme_hermes/cli.py",
+        "final_output_sha256": "87eb788e613976811b805bf2de74f4855872a82e35d7ba35b7057e5c8be1e9bd",
+        "cli_destination": "agentchatme_duckwork/cli.py",
+        "previous_staging_sha256": "87eb788e613976811b805bf2de74f4855872a82e35d7ba35b7057e5c8be1e9bd"
+      },
+      {
+        "destination": "agentchatme_duckwork/client_identity.py",
+        "input_sha256": "b334f87c431d9a5bbc4bc602ba06b231fabe779a9f92f55a4229989b0a9c19b8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "272b4b60e238e24783bb8421ab6aa2be2187023bd65bebb5b2025c4cd649b964",
+        "source": "agentchatme_hermes/client_identity.py",
+        "final_output_sha256": "272b4b60e238e24783bb8421ab6aa2be2187023bd65bebb5b2025c4cd649b964",
+        "cli_destination": "agentchatme_duckwork/client_identity.py",
+        "previous_staging_sha256": "272b4b60e238e24783bb8421ab6aa2be2187023bd65bebb5b2025c4cd649b964"
+      },
+      {
+        "destination": "agentchatme_duckwork/config.py",
+        "input_sha256": "20ec34cd945a4ae8bb22b64a44f08e47de0b4c21122cc26ee2efd70980e8205e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "04517459cc300cb2b41697bb7d67cf77950a5f1bf2e6724bcf6bd259c32d6f29",
+        "source": "agentchatme_hermes/config.py",
+        "final_output_sha256": "04517459cc300cb2b41697bb7d67cf77950a5f1bf2e6724bcf6bd259c32d6f29",
+        "cli_destination": "agentchatme_duckwork/config.py",
+        "previous_staging_sha256": "04517459cc300cb2b41697bb7d67cf77950a5f1bf2e6724bcf6bd259c32d6f29"
+      },
+      {
+        "destination": "agentchatme_duckwork/group_participants.py",
+        "input_sha256": "e4cf2ae4bcbac69ba4e952e8cd2e4aa817292925f6f21f022527e08fffe2d96b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e4cf2ae4bcbac69ba4e952e8cd2e4aa817292925f6f21f022527e08fffe2d96b",
+        "source": "agentchatme_hermes/group_participants.py",
+        "final_output_sha256": "e4cf2ae4bcbac69ba4e952e8cd2e4aa817292925f6f21f022527e08fffe2d96b",
+        "cli_destination": "agentchatme_duckwork/group_participants.py",
+        "previous_staging_sha256": "e4cf2ae4bcbac69ba4e952e8cd2e4aa817292925f6f21f022527e08fffe2d96b"
+      },
+      {
+        "destination": "agentchatme_duckwork/leader_lock.py",
+        "input_sha256": "b700f1f0a8e5ef22ff59299b4e522923299af00db7e802e2d8eae3c50a3dbcd9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9d52a45595a3468d403237e504b70e84b0594896fda61d2396986ed7458f46bf",
+        "source": "agentchatme_hermes/leader_lock.py",
+        "final_output_sha256": "9d52a45595a3468d403237e504b70e84b0594896fda61d2396986ed7458f46bf",
+        "cli_destination": "agentchatme_duckwork/leader_lock.py",
+        "previous_staging_sha256": "9d52a45595a3468d403237e504b70e84b0594896fda61d2396986ed7458f46bf"
+      },
+      {
+        "destination": "agentchatme_duckwork/lookup_cache.py",
+        "input_sha256": "09a51b93ed2711c5a55f962af6c29dfb92e83ffe6e08574c9fa09888236d330e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "09a51b93ed2711c5a55f962af6c29dfb92e83ffe6e08574c9fa09888236d330e",
+        "source": "agentchatme_hermes/lookup_cache.py",
+        "final_output_sha256": "09a51b93ed2711c5a55f962af6c29dfb92e83ffe6e08574c9fa09888236d330e",
+        "cli_destination": "agentchatme_duckwork/lookup_cache.py",
+        "previous_staging_sha256": "09a51b93ed2711c5a55f962af6c29dfb92e83ffe6e08574c9fa09888236d330e"
+      },
+      {
+        "destination": "agentchatme_duckwork/message_queue.py",
+        "input_sha256": "709960e17a07a54a760774cf85f478741a229208e86f31896540c95d01509168",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "709960e17a07a54a760774cf85f478741a229208e86f31896540c95d01509168",
+        "source": "agentchatme_hermes/message_queue.py",
+        "final_output_sha256": "709960e17a07a54a760774cf85f478741a229208e86f31896540c95d01509168",
+        "cli_destination": "agentchatme_duckwork/message_queue.py",
+        "previous_staging_sha256": "709960e17a07a54a760774cf85f478741a229208e86f31896540c95d01509168"
+      },
+      {
+        "destination": "agentchatme_duckwork/plugin.yaml",
+        "input_sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e",
+        "source": "agentchatme_hermes/plugin.yaml",
+        "final_output_sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e",
+        "cli_destination": "agentchatme_duckwork/plugin.yaml",
+        "previous_staging_sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e"
+      },
+      {
+        "destination": "agentchatme_duckwork/prompts.py",
+        "input_sha256": "d88a9c2518fd1559fe791936853e9adf551e327313bfa98e65afdfb67e125614",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f312b250ae88697ac2340edb22ee78da44c761150c121dfe10a993f3ddb0f457",
+        "source": "agentchatme_hermes/prompts.py",
+        "final_output_sha256": "f312b250ae88697ac2340edb22ee78da44c761150c121dfe10a993f3ddb0f457",
+        "cli_destination": "agentchatme_duckwork/prompts.py",
+        "previous_staging_sha256": "f312b250ae88697ac2340edb22ee78da44c761150c121dfe10a993f3ddb0f457"
+      },
+      {
+        "destination": "agentchatme_duckwork/reply_gate.py",
+        "input_sha256": "aeee520c8d22706fd0ad92dc919d611c5cf7d084bbbb26709f5b6530c89aefcb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2d7f7e09a9e336854c373b5082672f002adda15c089696a91063db2e98ac2dbe",
+        "source": "agentchatme_hermes/reply_gate.py",
+        "final_output_sha256": "2d7f7e09a9e336854c373b5082672f002adda15c089696a91063db2e98ac2dbe",
+        "cli_destination": "agentchatme_duckwork/reply_gate.py",
+        "previous_staging_sha256": "2d7f7e09a9e336854c373b5082672f002adda15c089696a91063db2e98ac2dbe"
+      },
+      {
+        "destination": "agentchatme_duckwork/runtime.py",
+        "input_sha256": "619d07b6dc51b0fa194198397a750a67eceff3e429c33969b6670b2aa24ba595",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "90150091e2dca9799f229f71ccf914ad33fcd1c61b8093e4e208b94b42c260be",
+        "source": "agentchatme_hermes/runtime.py",
+        "final_output_sha256": "90150091e2dca9799f229f71ccf914ad33fcd1c61b8093e4e208b94b42c260be",
+        "cli_destination": "agentchatme_duckwork/runtime.py",
+        "previous_staging_sha256": "90150091e2dca9799f229f71ccf914ad33fcd1c61b8093e4e208b94b42c260be"
+      },
+      {
+        "destination": "agentchatme_duckwork/skills/SKILL.md",
+        "input_sha256": "18f0488178e3443fea6c043e52055b3539280f257228d4a587ef304779985295",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "638edd9d897f0f3ec83bf4d3cacac8653d3f7768b2b232e836062f49846f9784",
+        "source": "agentchatme_hermes/skills/SKILL.md",
+        "final_output_sha256": "638edd9d897f0f3ec83bf4d3cacac8653d3f7768b2b232e836062f49846f9784",
+        "cli_destination": "agentchatme_duckwork/skills/SKILL.md",
+        "previous_staging_sha256": "638edd9d897f0f3ec83bf4d3cacac8653d3f7768b2b232e836062f49846f9784"
+      },
+      {
+        "destination": "agentchatme_duckwork/skills/__init__.py",
+        "input_sha256": "3c93c9ee864f173ba3c95a06f3c3958d424a0ed8ec939ff2f08a2f33e8a2d1bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "02b6a68c8a8c40b812a836820520727349b6e122bd504a3d19d48abcd8c4fd6e",
+        "source": "agentchatme_hermes/skills/__init__.py",
+        "final_output_sha256": "02b6a68c8a8c40b812a836820520727349b6e122bd504a3d19d48abcd8c4fd6e",
+        "cli_destination": "agentchatme_duckwork/skills/__init__.py",
+        "previous_staging_sha256": "02b6a68c8a8c40b812a836820520727349b6e122bd504a3d19d48abcd8c4fd6e"
+      },
+      {
+        "destination": "agentchatme_duckwork/soul_anchor.py",
+        "input_sha256": "b86c605850501e8878e4ec90856583b4dba66d61450c826e50e197afdee2b532",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5077357147296aca89cbf61883c16718e040240959e8646d49e7fbeb4725b408",
+        "source": "agentchatme_hermes/soul_anchor.py",
+        "final_output_sha256": "5077357147296aca89cbf61883c16718e040240959e8646d49e7fbeb4725b408",
+        "cli_destination": "agentchatme_duckwork/soul_anchor.py",
+        "previous_staging_sha256": "5077357147296aca89cbf61883c16718e040240959e8646d49e7fbeb4725b408"
+      },
+      {
+        "destination": "agentchatme_duckwork/thread_closures.py",
+        "input_sha256": "a5a98a4092a752ce29fa4060b68cdfffad291176c764461b66ab0c00c0d5bd19",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e55a4eafbbb49b25d6a59be21119d6b01ea4626f8bbec12081a242dd5454909f",
+        "source": "agentchatme_hermes/thread_closures.py",
+        "final_output_sha256": "e55a4eafbbb49b25d6a59be21119d6b01ea4626f8bbec12081a242dd5454909f",
+        "cli_destination": "agentchatme_duckwork/thread_closures.py",
+        "previous_staging_sha256": "e55a4eafbbb49b25d6a59be21119d6b01ea4626f8bbec12081a242dd5454909f"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/__init__.py",
+        "input_sha256": "c446b43a8559328869d9b37ac33385dcbda3e71117a899bcc533723b4fc8a201",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2daf9218aeef1783a7d23a0348809f4204c1061d7afe0a6a277a18680fe2cd13",
+        "source": "agentchatme_hermes/tools/__init__.py",
+        "final_output_sha256": "2daf9218aeef1783a7d23a0348809f4204c1061d7afe0a6a277a18680fe2cd13",
+        "cli_destination": "agentchatme_duckwork/tools/__init__.py",
+        "previous_staging_sha256": "2daf9218aeef1783a7d23a0348809f4204c1061d7afe0a6a277a18680fe2cd13"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/_common.py",
+        "input_sha256": "d2a9d79cc188bdfbdfea973f94cddf1c455adebfe440585e0895717c3347394d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bc7ff92726e89e6be535b27926b534c023084c5dba4847ddb841b82563641b3a",
+        "source": "agentchatme_hermes/tools/_common.py",
+        "final_output_sha256": "bc7ff92726e89e6be535b27926b534c023084c5dba4847ddb841b82563641b3a",
+        "cli_destination": "agentchatme_duckwork/tools/_common.py",
+        "previous_staging_sha256": "bc7ff92726e89e6be535b27926b534c023084c5dba4847ddb841b82563641b3a"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/attachments.py",
+        "input_sha256": "1c8c3e46c223915eb6f25bb8adb17423a9b73b63880452fe3801c5abd3a82f85",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1c8c3e46c223915eb6f25bb8adb17423a9b73b63880452fe3801c5abd3a82f85",
+        "source": "agentchatme_hermes/tools/attachments.py",
+        "final_output_sha256": "1c8c3e46c223915eb6f25bb8adb17423a9b73b63880452fe3801c5abd3a82f85",
+        "cli_destination": "agentchatme_duckwork/tools/attachments.py",
+        "previous_staging_sha256": "1c8c3e46c223915eb6f25bb8adb17423a9b73b63880452fe3801c5abd3a82f85"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/contacts.py",
+        "input_sha256": "484dc915bf69620db6d91441f8b802c493dcc78ffc3011c638f2192f547216bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9299aee9bd2f82fd671c13bcdf1dabc922eee00b1f2f071cb64df8d8292fdc67",
+        "source": "agentchatme_hermes/tools/contacts.py",
+        "final_output_sha256": "9299aee9bd2f82fd671c13bcdf1dabc922eee00b1f2f071cb64df8d8292fdc67",
+        "cli_destination": "agentchatme_duckwork/tools/contacts.py",
+        "previous_staging_sha256": "9299aee9bd2f82fd671c13bcdf1dabc922eee00b1f2f071cb64df8d8292fdc67"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/conversations.py",
+        "input_sha256": "cecf7c776d4bd06a231d3810b7eec6916b45a28644b72c798936f304d1002f7b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a89105c520e110be595b36c240a0e56fc8a2e8f1825319faa455c73ee81f26da",
+        "source": "agentchatme_hermes/tools/conversations.py",
+        "final_output_sha256": "a89105c520e110be595b36c240a0e56fc8a2e8f1825319faa455c73ee81f26da",
+        "cli_destination": "agentchatme_duckwork/tools/conversations.py",
+        "previous_staging_sha256": "a89105c520e110be595b36c240a0e56fc8a2e8f1825319faa455c73ee81f26da"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/directory.py",
+        "input_sha256": "70c78e1064495cf78b7c75e7daf9098954cc6072e158c45ef117790bb285e0ba",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "70c78e1064495cf78b7c75e7daf9098954cc6072e158c45ef117790bb285e0ba",
+        "source": "agentchatme_hermes/tools/directory.py",
+        "final_output_sha256": "70c78e1064495cf78b7c75e7daf9098954cc6072e158c45ef117790bb285e0ba",
+        "cli_destination": "agentchatme_duckwork/tools/directory.py",
+        "previous_staging_sha256": "70c78e1064495cf78b7c75e7daf9098954cc6072e158c45ef117790bb285e0ba"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/groups.py",
+        "input_sha256": "7ffaa87221d8f6f6f3669de2d1cd723966e1c22f0b981f6cde66decdf7f8e5d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7ffaa87221d8f6f6f3669de2d1cd723966e1c22f0b981f6cde66decdf7f8e5d7",
+        "source": "agentchatme_hermes/tools/groups.py",
+        "final_output_sha256": "7ffaa87221d8f6f6f3669de2d1cd723966e1c22f0b981f6cde66decdf7f8e5d7",
+        "cli_destination": "agentchatme_duckwork/tools/groups.py",
+        "previous_staging_sha256": "7ffaa87221d8f6f6f3669de2d1cd723966e1c22f0b981f6cde66decdf7f8e5d7"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/messages.py",
+        "input_sha256": "c66e106dd753df0004990893e0f9ab7c130a1b8e3f94ff38cbf45d7d05425cf1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c66e106dd753df0004990893e0f9ab7c130a1b8e3f94ff38cbf45d7d05425cf1",
+        "source": "agentchatme_hermes/tools/messages.py",
+        "final_output_sha256": "c66e106dd753df0004990893e0f9ab7c130a1b8e3f94ff38cbf45d7d05425cf1",
+        "cli_destination": "agentchatme_duckwork/tools/messages.py",
+        "previous_staging_sha256": "c66e106dd753df0004990893e0f9ab7c130a1b8e3f94ff38cbf45d7d05425cf1"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/mutes.py",
+        "input_sha256": "d5768c7c9e7d29a0c7d64172d34957b48d5d20d15403c6f39617163280821091",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d5768c7c9e7d29a0c7d64172d34957b48d5d20d15403c6f39617163280821091",
+        "source": "agentchatme_hermes/tools/mutes.py",
+        "final_output_sha256": "d5768c7c9e7d29a0c7d64172d34957b48d5d20d15403c6f39617163280821091",
+        "cli_destination": "agentchatme_duckwork/tools/mutes.py",
+        "previous_staging_sha256": "d5768c7c9e7d29a0c7d64172d34957b48d5d20d15403c6f39617163280821091"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/presence.py",
+        "input_sha256": "ee027d5ed201f64d43bac8e48bd77f10e20cec975bbcdaa447502ae8a0deb3bd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ee027d5ed201f64d43bac8e48bd77f10e20cec975bbcdaa447502ae8a0deb3bd",
+        "source": "agentchatme_hermes/tools/presence.py",
+        "final_output_sha256": "ee027d5ed201f64d43bac8e48bd77f10e20cec975bbcdaa447502ae8a0deb3bd",
+        "cli_destination": "agentchatme_duckwork/tools/presence.py",
+        "previous_staging_sha256": "ee027d5ed201f64d43bac8e48bd77f10e20cec975bbcdaa447502ae8a0deb3bd"
+      },
+      {
+        "destination": "agentchatme_duckwork/tools/profile.py",
+        "input_sha256": "667991fa7205523f2eec431227e2cfe8aad400384c9a7308e562a84a85550fe6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "667991fa7205523f2eec431227e2cfe8aad400384c9a7308e562a84a85550fe6",
+        "source": "agentchatme_hermes/tools/profile.py",
+        "final_output_sha256": "667991fa7205523f2eec431227e2cfe8aad400384c9a7308e562a84a85550fe6",
+        "cli_destination": "agentchatme_duckwork/tools/profile.py",
+        "previous_staging_sha256": "667991fa7205523f2eec431227e2cfe8aad400384c9a7308e562a84a85550fe6"
+      },
+      {
+        "destination": "agentchatme_duckwork/types.py",
+        "input_sha256": "7d1477e5acb98fe1060de2bb6d1aa6aa703b43b9821efc826d1dbf5a18c507d3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7d1477e5acb98fe1060de2bb6d1aa6aa703b43b9821efc826d1dbf5a18c507d3",
+        "source": "agentchatme_hermes/types.py",
+        "final_output_sha256": "7d1477e5acb98fe1060de2bb6d1aa6aa703b43b9821efc826d1dbf5a18c507d3",
+        "cli_destination": "agentchatme_duckwork/types.py",
+        "previous_staging_sha256": "7d1477e5acb98fe1060de2bb6d1aa6aa703b43b9821efc826d1dbf5a18c507d3"
+      },
+      {
+        "destination": "agentchatme_duckwork/wizard.py",
+        "input_sha256": "9a64eac855c23c94aa1f7b0c5a0c3585146b6fbcef86811c856148517b575362",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "75238f0f6c93968a8ffa782c441cadba49e1b79eb6209cef5c1cac6971ae0d59",
+        "source": "agentchatme_hermes/wizard.py",
+        "final_output_sha256": "75238f0f6c93968a8ffa782c441cadba49e1b79eb6209cef5c1cac6971ae0d59",
+        "cli_destination": "agentchatme_duckwork/wizard.py",
+        "previous_staging_sha256": "75238f0f6c93968a8ffa782c441cadba49e1b79eb6209cef5c1cac6971ae0d59"
+      },
+      {
+        "destination": "agentchatme_duckwork/ws_daemon.py",
+        "input_sha256": "adfe0fa7f8423cb09a6e0f2324159922e9b0f789ed951d799a6731b4d40410e9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0835ccbc2fdacbda712ab7f2b4a67abd0bd8f9a5d24f81ac0dceadeac029f48b",
+        "source": "agentchatme_hermes/ws_daemon.py",
+        "final_output_sha256": "0835ccbc2fdacbda712ab7f2b4a67abd0bd8f9a5d24f81ac0dceadeac029f48b",
+        "cli_destination": "agentchatme_duckwork/ws_daemon.py",
+        "previous_staging_sha256": "0835ccbc2fdacbda712ab7f2b4a67abd0bd8f9a5d24f81ac0dceadeac029f48b"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e",
+        "source": "plugin.yaml",
+        "final_output_sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "7d50687d64cf90cfbe06594d15af4190fc0e835c8e03356cdcc55c3c43c2aa5e"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "6e9b9a183fe0035cd03e317505834d4b89ca4eb6e25ce8c99b392742ee946609",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca7f4e9c28a904a6962836c14da13b12c43ceb32bfa96811f278a37b64a1ea36",
+        "source": "pyproject.toml",
+        "final_output_sha256": "60a3d455e3ae6460172a525fd1990c5c518d914edfab12ff8adf22a669254839",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "ca7f4e9c28a904a6962836c14da13b12c43ceb32bfa96811f278a37b64a1ea36"
+      },
+      {
+        "destination": "tests/__init__.py",
+        "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "tests/__init__.py",
+        "final_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cli_destination": "tests/__init__.py",
+        "previous_staging_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "destination": "tests/test_agent_invoker.py",
+        "input_sha256": "921eec132864844e874dffea4397f6589c7e27004788ae17fed8519004279422",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b51deb1127deaba29160cfa43371f6aade663a3131c843358caaa5567d7c946c",
+        "source": "tests/test_agent_invoker.py",
+        "final_output_sha256": "b51deb1127deaba29160cfa43371f6aade663a3131c843358caaa5567d7c946c",
+        "cli_destination": "tests/test_agent_invoker.py",
+        "previous_staging_sha256": "b51deb1127deaba29160cfa43371f6aade663a3131c843358caaa5567d7c946c"
+      },
+      {
+        "destination": "tests/test_cli_recover.py",
+        "input_sha256": "249cdb034476093c76cea1a1e4efeaf31d5c461ed794b8b9067080f08de03570",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8a19c8df1bc48379586ce5efab9e95233819eff46f6fb0f4f7168fc9d54a31ae",
+        "source": "tests/test_cli_recover.py",
+        "final_output_sha256": "8a19c8df1bc48379586ce5efab9e95233819eff46f6fb0f4f7168fc9d54a31ae",
+        "cli_destination": "tests/test_cli_recover.py",
+        "previous_staging_sha256": "8a19c8df1bc48379586ce5efab9e95233819eff46f6fb0f4f7168fc9d54a31ae"
+      },
+      {
+        "destination": "tests/test_cli_validation.py",
+        "input_sha256": "477cee20f58ab4bd5af98111097f7eb4f7dfa85fafc3893b26783bdde7c52839",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "734a11851a26ce1a1e65019c6c164044611a5c77af97120de2bdf1fe44263d78",
+        "source": "tests/test_cli_validation.py",
+        "final_output_sha256": "734a11851a26ce1a1e65019c6c164044611a5c77af97120de2bdf1fe44263d78",
+        "cli_destination": "tests/test_cli_validation.py",
+        "previous_staging_sha256": "734a11851a26ce1a1e65019c6c164044611a5c77af97120de2bdf1fe44263d78"
+      },
+      {
+        "destination": "tests/test_client_identity.py",
+        "input_sha256": "426f49fd9b777fd10cffcdbba1dd4135ca90b939dd17b5462b586c12bb10192b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5cef3982b7667522eb3eacf9932b79abfc510fa80f43d30daa97ff8ee5e949ad",
+        "source": "tests/test_client_identity.py",
+        "final_output_sha256": "5cef3982b7667522eb3eacf9932b79abfc510fa80f43d30daa97ff8ee5e949ad",
+        "cli_destination": "tests/test_client_identity.py",
+        "previous_staging_sha256": "5cef3982b7667522eb3eacf9932b79abfc510fa80f43d30daa97ff8ee5e949ad"
+      },
+      {
+        "destination": "tests/test_config.py",
+        "input_sha256": "07247e9d4ba67fddc3221624ce48c6a1f95e863ea305f60f61f87227b6f77b9f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5d9d7d5d82a4ee6ddaee00c07b1dd34719f9ae96d4bfa98a4f30432b656cafb5",
+        "source": "tests/test_config.py",
+        "final_output_sha256": "5d9d7d5d82a4ee6ddaee00c07b1dd34719f9ae96d4bfa98a4f30432b656cafb5",
+        "cli_destination": "tests/test_config.py",
+        "previous_staging_sha256": "5d9d7d5d82a4ee6ddaee00c07b1dd34719f9ae96d4bfa98a4f30432b656cafb5"
+      },
+      {
+        "destination": "tests/test_conversation_tools.py",
+        "input_sha256": "c74319080484cc3550d5506a10d75161d820db469d4db0efb1f5e5a36a6846ad",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8928c3bb80cc415dcc33296182382469c515483a442bcd0be3a2219b2489ab41",
+        "source": "tests/test_conversation_tools.py",
+        "final_output_sha256": "8928c3bb80cc415dcc33296182382469c515483a442bcd0be3a2219b2489ab41",
+        "cli_destination": "tests/test_conversation_tools.py",
+        "previous_staging_sha256": "8928c3bb80cc415dcc33296182382469c515483a442bcd0be3a2219b2489ab41"
+      },
+      {
+        "destination": "tests/test_group_participant_cache.py",
+        "input_sha256": "11e15c89023ade6a9617d04919be85de6d8bda187579d10076e831a4d73dea66",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e6736d0064cc8e52f013aa0a289824ecdbaf847fabe46c89f1d11530bc8e8322",
+        "source": "tests/test_group_participant_cache.py",
+        "final_output_sha256": "e6736d0064cc8e52f013aa0a289824ecdbaf847fabe46c89f1d11530bc8e8322",
+        "cli_destination": "tests/test_group_participant_cache.py",
+        "previous_staging_sha256": "e6736d0064cc8e52f013aa0a289824ecdbaf847fabe46c89f1d11530bc8e8322"
+      },
+      {
+        "destination": "tests/test_group_tools.py",
+        "input_sha256": "c95efadba4e1500b5ccceefcac4715139d0cdf401d041d86eec1f3a12f94439f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "064108b2018f6e41e8e0c718a3412c9e32cc7cff815b39f3d2df2217b8a7cea0",
+        "source": "tests/test_group_tools.py",
+        "final_output_sha256": "064108b2018f6e41e8e0c718a3412c9e32cc7cff815b39f3d2df2217b8a7cea0",
+        "cli_destination": "tests/test_group_tools.py",
+        "previous_staging_sha256": "064108b2018f6e41e8e0c718a3412c9e32cc7cff815b39f3d2df2217b8a7cea0"
+      },
+      {
+        "destination": "tests/test_leader_lock.py",
+        "input_sha256": "54f9834672f9358828c8558ab402fd5a0b554273975b137552317a90af13e580",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5758fe072e37019a75f3ea61a62fad66d771797acc67738cff4db3821c2688ab",
+        "source": "tests/test_leader_lock.py",
+        "final_output_sha256": "5758fe072e37019a75f3ea61a62fad66d771797acc67738cff4db3821c2688ab",
+        "cli_destination": "tests/test_leader_lock.py",
+        "previous_staging_sha256": "5758fe072e37019a75f3ea61a62fad66d771797acc67738cff4db3821c2688ab"
+      },
+      {
+        "destination": "tests/test_lookup_cache.py",
+        "input_sha256": "baa2020d082fcad1596000c909e7bd1b2ece4c3648291ebb0fb2b97973abecd6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6dece7f210bc6ece4b47e1dfad76ee8920498fc3ce071602e77cf945a34dd836",
+        "source": "tests/test_lookup_cache.py",
+        "final_output_sha256": "6dece7f210bc6ece4b47e1dfad76ee8920498fc3ce071602e77cf945a34dd836",
+        "cli_destination": "tests/test_lookup_cache.py",
+        "previous_staging_sha256": "6dece7f210bc6ece4b47e1dfad76ee8920498fc3ce071602e77cf945a34dd836"
+      },
+      {
+        "destination": "tests/test_lookup_caching_tools.py",
+        "input_sha256": "f6d21b5ddf5c35f9b6e781cebee8c7341ca10bdaade0210c1d00dcc145ae2b50",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d34ce16c5bba966100ff3c3dd5cfc6324065653f4fd79859937ea23a34441eb2",
+        "source": "tests/test_lookup_caching_tools.py",
+        "final_output_sha256": "d34ce16c5bba966100ff3c3dd5cfc6324065653f4fd79859937ea23a34441eb2",
+        "cli_destination": "tests/test_lookup_caching_tools.py",
+        "previous_staging_sha256": "d34ce16c5bba966100ff3c3dd5cfc6324065653f4fd79859937ea23a34441eb2"
+      },
+      {
+        "destination": "tests/test_message_queue.py",
+        "input_sha256": "e8b3b7fee3fee1fbbed73846b840fbcb15a2803ce927249ea855adf2d4ec0c7f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "61ddfec35db2e85f44ff79ca29d5cb6414ee5a5526bf2908351edc53a9a5724f",
+        "source": "tests/test_message_queue.py",
+        "final_output_sha256": "61ddfec35db2e85f44ff79ca29d5cb6414ee5a5526bf2908351edc53a9a5724f",
+        "cli_destination": "tests/test_message_queue.py",
+        "previous_staging_sha256": "61ddfec35db2e85f44ff79ca29d5cb6414ee5a5526bf2908351edc53a9a5724f"
+      },
+      {
+        "destination": "tests/test_register.py",
+        "input_sha256": "5ec94303261037713f17906359f85bb628d9412c7cb5ff17aba62fa657675c37",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1367165ce2384f8675fe4632b32393952ad8d5bdbc05c3175fa7a7c38f15bc69",
+        "source": "tests/test_register.py",
+        "final_output_sha256": "1367165ce2384f8675fe4632b32393952ad8d5bdbc05c3175fa7a7c38f15bc69",
+        "cli_destination": "tests/test_register.py",
+        "previous_staging_sha256": "1367165ce2384f8675fe4632b32393952ad8d5bdbc05c3175fa7a7c38f15bc69"
+      },
+      {
+        "destination": "tests/test_reply_gate.py",
+        "input_sha256": "9f30277fe41091a6ae87431e18c5c1548bdcfb638b532dba4f806e44b212d77a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "78f87a91ab7cf880ede3228b71ec8b8cb4381998f344de7fc3a8e2b1691fae72",
+        "source": "tests/test_reply_gate.py",
+        "final_output_sha256": "78f87a91ab7cf880ede3228b71ec8b8cb4381998f344de7fc3a8e2b1691fae72",
+        "cli_destination": "tests/test_reply_gate.py",
+        "previous_staging_sha256": "78f87a91ab7cf880ede3228b71ec8b8cb4381998f344de7fc3a8e2b1691fae72"
+      },
+      {
+        "destination": "tests/test_runtime.py",
+        "input_sha256": "bf8d28b0734d0f6d8a95d609b20f201cf64a0bf35296e9fe440663d385fe830e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f5c7cf5061d7fe229c737a74d10f8845c80df897a232795ae81e2c039d74dd0b",
+        "source": "tests/test_runtime.py",
+        "final_output_sha256": "f5c7cf5061d7fe229c737a74d10f8845c80df897a232795ae81e2c039d74dd0b",
+        "cli_destination": "tests/test_runtime.py",
+        "previous_staging_sha256": "f5c7cf5061d7fe229c737a74d10f8845c80df897a232795ae81e2c039d74dd0b"
+      },
+      {
+        "destination": "tests/test_soul_anchor.py",
+        "input_sha256": "d6ab4731667a3130b194a4a816973fa9dba25c88c9af670f2b50b0169cc72632",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "de8c994e122dce48ddcc3192640e86db585c40dacdc2e851b97d3f16066d5311",
+        "source": "tests/test_soul_anchor.py",
+        "final_output_sha256": "de8c994e122dce48ddcc3192640e86db585c40dacdc2e851b97d3f16066d5311",
+        "cli_destination": "tests/test_soul_anchor.py",
+        "previous_staging_sha256": "de8c994e122dce48ddcc3192640e86db585c40dacdc2e851b97d3f16066d5311"
+      },
+      {
+        "destination": "tests/test_thread_closures.py",
+        "input_sha256": "31fbf408661754a3ba8966fb1d78c02ec2e1b992cff7dc6278328db8f25beabf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "86348317c83277007e29f1a0c23622aaefc912ed3c3a596e860a7e70043c8aa1",
+        "source": "tests/test_thread_closures.py",
+        "final_output_sha256": "86348317c83277007e29f1a0c23622aaefc912ed3c3a596e860a7e70043c8aa1",
+        "cli_destination": "tests/test_thread_closures.py",
+        "previous_staging_sha256": "86348317c83277007e29f1a0c23622aaefc912ed3c3a596e860a7e70043c8aa1"
+      },
+      {
+        "destination": "tests/test_tool_common.py",
+        "input_sha256": "423336f62847a7e5f7f37526fd76e1875eff69238779f586b0f8a8df9cdb8db1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9c6e660b5cc48f8c7016d84c4187d060d30b77c7bc632b3d11cdea604b5c7e01",
+        "source": "tests/test_tool_common.py",
+        "final_output_sha256": "9c6e660b5cc48f8c7016d84c4187d060d30b77c7bc632b3d11cdea604b5c7e01",
+        "cli_destination": "tests/test_tool_common.py",
+        "previous_staging_sha256": "9c6e660b5cc48f8c7016d84c4187d060d30b77c7bc632b3d11cdea604b5c7e01"
+      },
+      {
+        "destination": "tests/test_types.py",
+        "input_sha256": "b081b8f1959d76c77f0f8270f6b65dcd83ac0c33b1a5bb6724eec42f406a5f99",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f8ddff8ac5381fb3a2602f6b360d62f5f0986dc352eb6de5a677b1f96e03158f",
+        "source": "tests/test_types.py",
+        "final_output_sha256": "f8ddff8ac5381fb3a2602f6b360d62f5f0986dc352eb6de5a677b1f96e03158f",
+        "cli_destination": "tests/test_types.py",
+        "previous_staging_sha256": "f8ddff8ac5381fb3a2602f6b360d62f5f0986dc352eb6de5a677b1f96e03158f"
+      },
+      {
+        "destination": "tests/test_wizard.py",
+        "input_sha256": "9c32f7e9703d836915bfb1de5a9130b45f3360c0571839b98efe4fd50a595403",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4788d898d20ae6fc48c6e758a373638a58237cf71bf0a74fcdefaac2fecf2973",
+        "source": "tests/test_wizard.py",
+        "final_output_sha256": "4788d898d20ae6fc48c6e758a373638a58237cf71bf0a74fcdefaac2fecf2973",
+        "cli_destination": "tests/test_wizard.py",
+        "previous_staging_sha256": "4788d898d20ae6fc48c6e758a373638a58237cf71bf0a74fcdefaac2fecf2973"
+      },
+      {
+        "destination": "tests/test_wizard_email_policy.py",
+        "input_sha256": "ca71b8f6599fa6c095e3bea5f61f126d44b88013259302bfa287278c40b40157",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8e6971a781fbe3a666f0c54f55b2ebe068b851aab822b4cd2afb93a43a933fe2",
+        "source": "tests/test_wizard_email_policy.py",
+        "final_output_sha256": "8e6971a781fbe3a666f0c54f55b2ebe068b851aab822b4cd2afb93a43a933fe2",
+        "cli_destination": "tests/test_wizard_email_policy.py",
+        "previous_staging_sha256": "8e6971a781fbe3a666f0c54f55b2ebe068b851aab822b4cd2afb93a43a933fe2"
+      },
+      {
+        "destination": "tests/test_wizard_recovery.py",
+        "input_sha256": "c01e427099c27b91a4c005db7e8fa9f3ddcaa162ed33a48382deb77fff3f739a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "479fff910e72c0ecb75a0edf3e510843b989c74a9113846904ad348a2f600ff5",
+        "source": "tests/test_wizard_recovery.py",
+        "final_output_sha256": "479fff910e72c0ecb75a0edf3e510843b989c74a9113846904ad348a2f600ff5",
+        "cli_destination": "tests/test_wizard_recovery.py",
+        "previous_staging_sha256": "479fff910e72c0ecb75a0edf3e510843b989c74a9113846904ad348a2f600ff5"
+      },
+      {
+        "destination": "tests/test_ws_daemon.py",
+        "input_sha256": "b6617d3f73da011daecc777891afb00a4d64eb04342e618ac4fb9bb55d7735b5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dccd6328fde6443033124f927707b23fe46c211f057a1d1db21a249939c64b17",
+        "source": "tests/test_ws_daemon.py",
+        "final_output_sha256": "dccd6328fde6443033124f927707b23fe46c211f057a1d1db21a249939c64b17",
+        "cli_destination": "tests/test_ws_daemon.py",
+        "previous_staging_sha256": "dccd6328fde6443033124f927707b23fe46c211f057a1d1db21a249939c64b17"
+      }
+    ],
+    "manifest_sha256": "33b9fe7733e71566f9ac2ddd95eef91ba90eb3fef24c7b48cdb21680984afb4b",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/ISSUE_TEMPLATE/bug_report.md": ".github/ISSUE_TEMPLATE/bug_report.md",
+    ".github/ISSUE_TEMPLATE/feature_request.md": ".github/ISSUE_TEMPLATE/feature_request.md",
+    ".github/dependabot.yml": ".github/dependabot.yml",
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml": ".github/workflows/publish.yml",
+    ".gitignore": ".gitignore",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "CONTRIBUTING.md": "CONTRIBUTING.md",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "__init__.py": "__init__.py",
+    "agentchatme_hermes/__init__.py": "agentchatme_hermes/__init__.py",
+    "agentchatme_hermes/_register.py": "agentchatme_hermes/_register.py",
+    "agentchatme_hermes/_version.py": "agentchatme_hermes/_version.py",
+    "agentchatme_hermes/agent_invoker.py": "agentchatme_hermes/agent_invoker.py",
+    "agentchatme_hermes/cli.py": "agentchatme_hermes/cli.py",
+    "agentchatme_hermes/client_identity.py": "agentchatme_hermes/client_identity.py",
+    "agentchatme_hermes/config.py": "agentchatme_hermes/config.py",
+    "agentchatme_hermes/group_participants.py": "agentchatme_hermes/group_participants.py",
+    "agentchatme_hermes/leader_lock.py": "agentchatme_hermes/leader_lock.py",
+    "agentchatme_hermes/lookup_cache.py": "agentchatme_hermes/lookup_cache.py",
+    "agentchatme_hermes/message_queue.py": "agentchatme_hermes/message_queue.py",
+    "agentchatme_hermes/plugin.yaml": "agentchatme_hermes/plugin.yaml",
+    "agentchatme_hermes/prompts.py": "agentchatme_hermes/prompts.py",
+    "agentchatme_hermes/reply_gate.py": "agentchatme_hermes/reply_gate.py",
+    "agentchatme_hermes/runtime.py": "agentchatme_hermes/runtime.py",
+    "agentchatme_hermes/skills/SKILL.md": "agentchatme_hermes/skills/SKILL.md",
+    "agentchatme_hermes/skills/__init__.py": "agentchatme_hermes/skills/__init__.py",
+    "agentchatme_hermes/soul_anchor.py": "agentchatme_hermes/soul_anchor.py",
+    "agentchatme_hermes/thread_closures.py": "agentchatme_hermes/thread_closures.py",
+    "agentchatme_hermes/tools/__init__.py": "agentchatme_hermes/tools/__init__.py",
+    "agentchatme_hermes/tools/_common.py": "agentchatme_hermes/tools/_common.py",
+    "agentchatme_hermes/tools/attachments.py": "agentchatme_hermes/tools/attachments.py",
+    "agentchatme_hermes/tools/contacts.py": "agentchatme_hermes/tools/contacts.py",
+    "agentchatme_hermes/tools/conversations.py": "agentchatme_hermes/tools/conversations.py",
+    "agentchatme_hermes/tools/directory.py": "agentchatme_hermes/tools/directory.py",
+    "agentchatme_hermes/tools/groups.py": "agentchatme_hermes/tools/groups.py",
+    "agentchatme_hermes/tools/messages.py": "agentchatme_hermes/tools/messages.py",
+    "agentchatme_hermes/tools/mutes.py": "agentchatme_hermes/tools/mutes.py",
+    "agentchatme_hermes/tools/presence.py": "agentchatme_hermes/tools/presence.py",
+    "agentchatme_hermes/tools/profile.py": "agentchatme_hermes/tools/profile.py",
+    "agentchatme_hermes/types.py": "agentchatme_hermes/types.py",
+    "agentchatme_hermes/wizard.py": "agentchatme_hermes/wizard.py",
+    "agentchatme_hermes/ws_daemon.py": "agentchatme_hermes/ws_daemon.py",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "tests/__init__.py": "tests/__init__.py",
+    "tests/test_agent_invoker.py": "tests/test_agent_invoker.py",
+    "tests/test_cli_recover.py": "tests/test_cli_recover.py",
+    "tests/test_cli_validation.py": "tests/test_cli_validation.py",
+    "tests/test_client_identity.py": "tests/test_client_identity.py",
+    "tests/test_config.py": "tests/test_config.py",
+    "tests/test_conversation_tools.py": "tests/test_conversation_tools.py",
+    "tests/test_group_participant_cache.py": "tests/test_group_participant_cache.py",
+    "tests/test_group_tools.py": "tests/test_group_tools.py",
+    "tests/test_leader_lock.py": "tests/test_leader_lock.py",
+    "tests/test_lookup_cache.py": "tests/test_lookup_cache.py",
+    "tests/test_lookup_caching_tools.py": "tests/test_lookup_caching_tools.py",
+    "tests/test_message_queue.py": "tests/test_message_queue.py",
+    "tests/test_register.py": "tests/test_register.py",
+    "tests/test_reply_gate.py": "tests/test_reply_gate.py",
+    "tests/test_runtime.py": "tests/test_runtime.py",
+    "tests/test_soul_anchor.py": "tests/test_soul_anchor.py",
+    "tests/test_thread_closures.py": "tests/test_thread_closures.py",
+    "tests/test_tool_common.py": "tests/test_tool_common.py",
+    "tests/test_types.py": "tests/test_types.py",
+    "tests/test_wizard.py": "tests/test_wizard.py",
+    "tests/test_wizard_email_policy.py": "tests/test_wizard_email_policy.py",
+    "tests/test_wizard_recovery.py": "tests/test_wizard_recovery.py",
+    "tests/test_ws_daemon.py": "tests/test_ws_daemon.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "agentchat",
+    "python_files_compiled": 56,
+    "secret_findings": 0
+  },
+  "canonical_slug": "agentchat",
+  "catalog_file": "src/plugin-catalog/agentchat.yaml",
+  "identity": {
+    "catalog_id": "agentchat",
+    "canonical_slug": "agentchat",
+    "original_manifest_name": "agentchat",
+    "rebranded_manifest_name": "agentchat",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "2773d5803eed142c6adcec41d6d019e9f7943c7eb8f8da523e72d5596cabde8d",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "CHANGELOG.md",
+          "after_path": "CHANGELOG.md",
+          "before_sha256": "6a85dd9a840eb0a68029affbd6752e9bc2a3bdcc979b71a5af0eff23295da139",
+          "after_sha256": "ed51624b991689f7fbd5b3f4e84cecd381c0c4742e15d23e0904a9ca9679e3ed",
+          "before_bytes": 10049,
+          "after_bytes": 10020,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "CONTRIBUTING.md",
+          "after_path": "CONTRIBUTING.md",
+          "before_sha256": "5758c801bc011413113867dbcf33ef608218cb8ec09299e13050560da15b105f",
+          "after_sha256": "31dfa4a66ae315dc168ae90d1d2b0506ad8aa233ccea537018d5d93650bad66e",
+          "before_bytes": 2694,
+          "after_bytes": 2683,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "374614d014298d86e8cdd8b576911046b4e6d50672536b749b63282564ab7418",
+          "after_sha256": "a54d6e6191ffc6802865ed3c5d0bd7cf561dbf6c8e8ad26e01a617a48cee9a4e",
+          "before_bytes": 18694,
+          "after_bytes": 18614,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "ca7f4e9c28a904a6962836c14da13b12c43ceb32bfa96811f278a37b64a1ea36",
+          "after_sha256": "60a3d455e3ae6460172a525fd1990c5c518d914edfab12ff8adf22a669254839",
+          "before_bytes": 4586,
+          "after_bytes": 4523,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    ".github/workflows/publish.yml": [
+      {
+        "value": "https://pypi.org/project/agentchatme-hermes/",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      }
+    ],
+    "README.md": [
+      {
+        "value": "https://pypi.org/project/agentchatme-hermes/",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      },
+      {
+        "value": "https://pypi.org/project/agentchatme-hermes/",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      }
+    ]
+  }
+}

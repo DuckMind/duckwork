@@ -1,0 +1,524 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/NousResearch/hermes-official-plugins/e1f16143f164c4db10ea8fc0fc47ff8ac611e9fc/assets/langfuse.jpg": "_catalog_assets/assets/langfuse.jpg"
+    },
+    "image": "_catalog_assets/assets/langfuse.jpg",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "langfuse",
+  "content_id": "6d53a93ef0c4",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+    },
+    {
+      "bytes": 9257,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "cd9803e367ea9ff22a50fcd03cbad578cfcc621c6494211e6c2ee48b3fd80d8d"
+    },
+    {
+      "bytes": 68501,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "32354bf471bf0f569b26e300cc407961679af6f446e8ab17850bdf2e5f8b165e"
+    },
+    {
+      "bytes": 193290,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/langfuse.jpg",
+      "sha256": "fc66aa6f0f45b47d9f96e343ae3a60306d1dc9fb182a96501dd4cb95f8811334"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+    },
+    {
+      "bytes": 1750,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "f3484e8baad8e637056f11560a5d99332b144e286199d4edc4b65584810a0068"
+    },
+    {
+      "bytes": 407,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "c610adec5a1f756de48009b7985f61125a39f5787e1019e18b9c05fcff791deb"
+    },
+    {
+      "bytes": 61,
+      "mode": "100644",
+      "path": "pytest.ini",
+      "sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a"
+    },
+    {
+      "bytes": 2482,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "e8e65f179cefba1ec22a7655c35d2019adc93efbda2ddd0c8db61cf02f640d63"
+    },
+    {
+      "bytes": 14584,
+      "mode": "100644",
+      "path": "tests/test_langfuse_attribution.py",
+      "sha256": "7aec5f91b8ef7e1a76f7b13bdc3182ab4197f7493fbe376159a600f2bb19f6c7"
+    },
+    {
+      "bytes": 3745,
+      "mode": "100644",
+      "path": "tests/test_langfuse_max_depth.py",
+      "sha256": "f6100fbbf64c49dc98a740b8bc782c51a655789b30a1c7db1333ab8870375cae"
+    },
+    {
+      "bytes": 116137,
+      "mode": "100644",
+      "path": "tests/test_langfuse_plugin.py",
+      "sha256": "d0c908fccd5d57e5a3dba0919199b5dbaf862540b1a131bfb9031e8c8c0fce97"
+    },
+    {
+      "bytes": 3746,
+      "mode": "100644",
+      "path": "tests/test_langfuse_reasoning_usage.py",
+      "sha256": "82f35d15f74d74e4053757ac7dcc2658efbaf558941719d6d208a7ce7443289b"
+    },
+    {
+      "bytes": 1413,
+      "mode": "100644",
+      "path": "tests/test_scoped_secret_reader.py",
+      "sha256": "fb5f1c6b1d74d552e0c3733dbcad521eeb27ddd73fd857bc4847170b902a73c1"
+    }
+  ],
+  "input_manifest_sha256": "6d53a93ef0c4fea258717323c978ed913363e47e6644ff0d43cfa263564aa824",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source_path": "langfuse/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/conftest.py",
+      "tests/test_langfuse_attribution.py",
+      "tests/test_langfuse_max_depth.py",
+      "tests/test_langfuse_plugin.py",
+      "tests/test_langfuse_reasoning_usage.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/NousResearch/hermes-official-plugins",
+    "sha": "e1f16143f164c4db10ea8fc0fc47ff8ac611e9fc",
+    "subdir": "langfuse"
+  },
+  "original_repo": "https://github.com/NousResearch/hermes-official-plugins",
+  "original_sha": "e1f16143f164c4db10ea8fc0fc47ff8ac611e9fc",
+  "original_subdir": "langfuse",
+  "output_files": [
+    {
+      "path": "LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "6423ef1e2d5d1f0fe36f2d03a41bf043b333ffe0379a69e739913a40ac3a204d",
+      "bytes": 9313,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "6eaa2e4be208e65673a715a3bcc99276fbc5fbf0f350ff87a35cd9e01b39defa",
+      "bytes": 68633,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/assets/langfuse.jpg",
+      "sha256": "fc66aa6f0f45b47d9f96e343ae3a60306d1dc9fb182a96501dd4cb95f8811334",
+      "bytes": 193290,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "ff5b59f649edc3d1dbe48ee021dee64f11af94ebe39519e441952f99c325b83a",
+      "bytes": 1726,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "a723dbd31db84db79d7d28475ad773c0233409e3905bd7f5d2080b55f196e48b",
+      "bytes": 373,
+      "mode": "100644"
+    },
+    {
+      "path": "pytest.ini",
+      "sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a",
+      "bytes": 61,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "d704fe12073e7a0dea2cc306bf80d0c8d40b3bef3da0a4b20314b4c481f741cb",
+      "bytes": 2500,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_langfuse_attribution.py",
+      "sha256": "9dd92b599416bec5ce091e33fa07c145cebe8b783c709b7d523cfc62ab5ec6c0",
+      "bytes": 14654,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_langfuse_max_depth.py",
+      "sha256": "491038c7335b26045b5818b1755b6e60fbb9701c54becf16e196c1a9f2375db2",
+      "bytes": 3771,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_langfuse_plugin.py",
+      "sha256": "c6759827b6088d1768299ecddc8c4345a395e5c0393ab416f615daa8770b4500",
+      "bytes": 116319,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_langfuse_reasoning_usage.py",
+      "sha256": "553fd83a268b53954e3ac6d94dcd41c01deb1a4c8b6cdb0dccbe5f6c094a2aa1",
+      "bytes": 3748,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_scoped_secret_reader.py",
+      "sha256": "fb5f1c6b1d74d552e0c3733dbcad521eeb27ddd73fd857bc4847170b902a73c1",
+      "bytes": 1413,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "02a27f97e7a5b0280fa0e2b1dad483d693d2047c0ed62c18ff23827ea3d35de9",
+  "pin_verification": {
+    "archive_bytes": 8148609,
+    "archive_sha256": "105dd8171e4177093a39590f7a9d011d87fa645fe8c2620f504cba4dd4da0e51",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "e1f16143f164c4db10ea8fc0fc47ff8ac611e9fc",
+    "verified_commit_marker": "e1f16143f164c4db10ea8fc0fc47ff8ac611e9fc"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "8da9951a002136add417acedb578377c1202cf5524af66c05c2e810db50177a7",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "LICENSE",
+        "input_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source": "LICENSE",
+        "final_output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "cd9803e367ea9ff22a50fcd03cbad578cfcc621c6494211e6c2ee48b3fd80d8d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d4c84cec9161f54934dd2a72f7e9e73bef376807d16b53138f943cfafe8eee56",
+        "source": "README.md",
+        "final_output_sha256": "6423ef1e2d5d1f0fe36f2d03a41bf043b333ffe0379a69e739913a40ac3a204d",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "d4c84cec9161f54934dd2a72f7e9e73bef376807d16b53138f943cfafe8eee56"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "32354bf471bf0f569b26e300cc407961679af6f446e8ab17850bdf2e5f8b165e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6eaa2e4be208e65673a715a3bcc99276fbc5fbf0f350ff87a35cd9e01b39defa",
+        "source": "__init__.py",
+        "final_output_sha256": "6eaa2e4be208e65673a715a3bcc99276fbc5fbf0f350ff87a35cd9e01b39defa",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "6eaa2e4be208e65673a715a3bcc99276fbc5fbf0f350ff87a35cd9e01b39defa"
+      },
+      {
+        "destination": "_catalog_assets/assets/langfuse.jpg",
+        "input_sha256": "fc66aa6f0f45b47d9f96e343ae3a60306d1dc9fb182a96501dd4cb95f8811334",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc66aa6f0f45b47d9f96e343ae3a60306d1dc9fb182a96501dd4cb95f8811334",
+        "source": "_catalog_assets/assets/langfuse.jpg",
+        "final_output_sha256": "fc66aa6f0f45b47d9f96e343ae3a60306d1dc9fb182a96501dd4cb95f8811334",
+        "cli_destination": "_catalog_assets/assets/langfuse.jpg",
+        "previous_staging_sha256": "fc66aa6f0f45b47d9f96e343ae3a60306d1dc9fb182a96501dd4cb95f8811334"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "f3484e8baad8e637056f11560a5d99332b144e286199d4edc4b65584810a0068",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "56e9deb7d1c2a513d51a03241f8ff05cf246fc98355bb9a2daf2a8d3f755f810",
+        "source": "plugin.yaml",
+        "final_output_sha256": "ff5b59f649edc3d1dbe48ee021dee64f11af94ebe39519e441952f99c325b83a",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "56e9deb7d1c2a513d51a03241f8ff05cf246fc98355bb9a2daf2a8d3f755f810"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "c610adec5a1f756de48009b7985f61125a39f5787e1019e18b9c05fcff791deb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5411c3e3b50a48edded6111fc2c0a08a8394e53939f7993ae48747deb514f702",
+        "source": "pyproject.toml",
+        "final_output_sha256": "a723dbd31db84db79d7d28475ad773c0233409e3905bd7f5d2080b55f196e48b",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "5411c3e3b50a48edded6111fc2c0a08a8394e53939f7993ae48747deb514f702"
+      },
+      {
+        "destination": "pytest.ini",
+        "input_sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a",
+        "source": "pytest.ini",
+        "final_output_sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a",
+        "cli_destination": "pytest.ini",
+        "previous_staging_sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "e8e65f179cefba1ec22a7655c35d2019adc93efbda2ddd0c8db61cf02f640d63",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d704fe12073e7a0dea2cc306bf80d0c8d40b3bef3da0a4b20314b4c481f741cb",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "d704fe12073e7a0dea2cc306bf80d0c8d40b3bef3da0a4b20314b4c481f741cb",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "d704fe12073e7a0dea2cc306bf80d0c8d40b3bef3da0a4b20314b4c481f741cb"
+      },
+      {
+        "destination": "tests/test_langfuse_attribution.py",
+        "input_sha256": "7aec5f91b8ef7e1a76f7b13bdc3182ab4197f7493fbe376159a600f2bb19f6c7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9dd92b599416bec5ce091e33fa07c145cebe8b783c709b7d523cfc62ab5ec6c0",
+        "source": "tests/test_langfuse_attribution.py",
+        "final_output_sha256": "9dd92b599416bec5ce091e33fa07c145cebe8b783c709b7d523cfc62ab5ec6c0",
+        "cli_destination": "tests/test_langfuse_attribution.py",
+        "previous_staging_sha256": "9dd92b599416bec5ce091e33fa07c145cebe8b783c709b7d523cfc62ab5ec6c0"
+      },
+      {
+        "destination": "tests/test_langfuse_max_depth.py",
+        "input_sha256": "f6100fbbf64c49dc98a740b8bc782c51a655789b30a1c7db1333ab8870375cae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "491038c7335b26045b5818b1755b6e60fbb9701c54becf16e196c1a9f2375db2",
+        "source": "tests/test_langfuse_max_depth.py",
+        "final_output_sha256": "491038c7335b26045b5818b1755b6e60fbb9701c54becf16e196c1a9f2375db2",
+        "cli_destination": "tests/test_langfuse_max_depth.py",
+        "previous_staging_sha256": "491038c7335b26045b5818b1755b6e60fbb9701c54becf16e196c1a9f2375db2"
+      },
+      {
+        "destination": "tests/test_langfuse_plugin.py",
+        "input_sha256": "d0c908fccd5d57e5a3dba0919199b5dbaf862540b1a131bfb9031e8c8c0fce97",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c6759827b6088d1768299ecddc8c4345a395e5c0393ab416f615daa8770b4500",
+        "source": "tests/test_langfuse_plugin.py",
+        "final_output_sha256": "c6759827b6088d1768299ecddc8c4345a395e5c0393ab416f615daa8770b4500",
+        "cli_destination": "tests/test_langfuse_plugin.py",
+        "previous_staging_sha256": "c6759827b6088d1768299ecddc8c4345a395e5c0393ab416f615daa8770b4500"
+      },
+      {
+        "destination": "tests/test_langfuse_reasoning_usage.py",
+        "input_sha256": "82f35d15f74d74e4053757ac7dcc2658efbaf558941719d6d208a7ce7443289b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "553fd83a268b53954e3ac6d94dcd41c01deb1a4c8b6cdb0dccbe5f6c094a2aa1",
+        "source": "tests/test_langfuse_reasoning_usage.py",
+        "final_output_sha256": "553fd83a268b53954e3ac6d94dcd41c01deb1a4c8b6cdb0dccbe5f6c094a2aa1",
+        "cli_destination": "tests/test_langfuse_reasoning_usage.py",
+        "previous_staging_sha256": "553fd83a268b53954e3ac6d94dcd41c01deb1a4c8b6cdb0dccbe5f6c094a2aa1"
+      },
+      {
+        "destination": "tests/test_scoped_secret_reader.py",
+        "input_sha256": "fb5f1c6b1d74d552e0c3733dbcad521eeb27ddd73fd857bc4847170b902a73c1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fb5f1c6b1d74d552e0c3733dbcad521eeb27ddd73fd857bc4847170b902a73c1",
+        "source": "tests/test_scoped_secret_reader.py",
+        "final_output_sha256": "fb5f1c6b1d74d552e0c3733dbcad521eeb27ddd73fd857bc4847170b902a73c1",
+        "cli_destination": "tests/test_scoped_secret_reader.py",
+        "previous_staging_sha256": "fb5f1c6b1d74d552e0c3733dbcad521eeb27ddd73fd857bc4847170b902a73c1"
+      }
+    ],
+    "manifest_sha256": "4c4476f546c135b0347c3408706878665e4611ae5179bb43ad41d81c6be4b6f7",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "LICENSE": "langfuse/LICENSE",
+    "README.md": "langfuse/README.md",
+    "__init__.py": "langfuse/__init__.py",
+    "_catalog_assets/assets/langfuse.jpg": "assets/langfuse.jpg",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "langfuse/plugin.yaml",
+    "pyproject.toml": "langfuse/pyproject.toml",
+    "pytest.ini": "langfuse/pytest.ini",
+    "tests/conftest.py": "langfuse/tests/conftest.py",
+    "tests/test_langfuse_attribution.py": "langfuse/tests/test_langfuse_attribution.py",
+    "tests/test_langfuse_max_depth.py": "langfuse/tests/test_langfuse_max_depth.py",
+    "tests/test_langfuse_plugin.py": "langfuse/tests/test_langfuse_plugin.py",
+    "tests/test_langfuse_reasoning_usage.py": "langfuse/tests/test_langfuse_reasoning_usage.py",
+    "tests/test_scoped_secret_reader.py": "langfuse/tests/test_scoped_secret_reader.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "langfuse",
+    "python_files_compiled": 7,
+    "secret_findings": 0
+  },
+  "canonical_slug": "langfuse",
+  "catalog_file": "src/plugin-catalog/langfuse.yaml",
+  "identity": {
+    "catalog_id": "langfuse",
+    "canonical_slug": "langfuse",
+    "original_manifest_name": "langfuse",
+    "rebranded_manifest_name": "langfuse",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "6f83eb1b44cbaceec5799447fdcce3aa8b31a5581c8983db8e285dd00f71b7a4",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "d4c84cec9161f54934dd2a72f7e9e73bef376807d16b53138f943cfafe8eee56",
+          "after_sha256": "6423ef1e2d5d1f0fe36f2d03a41bf043b333ffe0379a69e739913a40ac3a204d",
+          "before_bytes": 9348,
+          "after_bytes": 9313,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "56e9deb7d1c2a513d51a03241f8ff05cf246fc98355bb9a2daf2a8d3f755f810",
+          "after_sha256": "ff5b59f649edc3d1dbe48ee021dee64f11af94ebe39519e441952f99c325b83a",
+          "before_bytes": 1764,
+          "after_bytes": 1726,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "5411c3e3b50a48edded6111fc2c0a08a8394e53939f7993ae48747deb514f702",
+          "after_sha256": "a723dbd31db84db79d7d28475ad773c0233409e3905bd7f5d2080b55f196e48b",
+          "before_bytes": 411,
+          "after_bytes": 373,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "plugin.yaml": [
+      {
+        "value": "author: NousResearch",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ],
+    "pyproject.toml": [
+      {
+        "value": "authors = [{ name = \"Nous Research\" }]",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

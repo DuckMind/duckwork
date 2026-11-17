@@ -1,0 +1,25 @@
+name: duckwork-town
+version: 0.3.0
+manifest_version: 2
+api_version: 1
+requires_duckwork: ">=0.21"
+description: >-
+  Passive Duckwork Town bridge. Publishes bounded, pseudonymous agent lifecycle
+  metadata to a same-host Town live server. Registers no tools, injects no
+  context, and returns no control directive.
+author: Hermes Town
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags: [visualization, observability, privacy]
+provides_tools: []
+provides_hooks:
+  - pre_llm_call
+  - post_llm_call
+  - pre_tool_call
+  - post_tool_call
+  - on_session_start
+  - on_session_end
+  - on_session_finalize
+  - on_session_reset
+  - subagent_start
+  - subagent_stop

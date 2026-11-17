@@ -1,0 +1,124 @@
+name: Propose Duckwork catalog update
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Published Enchanted Composer tag to propose (blank = latest release)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.DUCKWORK_CATALOG_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Require catalog pull-request token
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${GH_TOKEN}" ]]; then
+            echo "Add a DUCKWORK_CATALOG_TOKEN Actions secret with access to the Deadtrix21/duckwork-agent fork and public pull requests." >&2
+            exit 1
+          fi
+
+      - name: Resolve published release
+        id: release
+        env:
+          REQUESTED_TAG: ${{ inputs.release_tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${REQUESTED_TAG}"
+          if [[ -z "${TAG}" ]]; then
+            TAG="$(gh release list --repo noxius-studium/enchanted-composer --exclude-drafts --exclude-pre-releases --limit 1 --json tagName --jq '.[0].tagName')"
+          fi
+          gh release view "${TAG}" --repo noxius-studium/enchanted-composer >/dev/null
+          if [[ ! "${TAG}" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Release tag ${TAG} is not v<major>.<minor>.<patch>." >&2
+            exit 1
+          fi
+          git fetch origin "refs/tags/${TAG}:refs/tags/${TAG}" --force
+          SHA="$(git rev-list -n 1 "${TAG}")"
+          if [[ ! "${SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Could not resolve ${TAG} to a full commit SHA." >&2
+            exit 1
+          fi
+          {
+            echo "tag=${TAG}"
+            echo "version=${TAG#v}"
+            echo "sha=${SHA}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Update catalog fork and open review PR
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="catalog/enchanted-composer-v${VERSION}"
+          gh api --method POST repos/Deadtrix21/duckwork-agent/merge-upstream -f branch=main >/dev/null
+          UPSTREAM_SHA="$(gh api repos/Fordex/duckwork-agent/git/ref/heads/main --jq '.object.sha')"
+          REF_ENDPOINT="repos/Deadtrix21/duckwork-agent/git/refs/heads/${BRANCH}"
+          if gh api "${REF_ENDPOINT}" >/dev/null 2>&1; then
+            gh api --method PATCH "${REF_ENDPOINT}" -f sha="${UPSTREAM_SHA}" -F force=true >/dev/null
+          else
+            gh api --method POST repos/Deadtrix21/duckwork-agent/git/refs \
+              -f ref="refs/heads/${BRANCH}" -f sha="${UPSTREAM_SHA}" >/dev/null
+          fi
+
+          ENTRY="${RUNNER_TEMP}/enchanted-composer.yaml"
+          gh api --method GET \
+            -H "Accept: application/vnd.github.raw+json" \
+            repos/Fordex/duckwork-agent/contents/plugin-catalog/enchanted-composer.yaml \
+            -f ref=main > "${ENTRY}"
+          mapfile -t CATALOG_IDENTITY < <(python "${GITHUB_WORKSPACE}/scripts/update_duckwork_catalog_entry.py" "${ENTRY}" --show-current)
+          OLD_VERSION="${CATALOG_IDENTITY[0]}"
+          OLD_SHA="${CATALOG_IDENTITY[1]}"
+          python "${GITHUB_WORKSPACE}/scripts/update_duckwork_catalog_entry.py" "${ENTRY}" --version "${VERSION}" --sha "${RELEASE_SHA}"
+
+          FILE_ENDPOINT="repos/Deadtrix21/duckwork-agent/contents/plugin-catalog/enchanted-composer.yaml"
+          FILE_SHA="$(gh api --method GET "${FILE_ENDPOINT}" -f ref="${BRANCH}" --jq '.sha')"
+          CONTENT="$(base64 -w 0 "${ENTRY}")"
+          gh api --method PUT "${FILE_ENDPOINT}" \
+            -f message="chore(plugin-catalog): update enchanted-composer to ${VERSION}" \
+            -f content="${CONTENT}" \
+            -f branch="${BRANCH}" \
+            -f sha="${FILE_SHA}" >/dev/null
+
+          BODY_FILE="${RUNNER_TEMP}/enchanted-composer-catalog-pr.md"
+          printf '%s\n' \
+            '## Summary' \
+            "- update \`enchanted-composer\` from ${OLD_VERSION} to ${VERSION}" \
+            "- re-pin the reviewed source from \`${OLD_SHA}\` to \`${RELEASE_SHA}\`" \
+            '- re-pin README, banner, and screenshot URLs to the same exact commit' \
+            '' \
+            '## Release evidence' \
+            "- Release: https://github.com/noxius-studium/enchanted-composer/releases/tag/${RELEASE_TAG}" \
+            "- Source comparison: https://github.com/noxius-studium/enchanted-composer/compare/${OLD_SHA}...${RELEASE_SHA}" \
+            '' \
+            'This PR only proposes the catalog pin update. Fordex maintainer review and catalog CI remain the publication gate.' \
+            > "${BODY_FILE}"
+
+          EXISTING="$(gh pr list --repo Fordex/duckwork-agent --state open --head "Deadtrix21:${BRANCH}" --json url --jq '.[0].url // empty')"
+          if [[ -n "${EXISTING}" ]]; then
+            gh pr edit "${EXISTING}" --repo Fordex/duckwork-agent \
+              --title "chore(plugin-catalog): update enchanted-composer to ${VERSION}" \
+              --body-file "${BODY_FILE}"
+            echo "Updated ${EXISTING}"
+          else
+            gh pr create --repo Fordex/duckwork-agent --base main --head "Deadtrix21:${BRANCH}" \
+              --title "chore(plugin-catalog): update enchanted-composer to ${VERSION}" \
+              --body-file "${BODY_FILE}"
+          fi

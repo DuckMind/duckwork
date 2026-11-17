@@ -1,0 +1,7 @@
+name: duckwork-vision-inline
+version: "1.1.0"
+description: "Attach an image inline to the session model when it can see one, instead of letting an explicit auxiliary.vision backend write the description. Core already attaches images natively by default; what this plugin changes is an explicit auxiliary.vision setting, which it overrides so the model reads the pixels directly. The model's modality comes from the local models.dev cache; no network calls and nothing to configure."
+author: BrokeSkill
+license: MIT
+provides_middleware:
+  - tool_execution

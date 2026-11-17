@@ -1,0 +1,2345 @@
+"""Qdrant memory provider plugin for Duckwork.
+
+Self-hostable vector-memory backend using Qdrant (REST). No cloud dependency
+required. Registered by the Duckwork memory-provider loader via
+``ctx.register_memory_provider(QdrantMemoryProvider())``.
+
+What actually works today (see _backend.py for the unwired extras):
+
+  - Dense semantic search over a single named "dense" vector
+  - Session-scoped recall via a ``session_id`` payload filter
+  - Verbatim turn storage (sync_turn) with payload metadata
+  - A circuit breaker (5 failures -> 120s cooldown) around the I/O paths
+  - Honest availability reporting: is_available() / check_backend() /
+    unavailable_reason() distinguish config errors from a dead server
+
+What exists in ``_backend.py`` but is NOT on the live path — do not advertise
+it until it is wired into the provider: hybrid dense+sparse RRF search and
+INT8 scalar quantization.
+"""
+
+from __future__ import annotations
+
+import logging
+import re
+import time
+import uuid
+from collections import deque
+from datetime import UTC, datetime
+from typing import Any
+
+from agent.memory_provider import MemoryProvider, RecallStatus
+
+# ``embedder`` is a sibling module, but this package loads two ways: as
+# ``plugins.memory.qdrant`` (relative import works) and as a bare top-level
+# ``__init__`` (how the Duckwork plugin loader and these tests import it), where a
+# relative import has no parent package and raises ImportError. Load it by path
+# in that case. Module-object binding rather than a name list, so the re-export
+# block below stays a one-liner per name instead of duplicating the list twice.
+try:  # pragma: no cover - branch depends on how the package was imported
+    from . import embedder as _embedder
+except ImportError:  # pragma: no cover
+    import importlib.util
+    import os
+
+    _spec = importlib.util.spec_from_file_location(
+        "duckwork_qdrant_embedder",
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "embedder.py"),
+    )
+    if _spec is None or _spec.loader is None:
+        raise ImportError("cannot locate sibling embedder.py") from None
+    _embedder = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_embedder)
+
+Embedder = _embedder.Embedder
+EmbeddingError = _embedder.EmbeddingError
+EmbeddingConfigError = _embedder.EmbeddingConfigError
+EmbeddingRuntimeError = _embedder.EmbeddingRuntimeError
+BACKEND_FASTEMBED = _embedder.BACKEND_FASTEMBED
+BACKEND_ST = _embedder.BACKEND_ST
+BACKENDS = _embedder.BACKENDS
+DEFAULT_MODEL = _embedder.DEFAULT_MODEL
+model_cache_dir = _embedder.model_cache_dir
+model_cache_locations = _embedder.model_cache_locations
+model_is_present = _embedder.model_is_present
+pinned_cache_dir = _embedder.pinned_cache_dir
+
+logger = logging.getLogger("duckwork.plugins.memory.qdrant")
+
+# Ceiling on a model-supplied `limit`. A tool argument is not a human budget:
+# an accidental `limit=100000` on qdrant_recall scrolls the whole collection
+# into memory and bills the caller one enormous response, and on qdrant_search
+# it is a payload-heavy fetch. Capped per tool — recall legitimately wants
+# more than search, but neither wants "everything".
+MAX_LIMIT_SEARCH = 100
+MAX_LIMIT_RECALL = 1000
+
+#: Ceiling on one ``qdrant_forget`` call. The tool is deliberately
+#: point-targeted, so a batch cap is what keeps it from being a bulk delete
+#: with extra steps. Well above any realistic "forget these five memories".
+MAX_FORGET_BATCH = 100
+
+#: Qdrant accepts an unsigned integer or a UUID as a point ID and nothing
+#: else. Validating before the call turns a model-invented ID into a clear
+#: message instead of a client error — or, worse, a wrong match.
+_POINT_ID_RE = re.compile(
+    r"\A(?:[0-9]{1,20}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}"
+    r"-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\Z"
+)
+
+
+def _is_valid_point_id(value: str) -> bool:
+    return bool(_POINT_ID_RE.match(value))
+
+
+def _clamp_limit(raw: object, default: int, ceiling: int) -> int:
+    """Coerce a model-supplied ``limit`` into ``1..ceiling``.
+
+    A tool argument is not a human budget: an accidental ``limit=100000`` on
+    qdrant_recall scrolls the whole collection into memory and returns one
+    enormous payload, and on qdrant_search it is a payload-heavy fetch. The
+    floor matters too — ``limit=0`` or a negative value is a silent
+    empty-result, which reads as "nothing was remembered" rather than as a
+    bad argument. A non-integer falls back to the default rather than raising
+    an unhandled traceback at the model.
+    """
+    try:
+        value = int(raw)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return default
+    return min(max(value, 1), ceiling)
+
+
+def _url_without_userinfo(url: str) -> str:
+    """The URL with any ``user:pass@`` credential removed, for display only.
+
+    The system prompt is model-visible text and is routinely echoed back in
+    transcripts, logs and bug reports, so a URL carrying basic-auth
+    credentials would leak them to the provider and anywhere the prompt is
+    quoted. The connection itself is unaffected — this only shapes the string
+    we print.
+    """
+    if not url or "@" not in url:
+        return url
+    try:
+        from urllib.parse import urlsplit, urlunsplit
+
+        parts = urlsplit(url)
+        if not parts.netloc or "@" not in parts.netloc:
+            return url
+        host = parts.netloc.rsplit("@", 1)[1]
+        return urlunsplit((parts.scheme, host, parts.path, parts.query, parts.fragment))
+    except Exception:
+        # Never let a display helper break the prompt; over-redact instead.
+        return url.split("@", 1)[1] if "@" in url else url
+
+# ---------------------------------------------------------------------------
+# QdrantClient lazy import — graceful degradation if qdrant-client missing
+# ---------------------------------------------------------------------------
+
+def _have_qdrant() -> bool:
+    try:
+        import qdrant_client  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def _models():
+    """Return qdrant_client.models, or None if qdrant-client is missing."""
+    try:
+        from qdrant_client import models
+        return models
+    except ImportError:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Plugin metadata
+# ---------------------------------------------------------------------------
+
+PLUGIN_NAME = "qdrant"
+PLUGIN_VERSION = "0.1.8"
+
+
+# ---------------------------------------------------------------------------
+# Config loading
+# ---------------------------------------------------------------------------
+
+def _state_home(duckwork_home: str | None = None) -> Any:
+    """The profile home whose ROOT holds this provider's two state files.
+
+    Deliberately NOT the plugin directory. The plugin dir is a *build input*:
+    ``pm.workspace.members_stamp()`` hashes every file inside it — its
+    ``_MEMBER_EXCLUDE`` names only ``.git``/``.venv``/``venv``/``node_modules``/
+    ``__pycache__``, so ``status.json`` and ``config.json`` are hashed too — and
+    folds that hash into the venv dependency stamp. One byte written next to the
+    module therefore invalidated the environment and re-synced dependencies on
+    every launch. Writing beside the module also fails outright on a read-only
+    (pip/system) install.
+
+    This is the convention, not a workaround unique to us: sibling providers
+    keep their state in the home root (``mem0.json``, ``honcho.json``,
+    ``supermemory.json``).
+
+    Precedence: the ``duckwork_home`` ``save_config()`` was handed → the process's
+    context-local override / ``DUCKWORK_HOME`` → ``~/.duckwork``.
+    """
+    from pathlib import Path as _Path
+    if duckwork_home is not None and str(duckwork_home).strip():
+        return _Path(str(duckwork_home).strip())
+    try:
+        from duckwork_constants import get_duckwork_home
+        return _Path(get_duckwork_home())
+    except Exception:
+        import os as _os
+        env = _os.environ.get("DUCKWORK_HOME", "").strip()
+        return _Path(env) if env else _Path.home() / ".duckwork"
+
+
+def _config_json_path(duckwork_home: str | None = None) -> Any:
+    """``<DUCKWORK_HOME>/qdrant.json`` — outside the plugin member dir.
+
+    Was ``<plugin dir>/config.json``. It stays a dict on disk rather than a
+    config.yaml read because ``duckwork memory setup`` and the dashboard both
+    route through ``MemoryProvider.save_config()``, which is contractually
+    file-based; only the directory moved (see :func:`_state_home`).
+    """
+    return _state_home(duckwork_home) / "qdrant.json"
+
+
+#: State files 0.1.4 and earlier wrote BESIDE the module, i.e. into a directory
+#: that is a duckwork build input. Left behind by an upgrade, their mere presence
+#: keeps ``pm.workspace.members_stamp()`` — and therefore the venv dependency
+#: stamp — different from the one recorded at install time, so every launch takes
+#: the sync branch. Nothing reads them any more; the live writer and reader both
+#: resolve through :func:`_state_home`. Names are literal, not globs: a sweep that
+#: matched patterns would risk deleting a real plugin input.
+_LEGACY_IN_DIR_STATE = ("status.json", "config.json")
+
+
+def sweep_legacy_in_dir_state() -> list:
+    """Remove pre-0.1.5 state files left in the plugin member dir. Best effort.
+
+    Called once per :meth:`QdrantMemoryProvider.initialize`, which every store
+    and recall passes through — that is what makes the cleanup self-healing: a
+    long-lived install keeps picking up a residue written by a process that was
+    already running the older code, without the user running anything.
+
+    Returns the paths it removed (empty when there was nothing to do or the
+    directory is not writable, e.g. a read-only pip install). Never raises:
+    failing to tidy residue must not take memory down.
+    """
+    from pathlib import Path as _Path
+
+    try:
+        member_dir = _Path(__file__).resolve().parent
+        removed = []
+        for name in _LEGACY_IN_DIR_STATE:
+            stale = member_dir / name
+            try:
+                stale.unlink()
+            except FileNotFoundError:
+                continue
+            except OSError as e:
+                logger.debug("could not remove legacy %s: %s", stale, e)
+                continue
+            removed.append(str(stale))
+        if removed:
+            logger.info(
+                "Removed legacy in-dir state that predates 0.1.5: %s. Their "
+                "contents now live in %s; while they sat in the member dir they "
+                "changed the venv dependency stamp and re-synced dependencies "
+                "on every launch.",
+                ", ".join(removed), _state_home(),
+            )
+        return removed
+    except Exception as e:  # pragma: no cover - defensive by contract
+        logger.debug("legacy in-dir state sweep skipped: %s", e)
+        return []
+
+
+def _load_plugin_config() -> dict:
+    """Read saved provider config: env < config.yaml's ``memory.qdrant`` < state file.
+
+    Precedence, lowest to highest:
+
+    1. the built-in defaults in ``__init__``
+    2. ``QDRANT_URL`` / ``QDRANT_API_KEY`` from the environment (cloud deploys
+       and the dashboard's secret writer, which routes secrets to ``.env``)
+    3. ``memory.qdrant:`` in config.yaml, for homes that set knobs directly
+    4. ``<DUCKWORK_HOME>/qdrant.json``, which is what ``save_config()`` writes
+       via ``duckwork memory setup`` and the dashboard
+
+    A malformed or missing file yields no override rather than an error, so a
+    bad hand-edit can never take memory offline.
+    """
+    import json as _json
+
+    merged: dict = {}
+
+    try:
+        from duckwork_cli.config import (
+            load_config_readonly,  # managed overlay + ${VAR} expansion
+        )
+        raw = (load_config_readonly().get("memory") or {}).get(PLUGIN_NAME)
+        if isinstance(raw, dict):
+            merged.update(raw)
+    except Exception:
+        pass
+
+    try:
+        cfg_path = _config_json_path()
+        if cfg_path.exists():
+            disk = _json.loads(cfg_path.read_text())
+            if isinstance(disk, dict):
+                merged.update(disk)
+    except Exception as e:
+        logger.warning(
+            "Qdrant state file (<DUCKWORK_HOME>/qdrant.json) unreadable, "
+            "using config.yaml/env only: %s", e
+        )
+
+    # Secrets live in the env, not the config file — read them last so a
+    # rotated key takes effect without rewriting ``qdrant.json``. ``get_secret``
+    # raises UnscopedSecretError under a multiplex gateway with no bound
+    # scope, and a config read must never take memory down: skip the env
+    # override rather than propagate.
+    try:
+        from agent.secret_scope import get_secret
+        for env_key, cfg_key in (("QDRANT_URL", "url"), ("QDRANT_API_KEY", "api_key")):
+            value = get_secret(env_key, default="")
+            if value:
+                merged[cfg_key] = value
+    except Exception as e:
+        logger.debug("Qdrant env override unavailable (no secret scope): %s", e)
+
+    # `display` (the nested `display.level` block) is a documented key of THIS
+    # file that is deliberately not a flat provider knob: display_level() reads
+    # it straight from qdrant.json, defensively, and the flat config never
+    # carries it. Removing it here keeps a documented key from being reported
+    # as a typo by the sweep below — reporting it as unknown would warn users
+    # about the exact key 0.1.8 tells them to write.
+    merged.pop("display", None)
+
+    # `md_docs_roots` is the same kind of documented, non-flat key: it belongs
+    # to md_search, which reads it straight from qdrant.json with its own
+    # validation (mdsearch.configured_roots). Dropping it here — like
+    # `display` above — keeps a documented key from being reported as a typo
+    # by the sweep below; calling a working setting "unknown" invites the user
+    # to delete it.
+    merged.pop("md_docs_roots", None)
+
+    # Unknown keys are dropped WITH a warning, not silently: a typo'd key that
+    # reads as configured-but-inert is the failure class that took a peer
+    # project 50 silently-ignored config keys (mnemosyne issue #482). The
+    # warning makes the mistake visible; the drop keeps behaviour honest to it.
+    known = {"collection", "vector_size", "distance", "url", "api_key",
+             "embedder", "model", "device", "progress", "hybrid"}
+    unknown = sorted(set(merged) - known)
+    if unknown:
+        logger.warning(
+            "memory.qdrant: ignoring unknown config key(s): %s (known keys: %s)",
+            ", ".join(unknown), ", ".join(sorted(known)),
+        )
+        merged = {k: v for k, v in merged.items() if k in known}
+    return merged
+
+
+# ---------------------------------------------------------------------------
+# display.level (0.1.8)
+# ---------------------------------------------------------------------------
+
+#: The three display levels (SPEC-qdrant-display): ``off`` is 0.1.7's
+#: behaviour byte for byte, ``summary`` adds two facts to the chat indicator,
+#: ``verbose`` adds numeric operation records to the log. ``debug`` is
+#: deliberately NOT a value here — it is a log-level concern, a separate
+#: display mode, and out of scope for 0.1.8.
+DISPLAY_LEVELS = ("off", "summary", "verbose")
+
+#: Hybrid retrieval (opt-in): the sparse vector name the collection must
+#: declare, and the fastembed model that fills it (10 MB, already a
+#: dependency — no new package).
+#:
+#: Adding the sparse vector to an EXISTING dense-only collection works on
+#: Qdrant >= 1.18 via the dedicated ``create_vector_name`` endpoint — NOT
+#: via ``update_collection``, which rejects it with 400 "Not existing
+#: vector name". Verified on 1.19.2. Points added before the upgrade carry
+#: no sparse value until they are re-upserted, so enabling hybrid on a
+#: populated store needs one backfill pass (``scripts/migrate_hybrid.py``).
+SPARSE_VECTOR_NAME = "bm25"
+SPARSE_MODEL_NAME = "Qdrant/bm25"
+
+#: Accepted truthy spellings for the ``hybrid`` knob. YAML parses an
+#: unquoted ``on`` as boolean ``True``; JSON stores the string ``"on"`` —
+#: both must land in the same place. Anything unrecognized resolves OFF:
+#: a typo must never turn ON a feature the operator did not ask for.
+_HYBRID_TRUTHY = {"on", "true", "yes", "1"}
+_HYBRID_FALSY = {"off", "false", "no", "0", ""}
+
+
+def sparse_vector_params():
+    """The sparse-vector schema both hybrid paths must declare.
+
+    Single source of truth: a fresh collection (create_collection) and a
+    migrated one (_add_sparse_vector_in_place) have to behave identically, or
+    the same query returns different rankings depending on when the store was
+    created. The IDF modifier is what makes a rare term outweigh a common
+    one — measured +0.025 sparse-arm recall@5 vs no modifier (n=40, 365
+    docs), and it is what Qdrant's own hybrid-search guide prescribes for
+    BM25.
+    """
+    from qdrant_client.http import models as _m
+
+    return _m.SparseVectorParams(modifier=_m.Modifier.IDF)
+
+
+def hybrid_requested(raw: object) -> bool:
+    """Parse the ``hybrid`` config knob. Default off unless clearly truthy.
+
+    An unrecognized non-empty value logs one warning and resolves to off —
+    the same fail-safe posture ``display_level`` takes with bad values.
+    """
+    if isinstance(raw, bool):
+        return raw
+    if raw is None:
+        return False
+    text = str(raw).strip().lower()
+    if text in _HYBRID_TRUTHY:
+        return True
+    if text in _HYBRID_FALSY:
+        return False
+    logger.warning(
+        "memory.qdrant: hybrid: unrecognized value %r — treating as off "
+        "(valid: on/off)", raw,
+    )
+    return False
+
+#: Rank of each level, so callers can say ``rank >= summary`` instead of
+#: enumerating names. Missing key impossible: keys are read through
+#: :func:`display_level`, which validates against DISPLAY_LEVELS first.
+def _percentile(values: list[int], pct: int) -> int:
+    """Nearest-rank percentile — the same deterministic shape as
+    ``scripts/retrieval_eval.py:percentile`` (no interpolation surprises)."""
+    if not values:
+        return 0
+    ordered = sorted(values)
+    rank = -(-pct * len(ordered) // 100)  # ceil(pct * n / 100), integer-only
+    return ordered[max(0, min(len(ordered) - 1, rank - 1))]
+
+
+_DISPLAY_RANK = {"off": 0, "summary": 1, "verbose": 2}
+
+#: ``display.level`` defects already reported by THIS process, keyed by the
+#: full message (which embeds the path). One warning per distinct defect, not
+#: one per recall: recall_status() reads the level on every call, and a broken
+#: config must not turn agent.log into a warning stream (the spec's
+#: "parse failure => off + one warning line").
+_DISPLAY_WARNINGS: set[str] = set()
+
+
+def _display_warn_once(message: str) -> None:
+    """Log *message* at WARNING the first time this process sees it."""
+    if message in _DISPLAY_WARNINGS:
+        return
+    _DISPLAY_WARNINGS.add(message)
+    logger.warning("%s", message)
+
+
+def display_level(duckwork_home: str | None = None) -> str:
+    """``display.level`` from ``<DUCKWORK_HOME>/qdrant.json``: off|summary|verbose.
+
+    Same file as ``md_docs_roots``, read with the same defensive posture as
+    ``mdsearch.configured_roots()`` — a config file must never be able to take
+    a memory operation down:
+
+    * file absent (the default install) → ``off``, silently: that IS the
+      documented default, not an error;
+    * unreadable/malformed JSON, a non-object document, a ``display`` block of
+      the wrong type, or a value outside :data:`DISPLAY_LEVELS` (including a
+      non-string) → ``off`` plus ONE warning line for that defect, ever;
+    * value is case/whitespace-insensitive (``" Summary "`` works) so a
+      hand-edited file fails safe rather than mysteriously.
+
+    Read per call, not cached: it is a few hundred bytes, and an operator
+    editing the file should not have to restart the session for it to take
+    effect. ``duckwork_home`` resolves exactly like ``_status_json_path()`` —
+    the profile home from ``initialize()``'s scoping kwargs, else the
+    process's own home.
+    """
+    import json as _json
+
+    path = _config_json_path(duckwork_home)
+    try:
+        raw = _json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return "off"
+    except (OSError, ValueError) as exc:
+        _display_warn_once(
+            f"display.level: {path} is unreadable ({exc}) — using off"
+        )
+        return "off"
+    if not isinstance(raw, dict):
+        _display_warn_once(
+            f"display.level: {path} does not hold a JSON object — using off"
+        )
+        return "off"
+    display = raw.get("display")
+    if display is None:
+        return "off"
+    if not isinstance(display, dict):
+        _display_warn_once(
+            f"display.level: \"display\" in {path} is a "
+            f"{type(display).__name__}, want an object — using off"
+        )
+        return "off"
+    level = display.get("level")
+    if level is None:
+        return "off"
+    if not isinstance(level, str) or level.strip().lower() not in DISPLAY_LEVELS:
+        _display_warn_once(
+            f"display.level: {level!r} in {path} is not one of "
+            f"{', '.join(DISPLAY_LEVELS)} — using off"
+        )
+        return "off"
+    return level.strip().lower()
+
+
+# ---------------------------------------------------------------------------
+# QdrantMemoryProvider
+# ---------------------------------------------------------------------------
+
+class QdrantMemoryProvider(MemoryProvider):
+    """Duckwork memory provider backed by a Qdrant vector database.
+
+    Dense semantic search over a named "dense" vector, session-scoped filtering
+    through a ``session_id`` payload index, and verbatim turn storage.
+    """
+
+    name = PLUGIN_NAME
+
+    # -- circuit breaker -----------------------------------------------------
+    _BREAKER_THRESHOLD = 5
+    _BREAKER_COOLDOWN_SECS = 120
+    _PREFETCH_WAIT_SECS = 3
+
+    def __init__(self, config: dict | None = None) -> None:
+        self._config = config or _load_plugin_config()
+        self._client: Any = None
+        self._collection = self._config.get("collection", "duckwork_memories")
+        self._vector_size = self._config.get("vector_size", 384)
+        self._distance = self._config.get("distance", "Cosine")
+        self._url = self._config.get("url", "http://localhost:6333")
+        self._api_key = self._config.get("api_key", "")
+        self._embedder = self._config.get("embedder") or BACKEND_FASTEMBED
+        self._model = self._config.get("model") or DEFAULT_MODEL
+        self._device = self._config.get("device") or "auto"
+        self._embedder_impl: Embedder | None = None
+        # Last embedder failure, surfaced through unavailable_reason() so a
+        # dead embedder shows red in /status even when no tool has been called
+        # since it broke.
+        self._embed_error: str = ""
+        self._breaker_open_until: float = 0.0
+        self._breaker_failures = 0
+        self._initialized = False
+        self._prefetch_thread: Any = None
+        # Last real backend probe result ("" = unknown/ok, else a message).
+        # Only set by check_backend()/initialize(); never guessed.
+        self._backend_error: str = ""
+        # Progress display: status_callback is passed to initialize() by the
+        # orchestrator (agent_init.py:1284). We store it and emit progress
+        # events during sync_turn / prefetch so the user sees the plugin
+        # working. Mode is controlled by config: "off" | "minimal" | "verbose".
+        self._status_callback: Any = None
+        self._progress_mode: str = self._config.get("progress", "minimal")
+        # Hybrid retrieval (opt-in). _hybrid_requested comes from config;
+        # _hybrid_active flips to True only after initialize() confirms the
+        # collection DECLARES the sparse vector — adding it in place on a
+        # dense-only store is done there (Qdrant >= 1.18 create_vector_name),
+        # with scripts/migrate_hybrid.py to backfill the existing points.
+        self._hybrid_requested = hybrid_requested(self._config.get("hybrid"))
+        self._hybrid_active = False
+        self._sparse_embedder: Any = None
+        self._sparse_error: str = ""
+        self._last_recall_count: int = 0
+        # Latency of the last SUCCESSFUL recall, milliseconds (0.1.8). None
+        # means "no timing" — first turn, or the recall failed — and the
+        # summary label then omits the ms segment rather than printing a 0 or
+        # a stale number.
+        self._last_recall_ms: int | None = None
+        # Session hit-rate (0.1.9). attempts = recall calls that got past the
+        # circuit breaker (a FAILED attempt still counts — that turn left the
+        # user with no usable recall); hits = attempts returning >= 1 result.
+        # Process lifetime. The summary label shows ``hits N/M`` once M > 0;
+        # `duckwork memory status` always reports both counters.
+        self._recall_attempts: int = 0
+        self._recall_hits: int = 0
+        # Rolling window of completed-recall latencies for p50/p95 (last 200).
+        # Status and verbose log only — percentiles never reach the chat line.
+        self._recall_ms_window: deque[int] = deque(maxlen=200)
+        # Last md_search record: {"tier", "ms", "hits", "top"} (0.1.8). The
+        # tier is the routing decision (lexical vs the semantic fallback),
+        # which no user-visible surface shows; recorded at the decision point
+        # and echoed as one numeric line at display.level=verbose.
+        self._last_md_search: dict | None = None
+        # Profile home, captured from initialize()'s scoping kwargs (or left
+        # empty so _state_home() resolves it from the environment). It decides
+        # where qdrant.json / qdrant-status.json live — never the plugin dir.
+        self._duckwork_home: str = ""
+
+    # -- Lifecycle -----------------------------------------------------------
+
+    def is_available(self) -> bool:
+        """Config/deps only, per the MemoryProvider contract (no network call).
+
+        A previously completed backend probe is honoured if it FAILED, so a
+        provider that was proven unreachable does not report a false green.
+        A successful probe is deliberately not cached as "available": this
+        method must not depend on a transient network state, and initialize()
+        re-probes every start.
+        """
+        if not _have_qdrant():
+            logger.debug("qdrant-client not installed")
+            return False
+        if not self._url:
+            return False
+        # Only a *negative* cached result gates availability.
+        if self._backend_error:
+            return False
+        return True
+
+    def check_backend(self, timeout: float = 3.0) -> tuple[bool, str]:
+        """Actually probe the Qdrant server. Returns (ok, message).
+
+        This is the real liveness check: is_available() is contractually
+        config-only, so without this a dead Qdrant is indistinguishable from a
+        healthy one until the first failed tool call.
+        """
+        try:
+            from qdrant_client import QdrantClient
+        except ImportError as e:
+            return False, f"qdrant-client not importable: {e}"
+        if not self._url:
+            return False, "no url configured"
+        client = None
+        try:
+            client = QdrantClient(url=self._url, api_key=self._api_key or None,
+                                  prefer_grpc=False, timeout=timeout)
+            client.get_collections()
+            return True, f"connected to {self._url}"
+        except Exception as e:
+            return False, f"cannot reach Qdrant at {self._url}: {type(e).__name__}: {e}"
+        finally:
+            if client is not None:
+                try:
+                    client.close()
+                except Exception:
+                    pass
+
+    def unavailable_reason(self) -> str:
+        """User-facing hint shown when the provider is gated off."""
+        if not _have_qdrant():
+            return "qdrant-client is not installed in this environment"
+        if not self._url:
+            return "no Qdrant url configured (set memory.qdrant.url)"
+        if self._embed_error:
+            # An embedder failure must be visible even when the server is fine:
+            # a broken embedder leaves is_available() green while every write
+            # silently no-ops.
+            return self._embed_error
+        if self._backend_error:
+            return self._backend_error
+        return ""
+
+    def initialize(self, session_id: str, **kwargs: Any) -> None:
+        """Connect to Qdrant and ensure the collection exists."""
+        # Before anything else: drop state a pre-0.1.5 process wrote beside the
+        # module. It is inert, but pm.workspace.members_stamp() hashes it and the
+        # residue therefore re-syncs the venv on every launch until it is gone.
+        sweep_legacy_in_dir_state()
+        # A previous failed probe must not block recovery: re-probe for real
+        # rather than trusting the cached negative from an earlier run.
+        self._backend_error = ""
+        if not _have_qdrant():
+            self._backend_error = "qdrant-client is not installed in this environment"
+            raise RuntimeError("Qdrant provider not available — qdrant-client missing")
+        if not self._url:
+            self._backend_error = "no Qdrant url configured (set memory.qdrant.url)"
+            raise RuntimeError("Qdrant provider not available — no URL configured")
+
+        from qdrant_client import QdrantClient
+        from qdrant_client.models import Distance, VectorParams
+
+        # Only connection params reach QdrantClient. MemoryManager.initialize_all passes
+        # scoping kwargs too (platform, duckwork_home, agent_context, status_callback,
+        # warning_callback, session_title, ...); splatting those in makes the client
+        # constructor raise "unexpected keyword argument 'platform'" and the provider
+        # never initializes.
+        self._client = QdrantClient(
+            url=self._url,
+            api_key=self._api_key or None,
+            prefer_grpc=kwargs.get("prefer_grpc", False),
+            timeout=kwargs.get("timeout", 30),
+        )
+
+        # Store status_callback for progress display. The orchestrator passes it
+        # (agent_init.py:1284) so the plugin can emit progress events that the
+        # CLI/TUI/gateway renders. We never call it directly — only through
+        # _emit_progress() which respects the progress mode config.
+        self._status_callback = kwargs.get("status_callback")
+        # Which profile's home holds our state files. The orchestrator passes
+        # it as a scoping kwarg; an empty value lets _state_home() fall back to
+        # the process's own DUCKWORK_HOME / context override.
+        self._duckwork_home = str(kwargs.get("duckwork_home") or "").strip()
+
+        # Create collection if it doesn't exist.
+        # The collection MUST declare a NAMED vector "dense" because sync_turn /
+        # add_memory / search all upsert and query with vector={"dense": [...]} and
+        # using="dense". An unnamed default vector (plain VectorParams) makes Qdrant
+        # reject those with 400 "Not existing vector name error: dense".
+        try:
+            collections = {c.name for c in self._client.get_collections().collections}
+        except Exception as e:
+            # A dead/unreachable server must produce a diagnosable error, not a
+            # raw qdrant_client traceback (which is what this used to do).
+            self._backend_error = (
+                f"cannot reach Qdrant at {self._url}: {type(e).__name__}: {e}"
+            )
+            self._initialized = False
+            self._client = None
+            logger.error(
+                "QdrantMemoryProvider initialize failed: %s", self._backend_error
+            )
+            raise RuntimeError(self._backend_error) from e
+        # Verified reachable: clear any stale negative so a restart can recover.
+        self._backend_error = ""
+        if self._collection not in collections:
+            logger.info(
+                "Creating collection %s (dims=%d, distance=%s, named vector 'dense')",
+                self._collection, self._vector_size, self._distance,
+            )
+            create_kwargs: dict[str, Any] = {
+                "vectors_config": {
+                    "dense": VectorParams(
+                        size=self._vector_size,
+                        distance=Distance[self._distance.upper()],
+                    )
+                },
+            }
+            if self._hybrid_requested:
+                # Declare the sparse vector at creation time: one call
+                # instead of create-then-alter, and no backfill needed for
+                # an empty collection. sparse_vector_params() is shared with
+                # the in-place path so a fresh and a migrated collection
+                # rank identically.
+                create_kwargs["sparse_vectors_config"] = {
+                    SPARSE_VECTOR_NAME: sparse_vector_params()
+                }
+            self._client.create_collection(
+                collection_name=self._collection,
+                **create_kwargs,
+            )
+            # Payload indexes for session scoping
+            try:
+                self._client.create_payload_index(
+                    collection_name=self._collection,
+                    field_name="session_id",
+                    field_schema="keyword",
+                )
+                self._client.create_payload_index(
+                    collection_name=self._collection,
+                    field_name="source",
+                    field_schema="keyword",
+                )
+            except Exception as e:
+                logger.debug("Payload index creation: %s", e)
+
+        # Hybrid activation: config asks for it AND the collection declares
+        # the sparse vector. When the collection is dense-only and the
+        # server supports it (Qdrant >= 1.18), add the sparse vector in
+        # place and activate — a populated store then needs one backfill
+        # pass to fill existing points (scripts/migrate_hybrid.py), which
+        # the warning names. If the server is too old, stay dense-only with
+        # an actionable warning — never a failed write.
+        self._hybrid_active = False
+        if self._hybrid_requested:
+            try:
+                info = self._client.get_collection(self._collection)
+                declared = info.config.params.sparse_vectors or {}
+                if SPARSE_VECTOR_NAME in declared:
+                    self._hybrid_active = True
+                elif self._add_sparse_vector_in_place():
+                    self._hybrid_active = True
+                    logger.info(
+                        "hybrid: added sparse vector %r to existing "
+                        "collection %r — run scripts/migrate_hybrid.py to "
+                        "backfill sparse vectors onto existing points.",
+                        SPARSE_VECTOR_NAME, self._collection,
+                    )
+                else:
+                    logger.warning(
+                        "hybrid: on, but collection %r has no sparse vector "
+                        "and this Qdrant server cannot add one in place "
+                        "(needs >= 1.18) — dense-only. Upgrade Qdrant, or "
+                        "recreate the collection (with hybrid: on).",
+                        self._collection,
+                    )
+            except Exception as e:
+                logger.warning(
+                    "hybrid: cannot read collection config (%s) — "
+                    "dense-only this session.", e,
+                )
+
+        self._initialized = True
+        logger.info("QdrantMemoryProvider initialized (url=%s, collection=%s)",
+                    self._url, self._collection)
+
+    def _add_sparse_vector_in_place(self) -> bool:
+        """Add the sparse vector to an existing dense-only collection.
+
+        Qdrant >= 1.18 exposes ``PUT /collections/{name}/vectors/{vector_name}``
+        (client: ``create_vector_name``) which extends a live collection's
+        vector schema without a recreate. ``update_collection`` does NOT work
+        for this — it answers 400 "Not existing vector name" — which is the
+        trap that made an earlier version of this code claim the migration was
+        impossible.
+
+        Returns ``True`` when the schema now declares the sparse vector (so
+        the caller can activate hybrid), ``False`` when the server is too old
+        or the call is refused. Never raises: a schema change that fails must
+        degrade to dense-only, not take the provider down.
+        """
+        from qdrant_client.http import models as _m
+
+        try:
+            self._client.create_vector_name(
+                collection_name=self._collection,
+                vector_name=SPARSE_VECTOR_NAME,
+                vector_name_config=_m.SparseVectorNameConfig(
+                    sparse=_m.SparseVectorConfig(
+                        modifier=sparse_vector_params().modifier
+                    )
+                ),
+            )
+        except Exception as e:
+            logger.debug("hybrid: create_vector_name refused (%s)", e)
+            return False
+        # Confirm from the server, not from the call's return value.
+        try:
+            info = self._client.get_collection(self._collection)
+            declared = info.config.params.sparse_vectors or {}
+            return SPARSE_VECTOR_NAME in declared
+        except Exception as e:
+            logger.debug("hybrid: could not confirm sparse schema (%s)", e)
+            return False
+
+    def system_prompt_block(self) -> str:
+        """Static info about Qdrant status for the system prompt."""
+        status = "ready" if self._initialized else "not initialized"
+        return (
+            f"[Qdrant memory: {status}] "
+            f"Collection: {self._collection} | "
+            f"URL: {_url_without_userinfo(self._url)} | "
+            f"Vector size: {self._vector_size}"
+        )
+
+    # -- Prefetch / Recall ---------------------------------------------------
+
+    def _query_points(self, dense_vec: list[float], query: str,
+                      query_filter: dict | None, limit: int) -> Any:
+        """Run recall: dense-only, or dense+bm25 RRF fusion when hybrid is on.
+
+        Any failure on the sparse arm — embedder missing, model not
+        loadable, a client too old for fusion — degrades to the plain dense
+        query with one warning: an optional arm must never take the
+        required one down. Qdrant >= 1.19 rejects prefetch without a
+        top-level query (``query=None``); ``FusionQuery`` IS that query.
+        """
+        if not self._hybrid_active:
+            return self._client.query_points(
+                collection_name=self._collection,
+                query=dense_vec,
+                using="dense",
+                query_filter=query_filter,
+                limit=limit,
+            )
+        try:
+            from qdrant_client.models import Fusion, FusionQuery, Prefetch
+            sparse_vec = self._embed_sparse(query)
+            return self._client.query_points(
+                collection_name=self._collection,
+                query=FusionQuery(fusion=Fusion.RRF),
+                prefetch=[
+                    Prefetch(query=dense_vec, using="dense"),
+                    Prefetch(query=sparse_vec, using=SPARSE_VECTOR_NAME),
+                ],
+                query_filter=query_filter,
+                limit=limit,
+            )
+        except EmbeddingError as e:
+            logger.warning(
+                "hybrid: sparse arm failed, falling back to dense-only: %s", e,
+            )
+        except ImportError as e:
+            logger.warning(
+                "hybrid: qdrant_client too old for fusion (%s), dense-only", e,
+            )
+        return self._client.query_points(
+            collection_name=self._collection,
+            query=dense_vec,
+            using="dense",
+            query_filter=query_filter,
+            limit=limit,
+        )
+
+    @staticmethod
+    def _dedup_hits(pairs: list[tuple[float, str]]) -> list[tuple[float, str]]:
+        """Drop later hits that substantially repeat an earlier one.
+
+        Word-level Jaccard (>=0.72) and containment (>=0.86) thresholds —
+        the two numbers Mnemosyne's `_semantic_dedup_prefetch` uses, adopted
+        after comparing implementations. A prefetch that injects three
+        near-copies of one turn burns context tokens and makes recall look
+        noisier than it is. n <= 10, so the O(n^2) compare is free.
+        """
+        kept: list[tuple[float, str]] = []
+        kept_words: list[set[str]] = []
+        for score, text in pairs:
+            words = set(text.lower().split())
+            if not words:
+                continue
+            duplicate = False
+            for prev in kept_words:
+                inter = len(words & prev)
+                union = len(words | prev)
+                if union and inter / union >= 0.72:
+                    duplicate = True
+                    break
+                if inter / min(len(words), len(prev)) >= 0.86:
+                    duplicate = True
+                    break
+            if not duplicate:
+                kept.append((score, text))
+                kept_words.append(words)
+        return kept
+
+    def prefetch(self, query: str, *, session_id: str = "", **kwargs: Any) -> str:
+        """Semantic/hybrid search for memories relevant to *query*."""
+        if not self._initialized or not self._client:
+            return ""
+
+        if self._is_breaker_open():
+            logger.debug("Circuit breaker open — skipping prefetch")
+            return ""
+
+        self._emit_progress("memory_sync", "💾 qdrant — retrieving...", verbose=True)
+
+        # Counted here, past the breaker: a breaker-skipped turn is not an
+        # attempt; a later failure still is (that turn got no usable recall).
+        self._recall_attempts += 1
+
+        # Recall latency (0.1.8): nothing measured this before. Covers embed +
+        # query + dedup — the whole search, i.e. the number the user waits for.
+        t_recall = time.monotonic()
+
+        try:
+            # Encode query via the configured embedder. A failure raises, and
+            # is logged below — it is never swallowed into a silent "".
+            dense_vec = self._embed(query)
+
+            # Dense semantic search via named "dense" vector.
+            # NOTE 1: Prefetch must be the real qdrant_client.models.Prefetch —
+            # building it with type(...) produces a plain object that pydantic
+            # rejects ("Input should be a valid dictionary or instance of Prefetch").
+            # NOTE 2: Qdrant >=1.19 rejects prefetch=... with query=None
+            # ("A query is needed to merge the prefetches"). A single dense
+            # query is expressed by passing query= directly; the hybrid path
+            # passes FusionQuery there instead (see _query_points).
+            results = self._query_points(
+                dense_vec,
+                query,
+                {
+                    "must": [{"key": "session_id", "match": {"value": session_id}}]
+                } if session_id else None,
+                10,
+            )
+
+            hits = results.points if hasattr(results, "points") else []
+            pairs: list[tuple[float, str]] = []
+            for pt in hits:
+                payload = pt.payload if hasattr(pt, "payload") else {}
+                score = pt.score if hasattr(pt, "score") else 0.0
+                text = payload.get("text", "")
+                if text:
+                    pairs.append((score, text))
+            pairs = self._dedup_hits(pairs)
+            # Stop the clock here: everything after is formatting. Captured on
+            # the success path only — a failed recall has no timing to show,
+            # which is why the except branch clears _last_recall_ms.
+            recall_ms = int((time.monotonic() - t_recall) * 1000)
+            lines = [f"- [{score:.2f}] {text}" for score, text in pairs]
+
+            count = len(lines)
+            self._last_recall_count = count
+            self._last_recall_ms = recall_ms
+            self._recall_ms_window.append(recall_ms)
+            if count > 0:
+                self._recall_hits += 1
+            self._note_status(last_recall=datetime.now(UTC).isoformat(),
+                              last_recall_count=count)
+            if count > 0:
+                self._emit_progress(
+                    "memory_sync",
+                    f"💾 qdrant — recalled {count} memor{'y' if count == 1 else 'ies'}",
+                )
+            else:
+                self._emit_progress("memory_sync", "💾 qdrant — no relevant memories")
+
+            if self._display_rank() >= _DISPLAY_RANK["verbose"]:
+                self._log_recall(count, recall_ms, pairs, session_id)
+
+            return "\n".join(lines) if lines else ""
+
+        except Exception as e:
+            self._record_failure()
+            # No trustworthy latency for a recall that did not complete: the
+            # label must not show a stale number from an earlier turn.
+            self._last_recall_ms = None
+            logger.warning("Qdrant prefetch failed: %s", e)
+            return ""
+
+    def queue_prefetch(
+        self, query: str, *, session_id: str = "", **kwargs: Any
+    ) -> None:
+        """Background prefetch on a scope-bound thread.
+
+        ``plugins/AGENTS.md`` requires every memory-provider background job to go
+        through ``spawn_context_thread`` so the worker inherits the spawning
+        profile's contextvars. A bare ``threading.Thread`` runs with no scope
+        and fails closed, or worse, writes into the launch profile's tenant.
+        """
+        try:
+            from agent.memory_provider import spawn_context_thread
+        except Exception:
+            # Core symbol unavailable (tests stub it, or an old checkout): fall
+            # back rather than lose the prefetch entirely, and say so once.
+            import threading
+
+            logger.debug(
+                "spawn_context_thread unavailable; prefetch thread will run unscoped"
+            )
+            spawn = threading.Thread
+        else:
+            spawn = spawn_context_thread
+
+        def _run():
+            try:
+                self.prefetch(query, session_id=session_id, **kwargs)
+            except Exception as e:
+                # A background prefetch failure must be visible without being
+                # fatal; the turn does not depend on it.
+                logger.warning("Qdrant background prefetch failed: %s", e)
+
+        t = spawn(target=_run, name="qdrant-prefetch", daemon=True)
+        t.start()
+        self._prefetch_thread = t
+
+    def recall_status(self) -> RecallStatus:
+        """Return current recall state.
+
+        ``display.level`` (default ``off``) decides what the provider_label
+        carries, because core renders ``{glyph} {provider_label} — recalled
+        {count} memories`` and the metrics belong there: ``provider_label`` is
+        documented free text and interpolates verbatim, while ``glyph`` is a
+        symbol field no peer overrides (the decision recorded in the 0.1.8
+        spec). Facts added at ``summary`` and above: how fast (ms), from where
+        (collection), and — once any recall has been attempted — the session
+        hit-rate ``hits N/M`` (N results, M attempts; process lifetime). The
+        count stays core's.
+
+        At ``off`` — the default, and what every existing user has today — the
+        returned label is byte-identical to 0.1.7: ``self.name``, no metrics,
+        no collection, whatever the timing happens to be. Timing that does not
+        exist (first turn, or a failed recall) omits the ``· …ms`` segment
+        rather than printing a zero; the collection segment still stands.
+        """
+        label = self.name
+        if self._display_rank() >= _DISPLAY_RANK["summary"]:
+            ms = self._last_recall_ms
+            label = (
+                f"{self.name} · {ms}ms · {self._collection}"
+                if ms
+                else f"{self.name} · {self._collection}"
+            )
+            # The hit-rate segment waits for the first attempt: 0/0 is noise,
+            # exactly like the omitted-ms rule above.
+            if self._recall_attempts:
+                label += f" · hits {self._recall_hits}/{self._recall_attempts}"
+        return RecallStatus(
+            provider_label=label,
+            count=self._last_recall_count,
+            glyph="📖",
+        )
+
+    # -- Sync / Store --------------------------------------------------------
+
+    def sync_turn(
+        self,
+        user: str,
+        assistant: str,
+        *,
+        session_id: str = "",
+        messages: list | None = None,
+        turn_author: str = "",
+        **kwargs: Any,
+    ) -> None:
+        """Store the turn's content as a memory point in Qdrant."""
+        if not self._initialized or not self._client:
+            return
+
+        if self._is_breaker_open():
+            logger.debug("Circuit breaker open — skipping sync_turn")
+            return
+
+        self._emit_progress("memory_sync", "💾 qdrant — storing turn...", verbose=True)
+
+        t0 = time.monotonic()
+        try:
+            # Combine user + assistant for embedding
+            combined = f"user: {user}\nassistant: {assistant}"
+            dense_vec = self._embed(combined)
+
+            point_id = str(uuid.uuid4())
+            timestamp = datetime.now(UTC).isoformat()
+
+            # The payload is built once and reused: the upsert stores it, and
+            # display.level=verbose reports its serialized size — so the number
+            # logged is the bytes actually sent, not an estimate.
+            payload = {
+                "text": combined[:2000],  # Truncate for storage
+                "session_id": session_id,
+                "timestamp": timestamp,
+                "source": "sync_turn",
+                "turn_author": turn_author,
+            }
+            vector: dict[str, Any] = {"dense": dense_vec}
+            if self._hybrid_active:
+                try:
+                    vector[SPARSE_VECTOR_NAME] = self._embed_sparse(combined)
+                except EmbeddingError as e:
+                    # The memory is not optional; the sparse arm is.
+                    logger.warning(
+                        "hybrid: sparse embed failed, storing dense-only: %s", e,
+                    )
+            self._client.upsert(
+                collection_name=self._collection,
+                points=[
+                    {
+                        "id": point_id,
+                        "vector": vector,
+                        "payload": payload,
+                    }
+                ],
+                wait=True,
+            )
+            self._record_success()
+            store_ms = int((time.monotonic() - t0) * 1000)
+            self._note_status(
+                last_store=datetime.now(UTC).isoformat(),
+                last_store_ms=store_ms,
+            )
+
+            # Get the total point count for the progress message
+            try:
+                info = self._client.get_collection(self._collection)
+                count = info.points_count
+                self._emit_progress(
+                    "memory_sync", f"💾 qdrant — stored ({count:,} points)"
+                )
+            except Exception:
+                count = None
+                self._emit_progress("memory_sync", "💾 qdrant — stored")
+
+            if self._display_rank() >= _DISPLAY_RANK["verbose"]:
+                self._log_store(count, store_ms, payload)
+
+        except Exception as e:
+            self._record_failure()
+            self._note_status(
+                last_error=f"sync_turn: {e}"[:300],
+                last_error_at=datetime.now(UTC).isoformat(),
+            )
+            logger.warning("Qdrant sync_turn failed: %s", e)
+
+    def handle_tool_call(self, tool_name: str, args: dict, **kwargs: Any) -> str:
+        """Dispatch a Qdrant tool call."""
+        if tool_name == "qdrant_search":
+            return self._tool_search(args)
+        if tool_name == "qdrant_upsert":
+            return self._tool_upsert(args)
+        if tool_name == "qdrant_recall":
+            return self._tool_recall(args)
+        if tool_name == "qdrant_collect":
+            return self._tool_collect(args)
+        if tool_name == "qdrant_prepare":
+            return self._tool_prepare(args)
+        if tool_name == "qdrant_forget":
+            return self._tool_forget(args)
+        if tool_name == "md_search":
+            return self._tool_md_search(args)
+        return f"Unknown qdrant tool: {tool_name}"
+
+    # -- Tool implementations ------------------------------------------------
+
+    def _tool_search(self, args: dict) -> str:
+        """Semantic/hybrid search with optional filters."""
+        query = args.get("query", "")
+        session_id = args.get("session_id", "")
+        limit = _clamp_limit(args.get("limit"), 10, MAX_LIMIT_SEARCH)
+
+        if not query:
+            return "qdrant_search: missing 'query' parameter"
+
+        try:
+            dense_vec = self._embed(query)
+        except EmbeddingError as e:
+            # Explicit, actionable failure. Never "embedding failed" with no
+            # detail — that is the silent-degradation trap this replaced.
+            return f"qdrant_search: {e}"
+
+        try:
+            results = self._query_points(
+                dense_vec,
+                query,
+                {
+                    "must": [{"key": "session_id", "match": {"value": session_id}}]
+                } if session_id else None,
+                limit,
+            )
+            hits = results.points if hasattr(results, "points") else []
+            # The point ID is printed so a specific memory can later be
+            # targeted by qdrant_forget. Without it, forgetting is impossible
+            # for the agent — and "delete the whole collection" is not an
+            # acceptable substitute.
+            lines = [
+                f"[{pt.score:.2f}] ({pt.id}) {pt.payload.get('text', '')}"
+                for pt in hits
+                if hasattr(pt, "payload")
+            ]
+            return "\n".join(lines) if lines else "No results"
+        except Exception as e:
+            return f"qdrant_search error: {e}"
+
+    def _tool_upsert(self, args: dict) -> str:
+        """Store a memory point (text + metadata)."""
+        text = args.get("text", "")
+        session_id = args.get("session_id", "")
+        if not text:
+            return "qdrant_upsert: missing 'text' parameter"
+
+        try:
+            dense_vec = self._embed(text)
+        except EmbeddingError as e:
+            # A failed write must never look like a successful save.
+            return f"qdrant_upsert: {e}"
+
+        try:
+            point_id = str(uuid.uuid4())
+            vector: dict[str, Any] = {"dense": dense_vec}
+            if self._hybrid_active:
+                try:
+                    vector[SPARSE_VECTOR_NAME] = self._embed_sparse(text)
+                except EmbeddingError as e:
+                    logger.warning(
+                        "hybrid: sparse embed failed, storing dense-only: %s", e,
+                    )
+            self._client.upsert(
+                collection_name=self._collection,
+                points=[{
+                    "id": point_id,
+                    "vector": vector,
+                    "payload": {
+                        "text": text[:2000],
+                        "session_id": session_id,
+                        "timestamp": datetime.now(UTC).isoformat(),
+                        "source": "tool_upsert",
+                    },
+                }],
+                wait=True,
+            )
+            return f"qdrant_upsert: stored point {point_id}"
+        except Exception as e:
+            return f"qdrant_upsert error: {e}"
+
+    def _tool_recall(self, args: dict) -> str:
+        """Scroll/filtered bulk recall for a session."""
+        session_id = args.get("session_id", "")
+        limit = _clamp_limit(args.get("limit"), 100, MAX_LIMIT_RECALL)
+        if not session_id:
+            return "qdrant_recall: missing 'session_id' parameter"
+
+        try:
+            results, _ = self._client.scroll(
+                collection_name=self._collection,
+                scroll_filter={
+                    "must": [{"key": "session_id", "match": {"value": session_id}}]
+                },
+                limit=limit,
+                with_payload=True,
+            )
+            # A scroll has no query, so there is no similarity score — printing
+            # a fabricated [0.00] for every row would be a fake number. Show a
+            # score bracket only when the payload actually carries one.
+            lines = []
+            for pt in results:
+                if not hasattr(pt, "payload"):
+                    continue
+                payload = pt.payload or {}
+                text = payload.get("text", "")
+                if not text:
+                    continue
+                # Point ID included so qdrant_forget can target this row.
+                score = payload.get("score")
+                prefix = f"[{score:.2f}] " if isinstance(score, (int, float)) else ""
+                lines.append(f"{prefix}({pt.id}) {text}")
+            return "\n".join(lines) if lines else "No recalled memories"
+        except Exception as e:
+            return f"qdrant_recall error: {e}"
+
+    def _tool_forget(self, args: dict) -> str:
+        """Delete specific memories by point ID. Point-targeted only.
+
+        Two deliberate constraints:
+
+        * **No bulk action.** ``qdrant_collect`` removed its ``delete`` action
+          for the same reason: dropping a user's whole memory corpus is a
+          human decision. There is no delete-all, no delete-by-filter and no
+          delete-by-query here, only exact point IDs.
+        * **Dry run by default.** Without ``confirm: true`` this reports which
+          IDs exist and what they contain, and deletes nothing — so a
+          mis-reasoned call can be inspected before it is irreversible.
+        """
+        raw_ids = args.get("point_ids") or []
+        if isinstance(raw_ids, str):
+            raw_ids = [raw_ids]
+        if not raw_ids:
+            return ("qdrant_forget: missing 'point_ids' — pass exact point IDs "
+                    "from qdrant_search or qdrant_recall")
+        # A model-supplied ID can be anything; Qdrant point IDs are UUIDs or
+        # unsigned integers. Rejecting the rest keeps a stray value from
+        # reaching the client as a type error at best, or the wrong record at
+        # worst. Also caps the batch so this cannot become a bulk delete.
+        ids: list[str] = []
+        invalid: list[str] = []
+        for value in list(raw_ids)[:MAX_FORGET_BATCH]:
+            text = str(value).strip()
+            if not text:
+                continue
+            if _is_valid_point_id(text):
+                ids.append(text)
+            else:
+                invalid.append(text)
+        if not ids:
+            return (f"qdrant_forget: no valid point IDs among {raw_ids!r} — "
+                    f"IDs look like a UUID or an unsigned integer")
+
+        try:
+            existing = self._client.retrieve(
+                collection_name=self._collection,
+                ids=ids,
+                with_payload=True,
+                with_vectors=False,
+            )
+        except Exception as e:
+            return f"qdrant_forget error: {e}"
+
+        found = [p for p in (existing or []) if p is not None]
+        found_ids = {str(p.id) for p in found}
+        missing = [i for i in ids if i not in found_ids]
+
+        def _summary(point) -> str:
+            text = (getattr(point, "payload", None) or {}).get("text", "")
+            text = " ".join(str(text).split())
+            return text[:70] + ("…" if len(text) > 70 else "")
+
+        if not args.get("confirm"):
+            lines = [f"  {p.id}  {_summary(p)}" for p in found]
+            report = [f"qdrant_forget: DRY RUN — {len(found)} point(s) would be "
+                      f"deleted. Nothing was removed."]
+            if lines:
+                report.append("would delete:")
+                report.extend(lines)
+            if missing:
+                report.append(f"not found (ignored): {', '.join(missing)}")
+            if invalid:
+                report.append(f"ignored, not a valid point ID: {', '.join(invalid)}")
+            report.append("Re-run with confirm: true to delete.")
+            return "\n".join(report)
+
+        to_delete = [str(p.id) for p in found]
+        if not to_delete:
+            msg = f"qdrant_forget: nothing to delete — none of {ids} exist"
+            return msg + (f" (not found: {', '.join(missing)})" if missing else "")
+
+        try:
+            self._client.delete(
+                collection_name=self._collection,
+                points_selector=to_delete,
+                wait=True,
+            )
+        except Exception as e:
+            return f"qdrant_forget error: {e}"
+
+        result = f"qdrant_forget: deleted {len(to_delete)} point(s)"
+        if missing:
+            result += f"; {len(missing)} not found: {', '.join(missing)}"
+        if invalid:
+            result += f"; {len(invalid)} ignored as invalid IDs"
+        return result
+
+    def _tool_collect(self, args: dict) -> str:
+        """Collection inspection: list / info. Read-only by design.
+
+        The schema used to advertise a 'delete' action that no branch
+        implemented, so the model could call it and get "Unknown action".
+        Deliberately no destructive action here: this is the inspection tool
+        the agent can call unprompted, and dropping the user's whole memory
+        corpus should be a human decision. Deletion exists only as
+        ``qdrant_forget``, which is point-targeted and dry-run by default.
+        """
+        action = args.get("action", "list")
+        try:
+            if action == "list":
+                cols = [c.name for c in self._client.get_collections().collections]
+                return f"Collections: {', '.join(cols)}"
+            if action == "info":
+                name = args.get("collection") or self._collection
+                col = self._client.get_collection(name)
+                return f"Collection {name}: {col.points_count} points, {col.config}"
+            return f"Unknown action: {action} (supported: list, info)"
+        except Exception as e:
+            return f"qdrant_collect error: {e}"
+
+    def _tool_prepare(self, args: dict) -> str:
+        """Report embedder readiness, optionally downloading the model.
+
+        Returns a human-readable report. Failures are stated plainly rather
+        than folded into a generic error, because the whole point of this tool
+        is to tell the user what is actually wrong.
+        """
+        download = bool(args.get("download", False))
+        try:
+            return self.prepare_report(download=download)
+        except EmbeddingError as e:
+            return f"qdrant_prepare: {e}"
+        except Exception as e:
+            return f"qdrant_prepare error: {type(e).__name__}: {e}"
+
+    def _tool_md_search(self, args: dict) -> str:
+        """Search the local markdown corpus: FTS5 first, embeddings only if thin.
+
+        The lexical tier is tried first and unconditionally. It is a sqlite
+        query against an index built by ``scripts/md_ingest.py``, costs no model
+        load and no Qdrant round-trip, and for a keyword-shaped question (the
+        overwhelming majority of "where did I write X") it is the correct answer
+        rather than a fallback. ``mdsemantic`` is imported INSIDE this method, and
+        only after the lexical tier came back thin — that is the mechanism by
+        which the fast path provably cannot pay the ~240 MB model load, and it is
+        what ``test_mdsearch.py::test_fts_path_does_not_import_the_model`` pins.
+        """
+        query = str(args.get("query", "") or "").strip()
+        if not query:
+            return "md_search: missing 'query' parameter"
+        limit = _clamp_limit(args.get("limit"), 5, MAX_LIMIT_SEARCH)
+        root = str(args.get("root", "") or "").strip()
+        mode = str(args.get("semantic", "auto") or "auto").strip().lower()
+
+        try:
+            from . import mdsearch
+        except ImportError:  # bare-module load mode
+            import importlib.util
+            import os as _os
+            _spec = importlib.util.spec_from_file_location(
+                "duckwork_qdrant_mdsearch",
+                _os.path.join(_os.path.dirname(__file__), "mdsearch.py"))
+            if _spec is None or _spec.loader is None:
+                return "md_search: could not load the lexical index module"
+            mdsearch = importlib.util.module_from_spec(_spec)
+            _spec.loader.exec_module(mdsearch)
+
+        if not mdsearch.index_is_present():
+            return (
+                "md_search: no markdown index yet. Build it with "
+                "`python scripts/md_ingest.py` (lexical only — no model needed); "
+                f"expected at {mdsearch.db_path()}."
+            )
+
+        # 0.1.8: time the whole two-tier search, and record the tier DECISION
+        # the moment it is made (`route` is assigned right where want_semantic
+        # is decided). The finally-block is the single point that writes the
+        # record and emits the one numeric line display.level=verbose asks for,
+        # so every return path after the decision — including the "nothing
+        # matched" and "semantic tier unavailable" ones — is covered without
+        # duplicating the log call five times.
+        t_md = time.monotonic()
+        route: str | None = None
+        lines: list[str] = []
+        order: list[str] = []
+        try:
+            hits = mdsearch.search_lexical(query, limit=limit, root=root)
+            lines = [f"{h.path}  [{h.heading}]"
+                     + (f"\n  {h.snippet}" if h.snippet else "")
+                     for h in hits]
+            order = [h.path for h in hits]
+
+            # 'auto': only spend the model when the lexical tier is thin. One
+            # solid hit is usually the answer; three weak ones are usually
+            # noise.
+            semantic_note = ""
+            want_semantic = (mode == "always"
+                             or (mode == "auto" and len(hits) < 2))
+            # Tier recorded HERE, at the decision itself: which tier ran is the
+            # routing fact a user otherwise never sees.
+            route = "semantic" if want_semantic else "lexical"
+            if want_semantic:
+                try:
+                    from . import mdsemantic
+                except ImportError as exc:
+                    mdsemantic = None
+                    logger.info("md_search: semantic tier not importable — %s",
+                                exc)
+
+                semantic: list = []
+                if mdsemantic is not None:
+                    try:
+                        semantic = mdsemantic.search_semantic(
+                            query, limit=limit, root=root)
+                    except mdsemantic.DocsBackendUnavailable as exc:
+                        if mode == "always":
+                            return (
+                                "md_search: the semantic tier is unavailable "
+                                "and "
+                                f"semantic='always' forbids the lexical "
+                                f"answer. Cause: {exc}\n"
+                                + (
+                                    "\n".join(lines)
+                                    if lines
+                                    else "(no lexical matches either)"
+                                )
+                            )
+                        # Say the tier did NOT RUN, not that it found nothing.
+                        # Those are different facts and only one of them is
+                        # actionable.
+                        semantic_note = (
+                            f" (the semantic fallback did not run: {exc})"
+                        )
+                        logger.info(
+                            "md_search: semantic fallback skipped — %s", exc)
+
+                seen_paths = {h.path for h in hits}
+                for hit in semantic:
+                    if hit.path in seen_paths:
+                        continue
+                    seen_paths.add(hit.path)
+                    lines.append(
+                        f"{hit.path}  [{hit.heading}]  "
+                        f"(semantic {hit.score:.3f})"
+                    )
+                    order.append(hit.path)
+
+            if not lines:
+                if want_semantic and semantic_note:
+                    return (f"md_search: no markdown matches for {query!r}."
+                            f"{semantic_note}")
+                if want_semantic:
+                    return (
+                        f"md_search: no markdown matches for {query!r}. "
+                        "The semantic tier had nothing either."
+                    )
+                return f"md_search: no markdown matches for {query!r}."
+            tier = ("lexical" if not want_semantic
+                    else "lexical + semantic fallback")
+            return (f"md_search ({tier}, {len(lines)} result(s)):\n"
+                    + "\n".join(lines))
+        finally:
+            if route is not None:
+                self._log_md_search(
+                    query=query,
+                    route=route,
+                    ms=int((time.monotonic() - t_md) * 1000),
+                    hits=len(lines),
+                    top=order[0] if order else "",
+                )
+
+    # -- Config + Tool Schemas (ABC methods) --------------------------------
+
+    def get_tool_schemas(self) -> list[dict]:
+        """Return the tool schemas for this provider."""
+        from .tool_schemas import ALL_TOOL_SCHEMAS
+        return list(ALL_TOOL_SCHEMAS)
+
+    def save_config(self, values: dict, duckwork_home: str) -> None:
+        """Write provider config values to disk (``<DUCKWORK_HOME>/qdrant.json``).
+
+        Called by ``duckwork memory setup`` (duckwork_cli/memory_setup.py) and by the
+        dashboard's memory-provider route. The file lives in the profile home
+        rather than beside this module so the member directory stays byte-stable
+        — see :func:`_state_home`. ``duckwork_home`` is honoured when the wizard
+        passes one; an empty string (the standalone ``_setup.py``) falls back to
+        the process home.
+        """
+        import json as _json
+        import os as _os
+
+        cfg_path = _config_json_path(duckwork_home)
+        cfg_path.parent.mkdir(parents=True, exist_ok=True)
+        existing = {}
+        if cfg_path.exists():
+            try:
+                existing = _json.loads(cfg_path.read_text())
+            except Exception:
+                existing = {}
+        if not isinstance(existing, dict):
+            existing = {}
+
+        # Never persist a credential here. `api_key` arrives in `values` from
+        # a caller that does not know Duckwork reads it from the secret scope,
+        # and writing it here would put a plaintext key in a JSON file that
+        # the dashboard reads and `duckwork backup` copies. It reaches the
+        # provider through `QDRANT_API_KEY` via `get_secret()` instead, which
+        # is also where a rotated key lands without a re-save.
+        values = dict(values or {})
+        values.pop("api_key", None)
+        existing.update(values)
+
+        # If a previous version (or a hand edit) already wrote a key here,
+        # scrub it on the next save rather than leaving it in place.
+        if existing.pop("api_key", None) is not None:
+            logger.info(
+                "Removed a legacy api_key from %s; the key now comes from "
+                "QDRANT_API_KEY via the secret scope",
+                cfg_path,
+            )
+
+        # Atomic (tmp + replace) so a reader never sees a truncated file, and
+        # 0600 from creation rather than a chmod afterwards: a bare write_text
+        # at the default umask briefly exposes the contents to any local
+        # reader, and on a platform without POSIX modes the chmod was silently
+        # skipped, leaving the README's "0600" claim untrue.
+        tmp = cfg_path.with_name(cfg_path.name + ".tmp")
+        fd = _os.open(
+            tmp,
+            _os.O_WRONLY | _os.O_CREAT | _os.O_TRUNC,
+            0o600,
+        )
+        with _os.fdopen(fd, "w") as handle:
+            handle.write(_json.dumps(existing, indent=2))
+        _os.replace(tmp, cfg_path)
+
+    def backup_paths(self) -> list[str]:
+        """Paths outside DUCKWORK_HOME for duckwork backup/import (none for Qdrant)."""
+        return []
+
+    # -- Shutdown ------------------------------------------------------------
+
+    def shutdown(self) -> None:
+        """Close Qdrant client connection."""
+        if self._client is not None:
+            try:
+                self._client.close()
+            except Exception:
+                pass
+            self._client = None
+        self._initialized = False
+        logger.info("QdrantMemoryProvider shut down")
+
+    # -- Config --------------------------------------------------------------
+
+    @staticmethod
+    def get_config_schema() -> list[dict]:
+        """Return config field definitions for the dashboard/CLI.
+
+        Fields use the ``MemoryProvider`` contract's vocabulary: a ``key``
+        identifies the setting, ``type`` is the HTTP/dashboard kind
+        (``string``/``integer``/``select``/``secret``), and ``secret: True``
+        routes the value to ``.env``. Consumers are
+        ``duckwork_cli/memory_setup.py::_prompt_schema_fields`` and
+        ``duckwork_cli/web_server_memory.py::_normalize_memory_provider_schema``
+        — both index on ``field["key"]``, so a field without one silently
+        vanishes from the dashboard and hard-crashes the setup wizard.
+        """
+        return [
+            {
+                "key": "url",
+                "label": "Qdrant URL",
+                "type": "string",
+                "default": "http://localhost:6333",
+                "description": "Qdrant server URL (REST mode)",
+            },
+            {
+                "key": "api_key",
+                "label": "API Key",
+                "type": "secret",
+                "secret": True,
+                "default": "",
+                "env_var": "QDRANT_API_KEY",
+                "description": "Qdrant API key (cloud mode only)",
+            },
+            {
+                "key": "collection",
+                "label": "Collection Name",
+                "type": "string",
+                "default": "duckwork_memories",
+                "description": "Qdrant collection to use",
+            },
+            {
+                "key": "vector_size",
+                "label": "Vector Size",
+                "type": "integer",
+                "default": 384,
+                "minimum": 1,
+                "description": "Embedding dimension (match your embedder model)",
+            },
+            {
+                "key": "distance",
+                "label": "Distance Metric",
+                "type": "select",
+                "default": "Cosine",
+                "choices": ["Cosine", "Dot", "Euclid"],
+                "description": "Vector distance metric",
+            },
+            {
+                "key": "hybrid",
+                "label": "Hybrid Retrieval",
+                "type": "select",
+                "default": "off",
+                "choices": ["off", "on"],
+                "description": (
+                    "Dense + BM25 sparse search fused with RRF. Takes effect "
+                    "only for collections created with it on — Qdrant cannot "
+                    "add a sparse vector to an existing collection. Off "
+                    "(default) is dense-only."
+                ),
+            },
+            {
+                "key": "embedder",
+                "label": "Embedder",
+                "type": "select",
+                "default": "fastembed",
+                "choices": ["fastembed", "sentence-transformers"],
+                "description": (
+                    "Embedding backend. 'fastembed' (default) runs the model on "
+                    "ONNX Runtime — CPU-only, ~290 MB peak RSS, no CUDA build "
+                    "needed. 'sentence-transformers' uses PyTorch: ~2.2 GB peak "
+                    "RSS, but faster on a machine with a GPU. Both produce "
+                    "identical vectors for the same model."
+                ),
+            },
+            {
+                "key": "model",
+                "label": "Embedding Model",
+                "type": "string",
+                "default": DEFAULT_MODEL,
+                "description": (
+                    "Model checkpoint, passed explicitly to the backend. Never "
+                    "left blank: a library's own default model would silently "
+                    "embed in a different vector space and break recall."
+                ),
+            },
+            {
+                "key": "device",
+                "label": "Device",
+                "type": "select",
+                "default": "auto",
+                "choices": ["auto", "cpu", "cuda"],
+                "description": (
+                    "Compute device. 'auto' lets the backend choose (CPU for "
+                    "ONNX). 'cuda' requires a working CUDA provider and fails "
+                    "loudly if none is present."
+                ),
+            },
+            {
+                "key": "progress",
+                "label": "Progress Display",
+                "type": "select",
+                "default": "minimal",
+                "choices": ["off", "minimal", "verbose"],
+                "description": (
+                    "Progress display for memory operations. 'off' shows nothing. "
+                    "'minimal' shows completion events (stored, recalled N). "
+                    "'verbose' also shows start events (storing..., retrieving...)."
+                ),
+            },
+        ]
+
+    # -- Internal helpers ----------------------------------------------------
+
+    # -- Embedder ------------------------------------------------------------
+
+    def get_embedder(self) -> Embedder:
+        """Return the configured embedder, validating it on first use.
+
+        A bad backend or an empty model name is a deterministic configuration
+        error, so it raises here rather than being quietly replaced by some
+        other model.
+        """
+        if self._embedder_impl is None:
+            self._embedder_impl = Embedder(
+                backend=self._embedder,
+                model=self._model,
+                device=self._device,
+            )
+        return self._embedder_impl
+
+    def _embed(self, text: str) -> list[float]:
+        """Encode `text` to a dense vector.
+
+        Raises EmbeddingError (a config or runtime subclass) on every failure
+        path. It never returns None: a caller that received a vector can trust
+        that the text really was encoded, which the previous
+        ``try/except: return None`` could not guarantee.
+        """
+        embedder = self.get_embedder()
+        try:
+            vec = embedder.encode(text)
+        except EmbeddingConfigError:
+            # Tier 1: deterministic. Re-raise so the tool boundary can report
+            # it verbatim, and record it so /status goes red.
+            self._embed_error = (
+                f"embedder misconfigured: backend={self._embedder!r} "
+                f"model={self._model!r}"
+            )
+            logger.error("Qdrant embedder configuration error: %s",
+                         embedder, exc_info=True)
+            raise
+        except EmbeddingRuntimeError as e:
+            # Tier 2: transient. Do not raise-and-hide, do not return None —
+            # report loudly and let the caller decide whether to retry.
+            self._embed_error = str(e)
+            logger.error("Qdrant embedding failed (transient): %s", e)
+            raise
+        self._embed_error = ""
+        return vec
+
+    def _embed_sparse(self, text: str) -> Any:
+        """Encode `text` to the sparse (bm25) vector for hybrid search.
+
+        Lazy-loads fastembed's ``SparseTextEmbedding`` once per process
+        (10 MB model, cached after first download). Raises
+        ``EmbeddingRuntimeError`` carrying the underlying reason on every
+        failure path — callers decide what to do, and both write paths
+        choose to store dense-only rather than lose a memory.
+        """
+        if self._sparse_embedder is None:
+            try:
+                from fastembed import SparseTextEmbedding
+                self._sparse_embedder = SparseTextEmbedding(SPARSE_MODEL_NAME)
+            except Exception as e:
+                self._sparse_error = str(e)
+                raise EmbeddingRuntimeError(
+                    f"sparse embedder unavailable ({SPARSE_MODEL_NAME}): {e}"
+                ) from e
+        try:
+            from qdrant_client.models import SparseVector
+            sv = next(self._sparse_embedder.embed(text))
+            return SparseVector(
+                indices=sv.indices.tolist(), values=sv.values.tolist(),
+            )
+        except Exception as e:
+            self._sparse_error = str(e)
+            raise EmbeddingRuntimeError(f"sparse embed failed: {e}") from e
+
+    # -- Model preparation and validation -------------------------------------
+
+    def ensure_model(self, download: bool = False) -> tuple[bool, str]:
+        """Check the configured model is available locally, optionally fetching.
+
+        Returns ``(ok, message)`` where the message is written for a human, not
+        for a log file. Called from check_backend() so /status and the
+        dashboard report a missing model instead of showing green.
+
+        Presence is judged against the directory the backend LOADS from, and a
+        copy found anywhere else is named in the message — a stale copy in a
+        prunable ``$TMPDIR`` is precisely the case where "present" used to be a
+        lie that then downloaded 90 MB mid-session.
+        """
+        try:
+            embedder = self.get_embedder()
+        except EmbeddingConfigError as e:
+            self._embed_error = str(e)
+            return False, str(e)
+
+        cache = model_cache_dir(self._embedder)
+        present = model_is_present(self._model, backend=self._embedder)
+        stale: list[str] = []
+        if self._embedder == BACKEND_FASTEMBED:
+            stale = [str(p) for p in model_cache_locations(self._model)
+                     if str(p) != cache]
+
+        if present and not download:
+            return True, (f"model {self._model!r} is present "
+                          f"(backend {self._embedder}) in {cache}")
+
+        if not download:
+            stale_note = ""
+            if stale:
+                stale_note = (f" A copy sits in {', '.join(stale)}, but "
+                              f"{self._embedder} loads from {cache}, so it "
+                              f"will be downloaded there.")
+            msg = (f"model {self._model!r} not found in {cache!r}."
+                   f"{stale_note} "
+                   f"Run qdrant_prepare to download it, or set "
+                   f"memory.qdrant.model.")
+            self._embed_error = msg
+            return False, msg
+
+        # download=True: actually construct it, which fetches the weights.
+        if not present:
+            # Announce the fetch before it starts: the Hugging Face download
+            # bars otherwise appear out of nowhere in the middle of a turn.
+            self._emit_progress(
+                "model_sync",
+                f"⬇ qdrant — downloading embedding model to {cache}...",
+                verbose=True,
+            )
+        try:
+            dim = embedder.dimension()
+        except EmbeddingError as e:
+            self._embed_error = str(e)
+            return False, f"download failed: {e}"
+        self._emit_progress("model_sync", f"⬇ qdrant — model ready in {cache}")
+        msg = (f"model {self._model!r} ready (backend {self._embedder}, "
+               f"{dim} dims) in {cache}")
+        self._embed_error = ""
+        return True, msg
+
+    def validate_vector_spec(self) -> list[str]:
+        """Return user-facing problems/recommendations about the vector setup.
+
+        Deliberately returns prose lines, not booleans: the value is telling the
+        user what is wrong, which numbers disagree, and what to do about it.
+        Empty list means everything checks out.
+        """
+        issues: list[str] = []
+
+        # 1. model dimensionality vs configured vector_size
+        try:
+            model_dim = self.get_embedder().dimension()
+        except EmbeddingError as e:
+            issues.append(f"embedder unavailable: {e}")
+            model_dim = 0
+
+        if model_dim and self._vector_size != model_dim:
+            issues.append(
+                f"vector_size is {self._vector_size} but model "
+                f"{self._model!r} produces {model_dim} dimensions. "
+                f"Set memory.qdrant.vector_size to {model_dim} (and recreate the "
+                f"collection) or choose a {self._vector_size}-dim model."
+            )
+
+        # 2. distance metric
+        if self._distance != "Cosine":
+            issues.append(
+                f"distance is {self._distance!r}; sentence-embedding models "
+                "like all-MiniLM-L6-v2 expect 'Cosine' on L2-normalised "
+                "vectors. Other metrics change result ranking."
+            )
+
+        # 3. config vs the live collection — the silently-wrong-recall state
+        live = self._live_vector_spec()
+        if live:
+            live_size, live_dist = live
+            if model_dim and live_size and live_size != model_dim:
+                issues.append(
+                    f"collection {self._collection!r} stores {live_size}-dim "
+                    f"vectors but the configured model produces {model_dim}. "
+                    "Recall will be wrong until one of them changes."
+                )
+            if live_dist and live_dist.lower() != str(self._distance).lower():
+                issues.append(
+                    f"collection uses distance {live_dist!r} but config says "
+                    f"{self._distance!r}."
+                )
+        return issues
+
+    def _live_vector_spec(self) -> tuple[int, str] | None:
+        """Read the collection's actual vector size/distance, or None if unknown.
+
+        Opens its own short-lived client (same pattern as check_backend) rather
+        than reusing the provider's, so a validation run never disturbs a live
+        connection and never trips the circuit breaker.
+        """
+        try:
+            from qdrant_client import QdrantClient
+        except ImportError:
+            return None
+        if not self._url:
+            return None
+
+        client = None
+        try:
+            client = QdrantClient(url=self._url, api_key=self._api_key or None,
+                                  prefer_grpc=False, timeout=5)
+            info = client.get_collection(self._collection)
+            raw = info.config.params.vectors
+            spec = None
+            if isinstance(raw, dict):
+                spec = raw.get("dense")
+            elif raw is not None:
+                # Unnamed/single vector config — surface its size anyway.
+                spec = {"size": getattr(raw, "size", None),
+                        "distance": getattr(raw, "distance", None)}
+            if spec is None:
+                return None
+            size = int(getattr(spec, "size", 0) or 0)
+            dist = str(getattr(spec, "distance", "") or "")
+            return (size, dist) if size else None
+        except Exception as e:
+            logger.debug("live vector spec unavailable: %s", e)
+            return None
+        finally:
+            if client is not None:
+                try:
+                    client.close()
+                except Exception:
+                    pass
+
+    def prepare_report(self, download: bool = False) -> str:
+        """Human-readable readiness report combining presence and spec checks."""
+        lines: list[str] = []
+        ok, msg = self.ensure_model(download=download)
+        lines.append(("OK  " if ok else "FAIL") + f"  model: {msg}")
+        lines.append(f"      backend={self._embedder!r} model={self._model!r} "
+                     f"device={self._device!r} "
+                     f"cache={model_cache_dir(self._embedder)!r}")
+
+        live = self._live_vector_spec()
+        if live:
+            lines.append(f"      collection {self._collection!r}: "
+                         f"{live[0]} dims, {live[1]}")
+        else:
+            lines.append(f"      collection {self._collection!r}: not reachable")
+
+        for issue in self.validate_vector_spec():
+            lines.append(f"WARN  {issue}")
+        return "\n".join(lines)
+
+    def _is_breaker_open(self) -> bool:
+        """Check if the circuit breaker is open."""
+        if self._breaker_failures < self._BREAKER_THRESHOLD:
+            return False
+        import time
+        if time.time() < self._breaker_open_until:
+            return True
+        # Cooldown expired — half-open
+        self._breaker_failures = 0
+        self._breaker_open_until = 0.0
+        return False
+
+    def _record_success(self) -> None:
+        self._breaker_failures = 0
+        self._breaker_open_until = 0.0
+
+    def _record_failure(self) -> None:
+        self._breaker_failures += 1
+        if self._breaker_failures >= self._BREAKER_THRESHOLD:
+            import time
+            self._breaker_open_until = time.time() + self._BREAKER_COOLDOWN_SECS
+            logger.warning("Circuit breaker OPEN for %ds", self._BREAKER_COOLDOWN_SECS)
+
+    # -- Progress display ----------------------------------------------------
+
+    def _emit_progress(
+        self, event_type: str, message: str, *, verbose: bool = False
+    ) -> None:
+        """Emit a progress event via status_callback if enabled.
+
+        The progress mode controls what is shown:
+        - "off": no progress events
+        - "minimal": only completion events (default)
+        - "verbose": both start and completion events
+
+        This is called from sync_turn and prefetch to give the user visible
+        feedback that the memory plugin is working. The status_callback is
+        passed by the orchestrator (agent_init.py:1284) and renders in the
+        CLI/TUI/gateway interface.
+        """
+        if self._progress_mode == "off":
+            return
+        if verbose and self._progress_mode != "verbose":
+            return
+        if self._status_callback is None:
+            return
+        try:
+            self._status_callback(event_type, message)
+        except Exception:
+            # A progress display failure must never break memory operations
+            pass
+
+    # -- Display levels (0.1.8) ---------------------------------------------
+
+    def _display_rank(self) -> int:
+        """0 = ``off``, 1 = ``summary``, 2 = ``verbose`` — resolved per call.
+
+        Never raises: display is observability, and observability must not be
+        able to take a memory operation down — the same rule
+        :meth:`_note_status` obeys for its status-file writes.
+        """
+        try:
+            return _DISPLAY_RANK[display_level(self._duckwork_home or None)]
+        except Exception:
+            return 0
+
+    def _log_recall(self, count: int, ms: int, pairs: list,
+                    session_id: str) -> None:
+        """One numeric recall record — emitted only at ``display.level=verbose``.
+
+        Spec rule c2, read strictly: scores, latencies, the session id and the
+        collection name are numbers and identifiers, a recalled message's text
+        is not — contents stay core's ``display.memory_notifications`` domain
+        and must never be duplicated into agent.log. This line therefore says
+        HOW the recall went, never WHAT came back.
+        """
+        scores = ""
+        if pairs:
+            values = [score for score, _ in pairs]
+            scores = f" (scores {min(values):.2f}–{max(values):.2f})"
+        window = ""
+        ordered = sorted(self._recall_ms_window)
+        if len(ordered) >= 2:
+            window = (
+                f" p50={_percentile(ordered, 50)}ms"
+                f" p95={_percentile(ordered, 95)}ms"
+            )
+        logger.info(
+            "recall %d pts in %d ms%s%s session=%s collection=%s",
+            count, ms, scores, window, session_id or "-", self._collection,
+        )
+
+    def _log_store(self, count: int | None, ms: int, payload: dict) -> None:
+        """One numeric store record — emitted only at ``display.level=verbose``.
+
+        *count* is the live collection size (the same figure the chat line
+        shows) or ``None`` when the server did not answer, in which case the
+        segment is omitted rather than printed as a zero — the shape mirrors
+        the chat fallback, "stored (N points)" vs "stored".
+        """
+        import json as _json
+        try:
+            size = len(_json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+        except (TypeError, ValueError):
+            size = 0
+        points = f"{count:,} pts " if count is not None else ""
+        size_seg = f" (+{size} B payload)" if size else ""
+        logger.info(
+            "stored %sin %d ms%s collection=%s",
+            points, ms, size_seg, self._collection,
+        )
+
+    def _log_md_search(self, *, query: str, route: str, ms: int, hits: int,
+                       top: str) -> None:
+        """Record an md_search outcome, then log it at ``level=verbose``.
+
+        The record is written unconditionally — tier and latency are state,
+        not a display choice — so the routing decision is inspectable even
+        when nothing is logged. The LINE is emitted only at verbose, and it
+        carries the tier the decision point assigned (``lexical`` /
+        ``semantic``), the latency, the hit count and the top file label: no
+        snippet, no chunk, no heading (c2).
+        """
+        self._last_md_search = {
+            "tier": route, "ms": ms, "hits": hits, "top": top,
+        }
+        if self._display_rank() < _DISPLAY_RANK["verbose"]:
+            return
+        # The query is echoed the way the spec's example line does — the tool
+        # echoes it in its own result too — while every RESULT field stays a
+        # number or a file label.
+        top_seg = f" (top={top})" if top else ""
+        logger.info(
+            'md_search "%s" → %s %d ms, %d hits%s',
+            query, route, ms, hits, top_seg,
+        )
+
+    def _status_json_path(self) -> Any:
+        """``<DUCKWORK_HOME>/qdrant-status.json`` — outside the plugin member dir.
+
+        Was ``<plugin dir>/status.json``, which is rewritten on every
+        store/recall and therefore re-synced the venv on every launch (see
+        :func:`_state_home`). Not a staticmethod any more: the profile home
+        comes from ``initialize()``'s scoping kwargs.
+        """
+        home = _state_home(getattr(self, "_duckwork_home", "") or None)
+        return home / "qdrant-status.json"
+
+    def _note_status(self, **fields: Any) -> None:
+        """Merge last-operation bookkeeping into ``qdrant-status.json`` — best effort.
+
+        Small atomic write (tmp + os.replace) so a reader never sees a
+        truncated file, and a failure here is swallowed: observability must
+        never break memory operations. This is the answer to a peer project's
+        silent-failure class (mnemosyne #1033: weeks of no writes while every
+        health surface said healthy) — 'when did this last store/recall?' has
+        to be answerable after the fact, from a fresh process.
+        """
+        import json as _json
+        import os as _os
+        path = self._status_json_path()
+        state: dict = {}
+        try:
+            if path.exists():
+                state = _json.loads(path.read_text())
+                if not isinstance(state, dict):
+                    state = {}
+        except Exception:
+            state = {}
+        state.update(fields)
+        try:
+            tmp = path.with_suffix(".json.tmp")
+            tmp.write_text(_json.dumps(state, indent=1))
+            _os.replace(tmp, path)
+        except Exception as e:
+            logger.debug("qdrant-status.json write failed (non-fatal): %s", e)
+
+    def get_status_config(self, provider_config: dict) -> dict:
+        """Config block for `duckwork memory status` (core calls this hook).
+
+        Config keys the CLI cannot know by itself, plus the last store/recall
+        from ``<DUCKWORK_HOME>/qdrant-status.json`` so a fresh process can answer
+        "is this thing alive?" without a live connection. api_key is never
+        displayed.
+        """
+        import json as _json
+        cfg = dict(provider_config or {})
+        display = {
+            "url": cfg.get("url", self._url),
+            "collection": cfg.get("collection", self._collection),
+            "embedder": cfg.get("embedder", self._embedder),
+            "model": cfg.get("model", self._model),
+            "vector_size": cfg.get("vector_size", self._vector_size),
+            "distance": cfg.get("distance", self._distance),
+            "progress": cfg.get("progress", self._progress_mode),
+            # Hybrid (0.1.9, opt-in): names its own states instead of
+            # collapsing "requested but impossible" into "off".
+            "hybrid": (
+                "on" if self._hybrid_active
+                else "off" if not self._hybrid_requested
+                else "inactive: collection has no sparse vector"
+                if self._initialized
+                else "pending initialization"
+            ),
+            # display.level lives in qdrant.json, not in the flat provider
+            # config, so it is resolved the same way recall_status() does —
+            # one source of truth, and `duckwork memory status` can answer
+            # "what is this thing showing me?" for a fresh process.
+            "display": display_level(self._duckwork_home or None),
+            "api_key": "(set)" if cfg.get("api_key") or self._api_key else "(unset)",
+            # Session metrics (0.1.9): honest zeros in a fresh process — these
+            # are process-lifetime counters, not persisted state.
+            "recall_attempts": self._recall_attempts,
+            "recall_hits": self._recall_hits,
+            "breaker_failures": self._breaker_failures,
+            "breaker_open": self._is_breaker_open(),
+        }
+        # Latency percentiles only once a recall completed — an empty window
+        # omits the keys instead of reporting a fake 0 (the omitted-ms rule).
+        if self._recall_ms_window:
+            ordered = sorted(self._recall_ms_window)
+            display["recall_ms_p50"] = _percentile(ordered, 50)
+            display["recall_ms_p95"] = _percentile(ordered, 95)
+        try:
+            if self._status_json_path().exists():
+                state = _json.loads(self._status_json_path().read_text())
+                if isinstance(state, dict):
+                    display.update({
+                        key: state[key]
+                        for key in ("last_store", "last_store_ms",
+                                    "last_recall", "last_recall_count",
+                                    "last_error")
+                        if key in state
+                    })
+        except Exception:
+            pass
+        return display
+
+
+# ---------------------------------------------------------------------------
+# Registration
+# ---------------------------------------------------------------------------
+
+def register(ctx: Any) -> None:
+    """Register the QdrantMemoryProvider with Duckwork.
+
+    ``md_search`` is registered HERE as a general plugin tool, in addition to
+    appearing in the provider's ``get_tool_schemas()``. The duplication is
+    deliberate and load-bearing:
+
+    * The provider path is gated on ``memory.provider == qdrant`` AND on the
+      ``memory`` toolset being exposed (see
+      ``agent.memory_manager.inject_memory_provider_tools``).
+    * ``ctx.register_tool`` is not: under the general PluginManager it is
+      independent of the active memory provider.
+
+    Measured 2026-10-02 on this host, scratch homes, both configurations
+    (probe scripts under ``~/.duckwork/profiles/qd/cache/scratch/probe_crux.py``):
+
+    ==================  =================  ================================
+    manifest ``kind``   memory.provider    ``md_search`` in tool registry
+    ==================  =================  ================================
+    ``exclusive``       ``qdrant``        yes
+    ``exclusive``       other             NO  — register() never ran
+    ``standalone``      ``qdrant``        yes
+    ``standalone``      other             yes
+    ==================  =================  ================================
+
+    With ``kind: exclusive`` the general discovery SKIPS the plugin
+    (``gate_manifest``: "exclusive plugin — activate via <category>.provider
+    config"), so ``register()`` runs only on the memory-activation path and the
+    tool dies with the provider. That is why this exists AND why an earlier
+    recommendation of mine, which claimed ``register()`` ran under general
+    discovery, was wrong — the 04:50:04 log line it was based on was the memory
+    activation path, not discovery.
+
+    Both registrations are safe: the registry is keyed by name and the second
+    registration of an identical tool is a no-op or a harmless refresh, while the
+    provider surface is a separate list appended by
+    ``inject_memory_provider_tools``.
+    """
+    provider = QdrantMemoryProvider()
+    ctx.register_memory_provider(provider)
+    logger.info("QdrantMemoryProvider registered via ctx.register_memory_provider")
+
+    # md_search as a general tool. Guarded because register() is called from two
+    # different contexts (general discovery and the memory _ProviderCollector)
+    # and only the former has a real register_tool; a provider activated purely
+    # through memory activation must not lose the tool for that reason.
+    if hasattr(ctx, "register_tool"):
+        try:
+            ctx.register_tool(
+                name="md_search",
+                toolset="qdrant",
+                schema=_md_search_schema(),
+                handler=_md_search_handler(provider),
+                description="Search the local markdown corpus (FTS5 first, "
+                            "multilingual embedding fallback).",
+            )
+            logger.info("Plugin qdrant registered tool: md_search")
+        except Exception as exc:
+            # A secondary registration must never cost the provider itself.
+            logger.warning("Plugin qdrant failed to register md_search: %s", exc)
+
+
+def _md_search_schema() -> dict:
+    from .tool_schemas import MD_SEARCH_SCHEMA
+
+    return dict(MD_SEARCH_SCHEMA)
+
+
+def _md_search_handler(provider: QdrantMemoryProvider):
+    """A registry handler delegating to the provider's ``md_search`` branch."""
+
+    def _handle(args: dict | None = None, **kwargs: Any) -> str:
+        return provider.handle_tool_call("md_search", dict(args or {}))
+
+    _handle.__name__ = "md_search"
+    return _handle

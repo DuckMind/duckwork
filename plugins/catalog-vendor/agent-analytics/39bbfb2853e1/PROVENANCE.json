@@ -1,0 +1,1067 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "agent-analytics",
+  "content_id": "39bbfb2853e1",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 59,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "e8806c830bdd83469943dc8c32b6b49a24a5895f4c0ecf3649a8e290ff1bce89"
+    },
+    {
+      "bytes": 1072,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "dc223721ab54d356efce4934b2e8b4df11e23a850d7dd9744928bdb3fd170caa"
+    },
+    {
+      "bytes": 1375,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "9463b4a1cd7976398ce76a410ae1e042b29719c56008876645f9a26518e320c3"
+    },
+    {
+      "bytes": 379,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "9fba9353e80e982be61d6e5bac57bcffcc95905a6bc0fffbf22b3411fbbd1ba3"
+    },
+    {
+      "bytes": 52,
+      "mode": "100644",
+      "path": "dashboard/__init__.py",
+      "sha256": "477079b18a86af28e818a77a3abd29150a49f18abfd89506b473f17c2f6998ab"
+    },
+    {
+      "bytes": 35664,
+      "mode": "100644",
+      "path": "dashboard/dist/agent-analytics-icon-bw-transparent.png",
+      "sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a"
+    },
+    {
+      "bytes": 48064,
+      "mode": "100644",
+      "path": "dashboard/dist/agent-analytics-icon-sidebar.png",
+      "sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a"
+    },
+    {
+      "bytes": 85015,
+      "mode": "100644",
+      "path": "dashboard/dist/agent-analytics-icon-transparent.png",
+      "sha256": "f9068c71c228eb0f08aaf6f047f07c168224aaef91183f9f2269e4ff44824b01"
+    },
+    {
+      "bytes": 273240,
+      "mode": "100644",
+      "path": "dashboard/dist/agent-analytics-logo-primary-transparent.png",
+      "sha256": "20460d64c58528830aa9db68492c29ee2c68f0aad9b2c5dced829f8d3a6b0195"
+    },
+    {
+      "bytes": 32324,
+      "mode": "100644",
+      "path": "dashboard/dist/agent-analytics-wordmark-white-transparent.png",
+      "sha256": "cb9c4b55de131846bf30aa3b02aabe50c86b004b6784955d9ef5602f5ccb4bb6"
+    },
+    {
+      "bytes": 25680,
+      "mode": "100644",
+      "path": "dashboard/dist/index.js",
+      "sha256": "0a80a399014403d3e1264154f5567ca90e2a100be378b93bd9ee45b707abf628"
+    },
+    {
+      "bytes": 14218,
+      "mode": "100644",
+      "path": "dashboard/dist/style.css",
+      "sha256": "6a6bff3c79737108b6bd15dff0cd237c0e8c23d6d9f139f2ad848c40b56cdbf3"
+    },
+    {
+      "bytes": 432,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "745ef191eaa6922c05623a8f6c7ec7555c572915bc14d24f7cdd755b086b36b9"
+    },
+    {
+      "bytes": 15203,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "f10b15ee8a51e3e81d5c6268f5b7c788d2b93bdf549284fee67dd621b241de9d"
+    },
+    {
+      "bytes": 176336,
+      "mode": "100644",
+      "path": "package-lock.json",
+      "sha256": "310ce53f1a8e5fc1cad666671b080cc65da513831e44e30a6414cb2c1a062f78"
+    },
+    {
+      "bytes": 1258,
+      "mode": "100644",
+      "path": "package.json",
+      "sha256": "0c4415f521a0f6eda51cae2f22cb47019882cc068f4a098382924cb77e1a1eb5"
+    },
+    {
+      "bytes": 175,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "1ea2f25253f898c1cc1fff078cce8e3f3b0a1468752edd7fa5caacad1fcfaab9"
+    },
+    {
+      "bytes": 1479,
+      "mode": "100644",
+      "path": "scripts/build.mjs",
+      "sha256": "b8dd4bbe34e062fb6de1ee6572535b7a2f226a883ffa01885f1fdc01bf1f7dae"
+    },
+    {
+      "bytes": 35664,
+      "mode": "100644",
+      "path": "src/dashboard/assets/agent-analytics-icon-bw-transparent.png",
+      "sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a"
+    },
+    {
+      "bytes": 48064,
+      "mode": "100644",
+      "path": "src/dashboard/assets/agent-analytics-icon-sidebar.png",
+      "sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a"
+    },
+    {
+      "bytes": 19270,
+      "mode": "100644",
+      "path": "src/dashboard/index.js",
+      "sha256": "86004d1fe708c3d578a066e0f4897421b5421f1d431f8af369308ef194de76bf"
+    },
+    {
+      "bytes": 446,
+      "mode": "100644",
+      "path": "src/dashboard/state-model.mjs",
+      "sha256": "21aa1e795c87e0e8d16468611847520c793f78febf63f59b4a8f2c5bed2bcb00"
+    },
+    {
+      "bytes": 9751,
+      "mode": "100644",
+      "path": "src/dashboard/style.css",
+      "sha256": "cd00dede9e42f12c20bb465debb611f52b3b38f04e6db64c039ecb5da3d2d28a"
+    },
+    {
+      "bytes": 1798,
+      "mode": "100644",
+      "path": "src/dashboard/summary-model.mjs",
+      "sha256": "9f6d4b6e159021dc3ba84c3ea288c49b618f3576d5d728217a4e22a183ae3c54"
+    },
+    {
+      "bytes": 1146,
+      "mode": "100644",
+      "path": "src/dashboard/telemetry.mjs",
+      "sha256": "97c330786f600f734f880d4b0580d764cdef59c4f195624758d7e6942fef264a"
+    },
+    {
+      "bytes": 2187,
+      "mode": "100644",
+      "path": "src/dashboard/theme-model.mjs",
+      "sha256": "373345a7561970fcf91deb0a79a5ed31bba6407d8c229a301a432d3dcdebf469"
+    },
+    {
+      "bytes": 724,
+      "mode": "100644",
+      "path": "src/dashboard/view-model.mjs",
+      "sha256": "5bf17eb2d88a76630e52774df91eeaffee228e7ace545ecc39a35d0140b713a1"
+    },
+    {
+      "bytes": 2315,
+      "mode": "100644",
+      "path": "tests/js/manifest.test.mjs",
+      "sha256": "8208cb41e15abeb0221e785529a1beae0c014e9ec8e8bcadc7a420d54d139676"
+    },
+    {
+      "bytes": 1201,
+      "mode": "100644",
+      "path": "tests/js/state-model.test.mjs",
+      "sha256": "4af251b38cd723516b2fae43de3fca43e45e420ec949cb0997d5084a40702c76"
+    },
+    {
+      "bytes": 1358,
+      "mode": "100644",
+      "path": "tests/js/style-contract.test.mjs",
+      "sha256": "89785d3494c68f0ae21ea2ba222fec96a1acedf240f3aff2e77bc35b55d7fa57"
+    },
+    {
+      "bytes": 1721,
+      "mode": "100644",
+      "path": "tests/js/summary-model.test.mjs",
+      "sha256": "60fb254d5960ebd312bdc6e4c6304d0decf5b4b80ada38f613c9141f5565471e"
+    },
+    {
+      "bytes": 1667,
+      "mode": "100644",
+      "path": "tests/js/telemetry.test.mjs",
+      "sha256": "ae5a4acc501877648573449b687487af4bef992a30bc74e7a77550eea49bab8c"
+    },
+    {
+      "bytes": 1736,
+      "mode": "100644",
+      "path": "tests/js/theme-model.test.mjs",
+      "sha256": "7f6946e3a3e44f063d2a86fa47cda00a4023dc803f6a86aa55a7648fc9dbf427"
+    },
+    {
+      "bytes": 1554,
+      "mode": "100644",
+      "path": "tests/js/view-model.test.mjs",
+      "sha256": "1e69ec9229adcae467a7bd868d15e60ca932cc29af6a2679d31a882dadf06f09"
+    },
+    {
+      "bytes": 18984,
+      "mode": "100644",
+      "path": "tests/python/test_plugin_api.py",
+      "sha256": "605aa276d332ade7faba825018b6b86108a4185d8339851538a9724be2bf7c19"
+    }
+  ],
+  "input_manifest_sha256": "39bbfb2853e1317312c5ff189fa6ecc9dd660f952ade63c2f05402c4f3c2cdad",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "dc223721ab54d356efce4934b2e8b4df11e23a850d7dd9744928bdb3fd170caa",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "dashboard/__init__.py",
+      "dashboard/dist/index.js",
+      "dashboard/dist/style.css",
+      "dashboard/manifest.json",
+      "dashboard/plugin_api.py",
+      "package-lock.json",
+      "package.json",
+      "plugin.yaml",
+      "src/dashboard/index.js",
+      "src/dashboard/style.css",
+      "src/dashboard/telemetry.mjs",
+      "src/dashboard/theme-model.mjs",
+      "tests/js/manifest.test.mjs",
+      "tests/js/style-contract.test.mjs",
+      "tests/js/telemetry.test.mjs",
+      "tests/js/theme-model.test.mjs",
+      "tests/python/test_plugin_api.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Agent-Analytics/agent-analytics-hermes-plugin",
+    "sha": "63f11d3669330e40dad977b7d32f9b69e69a9fb8",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/Agent-Analytics/agent-analytics-hermes-plugin",
+  "original_sha": "63f11d3669330e40dad977b7d32f9b69e69a9fb8",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "e8806c830bdd83469943dc8c32b6b49a24a5895f4c0ecf3649a8e290ff1bce89",
+      "bytes": 59,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "dc223721ab54d356efce4934b2e8b4df11e23a850d7dd9744928bdb3fd170caa",
+      "bytes": 1072,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "1cd3bdb8db7b8c623e3eb703d758a9f7d9ae76798fa6cc8a43c478e2f761c177",
+      "bytes": 1409,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "5aff480bb9e432027cfdc618305c19c33778ec52f05ec943f7477d9d32d575b1",
+      "bytes": 385,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/__init__.py",
+      "sha256": "5bcef2fabbdd502d004fdb0a3555c9a47722d1454ed12743c8dbc5bf884e0878",
+      "bytes": 54,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/agent-analytics-icon-bw-transparent.png",
+      "sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a",
+      "bytes": 35664,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/agent-analytics-icon-sidebar.png",
+      "sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a",
+      "bytes": 48064,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/agent-analytics-icon-transparent.png",
+      "sha256": "f9068c71c228eb0f08aaf6f047f07c168224aaef91183f9f2269e4ff44824b01",
+      "bytes": 85015,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/agent-analytics-logo-primary-transparent.png",
+      "sha256": "20460d64c58528830aa9db68492c29ee2c68f0aad9b2c5dced829f8d3a6b0195",
+      "bytes": 273240,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/agent-analytics-wordmark-white-transparent.png",
+      "sha256": "cb9c4b55de131846bf30aa3b02aabe50c86b004b6784955d9ef5602f5ccb4bb6",
+      "bytes": 32324,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/index.js",
+      "sha256": "8cb36e84c00bfee621879f177efdf95894a2f1192ae7e3d39c4d127be3579400",
+      "bytes": 26007,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/style.css",
+      "sha256": "56e0f3669d6d726917ce41c30b04a858254500c227c7d3a403cf69cbbb1a7f41",
+      "bytes": 14428,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "96cd4641d5c0692f4ae7263614e31770f45a379f5841cb0f5aa7d7895a01c3fa",
+      "bytes": 434,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "c58164a23dad87cb5e228add21899759a60f5598478ddd810cdcde7e6ca7061c",
+      "bytes": 15184,
+      "mode": "100644"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "3bc63981e79efac0b4aba54c1a0c07947873a43977b2250256d555117698997a",
+      "bytes": 176340,
+      "mode": "100644"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ed205a0c4f05bd882c5a7c37318effae6082929cb45aa9215104ad2274283e90",
+      "bytes": 1196,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "fdcd30d71105b105ddb1a40a08b2e9d5f8f5c1eebfc2c71ef623f91eeb7f2b63",
+      "bytes": 177,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/build.mjs",
+      "sha256": "b8dd4bbe34e062fb6de1ee6572535b7a2f226a883ffa01885f1fdc01bf1f7dae",
+      "bytes": 1479,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/assets/agent-analytics-icon-bw-transparent.png",
+      "sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a",
+      "bytes": 35664,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/assets/agent-analytics-icon-sidebar.png",
+      "sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a",
+      "bytes": 48064,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/index.js",
+      "sha256": "01732f1e99cb45b7ad45a5441167443edc8ca5b0d6ad46c1463cc619f2d81d98",
+      "bytes": 19567,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/state-model.mjs",
+      "sha256": "21aa1e795c87e0e8d16468611847520c793f78febf63f59b4a8f2c5bed2bcb00",
+      "bytes": 446,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/style.css",
+      "sha256": "25c5a14237a89c1db6b1612ec762548cfe7356567314b99c7fbb6e220663c440",
+      "bytes": 9961,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/summary-model.mjs",
+      "sha256": "9f6d4b6e159021dc3ba84c3ea288c49b618f3576d5d728217a4e22a183ae3c54",
+      "bytes": 1798,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/telemetry.mjs",
+      "sha256": "8c37d82fb635e98d98010fa1a95acb87023131f204a2e036adcd7a599df3e47b",
+      "bytes": 1170,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/theme-model.mjs",
+      "sha256": "e9132b2334356978f344e0f286a1d92a74602334e0b1042705f73a4450539a1e",
+      "bytes": 2203,
+      "mode": "100644"
+    },
+    {
+      "path": "src/dashboard/view-model.mjs",
+      "sha256": "5bf17eb2d88a76630e52774df91eeaffee228e7ace545ecc39a35d0140b713a1",
+      "bytes": 724,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/js/manifest.test.mjs",
+      "sha256": "94d65b622911eada72ba4f7c9a35bb45262d1d4c29025965633e468914cdcbfd",
+      "bytes": 2319,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/js/state-model.test.mjs",
+      "sha256": "4af251b38cd723516b2fae43de3fca43e45e420ec949cb0997d5084a40702c76",
+      "bytes": 1201,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/js/style-contract.test.mjs",
+      "sha256": "8e69993f55b62633a9d775105f028b3de5c5a70421c8a68db9d7a77fac4c4106",
+      "bytes": 1366,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/js/summary-model.test.mjs",
+      "sha256": "60fb254d5960ebd312bdc6e4c6304d0decf5b4b80ada38f613c9141f5565471e",
+      "bytes": 1721,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/js/telemetry.test.mjs",
+      "sha256": "abd8bf11a63518f7e54d56c66f55be1eb2c5ce3aba10219a1a279ee414363804",
+      "bytes": 1717,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/js/theme-model.test.mjs",
+      "sha256": "5551252b02abd6029a4deabfafd120c22e74bf982d5c8a6a7db4bcd9d4ce8127",
+      "bytes": 1758,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/js/view-model.test.mjs",
+      "sha256": "1e69ec9229adcae467a7bd868d15e60ca932cc29af6a2679d31a882dadf06f09",
+      "bytes": 1554,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/python/test_plugin_api.py",
+      "sha256": "a45ccf2cab12c00c7e63e14cc0f94d99db6486c30ce1daa3669e95d337a36e51",
+      "bytes": 18979,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "59e60d8ab8578c7f2762b97a113c1dd15176ba6d420f4fb41cc198b09704867a",
+  "pin_verification": {
+    "archive_bytes": 623972,
+    "archive_sha256": "0e525e0611d35465c82c1453c1bcb1898913b31d33be1fdc121685d63f6bcf41",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "63f11d3669330e40dad977b7d32f9b69e69a9fb8",
+    "verified_commit_marker": "63f11d3669330e40dad977b7d32f9b69e69a9fb8"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "87a0db29424b100507dd24b5aa9109ad96bdf55b41819f69b639f4992a9b2044",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "e8806c830bdd83469943dc8c32b6b49a24a5895f4c0ecf3649a8e290ff1bce89",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e8806c830bdd83469943dc8c32b6b49a24a5895f4c0ecf3649a8e290ff1bce89",
+        "source": ".gitignore",
+        "final_output_sha256": "e8806c830bdd83469943dc8c32b6b49a24a5895f4c0ecf3649a8e290ff1bce89",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "e8806c830bdd83469943dc8c32b6b49a24a5895f4c0ecf3649a8e290ff1bce89"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "dc223721ab54d356efce4934b2e8b4df11e23a850d7dd9744928bdb3fd170caa",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "dc223721ab54d356efce4934b2e8b4df11e23a850d7dd9744928bdb3fd170caa",
+        "source": "LICENSE",
+        "final_output_sha256": "dc223721ab54d356efce4934b2e8b4df11e23a850d7dd9744928bdb3fd170caa",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "dc223721ab54d356efce4934b2e8b4df11e23a850d7dd9744928bdb3fd170caa"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "9463b4a1cd7976398ce76a410ae1e042b29719c56008876645f9a26518e320c3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1cd3bdb8db7b8c623e3eb703d758a9f7d9ae76798fa6cc8a43c478e2f761c177",
+        "source": "README.md",
+        "final_output_sha256": "1cd3bdb8db7b8c623e3eb703d758a9f7d9ae76798fa6cc8a43c478e2f761c177",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "1cd3bdb8db7b8c623e3eb703d758a9f7d9ae76798fa6cc8a43c478e2f761c177"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "9fba9353e80e982be61d6e5bac57bcffcc95905a6bc0fffbf22b3411fbbd1ba3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5aff480bb9e432027cfdc618305c19c33778ec52f05ec943f7477d9d32d575b1",
+        "source": "__init__.py",
+        "final_output_sha256": "5aff480bb9e432027cfdc618305c19c33778ec52f05ec943f7477d9d32d575b1",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "5aff480bb9e432027cfdc618305c19c33778ec52f05ec943f7477d9d32d575b1"
+      },
+      {
+        "destination": "dashboard/__init__.py",
+        "input_sha256": "477079b18a86af28e818a77a3abd29150a49f18abfd89506b473f17c2f6998ab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5bcef2fabbdd502d004fdb0a3555c9a47722d1454ed12743c8dbc5bf884e0878",
+        "source": "dashboard/__init__.py",
+        "final_output_sha256": "5bcef2fabbdd502d004fdb0a3555c9a47722d1454ed12743c8dbc5bf884e0878",
+        "cli_destination": "dashboard/__init__.py",
+        "previous_staging_sha256": "5bcef2fabbdd502d004fdb0a3555c9a47722d1454ed12743c8dbc5bf884e0878"
+      },
+      {
+        "destination": "dashboard/dist/agent-analytics-icon-bw-transparent.png",
+        "input_sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a",
+        "source": "dashboard/dist/agent-analytics-icon-bw-transparent.png",
+        "final_output_sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a",
+        "cli_destination": "dashboard/dist/agent-analytics-icon-bw-transparent.png",
+        "previous_staging_sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a"
+      },
+      {
+        "destination": "dashboard/dist/agent-analytics-icon-sidebar.png",
+        "input_sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a",
+        "source": "dashboard/dist/agent-analytics-icon-sidebar.png",
+        "final_output_sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a",
+        "cli_destination": "dashboard/dist/agent-analytics-icon-sidebar.png",
+        "previous_staging_sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a"
+      },
+      {
+        "destination": "dashboard/dist/agent-analytics-icon-transparent.png",
+        "input_sha256": "f9068c71c228eb0f08aaf6f047f07c168224aaef91183f9f2269e4ff44824b01",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f9068c71c228eb0f08aaf6f047f07c168224aaef91183f9f2269e4ff44824b01",
+        "source": "dashboard/dist/agent-analytics-icon-transparent.png",
+        "final_output_sha256": "f9068c71c228eb0f08aaf6f047f07c168224aaef91183f9f2269e4ff44824b01",
+        "cli_destination": "dashboard/dist/agent-analytics-icon-transparent.png",
+        "previous_staging_sha256": "f9068c71c228eb0f08aaf6f047f07c168224aaef91183f9f2269e4ff44824b01"
+      },
+      {
+        "destination": "dashboard/dist/agent-analytics-logo-primary-transparent.png",
+        "input_sha256": "20460d64c58528830aa9db68492c29ee2c68f0aad9b2c5dced829f8d3a6b0195",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "20460d64c58528830aa9db68492c29ee2c68f0aad9b2c5dced829f8d3a6b0195",
+        "source": "dashboard/dist/agent-analytics-logo-primary-transparent.png",
+        "final_output_sha256": "20460d64c58528830aa9db68492c29ee2c68f0aad9b2c5dced829f8d3a6b0195",
+        "cli_destination": "dashboard/dist/agent-analytics-logo-primary-transparent.png",
+        "previous_staging_sha256": "20460d64c58528830aa9db68492c29ee2c68f0aad9b2c5dced829f8d3a6b0195"
+      },
+      {
+        "destination": "dashboard/dist/agent-analytics-wordmark-white-transparent.png",
+        "input_sha256": "cb9c4b55de131846bf30aa3b02aabe50c86b004b6784955d9ef5602f5ccb4bb6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cb9c4b55de131846bf30aa3b02aabe50c86b004b6784955d9ef5602f5ccb4bb6",
+        "source": "dashboard/dist/agent-analytics-wordmark-white-transparent.png",
+        "final_output_sha256": "cb9c4b55de131846bf30aa3b02aabe50c86b004b6784955d9ef5602f5ccb4bb6",
+        "cli_destination": "dashboard/dist/agent-analytics-wordmark-white-transparent.png",
+        "previous_staging_sha256": "cb9c4b55de131846bf30aa3b02aabe50c86b004b6784955d9ef5602f5ccb4bb6"
+      },
+      {
+        "destination": "dashboard/dist/index.js",
+        "input_sha256": "0a80a399014403d3e1264154f5567ca90e2a100be378b93bd9ee45b707abf628",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "34d0cd80c6d069275fcb98a6ced3c816418c69035f513898c07c30bcd0f34694",
+        "source": "dashboard/dist/index.js",
+        "final_output_sha256": "8cb36e84c00bfee621879f177efdf95894a2f1192ae7e3d39c4d127be3579400",
+        "cli_destination": "dashboard/dist/index.js",
+        "previous_staging_sha256": "34d0cd80c6d069275fcb98a6ced3c816418c69035f513898c07c30bcd0f34694"
+      },
+      {
+        "destination": "dashboard/dist/style.css",
+        "input_sha256": "6a6bff3c79737108b6bd15dff0cd237c0e8c23d6d9f139f2ad848c40b56cdbf3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "56e0f3669d6d726917ce41c30b04a858254500c227c7d3a403cf69cbbb1a7f41",
+        "source": "dashboard/dist/style.css",
+        "final_output_sha256": "56e0f3669d6d726917ce41c30b04a858254500c227c7d3a403cf69cbbb1a7f41",
+        "cli_destination": "dashboard/dist/style.css",
+        "previous_staging_sha256": "56e0f3669d6d726917ce41c30b04a858254500c227c7d3a403cf69cbbb1a7f41"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "745ef191eaa6922c05623a8f6c7ec7555c572915bc14d24f7cdd755b086b36b9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "96cd4641d5c0692f4ae7263614e31770f45a379f5841cb0f5aa7d7895a01c3fa",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "96cd4641d5c0692f4ae7263614e31770f45a379f5841cb0f5aa7d7895a01c3fa",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "96cd4641d5c0692f4ae7263614e31770f45a379f5841cb0f5aa7d7895a01c3fa"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "f10b15ee8a51e3e81d5c6268f5b7c788d2b93bdf549284fee67dd621b241de9d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "495bedad1dd44b0ae42116644d532775999eca6e0c8d7f44f5d7a74fa60a03d1",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "c58164a23dad87cb5e228add21899759a60f5598478ddd810cdcde7e6ca7061c",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "495bedad1dd44b0ae42116644d532775999eca6e0c8d7f44f5d7a74fa60a03d1"
+      },
+      {
+        "destination": "package-lock.json",
+        "input_sha256": "310ce53f1a8e5fc1cad666671b080cc65da513831e44e30a6414cb2c1a062f78",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3bc63981e79efac0b4aba54c1a0c07947873a43977b2250256d555117698997a",
+        "source": "package-lock.json",
+        "final_output_sha256": "3bc63981e79efac0b4aba54c1a0c07947873a43977b2250256d555117698997a",
+        "cli_destination": "package-lock.json",
+        "previous_staging_sha256": "3bc63981e79efac0b4aba54c1a0c07947873a43977b2250256d555117698997a"
+      },
+      {
+        "destination": "package.json",
+        "input_sha256": "0c4415f521a0f6eda51cae2f22cb47019882cc068f4a098382924cb77e1a1eb5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "17b41b67eab1d8dc42a4624356603d487bc6590db967295037960c0408882758",
+        "source": "package.json",
+        "final_output_sha256": "ed205a0c4f05bd882c5a7c37318effae6082929cb45aa9215104ad2274283e90",
+        "cli_destination": "package.json",
+        "previous_staging_sha256": "17b41b67eab1d8dc42a4624356603d487bc6590db967295037960c0408882758"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "1ea2f25253f898c1cc1fff078cce8e3f3b0a1468752edd7fa5caacad1fcfaab9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fdcd30d71105b105ddb1a40a08b2e9d5f8f5c1eebfc2c71ef623f91eeb7f2b63",
+        "source": "plugin.yaml",
+        "final_output_sha256": "fdcd30d71105b105ddb1a40a08b2e9d5f8f5c1eebfc2c71ef623f91eeb7f2b63",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "fdcd30d71105b105ddb1a40a08b2e9d5f8f5c1eebfc2c71ef623f91eeb7f2b63"
+      },
+      {
+        "destination": "scripts/build.mjs",
+        "input_sha256": "b8dd4bbe34e062fb6de1ee6572535b7a2f226a883ffa01885f1fdc01bf1f7dae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b8dd4bbe34e062fb6de1ee6572535b7a2f226a883ffa01885f1fdc01bf1f7dae",
+        "source": "scripts/build.mjs",
+        "final_output_sha256": "b8dd4bbe34e062fb6de1ee6572535b7a2f226a883ffa01885f1fdc01bf1f7dae",
+        "cli_destination": "scripts/build.mjs",
+        "previous_staging_sha256": "b8dd4bbe34e062fb6de1ee6572535b7a2f226a883ffa01885f1fdc01bf1f7dae"
+      },
+      {
+        "destination": "src/dashboard/assets/agent-analytics-icon-bw-transparent.png",
+        "input_sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a",
+        "source": "src/dashboard/assets/agent-analytics-icon-bw-transparent.png",
+        "final_output_sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a",
+        "cli_destination": "src/dashboard/assets/agent-analytics-icon-bw-transparent.png",
+        "previous_staging_sha256": "5278dd225cc006d3283b4c15fb053cba37cd1b996ac3275ddd16242f1667440a"
+      },
+      {
+        "destination": "src/dashboard/assets/agent-analytics-icon-sidebar.png",
+        "input_sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a",
+        "source": "src/dashboard/assets/agent-analytics-icon-sidebar.png",
+        "final_output_sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a",
+        "cli_destination": "src/dashboard/assets/agent-analytics-icon-sidebar.png",
+        "previous_staging_sha256": "3c599ff10373ad512aa5d084363e8171ac2fcf76d5d2d684f0e9d7e521ac7a2a"
+      },
+      {
+        "destination": "src/dashboard/index.js",
+        "input_sha256": "86004d1fe708c3d578a066e0f4897421b5421f1d431f8af369308ef194de76bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "14afaae2e792b2d407332f341f3688bc98a8b4cfdd2d985d54175298ddac12b7",
+        "source": "src/dashboard/index.js",
+        "final_output_sha256": "01732f1e99cb45b7ad45a5441167443edc8ca5b0d6ad46c1463cc619f2d81d98",
+        "cli_destination": "src/dashboard/index.js",
+        "previous_staging_sha256": "14afaae2e792b2d407332f341f3688bc98a8b4cfdd2d985d54175298ddac12b7"
+      },
+      {
+        "destination": "src/dashboard/state-model.mjs",
+        "input_sha256": "21aa1e795c87e0e8d16468611847520c793f78febf63f59b4a8f2c5bed2bcb00",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "21aa1e795c87e0e8d16468611847520c793f78febf63f59b4a8f2c5bed2bcb00",
+        "source": "src/dashboard/state-model.mjs",
+        "final_output_sha256": "21aa1e795c87e0e8d16468611847520c793f78febf63f59b4a8f2c5bed2bcb00",
+        "cli_destination": "src/dashboard/state-model.mjs",
+        "previous_staging_sha256": "21aa1e795c87e0e8d16468611847520c793f78febf63f59b4a8f2c5bed2bcb00"
+      },
+      {
+        "destination": "src/dashboard/style.css",
+        "input_sha256": "cd00dede9e42f12c20bb465debb611f52b3b38f04e6db64c039ecb5da3d2d28a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "25c5a14237a89c1db6b1612ec762548cfe7356567314b99c7fbb6e220663c440",
+        "source": "src/dashboard/style.css",
+        "final_output_sha256": "25c5a14237a89c1db6b1612ec762548cfe7356567314b99c7fbb6e220663c440",
+        "cli_destination": "src/dashboard/style.css",
+        "previous_staging_sha256": "25c5a14237a89c1db6b1612ec762548cfe7356567314b99c7fbb6e220663c440"
+      },
+      {
+        "destination": "src/dashboard/summary-model.mjs",
+        "input_sha256": "9f6d4b6e159021dc3ba84c3ea288c49b618f3576d5d728217a4e22a183ae3c54",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9f6d4b6e159021dc3ba84c3ea288c49b618f3576d5d728217a4e22a183ae3c54",
+        "source": "src/dashboard/summary-model.mjs",
+        "final_output_sha256": "9f6d4b6e159021dc3ba84c3ea288c49b618f3576d5d728217a4e22a183ae3c54",
+        "cli_destination": "src/dashboard/summary-model.mjs",
+        "previous_staging_sha256": "9f6d4b6e159021dc3ba84c3ea288c49b618f3576d5d728217a4e22a183ae3c54"
+      },
+      {
+        "destination": "src/dashboard/telemetry.mjs",
+        "input_sha256": "97c330786f600f734f880d4b0580d764cdef59c4f195624758d7e6942fef264a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8c37d82fb635e98d98010fa1a95acb87023131f204a2e036adcd7a599df3e47b",
+        "source": "src/dashboard/telemetry.mjs",
+        "final_output_sha256": "8c37d82fb635e98d98010fa1a95acb87023131f204a2e036adcd7a599df3e47b",
+        "cli_destination": "src/dashboard/telemetry.mjs",
+        "previous_staging_sha256": "8c37d82fb635e98d98010fa1a95acb87023131f204a2e036adcd7a599df3e47b"
+      },
+      {
+        "destination": "src/dashboard/theme-model.mjs",
+        "input_sha256": "373345a7561970fcf91deb0a79a5ed31bba6407d8c229a301a432d3dcdebf469",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e9132b2334356978f344e0f286a1d92a74602334e0b1042705f73a4450539a1e",
+        "source": "src/dashboard/theme-model.mjs",
+        "final_output_sha256": "e9132b2334356978f344e0f286a1d92a74602334e0b1042705f73a4450539a1e",
+        "cli_destination": "src/dashboard/theme-model.mjs",
+        "previous_staging_sha256": "e9132b2334356978f344e0f286a1d92a74602334e0b1042705f73a4450539a1e"
+      },
+      {
+        "destination": "src/dashboard/view-model.mjs",
+        "input_sha256": "5bf17eb2d88a76630e52774df91eeaffee228e7ace545ecc39a35d0140b713a1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5bf17eb2d88a76630e52774df91eeaffee228e7ace545ecc39a35d0140b713a1",
+        "source": "src/dashboard/view-model.mjs",
+        "final_output_sha256": "5bf17eb2d88a76630e52774df91eeaffee228e7ace545ecc39a35d0140b713a1",
+        "cli_destination": "src/dashboard/view-model.mjs",
+        "previous_staging_sha256": "5bf17eb2d88a76630e52774df91eeaffee228e7ace545ecc39a35d0140b713a1"
+      },
+      {
+        "destination": "tests/js/manifest.test.mjs",
+        "input_sha256": "8208cb41e15abeb0221e785529a1beae0c014e9ec8e8bcadc7a420d54d139676",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "94d65b622911eada72ba4f7c9a35bb45262d1d4c29025965633e468914cdcbfd",
+        "source": "tests/js/manifest.test.mjs",
+        "final_output_sha256": "94d65b622911eada72ba4f7c9a35bb45262d1d4c29025965633e468914cdcbfd",
+        "cli_destination": "tests/js/manifest.test.mjs",
+        "previous_staging_sha256": "94d65b622911eada72ba4f7c9a35bb45262d1d4c29025965633e468914cdcbfd"
+      },
+      {
+        "destination": "tests/js/state-model.test.mjs",
+        "input_sha256": "4af251b38cd723516b2fae43de3fca43e45e420ec949cb0997d5084a40702c76",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4af251b38cd723516b2fae43de3fca43e45e420ec949cb0997d5084a40702c76",
+        "source": "tests/js/state-model.test.mjs",
+        "final_output_sha256": "4af251b38cd723516b2fae43de3fca43e45e420ec949cb0997d5084a40702c76",
+        "cli_destination": "tests/js/state-model.test.mjs",
+        "previous_staging_sha256": "4af251b38cd723516b2fae43de3fca43e45e420ec949cb0997d5084a40702c76"
+      },
+      {
+        "destination": "tests/js/style-contract.test.mjs",
+        "input_sha256": "89785d3494c68f0ae21ea2ba222fec96a1acedf240f3aff2e77bc35b55d7fa57",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8e69993f55b62633a9d775105f028b3de5c5a70421c8a68db9d7a77fac4c4106",
+        "source": "tests/js/style-contract.test.mjs",
+        "final_output_sha256": "8e69993f55b62633a9d775105f028b3de5c5a70421c8a68db9d7a77fac4c4106",
+        "cli_destination": "tests/js/style-contract.test.mjs",
+        "previous_staging_sha256": "8e69993f55b62633a9d775105f028b3de5c5a70421c8a68db9d7a77fac4c4106"
+      },
+      {
+        "destination": "tests/js/summary-model.test.mjs",
+        "input_sha256": "60fb254d5960ebd312bdc6e4c6304d0decf5b4b80ada38f613c9141f5565471e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "60fb254d5960ebd312bdc6e4c6304d0decf5b4b80ada38f613c9141f5565471e",
+        "source": "tests/js/summary-model.test.mjs",
+        "final_output_sha256": "60fb254d5960ebd312bdc6e4c6304d0decf5b4b80ada38f613c9141f5565471e",
+        "cli_destination": "tests/js/summary-model.test.mjs",
+        "previous_staging_sha256": "60fb254d5960ebd312bdc6e4c6304d0decf5b4b80ada38f613c9141f5565471e"
+      },
+      {
+        "destination": "tests/js/telemetry.test.mjs",
+        "input_sha256": "ae5a4acc501877648573449b687487af4bef992a30bc74e7a77550eea49bab8c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "abd8bf11a63518f7e54d56c66f55be1eb2c5ce3aba10219a1a279ee414363804",
+        "source": "tests/js/telemetry.test.mjs",
+        "final_output_sha256": "abd8bf11a63518f7e54d56c66f55be1eb2c5ce3aba10219a1a279ee414363804",
+        "cli_destination": "tests/js/telemetry.test.mjs",
+        "previous_staging_sha256": "abd8bf11a63518f7e54d56c66f55be1eb2c5ce3aba10219a1a279ee414363804"
+      },
+      {
+        "destination": "tests/js/theme-model.test.mjs",
+        "input_sha256": "7f6946e3a3e44f063d2a86fa47cda00a4023dc803f6a86aa55a7648fc9dbf427",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5551252b02abd6029a4deabfafd120c22e74bf982d5c8a6a7db4bcd9d4ce8127",
+        "source": "tests/js/theme-model.test.mjs",
+        "final_output_sha256": "5551252b02abd6029a4deabfafd120c22e74bf982d5c8a6a7db4bcd9d4ce8127",
+        "cli_destination": "tests/js/theme-model.test.mjs",
+        "previous_staging_sha256": "5551252b02abd6029a4deabfafd120c22e74bf982d5c8a6a7db4bcd9d4ce8127"
+      },
+      {
+        "destination": "tests/js/view-model.test.mjs",
+        "input_sha256": "1e69ec9229adcae467a7bd868d15e60ca932cc29af6a2679d31a882dadf06f09",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1e69ec9229adcae467a7bd868d15e60ca932cc29af6a2679d31a882dadf06f09",
+        "source": "tests/js/view-model.test.mjs",
+        "final_output_sha256": "1e69ec9229adcae467a7bd868d15e60ca932cc29af6a2679d31a882dadf06f09",
+        "cli_destination": "tests/js/view-model.test.mjs",
+        "previous_staging_sha256": "1e69ec9229adcae467a7bd868d15e60ca932cc29af6a2679d31a882dadf06f09"
+      },
+      {
+        "destination": "tests/python/test_plugin_api.py",
+        "input_sha256": "605aa276d332ade7faba825018b6b86108a4185d8339851538a9724be2bf7c19",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "40a7b84d3d6ebda5011c039963981f4d1c0ac80cf44bfb4cfd7845c4cffebc2d",
+        "source": "tests/python/test_plugin_api.py",
+        "final_output_sha256": "a45ccf2cab12c00c7e63e14cc0f94d99db6486c30ce1daa3669e95d337a36e51",
+        "cli_destination": "tests/python/test_plugin_api.py",
+        "previous_staging_sha256": "40a7b84d3d6ebda5011c039963981f4d1c0ac80cf44bfb4cfd7845c4cffebc2d"
+      }
+    ],
+    "manifest_sha256": "7ce29bf759f0690e39df13396352926bb70206fde1b7bbe374a4c20cf76a2f86",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "dashboard/__init__.py": "dashboard/__init__.py",
+    "dashboard/dist/agent-analytics-icon-bw-transparent.png": "dashboard/dist/agent-analytics-icon-bw-transparent.png",
+    "dashboard/dist/agent-analytics-icon-sidebar.png": "dashboard/dist/agent-analytics-icon-sidebar.png",
+    "dashboard/dist/agent-analytics-icon-transparent.png": "dashboard/dist/agent-analytics-icon-transparent.png",
+    "dashboard/dist/agent-analytics-logo-primary-transparent.png": "dashboard/dist/agent-analytics-logo-primary-transparent.png",
+    "dashboard/dist/agent-analytics-wordmark-white-transparent.png": "dashboard/dist/agent-analytics-wordmark-white-transparent.png",
+    "dashboard/dist/index.js": "dashboard/dist/index.js",
+    "dashboard/dist/style.css": "dashboard/dist/style.css",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "package-lock.json": "package-lock.json",
+    "package.json": "package.json",
+    "plugin.yaml": "plugin.yaml",
+    "scripts/build.mjs": "scripts/build.mjs",
+    "src/dashboard/assets/agent-analytics-icon-bw-transparent.png": "src/dashboard/assets/agent-analytics-icon-bw-transparent.png",
+    "src/dashboard/assets/agent-analytics-icon-sidebar.png": "src/dashboard/assets/agent-analytics-icon-sidebar.png",
+    "src/dashboard/index.js": "src/dashboard/index.js",
+    "src/dashboard/state-model.mjs": "src/dashboard/state-model.mjs",
+    "src/dashboard/style.css": "src/dashboard/style.css",
+    "src/dashboard/summary-model.mjs": "src/dashboard/summary-model.mjs",
+    "src/dashboard/telemetry.mjs": "src/dashboard/telemetry.mjs",
+    "src/dashboard/theme-model.mjs": "src/dashboard/theme-model.mjs",
+    "src/dashboard/view-model.mjs": "src/dashboard/view-model.mjs",
+    "tests/js/manifest.test.mjs": "tests/js/manifest.test.mjs",
+    "tests/js/state-model.test.mjs": "tests/js/state-model.test.mjs",
+    "tests/js/style-contract.test.mjs": "tests/js/style-contract.test.mjs",
+    "tests/js/summary-model.test.mjs": "tests/js/summary-model.test.mjs",
+    "tests/js/telemetry.test.mjs": "tests/js/telemetry.test.mjs",
+    "tests/js/theme-model.test.mjs": "tests/js/theme-model.test.mjs",
+    "tests/js/view-model.test.mjs": "tests/js/view-model.test.mjs",
+    "tests/python/test_plugin_api.py": "tests/python/test_plugin_api.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "agent-analytics",
+    "python_files_compiled": 4,
+    "secret_findings": 0
+  },
+  "canonical_slug": "agent-analytics",
+  "catalog_file": "src/plugin-catalog/agent-analytics.yaml",
+  "identity": {
+    "catalog_id": "agent-analytics",
+    "canonical_slug": "agent-analytics",
+    "original_manifest_name": "agent-analytics",
+    "rebranded_manifest_name": "agent-analytics",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "ae742976629053c9e1b9551bd295ab9ca383711d253a51bf390532bfd60f27c9",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "dashboard/dist/index.js",
+          "after_path": "dashboard/dist/index.js",
+          "before_sha256": "34d0cd80c6d069275fcb98a6ced3c816418c69035f513898c07c30bcd0f34694",
+          "after_sha256": "8cb36e84c00bfee621879f177efdf95894a2f1192ae7e3d39c4d127be3579400",
+          "before_bytes": 26022,
+          "after_bytes": 26007,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "dashboard/plugin_api.py",
+          "after_path": "dashboard/plugin_api.py",
+          "before_sha256": "495bedad1dd44b0ae42116644d532775999eca6e0c8d7f44f5d7a74fa60a03d1",
+          "after_sha256": "c58164a23dad87cb5e228add21899759a60f5598478ddd810cdcde7e6ca7061c",
+          "before_bytes": 15227,
+          "after_bytes": 15184,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "package.json",
+          "after_path": "package.json",
+          "before_sha256": "17b41b67eab1d8dc42a4624356603d487bc6590db967295037960c0408882758",
+          "after_sha256": "5ed3a456380fc8ea1ceeec381867b486fb8478656ac34ae4ad77c23abfb8a9da",
+          "before_bytes": 1266,
+          "after_bytes": 1160,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "src/dashboard/index.js",
+          "after_path": "src/dashboard/index.js",
+          "before_sha256": "14afaae2e792b2d407332f341f3688bc98a8b4cfdd2d985d54175298ddac12b7",
+          "after_sha256": "01732f1e99cb45b7ad45a5441167443edc8ca5b0d6ad46c1463cc619f2d81d98",
+          "before_bytes": 19582,
+          "after_bytes": 19567,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "tests/python/test_plugin_api.py",
+          "after_path": "tests/python/test_plugin_api.py",
+          "before_sha256": "40a7b84d3d6ebda5011c039963981f4d1c0ac80cf44bfb4cfd7845c4cffebc2d",
+          "after_sha256": "a45ccf2cab12c00c7e63e14cc0f94d99db6486c30ce1daa3669e95d337a36e51",
+          "before_bytes": 18994,
+          "after_bytes": 18979,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    },
+    {
+      "revision": "r46-external-package-wire-review",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "798a3d08060609c5d4c2f5caa0aa945f12a34bd3a2ffdf5b1bd132b5aa28e798",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "package.json",
+          "after_path": "package.json",
+          "before_sha256": "5ed3a456380fc8ea1ceeec381867b486fb8478656ac34ae4ad77c23abfb8a9da",
+          "after_sha256": "ed205a0c4f05bd882c5a7c37318effae6082929cb45aa9215104ad2274283e90",
+          "before_bytes": 1160,
+          "after_bytes": 1196,
+          "operation": "preserve-external-package-and-wire-contract",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "package.json": [
+      {
+        "value": "git+https://github.com/Agent-Analytics/agent-analytics-hermes-plugin.git",
+        "reason": "external npm/PyPI Git dependency source coordinate; renaming would request a different package"
+      }
+    ]
+  }
+}

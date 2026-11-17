@@ -1,0 +1,14 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: little-canary
+version: 0.4.0
+description: Screen Duckwork Agent turns with Little Canary and block tools on a BLOCK verdict
+author: roli-lpci (Hermes Labs; independent of Nous Research)
+requires_duckwork: ">=0.21.3"
+python_dependencies:
+  - requests>=2.32.5,<3
+license: Apache-2.0
+homepage: https://github.com/DuckMind/duckwork
+provides_hooks:
+  - pre_llm_call
+  - pre_tool_call
+  - on_session_end

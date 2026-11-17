@@ -1,0 +1,19 @@
+name: sketch-pad
+version: 0.1.1
+manifest_version: 1
+api_version: 1
+description: >
+  Desktop sketch pad: draw a shape with the mouse, confirm, and the PNG is
+  attached to the next Duckwork chat message. No API keys.
+author: aydnOktay
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21"
+tags: [desktop, sketch, drawing, vision, tools]
+provides_tools:
+  - sketch_pad_last
+config_schema:
+  max_bytes:
+    type: int
+    default: 800000
+    description: Maximum PNG size accepted from the desktop pad.

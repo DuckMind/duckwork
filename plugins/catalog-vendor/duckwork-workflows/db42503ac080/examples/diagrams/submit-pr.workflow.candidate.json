@@ -1,0 +1,291 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Takes an existing branch and owns only what happens between 'code exists' and 'PR opened'",
+        "Validate before submit: the second half of upstream-engagement, detached from the first",
+        "Halt gates abort before any write to the forge"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "13 nodes, 5 gates, 4 branches: validate -> halt pair -> push -> PR -> audit",
+        "Assumes commits on head_branch came from anywhere \u2014 issue-to-pr, hand session, any builder",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "preflight",
+      "id": "preflight-route-preflight",
+      "to": "route-preflight",
+      "variant": "security"
+    },
+    {
+      "from": "route-preflight-halt",
+      "id": "route-preflight-halt-preflight-halt",
+      "to": "preflight-halt",
+      "variant": "default"
+    },
+    {
+      "from": "route-preflight",
+      "id": "route-preflight-validate",
+      "to": "validate",
+      "variant": "default"
+    },
+    {
+      "from": "validate",
+      "id": "validate-route-validated",
+      "to": "route-validated",
+      "variant": "security"
+    },
+    {
+      "from": "route-validate-red",
+      "id": "route-validate-red-validate-halt",
+      "to": "validate-halt",
+      "variant": "default"
+    },
+    {
+      "from": "route-validated",
+      "id": "route-validated-draft",
+      "to": "draft",
+      "variant": "default"
+    },
+    {
+      "from": "draft",
+      "id": "draft-approve",
+      "to": "approve",
+      "variant": "default"
+    },
+    {
+      "from": "approve",
+      "id": "approve-submit",
+      "to": "submit",
+      "variant": "default"
+    },
+    {
+      "from": "submit",
+      "id": "submit-verify-pr",
+      "to": "verify-pr",
+      "variant": "default"
+    },
+    {
+      "from": "preflight-halt",
+      "id": "preflight-halt-verify-pr",
+      "to": "verify-pr",
+      "variant": "default"
+    },
+    {
+      "from": "validate-halt",
+      "id": "validate-halt-verify-pr",
+      "to": "verify-pr",
+      "variant": "default"
+    },
+    {
+      "from": "verify-pr",
+      "id": "verify-pr-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "preflight-halt",
+      "id": "preflight-halt-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "validate-halt",
+      "id": "validate-halt-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "preflight",
+      "id": "preflight-route-preflight-halt",
+      "to": "route-preflight-halt",
+      "variant": "security"
+    },
+    {
+      "from": "validate",
+      "id": "validate-route-validate-red",
+      "to": "route-validate-red",
+      "variant": "security"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "gates",
+      "label": "Gates",
+      "variant": "normal"
+    },
+    {
+      "id": "room",
+      "label": "Deterministic",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/submit-pr.html",
+    "quality_profile": "standard",
+    "subtitle": "Reusable *->PR stub: validate a finished branch and submit it upstream as a PR. The second half of upstream-en",
+    "title": "submit-pr"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "preflight",
+      "label": "Preflight",
+      "lane": "work",
+      "sublabel": "preflight the",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "route-preflight",
+      "label": "Route Preflig\u2026",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "route-preflight-halt",
+      "label": "Route Preflig\u2026",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 2,
+      "id": "preflight-halt",
+      "label": "Preflight Halt",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "validate",
+      "label": "Validate",
+      "lane": "work",
+      "sublabel": "run the repo s",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "route-validate-red",
+      "label": "Route Validat\u2026",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "route-validated",
+      "label": "Route Validat\u2026",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 4,
+      "id": "draft",
+      "label": "Draft",
+      "lane": "work",
+      "sublabel": "draft the pr for",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 4,
+      "id": "validate-halt",
+      "label": "Validate Halt",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "approve",
+      "label": "Approve",
+      "lane": "gates",
+      "sublabel": "submit pr to run",
+      "tag": "human hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "closeout",
+      "label": "Closeout",
+      "lane": "work",
+      "sublabel": "write the submission",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "submit",
+      "label": "Submit",
+      "lane": "work",
+      "sublabel": "the human answered",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 5,
+      "id": "verify-pr",
+      "label": "Verify Pr",
+      "lane": "work",
+      "sublabel": "independent read",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 184
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 4
+    },
+    {
+      "fromCol": 5,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 5
+    }
+  ],
+  "schema_version": 2
+}

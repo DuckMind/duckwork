@@ -1,0 +1,1346 @@
+from __future__ import annotations
+
+from concurrent.futures import ThreadPoolExecutor
+import importlib
+import inspect
+import json
+import os
+from pathlib import Path
+import shutil
+import sys
+from types import SimpleNamespace
+from types import ModuleType
+
+import pytest
+
+from test_plan_mode import plan_profile
+
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _directive_lean_loaded(monkeypatch, home: Path) -> None:
+    """conftest.directive_lean for the plugin copy the real manager loaded (its own module, not plan_mode.plugin)."""
+    target = (home / "plugins" / "plan-mode" / "plan_mode" / "plugin.py").resolve()
+    loaded = [m for m in list(sys.modules.values())
+              if getattr(m, "__file__", None) and Path(m.__file__).resolve() == target]
+    assert loaded, "the real manager did not load the plugin copy"
+    for module in loaded:
+        monkeypatch.setattr(module, "LEAN_LEVERS", module.LEAN_LEVERS - {"approval_card"})
+
+
+def _copy_plugin(destination: Path) -> None:
+    shutil.copytree(
+        REPO_ROOT,
+        destination,
+        ignore=shutil.ignore_patterns(".git", ".pytest_cache", ".lane-evidence", ".lane-local", "__pycache__", "*.pyc"),
+    )
+
+
+def _gateway_binds_plugin_commands() -> bool:
+    """Feature gate for Fordex/duckwork-agent 5943347a2a (after v2026.9.21)."""
+    from gateway.run_inbound import GatewayInboundMixin
+
+    source = inspect.getsource(GatewayInboundMixin._hm_dispatch_quick_and_plugin_commands)
+    return "_session_env_scope" in source
+
+
+def _tui_binds_plugin_commands() -> bool:
+    """Feature gate for Fordex/duckwork-agent 35fdb4608a (after v2026.9.21)."""
+    from tui_gateway import methods_tools
+
+    return "session" in inspect.signature(methods_tools._run_plugin_command).parameters
+
+
+def test_pinned_upstream_session_seam_is_importable_and_bound_around_commands():
+    pytest.importorskip("duckwork_cli.plugins")
+    if not _gateway_binds_plugin_commands():
+        pytest.skip("Duckwork build lacks the gateway plugin-command session binding (5943347a2a)")
+    from gateway.session_context import get_session_env
+    from gateway.run_inbound import GatewayInboundMixin
+
+    assert callable(get_session_env)
+    source = inspect.getsource(GatewayInboundMixin._hm_dispatch_quick_and_plugin_commands)
+    assert "handler reading get_session_env()" in source
+    assert "with self._session_env_scope(_plugin_context):" in source
+
+
+def test_real_cli_like_process_works_after_gateway_run_import(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    home = tmp_path / "duckwork-home"
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.setenv("TERMINAL_CWD", str(workspace))
+    for key in (
+        "DUCKWORK_SESSION_KEY",
+        "DUCKWORK_SESSION_SOURCE",
+        "DUCKWORK_SESSION_PLATFORM",
+        "DUCKWORK_UI_SESSION_ID",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+    importlib.import_module("gateway.run")
+    from gateway.session_context import session_context_engaged
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+
+    home_token = set_duckwork_home_override(str(home))
+    try:
+        assert session_context_engaged() is False
+        plugins._reset_plugin_managers_for_tests()
+        plugins.get_plugin_manager().discover_and_load()
+        response = plugins.get_plugin_command_handler("planmode")("on real cli")
+
+        assert "Plan mode is on" in response
+        block = plugins.get_pre_tool_call_block_message
+        assert block("terminal", {"command": "pwd"})
+        assert block("write_file", {"path": str(workspace / "outside.txt"), "content": "x"})
+    finally:
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_plugin_manager_and_dispatch_guard(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    home = tmp_path / "duckwork-home"
+    plugin_dir = home / "plugins" / "plan-mode"
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    _copy_plugin(plugin_dir)
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.setenv("TERMINAL_CWD", str(workspace))
+
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_cli import plugins
+
+    home_token = set_duckwork_home_override(str(home))
+    session_tokens = None
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        manager = plugins.get_plugin_manager()
+        manager.discover_and_load()
+        assert manager._plugins["plan-mode"].enabled
+
+        handler = plugins.get_plugin_command_handler("planmode")
+        assert handler is not None
+        session_tokens = set_session_vars(
+            platform="telegram",
+            source="telegram",
+            session_key="integration-key",
+            session_id="integration-session",
+            cwd=str(workspace),
+        )
+        response = handler("on integration proof")
+        plans_dir = workspace / ".duckwork" / "plans"
+        assert str(plans_dir) in response
+
+        block = plugins.get_pre_tool_call_block_message
+        assert block("terminal", {"command": "pwd"}, session_id="integration-session")
+        assert block("execute_code", {"code": "1+1"}, session_id="integration-session")
+        assert block("mcp_linear_update_issue", {}, session_id="integration-session")
+        assert block("unknown_future_tool", {}, session_id="integration-session")
+        assert block(
+            "write_file", {"path": str(workspace / "outside.md"), "content": "x"},
+            session_id="integration-session",
+        )
+        assert block("read_file", {"path": str(workspace / "notes.md")}, session_id="integration-session") is None
+        assert block(
+            "write_file", {"path": str(plans_dir / "plan.md"), "content": "# Plan"},
+            session_id="integration-session",
+        ) is None
+
+        # Exercise the exact pre-hook entry and ContextVar propagation helper used
+        # by Duckwork' sequential/concurrent tool executor paths.
+        from agent.tool_executor import _pre_tool_block
+        from tools.thread_context import propagate_context_to_thread
+
+        agent = SimpleNamespace(
+            session_id="integration-session",
+            _current_turn_id="turn-1",
+            _current_api_request_id="request-1",
+        )
+        ref = SimpleNamespace(
+            name="terminal", args={"command": "pwd"}, task_id="default",
+            call_id="call-1", trace=[],
+        )
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future = executor.submit(
+                propagate_context_to_thread(lambda: _pre_tool_block(agent, ref)[0])
+            )
+            assert "Plan mode is on" in future.result(timeout=10)
+    finally:
+        if session_tokens is not None:
+            clear_session_vars(session_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_failed_plan_write_is_not_approvable(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    home, workspace, bundled = tmp_path / "home", tmp_path / "ws", tmp_path / "bundled"
+    workspace.mkdir()
+    bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+    from model_tools import handle_function_call
+
+    home_token = set_duckwork_home_override(str(home))
+    session_tokens = None
+    plans = workspace / ".duckwork" / "plans"
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        plugins.get_plugin_manager().discover_and_load()
+        session_tokens = set_session_vars(
+            platform="telegram", source="telegram", session_key="write-key",
+            session_id="write-session", cwd=str(workspace),
+        )
+        handler = plugins.get_plugin_command_handler("planmode")
+        assert "Plan mode is on" in handler("on provenance")
+        good, stale = plans / "2026-09-26_a-good.md", plans / "2026-09-26_b-stale.md"
+        ids = {"session_id": "write-session"}
+        handle_function_call("write_file", {"path": str(good), "content": "# Good"}, tool_call_id="c1", **ids)
+        stale.write_text("# Stale", encoding="utf-8")
+        stale.chmod(0o444)
+        plans.chmod(0o555)  # the real write fails on every Duckwork version
+        handle_function_call("write_file", {"path": str(stale), "content": "# New"}, tool_call_id="c2", **ids)
+        assert stale.read_text(encoding="utf-8") == "# Stale"
+        assert str(stale) not in handler("status")
+        assert str(good) in handler("approve")
+    finally:
+        if plans.exists():
+            plans.chmod(0o755)
+        if session_tokens is not None:
+            clear_session_vars(session_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_custom_home_accepts_custom_profile_and_enforces_writes(
+    tmp_path, monkeypatch
+):
+    pytest.importorskip("duckwork_cli.plugins")
+    home = tmp_path / "custom-duckwork-home"
+    plugin_dir = home / "plugins" / "plan-mode"
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    _copy_plugin(plugin_dir)
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("DUCKWORK_HOME", raising=False)
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+
+    home_token = set_duckwork_home_override(str(home))
+    session_tokens = None
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        plugins.get_plugin_manager().discover_and_load()
+        session_tokens = set_session_vars(
+            platform="desktop",
+            source="tui",
+            session_key="custom-profile-session",
+            session_id="custom-profile-session",
+            profile="custom",
+            cwd=str(workspace),
+        )
+
+        response = plugins.get_plugin_command_handler("planmode")("on custom home")
+
+        assert "Plan mode is on" in response
+        assert plugins.get_pre_tool_call_block_message(
+            "write_file",
+            {"path": str(workspace / "outside.md"), "content": "x"},
+            session_id="custom-profile-session",
+        )
+    finally:
+        if session_tokens is not None:
+            clear_session_vars(session_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_tui_plugin_command_cannot_fail_open_across_turn_binding(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    home = tmp_path / "duckwork-home"
+    plugin_dir = home / "plugins" / "plan-mode"
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    _copy_plugin(plugin_dir)
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.setenv("DUCKWORK_GATEWAY_SESSION", "1")
+    monkeypatch.delenv("DUCKWORK_SESSION_KEY", raising=False)
+    monkeypatch.delenv("DUCKWORK_SESSION_SOURCE", raising=False)
+    monkeypatch.setitem(sys.modules, "tui_gateway.server", ModuleType("tui_gateway.server"))
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+    from tui_gateway import methods_tools
+
+    home_token = set_duckwork_home_override(str(home))
+    turn_tokens = None
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        manager = plugins.get_plugin_manager()
+        manager.discover_and_load()
+        handler = plugins.get_plugin_command_handler("planmode")
+        assert handler is not None
+
+        monkeypatch.setattr(methods_tools, "_tools_mod", importlib.import_module, raising=False)
+        params = inspect.signature(methods_tools._run_plugin_command).parameters
+        if "session" in params:
+            monkeypatch.setattr(
+                methods_tools,
+                "_set_session_context",
+                lambda key, cwd=None: set_session_vars(
+                    source="tui", session_key=key, session_id=key, cwd=cwd or ""
+                ),
+                raising=False,
+            )
+            monkeypatch.setattr(methods_tools, "_clear_session_context", clear_session_vars, raising=False)
+            response = methods_tools._run_plugin_command(
+                handler,
+                "on regression proof",
+                {"session_key": "tui-session-key", "cwd": str(workspace)},
+            )
+        else:
+            response = methods_tools._run_plugin_command(handler, "on regression proof")
+
+        if "session" not in params:
+            assert "refused" in response.lower()
+            assert "session binding" in response.lower()
+        else:
+            assert "Plan mode is on" in response
+            turn_tokens = set_session_vars(
+                source="tui",
+                session_key="tui-session-key",
+                session_id="tui-session-key",
+                ui_session_id="ui-tab",
+                cwd=str(workspace),
+            )
+            assert plugins.get_pre_tool_call_block_message(
+                "terminal", {"command": "pwd"}, session_id="tui-session-key"
+            )
+    finally:
+        if turn_tokens is not None:
+            clear_session_vars(turn_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_ui_adoption_survives_gateway_process_restart(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    home = tmp_path / "duckwork-home"
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    plans_dir = workspace / ".duckwork" / "plans"
+    plans_dir.mkdir(parents=True)
+    _copy_plugin(home / "plugins" / "plan-mode")
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+
+    home_token = set_duckwork_home_override(str(home))
+    turn_tokens = None
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        plugins.get_plugin_manager().discover_and_load()
+        handler = plugins.get_plugin_command_handler("planmode")
+        assert handler is not None
+        instance = handler.__self__
+        cli_pid = os.getpid()
+        instance._save_state(
+            f"cli:{cli_pid}",
+            {
+                "active": True,
+                "entered_at": "2026-09-23T00:00:00+00:00",
+                "plans_dir": str(plans_dir),
+                "plan_files": [],
+                "pending_note": "",
+                "cli_pid": cli_pid,
+                "owner_pid": cli_pid,
+            },
+        )
+
+        turn_tokens = set_session_vars(
+            source="tui",
+            session_key="restart-session-key",
+            session_id="restart-session-key",
+            ui_session_id="restart-ui-tab",
+            cwd=str(workspace),
+        )
+        block = plugins.get_pre_tool_call_block_message
+        assert block("terminal", {"command": "pwd"}, session_id="restart-session-key")
+
+        monkeypatch.setattr(
+            instance,
+            "_pid_is_alive",
+            lambda pid: False if pid == cli_pid else True,
+        )
+        assert block(
+            "write_file",
+            {"path": str(workspace / "outside.md"), "content": "x"},
+            session_id="restart-session-key",
+        )
+    finally:
+        if turn_tokens is not None:
+            clear_session_vars(turn_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_tui_resume_rebuild_does_not_clear_plan_mode(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    if not _tui_binds_plugin_commands():
+        pytest.skip("Duckwork build lacks the TUI plugin-command session binding (35fdb4608a)")
+    home = tmp_path / "duckwork-home"
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.setenv("DUCKWORK_GATEWAY_SESSION", "1")
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+    from tui_gateway import server
+
+    home_token = set_duckwork_home_override(str(home))
+    turn_tokens = None
+    runtime_id = "round3-resume-runtime"
+    session_key = "round3-resume-session-key"
+    session = {
+        "session_key": session_key,
+        "cwd": str(workspace),
+        "source": "tui",
+    }
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        plugins.get_plugin_manager().discover_and_load()
+        handler = plugins.get_plugin_command_handler("planmode")
+        assert handler is not None
+        response = server._run_plugin_command(handler, "on resume proof", session)
+        assert "Plan mode is on" in response
+
+        turn_tokens = set_session_vars(
+            source="tui",
+            session_key=session_key,
+            session_id=session_key,
+            ui_session_id=runtime_id,
+            cwd=str(workspace),
+        )
+        assert plugins.get_pre_tool_call_block_message(
+            "terminal", {"command": "pwd"}, session_id=session_key
+        )
+        clear_session_vars(turn_tokens)
+        turn_tokens = None
+
+        server._sessions[runtime_id] = session
+        monkeypatch.setattr(server, "_start_notification_poller", lambda _sid, _rec: None)
+        server._start_session_services(runtime_id, session_key, session)
+
+        turn_tokens = set_session_vars(
+            source="tui",
+            session_key=session_key,
+            session_id=session_key,
+            ui_session_id=runtime_id,
+            cwd=str(workspace),
+        )
+        assert plugins.get_pre_tool_call_block_message(
+            "write_file",
+            {"path": str(workspace / "outside.md"), "content": "x"},
+            session_id=session_key,
+        )
+    finally:
+        server._sessions.pop(runtime_id, None)
+        if turn_tokens is not None:
+            clear_session_vars(turn_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_tui_slash_exec_refuses_cross_profile_activation(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    session_bound = _tui_binds_plugin_commands()
+    homes = [tmp_path / "profiles" / "profile-a", tmp_path / "profiles" / "profile-b"]
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    for home in homes:
+        _copy_plugin(home / "plugins" / "plan-mode")
+        (home / "config.yaml").write_text(
+            "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+            encoding="utf-8",
+        )
+
+    monkeypatch.setenv("DUCKWORK_HOME", str(homes[0]))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+    from tui_gateway import server
+
+    plugins._reset_plugin_managers_for_tests()
+    home_token = set_duckwork_home_override(str(homes[0]))
+    runtime_id = "round2-profile-b-runtime"
+    try:
+        manager = plugins.get_plugin_manager()
+        manager.discover_and_load()
+        server._sessions[runtime_id] = {
+            "session_key": "shared-session-key",
+            "cwd": str(workspace),
+            "profile_home": str(homes[1]),
+        }
+        result = server._methods["slash.exec"](
+            "round3-f5",
+            {"session_id": runtime_id, "command": "/planmode on profile B"},
+        )
+        output = result["result"]["output"]
+
+        assert "refused" in output.lower()
+        if session_bound:
+            assert "profile" in output.lower()
+        else:
+            # Released builds without 35fdb4608a refuse on the missing binding.
+            assert "session binding" in output.lower()
+    finally:
+        server._sessions.pop(runtime_id, None)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_session_bound_cwd_wins_over_backend_process_cwd(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    home = tmp_path / "duckwork-home"
+    plugin_dir = home / "plugins" / "plan-mode"
+    workspace = tmp_path / "session-workspace"
+    backend_cwd = tmp_path / "backend-cwd"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    backend_cwd.mkdir()
+    empty_bundled.mkdir()
+    _copy_plugin(plugin_dir)
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.delenv("TERMINAL_CWD", raising=False)
+    monkeypatch.chdir(backend_cwd)
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+
+    home_token = set_duckwork_home_override(str(home))
+    session_tokens = set_session_vars(
+        source="tui",
+        session_key="cwd-session-key",
+        session_id="cwd-session-key",
+        cwd=str(workspace),
+    )
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        manager = plugins.get_plugin_manager()
+        manager.discover_and_load()
+        handler = plugins.get_plugin_command_handler("planmode")
+        assert handler is not None
+
+        response = handler("on cwd proof")
+
+        assert "Plan mode is on" in response
+        assert str(workspace / ".duckwork" / "plans") in response
+        assert str(backend_cwd / ".duckwork" / "plans") not in response
+    finally:
+        clear_session_vars(session_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_skill_view_follows_duckwork_inline_shell_config(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    skill_preprocessing = pytest.importorskip("agent.skill_preprocessing")
+    home = tmp_path / "duckwork-home"
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    base_config = "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n"
+    (home / "config.yaml").write_text(base_config, encoding="utf-8")
+
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.setenv("TERMINAL_CWD", str(workspace))
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+
+    home_token = set_duckwork_home_override(str(home))
+    session_tokens = None
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        plugins.get_plugin_manager().discover_and_load()
+        handler = plugins.get_plugin_command_handler("planmode")
+        assert handler is not None
+        session_tokens = set_session_vars(
+            platform="telegram",
+            source="telegram",
+            session_key="skill-view-key",
+            session_id="skill-view-session",
+            cwd=str(workspace),
+        )
+        assert "Plan mode is on" in handler("on skill proof")
+        block = plugins.get_pre_tool_call_block_message
+        session = {"session_id": "skill-view-session"}
+
+        # Default profile config: the tool's own loader reports inline shell off.
+        assert not skill_preprocessing.load_skills_config().get("inline_shell", False)
+        assert block("skill_view", {"name": "any-skill"}, **session) is None
+        assert block("terminal", {"command": "pwd"}, **session)
+        assert block(
+            "write_file", {"path": str(workspace / "outside.md"), "content": "x"}, **session
+        )
+
+        (home / "config.yaml").write_text(
+            base_config + "skills:\n  inline_shell: true\n", encoding="utf-8"
+        )
+        assert skill_preprocessing.load_skills_config().get("inline_shell") is True
+        message = block("skill_view", {"name": "any-skill"}, **session)
+        assert message and "inline_shell" in message
+
+        (home / "config.yaml").write_text(
+            base_config + "skills:\n  inline_shell: false\n", encoding="utf-8"
+        )
+        assert block("skill_view", {"name": "any-skill"}, **session) is None
+
+        def _raise():
+            raise RuntimeError("config unreadable")
+
+        monkeypatch.setattr(skill_preprocessing, "load_skills_config", _raise)
+        assert block("skill_view", {"name": "any-skill"}, **session)
+        monkeypatch.setitem(sys.modules, "agent.skill_preprocessing", None)
+        assert block("skill_view", {"name": "any-skill"}, **session)
+    finally:
+        if session_tokens is not None:
+            clear_session_vars(session_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_extra_allowed_tools_config_path_matches_readme(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    home = tmp_path / "duckwork-home"
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    (home / "config.yaml").write_text(
+        "plugins:\n"
+        "  enabled:\n    - plan-mode\n"
+        "  load_timeout_seconds: 0\n"
+        "  entries:\n"
+        "    plan-mode:\n"
+        "      settings:\n"
+        "        plan_mode:\n"
+        "          extra_allowed_tools:\n            - custom_read\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.setenv("TERMINAL_CWD", str(workspace))
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+
+    home_token = set_duckwork_home_override(str(home))
+    session_tokens = None
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        plugins.get_plugin_manager().discover_and_load()
+        handler = plugins.get_plugin_command_handler("planmode")
+        assert handler is not None
+        session_tokens = set_session_vars(
+            platform="telegram",
+            source="telegram",
+            session_key="extra-tools-key",
+            session_id="extra-tools-session",
+            cwd=str(workspace),
+        )
+        assert "Plan mode is on" in handler("on extra tools proof")
+        block = plugins.get_pre_tool_call_block_message
+        assert block("custom_read", {}, session_id="extra-tools-session") is None
+        assert block("other_custom_tool", {}, session_id="extra-tools-session")
+    finally:
+        if session_tokens is not None:
+            clear_session_vars(session_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_tui_slash_exec_refuses_cross_profile_off(tmp_path, monkeypatch):
+    pytest.importorskip("duckwork_cli.plugins")
+    if not _tui_binds_plugin_commands():
+        pytest.skip("Duckwork build lacks the TUI plugin-command session binding (35fdb4608a)")
+    homes = [tmp_path / "profiles" / "profile-a", tmp_path / "profiles" / "profile-b"]
+    workspace = tmp_path / "workspace"
+    empty_bundled = tmp_path / "empty-bundled"
+    workspace.mkdir()
+    empty_bundled.mkdir()
+    for home in homes:
+        _copy_plugin(home / "plugins" / "plan-mode")
+        (home / "config.yaml").write_text(
+            "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+            encoding="utf-8",
+        )
+
+    monkeypatch.setenv("DUCKWORK_HOME", str(homes[0]))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(empty_bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+    from tui_gateway import server
+
+    plugins._reset_plugin_managers_for_tests()
+    home_token = set_duckwork_home_override(str(homes[0]))
+    runtime_a = "round6-profile-a-runtime"
+    runtime_b = "round6-profile-b-runtime"
+    turn_tokens = None
+    try:
+        plugins.get_plugin_manager().discover_and_load()
+        server._sessions[runtime_a] = {
+            "session_key": "colliding-session-key",
+            "cwd": str(workspace),
+            "profile_home": str(homes[0]),
+        }
+        on = server._methods["slash.exec"](
+            "round6-on", {"session_id": runtime_a, "command": "/planmode on profile A"}
+        )
+        assert "Plan mode is on" in on["result"]["output"]
+        # Profile A's tab is no longer live in this backend, but its durable plan
+        # state remains. (While both records are live, Duckwork' _session_for_key
+        # binds the first record's profile, so the plugin cannot see profile B.)
+        server._sessions.pop(runtime_a, None)
+
+        server._sessions[runtime_b] = {
+            "session_key": "colliding-session-key",
+            "cwd": str(workspace),
+            "profile_home": str(homes[1]),
+        }
+        off = server._methods["slash.exec"](
+            "round6-off", {"session_id": runtime_b, "command": "/planmode off"}
+        )
+        output = off["result"]["output"].lower()
+        assert "refused" in output
+        assert "profile" in output
+
+        turn_tokens = set_session_vars(
+            source="tui",
+            session_key="colliding-session-key",
+            session_id="colliding-session-key",
+            cwd=str(workspace),
+        )
+        assert plugins.get_pre_tool_call_block_message(
+            "terminal", {"command": "pwd"}, session_id="colliding-session-key"
+        )
+    finally:
+        if turn_tokens is not None:
+            clear_session_vars(turn_tokens)
+        server._sessions.pop(runtime_a, None)
+        server._sessions.pop(runtime_b, None)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_real_agent_tool_in_gateway_turn_enforces_plan_mode(tmp_path, monkeypatch):
+    """T8: the plan_mode tool registers, and a gateway turn's own tool call activates it."""
+    pytest.importorskip("duckwork_cli.plugins")
+    home, workspace, bundled = tmp_path / "home", tmp_path / "ws", tmp_path / "bundled"
+    workspace.mkdir()
+    bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled:\n    - plan-mode\n  load_timeout_seconds: 0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.setenv("DUCKWORK_GATEWAY_SESSION", "1")  # an admitted gateway process
+    for key in ("DUCKWORK_SESSION_KEY", "DUCKWORK_SESSION_SOURCE", "DUCKWORK_SESSION_PLATFORM",
+                "DUCKWORK_UI_SESSION_ID", "TERMINAL_CWD"):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.chdir(workspace)  # the gateway binds no cwd; plans fall back to the process cwd
+
+    from gateway.config import Platform
+    from gateway.run import GatewayRunner
+    from gateway.session import SessionContext, SessionSource
+    from gateway.session_context import clear_session_vars
+    from duckwork_cli import plugins
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from model_tools import handle_function_call
+    from tools.registry import registry
+    from tools.thread_context import propagate_context_to_thread
+
+    home_token = set_duckwork_home_override(str(home))
+    turn_tokens = None
+    plans = workspace / ".duckwork" / "plans"
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        manager = plugins.get_plugin_manager()
+        manager.discover_and_load()
+        entry = registry.get_entry("plan_mode", scope=manager.scope_key)
+        assert entry is not None and entry.toolset == "plan-mode"
+        assert "plan_mode" in manager._plugin_tool_names
+        assert entry.schema["parameters"]["properties"]["action"]["enum"] == ["on", "status", "off", "submit"]
+
+        # Bind exactly what a gateway turn binds before the agent runs (run_turn.py:2063).
+        source = SessionSource(platform=Platform.TELEGRAM, chat_id="4242", user_id="7")
+        context = SessionContext(source=source, connected_platforms=[], home_channels={},
+                                 session_key="agent:main:telegram:dm:4242")
+        turn_tokens = GatewayRunner._set_session_env(SimpleNamespace(adapters={}), context)
+        ids = {"session_id": "gateway-turn-session"}
+
+        def call(name, args, call_id):
+            # The agent runs tool calls on a worker carrying the turn's ContextVars.
+            run = propagate_context_to_thread(
+                lambda: handle_function_call(name, args, tool_call_id=call_id, **ids))
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                return pool.submit(run).result(timeout=30)
+
+        on = json.loads(call("plan_mode", {"action": "on", "reason": "draft first"}, "c1"))
+        assert "Plan mode is on" in on["message"] and str(plans) in on["message"]
+
+        block = plugins.get_pre_tool_call_block_message
+        assert block("plan_mode", {"action": "status"}, **ids) is None
+        outside = workspace / "outside.md"
+        assert block("write_file", {"path": str(outside), "content": "x"}, **ids)
+        result = call("write_file", {"path": str(outside), "content": "x"}, "c2")
+        assert "Plan mode is on" in result and not outside.exists()
+        assert "Plan mode is on" in call("terminal", {"command": "pwd"}, "c3")
+        plan = plans / "2026-09-26_120000-agent-plan.md"
+        call("write_file", {"path": str(plan), "content": "# Plan"}, "c4")
+        assert plan.read_text(encoding="utf-8") == "# Plan"
+
+        status = json.loads(call("plan_mode", {"action": "status"}, "c5"))["message"]
+        assert "Plan mode: on" in status and str(plan) in status
+        # The user's slash command in the same chat reaches the agent-entered state.
+        assert "Plan approved" in plugins.get_plugin_command_handler("planmode")("approve")
+        assert block("terminal", {"command": "pwd"}, **ids) is None
+    finally:
+        if turn_tokens is not None:
+            clear_session_vars(turn_tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+@pytest.fixture
+def real_submit_host(tmp_path, monkeypatch, plan_profile, request):
+    pytest.importorskip("duckwork_cli.plugins")
+    approval = pytest.importorskip("tools.approval")
+    if not callable(getattr(approval, "request_tool_approval", None)):
+        pytest.skip("Duckwork lacks request_tool_approval")
+    from tools import approval_context
+    from tools.terminal_tool import set_approval_callback
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from duckwork_cli import plugins
+    from model_tools import handle_function_call
+
+    home, workspace, bundled = tmp_path / "home", tmp_path / "ws", tmp_path / "bundled"
+    workspace.mkdir()
+    bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled: [plan-mode]\n  load_timeout_seconds: 0\n"
+        f"  entries:\n    plan-mode:\n      settings:\n        plan_profile: {plan_profile}\n"
+        "approvals:\n  mode: manual\n",
+        encoding="utf-8")
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.setenv("DUCKWORK_INTERACTIVE", "1")
+    for key in ("DUCKWORK_GATEWAY_SESSION", "DUCKWORK_EXEC_ASK", "DUCKWORK_YOLO_MODE", "DUCKWORK_CRON_SESSION", "DUCKWORK_SINGLE_QUERY"):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setattr(approval, "_YOLO_MODE_FROZEN", False, raising=False)
+    monkeypatch.setattr(approval, "is_current_session_yolo_enabled", lambda: False)
+    monkeypatch.setattr(approval_context, "_get_approval_mode", lambda: "manual")
+    monkeypatch.setattr(approval, "is_approved", lambda *_: False)
+    home_token = set_duckwork_home_override(str(home))
+    tokens = set_session_vars(source="cli", session_key="submit-session", session_id="submit-session", cwd=str(workspace))
+    approval_token = approval_context.set_current_session_key("submit-session")
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        plugins.get_plugin_manager().discover_and_load()
+        if not request.node.get_closest_marker("default_card"):
+            _directive_lean_loaded(monkeypatch, home)  # these tests cover the directive path
+        command = plugins.get_plugin_command_handler("planmode")
+        assert command is not None
+        assert "Plan mode is on" in command("on submit proof")
+        path = workspace / ".duckwork" / "plans" / "plan.md"
+        handle_function_call("write_file", {"path": str(path), "content": "# Plan\n\n## Implement\n## Verify"}, session_id="submit-session", tool_call_id="write-1")
+        assert path.exists() and str(path) in command("status")
+        yield SimpleNamespace(
+            approval=approval, context=approval_context, plugins=plugins, command=command,
+            callback=set_approval_callback,
+            submit=lambda: handle_function_call("plan_mode", {"action": "submit"}, session_id="submit-session", tool_call_id="submit-1"))
+    finally:
+        set_approval_callback(None)
+        approval.unregister_gateway_notify("submit-session")
+        approval.clear_session("submit-session")
+        approval_context.reset_current_session_key(approval_token)
+        clear_session_vars(tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+def test_u1_real_cli_approval_same_call(real_submit_host):
+    host = real_submit_host
+    answers = []
+    host.callback(lambda *a, **kw: answers.append((a, kw)) or "once")
+    result = json.loads(host.submit())
+    assert answers and result["approved"] and "todo_list" in result["message"]
+    assert host.plugins.get_pre_tool_call_block_message("terminal", {"command": "pwd"}, session_id="submit-session") is None
+
+
+def test_u1_real_cli_deny_keeps_planning(real_submit_host):
+    host = real_submit_host
+    host.callback(lambda *a, **kw: "deny")
+    result = host.submit()
+    assert "BLOCKED" in result
+    assert host.plugins.get_pre_tool_call_block_message("terminal", {}, session_id="submit-session")
+    notes = host.plugins.invoke_hook("pre_llm_call", session_id="submit-session")
+    assert any("review feedback, not a safety refusal" in note.get("context", "") for note in notes if isinstance(note, dict))
+
+
+def test_061_real_stale_submission_refuses_bare_approve(real_submit_host):
+    host = real_submit_host
+    plugin = host.command.__self__
+
+    def edit_then_approve(*args, **kwargs):
+        path = Path(plugin._load_state("sk:submit-session")["submission"]["path"])
+        path.write_text("# Changed after submission\n")
+        return "once"
+
+    host.callback(edit_then_approve)
+    result = json.loads(host.submit())
+    assert "changed after rev 1 was submitted" in result["message"]
+    before = plugin._load_state("sk:submit-session")
+    assert before["active"] and before["submission"]["status"] == "stale"
+    reply = host.command("approve")
+    assert "Plan rev 1 changed after it was submitted" in reply and "/planmode show" in reply
+    assert plugin._load_state("sk:submit-session") == before
+    assert "approved_path" not in before
+
+
+@pytest.mark.parametrize("mode", ["yolo", "off"])
+def test_u1_real_auto_approval_keeps_planning(real_submit_host, monkeypatch, mode):
+    host = real_submit_host
+    if mode == "yolo":
+        monkeypatch.setattr(host.approval, "is_current_session_yolo_enabled", lambda: True)
+    else:
+        monkeypatch.setattr(host.context, "_get_approval_mode", lambda: "off")
+    host.callback(lambda *a, **kw: pytest.fail("automatic approval must not prompt"))
+    result = json.loads(host.submit())
+    assert "no human has approved" in result["message"]
+    assert "awaiting" in host.command("status")
+    assert host.plugins.get_pre_tool_call_block_message("terminal", {}, session_id="submit-session")
+
+
+def test_062_real_show_then_approve_changed_snapshot(real_submit_host):
+    host = real_submit_host
+    plugin = host.command.__self__
+
+    def edit_then_deny(*args, **kwargs):
+        path = Path(plugin._load_state("sk:submit-session")["submission"]["path"])
+        path.write_text("# Revised\n" + "x" * 12000 + "\nPreserve the approved change.\n")
+        return "deny"
+
+    host.callback(edit_then_deny)
+    host.submit()
+    path = Path(plugin._load_state("sk:submit-session")["submission"]["path"])
+    captured = path.read_text()
+    assert host.command("show").endswith(captured)
+    assert "Plan approved" in host.command("approve")
+    current = plugin._load_state("sk:submit-session")
+    assert current["approved_revision"] == 2
+    snapshot = path.parent / "approved" / f"plan-rev2-{current['submission']['digest'][:12]}.md"
+    assert current["approved_snapshot"] == str(snapshot)
+    assert snapshot.read_text() == captured
+    path.write_text("# Later unapproved change")
+    notes = host.plugins.invoke_hook("pre_llm_call", session_id="submit-session")
+    note = next(n["context"] for n in notes if isinstance(n, dict) and "context" in n)
+    assert note.startswith("The user approved revised plan rev 2")
+    assert captured in note and str(snapshot) in note
+    assert "Later unapproved" not in note
+    assert host.plugins.get_pre_tool_call_block_message("terminal", {}, session_id="submit-session") is None
+
+
+def test_u1_real_gateway_callback_approves(real_submit_host, monkeypatch):
+    host = real_submit_host
+    monkeypatch.setenv("DUCKWORK_GATEWAY_SESSION", "1")
+    notifications = []
+
+    def notify(data):
+        notifications.append(data)
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            count = pool.submit(host.approval.resolve_gateway_approval,
+                                "submit-session", "once", request_id=data["request_id"]).result(timeout=5)
+            assert count == 1
+
+    host.approval.register_gateway_notify("submit-session", notify)
+    result = json.loads(host.submit())
+    assert result["approved"] and len(notifications) == 1
+    assert notifications[0]["pattern_key"].startswith("plugin_rule:plan-mode:")
+    assert host.plugins.get_pre_tool_call_block_message("terminal", {}, session_id="submit-session") is None
+
+
+@pytest.fixture
+def real_u2_host(tmp_path, monkeypatch):
+    plugins = pytest.importorskip("duckwork_cli.plugins")
+    from gateway.session_context import clear_session_vars, set_session_vars
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+
+    home, workspace, bundled = tmp_path / "home", tmp_path / "workspace", tmp_path / "bundled"
+    workspace.mkdir()
+    bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    (home / "config.yaml").write_text(
+        "plugins:\n  enabled: [plan-mode]\n  load_timeout_seconds: 0\n"
+        "  entries:\n    plan-mode:\n      settings:\n        plan_profile: classic\n", encoding="utf-8")
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    home_token = set_duckwork_home_override(str(home))
+    tokens = None
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        manager = plugins.get_plugin_manager()
+        manager.discover_and_load()
+        assert manager._plugins["plan-mode"].enabled
+        command = plugins.get_plugin_command_handler("planmode")
+        assert command is not None
+        tokens = set_session_vars(platform="telegram", source="telegram", session_key="u2-session",
+                                  session_id="u2-session", cwd=str(workspace))
+        yield SimpleNamespace(plugins=plugins, manager=manager, command=command)
+    finally:
+        if tokens is not None:
+            clear_session_vars(tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+@pytest.mark.parametrize("prefix", ["", "[Alice] ", '[Replying to: "x"]\n\n'])
+def test_u2_real_core_prompt_enforced(real_u2_host, prefix):
+    prompt_module = pytest.importorskip("agent.plan_prompt")
+    builder = getattr(prompt_module, "build_plan_prompt", None)
+    if not callable(builder):
+        pytest.skip("Duckwork lacks build_plan_prompt")
+    host = real_u2_host
+    notes = host.plugins.invoke_hook("pre_llm_call", user_message=prefix + builder("ship it"),
+                                     platform="telegram", session_id="u2-session", is_first_turn=True)
+    assert "Plan mode: on" in host.command("status")
+    assert host.command.__self__._load_state("sk:u2-session")["task"] == "ship it"
+    assert any("This overrides the /plan instruction" in note.get("context", "")
+               for note in notes if isinstance(note, dict))
+    assert host.plugins.get_pre_tool_call_block_message("terminal", {"command": "pwd"}, session_id="u2-session")
+
+
+def test_u2_real_telegram_menu_rule(real_u2_host):
+    commands = pytest.importorskip("duckwork_cli.commands_platforms")
+    requires = getattr(commands, "_requires_argument", None)
+    if not callable(requires):
+        pytest.skip("Duckwork lacks the private _requires_argument menu rule")
+    hint = real_u2_host.plugins.get_plugin_commands()["planmode"]["args_hint"]
+    assert hint == "[on|status|show|edit|approve|reject|done|off] [task]"
+    assert requires(hint) is False
+    assert "planmode" in {name for name, _ in commands.telegram_bot_commands()}
+
+
+def test_u2_real_hint_section_accepted(real_u2_host):
+    host = real_u2_host
+    if not callable(getattr(host.plugins.PluginContext, "register_system_prompt_section", None)):
+        pytest.skip("Duckwork lacks register_system_prompt_section")
+    accessor = getattr(host.plugins, "render_system_prompt_sections", None)
+    if callable(accessor):
+        sections = accessor({"session_id": "u2-session", "platform": "telegram"})
+        section = next((section for section in sections if section.id == "plan-mode.hint"), None)
+        assert section is not None
+        assert "plan_mode" in section.content and len(section.content) <= 200
+    else:
+        assert host.manager._plugins["plan-mode"].enabled
+
+
+@pytest.fixture
+def real_clarify_host(real_submit_host, monkeypatch):
+    """Inject the platform callback into the real registered clarify handler."""
+    host = real_submit_host
+    clarify = pytest.importorskip("tools.clarify_tool")
+    from tools.registry import registry
+    from model_tools import handle_function_call
+
+    entry = registry.get_entry("clarify")
+    if entry is None or "callback" not in inspect.signature(clarify.clarify_tool).parameters:
+        pytest.skip("Duckwork lacks the registered clarify callback seam")
+    host.clarify_entry = entry
+    host.clarify_module = clarify
+    host.call_clarify = lambda args, call_id="clarify-1": handle_function_call(
+        "clarify", args, session_id="submit-session", tool_call_id=call_id)
+    monkeypatch.setattr(host.context, "_get_approval_mode", lambda: "off")
+    host.callback(lambda *a, **kw: pytest.fail("automatic submit must not prompt"))
+    host.question = json.loads(host.submit())["clarify"]
+    return host
+
+
+def _inject_real_clarify_callback(host, monkeypatch, answer, seen):
+    parameters = inspect.signature(host.clarify_module.clarify_tool).parameters
+    if "question" in parameters:  # v2026.9.x/fleet: single-question platform callback
+        def callback(question, choices, multi_select=False):
+            seen.append((question, choices, multi_select))
+            return answer
+    else:  # main: callback takes normalized questions and returns an answer map
+        def callback(questions):
+            seen.extend(questions)
+            return {"answers": {question["qid"]: answer for question in questions}, "outcome": "answered"}
+    original = host.clarify_entry.handler
+    monkeypatch.setattr(host.clarify_entry, "handler",
+                        lambda args, **kw: original(args, **{**kw, "callback": callback}))
+
+
+@pytest.mark.parametrize("decision", ["approve", "keep"])
+def test_v034_real_off_clarify_decision(real_clarify_host, monkeypatch, decision):
+    host = real_clarify_host
+    answer = host.question["choices"][0 if decision == "approve" else 1]
+    seen = []
+    _inject_real_clarify_callback(host, monkeypatch, answer, seen)
+    result = json.loads(host.call_clarify({"questions": [{**host.question, "multi_select": False}]}))
+    responses = result.get("responses", [result])
+    assert seen and responses[0]["user_response"] == answer
+    state = host.command.__self__._load_state("sk:submit-session")
+    assert state["submission"]["status"] == ("approved" if decision == "approve" else "rejected")
+    assert "clarify" not in state["submission"]
+    if decision == "approve":
+        assert not state["active"] and state["phase"] == "executing"
+        assert state["submission"]["approved_via"] == "clarify"
+        assert state["approved_revision"] == 1
+    else:
+        assert state["active"] and "review feedback" in state["pending_note"]
+
+
+def test_v034_real_mismatched_tagged_question_blocked(real_clarify_host, monkeypatch):
+    host = real_clarify_host
+    seen = []
+    _inject_real_clarify_callback(host, monkeypatch, host.question["choices"][0], seen)
+    question = {**host.question, "question": host.question["question"] + " altered"}
+    result = host.call_clarify({"questions": [question]})
+    # Real Duckwork returns a blocked call as {"error": <plugin message>}; the callback must never run.
+    assert json.loads(result)["error"].startswith("Use exactly these clarify args") and seen == []
+    state = host.command.__self__._load_state("sk:submit-session")
+    assert state["active"] and state["submission"]["status"] == "awaiting"
+    assert state["submission"]["clarify"]["tool_call_id"] == ""
+
+
+@pytest.fixture
+def plan_once_enabled(monkeypatch):
+    monkeypatch.setenv("PLAN_MODE_LEVERS", "plan_once")
+
+
+@pytest.mark.usefixtures("plan_once_enabled")
+def test_plan_once_real_tracked_file_fallback(real_submit_host):
+    host = real_submit_host
+    plugin = host.command.__self__
+    # Real PluginContext accepts an undeclared flat settings key on all three hosts.
+    plugin.ctx.set_config("levers", "plan_once")
+    assert plugin.ctx.get_config("levers") == "plan_once"
+    assert plugin._levers() == {"plan_once"}
+    assert host.plugins.has_hook("post_api_request")
+    host.callback(lambda *args, **kw: "once")
+    result = json.loads(host.submit())
+    assert result["approved"] is True
+    assert Path(result["path"]).name == "plan.md"
+    assert Path(result["path"]).read_text() == "# Plan\n\n## Implement\n## Verify"
+
+
+@pytest.mark.usefixtures("plan_once_enabled")
+def test_plan_once_real_capture_dispatch(real_submit_host, monkeypatch, tmp_path):
+    host = real_submit_host
+    from gateway.session_context import clear_session_vars, set_session_vars
+    if "post_api_request" not in host.plugins.VALID_HOOKS:
+        pytest.skip("Duckwork lacks post_api_request")
+    pytest.importorskip("agent.history_commentary", reason="Duckwork build lacks the commentary helpers plan_once needs")
+    # Loaded server marker plus the actual turn-bound public ContextVar signal.
+    monkeypatch.setitem(sys.modules, "tui_gateway.server", SimpleNamespace(
+        _active_config_path=lambda: tmp_path / "home/config.yaml"))
+    tokens = set_session_vars(source="cli", session_key="submit-session", ui_session_id="ui-proof",
+                              session_id="submit-session", cwd=str(tmp_path / "ws"))
+    text = "# Captured plan\n\nChange parser.py and cli.py. Add a behaviour test. Run pytest tests/test_parser.py."
+    response = SimpleNamespace(content="", codex_message_items=[{
+        "type": "message", "role": "assistant", "phase": "commentary",
+        "content": [{"type": "output_text", "text": "Preamble\n<proposed_plan>\n" + text +
+                     "\n</proposed_plan>\nI'm Duckwork, built by Fordex. `/help` shows available commands."}]}],
+        tool_calls=[SimpleNamespace(id="response-item", call_id="submit-1")])
+    try:
+        assert host.plugins.has_hook("post_api_request")
+        host.plugins.invoke_hook("post_api_request", assistant_message=response,
+                                 provider="openai-codex", session_id="submit-session")
+        directive, description = host.plugins.get_pre_tool_call_directive(
+            "plan_mode", {"action": "submit"}, session_id="submit-session", tool_call_id="submit-1")
+        assert directive == "approve" and "Plan rev 1" in description
+        plugin = host.command.__self__
+        state = plugin._load_state("ui:ui-proof")
+        path = Path(state["submission"]["path"])
+        assert path.read_bytes() == (text + "\n").encode()
+        assert str(path) in state["plan_files"]
+        # Complete the prepared directive through real human-decision hook dispatch.
+        host.plugins.invoke_hook("post_approval_response", pattern_key="plugin_rule:" + state["submission"]["rule_key"],
+                                 choice="once", tool_call_id="submit-1")
+        result = json.loads(plugin.tool({"action": "submit"}))
+        assert result["approved"] is True and result["path"] == str(path)
+    finally:
+        clear_session_vars(tokens)
+
+
+@pytest.fixture
+def approved_text_enabled(monkeypatch):
+    monkeypatch.setenv("PLAN_MODE_LEVERS", "approved_text")
+
+
+@pytest.mark.usefixtures("approved_text_enabled")
+def test_approved_text_real_clarify_result(real_clarify_host, monkeypatch):
+    host = real_clarify_host
+    _inject_real_clarify_callback(host, monkeypatch, host.question["choices"][0], [])
+    result = json.loads(host.call_clarify({"questions": [{**host.question, "multi_select": False}]}))
+    assert "## Implement" in result["plan_mode_approval"]
+    assert "Plan: " in result["plan_mode_approval"]
+
+
+@pytest.mark.parametrize("settings,expected", [
+    ({}, "lean"),
+    ({"plan_profile": "classic"}, "classic"),
+    ({"plan_profile": "lean"}, "lean"),
+    ({"plan_mode": {"plan_profile": "lean"}}, "lean"),
+    ({"plan_profile": "classic", "plan_mode": {"plan_profile": "lean"}}, "classic"),
+    ({"plan_profile": "lean", "levers": "sticky"}, "lean (custom levers)"),
+])
+def test_real_plugin_manager_plan_profile(tmp_path, monkeypatch, settings, expected):
+    pytest.importorskip("duckwork_cli.plugins")
+    from duckwork_cli import plugins
+    from duckwork_constants import reset_duckwork_home_override, set_duckwork_home_override
+    from gateway.session_context import clear_session_vars, set_session_vars
+
+    home, workspace, bundled = tmp_path / "home", tmp_path / "workspace", tmp_path / "bundled"
+    workspace.mkdir()
+    bundled.mkdir()
+    _copy_plugin(home / "plugins" / "plan-mode")
+    # JSON is valid YAML on all three hosts; nested settings exercise real ctx.get_config.
+    (home / "config.yaml").write_text(json.dumps({"plugins": {
+        "enabled": ["plan-mode"], "load_timeout_seconds": 0,
+        "entries": {"plan-mode": {"settings": settings}}}}), encoding="utf-8")
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_BUNDLED_PLUGINS", str(bundled))
+    monkeypatch.setenv("DUCKWORK_ENABLE_PROJECT_PLUGINS", "0")
+    monkeypatch.delenv("PLAN_MODE_LEVERS", raising=False)
+    home_token = set_duckwork_home_override(str(home))
+    tokens = set_session_vars(source="cli", session_key="profile-test", session_id="profile-test", cwd=str(workspace))
+    try:
+        plugins._reset_plugin_managers_for_tests()
+        manager = plugins.get_plugin_manager()
+        manager.discover_and_load()
+        assert manager._plugins["plan-mode"].enabled
+        command = plugins.get_plugin_command_handler("planmode")
+        assert f"Plan profile: {expected}" in command("status").splitlines()
+        assert "Plan mode is on" in command("on profile test")
+        assert f"Plan profile: {expected}" in command("status").splitlines()
+    finally:
+        clear_session_vars(tokens)
+        plugins._reset_plugin_managers_for_tests()
+        reset_duckwork_home_override(home_token)
+
+
+@pytest.mark.default_card
+@pytest.mark.parametrize("plan_profile", ["lean"])
+def test_real_default_lean_submit_asks_the_card(real_submit_host):
+    """0.6.0: approval_card is in the lean defaults, so a real-host submit asks the card, not the approval prompt."""
+    host = real_submit_host
+    host.callback(lambda *a, **kw: pytest.fail("the default lean submit must not use the approval prompt"))
+    result = json.loads(host.submit())
+    assert not result.get("approved") and "Approve, auto-accept edits" in json.dumps(result)
+    assert "awaiting" in host.command("status")

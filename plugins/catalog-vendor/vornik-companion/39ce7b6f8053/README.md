@@ -1,0 +1,320 @@
+<!-- Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained. -->
+# vornik-companion for Duckwork Agent
+
+**A hardened, enterprise-grade broker for [Duckwork Agent](https://duckwork-agent.fordex.com).**
+Duckwork holds no credentials for your mail, calendar, documents or accounts.
+When a request touches them, Duckwork runs an operator-approved workflow on
+your own [Vornik](https://vornik.io) daemon and gets back a bounded,
+schema-validated result, never raw access. Vornik keeps every credential,
+and every widening of Duckwork's reach (a new connection, a new credential, a
+write) is approved by you on your phone. Vornik can also be Duckwork's
+long-term memory.
+
+## Two ways to use it
+
+| Setup | What Duckwork can do | What it needs |
+|---|---|---|
+| **Broker** (the default) | Run the workflows your operator allowed, and get results | `VORNIK_URL` and `VORNIK_BROKER_TOKEN` (plus `VORNIK_MEMORY_TOKEN` for memory) |
+| **Admin** (opt-in) | Set up projects, workflows and connections on Vornik for you, each change approved on your phone | `duckwork vornik connect` once; none of the three settings |
+
+Requires Duckwork 0.21.5 or later. The plugin reads its three settings only
+through Duckwork (`agent.secret_scope`), so each Duckwork profile has its own.
+
+Start with the broker: it grants Duckwork the least. The full walkthrough,
+including Vornik and Duckwork under separate OS users on one machine, is
+https://github.com/DuckMind/duckwork Every step that mints a key
+needs the operator's admin key: a Duckwork reading this hands the commands to
+the operator and does not run them itself.
+
+### Broker setup
+
+On the Vornik host, as the operator, set up two projects and two keys (the
+setup guide above inlines a complete broker project; grant a Duckwork key no
+skill flags and no `companion-*` developer workflows):
+
+```bash
+# the broker project holds the credentials; it has `broker: true` in its config
+vornikctl companion grant -p broker-mail --client duckwork --workflows mail-digest --budget-usd 5
+# Duckwork's long-term memory, which can never delegate
+vornikctl companion grant -p duckwork-memory --client duckwork --memory-all --no-delegate
+```
+
+On the Duckwork host:
+
+```bash
+duckwork plugins install vornik-companion
+duckwork plugins enable vornik-companion
+duckwork config set memory.provider vornik-companion   # use Vornik as long-term memory
+duckwork memory status                     # expect "installed" and "available"
+```
+
+If the plugin is already installed, update it explicitly after upgrading
+Vornik:
+
+```bash
+duckwork plugins update vornik-companion
+```
+
+Then restart Duckwork (or its gateway) so the running process loads the new
+plugin tools. Updating the daemon does not update the plugin installed on the
+Duckwork host. `duckwork plugins install` is for first-time installation; it does
+not update an existing copy.
+
+Put the URL and keys in the Duckwork profile's `.env`: `$DUCKWORK_HOME/.env`
+(default `~/.duckwork/.env`, mode 600) for the default profile, the profile's
+own directory for another one. Duckwork loads it at every start. An `export`
+in a shell never reaches a Duckwork service or survives a reboot, and a
+Duckwork gateway that serves several profiles gives each profile only its own
+`.env`.
+
+```
+VORNIK_URL=https://vornik.example.com    # http://localhost:8080 on the same machine
+VORNIK_BROKER_TOKEN=sk-vornik-…          # the broker-project key
+VORNIK_MEMORY_TOKEN=sk-vornik-…          # optional: the memory-project key
+```
+
+`duckwork config set VORNIK_URL https://vornik.example.com` writes the same
+line for you (`duckwork -p <profile> config set …` for another profile); a
+value typed on a command line stays in your shell history, so prefer the
+editor for the two keys. In the Duckwork Desktop the three appear under
+Settings > Plugins > vornik-companion. Since 0.21.5 the plugin reads them
+through Duckwork's secret scope at every use, so a changed key is used on the
+next turn, and a missing one is named in the answer together with how to
+set it.
+
+Checked against Duckwork v2026.9.24 (0.21.5) by the end-to-end tests in
+`test/e2e/duckwork` of this repository.
+Before 0.2.1 this README said to choose `vornik`; Duckwork names a memory
+provider after its plugin directory, so that selected nothing.
+
+By default Duckwork hides plugin tools behind its `tool_search` tool, and a
+model has to search before it can call `vornik_delegate`. Large models do
+this. Small local ones mostly do not. If Duckwork never uses the Vornik tools,
+offer them directly:
+
+```bash
+duckwork config set tools.tool_search.enabled off
+```
+
+0.2.2 declares `kind: standalone` in `plugin.yaml`. Without it, Duckwork
+treated the plugin as an exclusive memory plugin and never loaded the broker
+tools. It declares `vornik_delegate`'s `inputs` as an open object. Before that,
+a model served by llama.cpp could only send `"inputs": {}`. It also reports a note that Vornik's memory gates refuse or hold for
+review as an error to the model, instead of a result the model could read
+as "saved". Vornik refuses a note shorter than three words and ten characters
+("Dr Novak" is refused, "My dentist is Dr Novak." is kept), so write a fact
+as a full sentence with its context.
+
+### Admin setup
+
+Install Vornik first (https://docs.vornik.io/getting-started/), sign
+`vornikctl` in as the operator (`vornikctl auth login`) and pair your phone
+(`vornikctl pair-device`). Then:
+
+```bash
+duckwork plugins install vornik-companion
+duckwork plugins enable vornik-companion
+duckwork vornik connect          # runs: vornikctl agent connect duckwork
+duckwork vornik status           # what is configured, and what the daemon supports
+```
+
+`duckwork vornik connect` adds one MCP entry to Duckwork's config. The plugin's
+`vornik-admin` skill teaches Duckwork to use it. The setup guide is
+https://docs.vornik.io/guides/assistant-setup/. With Duckwork on its own OS
+user, that user needs its own executable `vornikctl` and the admin key for
+the one connect command: see the Duckwork setup guide.
+
+### Answer Duckwork's own approvals on your phone
+
+When Duckwork's safety rules flag a command (`rm -rf`, `git push --force`),
+Duckwork asks you in its terminal or chat. With the admin setup connected,
+the same paired phone that approves Vornik changes can answer those too:
+
+```bash
+duckwork vornik approvals on     # sets security.approval.transport: vornik
+duckwork vornik approvals off    # Duckwork asks in its own prompt again
+```
+
+The phone offers **Allow once**, **Allow for this session** (when Duckwork
+allows it) and **Deny**; "always" stays in Duckwork's own terminal. Duckwork
+still decides and enforces: Vornik is where you answer and where the answer
+is recorded, not the gate, and a modified Duckwork, or one with the transport
+deselected, ignores the phone. While it is on, a Vornik outage denies every
+flagged command, unless you also set
+`security.approval.transport_fallback: builtin` in Duckwork's config.
+`duckwork vornik status` says whether the transport is registered, selected,
+and for which namespace.
+
+**Unattended runs never reach your phone.** Duckwork asks an approval
+transport only in an interactive terminal session, a chat gateway session,
+or an API session whose client can answer. Cron jobs, single-query runs
+(`duckwork chat -q`) and sessions on unattended platforms (webhook, or
+`api_server` with no client that can answer) never ask anyone: they resolve
+each flagged command from Duckwork's own `approvals.cron_mode`,
+`approvals.single_query_mode` and `approvals.unattended_mode` (each `deny`
+by default, so the command is refused at once). `duckwork -z` asks nobody
+either: it also turns on Duckwork's YOLO mode, so flagged commands run
+without a prompt, short of Duckwork's hardline floor and your own
+`approvals.deny` rules. Turning the transport on changes nothing there.
+Checked against Duckwork v2026.9.24 and Duckwork `main` of 2026-10-12; this is
+the limit for Vornik 2026.10.6.
+
+## What you get
+
+| Surface | Name |
+|---|---|
+| Tools | `vornik_catalog`, `vornik_delegate`, `vornik_result`, `vornik_status`, `vornik_cancel`, and `vornik_task_logs` and `vornik_task_explain` to diagnose a stuck or failed task (broker setup only, when the daemon advertises `companion-progress`); `vornik_list_artifacts` and `vornik_read_artifact` when both daemon capabilities are present and the workflow explicitly approves artifact outputs |
+| Skill | `vornik-companion:vornik-broker`: when to broker and how to treat results |
+| Hook | `pre_llm_call`: announces finished broker tasks (ids and states only) and, since 0.16.0, where running ones are (step positions only) |
+| Commands | `/vornik-peek`, `/vornik-result <task_id>`; with memory: `/vornik-memory [words]`, `/vornik-forget <id>` |
+| CLI | `duckwork vornik connect`, `duckwork vornik status`, `duckwork vornik approvals on\|off` |
+| Approval transport | `vornik`: Duckwork's own approval prompts answered on the paired phone, once selected |
+| Skill | `vornik-companion:vornik-admin`: how to administer Vornik through the admin setup |
+| Memory provider | `vornik-companion`: `vornik_recall` / `vornik_remember`, prefetch before each turn, mirrors Duckwork's curated `MEMORY.md` / `USER.md` writes, removals included |
+
+## What Vornik keeps, and forgetting (0.8.0)
+
+`/vornik-memory` lists the 20 newest things Vornik's memory holds for you;
+`/vornik-memory dentist` lists what matches. Each line shows a short id, the
+age, where it came from, and the text. `/vornik-forget <id>` forgets that one
+item and tells you whether Vornik found it. You type these commands; the
+model cannot run them, and none of its tools can make Vornik forget.
+
+Since 0.15.0, on a Vornik that offers it, `/vornik-memory` pages through
+everything Vornik keeps (`/vornik-memory more` for the next page), and
+`/vornik-memory export` prints a link to the memory page on your paired
+approver device (your phone). There you can download everything as JSON or
+Markdown, forget items, and see what your broker workflows learned; none of
+it passes through the model. Forgetting there does not change Duckwork's own
+`MEMORY.md`: if Duckwork still holds the line, Vornik keeps it forgotten anyway.
+
+When Duckwork removes or replaces an entry in its own memory (because you said
+"forget that" or corrected a fact), the plugin finds the copy it mirrored to
+Vornik and has Vornik forget it too. Be aware of what that means:
+
+- **Forgetting is not deleting.** Vornik stops recalling the item, here and
+  in every prefetch, but keeps the record for your operator's audit until the
+  memory project's retention removes it. Your operator can erase it at once.
+- **What comes back (0.11.3).** A line Duckwork forgot through its own memory
+  comes back when Duckwork adds the same line again. Something you forgot with
+  `/vornik-forget`, or that was corrected as wrong, stays forgotten even if
+  the same text is stored again; a reworded note is a new memory and is
+  recalled. Items forgotten before 0.11.3 stay forgotten against identical
+  text. Replacing an entry with the same text changes nothing in Vornik.
+- **A forget said in conversation is best effort.** It runs through Duckwork's
+  own memory tool, and the plugin cannot add a line to Duckwork's reply, so if
+  Vornik's copy is not found you are not told; it is only logged ("could not
+  find the Vornik copy of a removed memory"). Notes mirrored before 0.8.0
+  carry no identity token and are found by their exact text only.
+- **The confirmed route** is `/vornik-memory`, then `/vornik-forget <id>`:
+  it says whether something was forgotten.
+- **Bound: one note must be one chunk.** The plugin caps each mirrored note
+  at 2,048 bytes, which is one chunk at the daemon's default chunk size
+  (`memory.chunk_tokens: 512`). If your operator sets a smaller chunk size,
+  a note near the cap is split, its identity token is only in the last
+  piece, and forgetting it leaves the earlier pieces recallable. Duckwork's
+  own entries are normally far shorter than the cap.
+- **Export:** the plugin shows at most 20 items at a time. For everything
+  Vornik holds, ask your operator for an export from the Vornik console.
+
+Mirrored notes end with a short identity token (`⟦vm:…⟧`). The plugin
+strips it from everything it shows you or the model.
+
+## Works with older daemons
+
+On start the plugin reads `/api/v1/capabilities`. The broker tools are offered
+only when the daemon advertises `companion-broker`, and `vornik_result` waits
+server-side only when it advertises `companion-result-wait`. Against an older
+daemon the tools and `/vornik-peek` stay hidden and nothing breaks. The flags
+are re-read every 10 minutes, so upgrading the daemon does not need a Duckwork
+restart.
+
+Since 0.16.0: when the daemon advertises `companion-progress`, the digest
+says where up to three running broker tasks are ("step 2 of 3 (curate)"),
+once per change of step. When it advertises `companion-result-reuse`,
+`vornik_delegate` passes `max_age_seconds` so a follow-up about something a
+read-only workflow fetched minutes ago reuses that answer instead of running
+the workflow again; an older daemon never receives the argument.
+
+## Proposed writes (0.2.0)
+
+A broker workflow may **propose** a write, such as a reply to an email, instead
+of performing it. Its `vornik_catalog` entry lists `proposes`, and
+`vornik_result` / `vornik_status` carry an `actions` list with each write's
+state (`pending_approval`, `executed`, `unknown`, and so on). A person approves
+or rejects each draft in Vornik's `/inbox`; Duckwork cannot approve, and the
+skill tells it never to claim a write was sent before its state is
+`executed`. The daemon advertises `companion-broker-actions` when writes are
+enabled. On a daemon without it no workflow proposes, `actions` never appears,
+and the plugin needs no gating. The reverse, a 0.1.0 plugin against a daemon
+with writes on, sees an `actions` key its skill does not explain; it relays
+results but may not say that a draft awaits approval. Plugins update off the
+manifest version, and writes are off until the operator turns them on, so
+update the plugin before enabling `broker.writes`.
+
+## What it does on your machine
+
+What you would want to know before installing (Duckwork plugin catalog,
+rule 13):
+
+- **Network:** it talks only to the Vornik daemon at `VORNIK_URL`, your own.
+  It calls no third-party service and sends no telemetry. With `VORNIK_URL`
+  unset it opens no connection at all.
+- **Before each turn:** the `pre_llm_call` hook asks the daemon which broker
+  tasks finished (ids and states only); the memory provider, when enabled,
+  prefetches relevant memories.
+- **Memory:** when you select it as Duckwork's memory provider, it mirrors
+  Duckwork's curated `MEMORY.md` and `USER.md` writes to Vornik, and has
+  Vornik forget an entry Duckwork removes or replaces.
+- **Credentials:** it reads `VORNIK_URL`, `VORNIK_BROKER_TOKEN` and
+  `VORNIK_MEMORY_TOKEN` through Duckwork's secret scope
+  (`agent.secret_scope.get_secret`), the active profile's values, and
+  nothing else. It never reads `.env` or any other file for a credential,
+  stores no credential of its own and never reads another tool's login.
+- **Programs:** `duckwork vornik connect`, which you type, runs your local
+  `vornikctl` (`vornikctl agent connect duckwork`) with a 120-second limit. That
+  writes one MCP entry into Duckwork's config and a key file only you can
+  read. Once you select the approval transport (`duckwork vornik approvals
+  on`), Duckwork's approval seam runs `vornikctl agent host-approval` (the
+  path connect recorded, never a shell) for each flagged command, bounded by
+  Duckwork's approval timeout. Nothing else in the plugin runs a program: no
+  tool, hook or slash command does, so Duckwork's model cannot trigger it.
+- **Never:** it downloads or installs nothing (without `vornikctl`,
+  `connect` prints the install page), updates nothing by itself, runs no
+  background process, and never answers an approval for you: only your
+  paired phone does, and anything else is a deny.
+
+## Licence
+
+This directory is licensed **Apache-2.0** (see `LICENSE`), although the
+repository around it is AGPL-3.0: the repository's `LICENSING.md` maps each
+directory to its licence. The companion plugins are installed into
+third-party tools, so they carry a permissive licence on purpose.
+
+## Testing
+
+The unit tests (`python3 -m unittest discover -s tests -t .` from this
+directory) run the plugin against a scripted daemon and a fake Duckwork context.
+The end-to-end tests in `test/e2e/duckwork` (build tag `e2e_duckwork`) run it
+inside a pinned Duckwork release against a Vornik daemon built from the tree and
+a local llama.cpp model. They need podman and about 17 GB of downloads the
+first time (the gpt-oss-20b model and the Duckwork image). They are not part of
+CI; the maintainers run them before every version bump of this plugin.
+
+### Files from a completed run
+
+With an upgraded daemon and plugin, `vornik_list_artifacts` lists explicitly approved
+outputs using the completed result's `task_id` and `execution_id`.
+`vornik_read_artifact` takes one returned `artifact_id`: text is bounded and
+marked untrusted; a PDF or image returns a download link valid for five
+minutes. Relay that link immediately. The plugin does not download binary
+bytes into model context. The operator must declare additional file names
+in the workflow's `broker.egress.artifacts`; workflows with no declaration
+expose no additional files. Revoking the grant invalidates existing links.
+
+If these two tools do not appear in Duckwork, check `duckwork plugins list` for an
+available plugin update, run `duckwork plugins update vornik-companion`, and
+restart Duckwork. Then check `duckwork vornik status` for the daemon's
+`companion-artifact-read` capability. The workflow still needs an approved
+`broker.egress.artifacts` list; updating the plugin or daemon does not widen
+that approval.

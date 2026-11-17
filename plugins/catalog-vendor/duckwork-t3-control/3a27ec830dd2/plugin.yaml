@@ -1,0 +1,110 @@
+{
+  "manifest_version": 1,
+  "api_version": 1,
+  "name": "duckwork-t3-control",
+  "version": "1.5.0",
+  "description": "Control T3 work from Duckwork with bounded tools and operation-scoped local authentication; core thread lifecycle verified end-to-end with Codex.",
+  "author": "Jakub Sladek",
+  "license": "MIT",
+  "homepage": "https://github.com/DuckMind/duckwork",
+  "kind": "standalone",
+  "requires_env": [],
+  "provides_tools": [
+    "t3_threads",
+    "t3_thread_read",
+    "t3_thread_create",
+    "t3_thread_send",
+    "t3_thread_set_mode",
+    "t3_thread_implement_plan",
+    "t3_turn_interrupt",
+    "t3_session_stop",
+    "t3_thread_wait",
+    "t3_thread_respond",
+    "t3_thread_settle"
+  ],
+  "python_dependencies": [
+    "websockets>=15,<16"
+  ],
+  "config_schema": {
+    "auth_mode": {
+      "type": "string",
+      "required": false,
+      "description": "Optional explicit mode: local-cli or external-token. When omitted, a valid profile token selects external-token, no token selects local-cli, and invalid token configuration fails closed."
+    },
+    "base_url": {
+      "type": "string",
+      "required": false,
+      "description": "Numeric loopback-only T3 orchestration origin required only for external-token mode."
+    },
+    "t3_base_dir": {
+      "type": "string",
+      "required": false,
+      "description": "Optional absolute local T3 base directory override; normal local discovery uses the current user's .t3 directory."
+    },
+    "default_runtime_mode": {
+      "type": "string",
+      "required": false,
+      "default": "approval-required",
+      "description": "Default runtime mode for newly created threads when the tool call does not supply one."
+    },
+    "default_instance_id": {
+      "type": "string",
+      "required": false,
+      "description": "Optional T3 instance for new-thread defaults. Configure together with default_model; applies only to t3_thread_create."
+    },
+    "default_model": {
+      "type": "string",
+      "required": false,
+      "description": "Optional canonical model for new-thread defaults. Configure together with default_instance_id; applies only to t3_thread_create."
+    },
+    "default_reasoning_effort": {
+      "type": "string",
+      "required": false,
+      "description": "Optional reasoningEffort value added when t3_thread_create resolves the configured model pair and the call omits model_options."
+    },
+    "default_model_aliases": {
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional exact case-insensitive shorthand names for t3_thread_create. Aliases resolve with an omitted instance or the exact configured instance; another explicit instance remains literal."
+    },
+    "continuation_enabled": {
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Opt in to the default-profile T3 continuation worker. Ordinary required sends register one result report automatically through a ready native consumer; explicit gateway injection permission is required."
+    },
+    "continuation_excluded_bindings": {
+      "type": "array",
+      "items": {"type": "string"},
+      "default": [],
+      "description": "Skip explicitly retired binding IDs without rewriting their historical audit. Invalid values disable continuation admission."
+    },
+    "continuation_profile": {
+      "type": "string",
+      "required": false,
+      "default": "default",
+      "description": "Exact Duckwork profile allowed to own the continuation worker; only default is supported."
+    },
+    "continuation_max_queue_rows": {
+      "type": "integer",
+      "required": false,
+      "default": 128,
+      "description": "Bounded durable queue rows per binding (1-1024)."
+    },
+    "continuation_max_reconnects": {
+      "type": "integer",
+      "required": false,
+      "default": 12,
+      "description": "Bounded consecutive T3 stream reconnect attempts (1-64)."
+    },
+    "continuation_receipt_timeout_seconds": {
+      "type": "number",
+      "required": false,
+      "default": 900,
+      "description": "Bounded wait for the host's terminal internal-event receipt (30-1800 seconds)."
+    }
+  }
+}

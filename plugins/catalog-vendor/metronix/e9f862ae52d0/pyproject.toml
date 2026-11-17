@@ -1,0 +1,49 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-memory-metronix"
+version = "2026.34.1"
+description = "Standalone Duckwork memory-provider plugin scaffold for Metronix"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Metronix Contributors" }]
+license = "Apache-2.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests>=2.31,<3",
+    "pyyaml>=6,<7",
+]
+
+[project.urls]
+Repository = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+
+[project.scripts]
+duckwork-metronix-setup = "duckwork_memory_metronix_setup.setup:main"
+
+[project.entry-points."duckwork_agent.memory_providers"]
+metronix = "metronix:register"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9,<10",
+]
+
+[tool.setuptools.packages.find]
+where = ["plugin"]
+
+[tool.setuptools.package-data]
+metronix = ["plugin.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["plugin"]
+markers = ["integration: tests that require a live Metronix backend"]

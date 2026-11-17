@@ -1,0 +1,213 @@
+"""Deployment settings: timezone first. Resolution order is env, config file, system, then UTC.
+
+Config file: $HEALTH_INSIGHTS_CONFIG or ~/.config/health-insights/config.yaml (YAML mapping).
+"""
+from __future__ import annotations
+
+import os
+from functools import lru_cache
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+import yaml
+
+
+def modules_file() -> Path:
+    """The small file the `health-insights modules` command owns (so your config.yaml comments are never rewritten)."""
+    override = os.environ.get("HEALTH_INSIGHTS_MODULES_FILE")
+    return Path(override) if override else _config_path().with_name("modules.yaml")
+
+
+def package_data(name: str) -> Path:
+    """A default file shipped inside the package (health_monitor.yaml, dri.yaml)."""
+    return Path(__file__).resolve().parent / "data" / name
+
+
+def _config_path() -> Path:
+    override = os.environ.get("HEALTH_INSIGHTS_CONFIG")
+    return Path(override) if override else Path.home() / ".config" / "health-insights" / "config.yaml"
+
+
+@lru_cache(maxsize=1)
+def _config() -> dict:
+    path = _config_path()
+    try:
+        data = yaml.safe_load(path.read_text())
+    except (OSError, yaml.YAMLError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _system_zone() -> str:
+    tz = os.environ.get("TZ")
+    if tz:
+        return tz
+    try:
+        return Path("/etc/timezone").read_text().strip() or "UTC"
+    except OSError:
+        pass
+    try:
+        target = os.path.realpath("/etc/localtime")
+        if "zoneinfo/" in target:
+            return target.split("zoneinfo/", 1)[1]
+    except OSError:
+        pass
+    return "UTC"
+
+
+@lru_cache(maxsize=1)
+def _modules_file_data() -> dict:
+    try:
+        data = yaml.safe_load(modules_file().read_text())
+    except (OSError, yaml.YAMLError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def module_settings() -> dict:
+    """module id -> bool or mapping. Precedence: env list, then modules.yaml, then config.yaml `modules:`."""
+    merged: dict = {}
+    block = _config().get("modules")
+    if isinstance(block, dict):
+        merged.update(block)
+    merged.update(_modules_file_data())
+    env = os.environ.get("HEALTH_INSIGHTS_MODULES")
+    if env:
+        for name in (part.strip() for part in env.split(",")):
+            if name:
+                merged[name] = True
+    return merged
+
+
+@lru_cache(maxsize=1)
+def timezone_name() -> str:
+    name = os.environ.get("HEALTH_INSIGHTS_TZ") or _config().get("timezone") or _system_zone()
+    try:
+        ZoneInfo(name)
+    except Exception:
+        return "UTC"
+    return name
+
+
+def timezone() -> ZoneInfo:
+    return ZoneInfo(timezone_name())
+
+
+def tz_label() -> str:
+    """Short place name for report headers, e.g. 'Chicago' for America/Chicago."""
+    return timezone_name().split("/")[-1].replace("_", " ")
+
+
+def data_dir() -> Path:
+    """Where snapshots, merged history, labs, ECG and cards live."""
+    value = os.environ.get("HEALTH_INSIGHTS_DATA_DIR") or _config().get("data_dir")
+    return Path(value).expanduser() if value else Path.home() / ".local" / "share" / "health-insights"
+
+
+def labs_dir() -> Path:
+    return data_dir() / "labs"
+
+
+def ecg_dir() -> Path:
+    return data_dir() / "ecg"
+
+
+def cards_dir() -> Path:
+    return data_dir() / "cards"
+
+
+def config_path() -> Path:
+    """The config file this process reads (shown in error messages)."""
+    return _config_path()
+
+
+def healthrelay_db_path_file() -> Path:
+    """~/.config/healthrelay/db-path, shared with the healthrelay plugin's launcher."""
+    return Path.home() / ".config" / "healthrelay" / "db-path"
+
+
+def _db_path_from_file() -> str | None:
+    try:
+        lines = healthrelay_db_path_file().read_text().splitlines()
+    except (OSError, UnicodeDecodeError):
+        return None
+    return lines[0].strip() or None if lines else None
+
+
+def bridge_db() -> str | None:
+    """Path of the receiver's live database, or None when not configured.
+
+    Order: HEALTH_INSIGHTS_BRIDGE_DB, `bridge_db` in the config file, then the first line of
+    ~/.config/healthrelay/db-path.
+    """
+    return (os.environ.get("HEALTH_INSIGHTS_BRIDGE_DB") or _config().get("bridge_db")
+            or _db_path_from_file() or None)
+
+
+def _truthy(value) -> bool:
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def medlog_enabled() -> bool:
+    """Medication-adherence integration (the `medlog` CLI). Off unless enabled by env or config."""
+    env = os.environ.get("HEALTH_INSIGHTS_MEDLOG")
+    if env is not None:
+        return _truthy(env)
+    return _truthy((_config().get("integrations") or {}).get("medlog", False))
+
+
+def medlog_bin() -> str:
+    return os.environ.get("MEDLOG_BIN") or _config().get("medlog_bin") or "medlog"
+
+
+def medlog_path() -> str | None:
+    """Directory of the medication tracker's Python module, when it is not installed."""
+    return _config().get("medlog_path") or None
+
+
+def _bounded_int(value, default: int, maximum: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        return default
+    return min(value, maximum)
+
+
+def injection_window() -> dict:
+    """The `injection_window:` block: which medlog registry id to watch, how many baseline days, how many window days."""
+    raw = _config().get("injection_window")
+    raw = raw if isinstance(raw, dict) else {}
+    med = raw.get("medication_id")
+    return {
+        "medication_id": med.strip() if isinstance(med, str) and med.strip() else None,
+        "baseline_days": _bounded_int(raw.get("baseline_days"), 28, 365),
+        "window_days": _bounded_int(raw.get("window_days"), 3, 7),
+    }
+
+
+def narration_url() -> str | None:
+    """OpenAI-compatible chat-completions URL of a LOCAL model. None = deterministic text only."""
+    return os.environ.get("HEALTH_INSIGHTS_NARRATION_URL") or (_config().get("narration") or {}).get("url") or None
+
+
+def narration_model() -> str:
+    return (_config().get("narration") or {}).get("model") or "local"
+
+
+_PROFILE_KEYS = ("sex", "age_years", "pal", "goal_kcal", "activity_factor")
+
+
+def profile() -> dict:
+    """Personal energy-target inputs from the config file's `profile:` mapping (only known keys)."""
+    raw = _config().get("profile") or {}
+    return {k: raw[k] for k in _PROFILE_KEYS if isinstance(raw, dict) and k in raw}
+
+
+def weight_unit() -> str:
+    """Display unit for weight, 'kg' or 'lb'. Stored data is always kg."""
+    value = (os.environ.get("HEALTH_INSIGHTS_WEIGHT_UNIT") or _config().get("weight_unit") or "kg").strip().lower()
+    return value if value in ("kg", "lb") else "kg"
+
+
+def reset() -> None:
+    _config.cache_clear()
+    _modules_file_data.cache_clear()
+    timezone_name.cache_clear()

@@ -1,0 +1,106 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "The wait is a machine gate polling a check command \u2014 parked costs no tokens, unlike an agent sleeping in a loop",
+        "A cheap agent bootstrap installs the probe; only the release event wakes a model",
+        "Poll cadence and exit-code contract live in the gate bytes, reviewable without running anything"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "3 nodes: bootstrap agent -> watch machine gate -> report agent; 2 edges",
+        "Report reads the gate's committed answer \u2014 attempt count and timestamps come from the machine record",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "bootstrap",
+      "id": "bootstrap-watch",
+      "to": "watch",
+      "variant": "default"
+    },
+    {
+      "from": "watch",
+      "id": "watch-report",
+      "to": "report",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "gates",
+      "label": "Gates",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/machine-watch.html",
+    "quality_profile": "standard",
+    "subtitle": "Deterministic scheduled watcher: a machine gate polls a check command at a fixed cadence and costs ZERO tokens",
+    "title": "machine-watch"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "bootstrap",
+      "label": "Bootstrap",
+      "lane": "work",
+      "sublabel": "install the watch",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "watch",
+      "label": "Watch",
+      "lane": "gates",
+      "sublabel": "usr bin python3",
+      "tag": "machine hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "report",
+      "label": "Report",
+      "lane": "work",
+      "sublabel": "the machine gate",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 1
+    },
+    {
+      "fromCol": 2,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 2
+    }
+  ],
+  "schema_version": 2
+}

@@ -1,0 +1,13 @@
+name: liquid-inference-provider
+kind: model-provider
+version: 0.2.0
+description: Liquid Inference, an auction exchange for LLM inference, as a Duckwork model provider
+author: Architect
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21.6"
+requires_env:
+  - name: LIQUID_API_KEY
+    description: A Liquid Inference buyer key with the spend scope
+    url: https://inference.ai.exchange
+    secret: true

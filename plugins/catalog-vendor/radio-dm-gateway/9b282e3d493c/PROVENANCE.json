@@ -1,0 +1,451 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "radio-dm-gateway",
+  "content_id": "9b282e3d493c",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 41,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e"
+    },
+    {
+      "bytes": 35443,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "08dc805687b14e904598d07e195557bf20a1b8f2939568b4c500a037b821cf59"
+    },
+    {
+      "bytes": 20553,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "86f7fd78fdf7317deaa7e4444eb8a5427466fff0f91d4b8225bed82c7b8c08ef"
+    },
+    {
+      "bytes": 272,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "319f4e6c50001a76736eb7268d8c8c1c0ea9387217842f3800026c09281f0877"
+    },
+    {
+      "bytes": 41028,
+      "mode": "100644",
+      "path": "adapter.py",
+      "sha256": "537b032d1084aa6eb99a8dc8b9bd890214053623a22e98cc2ab29d1eb9659879"
+    },
+    {
+      "bytes": 2539,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "7db93c92dd1e6e541a08c955d6bdc50326ae0401273b119ce685ac05ce855d89"
+    },
+    {
+      "bytes": 21031,
+      "mode": "100644",
+      "path": "policy.py",
+      "sha256": "443cb35e4493def42987560db63a4dfd744a3ef8d3b2bab07c0bb248c4174402"
+    },
+    {
+      "bytes": 7227,
+      "mode": "100644",
+      "path": "radio.py",
+      "sha256": "d20757b3f8e69f4d61812abc564b4e8e2156744fceda207cd43f9dd58c580b8e"
+    },
+    {
+      "bytes": 2528,
+      "mode": "100644",
+      "path": "store.py",
+      "sha256": "ae39d8820025e523892037fa909d2d7712883ed4f4c3f66cbeec4bc5bf32beed"
+    },
+    {
+      "bytes": 77956,
+      "mode": "100644",
+      "path": "tests/test_adapter.py",
+      "sha256": "47aec4c535724db42a607239a048f6b1f3952dd9cd81302682e8b59ee3acc1e0"
+    },
+    {
+      "bytes": 15343,
+      "mode": "100644",
+      "path": "tests/test_policy.py",
+      "sha256": "86915ad120bed2d262c7de5c48b4b9a25b2d580d4623cc2c2a984dc3be76af4f"
+    },
+    {
+      "bytes": 2003,
+      "mode": "100644",
+      "path": "tests/test_radio.py",
+      "sha256": "2b281208533703de7ef18486c3094ba526619eb0ac367bfb0747b49defcfa931"
+    }
+  ],
+  "input_manifest_sha256": "9b282e3d493cdbeb295b9c9459a45578d9b0be2c3ee9f20cf2f9465b842c8332",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "GPL-3.0",
+        "path": "LICENSE",
+        "sha256": "08dc805687b14e904598d07e195557bf20a1b8f2939568b4c500a037b821cf59",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "GPL-3.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "adapter.py",
+      "plugin.yaml",
+      "policy.py",
+      "radio.py",
+      "store.py",
+      "tests/test_adapter.py",
+      "tests/test_policy.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      "README.md",
+      "adapter.py",
+      "plugin.yaml",
+      "policy.py",
+      "radio.py",
+      "store.py",
+      "tests/test_adapter.py",
+      "tests/test_policy.py"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/TakeshiTGAL/hermes-plugin-radio-dm-gateway",
+    "sha": "cc543e3fcd331bb3aeb995d8176947593134e7a3",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/TakeshiTGAL/hermes-plugin-radio-dm-gateway",
+  "original_sha": "cc543e3fcd331bb3aeb995d8176947593134e7a3",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e",
+      "bytes": 41,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "08dc805687b14e904598d07e195557bf20a1b8f2939568b4c500a037b821cf59",
+      "bytes": 35443,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "78ea163fed892285289d081d8c0315cea9b30836b5e5cd896680fadc34d0dad5",
+      "bytes": 20841,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "319f4e6c50001a76736eb7268d8c8c1c0ea9387217842f3800026c09281f0877",
+      "bytes": 272,
+      "mode": "100644"
+    },
+    {
+      "path": "adapter.py",
+      "sha256": "6adb40e6c39cf0f4f0355ee9229bd4457239cb62bac9609b2cfc2422e7db8421",
+      "bytes": 41254,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "0b2ec19bc4e9adff1a341443639fcc754154d7df7ad254d2534f7b079d14158c",
+      "bytes": 2664,
+      "mode": "100644"
+    },
+    {
+      "path": "policy.py",
+      "sha256": "647941d2dffff05428db9efd752bc87da0de2b4f162b54e9061128a36c44f211",
+      "bytes": 21205,
+      "mode": "100644"
+    },
+    {
+      "path": "radio.py",
+      "sha256": "4727f9266469eaf14dd71fbab5206abccf79ac7a2f66eb4b66f2751f1b0f6b61",
+      "bytes": 7371,
+      "mode": "100644"
+    },
+    {
+      "path": "store.py",
+      "sha256": "5dff272f3ede34cc915ab5e701a354964bf1399af11cc6f145192733e94226e2",
+      "bytes": 2672,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_adapter.py",
+      "sha256": "05e9e1c5685c21680cd2313361bef1d2176066236758c5544f5dffd0be4a30f1",
+      "bytes": 78166,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_policy.py",
+      "sha256": "5c882895804d2249eb549019870f473b0be82515966c78508da4c1bdf224e294",
+      "bytes": 15489,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_radio.py",
+      "sha256": "2b281208533703de7ef18486c3094ba526619eb0ac367bfb0747b49defcfa931",
+      "bytes": 2003,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "0e6e199c07e3f1a511ca13d25756f11482f7d35136724da9e7895b47599cff30",
+  "pin_verification": {
+    "archive_bytes": 56173,
+    "archive_sha256": "0c145be7a2014b140afb6a8287cbd277c60105cb60dc56a02046c3459e512276",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "cc543e3fcd331bb3aeb995d8176947593134e7a3",
+    "verified_commit_marker": "cc543e3fcd331bb3aeb995d8176947593134e7a3"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "909a8cb1201e951888b05b123cad6368ff7d7e081f5c5f274437b31ea59d85bd",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e",
+        "source": ".gitignore",
+        "final_output_sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "08dc805687b14e904598d07e195557bf20a1b8f2939568b4c500a037b821cf59",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "08dc805687b14e904598d07e195557bf20a1b8f2939568b4c500a037b821cf59",
+        "source": "LICENSE",
+        "final_output_sha256": "08dc805687b14e904598d07e195557bf20a1b8f2939568b4c500a037b821cf59",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "08dc805687b14e904598d07e195557bf20a1b8f2939568b4c500a037b821cf59"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "86f7fd78fdf7317deaa7e4444eb8a5427466fff0f91d4b8225bed82c7b8c08ef",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8b707f2cfe7863af6c61d9f101807234b83a0ec8ef9f3a64306a49ac849c98ec",
+        "source": "README.md",
+        "final_output_sha256": "78ea163fed892285289d081d8c0315cea9b30836b5e5cd896680fadc34d0dad5",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "40bc69852fc81542fd20a13cf4fdb92091d2e0ed143e9cee68e2d03b0904e623"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "319f4e6c50001a76736eb7268d8c8c1c0ea9387217842f3800026c09281f0877",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "319f4e6c50001a76736eb7268d8c8c1c0ea9387217842f3800026c09281f0877",
+        "source": "__init__.py",
+        "final_output_sha256": "319f4e6c50001a76736eb7268d8c8c1c0ea9387217842f3800026c09281f0877",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "319f4e6c50001a76736eb7268d8c8c1c0ea9387217842f3800026c09281f0877"
+      },
+      {
+        "destination": "adapter.py",
+        "input_sha256": "537b032d1084aa6eb99a8dc8b9bd890214053623a22e98cc2ab29d1eb9659879",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c2c534f775970b6c5862eb8dfda5ffa0ade5862fa2d98f22d53c8588fdd3de88",
+        "source": "adapter.py",
+        "final_output_sha256": "6adb40e6c39cf0f4f0355ee9229bd4457239cb62bac9609b2cfc2422e7db8421",
+        "cli_destination": "adapter.py",
+        "previous_staging_sha256": "6adb40e6c39cf0f4f0355ee9229bd4457239cb62bac9609b2cfc2422e7db8421"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "7db93c92dd1e6e541a08c955d6bdc50326ae0401273b119ce685ac05ce855d89",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c040c2c9920a65d68eb484d70c273cc7e6889ba10c7b8c3c2847941a5fb0f070",
+        "source": "plugin.yaml",
+        "final_output_sha256": "0b2ec19bc4e9adff1a341443639fcc754154d7df7ad254d2534f7b079d14158c",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "e6414a9ce892e8f6c6ced758642c24ba02c13d20de651cb502ec44a604a8f61c"
+      },
+      {
+        "destination": "policy.py",
+        "input_sha256": "443cb35e4493def42987560db63a4dfd744a3ef8d3b2bab07c0bb248c4174402",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f3a7ac1c912f7452995dd16f870a7b209efd9ce36aa91fad2eee19af00aec1f0",
+        "source": "policy.py",
+        "final_output_sha256": "647941d2dffff05428db9efd752bc87da0de2b4f162b54e9061128a36c44f211",
+        "cli_destination": "policy.py",
+        "previous_staging_sha256": "647941d2dffff05428db9efd752bc87da0de2b4f162b54e9061128a36c44f211"
+      },
+      {
+        "destination": "radio.py",
+        "input_sha256": "d20757b3f8e69f4d61812abc564b4e8e2156744fceda207cd43f9dd58c580b8e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c99183ee24a47236dc8f33e0bdbad7db999ce9fd426a243b9da4b9e6bcc7282",
+        "source": "radio.py",
+        "final_output_sha256": "4727f9266469eaf14dd71fbab5206abccf79ac7a2f66eb4b66f2751f1b0f6b61",
+        "cli_destination": "radio.py",
+        "previous_staging_sha256": "4727f9266469eaf14dd71fbab5206abccf79ac7a2f66eb4b66f2751f1b0f6b61"
+      },
+      {
+        "destination": "store.py",
+        "input_sha256": "ae39d8820025e523892037fa909d2d7712883ed4f4c3f66cbeec4bc5bf32beed",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6f325a406922490ab2fb2c1b5935ad02edba5cb846badecd64a58173d7db133d",
+        "source": "store.py",
+        "final_output_sha256": "5dff272f3ede34cc915ab5e701a354964bf1399af11cc6f145192733e94226e2",
+        "cli_destination": "store.py",
+        "previous_staging_sha256": "5dff272f3ede34cc915ab5e701a354964bf1399af11cc6f145192733e94226e2"
+      },
+      {
+        "destination": "tests/test_adapter.py",
+        "input_sha256": "47aec4c535724db42a607239a048f6b1f3952dd9cd81302682e8b59ee3acc1e0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e65082fc5030f5540e5faa19fb2ed3c0ecb9082c19735fcb2e91f77df59732a1",
+        "source": "tests/test_adapter.py",
+        "final_output_sha256": "05e9e1c5685c21680cd2313361bef1d2176066236758c5544f5dffd0be4a30f1",
+        "cli_destination": "tests/test_adapter.py",
+        "previous_staging_sha256": "05e9e1c5685c21680cd2313361bef1d2176066236758c5544f5dffd0be4a30f1"
+      },
+      {
+        "destination": "tests/test_policy.py",
+        "input_sha256": "86915ad120bed2d262c7de5c48b4b9a25b2d580d4623cc2c2a984dc3be76af4f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f0cf379f1f8cef13477b05b8b54db1aa2d5785f0ecd1c44760590c1b1c13931d",
+        "source": "tests/test_policy.py",
+        "final_output_sha256": "5c882895804d2249eb549019870f473b0be82515966c78508da4c1bdf224e294",
+        "cli_destination": "tests/test_policy.py",
+        "previous_staging_sha256": "5c882895804d2249eb549019870f473b0be82515966c78508da4c1bdf224e294"
+      },
+      {
+        "destination": "tests/test_radio.py",
+        "input_sha256": "2b281208533703de7ef18486c3094ba526619eb0ac367bfb0747b49defcfa931",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2b281208533703de7ef18486c3094ba526619eb0ac367bfb0747b49defcfa931",
+        "source": "tests/test_radio.py",
+        "final_output_sha256": "2b281208533703de7ef18486c3094ba526619eb0ac367bfb0747b49defcfa931",
+        "cli_destination": "tests/test_radio.py",
+        "previous_staging_sha256": "2b281208533703de7ef18486c3094ba526619eb0ac367bfb0747b49defcfa931"
+      }
+    ],
+    "manifest_sha256": "b348ad0b9fd0a30c82876f5944a5327b7278a89febb814565f64b4c77429e1de",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "adapter.py": "adapter.py",
+    "plugin.yaml": "plugin.yaml",
+    "policy.py": "policy.py",
+    "radio.py": "radio.py",
+    "store.py": "store.py",
+    "tests/test_adapter.py": "tests/test_adapter.py",
+    "tests/test_policy.py": "tests/test_policy.py",
+    "tests/test_radio.py": "tests/test_radio.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "radio-dm-gateway",
+    "python_files_compiled": 8,
+    "secret_findings": 0
+  },
+  "canonical_slug": "radio-dm-gateway",
+  "catalog_file": "src/plugin-catalog/radio-dm-gateway.yaml",
+  "identity": {
+    "catalog_id": "radio-dm-gateway",
+    "canonical_slug": "radio-dm-gateway",
+    "original_manifest_name": "radio-dm-gateway",
+    "rebranded_manifest_name": "radio-dm-gateway",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "21bc354e22037a1e0a3e96c6676d1b75006b6a384085a45117b6e8f54c417ed0",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "40bc69852fc81542fd20a13cf4fdb92091d2e0ed143e9cee68e2d03b0904e623",
+          "after_sha256": "78ea163fed892285289d081d8c0315cea9b30836b5e5cd896680fadc34d0dad5",
+          "before_bytes": 20836,
+          "after_bytes": 20841,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "e6414a9ce892e8f6c6ced758642c24ba02c13d20de651cb502ec44a604a8f61c",
+          "after_sha256": "0b2ec19bc4e9adff1a341443639fcc754154d7df7ad254d2534f7b079d14158c",
+          "before_bytes": 2689,
+          "after_bytes": 2664,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

@@ -1,0 +1,10 @@
+{
+  "verdict": "refuse",
+  "reason": "agent() option `isolation` at line 8 is not in the documented option set {schema, label, model, phase} (dialect.md row 1); worktree isolation is NOT DOCUMENTED as an agent() option in the primary sources and our trust model is verify-not-isolate (row 10), so an unknown option is refused rather than dropped — dropping it would silently change what the author asked for",
+  "rows": [
+    1,
+    10
+  ],
+  "refuse_construct": "unknown agent() option: isolation",
+  "refuse_line": 8
+}

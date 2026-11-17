@@ -1,0 +1,22 @@
+name: hud-teach
+version: 0.1.3
+description: Numbered click-through marks on any live Mac window — chess, games, Photoshop, Settings.
+author: Luke The Dev (@iamlukethedev)
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+kind: standalone
+requires_duckwork: ">=0.20.0"
+platforms:
+  - macos
+tags:
+  - desktop
+  - hud
+  - teach
+provides_tools:
+  - teach_screen
+provides_hooks:
+  - on_session_end
+hooks:
+  - on_session_end
+requires_env: []
+python_dependencies: []

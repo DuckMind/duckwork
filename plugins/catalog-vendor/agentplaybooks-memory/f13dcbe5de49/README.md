@@ -1,0 +1,123 @@
+# AgentPlaybooks Memory for Duckwork
+
+![AgentPlaybooks Memory for Duckwork](https://github.com/DuckMind/duckwork)
+
+A native Duckwork memory provider backed by [AgentPlaybooks](https://agentplaybooks.ai).
+Remember durable facts across sessions, inspect and correct them in AgentPlaybooks,
+and share selected knowledge with other agents through explicitly configured playbooks.
+For playbook skills, MCP and OpenAPI tools, and authentication in Duckwork, see
+the [AgentPlaybooks Tools plugin](https://github.com/DuckMind/duckwork).
+
+## Install
+
+On the gateway host/container, as the user running Duckwork:
+
+```bash
+npm install -g @agentplaybooks/cli@0.7.0
+apb memory setup PRIVATE_PLAYBOOK_GUID --target=duckwork
+apb memory setup PRIVATE_PLAYBOOK_GUID --target=duckwork --apply
+duckwork memory setup
+duckwork memory status
+```
+
+Select **agentplaybooks-memory** in the Duckwork setup wizard. Create a **private** playbook
+and a playbook-scoped key with `memory:read` and `memory:write` in its Integrations
+tab. Supply the key through Duckwork's secret setup or the profile-scoped
+`AGENTPLAYBOOKS_MEMORY_API_KEY` environment variable. The AgentPlaybooks CLI never
+copies a credential. An account-management key is not a substitute for this key.
+
+The CLI command is `apb memory setup <guid> --target=duckwork` in a CLI release that
+includes this provider. `--profile=work` selects a named profile; `--profile=default`
+returns to the installation root even from another active profile. It honors `DUCKWORK_HOME`; `--duckwork-home=<directory>` selects
+an explicit profile. Existing settings and different plugin files are reported as
+conflicts. No existing memory is imported or overwritten.
+
+Alternatively, install the Python package into **Duckwork's own Python environment**:
+
+```bash
+python -m pip install ./packages/duckwork-memory
+duckwork memory setup
+```
+
+The plugin is listed in the Duckwork catalog and can be installed with
+`duckwork plugins install agentplaybooks-memory`. The catalog pins a reviewed source
+commit. Direct repository installation also works with
+`duckwork plugins install matebenyovszky/agentplaybooks/packages/duckwork-memory/agentplaybooks`.
+Use `--ref <full-commit-sha>` to pin a direct installation, then run `duckwork memory setup`.
+
+Duckwork discovers its `duckwork_agent.memory_providers` entry point. The
+[catalog entry](https://github.com/DuckMind/duckwork) was
+merged and is present in the live plugin catalog.
+
+Requires Duckwork **0.22.4 or later**, with `agent.memory_provider.MemoryProvider`, profile-scoped
+`agent.secret_scope.get_secret`, and authoritative memory-write provenance (`previous_content`). Tested
+against the upstream revision recorded in this repository's compatibility workflow.
+Duckwork Desktop also presents native configuration fields for this provider. CLI
+and Desktop share `$DUCKWORK_HOME/agentplaybooks/config.json` and the profile's secret store.
+
+## What it does
+
+- Recalls with up to four keywords across personal and team sources in parallel.
+  Four workers, a four-second deadline and an 8,000-character/eight-record limit
+  bound latency and context. Up to eight sources are searched; explicit tools
+  remain available for every configured source. Matching is lexical, not semantic.
+- Mirrored replacement/removal uses exact Duckwork `previous_content`. Missing or
+  ambiguous identity requires reconciliation and never mutates another entry.
+- Exposes `apb_memory_search`, `apb_memory_read`, `apb_memory_write`,
+  `apb_memory_archive`, `apb_memory_delete`, and `apb_memory_history`.
+- Mirrors explicit built-in Duckwork memory additions, replacements and removals.
+  The original entry key survives a replacement, preserving remote history.
+- Records agent, session, author, platform and source on writes.
+- Keeps Duckwork's built-in MEMORY.md and USER.md active. Correcting remote memory
+  does not rewrite those files: also correct a mirrored local entry with Duckwork's
+  memory tool. Permanent forgetting must remove both copies; remote deletion also
+  deletes remote history. Archive retains content and is not forgetting.
+
+The provider does **not** upload conversation transcripts, run automatic fact
+extraction, import existing local memory, add embeddings, or implement a
+local cache, offline queue, retries or circuit breaker. A failed API operation is
+reported, not queued for later delivery. The HTTP transport has a finite timeout;
+Duckwork itself supplies its normal external-provider execution deadline.
+
+Only primary-agent contexts write. Session switches update provenance, and
+per-turn author metadata follows gateway participants. One private playbook is the
+memory boundary for a profile: **everyone allowed to use that profile shares its
+memory**. Use separate profiles and private playbooks for users needing isolation.
+
+## Shared knowledge
+
+Set `shared_playbooks` to comma-separated GUIDs in `duckwork memory setup`, or pass
+`--shared=<guid>,<guid>` to the AgentPlaybooks setup command. These are read-only
+sources selectable with the memory tools' `source` argument; automatic recall
+uses personal and configured team playbooks; read-only sources are queried explicitly.
+
+For a private shared playbook, supply a read-only key using
+`AGENTPLAYBOOKS_SHARED_<GUID_WITHOUT_HYPHENS_UPPERCASE>_API_KEY` in the profile's
+secret environment. Public sources need no key. Personal credentials are never
+sent to shared sources. Tags and metadata organize data; they are not access controls.
+
+Personal writes are refused if the playbook is public or unlisted. The plugin
+checks anonymous visibility and authenticated access before writing using existing
+AgentPlaybooks APIs. Keep this playbook private: changing its visibility later
+publishes existing contents according to the service's access model. Visibility
+checks and writes are separate requests, not a transaction locking visibility.
+
+## Verify
+
+1. Ask Duckwork to save a new fact with `apb_memory_write`.
+2. Start a new session and read/search that key.
+3. Correct it in the AgentPlaybooks editor, then read it again from Duckwork.
+4. Inspect history, archive it, and confirm normal search no longer returns it.
+5. Permanently delete it when finished.
+
+Development tests use an HTTP fake of the existing REST API and do not touch a
+real account. From the repository root:
+
+```bash
+python -m unittest discover -s packages/duckwork-memory/tests -v
+npm --prefix packages/cli test
+```
+
+## License
+
+MIT. The plugin has no third-party Python runtime dependencies beyond Duckwork.

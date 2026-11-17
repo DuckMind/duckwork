@@ -1,0 +1,877 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install runtime deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install 'httpx>=0.27' 'python-socketio[asyncio_client]>=5.11' pyyaml
+
+      - name: Syntax check all modules
+        run: |
+          python - <<'PY'
+          import ast, pathlib, sys
+          fail = False
+          for p in sorted(pathlib.Path('.').glob('*.py')):
+              try:
+                  ast.parse(p.read_text())
+                  print(f"OK  {p.name}")
+              except SyntaxError as e:
+                  print(f"ERR {p.name}: {e}")
+                  fail = True
+          sys.exit(1 if fail else 0)
+          PY
+
+      - name: Validate plugin.yaml
+        run: |
+          python - <<'PY'
+          import yaml, sys
+          data = yaml.safe_load(open('plugin.yaml'))
+          required = {'name', 'label', 'kind', 'version', 'requires_env'}
+          missing = required - set(data.keys())
+          assert not missing, f"plugin.yaml missing keys: {missing}"
+          assert data['kind'] == 'platform', f"unexpected kind: {data['kind']!r}"
+          assert any(e['name'] == 'CARBONVOICE_PAT' for e in data['requires_env']), \
+              "CARBONVOICE_PAT must be in requires_env"
+          print(f"plugin.yaml v{data['version']} OK")
+          PY
+
+      - name: Import duckwork-agent-free modules
+        run: |
+          # adapter.py and setup.py import from `gateway.*` which only exists
+          # inside an installed Duckwork. The rest of the package is pure and
+          # should import cleanly with just httpx + python-socketio.
+          python - <<'PY'
+          import importlib.util, pathlib, sys, types
+
+          ROOT = pathlib.Path('.').resolve()
+          pkg_name = 'carbonvoice'
+          pkg = types.ModuleType(pkg_name)
+          pkg.__path__ = [str(ROOT)]
+          sys.modules[pkg_name] = pkg
+
+          # Modules that don't touch gateway.*
+          for name in ['constants', 'parse', 'dedupe', 'state', 'api', 'transport', 'permits', 'audit', 'reactions', 'channels', 'gate', 'conversations']:
+              spec = importlib.util.spec_from_file_location(
+                  f'{pkg_name}.{name}', ROOT / f'{name}.py'
+              )
+              mod = importlib.util.module_from_spec(spec)
+              sys.modules[f'{pkg_name}.{name}'] = mod
+              spec.loader.exec_module(mod)
+              print(f'imported {pkg_name}.{name}')
+
+          # Sanity checks against the API surface
+          from carbonvoice.parse import extract_transcript, extract_message_id
+          assert extract_transcript({'text_models': [{'type': 'transcript', 'value': 'hi'}]}) == 'hi'
+          assert extract_message_id({'message_id': 'abc'}) == 'abc'
+
+          from carbonvoice.audit import AllowlistGate
+          import os
+          # DENY-BY-DEFAULT: unset env vars → nobody allowed (security fix).
+          os.environ.pop('CARBONVOICE_ALLOW_ALL_USERS', None)
+          os.environ.pop('CARBONVOICE_ALLOWED_USERS', None)
+          _g = AllowlistGate.from_env()
+          assert _g.is_allowed('anyone') is False, 'deny-by-default'
+          assert _g.has_any_authorizer is False
+          # The owner (whoami.created_by, set at connect) is always allowed —
+          # this is what makes deny-by-default usable with zero config.
+          _g.set_owner('OWNER')
+          assert _g.is_owner('OWNER') and _g.is_allowed('OWNER')
+          assert _g.is_allowed('anyone') is False
+          assert _g.has_any_authorizer is True
+          # allow-all is now an explicit opt-IN escape hatch (was the default).
+          os.environ['CARBONVOICE_ALLOW_ALL_USERS'] = 'true'
+          assert AllowlistGate.from_env().is_allowed('anyone') is True
+          os.environ.pop('CARBONVOICE_ALLOW_ALL_USERS')
+          # Static env list still works alongside the owner.
+          os.environ['CARBONVOICE_ALLOWED_USERS'] = 'abc'
+          g = AllowlistGate.from_env(); g.set_owner('OWNER')
+          assert g.is_allowed('abc') and g.is_allowed('OWNER') and not g.is_allowed('xyz')
+          os.environ.pop('CARBONVOICE_ALLOWED_USERS')
+
+          # Interactive allow-list: command parser + ApprovalStore degrades
+          # safely without Duckwork core (no gateway.pairing in standalone CI).
+          from carbonvoice.permits import parse_admin_command, ApprovalStore
+          assert parse_admin_command('/cv-allow-user Fmx4') == ('allow', 'Fmx4')
+          assert parse_admin_command('  /CV-DENY-USER  ABC ') == ('deny', 'ABC')
+          assert parse_admin_command('/cv-list-allow-users') == ('list', None)
+          assert parse_admin_command('/cv-allow-user') == ('allow', None)  # missing arg → usage
+          assert parse_admin_command('hi /cv-allow-user X') is None        # not a command
+          assert parse_admin_command('/cv-nope X') is None
+          assert parse_admin_command('/cv-allow X') is None                # old short form gone
+          # list-allow-users must not be shadowed by allow-user
+          assert parse_admin_command('/cv-list-allow-users')[0] == 'list'
+          assert parse_admin_command(None) is None and parse_admin_command('') is None
+          _appr = ApprovalStore()
+          assert _appr.available is False
+          assert _appr.is_approved('x') is False and _appr.approve('x') is False
+          assert _appr.revoke('x') is False and _appr.list_approved() == []
+          # Gate consults the ApprovalStore for dynamic approvals.
+          ga = AllowlistGate.from_env(_appr); ga.set_owner('OWNER')
+          assert ga.is_allowed('OWNER') and not ga.is_allowed('x')
+          print('deny-by-default allow-list + interactive commands: OK')
+
+          from carbonvoice.dedupe import SeenCache
+          c = SeenCache(ttl_s=60)
+          assert not c.is_seen('x')
+          c.mark('x')
+          assert c.is_seen('x')
+
+          # Participant roster from json_collaborators (GET /v3/users is dead,
+          # 404; the channel collaborator list is the name source of truth).
+          from carbonvoice.parse import extract_roster
+          _chan = {'json_collaborators': [
+              {'user_guid': 'u1', 'first_name': 'Cristian', 'last_name': 'Murillo'},
+              {'user_guid': 'u2', 'first_name': 'crd', 'last_name': 'producer'},
+              {'user_guid': 'u3', 'display_name': 'Flat Name'},   # alt shape
+          ]}
+          _r = extract_roster(_chan)
+          assert _r == {'u1': 'Cristian Murillo', 'u2': 'crd producer', 'u3': 'Flat Name'}, _r
+          assert extract_roster(None) == {} and extract_roster({}) == {}
+          assert extract_roster({'json_collaborators': [{'first_name': 'x'}]}) == {}  # no guid → skip
+
+          from carbonvoice.parse import chat_type_from_channel
+          # Safe defaults: missing/empty/unknown payload → "dm" (preserves
+          # prior "bot responds always" behavior until we gate on chat_type).
+          assert chat_type_from_channel(None) == 'dm'
+          assert chat_type_from_channel({}) == 'dm'
+          assert chat_type_from_channel({'unrelated': 'field'}) == 'dm'
+          # Explicit signals from PersonalizedChannel.type
+          assert chat_type_from_channel({'type': 'directMessage'}) == 'dm'
+          assert chat_type_from_channel({'type': 'namedConversation'}) == 'group'
+          assert chat_type_from_channel({'type': 'customerConversation'}) == 'group'
+          assert chat_type_from_channel({'type': 'asyncMeeting'}) == 'group'
+          # dm_hash fallback when ``type`` is absent
+          assert chat_type_from_channel({'dm_hash': 'abc123'}) == 'dm'
+          assert chat_type_from_channel({'dm_hash': None}) == 'dm'
+
+          # Mention detection — tagged_user_ids ONLY. cv-api #243 exposes
+          # the field; the Flutter composer strips inline @[name](guid) to
+          # plain @Name before send (and voice tags via the batch endpoint
+          # post-STT), so there is no inline markup left to parse. Locks
+          # the structured-only contract (CV mentions migration).
+          from carbonvoice.parse import is_user_mentioned
+          assert is_user_mentioned({'tagged_user_ids': ['BOT']}, 'BOT') is True
+          assert is_user_mentioned({'tagged_user_ids': ['OTHER']}, 'BOT') is False
+          # Empty / missing tagged_user_ids → not mentioned (no fallback).
+          assert is_user_mentioned({'tagged_user_ids': []}, 'BOT') is False
+          assert is_user_mentioned({}, 'BOT') is False
+          # Inline @[name](guid) in the transcript is now IGNORED — detection
+          # is structured-field only. A voice memo's tag arrives later on a
+          # message:updated, which the gate's revisitable path re-evaluates.
+          assert is_user_mentioned({'transcript': '@[Bot](BOT) hi'}, 'BOT') is False
+          assert is_user_mentioned({'transcript_txt': '@[Bot](BOT) hi'}, 'BOT') is False
+          # Missing user_id never matches.
+          assert is_user_mentioned({'tagged_user_ids': ['BOT']}, None) is False
+
+          # Server-side dedup marker: the bot's own ack reaction in
+          # reaction_summary means "already processed" (survives restarts,
+          # breaks the use_last_updated re-capture loop).
+          from carbonvoice.parse import bot_has_reacted
+          _rs = {'reaction_summary': {'top_user_reactions': [
+              {'user_id': 'BOT', 'reaction_id': 'acknowledged'}]}}
+          assert bot_has_reacted(_rs, 'BOT', 'acknowledged') is True
+          assert bot_has_reacted(_rs, 'OTHER', 'acknowledged') is False     # someone else's reaction
+          assert bot_has_reacted(_rs, 'BOT', 'love') is False               # different reaction
+          assert bot_has_reacted({}, 'BOT', 'acknowledged') is False        # no summary
+          assert bot_has_reacted(_rs, None, 'acknowledged') is False
+          assert bot_has_reacted(_rs, 'BOT', None) is False
+
+          # MentionGate decisions
+          from carbonvoice.gate import MentionGate
+          g = MentionGate(require_mention=True, free_response_channels=set(), ignored_channels=set())
+          # DM always passes regardless of mention
+          assert g.evaluate(msg={'transcript_txt': 'hi'}, chat_type='dm', channel_id='c', self_user_id='BOT').process
+          # Group without mention → skip
+          assert not g.evaluate(msg={'transcript_txt': 'hi'}, chat_type='group', channel_id='c', self_user_id='BOT').process
+          # Group with structured tag → process
+          assert g.evaluate(msg={'tagged_user_ids': ['BOT']}, chat_type='group', channel_id='c', self_user_id='BOT').process
+          # Group with ONLY inline markup (no tag) → skip. Detection is
+          # tagged_user_ids-only now; inline @[name](guid) is ignored.
+          assert not g.evaluate(msg={'transcript': '@[Bot](BOT) hi'}, chat_type='group', channel_id='c', self_user_id='BOT').process
+
+          # Ignored channel vetoes everything, including DMs
+          g_mute = MentionGate(require_mention=True, free_response_channels=set(), ignored_channels={'mute'})
+          assert not g_mute.evaluate(msg={'tagged_user_ids': ['BOT']}, chat_type='dm', channel_id='mute', self_user_id='BOT').process
+          assert not g_mute.evaluate(msg={'tagged_user_ids': ['BOT']}, chat_type='group', channel_id='mute', self_user_id='BOT').process
+
+          # Free-response channel bypasses mention requirement
+          g_free = MentionGate(require_mention=True, free_response_channels={'free'}, ignored_channels=set())
+          assert g_free.evaluate(msg={'transcript_txt': 'no mention'}, chat_type='group', channel_id='free', self_user_id='BOT').process
+
+          # require_mention=false → group passes without mention
+          g_open = MentionGate(require_mention=False, free_response_channels=set(), ignored_channels=set())
+          assert g_open.evaluate(msg={'transcript_txt': 'no mention'}, chat_type='group', channel_id='c', self_user_id='BOT').process
+
+          # Revisitable rejections: only "group channel without @-mention"
+          # is revisitable, because cv-api emits message:updated after
+          # the async tag-resolution job populates tagged_user_ids — a
+          # rejection now can flip to acceptance on the next re-fire.
+          # All other rejections (ignored channel, etc.) are stable and
+          # must NOT be revisitable, otherwise the adapter re-evaluates
+          # them on every retry without any chance of a different outcome.
+          d_no_mention = g.evaluate(
+              msg={'transcript_txt': 'hi'}, chat_type='group',
+              channel_id='c', self_user_id='BOT',
+          )
+          assert not d_no_mention.process and d_no_mention.revisitable, \
+              'group-without-mention rejection must be revisitable so a ' \
+              'later message:updated with populated tagged_user_ids ' \
+              "gets a fresh gate evaluation (don't dedup it away)"
+          d_ignored = g_mute.evaluate(
+              msg={'tagged_user_ids': ['BOT']}, chat_type='group',
+              channel_id='mute', self_user_id='BOT',
+          )
+          assert not d_ignored.process and not d_ignored.revisitable, \
+              'ignored-channel rejection must be stable (not revisitable)'
+
+          # from_env smoke
+          import os
+          for k in ['CARBONVOICE_REQUIRE_MENTION', 'CARBONVOICE_FREE_RESPONSE_CHANNELS', 'CARBONVOICE_IGNORED_CHANNELS']:
+              os.environ.pop(k, None)
+          gd = MentionGate.from_env()
+          assert gd._require_mention is True
+          assert gd._free_response_channels == set() and gd._ignored_channels == set()
+          os.environ['CARBONVOICE_REQUIRE_MENTION'] = 'false'
+          os.environ['CARBONVOICE_FREE_RESPONSE_CHANNELS'] = 'a, b ,c'
+          os.environ['CARBONVOICE_IGNORED_CHANNELS'] = 'mute'
+          ge = MentionGate.from_env()
+          assert ge._require_mention is False
+          assert ge._free_response_channels == {'a', 'b', 'c'}
+          assert ge._ignored_channels == {'mute'}
+          for k in ['CARBONVOICE_REQUIRE_MENTION', 'CARBONVOICE_FREE_RESPONSE_CHANNELS', 'CARBONVOICE_IGNORED_CHANNELS']:
+              os.environ.pop(k, None)
+
+          # ConversationTracker: LRU bounds + recency
+          from carbonvoice.conversations import ConversationTracker, _LRUDict
+          lru = _LRUDict(3)
+          lru.set('a', 1); lru.set('b', 2); lru.set('c', 3)
+          assert len(lru) == 3
+          lru.set('d', 4)                  # evicts 'a' (oldest)
+          assert lru.get('a') is None and lru.get('d') == 4 and len(lru) == 3
+          lru.get('b')                     # bumps 'b' to most-recent
+          lru.set('e', 5)                  # evicts 'c' (now oldest after 'b' bump)
+          assert lru.get('c') is None and lru.get('b') == 2 and lru.get('e') == 5
+
+          # thread_id_of: top-level → own id; reply → parent id;
+          # fallback to _id / parent_message_guid; empty payload → None
+          assert ConversationTracker.thread_id_of({'message_id': 'm1'}) == 'm1'
+          assert ConversationTracker.thread_id_of({'message_id': 'm2', 'parent_message_id': 'r1'}) == 'r1'
+          assert ConversationTracker.thread_id_of({'_id': 'm3'}) == 'm3'
+          assert ConversationTracker.thread_id_of({'parent_message_guid': 'rg', 'message_id': 'm4'}) == 'rg'
+          assert ConversationTracker.thread_id_of({}) is None
+
+          # reply_anchors: thread-keyed, idempotent, ignores empty inputs
+          t = ConversationTracker(api=None, max_reply_anchors=2, max_parent_text=2)
+          t.set_reply_anchor('thread1', 'msg1')
+          assert t.get_reply_anchor('thread1') == 'msg1'
+          assert t.get_reply_anchor('missing') is None
+          assert t.get_reply_anchor(None) is None
+          t.set_reply_anchor('', 'msg2')             # empty id silently ignored
+          t.set_reply_anchor('thread1', '')          # empty msg silently ignored, anchor stays
+          assert t.get_reply_anchor('thread1') == 'msg1'
+          t.clear_reply_anchor('thread1')
+          assert t.get_reply_anchor('thread1') is None
+
+          # parent_text cache: hits avoid re-fetch, None payloads cached too
+          import asyncio
+          class _FakeAPI:
+              def __init__(self): self.calls = 0
+              async def get_message(self, mid):
+                  self.calls += 1
+                  return {'transcript_txt': f'parent of {mid}'} if mid == 'with-text' else None
+          async def _tracker_async():
+              api = _FakeAPI()
+              t = ConversationTracker(api=api)
+              assert await t.get_parent_text('with-text') == 'parent of with-text'
+              assert await t.get_parent_text('with-text') == 'parent of with-text'   # cache hit
+              assert api.calls == 1
+              assert await t.get_parent_text('absent') is None
+              assert await t.get_parent_text('absent') is None                       # negative cache
+              assert api.calls == 2
+              assert await t.get_parent_text(None) is None and await t.get_parent_text('') is None
+              assert api.calls == 2
+          asyncio.run(_tracker_async())
+
+          # Note: setup._env_enablement (which seeds group_sessions_per_user
+          # from CARBONVOICE_SHARED_GROUP_SESSIONS) imports from gateway.*
+          # and so can't run in this gateway-free CI step. The logic is a
+          # one-liner ``if _bool_env('CARBONVOICE_SHARED_GROUP_SESSIONS'):
+          # seed['group_sessions_per_user'] = False`` — covered by the
+          # ``Syntax check all modules`` step and validated end-to-end in
+          # local dogfooding before each PR.
+
+          # v5 transport surface: every method declared in api.py exists
+          # on CarbonVoiceAPI. Network calls aren't exercised here (would
+          # require an HTTPX mock or a fake CV server); the goal is to
+          # catch typos / accidental removals during refactors.
+          from carbonvoice.api import CarbonVoiceAPI
+          for method in (
+              'send_message',          # legacy v3 (kept for compat)
+              'send_text_v5',          # v5 outbound text
+              'send_audio_v5',         # v5 outbound audio (multipart)
+              'send_attachment_v5',    # v5 outbound attachments (URL-based)
+              'get_message_v5',        # v5 fetch single
+              'get_messages_by_ids_v5',# v5 batch fetch (PR 4 thread context)
+              'list_channel_message_index',  # v3 channel index (PR 4)
+              'get_signed_upload_urls',# v3 signed-URL fetch (PR 5)
+              'upload_to_s3',          # direct S3 PUT (PR 5)
+              'update_attachment',     # attachment status flip (PR 5)
+              'get_message',           # legacy v3 single fetch (kept)
+              'get_channel',           # channel metadata + collaborator roster
+              'whoami', 'fetch_recent', 'fetch_reactions', 'react', 'mark_read',
+          ):
+              assert hasattr(CarbonVoiceAPI, method), f'CarbonVoiceAPI is missing {method}'
+          print(f'CarbonVoiceAPI surface: {sum(1 for m in dir(CarbonVoiceAPI) if not m.startswith("_"))} public methods')
+
+          # by-ids now requires conversation_id (cv-api changed the body from
+          # {ids:[...]} to {conversation_id, message_ids:[...]} — the old shape
+          # 400s, which is why thread-context fetch was silently broken).
+          import inspect as _inspect, asyncio as _asyncio
+          _p = list(_inspect.signature(CarbonVoiceAPI.get_messages_by_ids_v5).parameters)
+          assert _p[:3] == ['self', 'conversation_id', 'message_ids'], _p
+
+          # ChannelCache resolves chat_type AND the participant roster from a
+          # SINGLE GET /channel/{id} (names come from json_collaborators now,
+          # not the dead /v3/users/{id}). Assert one call serves both axes.
+          from carbonvoice.channels import ChannelCache
+          class _FakeAPI:
+              def __init__(self): self.calls = 0
+              async def get_channel(self, cid):
+                  self.calls += 1
+                  return {'type': 'namedConversation', 'json_collaborators': [
+                      {'user_guid': 'u1', 'first_name': 'Cristian', 'last_name': 'Murillo'},
+                      {'user_guid': 'bot', 'first_name': 'Duckwork', 'last_name': '2'}]}
+          async def _cc_test():
+              api = _FakeAPI(); cc = ChannelCache(api)
+              assert await cc.resolve_chat_type('c1') == 'group'
+              assert await cc.get_roster('c1') == {'u1': 'Cristian Murillo', 'bot': 'Duckwork 2'}
+              assert await cc.resolve_name('c1', 'u1') == 'Cristian Murillo'
+              assert await cc.resolve_name('c1', 'nope') is None
+              assert api.calls == 1, f'expected 1 get_channel call, got {api.calls}'
+              # TTL: with ttl_s=0 every access refetches (picks up new joiners
+              # without a restart). With the default TTL the entry stays warm.
+              api0 = _FakeAPI(); cc0 = ChannelCache(api0, ttl_s=0)
+              await cc0.resolve_chat_type('c1')   # load → call 1
+              await cc0.get_roster('c1')          # ttl=0 → expired → call 2
+              assert api0.calls == 2, f'ttl=0 should refetch, got {api0.calls}'
+          _asyncio.run(_cc_test())
+          print('ChannelCache: one call for chat_type+roster; TTL refetch — OK')
+
+          # get_message_v5 must UNWRAP the {"message": {...}} envelope the v5
+          # single-GET returns (the source-of-truth test mocked a flat payload
+          # and missed this — a regression silently drops @-mentions because
+          # tagged_user_ids hides behind the 'message' key).
+          class _EnvResp:
+              status_code = 200
+              content = b'{"message":{"id":"m1","tagged_user_ids":["BOT"]}}'
+              def json(self): return {'message': {'id': 'm1', 'tagged_user_ids': ['BOT']}}
+          class _FlatResp:
+              status_code = 200
+              content = b'{"id":"m2"}'
+              def json(self): return {'id': 'm2'}
+          class _GetClient:
+              def __init__(self, resp): self._resp = resp
+              async def get(self, url): return self._resp
+              # get_message_v5 now routes through _request_retrying →
+              # client.request(method, url); the mock must accept it.
+              async def request(self, method, url, **kw): return self._resp
+          async def _env_test():
+              a = CarbonVoiceAPI.__new__(CarbonVoiceAPI); a._client = _GetClient(_EnvResp())
+              out = await a.get_message_v5('m1')
+              assert out == {'id': 'm1', 'tagged_user_ids': ['BOT']}, out  # unwrapped
+              a2 = CarbonVoiceAPI.__new__(CarbonVoiceAPI); a2._client = _GetClient(_FlatResp())
+              assert await a2.get_message_v5('m2') == {'id': 'm2'}  # flat passthrough
+          _asyncio.run(_env_test())
+          print('get_message_v5 unwraps {message:…} envelope + flat passthrough — OK')
+
+          # Transient-5xx retry: CV returns 502s in bursts; latency-critical
+          # idempotent reads/reactions must retry with short backoff instead
+          # of stalling until the next poll tick. Sends must NOT retry (could
+          # duplicate a delivered message).
+          from carbonvoice.constants import (
+              TRANSIENT_RETRY_ATTEMPTS, TRANSIENT_STATUS,
+          )
+          assert TRANSIENT_RETRY_ATTEMPTS >= 1
+          assert 502 in TRANSIENT_STATUS and 503 in TRANSIENT_STATUS
+          class _R:
+              def __init__(self, s): self.status_code = s
+          class _SeqClient:
+              def __init__(self, seq): self.seq = list(seq); self.calls = 0
+              async def request(self, method, url, **kw):
+                  s = self.seq[min(self.calls, len(self.seq) - 1)]
+                  self.calls += 1
+                  return _R(s)
+          async def _retry_test():
+              a = CarbonVoiceAPI.__new__(CarbonVoiceAPI)
+              a._client = _SeqClient([502, 200])
+              r = await a._request_retrying('GET', '/x')
+              assert r.status_code == 200 and a._client.calls == 2, 'retry then succeed'
+              a._client = _SeqClient([200])
+              r = await a._request_retrying('GET', '/x')
+              assert a._client.calls == 1, 'success → no retry'
+              a._client = _SeqClient([404])
+              r = await a._request_retrying('GET', '/x')
+              assert r.status_code == 404 and a._client.calls == 1, '404 is not transient'
+              a._client = _SeqClient([502])
+              r = await a._request_retrying('GET', '/x')
+              assert r.status_code == 502 and a._client.calls == TRANSIENT_RETRY_ATTEMPTS + 1, \
+                  'exhausts retries on persistent 502'
+          _asyncio.run(_retry_test())
+          # send() must NOT route through the retrying helper (no dup sends).
+          import inspect as _insp
+          _send_src = _insp.getsource(CarbonVoiceAPI.send_text_v5)
+          assert '_request_retrying' not in _send_src, \
+              'send_text_v5 must NOT retry — a retried send can duplicate a message'
+          print('transient-5xx retry: reads/reactions retry, sends do not — OK')
+
+          # PR 4 — thread-context cache on ConversationTracker:
+          # TTL eviction (entries past ttl_s return None) + LRU eviction
+          # (max_thread_context bounds the live set) + clear() path.
+          # The cache is what stops the adapter re-fetching the channel
+          # index + by-ids batch on every @mention in a hot thread, so
+          # regressions here would silently hammer the CV API.
+          import time as _time
+          tc = ConversationTracker(api=None, max_thread_context=2, thread_context_ttl_s=1800)
+          assert tc.get_cached_thread_context('thr1') is None
+          tc.set_cached_thread_context('thr1', 'hello')
+          assert tc.get_cached_thread_context('thr1') == 'hello'
+          # LRU: max_thread_context=2, three inserts → first one evicted.
+          tc.set_cached_thread_context('thr2', 'world')
+          tc.set_cached_thread_context('thr3', 'evict')
+          assert tc.get_cached_thread_context('thr1') is None
+          assert tc.get_cached_thread_context('thr3') == 'evict'
+          tc.clear_cached_thread_context('thr3')
+          assert tc.get_cached_thread_context('thr3') is None
+          # Empty thread_id is silently ignored on both read and write.
+          tc.set_cached_thread_context('', 'noop')
+          assert tc.get_cached_thread_context(None) is None
+          # TTL=0 → immediate expiry on the next read.
+          tc_ttl = ConversationTracker(api=None, thread_context_ttl_s=0)
+          tc_ttl.set_cached_thread_context('x', 'v')
+          _time.sleep(0.01)
+          assert tc_ttl.get_cached_thread_context('x') is None
+
+          # PR 5 — send_text_v5 now accepts an optional attachments param so
+          # the agent can ship "here's the report" + the .md/PDF in a single
+          # bubble. Defaults still work for plain text — guards against a
+          # future refactor flipping the param to required.
+          import inspect
+          sig = inspect.signature(CarbonVoiceAPI.send_text_v5)
+          assert 'attachments' in sig.parameters, \
+              'send_text_v5 missing attachments param (PR 5)'
+          assert sig.parameters['attachments'].default is None, \
+              'send_text_v5.attachments must default to None (plain-text path)'
+
+          # CV-13155 / cv-api PR #277 — the v5 conversation create routes
+          # renamed the threading input `thread_id` -> `reply_to_message_id`
+          # and now REJECT `thread_id` with 400 (it's in the v5
+          # reject-deprecated-fields pipe). Lock the rename across all three
+          # outbound send methods so a regression can't silently 400 every
+          # threaded reply / voice memo / attachment. The Duckwork-side
+          # `thread_id` *concept* (SessionSource.thread_id, thread_id_of,
+          # reply anchors) is unaffected — only the CV wire field moved.
+          for _m in ('send_text_v5', 'send_audio_v5', 'send_attachment_v5'):
+              _params = inspect.signature(getattr(CarbonVoiceAPI, _m)).parameters
+              assert 'reply_to_message_id' in _params, \
+                  f'{_m} missing reply_to_message_id param (CV-13155)'
+              assert 'thread_id' not in _params, \
+                  f'{_m} still exposes thread_id — cv-api #277 rejects it with 400'
+
+          # PR 5 — adapter is_url / mime guesser helpers. Can't import
+          # CarbonVoiceAdapter here (it pulls gateway.*) but we can reach
+          # into the module via importlib without instantiating it.
+          # Use a fresh module spec to avoid polluting carbonvoice.* with
+          # the gateway-dependent adapter import. Just verify the helpers
+          # are present by reading the file source.
+          import pathlib as _pl
+          adapter_src = (_pl.Path('adapter.py')).read_text()
+          for marker in ('def _is_url(', 'def _guess_mime(',
+                         'def _send_file_or_link(',
+                         'def _create_attachment_message(',
+                         'def _upload_attachment_in_background('):
+              assert marker in adapter_src, f'adapter.py missing: {marker}'
+          print('adapter.py attachment helpers: present')
+
+          # PR 7 — inbound multimodal. parse.extract_attachments
+          # should round-trip the exact payload shape we captured from
+          # a real CV inbound (image attachment with a UUID filename
+          # and a status:Uploaded marker). The smoke locks the field
+          # names (``_id`` and ``link``, not the v5-outgoing ``url``)
+          # against a future CV schema drift quietly returning empty.
+          from carbonvoice.parse import extract_attachments
+          real_inbound = {
+              "message_id": "c31993e0-595d-11f1-bcf2-1dbc644879fd",
+              "attachments": [{
+                  "_id": "6a1631eb6cc843d778fd40f6",
+                  "creator_id": "Fmx4ddC6EZT3ugls",
+                  "type": "file",
+                  "link": "https://pxmessages.s3.us-east-2.amazonaws.com/uploaded-files/.../foo.png",
+                  "filename": "foo.png",
+                  "mime_type": "image/png",
+                  "length_in_bytes": None,
+                  "status": "Uploaded",
+              }],
+          }
+          out = extract_attachments(real_inbound)
+          assert len(out) == 1, f"expected 1 attachment, got {len(out)}"
+          att = out[0]
+          assert att["_id"] == "6a1631eb6cc843d778fd40f6"
+          assert att["mime_type"] == "image/png"
+          assert att["link"].startswith("https://"), "link field must propagate"
+          # Defensive cases
+          assert extract_attachments({}) == []
+          assert extract_attachments({"attachments": None}) == []
+          assert extract_attachments({"attachments": [{}]}) == [], \
+              "entries with neither _id nor link must be dropped"
+          print('extract_attachments: round-trips real payload + defensive cases')
+
+          # PR 7 — api primitives for inbound download
+          for method in ('get_attachment_download_url', 'download_attachment'):
+              assert hasattr(CarbonVoiceAPI, method), \
+                  f'CarbonVoiceAPI missing {method} (PR 7)'
+          print('CarbonVoiceAPI: inbound download primitives present')
+
+          # PR 7 — adapter wires the media collector before MessageEvent
+          assert 'def _collect_inbound_media(' in adapter_src, \
+              'adapter.py missing _collect_inbound_media (PR 7)'
+          assert 'extract_attachments' in adapter_src, \
+              'adapter.py must import extract_attachments (PR 7)'
+          assert 'media_urls=media_urls' in adapter_src, \
+              'adapter.py _process_message must wire media_urls into MessageEvent'
+          assert 'media_types=media_types' in adapter_src, \
+              'adapter.py _process_message must wire media_types into MessageEvent'
+          assert 'self._max_attachment_bytes' in adapter_src, \
+              'adapter.py must enforce max_attachment_bytes (size cap)'
+          # Link attachment handling: type:"link" → prepend URL to text
+          # instead of trying to download (it's not a file). Locks the
+          # contract so a future refactor doesn't drop the third tuple
+          # element silently.
+          assert 'link_urls' in adapter_src, \
+              'adapter.py _collect_inbound_media must surface link attachments'
+          assert '[Attached link:' in adapter_src, \
+              'adapter.py must prepend link URLs to clean_text as "[Attached link: <url>]"'
+          # media_urls must carry BARE local paths, not file:// URIs — Duckwork
+          # core's native image routing (agent/image_routing.py
+          # build_native_content_parts) does Path(raw_path) directly, so a
+          # file:// prefix makes the path non-existent and the image is
+          # dropped as "unreadable". Slack/Telegram pass bare paths too.
+          assert 'media_urls.append(f"file://' not in adapter_src and \
+                 "media_urls.append(f'file://" not in adapter_src, \
+              'inbound media_urls must be bare local paths, not file:// URIs ' \
+              '(core native image routing drops file:// paths as unreadable)'
+          assert 'media_urls.append(str(local_path))' in adapter_src, \
+              'adapter must append the bare local path to media_urls'
+          print('adapter inbound media wiring: present (images + links, bare paths)')
+
+          # channel_context is a NEWER Duckwork core field on MessageEvent.
+          # It must be set defensively (hasattr + setattr), never passed as a
+          # ctor kwarg — older cores raise "unexpected keyword argument
+          # 'channel_context'" and crash every message. Regression guard.
+          assert 'channel_context=channel_context' not in adapter_src, \
+              'channel_context must NOT be a MessageEvent ctor kwarg — it ' \
+              'crashes older Duckwork cores; set it via ' \
+              'hasattr(event, "channel_context") after construction'
+          assert 'hasattr(event, "channel_context")' in adapter_src, \
+              'adapter must set channel_context defensively (cross-core compat)'
+          print('adapter MessageEvent.channel_context: set defensively (compat)')
+
+          # Interactive allow-list: cooldown re-notify (A), sender feedback
+          # (B), and a deny that re-opens the add/remove cycle (#3).
+          #  - notified_at must use a None sentinel (NOT 0.0): time.monotonic()
+          #    can be < cooldown right after boot, so a 0.0 sentinel would
+          #    silence the very FIRST owner prompt. Regression guard.
+          assert "\"notified_at\": None" in adapter_src or \
+                 "'notified_at': None" in adapter_src, \
+              'first-prompt sentinel must be None, not 0.0 (boot-time edge)'
+          assert 'self._approval_cooldown_s' in adapter_src, \
+              'allow-list owner prompt must be rate-limited by a cooldown (A)'
+          #  - deny must POP the pending entry (re-open the cycle), never
+          #    setdefault it to a sentinel (which would silence re-requests #3).
+          assert '_pending_approval.pop(arg, None)' in adapter_src, \
+              'deny must clear the pending entry so the user can re-request (#3)'
+          assert '_pending_approval.setdefault(' not in adapter_src, \
+              'deny must not silence the user via setdefault — breaks re-add (#3)'
+
+          # Duplicate-response guard. The core re-sends the same "first
+          # response" once per queued follow-up when streaming delivery
+          # isn't confirmed (CV 502s make this common), so the user sees the
+          # same reply many times. Two defenses must stay in place:
+          #  (1) SUPPORTS_MESSAGE_EDITING=False — CV has no edit API; declaring
+          #      it stops the stream consumer assuming an editable bubble.
+          #  (2) an outbound send-dedup that drops an identical re-send to the
+          #      same channel within a short window (reports success so the
+          #      core stops retrying).
+          assert 'SUPPORTS_MESSAGE_EDITING = False' in adapter_src, \
+              'CV has no edit API — must declare SUPPORTS_MESSAGE_EDITING=False ' \
+              '(else the stream consumer re-sends on unconfirmed delivery)'
+          assert '_send_dedup_window_s' in adapter_src and '_last_sent' in adapter_src, \
+              'send() must dedup identical re-sends per channel (duplicate-response guard)'
+          assert 'hashlib.sha256(content' in adapter_src, \
+              'send-dedup must key on a hash of the exact outbound text'
+
+          # Fetch reentrancy guard. Every WS message:created/updated event
+          # fires on_tick → _fetch_missed_messages; a burst would otherwise
+          # run overlapping fetches over the same cursor window in parallel,
+          # multiplying re-processing (a key amplifier of the bursts). A lock
+          # must serialize fetches and coalesce overlapping ticks.
+          assert '_fetch_lock' in adapter_src, \
+              'message fetches must be serialized by a lock (no parallel re-fetch)'
+          assert '_fetch_lock.locked()' in adapter_src, \
+              'overlapping ticks must coalesce (skip if a fetch is in progress)'
+
+          # Stuck-message cursor pin guard. A message with no transcript is
+          # held (return None → cursor not advanced) ONLY while young; past
+          # CARBONVOICE_STUCK_MAX_AGE_S it must advance past, or one
+          # permanently-empty message (image-only / system / failed STT)
+          # pins the cursor and re-feeds the whole window every poll/restart
+          # — the "cadena de mensajes ya procesados" bug. The age check must
+          # gate the stuck return.
+          assert 'self._stuck_max_age_s' in adapter_src, \
+              'empty-transcript stuck-hold must be bounded by a max age, ' \
+              'or a permanently-empty message pins the cursor forever'
+          assert 'message_age_seconds(' in adapter_src, \
+              'adapter must compute message age to bound the stuck-hold'
+          # parse.message_age_seconds: ISO parsing incl. trailing Z + naive.
+          from carbonvoice.parse import message_age_seconds, now_utc
+          from datetime import datetime, timezone, timedelta
+          _now = datetime(2026, 6, 8, 16, 0, 0, tzinfo=timezone.utc)
+          assert message_age_seconds({'created_at': '2026-06-08T15:59:00Z'}, _now) == 60.0
+          assert message_age_seconds({'created_at': '2026-06-08T15:59:00+00:00'}, _now) == 60.0
+          assert message_age_seconds({'created_at': '2026-06-08T15:59:00'}, _now) == 60.0  # naive→UTC
+          assert message_age_seconds({'created_at': '2026-06-05T19:36:44.437Z'}, _now) > 5*60
+          assert message_age_seconds({'id': 'x'}, _now) is None          # no ts → safe retry
+          assert message_age_seconds({'created_at': 'garbage'}, _now) is None
+          assert now_utc().tzinfo is not None
+          print('stuck-message cursor-pin guard + message_age_seconds: OK')
+          #  - sender feedback (B) must be a REACTION, not a text reply.
+          #    An unauthorized sender gets NO per-message feedback at all:
+          #    no text reply (it spammed old conversations under deny-by-
+          #    default) and no ⁉️ reaction (un-cooldowned, it buried the owner
+          #    in one CV notification per spam message). Mirrors
+          #    cv-claude-channels: drop silently; the only feedback is the
+          #    rate-limited owner prompt + a one-time "you've been added"
+          #    notice once approved.
+          assert 'sent to its' not in adapter_src, \
+              'unauthorized-sender feedback must NOT be a channel text reply (spam)'
+          assert 'self._reactions.pending(' not in adapter_src, \
+              'must NOT react per-message to unauthorized senders ' \
+              '(un-cooldowned ⁉️ floods the owner with notifications)'
+          # On approval the now-allowed user is told once, in the channel they
+          # wrote in, that they can talk now.
+          assert "You've been added" in adapter_src, \
+              'an approved user must get a one-time "you can talk now" notice'
+          # The ReactionService still EXPOSES pending() (kept for operators who
+          # opt back in), it's just not wired into the unauthorized path.
+          import importlib as _il
+          _rx = _il.import_module('carbonvoice.reactions')
+          _svc = _rx.ReactionService(type('A', (), {'react': lambda *a, **k: None})())
+          assert hasattr(_svc, 'pending') and callable(_svc.pending)
+          print('adapter interactive allow-list: silent drop + owner prompt + approval notice')
+
+          # One-tap owner approval: the owner reacts 💯/⛔ on the bot's
+          # "X wants to talk" prompt instead of copying /cv-allow-user <id>
+          # (mirrors cv-claude-channels). The adapter must track prompt
+          # message_id → creator_id and resolve only the OWNER's reaction.
+          assert '_pending_prompts' in adapter_src, \
+              'adapter must map prompt message_id → creator_id for reaction approval'
+          assert '_check_pending_prompt_reactions' in adapter_src, \
+              'adapter must resolve owner 💯/⛔ reactions on pending prompts'
+          from carbonvoice.constants import (
+              DEFAULT_APPROVE_REACTION_ID, DEFAULT_REJECT_REACTION_ID,
+          )
+          assert DEFAULT_APPROVE_REACTION_ID == 'affirmative'  # 👍
+          assert DEFAULT_REJECT_REACTION_ID == 'negative'      # 👎
+          assert DEFAULT_APPROVE_REACTION_ID != DEFAULT_REJECT_REACTION_ID
+          # reactors_for: only counts the named reactions; needs a real uid.
+          from carbonvoice.parse import reactors_for
+          _pm = lambda rxns: {'reaction_summary': {'top_user_reactions': rxns}}
+          assert reactors_for(_pm([{'user_id': 'O', 'reaction_id': 'affirmative'}]),
+                              {'affirmative', 'negative'}) == {'O'}
+          assert reactors_for(_pm([{'user_id': 'O', 'reaction_id': 'affirmative'}]),
+                              {'negative'}) == set()
+          # a stranger reacting on their own prompt must not appear as the owner
+          assert 'O' not in reactors_for(
+              _pm([{'user_id': 'STRANGER', 'reaction_id': 'affirmative'}]),
+              {'affirmative'})
+          assert reactors_for(_pm([{'reaction_id': 'affirmative'}]), {'affirmative'}) == set()  # no uid
+          assert reactors_for({}, {'affirmative'}) == set()
+          # The owner-only check must gate on the owner id, never blanket-trust
+          # whoever reacted (else any reactor self-approves).
+          assert 'self._allowlist.owner_id' in adapter_src, \
+              'reaction approval must verify the reactor IS the owner'
+          print('adapter one-tap approval: owner 💯/⛔ on prompt → allow/deny — OK')
+
+          # V5 source-of-truth migration — the socket / v3-poll push
+          # payload is V2-shaped and trails the V5 GET on async fields
+          # (tagged_user_ids resolves after a backend job, attachment
+          # enrichment can lag). The adapter must fetch v5 in
+          # _process_message and reassign msg so all downstream gates
+          # (mention, multimodal) see the canonical post-resolution
+          # state. Locks the contract that future refactors can't
+          # silently revert.
+          assert 'get_message_v5(message_id)' in adapter_src, \
+              'adapter._process_message must enrich the V2 payload via ' \
+              'get_message_v5(message_id) — V5 is the source of truth ' \
+              'per cv-api design (see DEVELOPMENT.md §4 / §7)'
+          assert 'msg = enriched' in adapter_src, \
+              'adapter._process_message must reassign msg to the v5 ' \
+              'payload after fetch — otherwise downstream gates still ' \
+              'read stale V2 fields'
+          print('adapter v5 source-of-truth enrichment: wired')
+
+          # Revisitable gate rejections must NOT mark the message as
+          # seen — otherwise a follow-up message:updated (which cv-api
+          # emits after the async tag-resolution job completes,
+          # populating tagged_user_ids) gets silently deduped away and
+          # the agent never wakes up despite being tagged. Stable
+          # rejections (ignored channel, etc.) still mark seen so we
+          # don't repeatedly re-evaluate them on every retry.
+          assert 'decision.revisitable' in adapter_src, \
+              'adapter._process_message must branch on ' \
+              'GateDecision.revisitable to decide whether to mark a ' \
+              'rejected message as seen — otherwise post-tag ' \
+              'message:updated re-fires are deduped before the gate ' \
+              'gets a fresh evaluation (the original "voice memo with ' \
+              'picker tag never reaches the bot" bug)'
+          # Make sure no one accidentally re-introduces an unconditional
+          # ``seen.mark`` before the *mention/process* gate runs. Count
+          # occurrences: there should be exactly six
+          # ``self._seen.mark(message_id)`` calls —
+          # (a) the server-side reaction-dedup skip (already-acked message),
+          # (b) the owner allow-list command path (/cv-*), (c) the
+          # rejected-but-stable mention-gate path, (d) after the gate accepts,
+          # (e) the *aged-out stuck* path (a message still missing its
+          # transcript past CARBONVOICE_STUCK_MAX_AGE_S — image-only / system
+          # / failed STT — advanced past instead of pinning the cursor), and
+          # (f) the *unauthorized sender* path — mark the specific message
+          # we just reacted ⁉️ to, so the poll loop (worsened by 502 retries
+          # re-fetching the same window) doesn't re-evaluate the SAME
+          # unauthorized message every tick (the 2500×-"dropped unauthorized"
+          # burst). (f) is bounded + safe: it suppresses only THIS message,
+          # not the user — once approved, their NEW messages pass the gate;
+          # and the SeenCache TTL is short so even this one re-evaluates later
+          # if still unapproved. Plus ``self._seen.is_seen(message_id)`` for
+          # the early dedup check. None of these marks a message that should
+          # later reach the agent after a tag-resolution re-fire (the
+          # revisitable mention-gate rejection is deliberately NOT marked).
+          assert adapter_src.count('self._seen.mark(message_id)') == 6, \
+              'adapter._process_message must mark seen in exactly six ' \
+              'places: (a) reaction-dedup skip, (b) owner /cv-* command, ' \
+              '(c) a non-revisitable mention rejection, (d) when the gate ' \
+              'accepts, (e) the aged-out stuck path, (f) the unauthorized ' \
+              'sender path (suppress re-processing the same dropped message). ' \
+              'Counting drift usually means someone added an unconditional ' \
+              'mark before the mention gate — that re-introduces the post-tag dedup bug.'
+          print('adapter revisitable-rejection dedup contract: wired')
+
+          # Server-side reaction dedup: the adapter must skip a message the
+          # bot already acked (reaction_summary), so dedup survives restarts
+          # and the use_last_updated re-capture loop can't re-answer the same
+          # message. Checked on the canonical v5 payload (post-enrichment).
+          assert 'bot_has_reacted(' in adapter_src, \
+              '_process_message must dedup on the bot ack reaction ' \
+              '(bot_has_reacted) — the in-memory SeenCache is lost on ' \
+              'restart and lapses after 5 min, which let one message be ' \
+              'dispatched 5x as the ack/reply kept bumping updated_at'
+          print('adapter server-side reaction dedup contract: wired')
+
+          # Stuck-message cursor hold: when a transcript isn't ready,
+          # _process_message returns None (not False), and the poll loop
+          # holds the cursor just before the first stuck message instead
+          # of advancing past it (which could skip a message whose
+          # transcript never bumps updated_at in time). Mirrors the Claude
+          # Code Channel's null-return + stuck-message handling.
+          assert '-> Optional[bool]' in adapter_src, \
+              '_process_message must return Optional[bool] (True=dispatched, ' \
+              'False=skip, None=stuck) so the cursor can distinguish a ' \
+              'not-ready transcript from a permanent skip'
+          assert 'first_stuck_idx' in adapter_src, \
+              '_fetch_missed_messages must track the first stuck message ' \
+              'and hold the cursor before it (stuck-message handling)'
+          # The not-ready-transcript branch must hold the cursor (return
+          # None) for a YOUNG message — returning False there would let the
+          # cursor advance past a message CV is still transcribing — but it
+          # must return False once the message ages past the stuck cutoff, so
+          # a permanently-empty message can't pin the cursor (see the
+          # stuck-cursor-pin guard above). Locate the `if not transcript:`
+          # block and assert it contains BOTH an age-gated False and a
+          # trailing bare `return None` (the young/transient default).
+          import re as _re
+          _blk = _re.search(
+              r'if not transcript:\n(?P<body>(?:[ \t].*\n|\n)+)', adapter_src
+          )
+          assert _blk, 'could not locate the empty-transcript branch'
+          _body = _blk.group('body')
+          assert _re.search(r'\bself\._stuck_max_age_s\b', _body), \
+              'empty-transcript branch must consult the stuck max-age cutoff'
+          assert _re.search(r'\breturn False\b', _body), \
+              'aged-out stuck message must return False (advance the cursor)'
+          assert _re.search(r'\n[ \t]+return None\b', _body), \
+              'young stuck message must still return None (hold the cursor)'
+          print('adapter stuck-message cursor-hold contract: age-bounded, wired')
+
+          # parse helpers must handle BOTH V5 and V2 shapes — V5 because
+          # that's what the v5 GET returns post-enrichment, V2 because
+          # webhook callers and pre-enrichment paths still hit them.
+          from carbonvoice.parse import (
+              extract_message_id as _emid,
+              extract_channel_id as _ecid,
+              extract_transcript as _et,
+              extract_creator_id as _ecr,
+          )
+          # V5 shape
+          v5 = {
+              'id': 'M', 'conversation_id': 'C', 'creator_id': 'U',
+              'transcript': 'hello v5',
+          }
+          assert _emid(v5) == 'M' and _ecid(v5) == 'C'
+          assert _ecr(v5) == 'U' and _et(v5) == 'hello v5'
+          # V2 shape (regression: must still work for pre-enrichment /
+          # transcript-not-ready empty events and webhook callers)
+          v2 = {
+              'message_id': 'M', 'channel_ids': ['C'], 'creator_id': 'U',
+              'text_models': [{'type': 'transcript', 'value': 'hello v2'}],
+          }
+          assert _emid(v2) == 'M' and _ecid(v2) == 'C'
+          assert _ecr(v2) == 'U' and _et(v2) == 'hello v2'
+          print('parse helpers handle V5 + V2 shapes: OK')
+
+          # PR 6 — voice-out gate. setup.py can't be imported here (it
+          # pulls gateway.*), so we source-grep both files for the
+          # required wiring. Three assertions:
+          #   1. setup.py reads CARBONVOICE_VOICE_OUT via _bool_env and
+          #      stuffs it into the seed dict
+          #   2. adapter.__init__ reads extra['voice_out'] into
+          #      self._voice_out
+          #   3. _process_message routes through MessageType.VOICE when
+          #      self._voice_out is true (instead of always TEXT)
+          setup_src = (_pl.Path('setup.py')).read_text()
+          assert "_bool_env(\"CARBONVOICE_VOICE_OUT\")" in setup_src, \
+              'setup.py missing _bool_env("CARBONVOICE_VOICE_OUT") seed'
+          assert "\"voice_out\":" in setup_src, \
+              'setup.py missing "voice_out" seed key'
+          assert "self._voice_out" in adapter_src, \
+              'adapter.py missing self._voice_out field'
+          assert "extra.get(\"voice_out\")" in adapter_src, \
+              'adapter.py not reading voice_out from extra'
+          assert "MessageType.VOICE if self._voice_out else MessageType.TEXT" in adapter_src, \
+              'adapter.py _process_message must branch on self._voice_out to set MessageType'
+          print('voice-out gate (PR 6): wired')
+
+          print('smoke tests OK')
+          PY

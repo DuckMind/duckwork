@@ -1,0 +1,103 @@
+# Duckwork Monitor
+
+Kanban worker health in the Desktop status bar.
+
+Duckwork Monitor adds two compact items to the right side of the Duckwork Desktop footer. Worker health is the primary feature. Provider quota usage is included as a secondary readout.
+
+```text
+[Worker 2 · build · 18 s ago]  [Claude 34% 12:40 · Codex 61% 14:00 · DeepSeek $7.25]
+```
+
+![Footer](docs/footer.png)
+
+Open the Worker item to see each running card, its title, assignee, runtime, last activity, and a link to Kanban. Open the Quotas item for the full Claude, Codex, and DeepSeek details. Both menus request a fresh reading when opened.
+
+## Requirements
+
+- Duckwork 0.21 or later
+- Duckwork Desktop
+
+## Install in Duckwork
+
+[Install in Duckwork](duckwork://plugin/install?repo=mr-3mm3/duckwork-monitor)
+
+Install the package:
+
+```sh
+duckwork plugins install mr-3mm3/duckwork-monitor
+```
+
+Enable its backend for the active Duckwork home. This adds `duckwork-monitor` to `plugins.enabled`:
+
+```sh
+duckwork plugins enable duckwork-monitor
+```
+
+Quit Duckwork Desktop completely with Command-Q, then reopen it. In the app, open Capabilities -> Plugins and enable Duckwork Monitor.
+
+### From a local checkout
+
+To run the plugin from a working copy instead of an installed release, symlink the package into the Duckwork plugin directory:
+
+```sh
+ln -s "$PWD" ~/.duckwork/plugins/duckwork-monitor
+duckwork plugins enable duckwork-monitor
+```
+
+Add `duckwork-monitor` to `plugins.enabled` if the enable command is unavailable, then restart the gateway (`duckwork gateway restart`) so the backend routes are loaded, and quit and reopen Duckwork Desktop so the footer items appear.
+
+### Official catalog publication
+
+The Duckwork plugin catalog accepts owner-maintained public repositories through a pull request that adds `plugin-catalog/duckwork-monitor.yaml` to `Fordex/duckwork-agent`. The entry must pin an exact 40-character commit SHA, describe the plugin's actual capabilities, and pass the catalog validation workflow. Published plugins must have a release/tag and must not update their own installed files; updates are reviewed as catalog SHA-bump pull requests.
+
+## Worker health states
+
+Duckwork Monitor reads running Kanban cards and their local worker activity:
+
+- Active: recent worker activity.
+- Stalled: no activity for more than five minutes.
+- Loop: the same tool with the same arguments appears at least four times in a row in the latest events.
+
+Loop has priority over stalled, and stalled has priority over active when several workers are running. The footer spinner runs while at least one worker is active.
+
+## Quotas
+
+The quota item shows used percentage and reset time for the Claude five-hour and weekly windows and the windows returned by Codex. DeepSeek shows the remaining account balance. Missing credentials or provider failures are displayed as `n/a` and do not interrupt the status bar.
+
+Accounts are collected from every Duckwork profile (the default profile plus each named profile under `profiles/`), deduplicated, and labelled with the profile they come from, so a provider reports its accounts wherever they are configured.
+
+DeepSeek credentials are resolved from the process environment, the Duckwork root `.env`, then the first profile `.env` containing `DEEPSEEK_API_KEY` in alphabetical profile order.
+
+## Privacy
+
+The backend opens the local Kanban and worker session databases in read-only mode. It returns activity metadata only. Message content and tool arguments never reach the frontend; arguments are represented by hashes for loop detection.
+
+Credentials stay in the backend and are never returned to the Desktop plugin. The only external requests are the DeepSeek balance API call (`GET https://api.deepseek.com/user/balance`) and the account-usage API calls already used by Duckwork for Claude and Codex. Duckwork core may refresh an Anthropic token for the active profile near expiry, or a Codex token after an HTTP 401, rewriting only that profile's `auth.json`; quota reads themselves use immutable snapshots and never refresh credentials. Each external call has a 15-second timeout, and quota results are cached for five minutes.
+
+### Which credential files are read
+
+To aggregate quotas across profiles, the backend reads the credential store (`auth.json`) of every Duckwork profile — the default home and each named profile under `profiles/` — one profile at a time. Each read is strictly read-only.
+
+- Active and non-active profiles are never mutated, refreshed, or persisted to during quota reads. Their accounts are read into immutable snapshots and only usage requests are issued against those snapshots; an expired token is reported as `n/a` instead of being refreshed.
+- No secret from one profile is ever copied into another profile's credential store.
+
+No profile names, absolute paths, tokens, or other personal data leave the backend.
+
+## Development
+
+Requirements: Python 3.11+ with `pytest`, and Node.js for the syntax check. The backend tests are pure logic with fixtures and never make real network calls.
+
+```sh
+python3 -m pytest tests/ -q
+node --check desktop/plugin.js
+```
+
+The backend lives in `dashboard/` (`plugin_api.py` wires the routes, `workers.py` and `quotas.py` hold the pure transformations) and the Desktop half is the single module `desktop/plugin.js`.
+
+## Related
+
+If you mainly need provider quota tracking, see `ai-usage-tracker` in the Duckwork plugin catalog. Duckwork Monitor focuses on Kanban worker health and includes quotas as a secondary feature.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

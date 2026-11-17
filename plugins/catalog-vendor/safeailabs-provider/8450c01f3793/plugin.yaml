@@ -1,0 +1,11 @@
+name: safeailabs-provider
+kind: model-provider
+version: 1.0.0
+description: Safe AI Labs as a Duckwork model provider (OpenAI-compatible, one endpoint per region)
+author: Safe AI Labs
+requires_duckwork: ">=0.22.0"
+requires_env:
+  - name: SAFE_AI_KEY
+    description: Safe AI Labs API key
+    secret: true
+    url: https://safeailabs.ai/keys

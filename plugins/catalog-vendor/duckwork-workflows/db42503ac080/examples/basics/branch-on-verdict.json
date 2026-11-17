@@ -1,0 +1,131 @@
+{
+  "name": "branch-on-verdict",
+  "nodes": [
+    {
+      "goal": "You are a judge. Decide ONE verdict for this statement: 'The number 17 is prime.' Reply with ONLY a fenced json block: {\"verdict\": \"ship\" | \"hold\", \"why\": \"<one line>\"}. Use 'ship' when the statement is true.",
+      "id": "judge",
+      "schema": {
+        "properties": {
+          "verdict": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "verdict",
+          "why"
+        ],
+        "type": "object"
+      },
+      "timeout": 120,
+      "type": "agent",
+      "tier": "worker"
+    },
+    {
+      "after": [
+        "judge"
+      ],
+      "id": "go",
+      "on_skip": "prune",
+      "type": "gate",
+      "wait": {
+        "wait_s": 1
+      },
+      "when": "out.judge.verdict == 'ship'"
+    },
+    {
+      "after": [
+        "judge"
+      ],
+      "id": "hold",
+      "on_skip": "prune",
+      "options": [
+        "override: ship anyway",
+        "stop"
+      ],
+      "question": "Judge said hold — override?",
+      "type": "gate",
+      "when": "out.judge.verdict != 'ship'"
+    },
+    {
+      "after": [
+        "go"
+      ],
+      "goal": "The go-arm ran because the judge said ship. Under '## Inputs' you have the judge's verdict. Reply with ONLY a fenced json block: {\"arm\": \"go\", \"echo\": \"<the judge's why>\"}.",
+      "id": "ship_it",
+      "inputs": [
+        "judge"
+      ],
+      "schema": {
+        "properties": {
+          "arm": {
+            "type": "string"
+          },
+          "echo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arm",
+          "echo"
+        ],
+        "type": "object"
+      },
+      "timeout": 120,
+      "type": "agent",
+      "tier": "worker"
+    },
+    {
+      "after": [
+        "hold"
+      ],
+      "goal": "The hold-arm ran because the judge said hold and the owner released the gate. Reply with ONLY a fenced json block: {\"arm\": \"hold\"}.",
+      "id": "escalate",
+      "schema": {
+        "properties": {
+          "arm": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "arm"
+        ],
+        "type": "object"
+      },
+      "timeout": 120,
+      "type": "agent",
+      "tier": "worker"
+    },
+    {
+      "after": [
+        "ship_it",
+        "escalate"
+      ],
+      "goal": "You are the join. Under '## Inputs' you have the judge's verdict; both arm dependencies are terminal, but exactly one is skipped. If verdict is ship, reply with ONLY a fenced json block {\"arms_seen\": [\"ship_it\"]}; otherwise reply {\"arms_seen\": [\"escalate\"]}. For a real join needing the live arm's output, read its committed nodes/<arm>.json record from the run directory (do not require inputs from a possibly pruned arm).",
+      "id": "join",
+      "inputs": [
+        "judge"
+      ],
+      "schema": {
+        "properties": {
+          "arms_seen": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "arms_seen"
+        ],
+        "type": "object"
+      },
+      "timeout": 120,
+      "type": "agent",
+      "tier": "worker"
+    }
+  ],
+  "description": "Two-arm branch on a schema'd verdict: complementary `when` gates with on_skip:prune; the dead arm is pruned (skipped, not run); the join runs on the live arm only. Replace judge/ship_it/escalate goals with real work."
+}

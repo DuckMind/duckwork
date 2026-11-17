@@ -1,0 +1,24 @@
+{
+  "id": "sigrex",
+  "name": "Sigrex",
+  "description": "Build, run and manage trading automation on Sigrex: code and AI strategies, trading bots, webhooks and signals across crypto exchanges, DEXs and prediction markets. Connects the official Sigrex MCP server (OAuth) and bundles the sigrex workflow skill.",
+  "version": "1.0.4",
+  "categories": [
+    "finance-payments"
+  ],
+  "skills": [
+    "./skills"
+  ],
+  "mcpServers": {
+    "sigrex": {
+      "url": "https://mcp.sigrex.io",
+      "transport": "streamable-http",
+      "auth": "oauth"
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

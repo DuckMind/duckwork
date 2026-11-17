@@ -1,0 +1,11 @@
+{
+  "verdict": "refuse",
+  "reason": "while loop at line 12 re-invokes agent() an input-dependent number of times: no bounded-graph form exists (dialect.md rows 6/7); also `let` re-assignment of an agent result, an `if` around agents, `.join` glue at line 17 and a computed object `return` at line 23 — the importer names the FIRST construct (the loop) and stops",
+  "rows": [
+    6,
+    7,
+    12
+  ],
+  "refuse_construct": "while",
+  "refuse_line": 12
+}

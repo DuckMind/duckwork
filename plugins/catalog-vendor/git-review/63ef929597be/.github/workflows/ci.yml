@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python-tests:
+    name: Python tests (${{ matrix.os }} / ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip fastapi httpx pyyaml
+
+      - name: Byte-compile all backend sources
+        run: python -m compileall -q __init__.py git_review dashboard/plugin_api.py
+
+      - name: Run offline unit tests
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
+  desktop-js:
+    name: Desktop plugin.js
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: "22"
+
+      - name: Syntax check
+        run: node --check desktop/plugin.js
+
+      - name: Desktop VM smoke harness
+        run: node tests/desktop_plugin_smoke.mjs desktop/plugin.js
+
+      - name: Pane, interaction, action and theme tests (real React, stubbed SDK)
+        run: |
+          npm ci || npm install --no-audit --no-fund
+          node --test tests/*.test.mjs
+
+      - name: Import allowlist (loader contract)
+        run: node tests/import_allowlist.mjs desktop/plugin.js
+
+  hygiene:
+    name: Hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Whitespace errors
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [[ -n "$BASE_SHA" ]]; then
+            git diff --check "$BASE_SHA...HEAD"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --check HEAD^ HEAD
+          else
+            git diff-tree --check --root --no-commit-id -r HEAD
+          fi
+
+      - name: Commit identities
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          OWNER_EMAIL='36502095+mister-ideas@users.noreply.github.com'
+          BLOCKED='tech[-]up[.]org|protonmai[l][.]com'
+          if [[ -n "${BASE_SHA:-}" ]]; then RANGE="$BASE_SHA..HEAD"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then RANGE="HEAD^..HEAD"
+          else RANGE="HEAD"; fi
+          fail=0
+          while IFS='|' read -r sha an ae cn ce; do
+            if [[ "$ae" =~ $BLOCKED || "$ce" =~ $BLOCKED ]]; then echo "::error::$sha uses a blocked address ($ae / $ce)"; fail=1; fi
+            if [[ "$an" == "mister-ideas" && "$ae" != "$OWNER_EMAIL" ]]; then echo "::error::$sha is authored as mister-ideas with $ae; use $OWNER_EMAIL"; fail=1; fi
+          done < <(git log --no-merges --format='%H|%an|%ae|%cn|%ce' "$RANGE")
+          if git log --no-merges --format='%H%n%B' "$RANGE" | grep -iE '^(co-authored-by|signed-off-by):.*('"$BLOCKED"')'; then
+            echo "::error::a commit message carries a blocked address in a trailer"; fail=1
+          fi
+          exit "$fail"
+
+      - name: No machine-specific paths
+        run: |
+          # Publication rule: the plugin is setup-agnostic. Only generic machine
+          # paths are checked here; a maintainer-specific name denylist must never
+          # be committed (keep it in a gitignored local script).
+          # ci.yml itself contains this pattern, so it is excluded from the scan.
+          if grep -RniE '/Users/|C:\\Users|\.cursor' --include='*.py' --include='*.js' --include='*.mjs' --include='*.yaml' --include='*.yml' --include='*.md' . --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist --exclude=ci.yml; then
+            echo "::error::Machine-specific identifiers found"; exit 1
+          fi
+
+      - name: Package builds clean
+        run: |
+          python scripts/package.py
+          python - <<'PY'
+          import glob, zipfile
+          (archive,) = glob.glob("dist/git-review-*.zip")
+          z = zipfile.ZipFile(archive)
+          bad = [n for n in z.namelist() if "__pycache__" in n or n.endswith(".pyc")]
+          assert not bad, bad
+          print("package OK:", len(z.namelist()), "files")
+          PY

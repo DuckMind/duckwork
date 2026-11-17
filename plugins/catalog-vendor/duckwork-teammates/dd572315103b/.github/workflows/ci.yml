@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  # Weekly run against Duckwork main catches upstream drift between pushes.
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Duckwork build the plugin is tested against. Bump deliberately (see README "Compatibility").
+  DUCKWORK_UPSTREAM_REPO: Fordex/duckwork-agent
+  DUCKWORK_UPSTREAM_SHA: 1078a4e5f363472c43a50c6738e47e54eab2940c
+
+jobs:
+  duckwork:
+    name: Against Duckwork (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [pinned, main]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+          fetch-depth: 0
+      - name: Resolve Duckwork ref
+        id: pin
+        run: |
+          if [ "${{ matrix.target }}" = pinned ]; then echo "ref=$DUCKWORK_UPSTREAM_SHA" >> "$GITHUB_OUTPUT"; else echo "ref=main" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.DUCKWORK_UPSTREAM_REPO }}
+          ref: ${{ steps.pin.outputs.ref }}
+          path: duckwork
+      - uses: astral-sh/setup-uv@v6
+      - name: Install Duckwork from its own lockfile
+        run: |
+          cd duckwork
+          uv sync --frozen --no-dev
+          uv pip install --python .venv/bin/python pytest pytest-timeout
+      - name: duckwork plugins validate (catalog admission checks)
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: duckwork/.venv/bin/duckwork plugins validate --install-deps plugin
+      - name: Tests inside a real Duckwork install
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: cd plugin && ../duckwork/.venv/bin/python -m pytest -q -p no:cacheprovider
+      - name: Historical identity and record checks (must run with tags)
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: cd plugin && ../duckwork/.venv/bin/python -m pytest -v -p no:cacheprovider tests/bench_slice2/test_historical_identity.py
+      - name: No self-updater, no runtime code fetch
+        run: |
+          bad=$(grep -rlE "releases/latest|raw\.githubusercontent\.com|pip install|urlopen\(" --include='*.py' plugin --exclude-dir=tests --exclude-dir=bench || true)
+          if [ -n "$bad" ]; then echo "self-updater / runtime fetch pattern in: $bad"; exit 1; fi

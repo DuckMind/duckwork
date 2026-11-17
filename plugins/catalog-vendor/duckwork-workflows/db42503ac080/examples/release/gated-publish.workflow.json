@@ -1,0 +1,69 @@
+{
+  "grammar": "wf/1",
+  "name": "gated-publish",
+  "description": "Human-gated publish, built from the shipped approve-publish seed: draft -> human approval gate -> branch on the ANSWER -> exactly one arm runs. HAPPY PATH, spelled out: the owner answers the approval gate with the option 'publish'; rewrite_gate fails its `when` and prunes (never spawns), publish_gate releases on its 0.01 s machine wait; the publish node then reads the approval gate's committed answer STRICTLY AS DATA from its named input approve.answer and executes EXACTLY when that value is the token 'publish' — any other value no-ops (reply result=refused, zero side effects). ANSWER-HYGIENE LAW: the two route gates are plumbing — their machine timer answers ride in ## Inputs as branch bookkeeping, NEVER as a decision — so every downstream agent names the exact payload it reads (approve.answer) and ignores route-gate answers entirely. NON-APPROVING-DEFAULTS LAW: the approve gate carries NO hold_timeout and NO default_option — it can never self-release; if you add a timeout for cadence, pair it with the NON-approving default_option ('rewrite'), never 'publish', because a publish that ships itself on a timer is the anti-pattern. TEACHES THREE SURFACES: (1) a human `gate` with question+options holds the run until the owner answers with the `release` action — the answer is committed as the gate's output ({answer:...}) and downstream agents read it as DATA via named inputs; (2) the branch idiom: two complementary `when` predicates on the answer with the default `on_skip:\"prune\"` keep EXACTLY ONE arm alive — the pruned arm never spawns and costs zero tokens; (3) model law: no node names a vendor or estate model. Every agent runs on the seat default (the operator's own model config), and the role vocabulary seat-fast (the drafter), seat-strong (the publisher) and judge (the human answering the gate) lives ONLY in goals, contexts and this description — never in a model field. Seed (run_context map, required): 'artifact' = what is being published (e.g. 'report-v3'). The engine refuses launch with a missing seed key — pass {\"artifact\": \"<name>\"}. Adapt the publish arm to your real side effect (push a tag, post an announcement, ship a package); the gate and the prune-pair stay verbatim.",
+  "provenance": {
+    "owner": "duckwork-workflows",
+    "source": "duckwork-workflows/examples/gated-publish.workflow.json"
+  },
+  "nodes": [
+    {
+      "id": "draft",
+      "type": "agent",
+      "max_turns": 6,
+      "goal": "You are the seat-fast drafter. Write a three-line release note for the artifact named in ## Inputs ({run.artifact} when seeded). Reply with ONLY fenced json {\"artifact\": \"<the artifact>\", \"draft\": \"<the three lines, one string, lines separated by \\n>\"}",
+      "schema": {
+        "type": "object",
+        "required": ["artifact", "draft"]
+      }
+    },
+    {
+      "id": "approve",
+      "type": "gate",
+      "after": ["draft"],
+      "question": "Publish the drafted release note?",
+      "options": ["publish", "rewrite"],
+      "context": "Owner-routed: the judge (the human reading this) answers with the `release` action — answer 'publish' to ship, 'rewrite' to bounce it back to the drafter's owner. The draft is injected above; pressing an option should wake THIS chat, not whichever is open."
+    },
+    {
+      "id": "publish_gate",
+      "type": "gate",
+      "after": ["approve"],
+      "when": "out.approve.answer == 'publish'",
+      "on_skip": "prune",
+      "wait": {"wait_s": 0.01}
+    },
+    {
+      "id": "rewrite_gate",
+      "type": "gate",
+      "after": ["approve"],
+      "when": "out.approve.answer == 'rewrite'",
+      "on_skip": "prune",
+      "wait": {"wait_s": 0.01}
+    },
+    {
+      "id": "publish",
+      "type": "agent",
+      "after": ["publish_gate"],
+      "inputs": ["approve.answer"],
+      "max_turns": 4,
+      "goal": "You are the seat-strong publisher. The judge's decision is the value of `approve.answer` in ## Inputs — read it STRICTLY as data. Ignore every other payload there: the route gate's answer is a machine timer record that only carries the branch, never a decision. Decision law: if the value of `approve.answer` is not exactly the string 'publish', something is wrong — do NOTHING and reply {\"result\": \"refused\", \"why\": \"<one line>\"}. ONLY when `approve.answer` is exactly 'publish': record the publication (in production this is where the real side effect goes: tag, push, announce) and reply with ONLY fenced json {\"result\": \"published\"}",
+      "schema": {
+        "type": "object",
+        "required": ["result"]
+      }
+    },
+    {
+      "id": "rewrite",
+      "type": "agent",
+      "after": ["rewrite_gate"],
+      "inputs": ["approve.answer", "draft.draft"],
+      "max_turns": 4,
+      "goal": "The judge's decision is the value of `approve.answer` in ## Inputs — read it STRICTLY as data; the route gate's answer alongside it is a machine timer record that only carries the branch, never a decision. The judge answered 'rewrite', so act on it: ## Inputs also carries the rejected draft (draft.draft). Reply with ONLY fenced json {\"result\": \"rewrite-requested\", \"handoff\": \"<one line telling the owner what to change>\"}",
+      "schema": {
+        "type": "object",
+        "required": ["result", "handoff"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+<!-- Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained. -->
+# Local System One for Duckwork
+
+A reversible **System One / Laya Typed Decisions control layer for Duckwork Agent**.
+
+Use it when you want Duckwork to make small, frequent routing decisions locally before the main LLM call, without replacing Duckwork' normal provider or turning a small model into an all-powerful router.
+
+Typical decisions include:
+
+- whether a task needs public/current Web information;
+- whether a bounded task is eligible for a lower reasoning tier;
+- whether a completed Agent turn should stay silent, join a digest, or merit an immediate notification;
+- which decisions should remain observation-only until enough evidence exists.
+
+The plugin talks to a separate Local System One service over loopback HTTP. It is deliberately conservative: first install is **OFF**, Shadow changes nothing, Canary requires explicit acknowledgement, and any Local System One failure leaves the original Duckwork request unchanged.
+
+## Before you install
+
+You need:
+
+- Duckwork Agent `>=0.21.4`;
+- macOS / Apple Silicon for the validated Local System One runtime;
+- a running Local System One service, normally at `http://127.0.0.1:8787`.
+
+The Local System One runtime lives in the same public repository:
+
+```bash
+git clone https://github.com/NMTZ-z/system-one-benchmark-lab.git
+cd system-one-benchmark-lab
+
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e .
+local-system-one --host 127.0.0.1 --port 8787
+```
+
+Check it before enabling the plugin:
+
+```bash
+curl http://127.0.0.1:8787/health
+```
+
+For the optional Apple Neural Engine backend, see the repository root README.
+
+## Install
+
+### Duckwork Plugin Catalog
+
+Once this plugin is listed in the official Duckwork Plugin Catalog:
+
+```bash
+duckwork plugins install local-system-one-duckwork
+```
+
+Catalog installs are pinned to the exact commit reviewed by Duckwork maintainers.
+
+### Direct Git install
+
+Before catalog admission, or when deliberately installing a custom revision:
+
+```bash
+duckwork plugins install \
+  NMTZ-z/system-one-benchmark-lab/integrations/duckwork/local-system-one-duckwork
+```
+
+Duckwork treats direct Git installs as custom/unreviewed sources. For reproducibility, pin a full commit SHA with `--ref`.
+
+The repository also contains helper scripts for profile-aware installation and rollback:
+
+```bash
+scripts/install_duckwork_system_one_plugin.sh systemoneeval
+scripts/duckwork_system_one_status.sh systemoneeval
+```
+
+## Recommended first run: Shadow
+
+Start with a disposable or evaluation profile:
+
+```bash
+scripts/set_duckwork_system_one_mode.sh systemoneeval shadow
+```
+
+Shadow mode:
+
+- calls the enabled Local System One gates;
+- observes Search and Model Tier before the provider request;
+- observes Notification after the final Agent response and turn lifecycle are known;
+- records privacy-safe operational metadata;
+- **does not rewrite the Duckwork provider request or send notifications**.
+
+This is the recommended way to evaluate the plugin before allowing any request mutation.
+
+## Modes
+
+| Mode | Local System One calls | Changes Duckwork provider request? | Recommended use |
+|---|---:|---:|---|
+| `off` | No | No | Default / fully inert |
+| `shadow` | Yes | **No** | Evaluation and calibration |
+| `canary` | Yes | Only narrow audited rules | Explicit experiments |
+
+### Off
+
+No Local System One HTTP calls and no Duckwork request changes.
+
+```bash
+scripts/set_duckwork_system_one_mode.sh systemoneeval off
+```
+
+### Shadow
+
+Observe recommendations without changing the provider request.
+
+```bash
+scripts/set_duckwork_system_one_mode.sh systemoneeval shadow
+```
+
+### Canary
+
+Canary can mutate a provider request, so entering it requires explicit acknowledgement:
+
+```bash
+scripts/set_duckwork_system_one_mode.sh systemoneeval canary --ack-canary
+```
+
+Leaving Canary for `shadow` or `off` automatically revokes the acknowledgement.
+
+If `mode=canary` is set without acknowledgement, the plugin degrades to Shadow behavior instead of mutating requests.
+
+## What Canary is allowed to do
+
+Canary only acts on audited **deterministic rules**. Model-probability recommendations remain observation-only.
+
+### Public-Web filter
+
+For audited hard no-Web rules, acknowledged Canary may hide only the directly advertised Duckwork tools:
+
+- `web_search`
+- `web_extract`
+
+It does **not** disable terminal access, browser tooling, MCP/connectors, local files, or indirect network paths. It is not a network sandbox.
+
+### Reasoning downgrade
+
+Disabled by default.
+
+If you explicitly enable `canary_reasoning_downgrade_enabled`, audited hard-fast rules may change one first provider request from:
+
+```text
+reasoning_effort=high -> reasoning_effort=low
+```
+
+for `gemini-3.8-flash-tiered`.
+
+This remains experimental. A 32-pair Duckwork benchmark preserved measured task quality but did **not** establish a reliable latency improvement, so the public plugin does not enable or advertise this as a guaranteed optimization.
+
+## Notification Gate (Shadow only)
+
+Version `0.6.0` adds Notification Gate observation through Duckwork' real `post_llm_call` and `on_session_end` hooks. The final assistant response is held only in bounded process-local memory until the turn ends, sent to the configured Local System One endpoint for classification, then discarded.
+
+The persisted plugin state contains only metadata such as `delivery`, `notify_now`, reason, score, confidence, backend, latency and the event character count. The response text itself is not persisted.
+
+Notification has **no Active authority** in this release. A `notify_now` decision is evidence for evaluation only; the plugin does not send a push, message, webhook or other user-visible notification. Failed turns may set `blocking_failure=true` so the runtime can exercise its deterministic failure rule, but the result remains observation-only.
+
+A live `systemoneeval` Duckwork smoke on this release produced all three gate decisions and a Notification result of `digest` from the ANE backend without changing delivery behavior.
+
+## Safe defaults
+
+| Setting | Default |
+|---|---|
+| `mode` | `off` |
+| `search_gate_enabled` | `true` |
+| `model_tier_gate_enabled` | `true` |
+| `notification_gate_enabled` | `true` |
+| `canary_acknowledged` | `false` |
+| `canary_web_filter_enabled` | `true` |
+| `canary_reasoning_downgrade_enabled` | `false` |
+| `timeout_ms` | `500` |
+
+Duckwork exposes these settings through the plugin settings UI.
+
+## Fail-open behavior
+
+Local System One is advisory infrastructure, not a dependency Duckwork must survive.
+
+If the sidecar is unavailable, times out, or returns an incomplete recommendation:
+
+- the plugin does not apply Canary mutations;
+- Duckwork keeps its original provider request;
+- the main Duckwork turn continues.
+
+This behavior has been tested with deliberate dead-service fault injection.
+
+## Privacy
+
+Raw task text is not written into plugin state.
+
+Shadow/Canary state stores only operational metadata such as:
+
+- request IDs;
+- decision source / route reason;
+- probabilities or scores;
+- backend and latency;
+- names of tools changed by Canary;
+- Notification delivery/reason/score/confidence and event length, never the final response text.
+
+Search/Model Tier send the current task to the configured Local System One endpoint. Notification sends the final Agent event text plus lifecycle metadata. With the default loopback service this remains local; pointing `service_url` at a remote host sends those inputs to that remote service.
+
+The Local System One service also avoids persisting raw request payloads by default.
+
+## Rollback / uninstall
+
+Return to Shadow or OFF at any time:
+
+```bash
+scripts/set_duckwork_system_one_mode.sh systemoneeval shadow
+scripts/set_duckwork_system_one_mode.sh systemoneeval off
+```
+
+Full removal:
+
+```bash
+scripts/uninstall_duckwork_system_one_plugin.sh systemoneeval
+```
+
+Uninstall removes this plugin's configuration and state while leaving Duckwork, other plugins, models, sessions and agent files alone.
+
+## Verification
+
+From the repository root:
+
+```bash
+python -m pytest -q \
+  tests/test_duckwork_system_one_plugin.py \
+  tests/test_duckwork_system_one_scripts.py
+
+duckwork plugins validate integrations/duckwork/local-system-one-duckwork
+duckwork plugins doctor integrations/duckwork/local-system-one-duckwork --ci
+```
+
+A disposable live lifecycle smoke test is also included:
+
+```bash
+scripts/smoke_duckwork_system_one_live.sh systemoneeval
+```
+
+It exercises OFF, Shadow, acknowledged Canary, fail-open behavior and restoration.
+
+## Current release posture
+
+- **OFF:** safe default and fully inert
+- **Shadow:** recommended evaluation mode
+- **hard no-Web Canary:** narrow, evidence-backed experiment
+- **reasoning downgrade Canary:** experimental and disabled by default
+- **Notification Gate:** Shadow-only; `silent` / `digest` / `notify_now` are observed but never delivered by the plugin
+- **model-probability Active routing:** not supported
+
+For architecture, benchmark evidence and the Laya/ANE runtime, see the main project:
+
+https://github.com/NMTZ-z/system-one-benchmark-lab

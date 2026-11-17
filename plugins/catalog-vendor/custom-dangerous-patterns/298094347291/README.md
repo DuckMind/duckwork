@@ -1,0 +1,803 @@
+# Custom Dangerous Patterns plugin for Duckwork Agent
+
+> **⚠️ USE AT YOUR OWN RISK**
+>
+> This plugin is in **early development** and has not been rigorously tested
+> across all Duckwork environments, versions, or edge cases. There is **no
+> guarantee** that all destructive commands will be caught or blocked. Pattern
+> matching is best-effort — creative command obfuscation, shell expansions,
+> piped commands, or edge cases in the approval flow may bypass detection.
+> **Do not rely on this plugin as your sole safety net for critical operations.**
+
+A [Duckwork Agent](https://github.com/DuckMind/duckwork) plugin that adds custom dangerous command patterns to Duckwork's built-in approval system.
+
+> **Upgrading from 0.4.x?** 0.5.0 stops modifying Duckwork internals and **removes
+> allow patterns**. If you have an existing config, start with
+> [Migrating to 0.5.0](https://github.com/scross01/custom-dangerous-patterns-plugin/wiki/Migrating-to-0.5.0)
+> — it covers what changed, why, and how to update.
+
+## What It Does
+
+Duckwork ships with over 100 built-in dangerous command patterns (`rm -rf`, `git reset --hard`, `docker stop`, etc.). When a command matches, you get an interactive approval prompt: `[o]nce`, `[s]ession`, `[a]lways`, or `[d]eny`.
+
+This plugin lets you define **your own patterns** in a YAML config file. They get the exact same approval flow — same prompts, same session persistence, same permanent allowlist, same gateway `/approve` and `/deny` support.
+
+**Use cases:**
+- Guard cloud CLI tools (`vultr`, `gcloud`, `aws`, `az`)
+- Protect deployment scripts (`cap deploy`, `fab deploy`)
+- Block dangerous database operations (`DROP TABLE`, `mongodump --drop`)
+- Gate any command that should require explicit human approval
+
+## Installation
+
+### Recommended: Install via Duckwork CLI
+
+```bash
+duckwork plugins install scross01/duckwork-custom-dangerous-patterns-plugin
+duckwork plugins enable custom-dangerous-patterns
+```
+
+The `install` command clones the repo into `~/.duckwork/plugins/custom-dangerous-patterns/`
+and prompts to enable it. Use `--enable` to skip the prompt:
+
+```bash
+duckwork plugins install scross01/duckwork-custom-dangerous-patterns-plugin --enable
+```
+
+### Updating
+
+```bash
+duckwork plugins update custom-dangerous-patterns
+```
+
+Then restart Duckwork for the changes to take effect.
+
+### Step 2: Create the config
+
+Easiest — use the interactive bootstrap:
+
+```bash
+duckwork custom-dangerous-patterns init --with-examples
+```
+
+This creates `~/.duckwork/custom-dangerous-patterns/` (a directory) with:
+- `00-test.yaml` — safe `[TEST]` patterns (all disabled)
+- All bundled example files copied individually (`01-cloud.yaml`, `02-infra.yaml`, `03-tools.yaml`, `04-package-managers.yaml`) — fully-enabled example patterns (only with `--with-examples`)
+
+Without `--with-examples`, creates a minimal config directory with safe test patterns (all disabled).
+
+Or create `~/.duckwork/custom-dangerous-patterns/` manually — see [Configuration](#configuration).
+
+> **Note:** Directory mode is the **preferred** configuration setup.
+> The plugin also supports a single `custom-dangerous-patterns.yaml` file
+> or *combined mode* where both the directory and sibling `.yaml` file are
+> loaded and merged together.
+
+### Step 3: Restart Duckwork
+
+The plugin loads at startup. Restart the gateway or start a new CLI session:
+
+```bash
+duckwork gateway restart    # if using the gateway
+# or just start a new `duckwork` CLI session
+```
+
+### Step 4: Test it
+
+Test your patterns without running real commands:
+
+```bash
+duckwork custom-dangerous-patterns test "vultr instance delete --instance-id cb670a12"
+```
+
+Then try it live:
+
+```
+> vultr instance delete --instance-id cb670a12-e4f5-6d78-ab90-1234567890ab
+
+⚠️ Dangerous command detected: Vultr destructive instance/snapshot command
+    vultr instance delete --instance-id cb670a12-e4f5-6d78-ab90-1234567890ab
+
+  [o]nce    — allow this one time
+  [s]ession — allow for this session
+  [a]lways  — always allow this pattern
+  [d]eny    — block (default)
+```
+
+## Configuration
+
+### Config Location
+
+**Directory (preferred):**
+
+```
+~/.duckwork/custom-dangerous-patterns/
+```
+
+All `*.yaml` files in the directory are loaded and merged alphabetically.
+Most CLI write commands (`enable`, `disable`, `add` without `--target`)
+write delta entries to `99-custom.yaml` — user-created files are never
+modified.
+
+Two exceptions:
+- **`remove`** behavior depends on config mode:
+  - **Single-file mode:** edits the source YAML file directly using `remove_entry_from_file()`, which scans all YAML files and deletes matching pattern entries at the YAML level — no `disabled: true` remnant is written.
+  - **Directory mode:** removes the entry from the in-memory config and `save_config()` writes `enabled: false` to `99-custom.yaml` (delta). Source files are not modified.
+- **`add --target <filename>`** writes to the specified file
+
+**Single file (fallback):**
+
+```
+~/.duckwork/custom-dangerous-patterns.yaml
+```
+
+**Combined mode:** When both the directory and the sibling `.yaml` file
+exist, both are loaded and merged (directory files take precedence via
+dedup).
+
+Override with env var:
+
+```bash
+export DUCKWORK_CUSTOM_PATTERNS_PATH=/path/to/config.yaml
+
+# Or point to a directory:
+export DUCKWORK_CUSTOM_PATTERNS_PATH=/path/to/config-directory/
+```
+
+### Block Patterns
+
+These commands trigger the approval prompt:
+
+```yaml
+patterns:
+  - pattern: '\bvultr\b'
+    description: 'Vultr CLI command'
+    enabled: true
+    group: cloud
+    protected: false
+    examples:
+      - 'vultr account info'
+      - 'vultr instance list'
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `pattern` | Yes* | Python regex (matched with `re.IGNORECASE \| re.DOTALL`). Can be omitted if `glob` is provided — the regex is auto-generated from the glob on config load. |
+| `description` | Yes | Human-readable label shown in the approval prompt |
+| `examples` | No | Documentation-only list of example commands |
+| `enabled` | No | Boolean (default `true`). Set `false` to temporarily disable a pattern |
+| `group` | No | Optional string tag for categorization (e.g., `cloud`, `database`, `testing`) |
+| `protected` | No | Boolean (default `false`). If `true`, the pattern's regex is integrity-checked across sessions |
+| `glob` | No | Original glob string saved when pattern was created via `--glob`. If `pattern` is not present, the glob is auto-converted to regex on config load. |
+
+> **\* `pattern` or `glob` required.** At least one must be present. If both are provided, `pattern` is used as-is. If only `glob` is present, the regex is auto-generated during config validation.
+
+### Deny Patterns
+
+Commands matching deny patterns are **blocked immediately without an approval prompt**. They are checked **before** allow and block patterns — deny wraps the original guard function and intercepts first. Useful for commands that should *never* be run without manual config changes.
+
+```yaml
+deny_patterns:
+  - pattern: '\bgit\s+push\s+--force\b'
+    description: 'Force git push'
+    enabled: true
+    group: git
+    examples:
+      - 'git push --force origin main'
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `pattern` | Yes* | Python regex (same flags as block patterns). Can be omitted if `glob` is provided — auto-generated from glob. |
+| `description` | Yes | Human-readable label shown in the block message |
+| `examples` | No | Documentation-only list of example commands |
+| `enabled` | No | Boolean (default `true`). Set `false` to temporarily disable |
+| `group` | No | Optional string tag for categorization |
+| `protected` | No | Boolean (default `false`). If `true`, integrity-checked across sessions |
+| `glob` | No | Original glob string. If `pattern` is absent, auto-converted to regex on load. |
+
+> **\* `pattern` or `glob` required.** At least one must be present. If both are provided, `pattern` is used as-is.
+
+**Behavior note:** A deny match returns `{"action": "block"}` from the plugin's hook before the approval gate is reached, so `--yolo` and `approvals.mode: off` do **not** bypass deny patterns — an intentional safeguard, and unchanged from 0.4.x.
+
+### Allow Patterns (removed in 0.5.0)
+
+Allow patterns exempted a command from all dangerous-command detection. They were
+removed because no supported Duckwork surface can express "do not apply a gate":
+`pre_tool_call` only *adds* gates, the approval hooks are observer-only, and
+Duckwork's `command_allowlist` matches exact command text or shell globs rather
+than regex.
+
+**Any `allow_patterns` still in your config are inert.** They are reported but
+never enforced, and nothing is auto-deleted from your config:
+
+```sh
+# See them
+duckwork custom-dangerous-patterns list --type allow
+
+# Remove them (choose from the list output)
+duckwork custom-dangerous-patterns remove --type allow <index>
+```
+
+For a command that should never prompt, use Duckwork's own `command_allowlist` in
+`config.yaml` — exact command text, or a shell glob:
+
+```yaml
+command_allowlist:
+  - 'vultr account info'
+  - 'vultr instance list *'
+```
+
+> Why the feature was removed rather than kept, and what else changed in 0.5.0:
+> [Migrating to 0.5.0](https://github.com/scross01/custom-dangerous-patterns-plugin/wiki/Migrating-to-0.5.0).
+
+### A Note on `\b` (Word Boundaries)
+
+Patterns use `\b` to match whole words only. This prevents false positives where a command name appears as a substring:
+
+| Pattern | Matches | Doesn't match |
+|---------|---------|---------------|
+| `\bvultr\b` | `vultr instance list` | `echo vultr_test`, `my-vultr-server` |
+| `\baws\s+ec2\b` | `aws ec2 describe-instances` | `aws-ec2-tool`, `paws ec2` |
+| `\bterraform destroy\b` | `terraform destroy -auto-approve` | `echo "terraform destroy"` in a script |
+
+Without `\b`, `\bvultr` would match any string containing "vultr" — including hostnames, variable names, or unrelated commands. The `\b` anchor ensures the pattern only triggers on the actual CLI tool name.
+
+**Tip:** Use single-quoted YAML strings for patterns — backslashes pass through literally (`'\bvultr\b'`), avoiding the double-escaping needed with double quotes (`"\\bvultr\\b"`).
+
+### Evaluation Order
+
+The plugin enforces patterns through a single `pre_tool_call` hook, which checks
+them on every `terminal` call:
+
+| # | Check | Result | Prompt? | Bypassed by `--yolo`? |
+|---|-------|--------|---------|----------------------|
+| 1 | **Deny patterns** | **Immediate block** | ❌ No | ❌ No |
+| 2 | **Block patterns** | **Approval prompt** via Duckwork's own gate | ✅ Yes | ✅ Yes |
+| 3 | **Block patterns** that also match a built-in | Deferred to the built-in gate, so one prompt appears | ✅ Yes | ✅ Yes |
+| 4 | No match | Command proceeds | — | — |
+
+**Key rules:**
+- **Deny wins over block.** Deny is checked first and is never bypassed by
+  `--yolo` or `approvals.mode: off`.
+- **Block patterns are bypassed by `--yolo` and `approvals.mode: off`**, exactly
+  as Duckwork's built-in dangerous-command patterns are.
+- **There is no allow tier.** Nothing in this config can exempt a command.
+- **Overlapping block patterns defer** to the built-in gate rather than prompting
+  twice — `[o]nce` on a first prompt would not satisfy a second. The trade-off is
+  that the built-in description is shown, and granting `[a]lways` on it stops
+  your rule firing for that command class.
+
+  At startup the plugin warns about block patterns that *look like* a built-in. That
+  is a similarity estimate over the two regex sources, so it is precise but not
+  complete. `custom-dangerous-patterns test '<command>'` asks Duckwork about the
+  actual command and is exact — use it when you need to know.
+
+> Full ordering table, per-surface behaviour, and the reasoning behind each
+> decision: [Migrating to 0.5.0](https://github.com/scross01/custom-dangerous-patterns-plugin/wiki/Migrating-to-0.5.0).
+
+### Config Integrity & Protected Patterns
+
+The plugin tracks the integrity of your configuration across sessions:
+
+- **Config hash tracking:** A SHA-256 hash of your full config YAML is stored in `~/.duckwork/.custom-patterns-hash`. If the config changes between sessions, a `WARNING` is logged with the old and new pattern counts.
+- **Protected patterns:** Patterns with `protected: true` have their individual regex SHA-256 hashed and tracked. If a protected pattern is **modified** or **removed**, a `CRITICAL` security warning is logged at startup.
+- **Built-in overlap disclosure:** For each block pattern that also matches a Duckwork built-in dangerous pattern, a `WARNING` is logged at startup naming both descriptions, because such matches defer to the built-in gate rather than prompting separately.
+- **Retired allow entries:** Any `allow_patterns` left in your config produce a `CRITICAL` startup log and are reported as inert by `list`, `info`, and `validate`, so they can be reviewed and removed.
+- **Match log contents:** every block and deny match is appended as JSONL to `~/.duckwork/logs/custom-dangerous-patterns.log` **including the full command text** that matched. Deferred block matches carry an extra `"deferred": true` field. Allow patterns are retired and are never logged. Treat that file as sensitive if your commands may contain secrets (tokens in URLs, inline passwords, etc.).
+
+These integrity checks provide defense-in-depth against unauthorized config tampering, but they are **detective, not preventive** — the plugin detects and logs changes but does not prevent them. See [Security & Risks](#security--risks) for more on the trust model.
+
+### Directory Config Loading
+
+Instead of a single file, you can use a **directory**. The plugin loads all `*.yaml` files in alphabetical order and merges them:
+
+- Lists (`patterns`, `allow_patterns`, `deny_patterns`) are **extended** (appended).
+  `allow_patterns` is retired: it still loads so `list`/`remove`/`enable` can
+  report and delete it, but nothing is enforced.
+- Scalars override previous values
+
+This is useful for splitting configs by tool or team:
+
+```bash
+~/.duckwork/custom-dangerous-patterns/
+├── 10-cloud.yaml       # cloud CLI patterns
+├── 20-database.yaml     # database patterns
+└── 30-deployment.yaml   # deploy tool patterns
+```
+
+Use `duckwork custom-dangerous-patterns init` to create a config directory
+with starter files, or set the directory path via `$DUCKWORK_CUSTOM_PATTERNS_PATH`.
+
+### Full Example
+
+```yaml
+# ~/.duckwork/custom-dangerous-patterns.yaml
+#
+# TIP: Use single-quoted strings for patterns — backslashes pass through
+# literally:  '\bvultr\b'  not  "\\bvultr\\b"
+
+patterns:
+  # ── Cloud CLI tools (destructive) ────────────────────────────────
+  - pattern: '\bvultr\s+(instance\s+create|instance\s+delete|snapshot\s+create|snapshot\s+delete)\b'
+    description: 'Vultr destructive instance/snapshot command'
+    examples:
+      - 'vultr instance delete --instance-id cb670a12-e4f5-6d78-ab90-1234567890ab'
+      - 'vultr snapshot delete --snapshot-id 5a3b2c1d'
+
+  - pattern: '\bterraform\s+(destroy|apply)\b'
+    description: 'Terraform destroy/apply (infrastructure mutation)'
+    examples:
+      - 'terraform destroy -auto-approve'
+      - 'terraform apply -auto-approve'
+
+  - pattern: '\baws\s+(ec2|s3|rds|iam|lambda|cloudformation)\b'
+    description: 'AWS CLI mutating service command'
+    examples:
+      - 'aws ec2 terminate-instances --instance-ids i-12345'
+      - 'aws s3 rb s://my-bucket --force'
+      - 'aws rds delete-db-instance --db-instance-identifier mydb'
+
+  - pattern: '\bgcloud\s+(compute\s+instances\s+delete|projects\s+delete)\b'
+    description: 'GCP destructive command'
+    examples:
+      - 'gcloud compute instances delete my-vm --zone=us-central1-a'
+
+  - pattern: '\boci\s+(compute\s+instance\s+terminate|database\s+db\s+system\s+delete|network\s+vcn\s+delete)\b'
+    description: 'Oracle Cloud destructive command'
+    examples:
+      - 'oci compute instance terminate --instance-id ocid1.instance.oc1..aaaaaaaa'
+      - 'oci database db-system delete --db-system-id ocid1.dbsystem.oc1..aaaaaaaa'
+
+  - pattern: '\bdoctl\s+(compute\s+droplet\s+delete|kubernetes\s+cluster\s+delete|databases\s+delete)\b'
+    description: 'DigitalOcean destructive command'
+    examples:
+      - 'doctl compute droplet delete 12345678'
+      - 'doctl kubernetes cluster delete my-cluster'
+
+  - pattern: '\bkubectl\s+delete\s+namespace\b'
+    description: 'Kubernetes namespace deletion'
+    examples:
+      - 'kubectl delete namespace staging'
+
+  # ── Deployment tools ─────────────────────────────────────────────
+  - pattern: '\bcap\s+\w+\s+deploy\b'
+    description: 'Capistrano production deploy'
+    examples:
+      - 'cap production deploy'
+
+  - pattern: '\bfab\s+\w*\s*deploy\b'
+    description: 'Fabric deploy'
+    examples:
+      - 'fab deploy production'
+
+  # ── Database operations ──────────────────────────────────────────
+  - pattern: '\bDROP\s+(TABLE|DATABASE)\b'
+    description: 'SQL DROP statement'
+    examples:
+      - 'DROP TABLE users'
+      - 'DROP DATABASE production'
+
+  - pattern: '\bmongodump\b.*--drop\b'
+    description: 'MongoDB dump with --drop (overwrites existing data)'
+    examples:
+      - 'mongodump --drop --db production'
+
+# ── Allow patterns ────────────────────────────────────────────────
+# REMOVED in 0.5.0 — nothing below can exempt a command any more.
+# Existing entries still load and are reported as inert so you can
+# review and remove them:
+#   duckwork custom-dangerous-patterns list --type allow
+#   duckwork custom-dangerous-patterns remove --type allow <index>
+#
+# Commands that should never prompt belong in Duckwork's own
+# command_allowlist in config.yaml, e.g.:
+#   command_allowlist:
+#     - 'vultr account info'
+#     - 'vultr instance list *'
+```
+
+## CLI Reference
+
+All commands follow the `duckwork custom-dangerous-patterns <verb>` pattern, consistent with other Duckwork subcommands like `duckwork plugins`.
+
+### `list` — Show your patterns
+
+```bash
+duckwork custom-dangerous-patterns list                    # all patterns
+duckwork custom-dangerous-patterns list --type block       # block patterns only
+duckwork custom-dangerous-patterns list --type allow       # retired allow entries (inert, not enforced)
+duckwork custom-dangerous-patterns list --type deny        # deny patterns only
+duckwork custom-dangerous-patterns list --group cloud      # patterns in a group
+duckwork custom-dangerous-patterns list --disabled         # only disabled patterns
+duckwork custom-dangerous-patterns list --enabled          # only active patterns
+duckwork custom-dangerous-patterns list --search aws       # search descriptions and patterns
+duckwork custom-dangerous-patterns list --builtins         # include Duckwork's built-in patterns
+```
+
+> **Note:** `--builtins` reads Duckwork's built-in patterns live from
+> `tools.approval_detection` at the moment you run it, so it always reflects your
+> current Duckwork version. Run it inside Duckwork; elsewhere it reports that the
+> built-in list is unavailable rather than showing an empty list.
+
+### `test <command>` — Verify patterns before running
+
+Test a command against all patterns to see what would happen **without running it**.
+
+```bash
+duckwork custom-dangerous-patterns test "vultr instance delete"
+duckwork custom-dangerous-patterns test "vultr account info" --verbose
+duckwork custom-dangerous-patterns test "git push --force" --skip-builtins
+```
+
+Shows which patterns match and the result: **DENY** (blocked immediately), **APPROVAL PROMPT** (interactive prompt), **PASS** (no patterns matched), or **UNKNOWN** (no custom match, but Duckwork's built-in patterns could not be read — run inside Duckwork). `UNKNOWN` exists so that failing to read the built-in table is never reported as "nothing matched": that would be an overclaim.
+
+Retired `allow_patterns` are listed for visibility but are never counted toward the verdict — such a command is not exempt. If one matches, the output ends with an explicit "This command is NOT exempt" note.
+
+`--verbose` shows full pattern regex and built-in matches. `--skip-builtins` omits Duckwork's built-in patterns to focus on custom patterns.
+
+### `init` — First-run bootstrap
+
+```bash
+duckwork custom-dangerous-patterns init                    # minimal config with safe [TEST] patterns (all disabled)
+duckwork custom-dangerous-patterns init --with-examples    # full example config (all enabled for demonstration)
+duckwork custom-dangerous-patterns init --force            # overwrite existing config without prompting
+```
+
+### `enable / disable` — Toggle patterns
+
+Toggle patterns on/off without editing YAML. Target by index, description substring, or group.
+
+```bash
+duckwork custom-dangerous-patterns enable 1                          # by index (from list output)
+duckwork custom-dangerous-patterns disable "Vultr"                    # by description substring
+duckwork custom-dangerous-patterns enable --group cloud               # all patterns in a group
+duckwork custom-dangerous-patterns enable --group testing --dry-run   # preview without saving
+```
+
+With no target or group specified, `enable` and `disable` launch
+interactive selection automatically.
+
+After any write command, the CLI reminds you to restart Duckwork for changes to take effect.
+
+### `validate` — Check config syntax
+
+```bash
+duckwork custom-dangerous-patterns validate                    # validate default config
+duckwork custom-dangerous-patterns validate --path /tmp/cfg.yaml  # validate a specific file
+duckwork custom-dangerous-patterns validate --quiet            # exit code only (CI/CD)
+```
+
+Validates YAML syntax, regex compilation, and pattern consistency. In
+addition to basic validation, if a pattern defines both `glob` and
+`pattern` and the stored regex differs from what the glob would generate,
+a warning is emitted to flag the discrepancy.
+
+Exit code 0 = valid, 1 = errors found, 2 = file not found.
+
+### `info` — State dashboard
+
+Shows config path, pattern counts by type, integrity status, protected patterns, and group breakdown.
+
+```bash
+duckwork custom-dangerous-patterns info
+```
+
+### `logs` — Extract plugin log entries
+
+```bash
+duckwork custom-dangerous-patterns logs                          # all plugin log entries
+duckwork custom-dangerous-patterns logs --level WARNING          # filter by minimum level
+duckwork custom-dangerous-patterns logs --limit 20               # last 20 entries
+duckwork custom-dangerous-patterns logs --since 2026-06-01       # entries since a date
+duckwork custom-dangerous-patterns logs --follow                 # tail the log (Ctrl+C to exit)
+```
+
+### `add` — Add a pattern
+
+Interactive guided prompts or CLI flags for scripting.
+
+```bash
+# Interactive (guided prompts for each field, with glob-to-regex support)
+duckwork custom-dangerous-patterns add
+
+# Write to a specific file in the config directory
+duckwork custom-dangerous-patterns add --target 02-mycloud.yaml --type block \
+    --pattern '\bheroku\s+(apps:destroy|pg:reset)\b' \
+    --description 'Heroku destructive commands' \
+    --group cloud
+
+# Glob-style pattern entry (converted to regex automatically).
+# * matches ONE word, ** matches ANYTHING, {a,b} for alternatives.
+duckwork custom-dangerous-patterns add --type block \
+    --glob 'heroku *destroy*' \
+    --description 'Heroku destructive commands'
+
+# Non-interactive (full CLI flags)
+duckwork custom-dangerous-patterns add --type block \
+    --pattern '\bheroku\s+(apps:destroy|pg:reset)\b' \
+    --description 'Heroku destructive commands' \
+    --group cloud
+```
+
+| Flag | Description |
+|------|-------------|
+| `-t` / `--type` | Pattern type: `block` or `deny` (required non-interactive). `allow` is **refused** — see [Allow Patterns](#allow-patterns-removed-in-050) |
+| `-p` / `--pattern` | Raw regex pattern (required non-interactive; mutually exclusive with `--glob`) |
+| `--glob` | Glob-style pattern like `echo hello` — converted to regex automatically |
+| `-d` / `--description` | Human-readable description |
+| `-g` / `--group` | Optional group tag for categorization |
+| `--examples` | One or more example commands |
+| `--disabled` | Add as disabled (default: enabled) |
+| `--protected` | Mark as protected (integrity tracked across sessions) |
+| `--dry-run` | Preview without saving |
+| `--target FILENAME` | Write to a specific `.yaml` file in the config directory (requires directory mode) |
+
+> **Note:** `--pattern` and `--glob` are mutually exclusive. Without any
+> flags, `add` launches interactive mode with guided prompts and
+> glob-to-regex conversion.
+
+### `remove` — Remove a pattern
+
+```bash
+# Interactive (shows numbered list)
+duckwork custom-dangerous-patterns remove
+
+# By index (from `list` output)
+duckwork custom-dangerous-patterns remove 3
+
+# By description substring
+duckwork custom-dangerous-patterns remove "Heroku"
+
+# Force removal without confirmation prompt
+duckwork custom-dangerous-patterns remove 3 --force
+
+# Preview without deleting
+duckwork custom-dangerous-patterns remove 7 --dry-run
+```
+
+| Flag | Description |
+|------|-------------|
+| `target` | Pattern index (from `list`) or description substring |
+| `-t` / `--type` | Filter by type: `block`, `allow`, or `deny` |
+| `--force` | Skip confirmation prompt |
+| `--dry-run` | Preview without deleting |
+
+Unlike `enable`/`disable` (which write delta entries to `99-custom.yaml`),
+**`remove`** deletes the pattern from the active config:
+
+- **Single-file mode:** edits the source YAML file directly using
+  `remove_entry_from_file()`. The entry is deleted from the file — no
+  `disabled: true` remnant is written.
+- **Directory mode:** removes the entry from the in-memory config and
+  `save_config()` writes `enabled: false` to `99-custom.yaml` (delta).
+  User-created source files are not modified.
+
+Protected patterns cannot be removed via CLI; edit the config file
+directly to remove them.
+
+---
+
+## How It Works
+
+The plugin enforces your patterns through a single `pre_tool_call` hook — a
+public plugin API. It does not modify any Duckwork internal: no pattern tables are
+written and no core function is rebound.
+
+```
+Duckwork startup:
+  1. Plugin discovery → register(ctx) runs
+  2. Resolves config path (env var → ~/.duckwork/custom-dangerous-patterns/ directory or single .yaml file)
+  3. Loads YAML (supports directory mode: all *.yaml files merged)
+  4. Runs integrity checks (config SHA-256 hash, protected pattern verification)
+  5. Compiles regex patterns (block, deny)
+  6. Registers one pre_tool_call hook
+  7. Agent runs → the hook checks deny, then block → Duckwork's native approval gate
+```
+
+On each `terminal` call the hook checks **deny** patterns first (immediate block,
+no prompt), then **block** patterns, which escalate to Duckwork's own human
+approval gate. Block patterns that also match a built-in dangerous pattern defer
+to the built-in gate so you get one prompt, not two.
+
+Because escalation goes through Duckwork, you get the standard prompt on every
+surface:
+
+| Context | Behavior |
+|---------|----------|
+| **CLI** | Interactive `[o]nce`/`[s]ession`/`[a]lways`/`[d]eny` prompt |
+| **TUI / desktop** | The same prompt, rendered by Duckwork's own UI |
+| **Gateway** (Telegram/Discord/etc.) | `/approve` and `/deny` commands, async approval queue |
+| **Session persistence** | "Session" choice survives for the session duration |
+| **Permanent allowlist** | "Always" persists `plugin_rule:cdp:<hash>` to `command_allowlist` |
+| **Smart mode** | If `approvals.mode: smart`, an auxiliary LLM assesses the decision |
+| **Cron** | Respects `approvals.cron_mode` (deny by default) |
+| **`--yolo` / `approvals.mode: off`** | Block patterns are bypassed, exactly as built-ins are. **Deny patterns still block.** |
+
+> Full ordering table, per-surface behaviour, and the reasoning behind each
+> design decision: [Migrating to 0.5.0](https://github.com/scross01/custom-dangerous-patterns-plugin/wiki/Migrating-to-0.5.0).
+
+## Edge Cases
+
+| Scenario | Behavior |
+|----------|----------|
+| Config file missing | Plugin loads silently, no patterns enforced |
+| Config file invalid YAML | Log WARNING, plugin loads with empty pattern list |
+| Invalid regex in pattern | Log WARNING for that pattern, skip it, load valid ones |
+| Retired `allow_patterns` present | Reported as inert by `list`/`info`/`validate`; CRITICAL log at startup. `validate` still exits 0. |
+| Block pattern also matches a built-in | Deferred to the built-in gate so one prompt appears; disclosed by a startup warning |
+| Bare headless run (no unattended marker) | Custom block patterns are blocked; built-in patterns auto-approve. Every other context (CLI, TUI, desktop, channels, cron, `-q`, webhook, `api_server`) behaves identically to built-ins. |
+| Deny pattern match | Blocked immediately, no prompt |
+| `--yolo` mode | Block patterns (custom + built-in) bypassed. Deny patterns still block — the hook returns `block` before the approval gate. |
+| `approvals.mode: off` | Block patterns bypassed. Deny patterns still block — same reason. |
+| `approvals.mode: smart` | Custom patterns assessed by auxiliary LLM |
+| Cron session + `cron_mode: deny` | Custom patterns blocked in cron |
+| Container backend (docker, etc.) | All approval checks skipped (sandboxed) |
+| `command_allowlist` "always" choice | Persisted to config.yaml — survives restarts |
+| Config changed since last session | WARNING logged with old/new pattern counts |
+| Protected pattern missing/modified | CRITICAL warning logged at startup |
+| Allow pattern shadows built-in pattern | WARNING logged with details |
+
+## Security & Risks
+
+> The plugin's stance on self-modification is: **allow it, detect it, log it.**
+
+The agent running Duckwork can read and write `~/.duckwork/custom-dangerous-patterns.yaml`. An agent with write access can **narrow or disable its own block patterns and delete its own deny patterns**. Since 0.5.0 that is the *only* lever it has: there is no exemption feature left to abuse, because no pattern in this config can make a command run without approval. The trust model is otherwise by design — the plugin is a safety net, not a jail.
+
+The `_config_cache` freeze means mid-session edits are ignored, but changes take effect after the next Duckwork restart.
+
+### Risks the plugin cannot prevent
+
+- An agent could delete a deny pattern outright, removing the strongest protection you configured
+- An agent could modify protected patterns — changing both the pattern and its `protected` flag
+- Config modifications via Python I/O or AI tool calls are invisible to pattern matching. Only literal command-line path references to the config file are potentially caught by patterns
+
+### Defenses the plugin does provide
+
+- **Protected patterns:** Patterns with `protected: true` have their regex SHA-256 hashed and tracked in `~/.duckwork/.custom-patterns-hash`. If a protected pattern is modified or removed, a **CRITICAL** security warning is logged at startup.
+- **Config hash tracking:** The full config SHA-256 is stored between sessions. Any change triggers a `WARNING` on next load with details of what changed (old vs new pattern counts).
+- **Built-in overlap disclosure:** For each block pattern that also matches a Duckwork built-in dangerous pattern, a `WARNING` is logged at startup naming both descriptions, because such matches defer to the built-in gate.
+- **No exemption surface:** The plugin deliberately offers no way for a pattern in your config to make a command run without approval. That capability existed only via allow patterns and is gone. Commands that should never prompt belong in Duckwork's `command_allowlist`, which the plugin never writes to.
+
+### Example bypass vectors
+
+| Command | Why pattern matching doesn't see it |
+|---------|-----------------------------------|
+| `python -c "open('~/.duckwork/custom-dangerous-patterns.yaml').write('...')"` | Filename is in a Python string, not shell-visible |
+| AI file-write tool call | Tool handles I/O; filename not in command string |
+| `sed -i 's/block/allow/' ~/.duckwork/custom-dangerous-patterns.yaml` | Filename visible but not in `_SENSITIVE_WRITE_TARGET` (out of scope) |
+| `tee ~/.duckwork/custom-dangerous-patterns.yaml << 'EOF'` | Same: not in `_SENSITIVE_WRITE_TARGET` (out of scope) |
+
+### User-level hardening options (optional, not default)
+
+- Set config file permissions to `0444` (read-only) for the agent's user
+- Mount the config directory read-only in containerized setups
+- Use `command_allowlist` only for patterns the user personally approved
+
+## Troubleshooting
+
+### Plugin not loading
+
+Check that the plugin is enabled:
+
+```bash
+duckwork plugins list | grep custom-dangerous-patterns
+```
+
+If not listed, enable it:
+
+```bash
+duckwork plugins enable custom-dangerous-patterns
+```
+
+### Patterns not triggering approval
+
+1. Verify the plugin loaded and see active patterns:
+   ```bash
+   duckwork custom-dangerous-patterns list
+   ```
+
+2. Test a command against your patterns:
+   ```bash
+   duckwork custom-dangerous-patterns test "vultr instance delete"
+   ```
+
+3. Check the plugin logs for errors:
+   ```bash
+   duckwork custom-dangerous-patterns logs
+   ```
+
+4. Ensure you restarted Duckwork after enabling the plugin or changing config.
+
+5. Validate your config syntax:
+   ```bash
+   duckwork custom-dangerous-patterns validate
+   ```
+
+### Allow patterns not working
+
+Allow patterns are checked **before** block patterns. If a command matches both, the allow wins. Test your pattern matching:
+
+```bash
+duckwork custom-dangerous-patterns test "vultr account info" --verbose
+```
+
+The `--verbose` output shows which patterns matched and the result.
+
+### A block pattern prompts, but I expected no prompt
+
+If a command matches both your pattern and one of Duckwork's built-in dangerous
+patterns, the plugin **defers to the built-in gate** so you get a single prompt
+rather than two. The consequence is that the built-in description is shown, and
+choosing `[a]lways` on it permanently allowlists the *built-in* key — which stops
+your custom rule firing for that class of command.
+
+Check with `--verbose` on `test`, and look for a `BUILT-IN OVERLAP` warning at
+startup. Narrowing your pattern so it no longer overlaps gives you your own
+description and an independent allowlist entry.
+
+### My `always` approval stopped applying after upgrading
+
+Approvals granted under 0.4.x do not carry over to 0.5.0. Approval keys are now
+derived from the pattern's **regex** rather than its description, so the first
+time you approve each rule after upgrading, a new `plugin_rule:cdp:<hash>` entry
+is written. This is a one-time re-grant, and it means that editing a pattern's
+*description* no longer discards your approval.
+
+> Background and the full list of 0.5.0 changes:
+> [Migrating to 0.5.0](https://github.com/scross01/custom-dangerous-patterns-plugin/wiki/Migrating-to-0.5.0).
+
+### Deny patterns not blocking
+
+If deny patterns are not blocking commands, verify:
+
+1. The pattern is enabled — `duckwork custom-dangerous-patterns list --enabled --type deny`
+2. The command is not normalized into your pattern's shape — deny patterns are matched against the same shell-spliced variants Duckwork uses for its own patterns, so try `duckwork custom-dangerous-patterns test "<command>"` and compare
+3. Restart Duckwork after config changes (mid-session edits are silently ignored)
+
+Test deny pattern matching:
+
+```bash
+duckwork custom-dangerous-patterns test "git push --force origin main"
+```
+
+### Integrity warnings on startup
+
+If you see `CONFIG CHANGED` or `PROTECTED PATTERN MISSING/MODIFIED` warnings on startup:
+
+1. Review the recent changes to `~/.duckwork/custom-dangerous-patterns.yaml`
+2. If the changes were intentional, the warning is informational — no action needed
+3. If the changes were unexpected, investigate who/what modified the config
+
+The integrity hash file is stored at `~/.duckwork/.custom-patterns-hash`. Deleting it will clear the stored hash and suppress warnings until the next config change.
+
+### Config file not found
+
+The plugin looks for `~/.duckwork/custom-dangerous-patterns/` (directory)
+or `~/.duckwork/custom-dangerous-patterns.yaml` (single file). Override with:
+
+```bash
+export DUCKWORK_CUSTOM_PATTERNS_PATH=/path/to/config.yaml
+
+# Or point to a directory:
+export DUCKWORK_CUSTOM_PATTERNS_PATH=/path/to/config-directory/
+```
+
+See [Directory Config Loading](#directory-config-loading) for details.
+
+## Requirements
+
+- Python 3.11+
+- [Duckwork Agent](https://github.com/DuckMind/duckwork) **>=0.21.4** — enforced by `requires_duckwork` in `plugin.yaml`. Older cores are skipped at load: below 0.18.1 the `pre_tool_call` `approve` action does not exist, so block patterns would stop gating anything, and below 0.21.4 `tools.approval_detection` is missing so rules match raw text only.
+- ruamel.yaml — for config loading and write-back (declared in `plugin.yaml`; Duckwork installs it automatically)
+
+### Development
+
+```bash
+uv venv --python 3.11 .venv
+uv sync --extra dev
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

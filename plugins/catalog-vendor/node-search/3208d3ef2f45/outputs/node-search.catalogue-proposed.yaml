@@ -1,0 +1,17 @@
+# PROPOSED UPDATE to existing plugin-catalog/node-search.yaml; blocked pending matrix/floor/dependency admission.
+# Pins the preceding documentation candidate; this proposal-only commit does not change plugin code.
+name: node-search
+repo: https://github.com/Heeervas/node-search-plugin
+sha: 16e0e46f3a19edbf3473bbeb572bce5af9beda87
+description: Bounded local Markdown metadata and link-graph candidate search.
+maintainer: Heeervas
+tier: community
+category: tools
+docs_url: https://github.com/Heeervas/node-search-plugin#readme
+version: "0.3.1"
+readme: true
+capabilities:
+  provides_tools: [node_search]
+  provides_hooks: []
+  provides_middleware: []
+  requires_env: []

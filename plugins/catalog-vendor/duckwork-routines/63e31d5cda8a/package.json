@@ -1,0 +1,55 @@
+{
+  "name": "duckwork-routines",
+  "version": "0.1.0",
+  "description": "Standalone Duckwork Desktop plugin for managing scheduled routines",
+  "type": "module",
+  "private": false,
+  "license": "MIT",
+  "homepage": "https://github.com/DuckMind/duckwork",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DuckMind/duckwork"
+  },
+  "bugs": {
+    "url": "https://github.com/DuckMind/duckwork"
+  },
+  "keywords": [
+    "duckwork",
+    "duckwork-desktop",
+    "routines",
+    "cron",
+    "plugin"
+  ],
+  "files": [
+    "desktop/",
+    "docs/",
+    "src/",
+    "scripts/",
+    "plugin.yaml",
+    "LICENSE",
+    "README.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check-generated": "node scripts/build.mjs --check",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test \"tests/*.test.mjs\"",
+    "check:allowlist": "node scripts/check-allowlist.mjs",
+    "check:version": "node scripts/check-version.mjs",
+    "check:manifest": "node scripts/check-manifest.mjs",
+    "check:label-policy": "node scripts/issue-triage.mjs --validate",
+    "check": "npm run typecheck && node scripts/check-allowlist.mjs && node scripts/check-version.mjs && node scripts/check-manifest.mjs && node scripts/issue-triage.mjs --validate && node scripts/build.mjs --check"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6",
+    "@types/react": "19.3.0",
+    "esbuild": "0.28.2",
+    "typescript": "5.6.3"
+  }
+}

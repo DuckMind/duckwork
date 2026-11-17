@@ -1,0 +1,241 @@
+# Duckwork Memory UI API
+
+Shared backend API reference for the [Duckwork Memory UI Plugin](README.md).
+
+The API is intended for the plugin's Duckwork Dashboard and Duckwork Desktop interfaces. All exposed operations are read-only or query-only; the plugin does not expose memory mutation endpoints.
+
+## Base route
+
+Duckwork mounts this plugin under:
+
+```text
+/api/plugins/duckwork-memory-ui/
+```
+
+Plugin backend routes are mounted when the serving Duckwork process starts. If a route returns 404 immediately after installing or updating the plugin, restart the dashboard or gateway used by the active interface.
+
+Dashboard calls these routes through its authenticated API client. Desktop uses profile-aware, namespace-relative calls such as `ctx.rest('/snapshot')`; Desktop plugin code should not hard-code the base route.
+
+## Profile scope
+
+All endpoints accept the optional `profile` query parameter used by the Dashboard selector and Desktop's scoped REST client. A named profile scopes the request's Duckwork home, configuration, secrets, local stores, provider calls, worker-thread context, and provider subprocess environment. The backend uses Duckwork' context-local request scope and never changes the process environment per request, so concurrent profile requests remain isolated.
+
+`profile=current`, an empty value, or an omitted parameter means the serving process's current profile. `profile=default` explicitly selects the default profile; other values select the corresponding named profile. Invalid names return 400 and missing profiles return 404 through Duckwork' resolver.
+
+Profile routing does not override provider-side sharing. Profiles configured with the same remote account and scope identifiers (for example a Mem0 user, Honcho workspace/peers, or Hindsight bank) share that provider data by design.
+
+For compatibility, a host without Duckwork' safe context-local profile helper continues to serve omitted/empty/`current` requests as a single-profile backend. It returns 501 for any explicit profile selection, including `default`, rather than falling back to the launch profile's credentials. The plugin does not claim a speculative minimum Duckwork version; capability detection is performed at request time.
+
+## Available endpoints
+
+### GET `/status`
+
+Returns plugin status, active Duckwork home, configured memory provider, built-in memory paths, holographic DB path, Mem0 configuration status, Honcho configuration status, Mnemosyne configuration status, Hindsight configuration status, and ByteRover CLI/configuration status.
+
+Example:
+
+```bash
+curl http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/status | jq
+```
+
+### GET `/builtin`
+
+Returns parsed built-in memory stores:
+
+- `memory` from `$DUCKWORK_HOME/memories/MEMORY.md`
+- `user` from `$DUCKWORK_HOME/memories/USER.md`
+
+Entries are split on Duckwork' built-in delimiter §.
+
+The response includes entry count, char count, configured/default char limits, usage percentage, file path, and modified timestamp.
+
+### GET `/session-search`
+
+Runs an explicit read-only search over previous Duckwork sessions through Duckwork' built-in `session_search` tool. This endpoint is not called from `/snapshot` or page load; the UI calls it only after the user submits a query.
+
+Query parameters:
+
+- `query`: required search query
+- `limit`: 1-10, default 3
+- `sort`: `newest` or `oldest`, default `newest`
+- `source`: optional exact source/type filter, e.g. `cli`, `telegram`, `cron`, `discord`, `web`, or `api-server` (`api` is accepted as an alias)
+
+Example:
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/session-search?query=dashboard&limit=3&sort=newest' | jq
+```
+
+### GET `/holographic`
+
+Returns facts from holographic SQLite memory.
+
+Query parameters:
+
+- `limit`: 1-2000, default 500
+- `category`: optional category filter, e.g. `user_pref`, `project`, `tool`, `general`
+- `min_trust`: 0.0-1.0, default 0.0
+- `search`: optional substring search over `content` and `tags`
+
+Example:
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/holographic?limit=100&min_trust=0.3' | jq
+```
+
+### GET `/mem0`
+
+Returns read-only memories from the Mem0 Platform API.
+
+Query parameters:
+
+- `limit`: 1-2000, default 500
+- `search`: optional search query; uses Mem0 semantic search
+
+Example:
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/mem0?limit=100&search=dashboard' | jq
+```
+
+### GET `/honcho`
+
+Returns read-only Honcho provider state, user/AI peer cards, representations, conclusions, and optional context search.
+
+Query parameters:
+
+- `limit`: 1-100, default 50
+- `search`: optional context search query
+
+Example:
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/honcho?limit=25&search=dashboard' | jq
+```
+
+### GET `/mnemosyne`
+
+Returns Mnemosyne provider status plus read-only local store contents.
+
+### GET `/mnemosyne/contents`
+
+Lists Mnemosyne local SQLite memory and fact rows. This is read-only.
+
+Query parameters:
+
+- `search`: optional text filter applied to visible memory/fact text and metadata columns
+- `limit`: optional, defaults to 25, capped at 100
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/mnemosyne/contents?search=dashboard&limit=25' | jq
+```
+
+### GET `/mnemosyne/recall`
+
+Runs explicit Mnemosyne recall through the Duckwork provider.
+
+Query parameters:
+
+- `query`: required query string
+- `limit`: 1-100, default 25
+- `temporal_weight`: 0.0-1.0, default 0.2
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/mnemosyne/recall?query=dashboard&limit=25&temporal_weight=0.2' | jq
+```
+
+### GET `/mnemosyne/prefetch`
+
+Returns the injected-context preview generated by Mnemosyne prefetch.
+
+Query parameters:
+
+- `query`: required query string
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/mnemosyne/prefetch?query=dashboard' | jq
+```
+
+### GET `/byterover`
+
+Returns read-only ByteRover CLI status, registered locations, and optional BM25 search results.
+
+Query parameters:
+
+- `limit`: 1-50, default 10
+- `search`: optional search query; uses `brv search --format json`
+
+Example:
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/byterover?limit=10&search=dashboard' | jq
+```
+
+### GET `/byterover/query`
+
+Runs explicit ByteRover query/synthesis. This may invoke ByteRover's configured model; it is never called automatically on page load.
+
+Query parameters:
+
+- `query`: required question string
+- `timeout`: 1-300 seconds, default 60; controls the backend subprocess deadline and is not forwarded as a `brv` CLI option
+
+Example:
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/byterover/query?query=dashboard&timeout=60' | jq
+```
+
+### GET `/hindsight`
+
+Returns Hindsight provider status/config only. It does not run recall, reflect, or daemon startup. Embedded endpoint discovery may construct the optional SDK manager, which can create `~/.hindsight/profiles`.
+
+### GET `/hindsight/contents`
+
+Lists Hindsight memory units and retained source documents through the official `hindsight_client` SDK. It does not mutate memory. For a local embedded loopback transport failure, it may start the daemon and retry once. The UI loads it for the Hindsight section and also provides a manual `Refresh contents` action.
+
+Query parameters:
+
+- `search`: optional text filter applied to memory/document text, IDs, tags, and metadata
+- `limit`: optional, defaults to 25, capped at 100
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/hindsight/contents?search=dashboard&limit=25' | jq
+```
+
+### GET `/hindsight/recall`
+
+Runs explicit Hindsight recall.
+
+Query parameters:
+
+- `query`: required query string
+- `limit`: 1-100, default 25
+
+Example:
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/hindsight/recall?query=dashboard&limit=25' | jq
+```
+
+### GET `/hindsight/reflect`
+
+Runs explicit Hindsight reflect/synthesis.
+
+Query parameters:
+
+- `query`: required query string
+
+Example:
+
+```bash
+curl 'http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/hindsight/reflect?query=dashboard' | jq
+```
+
+### GET `/snapshot`
+
+Combined payload used by the UI. Accepts the same query parameters as `/holographic`; `limit` and `search` are also applied to Mem0, Honcho, Mnemosyne, and ByteRover, with Honcho and Mnemosyne internally capped at 100 and ByteRover capped at 50. Hindsight in `/snapshot` is status/config only and does not query recall/reflect.
+
+```bash
+curl http://127.0.0.1:9119/api/plugins/duckwork-memory-ui/snapshot | jq
+```

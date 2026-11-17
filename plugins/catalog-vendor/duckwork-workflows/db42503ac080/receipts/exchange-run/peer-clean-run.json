@@ -1,0 +1,68 @@
+{
+  "template": "exchange-run",
+  "receipt_kind": "peer-clean-run",
+  "status": "pass",
+  "from": "peer estate (second independent seat), four laps at the peer door on the shipped bytes: A cold launch, B save-from-run-id, B2 save-from-file (provenance leg), C SIGKILL crash-resume — every run_id enumerated in laps[] below",
+  "template_bytes": {
+    "sha256": "b216164425fd711ffc89dc7bc1b2eec41d6c22e46203db414f48fe0d8362c327",
+    "source_digest": "bb39e93bc5c26c8eb9e2944249a1aa21c8147950bf35884304e67d0446339ab7",
+    "verification": "recomputed from the shipped file with the engine's own source_digest before any lap spent a token; re-verified IDENTICAL at heads c293ffe and 77feed7, and at main post-merge (blob b2161644… unchanged by the #141 merge — checked with git show origin/main:examples/basics/exchange-run.workflow.json). All four peer legs ran node-identical bytes across every head."
+  },
+  "gates_at_bytes": {
+    "validate_graph": "[] (current-main validator)",
+    "make_public_scrub": "0 hits at my clone of this head after this receipt replaced the pending_peer placeholder"
+  },
+  "laps": [
+    {
+      "lap": "A cold launch",
+      "run_id": "20261002-221241-exchange-run",
+      "observations": {
+        "prepare": "done; courier copied the committed token verbatim from ## Inputs",
+        "verify": "done; read BOTH committed records, byte_equal true from its own comparison, input_labels [manifest, prepare] — names only what is really under ## Inputs; notes quote the run-record layout the engine actually writes (nodes/<id>.json beside the run dir + run.json + runner_exit.json)",
+        "terminal": "run.done; runner_exit.json reason=done, graph_fingerprint 9537deef7744b990"
+      }
+    },
+    {
+      "lap": "B save -> library -> re-run",
+      "run_id": "20261002-221332-peer141-exchange-shelf",
+      "mechanic_variant": "save-from-RUN-ID (shelving lap A's run dir). The later lap B2 below is the save-from-FILE variant, which is what the author's shelf_provenance_proof used — both legs are disclosed rather than one being described as the other.",
+      "observations": {
+        "mechanic": "door's own save verb shelved lap A's run under a peer name; re-launched with run from=<shelf-name> — the exchange loop on the real verbs, not a hand-copied file",
+        "fingerprint": "graph_fingerprint 9537deef7744b990 in this run's runner_exit.json — IDENTICAL to lap A's, matching the fingerprint the AUTHOR receipt pins from its estate's runs: the byte-portability law holds across two estates' runs, one fingerprint (see B2 for the total count)",
+        "shelved_bytes": "graph.json differs from the launched graph in exactly two places, both verified by reading both files: name follows the shelf label (save semantics), and the shelf copy carries a door-written provenance block the direct launch never had. nodes compare byte-equal — exactly what the template description declares as WHAT TRAVELS",
+        "verify": "done; byte_equal true, same token",
+        "terminal": "run.done; reason=done"
+      }
+    },
+    {
+      "lap": "B2 save-from-FILE -> library -> re-run (provenance leg)",
+      "run_id": "20261002-224237-peer141-exchange-file",
+      "mechanic_variant": "save from the committed example file (inline graph read from examples/basics/exchange-run.workflow.json at this branch head), mirroring the author's shelf_provenance_proof leg.",
+      "observations": {
+        "library_row": "source_digest bb39e93bc5c26c8eb9e2944249a1aa21c8147950bf35884304e67d0446339ab7 — IDENTICAL to the template file's own source_digest: the shelf row carries the file's identity, while lap B's run-id shelf row carried the run-dir digest a659c68c... (budgets baked in) and source null. Both rows are honest for their input; the difference is the SAVE SOURCE, not the engine.",
+        "repro_note": "source is recorded ONLY when passed explicitly (save's source arg, <=200 chars) or when owner != default (__init__.py act_save); a bare save from a file path still yields source=null with the correct source_digest. The author's shelf proof shows a non-null source on their row — cold readers should pass source= at save time if they want the repo path on the row, not assume the door infers it.",
+        "fingerprint": "graph_fingerprint 9537deef7744b990 again — now four runs across two estates, one fingerprint",
+        "verify": "done; byte_equal true, same token",
+        "terminal": "run.done; reason=done"
+      }
+    },
+    {
+      "lap": "C SIGKILL crash-resume",
+      "run_id": "20261002-221412-peer141-exchange-shelf",
+      "observations": {
+        "mechanic": "SIGKILL to the runner pid at the manifest-done edge (prepare about to spawn); door reaped and resumed via the wait verb",
+        "events": "full enumeration, 13 event lines: run.started, manifest node.done (echo, ts :13), runner.reaped prev_pid=2102951 reason='crashed (no exit record)' + run.resumed (ts :18), prepare node.finished (:31, 13771ms), verify node.finished (:42, 10621ms), run.done",
+        "replay": "manifest's committed record was NEVER re-spawned across the crash: one node.done in the log, zero a0 spawn artifacts for it (logs/ holds prepare.a0.* and verify.a0.* only), yet the resumed verify re-read manifest's committed record from ## Inputs — the replay-skip + exchange pair proven in one lap",
+        "verify": "done; byte_equal true after the resume; attempts=1 (no retry loop)",
+        "terminal": "runner_exit.json reason=done, graph_fingerprint 9537deef7744b990 — unchanged across the crash and both runner generations",
+        "exit_record_count": "this peer estate's records hold FOUR terminal exit records (laps A, B, B2, C — all reason=done, all fingerprint 9537deef7744b990) plus ONE crash reap (lap C's prev_pid=2102951, no exit record by design, evidenced by the runner.reaped event quoted above). Every number here is re-derivable from the run dirs named."
+      }
+    }
+  ],
+  "reader_derivation_notes": [
+    "graph_fingerprint lives in runner_exit.json (with reason + fp_rule_version), NOT run.json — run.json carries fp_rule_version but no fingerprint; a cold reader who looks in the wrong file finds none. Recommend the verify node's notes line (or the description) name runner_exit.json as the fingerprint's home.",
+    "the shelf-copy provenance block is door-written save semantics; the template file itself carries none. Boundary a cold reader WILL hit (measured on my three graph.json copies): run-dir copies bake budget defaults (e.g. agent timeout) into node defs, so example-vs-run diffs on those keys too; what is provably byte-equal is (a) node defs between the direct-launch and shelf-launch run dirs and (b) source identity across all three — the template's source_digest, the library row's source_digest, and the recomputed digest agree, and budgets are excluded from fingerprint identity, which is why one fingerprint covers all four peer runs. State the comparison you ran (canonical node defs vs raw graph.json bytes) before claiming 'same bytes' — the author receipt's c293ffe restatement says this canonically; this receipt defers to its wording."
+  ],
+  "engine_floor": "peer door runs the current-main validator lineage (same fail-closed posture witnessed on the census-fanout peer receipt); observed clean, no refusal at this head.",
+  "verdict": "PASS — the save -> library -> re-run -> SIGKILL -> resume -> replay-skip -> byte-equality loop stands end-to-end on the peer estate's real door verbs in BOTH save flavors (from run-id and from file, the latter reproducing the author's shelf digest identity): one fingerprint across four runs and two estates, and the resumed verifier still proves exchange from committed records it never re-spawned."
+}

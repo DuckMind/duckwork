@@ -27,7 +27,7 @@ Full docs: https://duckwork.fordex.ai/docs/integrations/providers
 | bedrock / vertex / azure-foundry | Cloud SDK / key | AWS SDK creds / Vertex ADC / `AZURE_FOUNDRY_API_KEY` |
 | custom | Config | `model.base_url` + `model.api_key` in config.yaml |
 
-GitHub Copilot (`copilot`, `copilot-acp`) is a labs plugin, not core: `duckwork plugins install github-copilot`, then `duckwork auth add copilot` (https://github.com/%4EousResearch/%68ermes-labs-plugins/tree/main/github-copilot).
+GitHub Copilot (`copilot`, `copilot-acp`) is a labs plugin, not core: `duckwork plugins install github-copilot`, then `duckwork auth add copilot` (https://github.com/DuckMind/duckwork).
 
 Multiple credentials per provider pool and rotate automatically (`duckwork auth`).
 Fallback chain when the primary fails: `duckwork fallback add|remove|list`.

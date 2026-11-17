@@ -1,0 +1,442 @@
+import base64
+import inspect
+import json
+import wave
+
+import pytest
+
+import xai_realtime
+
+
+class FakeRealtimeWebSocket:
+    def __init__(self, events):
+        self.events = list(events)
+        self.sent = []
+        self.closed = False
+
+    async def send(self, message):
+        self.sent.append(json.loads(message))
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if not self.events:
+            raise StopAsyncIteration
+        return json.dumps(self.events.pop(0))
+
+    async def close(self):
+        self.closed = True
+
+
+class SlowSendRealtimeWebSocket(FakeRealtimeWebSocket):
+    def __init__(self, events, *, delay):
+        super().__init__(events)
+        self.delay = delay
+
+    async def send(self, message):
+        import asyncio
+
+        await asyncio.sleep(self.delay)
+        await super().send(message)
+
+
+class SlowRealtimeWebSocket(FakeRealtimeWebSocket):
+    def __init__(self, events, *, delay):
+        super().__init__(events)
+        self.delay = delay
+
+    async def __anext__(self):
+        import asyncio
+
+        await asyncio.sleep(self.delay)
+        return await super().__anext__()
+
+
+class SequenceDelayRealtimeWebSocket(FakeRealtimeWebSocket):
+    def __init__(self, events, *, delays):
+        super().__init__(events)
+        self.delays = list(delays)
+
+    async def __anext__(self):
+        import asyncio
+
+        delay = self.delays.pop(0) if self.delays else 0
+        await asyncio.sleep(delay)
+        return await super().__anext__()
+
+
+class RawRealtimeWebSocket(FakeRealtimeWebSocket):
+    async def __anext__(self):
+        if not self.events:
+            raise StopAsyncIteration
+        return self.events.pop(0)
+
+
+def pcm_delta(data: bytes):
+    return {"type": "response.output_audio.delta", "delta": base64.b64encode(data).decode("ascii")}
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_public_sink_methods_timeout_session_setup(monkeypatch, tmp_path):
+    opened = []
+
+    async def fake_connect(url, *, api_key):
+        ws = SlowSendRealtimeWebSocket([], delay=0.05)
+        opened.append(ws)
+        return ws
+
+    monkeypatch.setattr(xai_realtime, "_connect_websocket", fake_connect)
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+
+    async def sink(chunk: bytes):
+        raise AssertionError("sink should not receive audio when setup stalls")
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="did not finish within 0.001s"):
+        await client.force_message_to_sink("hello", sink, timeout=0.001)
+    assert opened[-1].closed is True
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="did not finish within 0.001s"):
+        await client.text_response_to_sink("hello", sink, timeout=0.001)
+    assert opened[-1].closed is True
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="did not finish within 0.001s"):
+        await client.audio_response_from_pcm16_to_sink(b"\x01\x00", sink, timeout=0.001)
+    assert opened[-1].closed is True
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="did not finish within 0.001s"):
+        await client.text_response_to_wav("hello", tmp_path / "text.wav", timeout=0.001)
+    assert opened[-1].closed is True
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="did not finish within 0.001s"):
+        await client.force_message_to_wav("hello", tmp_path / "force.wav", timeout=0.001)
+    assert opened[-1].closed is True
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="did not finish within 0.001s"):
+        await client.audio_response_from_pcm16(b"\x01\x00", tmp_path / "audio.wav", timeout=0.001)
+    assert opened[-1].closed is True
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_text_response_writes_pcm_wav(tmp_path):
+    ws = FakeRealtimeWebSocket(
+        [
+            {"type": "session.updated"},
+            {"type": "response.created"},
+            pcm_delta(b"\x00\x00\x01\x00"),
+            {"type": "response.output_audio_transcript.delta", "delta": "hi"},
+            {"type": "response.done"},
+        ]
+    )
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=16000)
+
+    result = await client._text_response_to_wav_on_ws(ws, "say hi", tmp_path / "out.wav")
+
+    assert ws.sent[0]["type"] == "session.update"
+    assert ws.sent[0]["session"]["audio"]["output"]["format"] == {"type": "audio/pcm", "rate": 16000}
+    assert ws.sent[1]["type"] == "conversation.item.create"
+    assert ws.sent[1]["item"]["content"][0] == {"type": "input_text", "text": "say hi"}
+    assert ws.sent[2] == {"type": "response.create"}
+    assert result.bytes_written == 4
+    assert result.transcript == "hi"
+    with wave.open(str(result.wav_path), "rb") as wav:
+        assert wav.getnchannels() == 1
+        assert wav.getsampwidth() == 2
+        assert wav.getframerate() == 16000
+        assert wav.readframes(2) == b"\x00\x00\x01\x00"
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_force_message_sends_response_create(tmp_path):
+    ws = FakeRealtimeWebSocket([pcm_delta(b"\x00\x00"), {"type": "response.done"}])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret")
+
+    await client._force_message_to_wav_on_ws(ws, "exact words", tmp_path / "force.wav", interruptible=False)
+
+    assert ws.sent[1]["type"] == "conversation.item.create"
+    assert ws.sent[1]["item"]["type"] == "force_message"
+    assert ws.sent[1]["item"]["content"][0] == {"type": "output_text", "text": "exact words"}
+    assert ws.sent[2] == {"type": "response.create"}
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_force_message_streams_deltas_to_sink():
+    ws = FakeRealtimeWebSocket([pcm_delta(b"\x01\x00"), {"type": "response.done"}])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret")
+    chunks = []
+
+    async def sink(chunk: bytes):
+        chunks.append(chunk)
+
+    await client._send_force_message_request(ws, "exact words", interruptible=False)
+    result = await client._collect_audio_to_sink(ws, sink, timeout=5)
+
+    assert ws.sent[1]["item"]["type"] == "force_message"
+    assert ws.sent[1]["item"]["content"][0] == {"type": "output_text", "text": "exact words"}
+    assert chunks == [b"\x01\x00"]
+    assert result.bytes_written == 2
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_text_response_streams_deltas_to_sink():
+    ws = FakeRealtimeWebSocket(
+        [
+            {"type": "response.created"},
+            pcm_delta(b"\x02\x00"),
+            {"type": "response.output_audio_transcript.delta", "delta": "four"},
+            {"type": "response.done"},
+        ]
+    )
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+    chunks = []
+
+    async def sink(chunk: bytes):
+        chunks.append(chunk)
+
+    result = await client._text_response_to_sink_on_ws(ws, "what is 2+2", sink)
+
+    assert ws.sent[1]["type"] == "conversation.item.create"
+    assert ws.sent[1]["item"]["content"][0] == {"type": "input_text", "text": "what is 2+2"}
+    assert ws.sent[2] == {"type": "response.create"}
+    assert chunks == [b"\x02\x00"]
+    assert result.wav_path is None
+    assert result.bytes_written == 2
+    assert result.transcript == "four"
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_audio_response_creates_input_audio_item_and_response(tmp_path):
+    ws = FakeRealtimeWebSocket([pcm_delta(b"\x02\x00"), {"type": "response.done"}])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+
+    result = await client._audio_response_from_pcm16_on_ws(ws, b"\x10\x00\x20\x00", tmp_path / "audio.wav")
+
+    assert ws.sent[1]["type"] == "conversation.item.create"
+    assert ws.sent[1]["item"]["type"] == "message"
+    assert ws.sent[1]["item"]["role"] == "user"
+    assert ws.sent[1]["item"]["content"][0]["type"] == "input_audio"
+    assert base64.b64decode(ws.sent[1]["item"]["content"][0]["audio"]) == b"\x10\x00\x20\x00"
+    assert ws.sent[2] == {"type": "response.create"}
+    assert result.bytes_written == 2
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_audio_response_streams_deltas_to_sink(tmp_path):
+    ws = FakeRealtimeWebSocket(
+        [
+            pcm_delta(b"\x02\x00"),
+            {"type": "response.output_audio_transcript.delta", "delta": "ok"},
+            pcm_delta(b"\x03\x00\x04\x00"),
+            {"type": "response.done"},
+        ]
+    )
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+    chunks = []
+
+    async def sink(chunk: bytes):
+        chunks.append(chunk)
+
+    result = await client._audio_response_from_pcm16_to_sink_on_ws(ws, b"\x10\x00", sink)
+
+    assert ws.sent[1]["type"] == "conversation.item.create"
+    assert ws.sent[1]["item"]["content"][0]["type"] == "input_audio"
+    assert ws.sent[2] == {"type": "response.create"}
+    assert chunks == [b"\x02\x00", b"\x03\x00\x04\x00"]
+    assert result.wav_path is None
+    assert result.bytes_written == 6
+    assert result.transcript == "ok"
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_first_audio_timeout_fails_fast():
+    ws = SequenceDelayRealtimeWebSocket(
+        [{"type": "response.created"}, pcm_delta(b"\x01\x00")],
+        delays=[0, 0.05],
+    )
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+
+    async def sink(chunk: bytes):
+        raise AssertionError("sink should not receive late audio")
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="emitted no audio.*events_tail=.*response.created"):
+        await client._audio_response_from_pcm16_to_sink_on_ws(
+            ws,
+            b"\x10\x00",
+            sink,
+            first_audio_timeout=0.001,
+        )
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_no_audio_timeout_reports_tighter_global_deadline():
+    ws = SequenceDelayRealtimeWebSocket(
+        [{"type": "response.created"}, pcm_delta(b"\x01\x00")],
+        delays=[0, 0.05],
+    )
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+
+    async def sink(chunk: bytes):
+        raise AssertionError("sink should not receive late audio")
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError) as exc_info:
+        await client._audio_response_from_pcm16_to_sink_on_ws(
+            ws,
+            b"\x10\x00",
+            sink,
+            timeout=0.001,
+            first_audio_timeout=5.0,
+        )
+
+    message = str(exc_info.value)
+    assert "emitted no audio within 0.001" in message
+    assert "within 5.0s" not in message
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_no_audio_timeout_reports_configured_timeout_not_remaining_budget():
+    ws = SequenceDelayRealtimeWebSocket(
+        [{"type": "response.created"}, pcm_delta(b"\x01\x00")],
+        delays=[0, 0.05],
+    )
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+
+    async def sink(chunk: bytes):
+        raise AssertionError("sink should not receive late audio")
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError) as exc_info:
+        await client._audio_response_from_pcm16_to_sink_on_ws(
+            ws,
+            b"\x10\x00",
+            sink,
+            timeout=0.001,
+        )
+
+    message = str(exc_info.value)
+    assert "emitted no audio within 0.001" in message
+    assert "emitted no audio within 0.000" not in message
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_wraps_audio_sink_failures_with_event_tail():
+    ws = FakeRealtimeWebSocket([
+        {"type": "response.created"},
+        pcm_delta(b"\x01\x00"),
+    ])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+
+    async def sink(chunk: bytes):
+        raise ValueError("publisher closed")
+
+    with pytest.raises(
+        xai_realtime.XAIRealtimeStreamError,
+        match="audio sink failed.*events_tail=.*response.output_audio.delta.*cause=ValueError: publisher closed",
+    ):
+        await client._audio_response_from_pcm16_to_sink_on_ws(ws, b"\x10\x00", sink)
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_lets_barge_in_interrupt_escape_unwrapped():
+    ws = FakeRealtimeWebSocket([
+        {"type": "response.created"},
+        pcm_delta(b"\x01\x00"),
+    ])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+
+    async def sink(chunk: bytes):
+        raise xai_realtime.BargeInInterrupt("user interrupted assistant speech")
+
+    with pytest.raises(xai_realtime.BargeInInterrupt, match="user interrupted"):
+        await client._audio_response_from_pcm16_to_sink_on_ws(ws, b"\x10\x00", sink)
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_wraps_same_named_non_barge_in_interrupt():
+    BargeInInterrupt = type("BargeInInterrupt", (Exception,), {})
+    ws = FakeRealtimeWebSocket([
+        {"type": "response.created"},
+        pcm_delta(b"\x01\x00"),
+    ])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret", sample_rate=24000)
+
+    async def sink(chunk: bytes):
+        raise BargeInInterrupt("not the shared interrupt type")
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="audio sink failed.*cause=BargeInInterrupt"):
+        await client._audio_response_from_pcm16_to_sink_on_ws(ws, b"\x10\x00", sink)
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_raises_on_error_event(tmp_path):
+    ws = FakeRealtimeWebSocket([{"type": "error", "error": {"message": "bad request"}}])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret")
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="bad request.*events_tail=.*error"):
+        await client._text_response_to_wav_on_ws(ws, "hello", tmp_path / "out.wav")
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_wav_timeout_preserves_event_tail(tmp_path):
+    ws = SequenceDelayRealtimeWebSocket(
+        [
+            {"type": "response.created"},
+            {"type": "response.output_audio.delta", "delta": ""},
+        ],
+        delays=[0, 60],
+    )
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret")
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="events_tail=.*response.created"):
+        await client._text_response_to_wav_on_ws(ws, "hello", tmp_path / "out.wav", timeout=0.001)
+
+
+def test_xai_realtime_sink_public_methods_use_outer_safety_timeout_only():
+    methods = (
+        xai_realtime.XAIRealtimeVoiceClient.text_response_to_sink,
+        xai_realtime.XAIRealtimeVoiceClient.force_message_to_sink,
+        xai_realtime.XAIRealtimeVoiceClient.audio_response_from_pcm16_to_sink,
+    )
+
+    for method in methods:
+        source = inspect.getsource(method)
+        assert "timeout=timeout + 1.0" in source
+        assert "timeout=timeout,\n" in source
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_wraps_malformed_json_event(tmp_path):
+    ws = RawRealtimeWebSocket(["{not-json"])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret")
+
+    with pytest.raises(xai_realtime.XAIRealtimeStreamError, match="malformed JSON event.*cause=JSONDecodeError"):
+        await client._text_response_to_wav_on_ws(ws, "hello", tmp_path / "out.wav")
+
+
+@pytest.mark.asyncio
+async def test_xai_realtime_wraps_malformed_audio_delta(tmp_path):
+    ws = FakeRealtimeWebSocket([
+        {"type": "response.created"},
+        {"type": "response.output_audio.delta", "delta": "not valid base64!"},
+    ])
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret")
+
+    with pytest.raises(
+        xai_realtime.XAIRealtimeStreamError,
+        match="malformed audio delta.*events_tail=.*response.output_audio.delta.*cause=Error",
+    ):
+        await client._text_response_to_wav_on_ws(ws, "hello", tmp_path / "out.wav")
+
+
+def test_xai_realtime_requires_text_and_key(tmp_path, monkeypatch):
+    monkeypatch.delenv("XAI_API_KEY", raising=False)
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="")
+
+    with pytest.raises(RuntimeError, match="XAI_API_KEY"):
+        import asyncio
+
+        asyncio.run(client.text_response_to_wav("hello", tmp_path / "out.wav"))
+
+    client = xai_realtime.XAIRealtimeVoiceClient(api_key="secret")
+    with pytest.raises(ValueError, match="text"):
+        import asyncio
+
+        asyncio.run(client.text_response_to_wav("", tmp_path / "out.wav"))

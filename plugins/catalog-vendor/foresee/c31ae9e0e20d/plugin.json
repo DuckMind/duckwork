@@ -1,0 +1,50 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "foresee",
+  "version": "0.4.1",
+  "description": "Shop for home and auto insurance with live carrier quotes. Instant quote estimates plus Foresee agents that complete the carriers' own quote flows — with the user's explicit consent — and read back the real page premium.",
+  "author": {
+    "name": "Foresee Insurance Services, LLC",
+    "email": "support@go-foresee.com",
+    "url": "https://go-foresee.com"
+  },
+  "homepage": "https://go-foresee.com",
+  "repository": "https://github.com/Foresee-Tech/foresee",
+  "license": "MIT",
+  "keywords": [
+    "insurance",
+    "auto-insurance",
+    "car-insurance",
+    "quotes",
+    "rates",
+    "rate-comparison",
+    "live-quotes",
+    "personal-finance"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Foresee",
+        "shortDescription": "Compare auto insurance quotes across carriers.",
+        "longDescription": "Instant auto insurance quote estimates, plus live premiums read back from the carriers' own quote flows with the user's explicit consent. Estimates are not bindable quotes; purchase finishes on the carrier's quoting portal.",
+        "developerName": "Foresee Insurance Services, LLC",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://go-foresee.com",
+        "privacyPolicyURL": "https://go-foresee.com/privacy",
+        "termsOfServiceURL": "https://go-foresee.com/terms",
+        "defaultPrompt": [
+          "How much would auto insurance cost for a 25-year-old driving a 2022 Camry in Sacramento?",
+          "Compare carriers for my profile and say who is cheapest at a $1000 deductible.",
+          "What does 100/300 mean, and what would raising my collision deductible save?"
+        ],
+        "brandColor": "#0d503c",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+node_modules/
+.venv/
+.pytest_cache/
+*.egg-info/
+# Build outputs stay disposable EXCEPT dashboard/dist: the Dashboard loads
+# dashboard/manifest.json's "entry" straight from the installed directory, so a
+# git install (which never runs npm) has no bundle unless it is committed.
+# duckwork-memory-ui, agent-analytics and duckwork-relay all track dashboard/dist
+# for exactly this reason. Ignoring it made every git install serve a 404 bundle
+# and an unimportable backend.
+ui/dist/
+dist-package/
+playwright-report/
+test-results/
+__pycache__/
+*.pyc
+real-home.json
+
+# --- Private data: ignore alone is NOT a guarantee (git add -f can still
+# stage these); scripts/privacy_guard.py is the actual gate. ---
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite*
+journals/
+snapshots/
+backups/
+.env
+.env.*
+*.env
+auth/
+credentials*
+*credentials*
+secrets*
+session-transcripts/
+*transcript*
+

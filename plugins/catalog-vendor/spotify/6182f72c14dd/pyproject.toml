@@ -1,0 +1,16 @@
+[project]
+name = "duckwork-spotify"
+version = "2.1.0"
+description = "Spotify playback, search, playlists and library tools for Duckwork Agent (official plugin)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Nous Research" }]
+requires-python = ">=3.11"
+dependencies = [
+  "httpx>=0.27,<1",
+  # Self-signed certificate for the optional https loopback listener.
+  "cryptography>=41,<51",
+]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"

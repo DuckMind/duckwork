@@ -1,0 +1,79 @@
+import importlib.util
+from pathlib import Path
+import tempfile
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location('slash_router_installer', ROOT / 'install.py')
+installer = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(installer)
+
+
+class InstallerTest(unittest.TestCase):
+    def test_installs_desktop_and_backend_without_agent_routing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            package = installer.install(home)
+
+            self.assertEqual(package, home / 'plugins' / 'duckwork-slash-router')
+            self.assertTrue((package / 'plugin.yaml').is_file())
+            self.assertTrue((package / 'desktop' / 'plugin.js').is_file())
+            self.assertTrue((package / 'dashboard' / 'plugin_api.py').is_file())
+            self.assertTrue((package / 'slash_router_core' / 'resolve.py').is_file())
+            spec = importlib.util.spec_from_file_location('installed_desktop_router', package / '__init__.py')
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            # A context with no registration methods still loads successfully.
+            self.assertIsNone(module.register(object()))
+            self.assertFalse((package / 'catalogs').exists())
+            self.assertFalse((package / 'adapters').exists())
+            self.assertFalse((package / 'slash_route.py').exists())
+            self.assertFalse((package / 'slash_router_core' / 'store.py').exists())
+            self.assertFalse((package / 'slash_router_core' / 'recover.py').exists())
+            self.assertFalse((package / 'videos').exists())
+            self.assertFalse((home / 'desktop-plugins').exists())
+            self.assertFalse((package / 'live-results.json').exists())
+            self.assertFalse((package / 'install.py').exists())
+    def test_refuses_to_overwrite_existing_package(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            package = installer.install(home)
+            marker = package / 'keep-me.txt'
+            marker.write_text('existing user data', encoding='utf-8')
+
+            with self.assertRaisesRegex(FileExistsError, 'Existing plugin installation'):
+                installer.install(home)
+
+            self.assertEqual(marker.read_text(encoding='utf-8'), 'existing user data')
+
+    def test_refuses_to_shadow_existing_standalone_desktop_plugin(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            desktop_plugin = home / 'desktop-plugins' / 'duckwork-slash-router'
+            desktop_plugin.mkdir(parents=True)
+            marker = desktop_plugin / 'keep-me.txt'
+            marker.write_text('existing user data', encoding='utf-8')
+
+            with self.assertRaisesRegex(FileExistsError, 'Existing plugin installation'):
+                installer.install(home)
+
+            self.assertEqual(marker.read_text(encoding='utf-8'), 'existing user data')
+            self.assertFalse((home / 'plugins' / 'duckwork-slash-router').exists())
+
+    def test_reports_both_existing_installation_paths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            package = home / 'plugins' / 'duckwork-slash-router'
+            desktop_plugin = home / 'desktop-plugins' / 'duckwork-slash-router'
+            package.mkdir(parents=True)
+            desktop_plugin.mkdir(parents=True)
+
+            with self.assertRaises(FileExistsError) as result:
+                installer.install(home)
+
+            self.assertIn(str(package), str(result.exception))
+            self.assertIn(str(desktop_plugin), str(result.exception))
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,0 +1,667 @@
+<img src="assets/hero-banner.png" alt="Duckwork Herald — Multi-Agent Dispatch for Duckwork Agent" width="100%">
+
+# Duckwork Herald
+
+<p>
+  <a href="https://github.com/DuckMind/duckwork"><img src="https://img.shields.io/badge/Duckwork%20Agent-compatible-8B5CF6" alt="Duckwork Agent"></a>
+  <img src="https://img.shields.io/badge/version-1.1.1-22C55E" alt="Version 1.1.1">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License">
+  <img src="https://img.shields.io/badge/tools-12-orange" alt="12 Tools">
+</p>
+
+> **Your agents should not just talk to you. They should be able to talk to each other.**
+
+Duckwork Herald turns one Duckwork Agent into a **conductor of specialist agents and models**. It adds three capabilities that Duckwork users otherwise have to wire together themselves:
+
+| Herald adds | Why you would want it |
+|---|---|
+| **📡 A network of named Duckwork agents** | Ask another profile a question, continue the conversation later, or send independent work to several specialists in parallel. Each target keeps its own identity, memory, skills, credentials, tools, and runtime. |
+| **🔀 A model switchboard for subagents** | Spawn a local child with the model, context, SOUL identity, and tool access appropriate to this one task—without changing the parent agent. |
+| **🧠 A lightweight inference lane** | Use a model for classification, extraction, translation, scoring, or JSON generation without paying for an agent loop and a large tool schema. |
+
+These are independent. You can use Herald only for `llm_call`, only for model-selectable subagents, or build a multi-host network of persistent specialist profiles.
+
+## Why Herald?
+
+A single giant agent prompt is convenient until different jobs need different identities, memories, credentials, tools, costs, or trust boundaries.
+
+Herald lets you build systems such as:
+
+- a coordinator that sends code, security, and documentation reviews to separate specialists in parallel;
+- a teacher agent that maintains an ongoing conversation with a curriculum expert;
+- a local reasoning agent that delegates mechanical inspection to a faster model;
+- several Duckwork installations connected over Tailscale, each retaining its own environment and credentials;
+- an autonomous workflow whose calls, model choices, lineage, status, and results remain queryable after the originating turn;
+- a high-volume classifier that uses bare inference rather than loading terminal, browser, and file tools for every item.
+
+Herald is not a replacement for Duckwork profiles or provider configuration. It is the **control plane between them**.
+
+---
+
+## Choose the right execution mode
+
+This is the most important distinction in Herald:
+
+| What you need | Use | Returns | Context and lifetime | Model choice |
+|---|---|---|---|---|
+| A conversation with a named specialist | `dispatch_chat` | Final reply; blocks the current agent turn | Reuses a persistent target session; streamed activity resets the stall timer | Target default or a verified target `model_routes` alias |
+| Independent work on another Duckwork profile | `dispatch_agent` | `run_id` immediately | Fresh target session; monitored by SSE/polling or explicitly detached | Target default or a verified target `model_routes` alias |
+| A local child agent with a different model | `delegate_subagent` | `task_id` immediately; result returns asynchronously | In-process and non-durable; context, SOUL, and tools are controlled per call | Any model resolvable through the parent Duckwork runtime |
+| Classification, extraction, translation, scoring | `llm_call` | Text synchronously | No agent loop and no tools | Duckwork provider/model routing |
+
+**Use `dispatch_chat` when your next decision depends on the target’s reply.**
+
+**Use `dispatch_agent` when the work is self-contained and the origin should remain available.**
+
+```python
+# Continue a real conversation with a named profile.
+dispatch_chat(profile="tutor", message="Explain decorators with one example")
+dispatch_chat(profile="tutor", message="Now adapt that example to cache results")
+
+# Fan independent work out without blocking the origin.
+dispatch_agent(profile="reviewer", message="Review the current diff. Do not edit.")
+dispatch_agent(profile="researcher", message="Find authoritative sources for the design.")
+
+# Choose a different local model and exactly what it inherits.
+delegate_subagent(
+    goal="Classify the test failures by likely root cause",
+    model="gpt-5",
+    inherit_context=True,
+    inherit_soul=True,
+    toolsets=[],
+)
+
+# Skip the agent machinery for a small inference job.
+llm_call(
+    messages=[{"role": "user", "content": "Return the sentiment: The fix worked perfectly."}],
+)
+```
+
+---
+
+## Five-minute setup
+
+### 1. Install Herald on an origin profile
+
+```bash
+duckwork plugins install bennybuoy/duckwork-herald --enable
+```
+
+Install Herald on profiles that will **originate** calls. A target-only profile needs Duckwork’s API server, not the plugin. Restart the process that loads the origin profile after installation.
+
+Manual installation is also supported, but user plugins are opt-in:
+
+```bash
+git clone https://github.com/DuckMind/duckwork ~/.duckwork/plugins/duckwork-herald
+duckwork plugins enable duckwork-herald
+```
+
+For a named origin, prefix the commands below with `duckwork -p <origin>`.
+
+### 2. Prepare a target profile
+
+```bash
+duckwork profile create tutor --description "A patient teaching specialist"
+duckwork -p tutor setup
+
+HERALD_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+duckwork -p tutor config set --force gateway.platforms.api_server.enabled true
+duckwork -p tutor config set --force gateway.platforms.api_server.extra.host 127.0.0.1
+duckwork -p tutor config set --force gateway.platforms.api_server.extra.port 8652
+duckwork -p tutor config set --force gateway.platforms.api_server.extra.key "$HERALD_KEY"
+
+# Store the same transport key in the origin profile's .env.
+duckwork config set TUTOR_API_KEY "$HERALD_KEY"
+unset HERALD_KEY
+```
+
+Herald does **not** invent the target's model catalog. `list_profile_models(profile="tutor")` is authenticated `GET /v1/models`, which advertises only the profile identity plus aliases you declare on **that target** — not every model its providers can run, and not anything in origin `duckwork_herald.profiles`.
+
+Edit the target profile's `config.yaml` (`~/.duckwork/profiles/tutor/config.yaml`):
+
+```yaml
+platforms:
+  api_server:
+    extra:
+      # ... host, port, key from the commands above ...
+      model_routes:
+        tutor-fast:
+          provider: ollama-cloud
+          model: glm-5.2
+        tutor-reasoning:
+          provider: openai-codex
+          model: gpt-5.6-sol
+```
+
+One alias per `(provider, model)` pair you want callable from Herald. Pin `provider` on each alias so the target cannot pick a subscription-less route for the same model name. Then restart the target gateway. A short listing means those aliases were never advertised — add them here, do not look for a Herald-side catalog.
+
+Start the target gateway:
+
+```bash
+duckwork -p tutor gateway run
+```
+
+For a background service, use `duckwork -p tutor gateway install` and `duckwork -p tutor gateway start`.
+
+> [!IMPORTANT]
+> The API key is a **bearer credential for a terminal-capable Duckwork agent**, not a model-provider key. Use a unique random key per target trust boundary. Keep it out of Git and logs. Expose the API only on loopback, a trusted private network, or behind authenticated TLS.
+
+### 3. Declare the origin’s outbound route
+
+Add this to the origin profile’s `config.yaml`:
+
+```yaml
+duckwork_herald:
+  # Optional when a custom/Docker DUCKWORK_HOME cannot reveal the profile name.
+  # origin_name: coordinator
+  allow_self: false
+
+  profiles:
+    tutor:
+      url: http://127.0.0.1:8652
+      api_key: ${TUTOR_API_KEY}
+      # Required explicit outbound grants. Missing/malformed means no calls.
+      capabilities: [dispatch, chat]
+      # Optional exact target model_routes alias used by both dispatch tools.
+      # model: tutor-fast
+
+  # Activity-stall timeout for dispatch_chat, not a flat wall-clock deadline.
+  chat_timeout: 600
+
+  # Optional paths; defaults live under the active DUCKWORK_HOME.
+  # state_file: /private/path/duckwork-herald-runs.json
+  # ledger_file: /private/path/duckwork-herald-network.db
+```
+
+`capabilities` is deliberately fail-closed. Use `[dispatch]`, `[chat]`, or `[dispatch, chat]`.
+
+Each route's `api_key` is the **target profile's own inbound API token** — the
+same value you stored in the target's `gateway.platforms.api_server.extra.key`
+in step 2. A dispatch failing with `401 Unauthorized` almost always means this
+route carries a stale or wrong copy of that key, not that the target is down:
+re-copy it from the target's config before debugging further.
+
+### 4. Restart and verify
+
+Start a fresh origin session and look for:
+
+```text
+duckwork-herald: registered 12 tools
+```
+
+Then verify reachability and authenticated model discovery:
+
+```python
+ping_profile(profile="tutor")
+list_profile_models(profile="tutor")
+```
+
+For local `llm_call` routing, omit `profile`. The result is a fail-closed
+allowlist built from Duckwork's explicit-only inventory for the calling profile:
+the configured default plus every provider explicitly configured by the user.
+It returns the exact provider and model slugs the agent can copy into
+`llm_call`. Virtual MoA routes, ambient or auto-discovered credentials, and
+fallback-only routes are excluded:
+
+```python
+list_profile_models()
+```
+
+Duckwork executes the selected pair through its public `ctx.llm` plugin service,
+so credentials and transport stay host-owned. Explicit overrides are also
+subject to Duckwork's per-plugin trust policy. Allow only the providers and
+models this plugin should be able to select:
+
+```yaml
+plugins:
+  entries:
+    duckwork-herald:
+      llm:
+        allow_provider_override: true
+        allowed_providers: [openai-codex, ollama-cloud]
+        allow_model_override: true
+        allowed_models: [gpt-5.6-sol, glm-5.2]
+```
+
+Without that trust block, `llm_call` can still omit both routing fields and use
+the host's active configured route; explicit provider/model selection fails
+closed.
+
+The plugin also bundles an opt-in operating skill:
+
+```python
+skill_view(name="duckwork-herald:agent-dispatch")
+```
+
+### 5. Talk to the target
+
+```python
+dispatch_chat(
+    profile="tutor",
+    message="Explain Python decorators with a simple example",
+)
+```
+
+A follow-up to `tutor` reuses the stored target session unless `new_session=True`.
+
+---
+
+## Upgrading from Agent Dispatch 1.x
+
+Duckwork Herald renames the plugin identity from `agent-dispatch` to
+`duckwork-herald`. The tool names are unchanged, but Duckwork's plugin allow-list
+uses the manifest identity. Replace the old entry before restarting:
+
+```yaml
+plugins:
+  enabled:
+    # Remove: agent-dispatch
+    - duckwork-herald
+```
+
+If the old checkout is installed at `~/.duckwork/plugins/agent-dispatch`, move it
+to `~/.duckwork/plugins/duckwork-herald` or reinstall it with the command above. Do
+not keep both checkouts: they advertise the same capabilities and make plugin
+discovery ambiguous.
+
+---
+
+## Pillar 1 — A network of named Duckwork agents
+
+A Herald target is a real Duckwork profile, not an anonymous prompt wrapper. It can have its own:
+
+- SOUL and operating instructions;
+- model and provider credentials;
+- skills and memory;
+- tools and filesystem;
+- Home Assistant, browser, GitHub, email, or other integrations;
+- machine, container, or network location.
+
+### Persistent inter-agent conversation
+
+`dispatch_chat` sends one synchronous turn over a streaming `/v1/chat/completions` connection and preserves continuity with `X-Duckwork-Session-Id`.
+
+```text
+Coordinator                         Tutor profile
+    │                                    │
+    ├─ "Explain decorators" ────────────▶│ turn 1
+    │◀──────────────────────── "Here's…" ┤
+    │                                    │
+    ├─ "Show a caching version" ────────▶│ turn 2, same history
+    │◀──────────────────── "Use lru_cache"┤
+```
+
+While the call is synchronous, target assistant deltas and tool lifecycle events keep the activity timer alive. Tool progress is relayed to the origin UI when that surface exposes a progress callback. SSE keepalives prove the transport is connected but do not count as agent activity.
+
+```python
+dispatch_chat(
+    profile="tutor",
+    message="Challenge my proposed explanation",
+    model="tutor-reasoning",       # exact verified model_routes alias
+    instructions="Be direct.",    # current turn only
+    stall_timeout_seconds=900,     # activity-based
+    new_session=False,
+)
+```
+
+Important contracts:
+
+- the call blocks the **current origin agent turn**, not every Duckwork session or process;
+- later calls to the configured profile name reuse its saved target session;
+- `new_session=True` creates and stores a fresh session;
+- `instructions` applies to the current turn and should be resent when still needed;
+- `model` is verified against authenticated `/v1/models`; omission uses the target default;
+- the stall timer resets on actual assistant or tool activity, so productive long turns can exceed it indefinitely;
+- persistent chat is synchronous and does not return a separately pollable Herald `run_id`.
+
+### Parallel or detached work
+
+`dispatch_agent` starts a target `/v1/runs` task and returns a `run_id` immediately.
+
+```python
+# Default: monitor through SSE and deliver the result back to this session.
+dispatch_agent(
+    profile="reviewer",
+    message="Review the repository for release blockers. Do not edit.",
+    model="reviewer-fast",
+)
+
+# Detached: no local listener or callback. Inspect it later.
+dispatch_agent(
+    profile="researcher",
+    message="Continue this workflow independently.",
+    delivery="none",
+    max_hops=6,
+)
+```
+
+With `delivery="callback"` (default), Herald monitors structured target events and reinjects the terminal result into the commissioning session. With `delivery="none"`, the target continues without a local listener; use `check_dispatch` or `dispatch_status` later.
+
+Herald also provides:
+
+- batch polling with `collect_dispatches`;
+- cooperative cancellation with `cancel_dispatch`;
+- durable call and model provenance in SQLite;
+- trace, parent-edge, and hop lineage for forwarded agent graphs;
+- optional `max_hops` to stop repeated A→B→A forwarding before another edge is created;
+- protected-command notice relay with human-confirmed remote denial.
+
+<details>
+<summary><strong>Async monitoring and recovery details</strong></summary>
+
+The listener consumes `/v1/runs/{run_id}/events`. If SSE drops, Herald checks authoritative run status before reconnecting, then retries with 5/10/20/40-second backoff. After five total failed connections, it switches to authenticated polling.
+
+SSE activity and advancing target `updated_at` timestamps reset the normal 600-second stall timer. Approval waits use 30 minutes. Five consecutive polling transport failures end monitoring with instructions to reconcile using `check_dispatch`.
+
+Auto-delivery is process-bound: restarting the origin loses its active listener. The durable SQLite ledger retains provenance and the bounded JSON cache retains live recovery data, but Herald does not recreate an old listener or inject a result into a dead session. Recover the handle with `dispatch_status`, then query the target with `check_dispatch`.
+
+</details>
+
+---
+
+## Pillar 2 — A model switchboard for local subagents
+
+Duckwork core’s `delegate_task` is the right tool when the child should inherit the parent model. `delegate_subagent` adds **per-call model choice** and explicit inheritance controls.
+
+```python
+delegate_subagent(
+    goal="Review auth.py for security issues. Do not edit.",
+    model="gpt-5",
+    context="Repository: /srv/app; focus on token handling.",
+    inherit_context=True,
+    inherit_soul=True,
+    inherit_toolsets=False,
+    toolsets=["file", "terminal"],
+    stall_timeout_seconds=600,
+    interrupt_after_seconds=1800,
+)
+```
+
+### Decide exactly what the child inherits
+
+| Input | Default | Behaviour |
+|---|---:|---|
+| `context` | none | Explicit task facts supplied regardless of inheritance mode |
+| `inherit_context` | `false` | Opt-in copy of the latest 20 parent user/assistant text messages, capped at 12,000 characters; excludes system, tools, results, memory, and hidden state |
+| `inherit_soul` | `false` | Loads the active parent profile’s full `SOUL.md` as the child identity |
+| `inherit_toolsets` | `true` | Inherits the parent’s safe child tool subset when `toolsets` is omitted |
+| `toolsets=[]` | omitted | Creates a model-only child |
+| `toolsets=[...]` | omitted | Requests an exact subset, intersected with parent capabilities; inherited MCP toolsets are stripped unless explicitly named |
+
+The child runs asynchronously in a daemon thread and returns a `task_id` immediately. Streamed text and tool events reset the stall timer. `interrupt_after_seconds` requests cooperative interruption after a wall-clock threshold; it cannot instantly kill a provider or blocking tool call.
+
+Because the child is in-process, it is not durable across parent-process exit. Use `dispatch_agent` when process isolation or durable target execution matters.
+
+`delegate_subagent` requires the live parent-agent context exposed by classic interactive CLI and desktop/TUI sessions. Gateway/API plugin-dispatch paths fail closed rather than guessing another session.
+
+> If Duckwork core’s global `delegation.child_timeout_seconds` is enabled, it can preempt Herald’s per-call policy. Set it to `0` or leave it unset when using Herald timeout controls.
+
+### Per-call reasoning effort
+
+`delegate_subagent` accepts `reasoning_effort` to set the child's thinking budget for this one call, without touching core's `delegation.reasoning_effort` config:
+
+```python
+delegate_subagent(
+    goal="Deep-dive the auth flow for security issues",
+    model="gpt-5",
+    reasoning_effort="high",   # minimal..ultra; 'none' disables thinking
+)
+```
+
+Omitted, the child keeps the normal resolution order (core `delegation.reasoning_effort` when configured, otherwise the parent's level). Herald assigns `child.reasoning_config` after build via the same post-build seam as SOUL inheritance. Downstream host policy can still clamp, drop, or substitute the requested budget (mandatory-reasoning rejection, length recovery, provider limits); do not treat the parameter as a strict every-request guarantee against the host.
+
+---
+
+## Pillar 3 — A lightweight inference lane
+
+`llm_call` delegates one completion to Duckwork's public plugin LLM service,
+without an agent loop, tool schemas, terminal access, or subagent overhead.
+Duckwork owns authentication, transport, provider behavior, timeouts, and routing
+policy; Herald never handles provider credentials.
+
+```python
+# Classification
+llm_call(messages=[{
+    "role": "user",
+    "content": "Classify as urgent or routine: Production database is unavailable.",
+}])
+
+# Structured extraction
+llm_call(
+    messages=[{
+        "role": "user",
+        "content": "Extract name and age: John Smith is 32.",
+    }],
+    json_mode=True,
+)
+
+# Translation on a selected route
+llm_call(
+    messages=[{"role": "user", "content": "Translate to French: Good morning."}],
+    provider="openai-codex",
+    model="gpt-5.6-sol",
+)
+```
+
+Use it for tasks where tools and iterative reasoning would be overhead: routing, scoring, rewriting, extraction, translation, compact summarisation, and schema-constrained JSON.
+
+With no routing arguments, `llm_call` uses the host's active configured route.
+Before choosing an override, call `list_profile_models()` and copy one exact
+returned `{provider, model}` pair. Provider and model must be supplied together.
+
+Prefer `configured_default`. Do not select another provider merely because it
+advertises the same model; override the route only when the task or user
+explicitly calls for that endpoint.
+
+Herald checks that the exact pair appears in the configured inventory, then
+passes it unchanged to `ctx.llm.complete()`. Duckwork applies the plugin trust
+allowlists and owns the actual provider resolution. Unknown pairs fail before
+the host call; policy or provider failures are returned noisily without a
+Herald-side retry. Results expose the requested pair alongside the provider and
+model reported by the host facade.
+
+`llm_direct` is a separate, **opt-in** research lane. It does not use host
+routing. Endpoints are named in config (`duckwork_herald.llm_direct.enabled: true`,
+explicit `http(s)` `base_url`, `api_key: ${ENV_VAR}` only). The tool never
+accepts a URL or credential as an argument. `extra_body` is for vendor-specific
+fields only — reserved OpenAI fields must go through the matching parameters.
+Redirects are refused so a bearer token cannot follow a 3xx to another origin.
+
+```yaml
+duckwork_herald:
+  llm_direct:
+    enabled: true
+    default_endpoint: lab
+    endpoints:
+      lab:
+        base_url: https://llm.example.com/v1
+        api_key: ${LAB_API_KEY}
+        default_model: lab-model
+        allowed_models: [lab-model]
+```
+
+```python
+llm_direct(
+    messages=[{"role": "user", "content": "Reply with the single word OK"}],
+    temperature=0,
+    seed=7,
+    extra_body={"top_k": 40},
+)
+```
+
+---
+
+## The 12 tools
+
+| Tool | Purpose |
+|---|---|
+| `dispatch_chat` | Persistent synchronous conversation with streamed activity and verified target model selection |
+| `dispatch_agent` | Async cross-profile run with callback or detached delivery |
+| `delegate_subagent` | In-process child with per-call model and inheritance controls |
+| `llm_call` | Bare model inference without an agent loop |
+| `llm_direct` | Opt-in direct OpenAI-compatible call to a pre-configured endpoint (full parameter control; credentials stay in config) |
+| `check_dispatch` | Query one target run using its exact `{profile, run_id}` |
+| `collect_dispatches` | Query several run handles in one call |
+| `dispatch_status` | Read durable call history and credential-free configured/observed topology |
+| `cancel_dispatch` | Request cooperative target cancellation and suppress late local delivery |
+| `approve_dispatch` | Deny the exact visible protected-command notice through human confirmation |
+| `ping_profile` | Check target API reachability |
+| `list_profile_models` | Discover configured local `llm_call` routes, or exact remote `model_routes` aliases accepted by both dispatch modes |
+
+---
+
+## Routing policy is not caller authentication
+
+This distinction is deliberate and non-negotiable.
+
+A route such as:
+
+```yaml
+profiles:
+  reviewer:
+    capabilities: [dispatch]
+```
+
+means:
+
+> “Calls made through Herald on **this origin profile** may dispatch to `reviewer`, but may not open persistent chat.”
+
+Herald enforces that rule before network contact. Missing or malformed capabilities grant nothing. Adding reviewer to coordinator creates coordinator→reviewer only; the reverse requires a separate outbound entry on reviewer.
+
+It does **not** mean:
+
+> “The reviewer API server can cryptographically identify coordinator and reject every other bearer-key holder.”
+
+Duckwork’s API server currently authenticates the target bearer key. It does not map different client keys to verified Duckwork profile principals. Anyone who can reach the endpoint and possesses that key has the key’s authority, including callers that bypass Herald with HTTP or terminal tools.
+
+Therefore:
+
+- Herald’s route table is a useful, enforced **caller-side policy and accidental-recursion guard**;
+- it is not a bilateral network ACL, sandbox, or target-side identity firewall;
+- `origin_name` is audit attribution, not authenticated caller identity;
+- use a unique target/key per trust boundary, network ACLs/Tailscale, containers, or a credential-aware reverse proxy when callers need different authority;
+- true “only profile A may call profile B” enforcement requires per-caller principals in Duckwork core or equivalent infrastructure.
+
+Self-routing requires both a matching route entry and `allow_self: true`. Async `max_hops` is an operational loop brake, not a cryptographic control; a malicious caller can discard model-carried lineage or bypass Herald.
+
+---
+
+## Model routing
+
+Both `dispatch_agent` and `dispatch_chat` support target-controlled model choice.
+
+**Where aliases come from.** They live on the **target** Duckwork profile, under `platforms.api_server.extra.model_routes`. The origin Herald route (`duckwork_herald.profiles.<name>`) is only `url`, `api_key`, `capabilities`, and an optional default `model` that must already be one of those target aliases. Herald never writes `model_routes`.
+
+**What `/v1/models` lists.** The profile identity (not a valid override) plus those aliases. Provider catalogs, fallbacks, and ambient credentials are excluded on purpose. If a model you know the target can run is missing from `list_profile_models(profile=...)`, add an alias on the target and restart its gateway.
+
+When `model` is supplied explicitly or configured on the Herald profile route, Herald:
+
+1. authenticates to the target’s `GET /v1/models`;
+2. requires an exact `model_routes` alias with a resolved target model;
+3. refuses unknown, unverifiable, or primary-identity-only names before sending work;
+4. records requested and resolved model provenance in the ledger.
+
+Copy `pass_as` / `pass_as_model` into `model=`. Copy `provider` into `provider=` when the listing includes it. If `provider` is empty (`provider_pinned: false`), still pass `provider=` yourself — current Duckwork `/v1/models` often omits the route's provider even when the YAML pin exists. An unpinned alias lets the target choose among configured providers, including ones with no subscription.
+
+Omit `model` to preserve the target’s normal default. Call `list_profile_models(profile=...)` before selecting an alias.
+
+This is intentionally stricter than calling the native API directly: a typo must not silently fall back to a different model.
+
+---
+
+## Persistence, audit, and graph lineage
+
+Herald uses two local stores:
+
+- a bounded JSON state cache for live run handles, target chat sessions, listeners, and approval recovery;
+- a SQLite ledger for durable call provenance, status, model resolution, timing, delivery mode, trace lineage, and optional full task text.
+
+`dispatch_status(include_messages=False, include_topology=True)` is the safe default. Set `include_messages=True` deliberately: the ledger excludes configured bearer credentials, but it stores task text exactly as supplied. Do not put secrets in dispatch briefs.
+
+Same-filesystem origins may share one `ledger_file` for a combined observed graph. Never share one JSON `state_file` between processes.
+
+A post-side-effect state-cache failure does not hide a remote handle: Herald returns the handle, records the ledger edge when possible, and includes an explicit warning.
+
+---
+
+## Approval relay
+
+For autonomous target profiles, prefer Duckwork’s `smart` approval mode. Use manual Herald relay only when a human-attended origin is intentionally part of the workflow.
+
+When the target emits `approval.request`, Herald delivers the redacted request to the commissioning session. `approve_dispatch` can deny that request and requires:
+
+- the exact target `{profile, run_id}`;
+- a fresh Herald `approval_id` bound to the originating session;
+- the visible FIFO head;
+- explicit human confirmation through Duckwork’s owned approval surface.
+
+Cross-session, cross-profile, stale, replayed, or unseen requests fail before the target is contacted. **Herald v1 is deny-only:** `choice="once"`, `"session"`, and `"always"` are rejected before profile resolution or network contact. Current Duckwork targets resolve approvals by FIFO position rather than an immutable target request ID, so positive remote approval cannot be proven to authorize the command that was shown. `resolve_all=True` is available only with `choice="deny"`.
+
+Target command descriptions remain untrusted display data. If the listener was lost before the command preview arrived, do not approve it—reconcile or cancel the run.
+
+---
+
+## Architecture
+
+```text
+                         DUCKWORK HERALD
+
+ Origin profile
+ ├─ dispatch_chat ───── streaming persistent turn ───▶ Named target profile
+ ├─ dispatch_agent ─── async /v1/runs task ─────────▶ Named target profile
+ │                       │
+ │                       └─ SSE → reconnect → polling → callback/ledger
+ ├─ delegate_subagent ─ in-process model-selected child
+ └─ llm_call ────────── direct provider inference
+
+ Target profiles retain their own model routes, SOUL, skills, memory,
+ credentials, tools, sessions, filesystem, and network location.
+```
+
+Reliability properties include redirect refusal for credentialed HTTP, atomic state replacement, WAL-backed SQLite, bounded previews, session-owned approval nonces, cooperative cancellation, model-route verification, activity-aware stalls, and zero Duckwork core patches.
+
+---
+
+## Trust boundaries
+
+- A valid target transport key is powerful. Protect it like remote execution access.
+- Herald does not provide TLS. Use loopback, a trusted private network, or authenticated TLS.
+- Target provider credentials, skills, memory, and tool credentials remain on the target.
+- Target responses are untrusted input when reinjected into the origin. Verify consequential side effects independently.
+- Async callback delivery is not a durable queue; recover target state with `dispatch_status` and `check_dispatch` after origin restart.
+- Persistent chat stores one target session handle per configured profile name; use `new_session=True` to start fresh.
+- A target gateway restart can interrupt active work even when the origin still knows the handle.
+
+### Multiplex limitation (known, unfixed)
+
+Herald resolves its configuration home and interpolates credentials from the process
+environment rather than from Duckwork' per-profile scope (`duckwork_constants.get_duckwork_home()`
+and `agent.secret_scope.get_secret()`), and its config cache is not keyed by home.
+
+Each of the 18 single-profile gateways Herald runs on today serves exactly one profile, so
+this is not exercised there. Under Duckwork **multiplex** mode — one process serving several
+profiles — an origin profile can read another origin profile's configuration and dispatch
+ledger, and credential interpolation can return the wrong profile's secrets or report a
+present key as missing.
+
+**Until this is fixed, run Herald origins as separate single-profile processes; do not run
+Herald origins in a multiplexed gateway.** These are pre-existing defects, not introduced by
+the current release.
+
+---
+
+## Development and tests
+
+```bash
+cd tests
+DUCKWORK_HERALD_PLUGIN_DIR=../ DUCKWORK_SOURCE_DIR=/path/to/duckwork-agent \
+  python3 -m pytest -v
+```
+
+The release suite currently contains **199 tests** covering streaming persistent chat, local and remote model-route discovery, public host-owned LLM execution and trust gates, activity-aware stalls, subagent inheritance controls, async SSE recovery, polling fallback, transactional cancellation, session-owned deny-only approval relay, durable ledger migration, graph lineage and hop budgets, redirect credential isolation, exact TUI parent resolution, bare inference validation, and release contracts.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+Built by Ben Kamholtz for [Duckwork Agent](https://github.com/DuckMind/duckwork), created by [Fordex](https://fordex.com).

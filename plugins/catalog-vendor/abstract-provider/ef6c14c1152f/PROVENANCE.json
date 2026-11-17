@@ -1,0 +1,257 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "abstract-provider",
+  "content_id": "ef6c14c1152f",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 51,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "5cc022ce0a8f43cb87cc5ca1ab6da14bde2dbc4b0b571299e4c0cdff2e7e98c4"
+    },
+    {
+      "bytes": 1065,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "109a64add57bc9dc1980fd221ff642398506155977e8a4e7dc200bbe6ebdb13c"
+    },
+    {
+      "bytes": 2251,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "489ec4d1f3feecb7b8b6d7f7ce22c5b3e6e08133a800a9954620559ab82da758"
+    },
+    {
+      "bytes": 1016,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "dd75aee1a7776ddf3704733dfaa480399e9ce47c9099e3b20f18e853878f508a"
+    },
+    {
+      "bytes": 312,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "cf7ac7785e285bf6532f823dac0a0af643223a6509288635222d18655624d5b2"
+    }
+  ],
+  "input_manifest_sha256": "ef6c14c1152f3166880561ffc7c3f2040d6e0f2eb08a8b4dada09913e5755720",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "109a64add57bc9dc1980fd221ff642398506155977e8a4e7dc200bbe6ebdb13c",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/abstractpbc/hermes-abstract-provider",
+    "sha": "e322e42578586af1c376b7e836dfce437308682a",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/abstractpbc/hermes-abstract-provider",
+  "original_sha": "e322e42578586af1c376b7e836dfce437308682a",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "5cc022ce0a8f43cb87cc5ca1ab6da14bde2dbc4b0b571299e4c0cdff2e7e98c4",
+      "bytes": 51,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "109a64add57bc9dc1980fd221ff642398506155977e8a4e7dc200bbe6ebdb13c",
+      "bytes": 1065,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "2247a0c909ec256eda339b0f4d576786db0ac35f45e1328e76822963bef4c625",
+      "bytes": 2252,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "0a4411a2c69a4ed0bfc32dd0d500f45fad9db649be12dede368f805f3740a7e8",
+      "bytes": 1018,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "cf7ac7785e285bf6532f823dac0a0af643223a6509288635222d18655624d5b2",
+      "bytes": 312,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "bf6d1cc0588709983ab8a58173f0a75c99d77d940d5d646d104371ba44d2a444",
+  "pin_verification": {
+    "archive_bytes": 2678,
+    "archive_sha256": "3d05e6befe3e3de235edd82e22a5012b52698eb560e38cb2872693ce26778a71",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "e322e42578586af1c376b7e836dfce437308682a",
+    "verified_commit_marker": "e322e42578586af1c376b7e836dfce437308682a"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "ad8c01e1fedf3a75816eaa15d4ac921f627f81ca540877f6130d033fb9876059",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "5cc022ce0a8f43cb87cc5ca1ab6da14bde2dbc4b0b571299e4c0cdff2e7e98c4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5cc022ce0a8f43cb87cc5ca1ab6da14bde2dbc4b0b571299e4c0cdff2e7e98c4",
+        "source": ".gitignore",
+        "final_output_sha256": "5cc022ce0a8f43cb87cc5ca1ab6da14bde2dbc4b0b571299e4c0cdff2e7e98c4",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "5cc022ce0a8f43cb87cc5ca1ab6da14bde2dbc4b0b571299e4c0cdff2e7e98c4"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "109a64add57bc9dc1980fd221ff642398506155977e8a4e7dc200bbe6ebdb13c",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "109a64add57bc9dc1980fd221ff642398506155977e8a4e7dc200bbe6ebdb13c",
+        "source": "LICENSE",
+        "final_output_sha256": "109a64add57bc9dc1980fd221ff642398506155977e8a4e7dc200bbe6ebdb13c",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "109a64add57bc9dc1980fd221ff642398506155977e8a4e7dc200bbe6ebdb13c"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "489ec4d1f3feecb7b8b6d7f7ce22c5b3e6e08133a800a9954620559ab82da758",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "78b74f9fb2fa533afdfa2e086a3cb30ae1d814ee10794b1ce662b395cd465315",
+        "source": "README.md",
+        "final_output_sha256": "2247a0c909ec256eda339b0f4d576786db0ac35f45e1328e76822963bef4c625",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "78b74f9fb2fa533afdfa2e086a3cb30ae1d814ee10794b1ce662b395cd465315"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "dd75aee1a7776ddf3704733dfaa480399e9ce47c9099e3b20f18e853878f508a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0a4411a2c69a4ed0bfc32dd0d500f45fad9db649be12dede368f805f3740a7e8",
+        "source": "__init__.py",
+        "final_output_sha256": "0a4411a2c69a4ed0bfc32dd0d500f45fad9db649be12dede368f805f3740a7e8",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "0a4411a2c69a4ed0bfc32dd0d500f45fad9db649be12dede368f805f3740a7e8"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "cf7ac7785e285bf6532f823dac0a0af643223a6509288635222d18655624d5b2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cf7ac7785e285bf6532f823dac0a0af643223a6509288635222d18655624d5b2",
+        "source": "plugin.yaml",
+        "final_output_sha256": "cf7ac7785e285bf6532f823dac0a0af643223a6509288635222d18655624d5b2",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "cf7ac7785e285bf6532f823dac0a0af643223a6509288635222d18655624d5b2"
+      }
+    ],
+    "manifest_sha256": "95e5adf655ef73debe9c8316912d1f7f7e6308409a24a9878fc93f5f7ffb4d79",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "plugin.yaml": "plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "abstract-provider",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "abstract-provider",
+  "catalog_file": "src/plugin-catalog/abstract-provider.yaml",
+  "identity": {
+    "catalog_id": "abstract-provider",
+    "canonical_slug": "abstract-provider",
+    "original_manifest_name": "abstract-provider",
+    "rebranded_manifest_name": "abstract-provider",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "a5e07f6c363df5a742dbbecf6a6036ea042e0b5d06438daf0369665a783f6b5f",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "78b74f9fb2fa533afdfa2e086a3cb30ae1d814ee10794b1ce662b395cd465315",
+          "after_sha256": "2247a0c909ec256eda339b0f4d576786db0ac35f45e1328e76822963bef4c625",
+          "before_bytes": 2271,
+          "after_bytes": 2252,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

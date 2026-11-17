@@ -1,0 +1,626 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/otsoa-dubief/airlock/e379b7a8f9fad21391f477732e8386944ee7d68a/docs/images/check.png": "_catalog_assets/docs/images/check.png",
+      "https://raw.githubusercontent.com/otsoa-dubief/airlock/e379b7a8f9fad21391f477732e8386944ee7d68a/docs/images/how-it-works.png": "_catalog_assets/docs/images/how-it-works.png",
+      "https://raw.githubusercontent.com/otsoa-dubief/airlock/e379b7a8f9fad21391f477732e8386944ee7d68a/docs/images/live-session.gif": "_catalog_assets/docs/images/live-session.gif",
+      "https://raw.githubusercontent.com/otsoa-dubief/airlock/e379b7a8f9fad21391f477732e8386944ee7d68a/docs/images/social-preview.png": "_catalog_assets/docs/images/social-preview.png"
+    },
+    "image": "_catalog_assets/docs/images/social-preview.png",
+    "omitted": [],
+    "screenshots": [
+      "_catalog_assets/docs/images/live-session.gif",
+      "_catalog_assets/docs/images/how-it-works.png",
+      "_catalog_assets/docs/images/check.png"
+    ],
+    "deduplicated": []
+  },
+  "catalog_id": "airlock",
+  "content_id": "7fc3a3494aa4",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 11358,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "bytes": 169,
+      "mode": "100644",
+      "path": "NOTICE",
+      "sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c"
+    },
+    {
+      "bytes": 2234,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "71ffbbb3e085e25a61583bb5203f83f005de720d8a71d728f8370d8464590329"
+    },
+    {
+      "bytes": 29117,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "ea9195a87ceb4b096a99c284759e7e3df5152c704de2fa7bb7ffb331fedb6ade"
+    },
+    {
+      "bytes": 212471,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/images/check.png",
+      "sha256": "875eddef9d1396ba6254bc4fc5d4d00639eb3df80d60b99150b1a3fe2c1e1939"
+    },
+    {
+      "bytes": 230892,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/images/how-it-works.png",
+      "sha256": "9c8acc026ec92f23f1950b3bf03408cfcdbe87bb3be755da871cba4fd16584a6"
+    },
+    {
+      "bytes": 431219,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/images/live-session.gif",
+      "sha256": "290d66d35755ce36b5bcd871ff7745b684363edf04364ca33b509178deb3f34f"
+    },
+    {
+      "bytes": 62289,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/images/social-preview.png",
+      "sha256": "1a06bd7a0ccb09511f03d56878aaa14d64e41fb0bc7cfb813de2f011677b9089"
+    },
+    {
+      "bytes": 11358,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "bytes": 169,
+      "mode": "100644",
+      "path": "_upstream_legal/NOTICE",
+      "sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c"
+    },
+    {
+      "bytes": 959,
+      "mode": "100644",
+      "path": "_yaml.py",
+      "sha256": "f400b78a1173ae2a24c5c4303d74f3bc627f9fecefe239fbb9040d1f592659f0"
+    },
+    {
+      "bytes": 545,
+      "mode": "100644",
+      "path": "after-install.md",
+      "sha256": "fde68750e037311bc3fcc912980165c45a3c08e585f6de68e92a6ee2b98b1e24"
+    },
+    {
+      "bytes": 8937,
+      "mode": "100644",
+      "path": "cli.py",
+      "sha256": "9b656a23b5072e681c02243e3ccb39c43a9c9b646a07e8bc236a3d4f8e43cdc3"
+    },
+    {
+      "bytes": 18831,
+      "mode": "100644",
+      "path": "default_policy.yaml",
+      "sha256": "4fc2d6dfbb0827469a7ca773a1ee26e5d789739900c3ccf9bf655cd1d1ba4d5e"
+    },
+    {
+      "bytes": 23982,
+      "mode": "100644",
+      "path": "guards.py",
+      "sha256": "6e9754aa22dbcbdb6ca0d824e0a5b1369b044955af820b9da726b8116972984b"
+    },
+    {
+      "bytes": 1106,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "90ab9e9c010315b79e6bb98451884ec2c890180d37230dc62f75f61bbee6364a"
+    },
+    {
+      "bytes": 9537,
+      "mode": "100644",
+      "path": "policy.py",
+      "sha256": "c003d3a10d3169ce5799066ce0919026aa12481b8a9b4817fd7a192a366e1114"
+    },
+    {
+      "bytes": 39870,
+      "mode": "100644",
+      "path": "rules.py",
+      "sha256": "3cdcd7475ba3209a6c1c39353b530514c8a3840a0e6801829cc1ff87758941ec"
+    },
+    {
+      "bytes": 48893,
+      "mode": "100644",
+      "path": "shell.py",
+      "sha256": "f2a144a8b2fcca8e44af320ee6c93a84d84cb19585b5d2e57d3c5a45d0fef399"
+    }
+  ],
+  "input_manifest_sha256": "7fc3a3494aa401774ef5aaf2f75fc7dc9f0be860b717cd9d26d8f8e2a29ac647",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source_path": "airlock/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "NOTICE",
+        "sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+        "source_path": "airlock/NOTICE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "_upstream_legal/NOTICE",
+        "sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+        "source_path": "NOTICE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "_yaml.py",
+      "after-install.md",
+      "cli.py",
+      "default_policy.yaml",
+      "plugin.yaml",
+      "rules.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      "README.md",
+      "__init__.py",
+      "_yaml.py",
+      "after-install.md",
+      "cli.py",
+      "default_policy.yaml",
+      "plugin.yaml",
+      "rules.py"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/otsoa-dubief/airlock",
+    "sha": "e379b7a8f9fad21391f477732e8386944ee7d68a",
+    "subdir": "airlock"
+  },
+  "original_repo": "https://github.com/otsoa-dubief/airlock",
+  "original_sha": "e379b7a8f9fad21391f477732e8386944ee7d68a",
+  "original_subdir": "airlock",
+  "output_files": [
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "mode": "100644"
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+      "bytes": 169,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "692e530b49a65d24e6da1d92fd89f307160522b741a726275efed127c38cd637",
+      "bytes": 2401,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "a65bb0fa246e84fdf6a2e5d652fe03fbf45198c56cc062a470bc2759c01578c4",
+      "bytes": 29315,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/docs/images/check.png",
+      "sha256": "875eddef9d1396ba6254bc4fc5d4d00639eb3df80d60b99150b1a3fe2c1e1939",
+      "bytes": 212471,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/docs/images/how-it-works.png",
+      "sha256": "9c8acc026ec92f23f1950b3bf03408cfcdbe87bb3be755da871cba4fd16584a6",
+      "bytes": 230892,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/docs/images/live-session.gif",
+      "sha256": "290d66d35755ce36b5bcd871ff7745b684363edf04364ca33b509178deb3f34f",
+      "bytes": 431219,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/docs/images/social-preview.png",
+      "sha256": "1a06bd7a0ccb09511f03d56878aaa14d64e41fb0bc7cfb813de2f011677b9089",
+      "bytes": 62289,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/NOTICE",
+      "sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+      "bytes": 169,
+      "mode": "100644"
+    },
+    {
+      "path": "_yaml.py",
+      "sha256": "2a59fa5328b582be703b0de4c44c9bb1052cc3bca9c65569533f60ddfe2b6d27",
+      "bytes": 1109,
+      "mode": "100644"
+    },
+    {
+      "path": "after-install.md",
+      "sha256": "2b03bc65c966851d90e83c5ad5054e3217e420fa6b8df491d8595119d9d7f85d",
+      "bytes": 706,
+      "mode": "100644"
+    },
+    {
+      "path": "cli.py",
+      "sha256": "e51190c8223c0d6ae28bb7197aaf05b8e02430368f671feb34b31d0cb79a6348",
+      "bytes": 9087,
+      "mode": "100644"
+    },
+    {
+      "path": "default_policy.yaml",
+      "sha256": "0157193cc53222b23d73b8515fca26f319b662045650ed4e22cc9658b492ebca",
+      "bytes": 19073,
+      "mode": "100644"
+    },
+    {
+      "path": "guards.py",
+      "sha256": "6e9754aa22dbcbdb6ca0d824e0a5b1369b044955af820b9da726b8116972984b",
+      "bytes": 23982,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "779e81e50cbf9966989b813188274ab5d5290f4960407c9ea8df1c499e42c5fe",
+      "bytes": 1252,
+      "mode": "100644"
+    },
+    {
+      "path": "policy.py",
+      "sha256": "c003d3a10d3169ce5799066ce0919026aa12481b8a9b4817fd7a192a366e1114",
+      "bytes": 9537,
+      "mode": "100644"
+    },
+    {
+      "path": "rules.py",
+      "sha256": "d05487b4dc8ec22995f002b6f053a17c57a80a04a014c34e949babae27c5770a",
+      "bytes": 40042,
+      "mode": "100644"
+    },
+    {
+      "path": "shell.py",
+      "sha256": "f2a144a8b2fcca8e44af320ee6c93a84d84cb19585b5d2e57d3c5a45d0fef399",
+      "bytes": 48893,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "873ca6602343fdfb686cd614e78aea5ef61e35506498933317d54566b9353bbf",
+  "pin_verification": {
+    "archive_bytes": 1753468,
+    "archive_sha256": "9188f8ac3bb20ececc6b985421326076bbf6458ca8c2f39c841c9731a2450d36",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "e379b7a8f9fad21391f477732e8386944ee7d68a",
+    "verified_commit_marker": "e379b7a8f9fad21391f477732e8386944ee7d68a"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "cd9b43aea3be48b279bcb65153ebe256aaaade6cf801e23393a9b8699983e2d7",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "LICENSE",
+        "input_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source": "LICENSE",
+        "final_output_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "destination": "NOTICE",
+        "input_sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+        "source": "NOTICE",
+        "final_output_sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+        "cli_destination": "NOTICE",
+        "previous_staging_sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "71ffbbb3e085e25a61583bb5203f83f005de720d8a71d728f8370d8464590329",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1072de36bd061e3c9e8c754c8b6be5b4c769b81e34a9b3f1405eaa215a9156a7",
+        "source": "README.md",
+        "final_output_sha256": "692e530b49a65d24e6da1d92fd89f307160522b741a726275efed127c38cd637",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "692e530b49a65d24e6da1d92fd89f307160522b741a726275efed127c38cd637"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "ea9195a87ceb4b096a99c284759e7e3df5152c704de2fa7bb7ffb331fedb6ade",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c64df1c998f3a2bac2ac5212bf3564af7605ac3ba26c11fe3b52571d002a7e8b",
+        "source": "__init__.py",
+        "final_output_sha256": "a65bb0fa246e84fdf6a2e5d652fe03fbf45198c56cc062a470bc2759c01578c4",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "a65bb0fa246e84fdf6a2e5d652fe03fbf45198c56cc062a470bc2759c01578c4"
+      },
+      {
+        "destination": "_catalog_assets/docs/images/check.png",
+        "input_sha256": "875eddef9d1396ba6254bc4fc5d4d00639eb3df80d60b99150b1a3fe2c1e1939",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "875eddef9d1396ba6254bc4fc5d4d00639eb3df80d60b99150b1a3fe2c1e1939",
+        "source": "_catalog_assets/docs/images/check.png",
+        "final_output_sha256": "875eddef9d1396ba6254bc4fc5d4d00639eb3df80d60b99150b1a3fe2c1e1939",
+        "cli_destination": "_catalog_assets/docs/images/check.png",
+        "previous_staging_sha256": "875eddef9d1396ba6254bc4fc5d4d00639eb3df80d60b99150b1a3fe2c1e1939"
+      },
+      {
+        "destination": "_catalog_assets/docs/images/how-it-works.png",
+        "input_sha256": "9c8acc026ec92f23f1950b3bf03408cfcdbe87bb3be755da871cba4fd16584a6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9c8acc026ec92f23f1950b3bf03408cfcdbe87bb3be755da871cba4fd16584a6",
+        "source": "_catalog_assets/docs/images/how-it-works.png",
+        "final_output_sha256": "9c8acc026ec92f23f1950b3bf03408cfcdbe87bb3be755da871cba4fd16584a6",
+        "cli_destination": "_catalog_assets/docs/images/how-it-works.png",
+        "previous_staging_sha256": "9c8acc026ec92f23f1950b3bf03408cfcdbe87bb3be755da871cba4fd16584a6"
+      },
+      {
+        "destination": "_catalog_assets/docs/images/live-session.gif",
+        "input_sha256": "290d66d35755ce36b5bcd871ff7745b684363edf04364ca33b509178deb3f34f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "290d66d35755ce36b5bcd871ff7745b684363edf04364ca33b509178deb3f34f",
+        "source": "_catalog_assets/docs/images/live-session.gif",
+        "final_output_sha256": "290d66d35755ce36b5bcd871ff7745b684363edf04364ca33b509178deb3f34f",
+        "cli_destination": "_catalog_assets/docs/images/live-session.gif",
+        "previous_staging_sha256": "290d66d35755ce36b5bcd871ff7745b684363edf04364ca33b509178deb3f34f"
+      },
+      {
+        "destination": "_catalog_assets/docs/images/social-preview.png",
+        "input_sha256": "1a06bd7a0ccb09511f03d56878aaa14d64e41fb0bc7cfb813de2f011677b9089",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1a06bd7a0ccb09511f03d56878aaa14d64e41fb0bc7cfb813de2f011677b9089",
+        "source": "_catalog_assets/docs/images/social-preview.png",
+        "final_output_sha256": "1a06bd7a0ccb09511f03d56878aaa14d64e41fb0bc7cfb813de2f011677b9089",
+        "cli_destination": "_catalog_assets/docs/images/social-preview.png",
+        "previous_staging_sha256": "1a06bd7a0ccb09511f03d56878aaa14d64e41fb0bc7cfb813de2f011677b9089"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "destination": "_upstream_legal/NOTICE",
+        "input_sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+        "source": "_upstream_legal/NOTICE",
+        "final_output_sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c",
+        "cli_destination": "_upstream_legal/NOTICE",
+        "previous_staging_sha256": "ff3575aac3391438aca7902d30d963eecaa31786a88d6f0d1fe85c648069d43c"
+      },
+      {
+        "destination": "_yaml.py",
+        "input_sha256": "f400b78a1173ae2a24c5c4303d74f3bc627f9fecefe239fbb9040d1f592659f0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "670b7075a832a16d12fced93887fce6e05275b9b4088724956f0182209c85c18",
+        "source": "_yaml.py",
+        "final_output_sha256": "2a59fa5328b582be703b0de4c44c9bb1052cc3bca9c65569533f60ddfe2b6d27",
+        "cli_destination": "_yaml.py",
+        "previous_staging_sha256": "2a59fa5328b582be703b0de4c44c9bb1052cc3bca9c65569533f60ddfe2b6d27"
+      },
+      {
+        "destination": "after-install.md",
+        "input_sha256": "fde68750e037311bc3fcc912980165c45a3c08e585f6de68e92a6ee2b98b1e24",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "556071626dce7e02672f232c9204303d85a725aa3fec054fa467b7b1e397ff7d",
+        "source": "after-install.md",
+        "final_output_sha256": "2b03bc65c966851d90e83c5ad5054e3217e420fa6b8df491d8595119d9d7f85d",
+        "cli_destination": "after-install.md",
+        "previous_staging_sha256": "2b03bc65c966851d90e83c5ad5054e3217e420fa6b8df491d8595119d9d7f85d"
+      },
+      {
+        "destination": "cli.py",
+        "input_sha256": "9b656a23b5072e681c02243e3ccb39c43a9c9b646a07e8bc236a3d4f8e43cdc3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ff1d77336ef480e5e755af0d386f95f526c42f7dca7f30c9a0d8c61d7ca22a29",
+        "source": "cli.py",
+        "final_output_sha256": "e51190c8223c0d6ae28bb7197aaf05b8e02430368f671feb34b31d0cb79a6348",
+        "cli_destination": "cli.py",
+        "previous_staging_sha256": "e51190c8223c0d6ae28bb7197aaf05b8e02430368f671feb34b31d0cb79a6348"
+      },
+      {
+        "destination": "default_policy.yaml",
+        "input_sha256": "4fc2d6dfbb0827469a7ca773a1ee26e5d789739900c3ccf9bf655cd1d1ba4d5e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8904604faf203eca9dcb95308a3f5aad02a4d0b2870183d4e3ba9c155052da49",
+        "source": "default_policy.yaml",
+        "final_output_sha256": "0157193cc53222b23d73b8515fca26f319b662045650ed4e22cc9658b492ebca",
+        "cli_destination": "default_policy.yaml",
+        "previous_staging_sha256": "0157193cc53222b23d73b8515fca26f319b662045650ed4e22cc9658b492ebca"
+      },
+      {
+        "destination": "guards.py",
+        "input_sha256": "6e9754aa22dbcbdb6ca0d824e0a5b1369b044955af820b9da726b8116972984b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6e9754aa22dbcbdb6ca0d824e0a5b1369b044955af820b9da726b8116972984b",
+        "source": "guards.py",
+        "final_output_sha256": "6e9754aa22dbcbdb6ca0d824e0a5b1369b044955af820b9da726b8116972984b",
+        "cli_destination": "guards.py",
+        "previous_staging_sha256": "6e9754aa22dbcbdb6ca0d824e0a5b1369b044955af820b9da726b8116972984b"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "90ab9e9c010315b79e6bb98451884ec2c890180d37230dc62f75f61bbee6364a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "95ad8afebee4d31e1386704f6aabb5030f915d264e9e2e5794d879a9b978104b",
+        "source": "plugin.yaml",
+        "final_output_sha256": "779e81e50cbf9966989b813188274ab5d5290f4960407c9ea8df1c499e42c5fe",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "779e81e50cbf9966989b813188274ab5d5290f4960407c9ea8df1c499e42c5fe"
+      },
+      {
+        "destination": "policy.py",
+        "input_sha256": "c003d3a10d3169ce5799066ce0919026aa12481b8a9b4817fd7a192a366e1114",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c003d3a10d3169ce5799066ce0919026aa12481b8a9b4817fd7a192a366e1114",
+        "source": "policy.py",
+        "final_output_sha256": "c003d3a10d3169ce5799066ce0919026aa12481b8a9b4817fd7a192a366e1114",
+        "cli_destination": "policy.py",
+        "previous_staging_sha256": "c003d3a10d3169ce5799066ce0919026aa12481b8a9b4817fd7a192a366e1114"
+      },
+      {
+        "destination": "rules.py",
+        "input_sha256": "3cdcd7475ba3209a6c1c39353b530514c8a3840a0e6801829cc1ff87758941ec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cd4431378b2a244b69591d6eba2f376246d555f24966c8fc9601ccf01d1de31a",
+        "source": "rules.py",
+        "final_output_sha256": "d05487b4dc8ec22995f002b6f053a17c57a80a04a014c34e949babae27c5770a",
+        "cli_destination": "rules.py",
+        "previous_staging_sha256": "d05487b4dc8ec22995f002b6f053a17c57a80a04a014c34e949babae27c5770a"
+      },
+      {
+        "destination": "shell.py",
+        "input_sha256": "f2a144a8b2fcca8e44af320ee6c93a84d84cb19585b5d2e57d3c5a45d0fef399",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f2a144a8b2fcca8e44af320ee6c93a84d84cb19585b5d2e57d3c5a45d0fef399",
+        "source": "shell.py",
+        "final_output_sha256": "f2a144a8b2fcca8e44af320ee6c93a84d84cb19585b5d2e57d3c5a45d0fef399",
+        "cli_destination": "shell.py",
+        "previous_staging_sha256": "f2a144a8b2fcca8e44af320ee6c93a84d84cb19585b5d2e57d3c5a45d0fef399"
+      }
+    ],
+    "manifest_sha256": "a1b77f4e74cbf0d22af9aec2c40986c293b18c80cda2e4d09a8feb762d6b3055",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "LICENSE": "airlock/LICENSE",
+    "NOTICE": "airlock/NOTICE",
+    "README.md": "airlock/README.md",
+    "__init__.py": "airlock/__init__.py",
+    "_catalog_assets/docs/images/check.png": "docs/images/check.png",
+    "_catalog_assets/docs/images/how-it-works.png": "docs/images/how-it-works.png",
+    "_catalog_assets/docs/images/live-session.gif": "docs/images/live-session.gif",
+    "_catalog_assets/docs/images/social-preview.png": "docs/images/social-preview.png",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "_upstream_legal/NOTICE": "NOTICE",
+    "_yaml.py": "airlock/_yaml.py",
+    "after-install.md": "airlock/after-install.md",
+    "cli.py": "airlock/cli.py",
+    "default_policy.yaml": "airlock/default_policy.yaml",
+    "guards.py": "airlock/guards.py",
+    "plugin.yaml": "airlock/plugin.yaml",
+    "policy.py": "airlock/policy.py",
+    "rules.py": "airlock/rules.py",
+    "shell.py": "airlock/shell.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "airlock",
+    "python_files_compiled": 7,
+    "secret_findings": 0
+  },
+  "canonical_slug": "airlock",
+  "catalog_file": "src/plugin-catalog/airlock.yaml",
+  "identity": {
+    "catalog_id": "airlock",
+    "canonical_slug": "airlock",
+    "original_manifest_name": "airlock",
+    "rebranded_manifest_name": "airlock",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "988a67dfeb2d83a1a1f126fba2b1b6e255fb6f2e21a5c257533c5cd73ba39f4a",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

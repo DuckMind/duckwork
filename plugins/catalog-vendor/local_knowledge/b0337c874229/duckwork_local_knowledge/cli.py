@@ -1,0 +1,1317 @@
+"""Command-line interface for the local knowledge indexer."""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import tempfile
+import time
+from collections.abc import Callable
+from dataclasses import replace
+from pathlib import Path
+from typing import Any, Sequence
+
+from . import __version__, index, okf
+from .artifacts import Artifact, Edge
+from .config import Config, IndexSettings, resolve_config
+from .routing import ROUTING_TRACE_METADATA_KEY, SearchRoutingTrace
+from .service import LocalKnowledgeService
+
+NewerIndexFormatError = index.NewerIndexFormatError
+build_index = index.build_index
+search_index = index.search_index
+get_artifact = index.get_artifact
+get_neighbors = index.get_neighbors
+index_metadata = index.index_metadata
+artifact_type_counts = index.artifact_type_counts
+
+
+ROUTER_SKILL_RELATIVE_PATH = Path("skills") / "local-knowledge-router" / "SKILL.md"
+_DEFAULT_ROOT = Path.cwd()
+
+
+def _duckwork_home_from_env() -> Path:
+    return Path(os.environ.get("DUCKWORK_HOME", Path.home() / ".duckwork")).expanduser()
+
+
+def _default_output_dir(duckwork_home: Path | None = None) -> Path:
+    return (duckwork_home.expanduser() if duckwork_home is not None else _duckwork_home_from_env()) / "local_knowledge"
+
+
+def print_results(rows: Sequence[dict[str, Any]]) -> None:
+    for row in rows:
+        print(f"{row['id']} [{row['type']}] {row['title']}")
+        print(f"  path: {row['path']}")
+        print(f"  summary: {row['summary']}")
+        if row.get("edge_kind"):
+            print(f"  edge: {row['edge_kind']} ({row.get('edge_evidence', '')})")
+        if row.get("triggers"):
+            print(f"  triggers: {', '.join(row['triggers'][:12])}")
+        print()
+
+
+def _resolved(path: Path) -> Path:
+    return path.expanduser().resolve()
+
+
+def _bundled_router_skill_path() -> Path:
+    return (Path(__file__).resolve().parent / ROUTER_SKILL_RELATIVE_PATH).resolve()
+
+
+def _installed_router_skill_path(duckwork_home: Path) -> Path:
+    lexical_home = Path(os.path.abspath(duckwork_home.expanduser()))
+    return lexical_home / ROUTER_SKILL_RELATIVE_PATH
+
+
+def _configured_router_skill_path(cfg: Config) -> Path:
+    return cfg.router_skill_path or _installed_router_skill_path(cfg.duckwork_home)
+
+
+def _router_skill_enrollment_error(duckwork_home: Path, target: Path) -> str | None:
+    lexical_skills = Path(os.path.abspath(duckwork_home.expanduser())) / "skills"
+    lexical_target = Path(os.path.abspath(target.expanduser()))
+    try:
+        lexical_target.relative_to(lexical_skills)
+    except ValueError:
+        return "configured router skill path must be under DUCKWORK_HOME/skills"
+    if lexical_target.name != "SKILL.md":
+        return "configured router skill path must name a SKILL.md file"
+    return None
+
+
+def _router_skill_frontmatter_name(path: Path) -> str | None:
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+    closing = next(
+        (index for index, line in enumerate(lines[1:], start=1) if line.strip() == "---"),
+        None,
+    )
+    if closing is None:
+        return None
+    names: list[str | None] = []
+    for line in lines[1:closing]:
+        if line != line.lstrip():
+            continue
+        key, separator, value = line.partition(":")
+        if separator and key.strip() == "name":
+            names.append(_yaml_frontmatter_string(value))
+    return names[0] if len(names) == 1 else None
+
+
+def _yaml_frontmatter_string(raw: str) -> str | None:
+    """Parse the ordinary quoted/plain YAML scalar forms used for skill names."""
+
+    quote: str | None = None
+    escaped = False
+    comment_at: int | None = None
+    index = 0
+    while index < len(raw):
+        character = raw[index]
+        if quote == '"':
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == quote:
+                quote = None
+        elif quote == "'":
+            if character == "'":
+                if index + 1 < len(raw) and raw[index + 1] == "'":
+                    index += 1
+                else:
+                    quote = None
+        elif character in "'\"":
+            quote = character
+        elif character == "#" and (index == 0 or raw[index - 1].isspace()):
+            comment_at = index
+            break
+        index += 1
+    if quote is not None or escaped:
+        return None
+
+    value = raw[:comment_at].strip() if comment_at is not None else raw.strip()
+    if not value:
+        return None
+    if value.startswith('"'):
+        if not value.endswith('"'):
+            return None
+        try:
+            decoded = json.loads(value)
+        except json.JSONDecodeError:
+            return None
+        return decoded if isinstance(decoded, str) else None
+    if value.startswith("'"):
+        if not value.endswith("'"):
+            return None
+        return value[1:-1].replace("''", "'")
+    if value.endswith(("'", '"')):
+        return None
+    return value
+
+
+def _router_target_safety_error(duckwork_home: Path, target: Path) -> str | None:
+    if target.is_symlink():
+        return "router skill target is a symbolic link; refusing to follow it"
+    resolved_home = duckwork_home.expanduser().resolve()
+    resolved_parent = target.parent.resolve()
+    try:
+        resolved_parent.relative_to(resolved_home)
+    except ValueError:
+        return "router skill target parent resolves outside the Duckwork home"
+    return None
+
+
+def _atomic_write_bytes(path: Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, raw_temp_path = tempfile.mkstemp(
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+    )
+    temp_path = Path(raw_temp_path)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, path)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+def _print_warnings(warnings: Sequence[str]) -> None:
+    for warning in warnings:
+        print(f"WARNING: {warning}", file=sys.stderr)
+
+
+BuildIndexFn = Callable[..., tuple[list[Artifact], list[Edge]] | None]
+
+
+def _service(
+    cfg: Config,
+    *,
+    build_index_fn: BuildIndexFn = build_index,
+    search_index_fn: Callable[..., list[dict[str, Any]]] = search_index,
+    get_artifact_fn: Callable[..., dict[str, Any] | None] = get_artifact,
+    get_neighbors_fn: Callable[..., list[dict[str, Any]]] = get_neighbors,
+) -> LocalKnowledgeService:
+    return LocalKnowledgeService(
+        cfg,
+        build_index_fn=build_index_fn,
+        search_index_fn=search_index_fn,
+        get_artifact_fn=get_artifact_fn,
+        get_neighbors_fn=get_neighbors_fn,
+    )
+
+
+def _record_cli_usage(
+    service: LocalKnowledgeService | None,
+    *,
+    tool: str,
+    success: bool,
+    query: str = "",
+    artifact_id: str = "",
+    artifact_type: str = "",
+    limit_value: int | None = None,
+    rebuild_requested: bool = False,
+    rebuilt: bool | None = None,
+    error: str = "",
+    result_count: int | None = None,
+    top_ids: list[str] | None = None,
+    top_types: list[str] | None = None,
+    baseline_top_ids: list[str] | None = None,
+    route_feedback_id: int | None = None,
+    route_artifact_id: str | None = None,
+    route_outcome: str = "none",
+    feedback_max_id: int | None = -1,
+    implicit_feedback_max_id: int | None = None,
+    implicit_feedback_enabled: bool | None = None,
+    implicit_min_confirmations: int | None = None,
+    implicit_max_generic_queries: int | None = None,
+    latency_ms: int | None = None,
+    db_path: Path | None = None,
+    index_meta: dict[str, Any] | None = None,
+) -> int | None:
+    if service is None:
+        return None
+    return service.record_usage(
+        tool=tool,
+        success=success,
+        query=query,
+        artifact_id=artifact_id,
+        artifact_type=artifact_type,
+        limit_value=limit_value,
+        rebuild_requested=rebuild_requested,
+        rebuilt=rebuilt,
+        error=error,
+        result_count=result_count,
+        top_ids=top_ids,
+        top_types=top_types,
+        baseline_top_ids=baseline_top_ids,
+        route_feedback_id=route_feedback_id,
+        route_artifact_id=route_artifact_id,
+        route_outcome=route_outcome,
+        feedback_max_id=feedback_max_id,
+        implicit_feedback_max_id=implicit_feedback_max_id,
+        implicit_feedback_enabled=implicit_feedback_enabled,
+        implicit_min_confirmations=implicit_min_confirmations,
+        implicit_max_generic_queries=implicit_max_generic_queries,
+        latency_ms=latency_ms,
+        db_path=db_path,
+        client="cli",
+        index_metadata=index_meta or {},
+    )
+
+
+def add_common_db_arg(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--db",
+        type=Path,
+        default=None,
+        help="SQLite index path (default: <duckwork-home>/local_knowledge/index.sqlite, or configured state_dir with --from-duckwork-config)",
+    )
+    parser.add_argument("--duckwork-home", type=Path, default=None, help="Duckwork home directory")
+    parser.add_argument(
+        "--from-duckwork-config",
+        action="store_true",
+        help="read local_knowledge settings from <duckwork-home>/config.yaml like the native plugin does",
+    )
+
+
+def add_okf_common_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--duckwork-home", type=Path, default=None, help="Duckwork home directory")
+    parser.add_argument(
+        "--from-duckwork-config",
+        action="store_true",
+        help="read local_knowledge settings from <duckwork-home>/config.yaml like the native plugin does",
+    )
+    parser.add_argument("--state-dir", type=Path, default=None, help="OKF queue/state directory override")
+    parser.add_argument("--json", action="store_true", help="emit JSON")
+
+
+def _add_doctor_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--duckwork-home", type=Path, default=None, help="Duckwork home directory")
+    parser.add_argument("--rebuild", action="store_true", help="build the configured index as part of the check")
+    parser.add_argument("--query", default=None, help="optional smoke search query to run against the index")
+    parser.add_argument("--limit", type=int, default=5, help="smoke search result limit")
+    parser.add_argument("--json", action="store_true", help="emit JSON")
+
+
+def _add_install_router_skill_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--duckwork-home", type=Path, default=None, help="Duckwork home directory")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="replace a different existing local-knowledge-router skill",
+    )
+    parser.add_argument("--json", action="store_true", help="emit JSON")
+
+
+def setup_duckwork_cli(parser: argparse.ArgumentParser) -> None:
+    """Register the small setup/diagnostic surface under ``duckwork local-knowledge``."""
+    subparsers = parser.add_subparsers(dest="local_knowledge_command", required=True)
+    install_parser = subparsers.add_parser(
+        "install-router-skill",
+        help="install the proactive router skill into the active Duckwork profile",
+    )
+    _add_install_router_skill_args(install_parser)
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        help="check plugin configuration and installation health",
+    )
+    _add_doctor_args(doctor_parser)
+    worker_parser = subparsers.add_parser(
+        "okf-worker",
+        help="run one bounded automatic OKF generation batch",
+    )
+    worker_parser.add_argument("--duckwork-home", type=Path, default=None, help="Duckwork home directory")
+
+
+def handle_duckwork_cli(args: argparse.Namespace, *, llm: Any = None) -> int:
+    """Dispatch the Duckwork-native CLI adapter through the standalone CLI."""
+    command = str(args.local_knowledge_command)
+    if command == "okf-worker":
+        status = okf.run_worker(llm=llm, duckwork_home=args.duckwork_home)
+        if status:
+            raise SystemExit(status)
+        return status
+    argv = [command]
+    if args.duckwork_home is not None:
+        argv.extend(["--duckwork-home", str(args.duckwork_home)])
+    if command == "install-router-skill":
+        if args.force:
+            argv.append("--force")
+    elif command == "doctor":
+        if args.rebuild:
+            argv.append("--rebuild")
+        if args.query is not None:
+            argv.extend(["--query", str(args.query)])
+        argv.extend(["--limit", str(args.limit)])
+    if args.json:
+        argv.append("--json")
+    status = main(argv)
+    if status:
+        raise SystemExit(status)
+    return status
+
+
+def _add_okf_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    okf_parser = subparsers.add_parser("okf", help="manage generated tool OKF candidate queue")
+    okf_subparsers = okf_parser.add_subparsers(dest="okf_command", required=True)
+
+    status_parser = okf_subparsers.add_parser("status", help="show OKF queue status")
+    status_parser.add_argument("--limit", type=int, default=10, help="candidate preview limit per state")
+    add_okf_common_args(status_parser)
+
+    claim_parser = okf_subparsers.add_parser("claim", help="claim pending OKF candidates")
+    claim_parser.add_argument("--limit", type=int, default=1)
+    claim_parser.add_argument("--min-use-count", type=int, default=None)
+    claim_parser.add_argument("--claim-token", default=None)
+    add_okf_common_args(claim_parser)
+
+    validate_parser = okf_subparsers.add_parser("validate", help="validate an authored OKF file")
+    validate_parser.add_argument("--claim-token", required=True)
+    validate_parser.add_argument("--path", type=Path, required=True)
+    add_okf_common_args(validate_parser)
+
+    complete_parser = okf_subparsers.add_parser("complete", help="mark a claimed OKF candidate complete")
+    complete_parser.add_argument("--claim-token", required=True)
+    complete_parser.add_argument("--tool", required=True)
+    complete_parser.add_argument("--path", type=Path, required=True)
+    add_okf_common_args(complete_parser)
+
+    fail_parser = okf_subparsers.add_parser("fail", help="mark a claimed OKF candidate failed")
+    fail_parser.add_argument("--claim-token", required=True)
+    fail_parser.add_argument("--tool", required=True)
+    fail_parser.add_argument("--error", required=True)
+    add_okf_common_args(fail_parser)
+
+    retry_parser = okf_subparsers.add_parser("retry", help="reset an exhausted OKF candidate for retry")
+    retry_parser.add_argument("--tool", required=True)
+    add_okf_common_args(retry_parser)
+
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    build_parser = subparsers.add_parser("build", help="build index.sqlite and index.jsonl")
+    build_parser.add_argument("--root", type=Path, default=None, help="source directory to index (default: current directory)")
+    build_parser.add_argument("--duckwork-home", type=Path, default=None, help="Duckwork home directory")
+    build_parser.add_argument("--output-dir", type=Path, default=None, help="output directory (default: <duckwork-home>/local_knowledge)")
+    build_parser.add_argument(
+        "--from-duckwork-config",
+        action="store_true",
+        help="read local_knowledge source_root, state_dir, and scanner settings from <duckwork-home>/config.yaml",
+    )
+
+    search_parser = subparsers.add_parser("search", help="search artifacts")
+    search_parser.add_argument("query", help="search query")
+    search_parser.add_argument("--limit", type=int, default=10)
+    search_parser.add_argument("--json", action="store_true", help="emit JSON")
+    add_common_db_arg(search_parser)
+
+    get_parser = subparsers.add_parser("get", help="show one artifact by id")
+    get_parser.add_argument("artifact_id")
+    get_parser.add_argument("--json", action="store_true", help="emit JSON")
+    add_common_db_arg(get_parser)
+
+    neighbors_parser = subparsers.add_parser("neighbors", help="show graph neighbors for one artifact")
+    neighbors_parser.add_argument("artifact_id")
+    neighbors_parser.add_argument("--json", action="store_true", help="emit JSON")
+    add_common_db_arg(neighbors_parser)
+
+    evaluate_parser = subparsers.add_parser(
+        "evaluate",
+        help="replay positive feedback labels against the current search index",
+    )
+    evaluate_parser.add_argument("--usage-db", type=Path, default=None, help="usage.sqlite path (default: index directory)")
+    evaluate_parser.add_argument("--json", action="store_true", help="emit JSON")
+    evaluate_parser.add_argument("--details", action="store_true", help="include per-query ranks and top result IDs")
+    add_common_db_arg(evaluate_parser)
+
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        aliases=["smoke"],
+        help="check runtime config, paths, index presence, and optional smoke build/search",
+    )
+    _add_doctor_args(doctor_parser)
+
+    install_skill_parser = subparsers.add_parser(
+        "install-router-skill",
+        help="install the bundled router skill into the active Duckwork profile",
+    )
+    _add_install_router_skill_args(install_skill_parser)
+
+    _add_okf_parser(subparsers)
+    return parser.parse_args(argv)
+
+
+def _build_config_from_args(args: argparse.Namespace) -> Config:
+    if args.from_duckwork_config:
+        cfg = resolve_config(args.duckwork_home)
+        updates: dict[str, Any] = {}
+        if args.root is not None:
+            updates["source_root"] = _resolved(args.root)
+            updates["source_root_source"] = "cli"
+            updates["warnings"] = ()
+            if cfg.include_markdown_docs_source == "default":
+                updates["index_settings"] = replace(cfg.index_settings, include_markdown_docs=True)
+                updates["include_markdown_docs_source"] = "cli"
+        if args.output_dir is not None:
+            updates["state_dir"] = _resolved(args.output_dir)
+            updates["state_dir_source"] = "cli"
+        return replace(cfg, **updates) if updates else cfg
+
+    duckwork_home = _resolved(args.duckwork_home) if args.duckwork_home is not None else _resolved(_duckwork_home_from_env())
+    source_root = _resolved(args.root) if args.root is not None else _resolved(_DEFAULT_ROOT)
+    state_dir = _resolved(args.output_dir) if args.output_dir is not None else _resolved(_default_output_dir(duckwork_home))
+    return Config(
+        source_root,
+        duckwork_home,
+        state_dir,
+        IndexSettings(),
+        source_root_source="cli" if args.root is not None else "cwd",
+        state_dir_source="cli" if args.output_dir is not None else "default",
+    )
+
+
+def _db_from_args(args: argparse.Namespace) -> tuple[Path, tuple[str, ...], Config]:
+    if args.from_duckwork_config:
+        cfg = resolve_config(args.duckwork_home)
+        db_path = _resolved(args.db) if args.db is not None else cfg.state_dir / "index.sqlite"
+        if args.db is not None:
+            cfg = replace(cfg, state_dir=db_path.parent, state_dir_source="cli")
+        return db_path, cfg.warnings, cfg
+    duckwork_home = _resolved(args.duckwork_home) if args.duckwork_home is not None else _resolved(_duckwork_home_from_env())
+    db_path = _resolved(args.db) if args.db is not None else _default_output_dir(duckwork_home) / "index.sqlite"
+    cfg = Config(
+        _resolved(_DEFAULT_ROOT),
+        duckwork_home,
+        db_path.parent,
+        IndexSettings(),
+        source_root_source="cwd",
+        state_dir_source="cli" if args.db is not None else "default",
+    )
+    return db_path, (), cfg
+
+
+def _okf_config_from_args(args: argparse.Namespace) -> Config:
+    cfg = resolve_config(args.duckwork_home) if args.from_duckwork_config else Config(
+        _resolved(_DEFAULT_ROOT),
+        _resolved(args.duckwork_home) if args.duckwork_home is not None else _resolved(_duckwork_home_from_env()),
+        _default_output_dir(_resolved(args.duckwork_home) if args.duckwork_home is not None else _resolved(_duckwork_home_from_env())),
+        IndexSettings(),
+        source_root_source="cwd",
+        state_dir_source="default",
+    )
+    if args.state_dir is not None:
+        cfg = replace(cfg, state_dir=_resolved(args.state_dir), state_dir_source="cli")
+    return cfg
+
+
+def _emit_payload(payload: dict[str, Any], *, json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        for key, value in payload.items():
+            if isinstance(value, (dict, list)):
+                print(f"{key}: {json.dumps(value, ensure_ascii=False, sort_keys=True)}")
+            else:
+                print(f"{key}: {value}")
+
+
+def _emit_newer_index_error(exc: NewerIndexFormatError, *, json_output: bool) -> None:
+    payload = {
+        "success": False,
+        "error_code": "newer_index_format",
+        "error": str(exc),
+        "expected_index_format_version": exc.expected_version,
+        "actual_index_format_version": exc.actual_version,
+    }
+    if json_output:
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    else:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+
+def _install_router_skill_payload(cfg: Config, *, force: bool) -> tuple[dict[str, Any], int]:
+    source = _bundled_router_skill_path()
+    target = _configured_router_skill_path(cfg)
+    base: dict[str, Any] = {
+        "source": str(source),
+        "target": str(target),
+    }
+    try:
+        if cfg.router_skill_path is not None:
+            enrollment_error = _router_skill_enrollment_error(cfg.duckwork_home, target)
+            if enrollment_error is not None:
+                return {
+                    **base,
+                    "success": False,
+                    "status": "custom_invalid",
+                    "force_required": False,
+                    "error": enrollment_error,
+                }, 1
+            if not target.is_file():
+                return {
+                    **base,
+                    "success": False,
+                    "status": "custom_missing",
+                    "force_required": False,
+                    "error": "configured custom local-knowledge-router skill is missing",
+                }, 1
+            skill_name = _router_skill_frontmatter_name(target)
+            if skill_name != "local-knowledge-router":
+                return {
+                    **base,
+                    "success": False,
+                    "status": "custom_invalid",
+                    "force_required": False,
+                    "error": (
+                        "configured custom router skill has frontmatter name "
+                        f"{skill_name!r}; expected 'local-knowledge-router'"
+                    ),
+                }, 1
+            return {
+                **base,
+                "success": True,
+                "status": "current",
+                "router_skill_mode": "custom",
+                "overwritten": False,
+                "message": (
+                    "configured custom local-knowledge-router skill is active; "
+                    "bundled installation skipped"
+                ),
+            }, 0
+
+        if not source.is_file():
+            return {
+                **base,
+                "success": False,
+                "status": "error",
+                "error": "bundled local-knowledge-router skill is missing",
+            }, 1
+        bundled_content = source.read_bytes()
+
+        safety_error = _router_target_safety_error(cfg.duckwork_home, target)
+        if safety_error is not None:
+            return {
+                **base,
+                "success": False,
+                "status": "conflict",
+                "force_required": False,
+                "error": safety_error,
+            }, 1
+
+        if target.exists():
+            if not target.is_file():
+                return {
+                    **base,
+                    "success": False,
+                    "status": "conflict",
+                    "force_required": False,
+                    "error": "router skill target exists but is not a regular file",
+                }, 1
+            existing_content = target.read_bytes()
+            if existing_content == bundled_content:
+                return {
+                    **base,
+                    "success": True,
+                    "status": "current",
+                    "overwritten": False,
+                    "message": "normal local-knowledge-router skill is already current",
+                }, 0
+            if not force:
+                return {
+                    **base,
+                    "success": False,
+                    "status": "conflict",
+                    "force_required": True,
+                    "error": (
+                        "a different local-knowledge-router skill already exists; "
+                        "review it before rerunning with --force"
+                    ),
+                }, 1
+            overwritten = True
+        else:
+            overwritten = False
+
+        safety_error = _router_target_safety_error(cfg.duckwork_home, target)
+        if safety_error is not None:
+            return {
+                **base,
+                "success": False,
+                "status": "conflict",
+                "force_required": False,
+                "error": safety_error,
+            }, 1
+        _atomic_write_bytes(target, bundled_content)
+    except (OSError, UnicodeError) as exc:
+        return {
+            **base,
+            "success": False,
+            "status": "error",
+            "error": f"failed to install router skill: {type(exc).__name__}: {exc}",
+        }, 1
+    return {
+        **base,
+        "success": True,
+        "status": "installed",
+        "overwritten": overwritten,
+        "message": "installed normal local-knowledge-router skill",
+    }, 0
+
+
+def _okf_status_payload(cfg: Config, *, limit: int) -> dict[str, Any]:
+    pending = okf.pending_candidates(cfg.state_dir, limit=max(1, limit), min_use_count=cfg.okf.min_use_count)
+    errors = okf.error_candidates(cfg.state_dir, limit=max(1, limit))
+    return {
+        "success": True,
+        "state_dir": str(cfg.state_dir),
+        "okf_dir": str(okf.okf_dir(cfg.state_dir)),
+        "queue_db": str(okf.okf_queue_db_path(cfg.state_dir)),
+        "counts": okf.queue_counts(cfg.state_dir),
+        "pending": [okf.candidate_packet(row, cfg.state_dir) for row in pending],
+        "errors": [okf.candidate_packet(row, cfg.state_dir) for row in errors],
+    }
+
+
+def _handle_okf_command(args: argparse.Namespace) -> int:
+    cfg = _okf_config_from_args(args)
+    _print_warnings(cfg.warnings)
+    if args.okf_command == "status":
+        _emit_payload(_okf_status_payload(cfg, limit=args.limit), json_output=args.json)
+        return 0
+    if args.okf_command == "claim":
+        min_use_count = cfg.okf.min_use_count if args.min_use_count is None else max(1, int(args.min_use_count))
+        claimed = okf.claim_candidates(
+            cfg.state_dir,
+            limit=max(1, int(args.limit)),
+            min_use_count=min_use_count,
+            claim_token=args.claim_token,
+        )
+        packets = [okf.candidate_packet(row, cfg.state_dir) for row in claimed]
+        payload = {
+            "success": True,
+            "state_dir": str(cfg.state_dir),
+            "claim_token": packets[0].get("claim_token") if packets else None,
+            "count": len(packets),
+            "candidates": packets,
+        }
+        _emit_payload(payload, json_output=args.json)
+        return 0
+    if args.okf_command == "validate":
+        payload = okf.validate_okf_file(cfg.state_dir, claim_token=args.claim_token, path=args.path)
+        payload["success"] = bool(payload["valid"])
+        _emit_payload(payload, json_output=args.json)
+        return 0 if payload["valid"] else 1
+    if args.okf_command == "complete":
+        validation = okf.validate_okf_file(cfg.state_dir, claim_token=args.claim_token, path=args.path)
+        if validation.get("tool") != args.tool:
+            validation.setdefault("errors", []).append("--tool does not match OKF frontmatter tool")
+            validation["valid"] = False
+        if not validation["valid"]:
+            validation["success"] = False
+            _emit_payload(validation, json_output=args.json)
+            return 1
+        marked = okf.mark_candidate_done(cfg.state_dir, tool_name=args.tool, claim_token=args.claim_token, okf_path=args.path)
+        payload = {"success": marked, "tool": args.tool, "path": str(args.path), "claim_token": args.claim_token}
+        if not marked:
+            payload["errors"] = ["no claimed candidate was marked done"]
+        _emit_payload(payload, json_output=args.json)
+        return 0 if marked else 1
+    if args.okf_command == "fail":
+        marked = okf.mark_candidate_error(cfg.state_dir, tool_name=args.tool, claim_token=args.claim_token, error=args.error)
+        payload = {"success": marked, "tool": args.tool, "claim_token": args.claim_token}
+        if not marked:
+            payload["errors"] = ["no claimed candidate was marked failed"]
+        _emit_payload(payload, json_output=args.json)
+        return 0 if marked else 1
+    if args.okf_command == "retry":
+        retried = okf.retry_error_candidate(cfg.state_dir, tool_name=args.tool)
+        payload = {"success": retried, "tool": args.tool}
+        if not retried:
+            payload["errors"] = ["candidate is missing or not in terminal error state"]
+        _emit_payload(payload, json_output=args.json)
+        return 0 if retried else 1
+    return 1
+
+
+def _doctor_payload(
+    args: argparse.Namespace,
+    *,
+    build_index_fn=build_index,
+    search_index_fn=search_index,
+    service: LocalKnowledgeService | None = None,
+) -> tuple[dict[str, Any], int]:
+    cfg = service.config if service is not None else resolve_config(args.duckwork_home)
+    service = service or _service(
+        cfg,
+        build_index_fn=build_index_fn,
+        search_index_fn=search_index_fn,
+    )
+    db_path = cfg.state_dir / "index.sqlite"
+    payload: dict[str, Any] = {
+        "success": True,
+        "plugin_version": __version__,
+        "duckwork_home": str(cfg.duckwork_home),
+        "source_root": str(cfg.source_root),
+        "source_root_source": cfg.source_root_source,
+        "state_dir": str(cfg.state_dir),
+        "state_dir_source": cfg.state_dir_source,
+        "include_markdown_docs_source": cfg.include_markdown_docs_source,
+        "db_path": str(db_path),
+        "warnings": list(cfg.warnings),
+        "checks": [],
+    }
+    errors: list[str] = []
+
+    def check(name: str, ok: bool, detail: str, *, fatal: bool = False) -> None:
+        payload["checks"].append({"name": name, "ok": ok, "detail": detail, "fatal": fatal})
+        if fatal and not ok:
+            errors.append(detail)
+
+    check("duckwork_home_exists", cfg.duckwork_home.exists(), str(cfg.duckwork_home), fatal=True)
+    check("source_root_exists", cfg.source_root.exists(), str(cfg.source_root), fatal=True)
+    check("state_dir_parent_exists", cfg.state_dir.parent.exists(), str(cfg.state_dir.parent), fatal=False)
+    check("index_exists", db_path.exists(), str(db_path), fatal=False)
+
+    bundled_router_skill = _bundled_router_skill_path()
+    installed_router_skill = _configured_router_skill_path(cfg)
+    router_skill_mode = "custom" if cfg.router_skill_path is not None else "bundled"
+    payload["router_skill_mode"] = router_skill_mode
+    payload["router_skill_path"] = str(installed_router_skill)
+    payload["router_skill_path_source"] = cfg.router_skill_path_source
+    router_skill_installed = installed_router_skill.is_file()
+    install_command = "duckwork local-knowledge install-router-skill"
+    if router_skill_mode == "custom":
+        enrollment_error = _router_skill_enrollment_error(cfg.duckwork_home, installed_router_skill)
+        check(
+            "router_skill_path_enrolled",
+            enrollment_error is None,
+            str(installed_router_skill) if enrollment_error is None else enrollment_error,
+            fatal=False,
+        )
+    check(
+        "router_skill_installed",
+        router_skill_installed,
+        str(installed_router_skill)
+        if router_skill_installed
+        else (
+            f"missing configured custom router skill {installed_router_skill}"
+            if router_skill_mode == "custom"
+            else f"missing {installed_router_skill}; run `{install_command}`"
+        ),
+        fatal=False,
+    )
+    if router_skill_mode == "custom":
+        router_skill_name: str | None = None
+        router_skill_identity_error: str | None = None
+        if router_skill_installed:
+            try:
+                router_skill_name = _router_skill_frontmatter_name(installed_router_skill)
+            except (OSError, UnicodeError) as exc:
+                router_skill_identity_error = f"failed to read configured custom router skill: {type(exc).__name__}: {exc}"
+        router_skill_identity = router_skill_name == "local-knowledge-router"
+        check(
+            "router_skill_identity",
+            router_skill_identity,
+            "configured custom router skill has frontmatter name 'local-knowledge-router'"
+            if router_skill_identity
+            else (
+                router_skill_identity_error
+                or (
+                    "configured custom router skill has frontmatter name "
+                    f"{router_skill_name!r}; expected frontmatter name 'local-knowledge-router'"
+                )
+            ),
+            fatal=False,
+        )
+        check(
+            "router_skill_matches_plugin",
+            router_skill_identity,
+            (
+                "explicit custom router skill is valid; bundled byte equality is intentionally not required"
+                if router_skill_identity
+                else "configured custom router skill is invalid; bundled byte equality is not applicable"
+            ),
+            fatal=False,
+        )
+    else:
+        router_skill_matches = False
+        if router_skill_installed and bundled_router_skill.is_file():
+            try:
+                router_skill_matches = installed_router_skill.read_bytes() == bundled_router_skill.read_bytes()
+            except OSError:
+                router_skill_matches = False
+        check(
+            "router_skill_matches_plugin",
+            router_skill_matches,
+            "normal router skill matches the bundled plugin version"
+            if router_skill_matches
+            else (
+                "normal router skill differs from the bundled plugin version; "
+                f"review it before running `{install_command} --force`"
+                if router_skill_installed
+                else "cannot compare until the normal router skill is installed"
+            ),
+            fatal=False,
+        )
+    check(
+        "okf_auto_generate",
+        cfg.okf.auto_generate,
+        "enabled; automatic OKF generation uses additional model tokens"
+        if cfg.okf.auto_generate
+        else (
+            "disabled; full automatic OKF generation is unavailable. Enabling it uses additional "
+            "model tokens: `duckwork config set local_knowledge.okf.auto_generate true`"
+        ),
+        fatal=False,
+    )
+
+    if args.rebuild and not errors:
+        try:
+            artifacts, edges, build_meta = service.rebuild()
+        except Exception as exc:
+            payload["rebuilt"] = False
+            check("rebuild_failed", False, f"{type(exc).__name__}: {exc}", fatal=True)
+        else:
+            payload.update(build_meta)
+            payload["artifact_count"] = len(artifacts)
+            payload["artifact_counts_by_type"] = index.artifact_type_counts(artifacts)
+            payload["edge_count"] = len(edges)
+            check("index_exists_after_rebuild", db_path.exists(), str(db_path), fatal=True)
+    else:
+        payload["rebuilt"] = False
+
+    query = str(args.query or "").strip()
+    if query:
+        if errors:
+            warning = "smoke query skipped because an earlier doctor check failed"
+            payload["warnings"].append(warning)
+        elif db_path.exists():
+            try:
+                rows, _query_meta = service.search(
+                    query,
+                    limit=max(1, min(50, int(args.limit))),
+                    db_path=db_path,
+                    ensure=False,
+                )
+            except Exception as exc:
+                check("smoke_search_failed", False, f"{type(exc).__name__}: {exc}", fatal=True)
+            else:
+                payload["smoke_query"] = query
+                payload["smoke_result_count"] = len(rows)
+                payload["smoke_top_ids"] = [str(row.get("id")) for row in rows[:5]]
+        else:
+            warning = "smoke query skipped because index.sqlite is missing; rerun with --rebuild"
+            payload["warnings"].append(warning)
+            check("smoke_query_index_exists", False, warning, fatal=True)
+
+    if errors:
+        payload["success"] = False
+        payload["errors"] = errors
+    payload.update(index.index_metadata(db_path))
+    return payload, 0 if payload["success"] else 1
+
+
+def _print_doctor(payload: dict[str, Any]) -> None:
+    print("local_knowledge doctor")
+    print(f"  Duckwork home: {payload['duckwork_home']}")
+    print(f"  Source root: {payload['source_root']} ({payload['source_root_source']})")
+    print(f"  State dir:   {payload['state_dir']} ({payload['state_dir_source']})")
+    print(f"  Index DB:    {payload['db_path']}")
+    for check in payload["checks"]:
+        status = "ok" if check["ok"] else "WARN" if not check["fatal"] else "ERROR"
+        print(f"  {status}: {check['name']} - {check['detail']}")
+    if payload.get("rebuilt"):
+        print(f"  Built {payload.get('artifact_count', 0)} artifacts and {payload.get('edge_count', 0)} edges")
+    if payload.get("smoke_query"):
+        print(
+            f"  Smoke query {payload['smoke_query']!r}: "
+            f"{payload.get('smoke_result_count', 0)} result(s)"
+        )
+        if payload.get("smoke_top_ids"):
+            print(f"  Top IDs: {', '.join(payload['smoke_top_ids'])}")
+    _print_warnings(payload.get("warnings", []))
+
+
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    build_index_fn=build_index,
+    search_index_fn=search_index,
+    get_artifact_fn=get_artifact,
+    get_neighbors_fn=get_neighbors,
+) -> int:
+    args = parse_args(argv)
+    if args.command == "install-router-skill":
+        cfg = resolve_config(args.duckwork_home)
+        payload, status = _install_router_skill_payload(cfg, force=bool(args.force))
+        _emit_payload(payload, json_output=bool(args.json))
+        return status
+    if args.command == "okf":
+        return _handle_okf_command(args)
+    if args.command == "build":
+        cfg = _build_config_from_args(args)
+        service = _service(
+            cfg,
+            build_index_fn=build_index_fn,
+            search_index_fn=search_index_fn,
+            get_artifact_fn=get_artifact_fn,
+            get_neighbors_fn=get_neighbors_fn,
+        )
+        db_path = cfg.state_dir / "index.sqlite"
+        started = time.perf_counter()
+        _print_warnings(cfg.warnings)
+        try:
+            artifacts, edges, meta = service.rebuild()
+        except Exception as exc:
+            message = f"cli_build failed: {type(exc).__name__}: {exc}"
+            _record_cli_usage(
+                service,
+                tool="cli_build",
+                success=False,
+                rebuild_requested=True,
+                rebuilt=False,
+                error=message,
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                db_path=db_path,
+                index_meta=index.index_metadata(db_path),
+            )
+            if isinstance(exc, NewerIndexFormatError):
+                _emit_newer_index_error(exc, json_output=False)
+                return 1
+            raise
+        build_duration_ms = int(meta.get("build_duration_ms") or (time.perf_counter() - started) * 1000)
+        counts = index.artifact_type_counts(artifacts)
+        _record_cli_usage(
+            service,
+            tool="cli_build",
+            success=True,
+            rebuild_requested=True,
+            rebuilt=True,
+            result_count=len(artifacts),
+            latency_ms=build_duration_ms,
+            db_path=db_path,
+            index_meta=meta,
+        )
+        print(f"Built {len(artifacts)} artifacts and {len(edges)} edges")
+        for artifact_type, count in sorted(counts.items()):
+            print(f"  {artifact_type}: {count}")
+        print(f"SQLite: {cfg.state_dir / 'index.sqlite'}")
+        print(f"JSONL:  {cfg.state_dir / 'index.jsonl'}")
+        return 0
+
+    if args.command == "search":
+        db_path, warnings, cfg = _db_from_args(args)
+        service = _service(
+            cfg,
+            build_index_fn=build_index_fn,
+            search_index_fn=search_index_fn,
+            get_artifact_fn=get_artifact_fn,
+            get_neighbors_fn=get_neighbors_fn,
+        )
+        managed = bool(args.from_duckwork_config and args.db is None)
+        started = time.perf_counter()
+        # Preserve the full CLI page selected by the caller. Unlike the native
+        # tool, the CLI has no schema-level 30-result maximum.
+        search_limit = int(args.limit)
+        _print_warnings(warnings)
+        meta = {}
+        try:
+            rows, meta = service.search(
+                args.query,
+                limit=search_limit,
+                db_path=None if managed else db_path,
+                ensure=managed,
+            )
+            routing_trace = meta.pop(ROUTING_TRACE_METADATA_KEY, None)
+        except Exception as exc:
+            message = f"cli_search failed: {type(exc).__name__}: {exc}"
+            _record_cli_usage(
+                service,
+                tool="knowledge_search",
+                success=False,
+                query=args.query,
+                limit_value=search_limit,
+                error=message,
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                db_path=db_path,
+                index_meta=meta or index.index_metadata(db_path),
+            )
+            if isinstance(exc, NewerIndexFormatError):
+                _emit_newer_index_error(exc, json_output=args.json)
+                return 1
+            raise
+        final_ids = [str(row.get("id")) for row in rows]
+        if isinstance(routing_trace, SearchRoutingTrace):
+            baseline_ids = list(routing_trace.baseline_ids)
+            route_decision = routing_trace.decision
+            route_feedback_id = route_decision.feedback_id
+            route_artifact_id = route_decision.artifact_id
+            route_outcome = route_decision.outcome.value
+            feedback_max_id = route_decision.feedback_max_id
+            implicit_feedback_max_id = route_decision.implicit_feedback_max_id
+        else:
+            baseline_ids = final_ids
+            route_feedback_id = None
+            route_artifact_id = None
+            route_outcome = "none"
+            feedback_max_id = None
+            implicit_feedback_max_id = None
+        implicit_settings = getattr(getattr(service, "config", None), "implicit_feedback", None)
+        _record_cli_usage(
+            service,
+            tool="knowledge_search",
+            success=True,
+            query=args.query,
+            limit_value=search_limit,
+            rebuilt=bool(meta.get("rebuilt")),
+            result_count=len(rows),
+            top_ids=final_ids,
+            top_types=[str(row.get("type")) for row in rows],
+            baseline_top_ids=baseline_ids,
+            route_feedback_id=route_feedback_id,
+            route_artifact_id=route_artifact_id,
+            route_outcome=route_outcome,
+            feedback_max_id=feedback_max_id,
+            implicit_feedback_max_id=implicit_feedback_max_id,
+            implicit_feedback_enabled=(
+                None
+                if implicit_settings is None
+                else (implicit_settings.enabled if managed else False)
+            ),
+            implicit_min_confirmations=(
+                None if implicit_settings is None else implicit_settings.min_confirmations
+            ),
+            implicit_max_generic_queries=(
+                None if implicit_settings is None else implicit_settings.max_generic_queries
+            ),
+            latency_ms=int((time.perf_counter() - started) * 1000),
+            db_path=db_path,
+            index_meta=meta,
+        )
+        if args.json:
+            print(json.dumps(rows, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print_results(rows)
+        return 0
+
+    if args.command == "get":
+        db_path, warnings, cfg = _db_from_args(args)
+        service = _service(
+            cfg,
+            build_index_fn=build_index_fn,
+            search_index_fn=search_index_fn,
+            get_artifact_fn=get_artifact_fn,
+            get_neighbors_fn=get_neighbors_fn,
+        )
+        managed = bool(args.from_duckwork_config and args.db is None)
+        started = time.perf_counter()
+        _print_warnings(warnings)
+        meta = {}
+        try:
+            row, meta = service.get(
+                args.artifact_id,
+                db_path=None if managed else db_path,
+                ensure=managed,
+            )
+        except Exception as exc:
+            message = f"cli_get failed: {type(exc).__name__}: {exc}"
+            _record_cli_usage(
+                service,
+                tool="knowledge_get",
+                success=False,
+                artifact_id=args.artifact_id,
+                error=message,
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                db_path=db_path,
+                index_meta=meta or index.index_metadata(db_path),
+            )
+            if isinstance(exc, NewerIndexFormatError):
+                _emit_newer_index_error(exc, json_output=args.json)
+                return 1
+            raise
+        if row is None:
+            _record_cli_usage(
+                service,
+                tool="knowledge_get",
+                success=False,
+                artifact_id=args.artifact_id,
+                rebuilt=bool(meta.get("rebuilt")),
+                error=f"Artifact not found: {args.artifact_id}",
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                db_path=db_path,
+                index_meta=meta,
+            )
+            print(f"Artifact not found: {args.artifact_id}", file=sys.stderr)
+            return 1
+        _record_cli_usage(
+            service,
+            tool="knowledge_get",
+            success=True,
+            artifact_id=args.artifact_id,
+            rebuilt=bool(meta.get("rebuilt")),
+            result_count=1,
+            latency_ms=int((time.perf_counter() - started) * 1000),
+            db_path=db_path,
+            index_meta=meta,
+        )
+        if args.json:
+            print(json.dumps(row, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print_results([row])
+        return 0
+
+    if args.command == "neighbors":
+        db_path, warnings, cfg = _db_from_args(args)
+        service = _service(
+            cfg,
+            build_index_fn=build_index_fn,
+            search_index_fn=search_index_fn,
+            get_artifact_fn=get_artifact_fn,
+            get_neighbors_fn=get_neighbors_fn,
+        )
+        managed = bool(args.from_duckwork_config and args.db is None)
+        started = time.perf_counter()
+        _print_warnings(warnings)
+        meta = {}
+        try:
+            rows, meta = service.neighbors(
+                args.artifact_id,
+                db_path=None if managed else db_path,
+                ensure=managed,
+            )
+        except Exception as exc:
+            message = f"cli_neighbors failed: {type(exc).__name__}: {exc}"
+            _record_cli_usage(
+                service,
+                tool="knowledge_neighbors",
+                success=False,
+                artifact_id=args.artifact_id,
+                error=message,
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                db_path=db_path,
+                index_meta=meta or index.index_metadata(db_path),
+            )
+            if isinstance(exc, NewerIndexFormatError):
+                _emit_newer_index_error(exc, json_output=args.json)
+                return 1
+            raise
+        _record_cli_usage(
+            service,
+            tool="knowledge_neighbors",
+            success=True,
+            artifact_id=args.artifact_id,
+            rebuilt=bool(meta.get("rebuilt")),
+            result_count=len(rows),
+            top_ids=[str(row.get("id")) for row in rows[:5]],
+            top_types=[str(row.get("type")) for row in rows[:5]],
+            latency_ms=int((time.perf_counter() - started) * 1000),
+            db_path=db_path,
+            index_meta=meta,
+        )
+        if args.json:
+            print(json.dumps(rows, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print_results(rows)
+        return 0
+
+    if args.command == "evaluate":
+        db_path, warnings, cfg = _db_from_args(args)
+        service = _service(
+            cfg,
+            build_index_fn=build_index_fn,
+            search_index_fn=search_index_fn,
+            get_artifact_fn=get_artifact_fn,
+            get_neighbors_fn=get_neighbors_fn,
+        )
+        _print_warnings(warnings)
+        usage_db_path = _resolved(args.usage_db) if args.usage_db is not None else db_path.parent / "usage.sqlite"
+        report = service.evaluate(db_path=db_path, usage_db_path=usage_db_path)
+        metrics = report.as_dict() if args.details else report.metrics.as_dict()
+        if args.json:
+            print(json.dumps(metrics, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print("local_knowledge evaluation")
+            print(f"  Index DB: {db_path}")
+            print(f"  Usage DB: {usage_db_path}")
+            for key, value in report.metrics.as_dict().items():
+                if isinstance(value, float):
+                    print(f"  {key}: {value:.3f}")
+                else:
+                    print(f"  {key}: {value}")
+            if args.details:
+                print("  cases:")
+                for case in report.cases:
+                    exact = case.exact_rank if case.exact_rank is not None else "miss"
+                    parent = case.parent_equiv_rank if case.parent_equiv_rank is not None else "miss"
+                    expected = ", ".join(case.expected_ids)
+                    top_ids = ", ".join(case.top_ids)
+                    print(
+                        f"    - {case.query}: expected=[{expected}], exact={exact}, parent={parent}, top_ids=[{top_ids}]"
+                    )
+        return 0
+
+    if args.command in {"doctor", "smoke"}:
+        started = time.perf_counter()
+        doctor_cfg: Config | None = None
+        doctor_service: LocalKnowledgeService | None = None
+        try:
+            doctor_cfg = resolve_config(args.duckwork_home)
+            doctor_service = _service(
+                doctor_cfg,
+                build_index_fn=build_index_fn,
+                search_index_fn=search_index_fn,
+                get_artifact_fn=get_artifact_fn,
+                get_neighbors_fn=get_neighbors_fn,
+            )
+            payload, status = _doctor_payload(
+                args,
+                build_index_fn=build_index_fn,
+                search_index_fn=search_index_fn,
+                service=doctor_service,
+            )
+        except Exception as exc:
+            payload = {
+                "success": False,
+                "errors": [f"doctor failed: {type(exc).__name__}: {exc}"],
+                "warnings": [],
+                "checks": [],
+            }
+            status = 1
+        doctor_db_path = Path(str(payload["db_path"])) if payload.get("db_path") else None
+        _record_cli_usage(
+            doctor_service,
+            tool="cli_doctor",
+            success=status == 0,
+            query=str(args.query or ""),
+            rebuild_requested=bool(args.rebuild),
+            rebuilt=bool(payload.get("rebuilt")) if "rebuilt" in payload else None,
+            error="; ".join(str(item) for item in payload.get("errors", [])),
+            result_count=payload.get("smoke_result_count"),
+            top_ids=[str(item) for item in payload.get("smoke_top_ids", [])],
+            latency_ms=int((time.perf_counter() - started) * 1000),
+            db_path=doctor_db_path,
+            index_meta=payload,
+        )
+        if args.json:
+            print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        elif "duckwork_home" in payload:
+            _print_doctor(payload)
+            for error in payload.get("errors", []):
+                print(f"ERROR: {error}", file=sys.stderr)
+        else:
+            for error in payload.get("errors", ["doctor failed"]):
+                print(f"ERROR: {error}", file=sys.stderr)
+        return status
+
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,34 @@
+# Bytecode & Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Tests & Coverage
+# Directory stays out of the catalog clone except the placeholder gate,
+# which `duckwork plugins validate` does not cover.
+tests/*
+test_*.py
+*.test.py
+!tests/test_locale_placeholders.py
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local configurations & backups
+.env
+*.local
+*.bak*
+*.tmp
+*.log
+summary.md
+
+# Private specifications & agent guidelines (git-spec)
+AGENTS.md
+planning-with-files/
+大纲.md
+git规范.md
+
+# OS metadata
+.DS_Store
+Thumbs.db

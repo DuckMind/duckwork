@@ -1,0 +1,764 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "memoria",
+  "content_id": "3e2c93466bae",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 2731,
+      "mode": "100644",
+      "path": "CLOUD_ACCEPTANCE.md",
+      "sha256": "ca3e1de28cee62e6e9b60624061345d56ddd028037fdb0c61bd7d6e88a86ce80"
+    },
+    {
+      "bytes": 11309,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607"
+    },
+    {
+      "bytes": 17224,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "e0bab75313622ef5b7f1b653556af242b244b0ec655452a8b3be7e037f6f7808"
+    },
+    {
+      "bytes": 11245,
+      "mode": "100644",
+      "path": "README.zh-CN.md",
+      "sha256": "d27da4fb1c75be2b3670726f7be61746d81194380599a1f74adadfc645b357ae"
+    },
+    {
+      "bytes": 3711,
+      "mode": "100644",
+      "path": "RELEASE.md",
+      "sha256": "fbd65c046fa1f32c0868532e6830d3bd5107673c95677485d59e712965ace182"
+    },
+    {
+      "bytes": 3808,
+      "mode": "100644",
+      "path": "REVIEW_FIXES.md",
+      "sha256": "25d7bb24e76e334c9c018ee7eb8e88a7fb29ba4461dcd3e28623dbf5c2115e39"
+    },
+    {
+      "bytes": 30978,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "2d3bd932d9cc722fc9e62e102588f34306b352939a733276f6669580b9e0bb72"
+    },
+    {
+      "bytes": 11309,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607"
+    },
+    {
+      "bytes": 5392,
+      "mode": "100644",
+      "path": "client.py",
+      "sha256": "db6f83a8e33d6f3fae403cdcc24679ce6fe24ac5b6824dd2caff59ca52ba1205"
+    },
+    {
+      "bytes": 3700,
+      "mode": "100644",
+      "path": "config.py",
+      "sha256": "ee686e8a6547f0d9df19eab455857d1775e9605a78c122822003f8373ec65e0e"
+    },
+    {
+      "bytes": 1100,
+      "mode": "100644",
+      "path": "config_schema.py",
+      "sha256": "beb170329925651b9fc4086ab3955b079222b76a2156d69d3768d074baaeebec"
+    },
+    {
+      "bytes": 3741,
+      "mode": "100644",
+      "path": "diagnostics.py",
+      "sha256": "189b42de06c5707716d00044fe2e3dfd2d8cd2a4d00948167bc1e7dbdfa09bdb"
+    },
+    {
+      "bytes": 6297,
+      "mode": "100644",
+      "path": "outbox.py",
+      "sha256": "d0e705f7d60942a8fb4335fca0278b4a0bbb406f71e3f8e5c2da4aaa0dbcec90"
+    },
+    {
+      "bytes": 163,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "c1ec4c1299750c0e7462467b42a31ed865709efdec609d01b16a339a36527217"
+    },
+    {
+      "bytes": 305,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "8346ab70e8e2eb84595c73290819b3683c275c47dd34711cff4719dbed8683c1"
+    },
+    {
+      "bytes": 12087,
+      "mode": "100644",
+      "path": "tests/cloud_smoke.py",
+      "sha256": "e69b964075bcc3705ae6a2f590db1091417b3eefb9563b050cfdfc692ec6e7bf"
+    },
+    {
+      "bytes": 5798,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "e69620179d98a9fedda6c279e06cd02e335fd94897513895ad861799c1b6213b"
+    },
+    {
+      "bytes": 14644,
+      "mode": "100644",
+      "path": "tests/test_capture_dedup.py",
+      "sha256": "c72bd17c4bf90391ea7e71dd108b4159ab807e8db4b6d3a5c369eddbcca0e404"
+    },
+    {
+      "bytes": 5279,
+      "mode": "100644",
+      "path": "tests/test_client_config.py",
+      "sha256": "9b07a6ce83592eb91aa172e78963e75af7900e6a14c0bbf6a3f46578f5f4d7ea"
+    },
+    {
+      "bytes": 2875,
+      "mode": "100644",
+      "path": "tests/test_cloud_smoke.py",
+      "sha256": "d804ba08a7baf1726bbd2e345cdbf305eee976f1444206e62dd9c1253c3434cb"
+    },
+    {
+      "bytes": 1231,
+      "mode": "100644",
+      "path": "tests/test_diagnostics.py",
+      "sha256": "da3a7f5de392b3acfbd4ce16fd2fc3c744489ce2c0367ea5bdb25ea437729637"
+    },
+    {
+      "bytes": 12572,
+      "mode": "100644",
+      "path": "tests/test_provider.py",
+      "sha256": "922497756dad596ae0430be533ac272b331aec249d96d9232705b42587576dd0"
+    },
+    {
+      "bytes": 16431,
+      "mode": "100644",
+      "path": "tests/test_reliability.py",
+      "sha256": "a0e9236a2b06851da68a5b4366bd1e4c8159af835288b5f38505cfc977b6ae5b"
+    },
+    {
+      "bytes": 3128,
+      "mode": "100644",
+      "path": "tools.py",
+      "sha256": "5b0dd34e11e1c9ec9fee3b2af93453bf0798cdc8f0ec23c8acee028223fb5dc3"
+    }
+  ],
+  "input_manifest_sha256": "3e2c93466bae098155b0d030f8205f255ae78395d867f81730951a4547bacc3e",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "LICENSE",
+        "sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+        "source_path": "plugins/hermes/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "CLOUD_ACCEPTANCE.md",
+      "README.md",
+      "README.zh-CN.md",
+      "RELEASE.md",
+      "REVIEW_FIXES.md",
+      "__init__.py",
+      "config.py",
+      "config_schema.py",
+      "diagnostics.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/cloud_smoke.py",
+      "tests/conftest.py",
+      "tests/test_client_config.py",
+      "tests/test_diagnostics.py",
+      "tests/test_provider.py",
+      "tests/test_reliability.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      "CLOUD_ACCEPTANCE.md",
+      "README.md",
+      "README.zh-CN.md",
+      "RELEASE.md",
+      "REVIEW_FIXES.md",
+      "__init__.py",
+      "config.py",
+      "config_schema.py",
+      "diagnostics.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/cloud_smoke.py",
+      "tests/conftest.py",
+      "tests/test_client_config.py",
+      "tests/test_diagnostics.py",
+      "tests/test_provider.py",
+      "tests/test_reliability.py"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/matrixorigin/memoria",
+    "sha": "3a5c5065b2820d56dd3d8ac8bb259a9424b1476e",
+    "subdir": "plugins/hermes"
+  },
+  "original_repo": "https://github.com/matrixorigin/memoria",
+  "original_sha": "3a5c5065b2820d56dd3d8ac8bb259a9424b1476e",
+  "original_subdir": "plugins/hermes",
+  "output_files": [
+    {
+      "path": "CLOUD_ACCEPTANCE.md",
+      "sha256": "427b7c3da98cba0e3f3a8b7e0a97e50c4186fcab8ac08bf15bdd7a6b9685aa6a",
+      "bytes": 2890,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+      "bytes": 11309,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "6cb2fb9629ec9946fa75cbfa041a36b91b9263ae12a92df8f4cb0e3f533f6370",
+      "bytes": 17465,
+      "mode": "100644"
+    },
+    {
+      "path": "README.zh-CN.md",
+      "sha256": "80d511af3024428009de29b1a03814bb50e35cf9dfda2a7844086343afdab9f9",
+      "bytes": 11462,
+      "mode": "100644"
+    },
+    {
+      "path": "RELEASE.md",
+      "sha256": "ee2a24006b03e9c42ee19f73c55b5b2d7af7e49f013a89895e6ea776f5c64d81",
+      "bytes": 3852,
+      "mode": "100644"
+    },
+    {
+      "path": "REVIEW_FIXES.md",
+      "sha256": "d0322871a679fa8bed9201d1df95edbdc9f73f05c3102ac07ba9dd077788da1d",
+      "bytes": 3965,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "fbd4f83a7898446717da01e2e0ef55928b4e13bfa2c427a9c88f45adbf65b0cb",
+      "bytes": 31142,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+      "bytes": 11309,
+      "mode": "100644"
+    },
+    {
+      "path": "client.py",
+      "sha256": "db6f83a8e33d6f3fae403cdcc24679ce6fe24ac5b6824dd2caff59ca52ba1205",
+      "bytes": 5392,
+      "mode": "100644"
+    },
+    {
+      "path": "config.py",
+      "sha256": "9c8ef245274bd6cc2f5e617658936ae2c80e5d7157e91c0b49956901a7f7166c",
+      "bytes": 3852,
+      "mode": "100644"
+    },
+    {
+      "path": "config_schema.py",
+      "sha256": "2bc380b35dffe9412d2fc8f5eabe7d25fc8f772e6f0d651404e52b413fbd53fb",
+      "bytes": 1244,
+      "mode": "100644"
+    },
+    {
+      "path": "diagnostics.py",
+      "sha256": "9a31e59b6d20b1af2728bb22de58eda126f67257f1780b1de3e047713a8404f4",
+      "bytes": 3887,
+      "mode": "100644"
+    },
+    {
+      "path": "outbox.py",
+      "sha256": "d0e705f7d60942a8fb4335fca0278b4a0bbb406f71e3f8e5c2da4aaa0dbcec90",
+      "bytes": 6297,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "9a2d28ce0ab2bf6ab96d2ea963a4b323ed8f11aed168236109732e0c2faa9b87",
+      "bytes": 307,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "2197ef725f48105185ccfa575758dc9cebd17bd700ddf96593467f810e6be1bd",
+      "bytes": 451,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/cloud_smoke.py",
+      "sha256": "26299e92c5f581949c9016fa8e374b0fa7e04bd12370613023bf7c4759b27b34",
+      "bytes": 12255,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "87ae10f40cae019fb5257fa68131ef3bbd1f200b44b773a1bcbee6d6419be1b7",
+      "bytes": 5968,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_capture_dedup.py",
+      "sha256": "c72bd17c4bf90391ea7e71dd108b4159ab807e8db4b6d3a5c369eddbcca0e404",
+      "bytes": 14644,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_client_config.py",
+      "sha256": "710ef347e9efd1802612b88867bd10e8da36052aa3941aba36277c5cdba89920",
+      "bytes": 5425,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cloud_smoke.py",
+      "sha256": "d804ba08a7baf1726bbd2e345cdbf305eee976f1444206e62dd9c1253c3434cb",
+      "bytes": 2875,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_diagnostics.py",
+      "sha256": "a3715cf604c736198848e52e2710113f57c863e3b370ed825ea0f1101db7f267",
+      "bytes": 1377,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_provider.py",
+      "sha256": "72c36ef011865c118b751d152a8ce2426e32455c1f79160d84734314d80251ff",
+      "bytes": 12722,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_reliability.py",
+      "sha256": "ef13a67e89d185b7a40e8d18c2f1fe7bb2964d8ca4102882450a254a52863229",
+      "bytes": 16583,
+      "mode": "100644"
+    },
+    {
+      "path": "tools.py",
+      "sha256": "5b0dd34e11e1c9ec9fee3b2af93453bf0798cdc8f0ec23c8acee028223fb5dc3",
+      "bytes": 3128,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "b0cc1249efc6cc73ced41ba10820c0c2056372be721c215238e65ca0727a6d90",
+  "pin_verification": {
+    "archive_bytes": 3101932,
+    "archive_sha256": "797d59ac0a80aa6e583af8e73cdd56fb67075dfe1e56e78189f662b009de2703",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "3a5c5065b2820d56dd3d8ac8bb259a9424b1476e",
+    "verified_commit_marker": "3a5c5065b2820d56dd3d8ac8bb259a9424b1476e"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "ef88adfba03b5ca762255c4363decdfcc497562b710c52954e1f44839b5066b4",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "CLOUD_ACCEPTANCE.md",
+        "input_sha256": "ca3e1de28cee62e6e9b60624061345d56ddd028037fdb0c61bd7d6e88a86ce80",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "265b71fb0978e0134cdded74c5c4a31baf8b057072bc5fda4c35ac76a032834b",
+        "source": "CLOUD_ACCEPTANCE.md",
+        "final_output_sha256": "427b7c3da98cba0e3f3a8b7e0a97e50c4186fcab8ac08bf15bdd7a6b9685aa6a",
+        "cli_destination": "CLOUD_ACCEPTANCE.md",
+        "previous_staging_sha256": "427b7c3da98cba0e3f3a8b7e0a97e50c4186fcab8ac08bf15bdd7a6b9685aa6a"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+        "source": "LICENSE",
+        "final_output_sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "e0bab75313622ef5b7f1b653556af242b244b0ec655452a8b3be7e037f6f7808",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "58917e6653c45c872422206d50b6779cd705293a0dc262d775d24aa7ad619cd5",
+        "source": "README.md",
+        "final_output_sha256": "6cb2fb9629ec9946fa75cbfa041a36b91b9263ae12a92df8f4cb0e3f533f6370",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "5770469234a875e01ff5c2dc54431186706e1834af683b64e6d31f343ba53d0b"
+      },
+      {
+        "destination": "README.zh-CN.md",
+        "input_sha256": "d27da4fb1c75be2b3670726f7be61746d81194380599a1f74adadfc645b357ae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9c8aefdcfafbdf2aa5a24d819ecbfaf0264e8a18500a591b445fbe58665dcbaa",
+        "source": "README.zh-CN.md",
+        "final_output_sha256": "80d511af3024428009de29b1a03814bb50e35cf9dfda2a7844086343afdab9f9",
+        "cli_destination": "README.zh-CN.md",
+        "previous_staging_sha256": "80d511af3024428009de29b1a03814bb50e35cf9dfda2a7844086343afdab9f9"
+      },
+      {
+        "destination": "RELEASE.md",
+        "input_sha256": "fbd65c046fa1f32c0868532e6830d3bd5107673c95677485d59e712965ace182",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a2be0f3d5bb05670ac9cfac4ba548cb78ad362094b35b07df82ffff5e6be78cd",
+        "source": "RELEASE.md",
+        "final_output_sha256": "ee2a24006b03e9c42ee19f73c55b5b2d7af7e49f013a89895e6ea776f5c64d81",
+        "cli_destination": "RELEASE.md",
+        "previous_staging_sha256": "6440614aa85597c275a4286c44d06f771dcb3879c9364ece4161adb350bac6f3"
+      },
+      {
+        "destination": "REVIEW_FIXES.md",
+        "input_sha256": "25d7bb24e76e334c9c018ee7eb8e88a7fb29ba4461dcd3e28623dbf5c2115e39",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0a60f37e4c8c2ca640207f5ede99883cd5a5c9f8f2c725ec24f58326e2ca049a",
+        "source": "REVIEW_FIXES.md",
+        "final_output_sha256": "d0322871a679fa8bed9201d1df95edbdc9f73f05c3102ac07ba9dd077788da1d",
+        "cli_destination": "REVIEW_FIXES.md",
+        "previous_staging_sha256": "d0322871a679fa8bed9201d1df95edbdc9f73f05c3102ac07ba9dd077788da1d"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "2d3bd932d9cc722fc9e62e102588f34306b352939a733276f6669580b9e0bb72",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b769148e85c425d1603db5a0a74120526740dc9dc3a2b4a2e90ba6e1adcc168",
+        "source": "__init__.py",
+        "final_output_sha256": "fbd4f83a7898446717da01e2e0ef55928b4e13bfa2c427a9c88f45adbf65b0cb",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "fbd4f83a7898446717da01e2e0ef55928b4e13bfa2c427a9c88f45adbf65b0cb"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "a6e2f408924ad44acabe43da942d149060a4e8174a8f30240a089bda10279607"
+      },
+      {
+        "destination": "client.py",
+        "input_sha256": "db6f83a8e33d6f3fae403cdcc24679ce6fe24ac5b6824dd2caff59ca52ba1205",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "db6f83a8e33d6f3fae403cdcc24679ce6fe24ac5b6824dd2caff59ca52ba1205",
+        "source": "client.py",
+        "final_output_sha256": "db6f83a8e33d6f3fae403cdcc24679ce6fe24ac5b6824dd2caff59ca52ba1205",
+        "cli_destination": "client.py",
+        "previous_staging_sha256": "db6f83a8e33d6f3fae403cdcc24679ce6fe24ac5b6824dd2caff59ca52ba1205"
+      },
+      {
+        "destination": "config.py",
+        "input_sha256": "ee686e8a6547f0d9df19eab455857d1775e9605a78c122822003f8373ec65e0e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0f5d3689ec93fb08b22a7f561d61493a0348153ab2fb7f5941365f4ac10735d4",
+        "source": "config.py",
+        "final_output_sha256": "9c8ef245274bd6cc2f5e617658936ae2c80e5d7157e91c0b49956901a7f7166c",
+        "cli_destination": "config.py",
+        "previous_staging_sha256": "9c8ef245274bd6cc2f5e617658936ae2c80e5d7157e91c0b49956901a7f7166c"
+      },
+      {
+        "destination": "config_schema.py",
+        "input_sha256": "beb170329925651b9fc4086ab3955b079222b76a2156d69d3768d074baaeebec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8ab217b94b64bd9677899e3d9e70900b84fc7f1cba37d8d8a91535dec413657d",
+        "source": "config_schema.py",
+        "final_output_sha256": "2bc380b35dffe9412d2fc8f5eabe7d25fc8f772e6f0d651404e52b413fbd53fb",
+        "cli_destination": "config_schema.py",
+        "previous_staging_sha256": "2bc380b35dffe9412d2fc8f5eabe7d25fc8f772e6f0d651404e52b413fbd53fb"
+      },
+      {
+        "destination": "diagnostics.py",
+        "input_sha256": "189b42de06c5707716d00044fe2e3dfd2d8cd2a4d00948167bc1e7dbdfa09bdb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0345199a2aea99c2be1e7146fee1940a40d1a493833bbfb0e9b0dced96320e92",
+        "source": "diagnostics.py",
+        "final_output_sha256": "9a31e59b6d20b1af2728bb22de58eda126f67257f1780b1de3e047713a8404f4",
+        "cli_destination": "diagnostics.py",
+        "previous_staging_sha256": "9a31e59b6d20b1af2728bb22de58eda126f67257f1780b1de3e047713a8404f4"
+      },
+      {
+        "destination": "outbox.py",
+        "input_sha256": "d0e705f7d60942a8fb4335fca0278b4a0bbb406f71e3f8e5c2da4aaa0dbcec90",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d0e705f7d60942a8fb4335fca0278b4a0bbb406f71e3f8e5c2da4aaa0dbcec90",
+        "source": "outbox.py",
+        "final_output_sha256": "d0e705f7d60942a8fb4335fca0278b4a0bbb406f71e3f8e5c2da4aaa0dbcec90",
+        "cli_destination": "outbox.py",
+        "previous_staging_sha256": "d0e705f7d60942a8fb4335fca0278b4a0bbb406f71e3f8e5c2da4aaa0dbcec90"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "c1ec4c1299750c0e7462467b42a31ed865709efdec609d01b16a339a36527217",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c9749f14e679c0470ead01534e92011a656d23342fbeb5f3aa7e3ea78ea89ee0",
+        "source": "plugin.yaml",
+        "final_output_sha256": "9a2d28ce0ab2bf6ab96d2ea963a4b323ed8f11aed168236109732e0c2faa9b87",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "9a2d28ce0ab2bf6ab96d2ea963a4b323ed8f11aed168236109732e0c2faa9b87"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "8346ab70e8e2eb84595c73290819b3683c275c47dd34711cff4719dbed8683c1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "40d87d6ca05a84f0e831169c0acc67f4fee2ca44326a1da9430ff1ccc3fdf80e",
+        "source": "pyproject.toml",
+        "final_output_sha256": "2197ef725f48105185ccfa575758dc9cebd17bd700ddf96593467f810e6be1bd",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "2197ef725f48105185ccfa575758dc9cebd17bd700ddf96593467f810e6be1bd"
+      },
+      {
+        "destination": "tests/cloud_smoke.py",
+        "input_sha256": "e69b964075bcc3705ae6a2f590db1091417b3eefb9563b050cfdfc692ec6e7bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "42bd8f80c5ff93ed39f28cb4d1cd5e8d621e2f8e597ef80dd1242e7c081701a7",
+        "source": "tests/cloud_smoke.py",
+        "final_output_sha256": "26299e92c5f581949c9016fa8e374b0fa7e04bd12370613023bf7c4759b27b34",
+        "cli_destination": "tests/cloud_smoke.py",
+        "previous_staging_sha256": "26299e92c5f581949c9016fa8e374b0fa7e04bd12370613023bf7c4759b27b34"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "e69620179d98a9fedda6c279e06cd02e335fd94897513895ad861799c1b6213b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "40dc23c26cddebfb4e80fe3419ca7f412ecca9444b200aba4300867e6e05ce2e",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "87ae10f40cae019fb5257fa68131ef3bbd1f200b44b773a1bcbee6d6419be1b7",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "87ae10f40cae019fb5257fa68131ef3bbd1f200b44b773a1bcbee6d6419be1b7"
+      },
+      {
+        "destination": "tests/test_capture_dedup.py",
+        "input_sha256": "c72bd17c4bf90391ea7e71dd108b4159ab807e8db4b6d3a5c369eddbcca0e404",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c72bd17c4bf90391ea7e71dd108b4159ab807e8db4b6d3a5c369eddbcca0e404",
+        "source": "tests/test_capture_dedup.py",
+        "final_output_sha256": "c72bd17c4bf90391ea7e71dd108b4159ab807e8db4b6d3a5c369eddbcca0e404",
+        "cli_destination": "tests/test_capture_dedup.py",
+        "previous_staging_sha256": "c72bd17c4bf90391ea7e71dd108b4159ab807e8db4b6d3a5c369eddbcca0e404"
+      },
+      {
+        "destination": "tests/test_client_config.py",
+        "input_sha256": "9b07a6ce83592eb91aa172e78963e75af7900e6a14c0bbf6a3f46578f5f4d7ea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d88d995a26701ef54cd4f284349dcf7f889435594a45edb0e844e9038e430d59",
+        "source": "tests/test_client_config.py",
+        "final_output_sha256": "710ef347e9efd1802612b88867bd10e8da36052aa3941aba36277c5cdba89920",
+        "cli_destination": "tests/test_client_config.py",
+        "previous_staging_sha256": "710ef347e9efd1802612b88867bd10e8da36052aa3941aba36277c5cdba89920"
+      },
+      {
+        "destination": "tests/test_cloud_smoke.py",
+        "input_sha256": "d804ba08a7baf1726bbd2e345cdbf305eee976f1444206e62dd9c1253c3434cb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d804ba08a7baf1726bbd2e345cdbf305eee976f1444206e62dd9c1253c3434cb",
+        "source": "tests/test_cloud_smoke.py",
+        "final_output_sha256": "d804ba08a7baf1726bbd2e345cdbf305eee976f1444206e62dd9c1253c3434cb",
+        "cli_destination": "tests/test_cloud_smoke.py",
+        "previous_staging_sha256": "d804ba08a7baf1726bbd2e345cdbf305eee976f1444206e62dd9c1253c3434cb"
+      },
+      {
+        "destination": "tests/test_diagnostics.py",
+        "input_sha256": "da3a7f5de392b3acfbd4ce16fd2fc3c744489ce2c0367ea5bdb25ea437729637",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3a8902ce950faa1cda299faa1db1d5a28a9c1ca15aa2e58e6fc6dd184d899ee9",
+        "source": "tests/test_diagnostics.py",
+        "final_output_sha256": "a3715cf604c736198848e52e2710113f57c863e3b370ed825ea0f1101db7f267",
+        "cli_destination": "tests/test_diagnostics.py",
+        "previous_staging_sha256": "a3715cf604c736198848e52e2710113f57c863e3b370ed825ea0f1101db7f267"
+      },
+      {
+        "destination": "tests/test_provider.py",
+        "input_sha256": "922497756dad596ae0430be533ac272b331aec249d96d9232705b42587576dd0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8bc0ec1d9838b77ca589065a1f8c24dff5360ab5b81a8f3174a5bdfbcec22757",
+        "source": "tests/test_provider.py",
+        "final_output_sha256": "72c36ef011865c118b751d152a8ce2426e32455c1f79160d84734314d80251ff",
+        "cli_destination": "tests/test_provider.py",
+        "previous_staging_sha256": "72c36ef011865c118b751d152a8ce2426e32455c1f79160d84734314d80251ff"
+      },
+      {
+        "destination": "tests/test_reliability.py",
+        "input_sha256": "a0e9236a2b06851da68a5b4366bd1e4c8159af835288b5f38505cfc977b6ae5b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e4ad950247a5472994278f58e541e089d7702d89088cb8cd99a2a0be62fde1a2",
+        "source": "tests/test_reliability.py",
+        "final_output_sha256": "ef13a67e89d185b7a40e8d18c2f1fe7bb2964d8ca4102882450a254a52863229",
+        "cli_destination": "tests/test_reliability.py",
+        "previous_staging_sha256": "ef13a67e89d185b7a40e8d18c2f1fe7bb2964d8ca4102882450a254a52863229"
+      },
+      {
+        "destination": "tools.py",
+        "input_sha256": "5b0dd34e11e1c9ec9fee3b2af93453bf0798cdc8f0ec23c8acee028223fb5dc3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b0dd34e11e1c9ec9fee3b2af93453bf0798cdc8f0ec23c8acee028223fb5dc3",
+        "source": "tools.py",
+        "final_output_sha256": "5b0dd34e11e1c9ec9fee3b2af93453bf0798cdc8f0ec23c8acee028223fb5dc3",
+        "cli_destination": "tools.py",
+        "previous_staging_sha256": "5b0dd34e11e1c9ec9fee3b2af93453bf0798cdc8f0ec23c8acee028223fb5dc3"
+      }
+    ],
+    "manifest_sha256": "833966bf8bcd45aded87ff05b2ac1bc964bca9894b3a03f671529d836a713a83",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "CLOUD_ACCEPTANCE.md": "plugins/hermes/CLOUD_ACCEPTANCE.md",
+    "LICENSE": "plugins/hermes/LICENSE",
+    "README.md": "plugins/hermes/README.md",
+    "README.zh-CN.md": "plugins/hermes/README.zh-CN.md",
+    "RELEASE.md": "plugins/hermes/RELEASE.md",
+    "REVIEW_FIXES.md": "plugins/hermes/REVIEW_FIXES.md",
+    "__init__.py": "plugins/hermes/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "client.py": "plugins/hermes/client.py",
+    "config.py": "plugins/hermes/config.py",
+    "config_schema.py": "plugins/hermes/config_schema.py",
+    "diagnostics.py": "plugins/hermes/diagnostics.py",
+    "outbox.py": "plugins/hermes/outbox.py",
+    "plugin.yaml": "plugins/hermes/plugin.yaml",
+    "pyproject.toml": "plugins/hermes/pyproject.toml",
+    "tests/cloud_smoke.py": "plugins/hermes/tests/cloud_smoke.py",
+    "tests/conftest.py": "plugins/hermes/tests/conftest.py",
+    "tests/test_capture_dedup.py": "plugins/hermes/tests/test_capture_dedup.py",
+    "tests/test_client_config.py": "plugins/hermes/tests/test_client_config.py",
+    "tests/test_cloud_smoke.py": "plugins/hermes/tests/test_cloud_smoke.py",
+    "tests/test_diagnostics.py": "plugins/hermes/tests/test_diagnostics.py",
+    "tests/test_provider.py": "plugins/hermes/tests/test_provider.py",
+    "tests/test_reliability.py": "plugins/hermes/tests/test_reliability.py",
+    "tools.py": "plugins/hermes/tools.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "memoria",
+    "python_files_compiled": 15,
+    "secret_findings": 0
+  },
+  "canonical_slug": "memoria",
+  "catalog_file": "src/plugin-catalog/memoria.yaml",
+  "identity": {
+    "catalog_id": "memoria",
+    "canonical_slug": "memoria",
+    "original_manifest_name": "memoria",
+    "rebranded_manifest_name": "memoria",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "a8a062a419bc41365adaf66527363bb612ce1e4e1478cd37aec1e26ed6cb23c8",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "5770469234a875e01ff5c2dc54431186706e1834af683b64e6d31f343ba53d0b",
+          "after_sha256": "6cb2fb9629ec9946fa75cbfa041a36b91b9263ae12a92df8f4cb0e3f533f6370",
+          "before_bytes": 17491,
+          "after_bytes": 17465,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "RELEASE.md",
+          "after_path": "RELEASE.md",
+          "before_sha256": "6440614aa85597c275a4286c44d06f771dcb3879c9364ece4161adb350bac6f3",
+          "after_sha256": "ee2a24006b03e9c42ee19f73c55b5b2d7af7e49f013a89895e6ea776f5c64d81",
+          "before_bytes": 3870,
+          "after_bytes": 3852,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

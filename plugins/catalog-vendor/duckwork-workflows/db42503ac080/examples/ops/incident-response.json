@@ -1,0 +1,365 @@
+{
+  "name": "incident-response",
+  "description": "Alert-triggered incident lifecycle template: triage -> debounce (confirm-live is a bare wait_s:120 timer \u2014 no live check, it exists only to ride out alert flapping) -> correlate with a 3-way verdict -> complementary gate pair (false-alarm arm tunes the alert rule; incident arm mitigates) -> machine-validated recovery probe -> resiliency retro -> merge-gated converge -> evidence-gated close. run_context seeds (ALL required): 'alert' = the trigger text as reported (alert name, hosts, time); 'sweep_cmd' = your alerting adapter command. ADAPTER CONTRACT for sweep_cmd: a command that lists currently-firing alerts, honoring '--match <regex>' (match on labels/summary; when --match is OMITTED the match regex is read from the scratch file 'incident.match' under the scratch root \u2014 never 'all') and '--expect fire|clear' where exit 0 = condition holds, exit 1 = it does not, exit 2 = probe broken. Example: 'python3 my_sweep.py'. Tracking is a scratch 'ticket.md' stand-in - swap in your tracker CLI (gh issue, jira) in the goals. The scratch root $DUCKWORK_HOME/incident-response-example is shared handoff state: run ONE incident at a time, or per-run-isolate the paths (and the recovery-probe argv) for production. The recovery gate releases only on TWO CONSECUTIVE adapter-exit-0 polls to ride out flapping: a re-fire (exit 1) zeroes the counter, and a broken probe (adapter exit 2, or a missing verify_cmd.txt) zeroes it STICKY and writes prev_poll_broken + probe_broken + loud stderr plus a bounded incident-diagnostic.json record in the run dir (incident_id = run id, event/marker = probe_broken, probe_exit = 2; the same JSON also appears in the native parked stdout_tail) WITHOUT counting \u2014 so the clear that immediately follows a broken poll can NEVER release the gate and probe_broken stays written until a genuine two-clear release deletes it; a broken probe is never reportable as incident-clear. Flag readings, one each: clear_ticks = banked CONSECUTIVE adapter-exit-0 polls (any non-zero poll writes 0); prev_poll_broken = the immediately-preceding poll was broken, deleted by the next healthy poll, and a healthy poll that finds it restarts the count from 0; probe_broken = a broken probe is still unresolved, deleted only at a genuine release. The triage node deletes the stale clear_ticks, prev_poll_broken and probe_broken as its first act, so a new incident can NEVER inherit a banked count from the previous one.",
+  "defaults": {
+    "context": "You are one lane of the incident-response workflow. Ground rules:\n- SCRATCH DIR (shared handoff between lanes; create if missing with mkdir -p $DUCKWORK_HOME/incident-response-example): $DUCKWORK_HOME/incident-response-example/ holds incident.match (the incident fingerprint regex), verify_cmd.txt (the exact clear-check command the recovery gate polls - written once by triage), ticket.md (the tracking artifact: newest line wins; APPEND, never rewrite), analysis.md (correlate's write-up), timeline.log (milestone log - append one line per milestone).\n- SWEEP: run {run.sweep_cmd} . With --expect clear it exits 0 iff NO firing alert matches the regex in incident.match; exit 1 = still firing; exit 2 = the probe itself broke (say so loudly, never report it as 'clear'; the recovery gate sticky-zeroes its counter on such a poll, so the next clear alone never releases it).\n- Self-report is not proof: every claim you hand downstream must name the command/output that establishes it. The alert says a service is down - probe it LIVE before believing it.\n- Notify channel: append to timeline.log. Wire your real notifier (webhook/IM) there in production.\n- Keep answers to the schema; no narration. Never print secrets."
+  },
+  "nodes": [
+    {
+      "id": "triage",
+      "type": "agent",
+      "shape": "recon",
+      "goal": "Incident triage. TRIGGER (reported by an operator/watchdog/webhook): {run.alert}\n0) RESET THE DEBOUNCE: delete $DUCKWORK_HOME/incident-response-example/clear_ticks, $DUCKWORK_HOME/incident-response-example/prev_poll_broken and $DUCKWORK_HOME/incident-response-example/probe_broken before anything else (rm -f) \u2014 a leftover counter from a previous incident must never release this run's recovery gate.\n1) Run {run.sweep_cmd} with a broad --match for a first look at everything firing.\n2) The incident CLUSTER is anchored on the TRIGGER: firing alerts about the services/hosts it names, wherever they started. Use startsAt to build the timeline, never to drop trigger-matching alerts.\n3) Write the fingerprint: the core services/hosts as a case-insensitive regex to $DUCKWORK_HOME/incident-response-example/incident.match. Then write the exact clear-check the recovery gate will poll: the sweep command with '--match' omitted (it then reads incident.match) plus '--expect clear', as a single line, to $DUCKWORK_HOME/incident-response-example/verify_cmd.txt. Re-run the sweep WITHOUT --match to confirm matched == the incident cluster and nothing unrelated (iterate the regex).\n4) Check $DUCKWORK_HOME/incident-response-example/ticket.md for an OPEN ticket on this same condition; reuse it, else create it (one line: OPEN [incident] <symptom> (<services>)).\nReply with ONLY fenced json {\"cluster\": [\"alertname@service\", ...], \"window\": \"<startsAt burst window>\", \"match_written\": true, \"reused\": true|false, \"notes\": \"<one line>\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "cluster",
+          "match_written"
+        ],
+        "properties": {
+          "cluster": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "window": {
+            "type": "string"
+          },
+          "match_written": {
+            "type": "boolean"
+          },
+          "reused": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "confirm-live",
+      "type": "gate",
+      "after": [
+        "triage"
+      ],
+      "wait": {
+        "wait_s": 120
+      }
+    },
+    {
+      "id": "correlate",
+      "type": "agent",
+      "shape": "recon",
+      "after": [
+        "confirm-live"
+      ],
+      "inputs": [
+        "triage"
+      ],
+      "goal": "Causal correlation for the fingerprint in $DUCKWORK_HOME/incident-response-example/incident.match. Build the NARRATIVE and the CAUSE:\n- Re-run {run.sweep_cmd} for the current firing set; group by host/service/startsAt burst.\n- Change check: did a deploy, config push, or image bump land just before the burst touching these services or their dependencies? (git log in the ops repo, deploy tooling, recent restarts.)\n- Other actors: anything else mid-flight on the box (provisioning runs, other agents, cron).\n- LIVE dependency probe: the alert says down - prove or disprove it directly (health endpoints, process up, port answering). A dead monitoring agent produces fake incidents.\n- Verdict: 'legit' (something actually broke), 'false_alarm' (services live and healthy; rule/threshold/window wrong), or 'real-external' (cause outside your control - upstream/ISP/physical).\n- Write $DUCKWORK_HOME/incident-response-example/analysis.md (narrative, timeline, cause, evidence-per-claim, suggested mitigations). Append 'CORRELATE: <cause verdict + one line>' to ticket.md and timeline.log.\nReply with ONLY fenced json {\"verdict\": \"legit|false_alarm|real-external\", \"cause\": \"<best-supported cause, one paragraph>\", \"narrative\": [\"<timeline line>\", ...], \"change_suspects\": [\"<commit/deploy/proc>\", ...], \"live_probe\": \"<what you probed and what it said>\", \"mitigations\": [\"<suggested action>\", ...]}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "verdict",
+          "cause",
+          "mitigations"
+        ],
+        "properties": {
+          "verdict": {
+            "type": "string"
+          },
+          "cause": {
+            "type": "string"
+          },
+          "narrative": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "change_suspects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "live_probe": {
+            "type": "string"
+          },
+          "mitigations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "gate-false-alarm",
+      "type": "gate",
+      "after": [
+        "correlate"
+      ],
+      "when": "out.correlate.verdict == 'false_alarm'",
+      "wait": {
+        "wait_s": 1
+      },
+      "on_skip": "prune"
+    },
+    {
+      "id": "gate-incident",
+      "type": "gate",
+      "after": [
+        "correlate"
+      ],
+      "when": "out.correlate.verdict != 'false_alarm'",
+      "wait": {
+        "wait_s": 1
+      },
+      "on_skip": "prune"
+    },
+    {
+      "id": "tune-alert",
+      "type": "agent",
+      "shape": "build",
+      "after": [
+        "gate-false-alarm"
+      ],
+      "inputs": [
+        "correlate"
+      ],
+      "goal": "FALSE-ALARM arm. Tune the offending alert rule so this condition stops paging (cause + live probe in correlate's output and $DUCKWORK_HOME/incident-response-example/analysis.md).\n1) Find the rule (in your alerting rule files) matching the alertname; compare its threshold/window against the ACTUAL healthy values from your metrics source. Fix the root of the falseness (threshold, for-window, or a rule keyed on the wrong signal), not one number nudged past today's value.\n2) Apply/reload the rule the way you normally converge monitoring config; verify via the alerting API that the new rule is live and the alert cleared.\n3) Commit on a branch, merge per your repo policy. Append 'FALSE ALARM tuned: <rule, old->new, commit>' to ticket.md and timeline.log.\nReply with ONLY fenced json {\"rule\": \"<id>\", \"old\": \"<expr/window>\", \"new\": \"<expr/window>\", \"commit\": \"<sha>\", \"cleared\": true|false}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "rule",
+          "new",
+          "cleared"
+        ],
+        "properties": {
+          "rule": {
+            "type": "string"
+          },
+          "old": {
+            "type": "string"
+          },
+          "new": {
+            "type": "string"
+          },
+          "commit": {
+            "type": "string"
+          },
+          "cleared": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    {
+      "id": "report-false-alarm",
+      "type": "agent",
+      "shape": "recon",
+      "after": [
+        "tune-alert"
+      ],
+      "inputs": [
+        "correlate",
+        "tune-alert"
+      ],
+      "goal": "FALSE-ALARM closeout. Run $DUCKWORK_HOME/incident-response-example/verify_cmd.txt contents via the shell - it MUST exit 0. If the alert still fires (exit 1) or the probe broke (exit 2), do NOT close: append 'needs-drill: tune did not clear the alert (<detail>)' to ticket.md and report closed:false. When clear: append a CLOSED line to ticket.md (cause, tune diff + commit, verification evidence) and one line to timeline.log.\nReply with ONLY fenced json {\"closed\": true|false, \"why\": \"<one line>\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "closed",
+          "why"
+        ],
+        "properties": {
+          "closed": {
+            "type": "boolean"
+          },
+          "why": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "mitigate",
+      "type": "agent",
+      "shape": "build",
+      "after": [
+        "gate-incident"
+      ],
+      "inputs": [
+        "correlate",
+        "triage"
+      ],
+      "goal": "INCIDENT arm: troubleshoot and MITIGATE (mitigations in correlate's output + $DUCKWORK_HOME/incident-response-example/analysis.md).\n- Work the mitigations in order of risk, least-disruptive first. BEFORE restarting anything that serves traffic, verify it is actually unhealthy - never restart a healthy-but-labeled workload.\n- If the verdict is 'real-external' or no safe mitigation exists: STOP acting, append 'MITIGATION BLOCKED: <what is needed and why>' to analysis.md and ticket.md, and reply {\"mitigated\": false, ...}. Do not flail.\n- Append one timeline line to ticket.md per action taken (with the command/output that proves it). Do NOT close the ticket; do NOT run broad config applies (a later node does that).\n- When you believe the incident is mitigated, re-run {run.sweep_cmd} and report what it shows.\nReply with ONLY fenced json {\"mitigated\": true|false, \"actions\": [\"<action + evidence>\", ...], \"blocked_reason\": \"<if mitigated=false>\", \"sweep_after\": \"<matched_firing count>\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "mitigated",
+          "actions"
+        ],
+        "properties": {
+          "mitigated": {
+            "type": "boolean"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blocked_reason": {
+            "type": "string"
+          },
+          "sweep_after": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "recovery-probe",
+      "type": "gate",
+      "after": [
+        "mitigate"
+      ],
+      "wait": {
+        "until_argv": [
+          "/usr/bin/python3",
+          "-c",
+          "import json,os,pathlib,subprocess,sys; S=pathlib.Path(os.environ.get('IR_STATE_ROOT') or (os.environ.get('DUCKWORK_HOME') or '~/.duckwork') + '/incident-response-example').expanduser(); V=S/'verify_cmd.txt'; K=S/'clear_ticks'; B=S/'probe_broken'; PB=S/'prev_poll_broken'; D=pathlib.Path('incident-diagnostic.json')\ntry: cmd=V.read_text().strip()\nexcept OSError: cmd=None\nrc=2 if cmd is None else subprocess.run(cmd,shell=True).returncode\nif rc==2:\n    K.write_text('0'); PB.write_text('broken at '+str(__import__('time').time())); B.write_text('probe broken at '+str(__import__('time').time())); record={'incident_id':pathlib.Path.cwd().name,'event':'probe_broken','marker':'probe_broken','probe_exit':2}; D.write_text(json.dumps(record)); print(json.dumps(record)); print('PROBE BROKEN (rc=%d): recovery adapter failed — counter STICKY-ZEROED, banked credit void, parked; the next clear alone can never release this gate' % rc, file=sys.stderr); sys.exit(2)\nprevBroken=PB.exists(); PB.unlink(missing_ok=True)\nn=(int(K.read_text()) if K.exists() else 0)\nif prevBroken: n=0\nn=n+1 if rc==0 else 0\nK.write_text(str(n))\nif n>=2: B.unlink(missing_ok=True); D.unlink(missing_ok=True)\nsys.exit(0 if n>=2 else 1)"
+        ],
+        "every_s": 300,
+        "timeout_s": 86400
+      },
+      "question": "Incident alerts STILL firing 24h after the mitigation pass (or the probe itself broke). Extend another 24h, or stop and escalate to a human?",
+      "options": [
+        "extend 1h",
+        "escalate"
+      ]
+    },
+    {
+      "id": "resiliency",
+      "type": "agent",
+      "shape": "recon",
+      "after": [
+        "recovery-probe"
+      ],
+      "inputs": [
+        "correlate",
+        "triage"
+      ],
+      "goal": "RECOVERY CONFIRMED by machine probe (two consecutive clear sweeps). Resiliency review: given the cause (correlate output + $DUCKWORK_HOME/incident-response-example/analysis.md), how did this fail, how long to notice, and what would make it self-heal or fail smaller next time? Candidate levers: restart/reschedule policy, check-window/threshold changes, a watchdog for the specific dependency that died, dependency-aware limits. Before proposing anything, check ticket.md and your tracker for follow-ups already covering each idea. Append 'RESILIENCY: <gap + follow-up id>' per real gap to ticket.md, and one line to timeline.log.\nReply with ONLY fenced json {\"gaps\": [\"<gap + proposed fix>\", ...], \"followups\": [\"<id>\", ...], \"already_covered\": [\"<id>\", ...]}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "gaps"
+        ],
+        "properties": {
+          "gaps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "followups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "already_covered": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "converge",
+      "type": "agent",
+      "shape": "build",
+      "after": [
+        "resiliency"
+      ],
+      "inputs": [
+        "mitigate",
+        "triage"
+      ],
+      "goal": "Convergence pass. 0) MERGE GATE FIRST: live state must equal your deploy branch. Enumerate every repo change this incident produced (mitigate/resiliency outputs + your repo's status + unmerged commits): each must be committed AND merged to your deploy branch BEFORE you converge anything - otherwise converge NOTHING for that change and record it in unmerged_refused[]. Converging an unmerged diff is forbidden: it makes live != main and the next incident's correlate lane reads a fiction. 1) Apply ONLY the affected config/services the normal way for your stack; never a blind whole-fleet apply. 2) POST-CONVERGE PROBE = one bounded machine re-check, NOT a sleep loop: $DUCKWORK_HOME/incident-response-example/verify_cmd.txt contents via the shell must exit 0, plus your live health probe for every service in the incident cluster - no converge may regress those. 3) Append 'CONVERGE+VERIFY: <roles applied + MERGED SHAs (not branch tips) + probe result>' to ticket.md and timeline.log.\nReply with ONLY fenced json {\"drift\": true|false, \"merged_shas\": [\"<sha>\", ...], \"unmerged_refused\": [\"<change + why not converged>\", ...], \"converged\": [\"<role/service>\", ...], \"sweep_clear\": true|false, \"evidence\": \"<one line>\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "drift"
+        ],
+        "properties": {
+          "drift": {
+            "type": "boolean"
+          },
+          "merged_shas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unmerged_refused": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "converged": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sweep_clear": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      },
+      "timeout": 3300
+    },
+    {
+      "id": "closeout",
+      "type": "agent",
+      "shape": "recon",
+      "after": [
+        "converge"
+      ],
+      "inputs": [
+        "correlate",
+        "converge",
+        "resiliency"
+      ],
+      "goal": "Close the incident ticket. GATE: converge.sweep_clear MUST be true and its evidence MUST show LIVE verification - if not, do NOT close: append 'needs-monitoring: <why>' to ticket.md and report closed:false. Otherwise append a CLOSED section to ticket.md (timeline, cause, mitigation, resiliency follow-ups, commits) and one final line to timeline.log.\nReply with ONLY fenced json {\"closed\": true|false, \"why\": \"<one line: cause -> mitigation -> verified recovery>\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "closed",
+          "why"
+        ],
+        "properties": {
+          "closed": {
+            "type": "boolean"
+          },
+          "why": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

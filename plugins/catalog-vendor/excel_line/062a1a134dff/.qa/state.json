@@ -1,0 +1,83 @@
+{
+  "pipeline": "QA1->QA2 hai nhom, muc tieu tach excel_line thanh repo harness-agnostic",
+  "upgrades": [
+    "backlog ben vung trong file nay",
+    "rubric review co dinh: severity/feasibility/cost/harness-agnostic-score",
+    "chia vong theo hang muc, khong audit 3169 dong cung luc",
+    "QA1 phai chay full test + duckwork plugins validate truoc khi tra QA2",
+    "QA1 audit phai dung model MANH (khong free-lite) + scope chat, vi gemini-3.5-flash-lite can budget khi audit 3169 dong (da xay ra round 1)",
+    "Viec CO HOC nhieu buoc (refactor thuc thi) phai do orchestrator lam truc tiep, KHONG giao cho sub-agent model lite — sub-agent chi dung cho phan tich/thiet ke/review (da xay ra round 4,5,6: 3/3 sub-agent can budget truoc khi lam duoc viec co hoc)"
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "scope": "audit toan dien",
+      "status": "DA HOAN THANH (5 issue EXC-001..005)",
+      "issues": ["EXC-001","EXC-002","EXC-003","EXC-004","EXC-005"],
+      "qa1_agent": "sa-0-0ee17a15"
+    },
+    {
+      "round": 2,
+      "scope": "coupling/harness-agnostic",
+      "status": "DA HOAN THANH (8 issue coupling-1..8)",
+      "issues": ["coupling-1","coupling-2","coupling-3","coupling-4","coupling-5","coupling-6","coupling-7","coupling-8"],
+      "qa1_agent": "sa-0-7a7f50cf"
+    },
+    {
+      "round": 3,
+      "scope": "QA2 review 13 issue",
+      "status": "DA HOAN THANH — QA2 duyet 13/13, gom con 7 canonical, kien truc Adapter Pattern",
+      "canonical_issues": ["EXC-001","EXC-003","coupling-7","EXC-002","EXC-004","EXC-005","coupling-8"],
+      "qa2_agent": "sa-0-7c7ab216"
+    },
+    {
+      "round": 4,
+      "scope": "QA1 thiet ke giai phap chi tiet",
+      "status": "DA HOAN THANH — QA1 tra thiet ke 7 giai phap + target_layout",
+      "design_ready": true,
+      "qa1_agent": "sa-0-cb3553eb"
+    },
+    {
+      "round": 5,
+      "scope": "QA2 duyet giai phap",
+      "status": "DA HOAN THANH — QA2 duyet EXC-001 + EXC-003 trong transcript; bi budget truoc khi viet day du atomic_commit_plan, nhung du huong refactor phai atom/runable",
+      "verdict_known": ["EXC-001 duyet", "EXC-003 duyet"],
+      "atomic_plan_note": "QA2 bi budget truoc khi viet day du atomic_commit_plan; orchestrator tu soan thu tu B1..B6 va tiep tuc hanh dong",
+      "qa2_agent": "sa-0-8b370b60"
+    },
+    {
+      "round": 6,
+      "scope": "ORCHESTRATOR thuc thi refactor (khong giao sub-agent)",
+      "status": "DA HOAN THANH PHAN LON — 5 commit push main",
+      "actions": [
+        "B1: tao package excel_line_core (store/brain_store/worker) pure Python + openpyxl, zero agent-runtime import",
+        "B-compat: store.py/brain_store.py/worker.py thanh shim re-export, giu tuong thich nguoc",
+        "B6: pyproject.toml (EXC-005) — build wheel OK, cai venv sach + openpyxl OK, import excel_line_core doc lap OK",
+        "EXC-003 + coupling-7: excel_line_core/llm.py BaseLLMClient + classify; xoa quick_completion dead import",
+        "EXC-002: EXCEL_LINE_HOME env override + legacy fallback get_duckwork_home",
+        "EXC-004: BrainServerManager lifecycle; brain_server nhan EXCEL_LINE_ROOT; scripts/_core_bridge.py resolve core",
+        "cleanup: xoa _py_loader_connector.py unused"
+      ],
+      "verified": [
+        "82/82 tests xanh (21 brain_store + 42 excel_line + 19 v2_e2e)",
+        "python scripts/brain_server.py chay phuc vu http://127.0.0.1:8766",
+        "python -m pip wheel . --no-deps OK",
+        "venv sach + openpyxl cai wheel OK: import excel_line_core BrainStore/ExcelLineStore/BaseLLMClient/classify OK",
+        "grep core: khong con duckwork_cli/duckwork_constants/agent./tools./ctx. import trong excel_line_core"
+      ],
+      "remaining": [
+        "coupling-6: agent.auxiliary_client.call_llm direct import trong _call_provider; design chuyen thanh injectable Duckwork adapter",
+        "coupling-8: duckwork_cli.config read trong _load_plugin_config + _model_command list view",
+        "EXC-001 phan con lai: lazy import/adapter injection hoa MemoryProvider + tool_error de __init__ khong import Duckwork o module top neu co the"
+      ],
+      "commits": [
+        "eabb685 refactor(core): extract harness-agnostic excel_line_core package",
+        "109c97d refactor(llm): add harness-agnostic BaseLLMClient + drop dead quick_completion",
+        "bd9a766 feat(config): EXCEL_LINE_HOME env override as primary root source",
+        "82a3463 refactor(server): isolate BrainServerManager lifecycle",
+        "d764f64 chore: drop unused _py_loader_connector.py"
+      ],
+      "qa1_agent": "ORCHESTRATOR (main agent)"
+    }
+  ]
+}

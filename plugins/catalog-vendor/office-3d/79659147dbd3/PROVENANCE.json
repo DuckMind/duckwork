@@ -1,0 +1,959 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "office-3d",
+  "content_id": "79659147dbd3",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 26222,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "0b1e99a620accfdd5314ab9f9f002f823ec90a3d8fd29f10291331bb481c90e8"
+    },
+    {
+      "bytes": 1078,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "2f16e7d7ebff39c98081a988582784e3233dea9cdde52b1849bb361173bb41d3"
+    },
+    {
+      "bytes": 2221,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "eea9ea877615f70773232995fb6b74e2fa1becccc601f8f2d674f954b8c4d8be"
+    },
+    {
+      "bytes": 736,
+      "mode": "100644",
+      "path": "README.zh-CN.md",
+      "sha256": "4ed1034cdcdfc5d0c55e68cd5cceb70727cf5ee3c8d0a467ce30229f781ea9f7"
+    },
+    {
+      "bytes": 945,
+      "mode": "100644",
+      "path": "RELEASING.md",
+      "sha256": "2aa0fcbdedd899a1eb881593dc2a9ceecff7c6affcb4b4b741e7505b00b9f49e"
+    },
+    {
+      "bytes": 3462,
+      "mode": "100644",
+      "path": "UPSTREAM.json",
+      "sha256": "503fec601a5056d56ab151c0dd5d6e4b2da2d1fdc5e4f595d4b9e466ed29dd00"
+    },
+    {
+      "bytes": 2704,
+      "mode": "100644",
+      "path": "WINDOWS.md",
+      "sha256": "afac2cfde9104fe5f6ffae9ef9f1de62f49b91282d2dee0c6dd4caf8a543caa9"
+    },
+    {
+      "bytes": 19708,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "434d1fa15bbab41602bc4afa5e83e69883eba66abcad7a6410944a6177dd693a"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6"
+    },
+    {
+      "bytes": 42,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "da968d0518a5328f5cfbacbf2f54549642c9ce490fe2db00cb47fc1f9df2d9d9"
+    },
+    {
+      "bytes": 24165,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "da3d91c3acd722a97d246d5d44ce509cf4008369c080e7bece6081ded6389b45"
+    },
+    {
+      "bytes": 104650,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "d9ae9903c8e7c56a5a48477b4ff230f345125c5877b747f7e6b34c46f595a41c"
+    },
+    {
+      "bytes": 937,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "75625260b4f720a5beb647adbf91efd99032fd33dc92864b5bf9baa25de2bb18"
+    },
+    {
+      "bytes": 6925,
+      "mode": "100644",
+      "path": "tests/canvas-browser.mjs",
+      "sha256": "5202576de7ab2e9b08496c103623ed67bb64f69b8ade30f8bb1926f6ae9b23c4"
+    },
+    {
+      "bytes": 2508,
+      "mode": "100644",
+      "path": "tests/duckwork-desktop.test.ts",
+      "sha256": "c2ea6c0ee7c57365712a471bb727dfb5afb53a6e764e7b16d211510a19608968"
+    },
+    {
+      "bytes": 98728,
+      "mode": "100644",
+      "path": "tests/fixtures/pre-ik-plugin.js",
+      "sha256": "1829e80018012bf19f6ebcbd10efd6b9540c75ddce28d834183179722dacb7af"
+    },
+    {
+      "bytes": 2511,
+      "mode": "100644",
+      "path": "tests/layout-backend-semantics.py",
+      "sha256": "39e93416b41a689b9535acf38c25029054ad3b9b29bfa77b88527137e8e522d2"
+    },
+    {
+      "bytes": 7661,
+      "mode": "100644",
+      "path": "tests/layout-browser.mjs",
+      "sha256": "c6da4da4bd11319f74b2cc0a3e16a8036ebaafc6c67eaec2cdbfe0164618404c"
+    },
+    {
+      "bytes": 2488,
+      "mode": "100644",
+      "path": "tests/layout-checks.html",
+      "sha256": "f0a91cccb545f76aff744e5b2e131d2156bdecc1c25f42261e2f6039ac74df6a"
+    },
+    {
+      "bytes": 5073,
+      "mode": "100644",
+      "path": "tests/layout-preview.mjs",
+      "sha256": "3a5476104d2f89417bc32b3014c98d58e0b63a34b87bc8ce7a2932e3b9b625f1"
+    },
+    {
+      "bytes": 1337,
+      "mode": "100644",
+      "path": "tests/lowpoly-perf.html",
+      "sha256": "2ce0d82dcb48e994847aa0ac05f33a7a23f95c6457d5150a734b4d06b2125cd3"
+    },
+    {
+      "bytes": 2551,
+      "mode": "100644",
+      "path": "tests/pose-preview.py",
+      "sha256": "1c17b5aaade19711cb95d84a07b0f0e9036ca42c8b7af663a94b3dc824cb13a5"
+    },
+    {
+      "bytes": 21385,
+      "mode": "100644",
+      "path": "tests/pose-regression.html",
+      "sha256": "a19332a5ad4ed9f4462a37365e8cd3ed7e622268e81de5206be695e84f9d53ab"
+    },
+    {
+      "bytes": 5881,
+      "mode": "100644",
+      "path": "tests/profile-visibility.mjs",
+      "sha256": "50fe2b0c9ada3ec31ec53a1494471d40f2228efb2b5d4687a6d3e89589ef2584"
+    },
+    {
+      "bytes": 4146,
+      "mode": "100644",
+      "path": "tests/route-query.mjs",
+      "sha256": "ba60a9c0bd6b7e234a3a074b539bebeae0b988458a3919345bb56b0575017048"
+    },
+    {
+      "bytes": 2156,
+      "mode": "100644",
+      "path": "tests/sofa-preview.py",
+      "sha256": "bcff5e64d4edd4df52db6c7b14b0c204018b9abb944ee5a84cca5fe05d8bf69d"
+    },
+    {
+      "bytes": 5205,
+      "mode": "100644",
+      "path": "tests/sofa-regression.html",
+      "sha256": "ed97c8c2e2351fa86598e64a9b27206c04e521a5e116120e1a679633d6b24244"
+    },
+    {
+      "bytes": 4149,
+      "mode": "100644",
+      "path": "tests/test_display_name.py",
+      "sha256": "d09ffc59cd480e6008ad5dd03e2c2f68466fb9faa0a5aac79c0638024abd590d"
+    },
+    {
+      "bytes": 6125,
+      "mode": "100644",
+      "path": "tests/test_fleet_root.py",
+      "sha256": "5f64cac242ac1a99131275aa40f2b6df6ae3f935f9699af702223234edb05824"
+    },
+    {
+      "bytes": 9059,
+      "mode": "100644",
+      "path": "tests/test_gateway_liveness.py",
+      "sha256": "7b2c31179434fa5af3eab767f0015d07ef0d9905e3688df8d11b7873b24445ff"
+    },
+    {
+      "bytes": 5357,
+      "mode": "100644",
+      "path": "tests/test_profile_discovery.py",
+      "sha256": "aca62bb0a9000cda621c1184f3fc72467a25123fd666dc2e2cfed7a79beb3311"
+    },
+    {
+      "bytes": 619,
+      "mode": "100644",
+      "path": "tests/vitest.config.mts",
+      "sha256": "76350e178931eb178a3eece1a68ef2d03b1aa7e87091b1ae266e75c61c581f6a"
+    },
+    {
+      "bytes": 6673,
+      "mode": "100644",
+      "path": "tests/wheel-browser.mjs",
+      "sha256": "6e16e2c3a89d7778d7c6c43d2d6ac4d15f9c5f9ca5be26b7b7f7fb384de3c5b4"
+    },
+    {
+      "bytes": 2004,
+      "mode": "100644",
+      "path": "tests/wheel-checks.html",
+      "sha256": "5135df2e90588b7cb42ec1e917881216865b2d1514d509d978c241c58e584edf"
+    }
+  ],
+  "input_manifest_sha256": "79659147dbd3382432437b4b0ce5f5f4c45b15d9a64e7622d25f8cac89945229",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "2f16e7d7ebff39c98081a988582784e3233dea9cdde52b1849bb361173bb41d3",
+        "source_path": "plugins/office-3d/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "UPSTREAM.json"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/DuckMind/duckwork",
+    "sha": "8eb4de8c61fd998b864e48299799d81d71962757",
+    "subdir": "plugins/office-3d"
+  },
+  "original_repo": "https://github.com/DuckMind/duckwork",
+  "original_sha": "8eb4de8c61fd998b864e48299799d81d71962757",
+  "original_subdir": "plugins/office-3d",
+  "output_files": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "0b1e99a620accfdd5314ab9f9f002f823ec90a3d8fd29f10291331bb481c90e8",
+      "bytes": 26222,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "2f16e7d7ebff39c98081a988582784e3233dea9cdde52b1849bb361173bb41d3",
+      "bytes": 1078,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "eea9ea877615f70773232995fb6b74e2fa1becccc601f8f2d674f954b8c4d8be",
+      "bytes": 2221,
+      "mode": "100644"
+    },
+    {
+      "path": "README.zh-CN.md",
+      "sha256": "4ed1034cdcdfc5d0c55e68cd5cceb70727cf5ee3c8d0a467ce30229f781ea9f7",
+      "bytes": 736,
+      "mode": "100644"
+    },
+    {
+      "path": "RELEASING.md",
+      "sha256": "2aa0fcbdedd899a1eb881593dc2a9ceecff7c6affcb4b4b741e7505b00b9f49e",
+      "bytes": 945,
+      "mode": "100644"
+    },
+    {
+      "path": "UPSTREAM.json",
+      "sha256": "878cb66f0d164d7e9e2a82c390da5bfff98cf404438b908e539b7b8b27ab634a",
+      "bytes": 3459,
+      "mode": "100644"
+    },
+    {
+      "path": "WINDOWS.md",
+      "sha256": "afac2cfde9104fe5f6ffae9ef9f1de62f49b91282d2dee0c6dd4caf8a543caa9",
+      "bytes": 2704,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "434d1fa15bbab41602bc4afa5e83e69883eba66abcad7a6410944a6177dd693a",
+      "bytes": 19708,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "da968d0518a5328f5cfbacbf2f54549642c9ce490fe2db00cb47fc1f9df2d9d9",
+      "bytes": 42,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "da3d91c3acd722a97d246d5d44ce509cf4008369c080e7bece6081ded6389b45",
+      "bytes": 24165,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "d9ae9903c8e7c56a5a48477b4ff230f345125c5877b747f7e6b34c46f595a41c",
+      "bytes": 104650,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "75625260b4f720a5beb647adbf91efd99032fd33dc92864b5bf9baa25de2bb18",
+      "bytes": 937,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/canvas-browser.mjs",
+      "sha256": "5202576de7ab2e9b08496c103623ed67bb64f69b8ade30f8bb1926f6ae9b23c4",
+      "bytes": 6925,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/duckwork-desktop.test.ts",
+      "sha256": "c2ea6c0ee7c57365712a471bb727dfb5afb53a6e764e7b16d211510a19608968",
+      "bytes": 2508,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/pre-ik-plugin.js",
+      "sha256": "1829e80018012bf19f6ebcbd10efd6b9540c75ddce28d834183179722dacb7af",
+      "bytes": 98728,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/layout-backend-semantics.py",
+      "sha256": "39e93416b41a689b9535acf38c25029054ad3b9b29bfa77b88527137e8e522d2",
+      "bytes": 2511,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/layout-browser.mjs",
+      "sha256": "c6da4da4bd11319f74b2cc0a3e16a8036ebaafc6c67eaec2cdbfe0164618404c",
+      "bytes": 7661,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/layout-checks.html",
+      "sha256": "f0a91cccb545f76aff744e5b2e131d2156bdecc1c25f42261e2f6039ac74df6a",
+      "bytes": 2488,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/layout-preview.mjs",
+      "sha256": "3a5476104d2f89417bc32b3014c98d58e0b63a34b87bc8ce7a2932e3b9b625f1",
+      "bytes": 5073,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/lowpoly-perf.html",
+      "sha256": "2ce0d82dcb48e994847aa0ac05f33a7a23f95c6457d5150a734b4d06b2125cd3",
+      "bytes": 1337,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/pose-preview.py",
+      "sha256": "1c17b5aaade19711cb95d84a07b0f0e9036ca42c8b7af663a94b3dc824cb13a5",
+      "bytes": 2551,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/pose-regression.html",
+      "sha256": "a19332a5ad4ed9f4462a37365e8cd3ed7e622268e81de5206be695e84f9d53ab",
+      "bytes": 21385,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/profile-visibility.mjs",
+      "sha256": "50fe2b0c9ada3ec31ec53a1494471d40f2228efb2b5d4687a6d3e89589ef2584",
+      "bytes": 5881,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/route-query.mjs",
+      "sha256": "ba60a9c0bd6b7e234a3a074b539bebeae0b988458a3919345bb56b0575017048",
+      "bytes": 4146,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/sofa-preview.py",
+      "sha256": "bcff5e64d4edd4df52db6c7b14b0c204018b9abb944ee5a84cca5fe05d8bf69d",
+      "bytes": 2156,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/sofa-regression.html",
+      "sha256": "ed97c8c2e2351fa86598e64a9b27206c04e521a5e116120e1a679633d6b24244",
+      "bytes": 5205,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_display_name.py",
+      "sha256": "d09ffc59cd480e6008ad5dd03e2c2f68466fb9faa0a5aac79c0638024abd590d",
+      "bytes": 4149,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_fleet_root.py",
+      "sha256": "5f64cac242ac1a99131275aa40f2b6df6ae3f935f9699af702223234edb05824",
+      "bytes": 6125,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_gateway_liveness.py",
+      "sha256": "7b2c31179434fa5af3eab767f0015d07ef0d9905e3688df8d11b7873b24445ff",
+      "bytes": 9059,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_profile_discovery.py",
+      "sha256": "aca62bb0a9000cda621c1184f3fc72467a25123fd666dc2e2cfed7a79beb3311",
+      "bytes": 5357,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/vitest.config.mts",
+      "sha256": "76350e178931eb178a3eece1a68ef2d03b1aa7e87091b1ae266e75c61c581f6a",
+      "bytes": 619,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/wheel-browser.mjs",
+      "sha256": "6e16e2c3a89d7778d7c6c43d2d6ac4d15f9c5f9ca5be26b7b7f7fb384de3c5b4",
+      "bytes": 6673,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/wheel-checks.html",
+      "sha256": "5135df2e90588b7cb42ec1e917881216865b2d1514d509d978c241c58e584edf",
+      "bytes": 2004,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "3f62874ca57e83e235316a62364772a4afc2122ec86edf654f2589a204cf03fb",
+  "pin_verification": {
+    "archive_bytes": 13492634,
+    "archive_sha256": "adefdd611102eaae63794e73820f5389179d48d85d11e88efeb8a8623dea2b63",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "8eb4de8c61fd998b864e48299799d81d71962757",
+    "verified_commit_marker": "8eb4de8c61fd998b864e48299799d81d71962757"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "24c4fe468cc50ab0ad7dc491aa393634ff7caec12b1fdbda1e0af282f696d95f",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "0b1e99a620accfdd5314ab9f9f002f823ec90a3d8fd29f10291331bb481c90e8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0b1e99a620accfdd5314ab9f9f002f823ec90a3d8fd29f10291331bb481c90e8",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "0b1e99a620accfdd5314ab9f9f002f823ec90a3d8fd29f10291331bb481c90e8",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "0b1e99a620accfdd5314ab9f9f002f823ec90a3d8fd29f10291331bb481c90e8"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "2f16e7d7ebff39c98081a988582784e3233dea9cdde52b1849bb361173bb41d3",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "2f16e7d7ebff39c98081a988582784e3233dea9cdde52b1849bb361173bb41d3",
+        "source": "LICENSE",
+        "final_output_sha256": "2f16e7d7ebff39c98081a988582784e3233dea9cdde52b1849bb361173bb41d3",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "2f16e7d7ebff39c98081a988582784e3233dea9cdde52b1849bb361173bb41d3"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "eea9ea877615f70773232995fb6b74e2fa1becccc601f8f2d674f954b8c4d8be",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "eea9ea877615f70773232995fb6b74e2fa1becccc601f8f2d674f954b8c4d8be",
+        "source": "README.md",
+        "final_output_sha256": "eea9ea877615f70773232995fb6b74e2fa1becccc601f8f2d674f954b8c4d8be",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "eea9ea877615f70773232995fb6b74e2fa1becccc601f8f2d674f954b8c4d8be"
+      },
+      {
+        "destination": "README.zh-CN.md",
+        "input_sha256": "4ed1034cdcdfc5d0c55e68cd5cceb70727cf5ee3c8d0a467ce30229f781ea9f7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4ed1034cdcdfc5d0c55e68cd5cceb70727cf5ee3c8d0a467ce30229f781ea9f7",
+        "source": "README.zh-CN.md",
+        "final_output_sha256": "4ed1034cdcdfc5d0c55e68cd5cceb70727cf5ee3c8d0a467ce30229f781ea9f7",
+        "cli_destination": "README.zh-CN.md",
+        "previous_staging_sha256": "4ed1034cdcdfc5d0c55e68cd5cceb70727cf5ee3c8d0a467ce30229f781ea9f7"
+      },
+      {
+        "destination": "RELEASING.md",
+        "input_sha256": "2aa0fcbdedd899a1eb881593dc2a9ceecff7c6affcb4b4b741e7505b00b9f49e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2aa0fcbdedd899a1eb881593dc2a9ceecff7c6affcb4b4b741e7505b00b9f49e",
+        "source": "RELEASING.md",
+        "final_output_sha256": "2aa0fcbdedd899a1eb881593dc2a9ceecff7c6affcb4b4b741e7505b00b9f49e",
+        "cli_destination": "RELEASING.md",
+        "previous_staging_sha256": "2aa0fcbdedd899a1eb881593dc2a9ceecff7c6affcb4b4b741e7505b00b9f49e"
+      },
+      {
+        "destination": "UPSTREAM.json",
+        "input_sha256": "503fec601a5056d56ab151c0dd5d6e4b2da2d1fdc5e4f595d4b9e466ed29dd00",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "503fec601a5056d56ab151c0dd5d6e4b2da2d1fdc5e4f595d4b9e466ed29dd00",
+        "source": "UPSTREAM.json",
+        "final_output_sha256": "878cb66f0d164d7e9e2a82c390da5bfff98cf404438b908e539b7b8b27ab634a",
+        "cli_destination": "UPSTREAM.json",
+        "previous_staging_sha256": "503fec601a5056d56ab151c0dd5d6e4b2da2d1fdc5e4f595d4b9e466ed29dd00"
+      },
+      {
+        "destination": "WINDOWS.md",
+        "input_sha256": "afac2cfde9104fe5f6ffae9ef9f1de62f49b91282d2dee0c6dd4caf8a543caa9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "afac2cfde9104fe5f6ffae9ef9f1de62f49b91282d2dee0c6dd4caf8a543caa9",
+        "source": "WINDOWS.md",
+        "final_output_sha256": "afac2cfde9104fe5f6ffae9ef9f1de62f49b91282d2dee0c6dd4caf8a543caa9",
+        "cli_destination": "WINDOWS.md",
+        "previous_staging_sha256": "afac2cfde9104fe5f6ffae9ef9f1de62f49b91282d2dee0c6dd4caf8a543caa9"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "434d1fa15bbab41602bc4afa5e83e69883eba66abcad7a6410944a6177dd693a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "434d1fa15bbab41602bc4afa5e83e69883eba66abcad7a6410944a6177dd693a",
+        "source": "__init__.py",
+        "final_output_sha256": "434d1fa15bbab41602bc4afa5e83e69883eba66abcad7a6410944a6177dd693a",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "434d1fa15bbab41602bc4afa5e83e69883eba66abcad7a6410944a6177dd693a"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "da968d0518a5328f5cfbacbf2f54549642c9ce490fe2db00cb47fc1f9df2d9d9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "da968d0518a5328f5cfbacbf2f54549642c9ce490fe2db00cb47fc1f9df2d9d9",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "da968d0518a5328f5cfbacbf2f54549642c9ce490fe2db00cb47fc1f9df2d9d9",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "da968d0518a5328f5cfbacbf2f54549642c9ce490fe2db00cb47fc1f9df2d9d9"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "da3d91c3acd722a97d246d5d44ce509cf4008369c080e7bece6081ded6389b45",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "da3d91c3acd722a97d246d5d44ce509cf4008369c080e7bece6081ded6389b45",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "da3d91c3acd722a97d246d5d44ce509cf4008369c080e7bece6081ded6389b45",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "da3d91c3acd722a97d246d5d44ce509cf4008369c080e7bece6081ded6389b45"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "d9ae9903c8e7c56a5a48477b4ff230f345125c5877b747f7e6b34c46f595a41c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d9ae9903c8e7c56a5a48477b4ff230f345125c5877b747f7e6b34c46f595a41c",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "d9ae9903c8e7c56a5a48477b4ff230f345125c5877b747f7e6b34c46f595a41c",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "d9ae9903c8e7c56a5a48477b4ff230f345125c5877b747f7e6b34c46f595a41c"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "75625260b4f720a5beb647adbf91efd99032fd33dc92864b5bf9baa25de2bb18",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "75625260b4f720a5beb647adbf91efd99032fd33dc92864b5bf9baa25de2bb18",
+        "source": "plugin.yaml",
+        "final_output_sha256": "75625260b4f720a5beb647adbf91efd99032fd33dc92864b5bf9baa25de2bb18",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "75625260b4f720a5beb647adbf91efd99032fd33dc92864b5bf9baa25de2bb18"
+      },
+      {
+        "destination": "tests/canvas-browser.mjs",
+        "input_sha256": "5202576de7ab2e9b08496c103623ed67bb64f69b8ade30f8bb1926f6ae9b23c4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5202576de7ab2e9b08496c103623ed67bb64f69b8ade30f8bb1926f6ae9b23c4",
+        "source": "tests/canvas-browser.mjs",
+        "final_output_sha256": "5202576de7ab2e9b08496c103623ed67bb64f69b8ade30f8bb1926f6ae9b23c4",
+        "cli_destination": "tests/canvas-browser.mjs",
+        "previous_staging_sha256": "5202576de7ab2e9b08496c103623ed67bb64f69b8ade30f8bb1926f6ae9b23c4"
+      },
+      {
+        "destination": "tests/duckwork-desktop.test.ts",
+        "input_sha256": "c2ea6c0ee7c57365712a471bb727dfb5afb53a6e764e7b16d211510a19608968",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c2ea6c0ee7c57365712a471bb727dfb5afb53a6e764e7b16d211510a19608968",
+        "source": "tests/duckwork-desktop.test.ts",
+        "final_output_sha256": "c2ea6c0ee7c57365712a471bb727dfb5afb53a6e764e7b16d211510a19608968",
+        "cli_destination": "tests/duckwork-desktop.test.ts",
+        "previous_staging_sha256": "c2ea6c0ee7c57365712a471bb727dfb5afb53a6e764e7b16d211510a19608968"
+      },
+      {
+        "destination": "tests/fixtures/pre-ik-plugin.js",
+        "input_sha256": "1829e80018012bf19f6ebcbd10efd6b9540c75ddce28d834183179722dacb7af",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1829e80018012bf19f6ebcbd10efd6b9540c75ddce28d834183179722dacb7af",
+        "source": "tests/fixtures/pre-ik-plugin.js",
+        "final_output_sha256": "1829e80018012bf19f6ebcbd10efd6b9540c75ddce28d834183179722dacb7af",
+        "cli_destination": "tests/fixtures/pre-ik-plugin.js",
+        "previous_staging_sha256": "1829e80018012bf19f6ebcbd10efd6b9540c75ddce28d834183179722dacb7af"
+      },
+      {
+        "destination": "tests/layout-backend-semantics.py",
+        "input_sha256": "39e93416b41a689b9535acf38c25029054ad3b9b29bfa77b88527137e8e522d2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "39e93416b41a689b9535acf38c25029054ad3b9b29bfa77b88527137e8e522d2",
+        "source": "tests/layout-backend-semantics.py",
+        "final_output_sha256": "39e93416b41a689b9535acf38c25029054ad3b9b29bfa77b88527137e8e522d2",
+        "cli_destination": "tests/layout-backend-semantics.py",
+        "previous_staging_sha256": "39e93416b41a689b9535acf38c25029054ad3b9b29bfa77b88527137e8e522d2"
+      },
+      {
+        "destination": "tests/layout-browser.mjs",
+        "input_sha256": "c6da4da4bd11319f74b2cc0a3e16a8036ebaafc6c67eaec2cdbfe0164618404c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c6da4da4bd11319f74b2cc0a3e16a8036ebaafc6c67eaec2cdbfe0164618404c",
+        "source": "tests/layout-browser.mjs",
+        "final_output_sha256": "c6da4da4bd11319f74b2cc0a3e16a8036ebaafc6c67eaec2cdbfe0164618404c",
+        "cli_destination": "tests/layout-browser.mjs",
+        "previous_staging_sha256": "c6da4da4bd11319f74b2cc0a3e16a8036ebaafc6c67eaec2cdbfe0164618404c"
+      },
+      {
+        "destination": "tests/layout-checks.html",
+        "input_sha256": "f0a91cccb545f76aff744e5b2e131d2156bdecc1c25f42261e2f6039ac74df6a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f0a91cccb545f76aff744e5b2e131d2156bdecc1c25f42261e2f6039ac74df6a",
+        "source": "tests/layout-checks.html",
+        "final_output_sha256": "f0a91cccb545f76aff744e5b2e131d2156bdecc1c25f42261e2f6039ac74df6a",
+        "cli_destination": "tests/layout-checks.html",
+        "previous_staging_sha256": "f0a91cccb545f76aff744e5b2e131d2156bdecc1c25f42261e2f6039ac74df6a"
+      },
+      {
+        "destination": "tests/layout-preview.mjs",
+        "input_sha256": "3a5476104d2f89417bc32b3014c98d58e0b63a34b87bc8ce7a2932e3b9b625f1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3a5476104d2f89417bc32b3014c98d58e0b63a34b87bc8ce7a2932e3b9b625f1",
+        "source": "tests/layout-preview.mjs",
+        "final_output_sha256": "3a5476104d2f89417bc32b3014c98d58e0b63a34b87bc8ce7a2932e3b9b625f1",
+        "cli_destination": "tests/layout-preview.mjs",
+        "previous_staging_sha256": "3a5476104d2f89417bc32b3014c98d58e0b63a34b87bc8ce7a2932e3b9b625f1"
+      },
+      {
+        "destination": "tests/lowpoly-perf.html",
+        "input_sha256": "2ce0d82dcb48e994847aa0ac05f33a7a23f95c6457d5150a734b4d06b2125cd3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2ce0d82dcb48e994847aa0ac05f33a7a23f95c6457d5150a734b4d06b2125cd3",
+        "source": "tests/lowpoly-perf.html",
+        "final_output_sha256": "2ce0d82dcb48e994847aa0ac05f33a7a23f95c6457d5150a734b4d06b2125cd3",
+        "cli_destination": "tests/lowpoly-perf.html",
+        "previous_staging_sha256": "2ce0d82dcb48e994847aa0ac05f33a7a23f95c6457d5150a734b4d06b2125cd3"
+      },
+      {
+        "destination": "tests/pose-preview.py",
+        "input_sha256": "1c17b5aaade19711cb95d84a07b0f0e9036ca42c8b7af663a94b3dc824cb13a5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1c17b5aaade19711cb95d84a07b0f0e9036ca42c8b7af663a94b3dc824cb13a5",
+        "source": "tests/pose-preview.py",
+        "final_output_sha256": "1c17b5aaade19711cb95d84a07b0f0e9036ca42c8b7af663a94b3dc824cb13a5",
+        "cli_destination": "tests/pose-preview.py",
+        "previous_staging_sha256": "1c17b5aaade19711cb95d84a07b0f0e9036ca42c8b7af663a94b3dc824cb13a5"
+      },
+      {
+        "destination": "tests/pose-regression.html",
+        "input_sha256": "a19332a5ad4ed9f4462a37365e8cd3ed7e622268e81de5206be695e84f9d53ab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a19332a5ad4ed9f4462a37365e8cd3ed7e622268e81de5206be695e84f9d53ab",
+        "source": "tests/pose-regression.html",
+        "final_output_sha256": "a19332a5ad4ed9f4462a37365e8cd3ed7e622268e81de5206be695e84f9d53ab",
+        "cli_destination": "tests/pose-regression.html",
+        "previous_staging_sha256": "a19332a5ad4ed9f4462a37365e8cd3ed7e622268e81de5206be695e84f9d53ab"
+      },
+      {
+        "destination": "tests/profile-visibility.mjs",
+        "input_sha256": "50fe2b0c9ada3ec31ec53a1494471d40f2228efb2b5d4687a6d3e89589ef2584",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "50fe2b0c9ada3ec31ec53a1494471d40f2228efb2b5d4687a6d3e89589ef2584",
+        "source": "tests/profile-visibility.mjs",
+        "final_output_sha256": "50fe2b0c9ada3ec31ec53a1494471d40f2228efb2b5d4687a6d3e89589ef2584",
+        "cli_destination": "tests/profile-visibility.mjs",
+        "previous_staging_sha256": "50fe2b0c9ada3ec31ec53a1494471d40f2228efb2b5d4687a6d3e89589ef2584"
+      },
+      {
+        "destination": "tests/route-query.mjs",
+        "input_sha256": "ba60a9c0bd6b7e234a3a074b539bebeae0b988458a3919345bb56b0575017048",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ba60a9c0bd6b7e234a3a074b539bebeae0b988458a3919345bb56b0575017048",
+        "source": "tests/route-query.mjs",
+        "final_output_sha256": "ba60a9c0bd6b7e234a3a074b539bebeae0b988458a3919345bb56b0575017048",
+        "cli_destination": "tests/route-query.mjs",
+        "previous_staging_sha256": "ba60a9c0bd6b7e234a3a074b539bebeae0b988458a3919345bb56b0575017048"
+      },
+      {
+        "destination": "tests/sofa-preview.py",
+        "input_sha256": "bcff5e64d4edd4df52db6c7b14b0c204018b9abb944ee5a84cca5fe05d8bf69d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bcff5e64d4edd4df52db6c7b14b0c204018b9abb944ee5a84cca5fe05d8bf69d",
+        "source": "tests/sofa-preview.py",
+        "final_output_sha256": "bcff5e64d4edd4df52db6c7b14b0c204018b9abb944ee5a84cca5fe05d8bf69d",
+        "cli_destination": "tests/sofa-preview.py",
+        "previous_staging_sha256": "bcff5e64d4edd4df52db6c7b14b0c204018b9abb944ee5a84cca5fe05d8bf69d"
+      },
+      {
+        "destination": "tests/sofa-regression.html",
+        "input_sha256": "ed97c8c2e2351fa86598e64a9b27206c04e521a5e116120e1a679633d6b24244",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ed97c8c2e2351fa86598e64a9b27206c04e521a5e116120e1a679633d6b24244",
+        "source": "tests/sofa-regression.html",
+        "final_output_sha256": "ed97c8c2e2351fa86598e64a9b27206c04e521a5e116120e1a679633d6b24244",
+        "cli_destination": "tests/sofa-regression.html",
+        "previous_staging_sha256": "ed97c8c2e2351fa86598e64a9b27206c04e521a5e116120e1a679633d6b24244"
+      },
+      {
+        "destination": "tests/test_display_name.py",
+        "input_sha256": "d09ffc59cd480e6008ad5dd03e2c2f68466fb9faa0a5aac79c0638024abd590d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d09ffc59cd480e6008ad5dd03e2c2f68466fb9faa0a5aac79c0638024abd590d",
+        "source": "tests/test_display_name.py",
+        "final_output_sha256": "d09ffc59cd480e6008ad5dd03e2c2f68466fb9faa0a5aac79c0638024abd590d",
+        "cli_destination": "tests/test_display_name.py",
+        "previous_staging_sha256": "d09ffc59cd480e6008ad5dd03e2c2f68466fb9faa0a5aac79c0638024abd590d"
+      },
+      {
+        "destination": "tests/test_fleet_root.py",
+        "input_sha256": "5f64cac242ac1a99131275aa40f2b6df6ae3f935f9699af702223234edb05824",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5f64cac242ac1a99131275aa40f2b6df6ae3f935f9699af702223234edb05824",
+        "source": "tests/test_fleet_root.py",
+        "final_output_sha256": "5f64cac242ac1a99131275aa40f2b6df6ae3f935f9699af702223234edb05824",
+        "cli_destination": "tests/test_fleet_root.py",
+        "previous_staging_sha256": "5f64cac242ac1a99131275aa40f2b6df6ae3f935f9699af702223234edb05824"
+      },
+      {
+        "destination": "tests/test_gateway_liveness.py",
+        "input_sha256": "7b2c31179434fa5af3eab767f0015d07ef0d9905e3688df8d11b7873b24445ff",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7b2c31179434fa5af3eab767f0015d07ef0d9905e3688df8d11b7873b24445ff",
+        "source": "tests/test_gateway_liveness.py",
+        "final_output_sha256": "7b2c31179434fa5af3eab767f0015d07ef0d9905e3688df8d11b7873b24445ff",
+        "cli_destination": "tests/test_gateway_liveness.py",
+        "previous_staging_sha256": "7b2c31179434fa5af3eab767f0015d07ef0d9905e3688df8d11b7873b24445ff"
+      },
+      {
+        "destination": "tests/test_profile_discovery.py",
+        "input_sha256": "aca62bb0a9000cda621c1184f3fc72467a25123fd666dc2e2cfed7a79beb3311",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "aca62bb0a9000cda621c1184f3fc72467a25123fd666dc2e2cfed7a79beb3311",
+        "source": "tests/test_profile_discovery.py",
+        "final_output_sha256": "aca62bb0a9000cda621c1184f3fc72467a25123fd666dc2e2cfed7a79beb3311",
+        "cli_destination": "tests/test_profile_discovery.py",
+        "previous_staging_sha256": "aca62bb0a9000cda621c1184f3fc72467a25123fd666dc2e2cfed7a79beb3311"
+      },
+      {
+        "destination": "tests/vitest.config.mts",
+        "input_sha256": "76350e178931eb178a3eece1a68ef2d03b1aa7e87091b1ae266e75c61c581f6a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "76350e178931eb178a3eece1a68ef2d03b1aa7e87091b1ae266e75c61c581f6a",
+        "source": "tests/vitest.config.mts",
+        "final_output_sha256": "76350e178931eb178a3eece1a68ef2d03b1aa7e87091b1ae266e75c61c581f6a",
+        "cli_destination": "tests/vitest.config.mts",
+        "previous_staging_sha256": "76350e178931eb178a3eece1a68ef2d03b1aa7e87091b1ae266e75c61c581f6a"
+      },
+      {
+        "destination": "tests/wheel-browser.mjs",
+        "input_sha256": "6e16e2c3a89d7778d7c6c43d2d6ac4d15f9c5f9ca5be26b7b7f7fb384de3c5b4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6e16e2c3a89d7778d7c6c43d2d6ac4d15f9c5f9ca5be26b7b7f7fb384de3c5b4",
+        "source": "tests/wheel-browser.mjs",
+        "final_output_sha256": "6e16e2c3a89d7778d7c6c43d2d6ac4d15f9c5f9ca5be26b7b7f7fb384de3c5b4",
+        "cli_destination": "tests/wheel-browser.mjs",
+        "previous_staging_sha256": "6e16e2c3a89d7778d7c6c43d2d6ac4d15f9c5f9ca5be26b7b7f7fb384de3c5b4"
+      },
+      {
+        "destination": "tests/wheel-checks.html",
+        "input_sha256": "5135df2e90588b7cb42ec1e917881216865b2d1514d509d978c241c58e584edf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5135df2e90588b7cb42ec1e917881216865b2d1514d509d978c241c58e584edf",
+        "source": "tests/wheel-checks.html",
+        "final_output_sha256": "5135df2e90588b7cb42ec1e917881216865b2d1514d509d978c241c58e584edf",
+        "cli_destination": "tests/wheel-checks.html",
+        "previous_staging_sha256": "5135df2e90588b7cb42ec1e917881216865b2d1514d509d978c241c58e584edf"
+      }
+    ],
+    "manifest_sha256": "e107b9062670cec081611cf1c55970e361990909c2c47ad31b2283d1387903d3",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "CHANGELOG.md": "plugins/office-3d/CHANGELOG.md",
+    "LICENSE": "plugins/office-3d/LICENSE",
+    "README.md": "plugins/office-3d/README.md",
+    "README.zh-CN.md": "plugins/office-3d/README.zh-CN.md",
+    "RELEASING.md": "plugins/office-3d/RELEASING.md",
+    "UPSTREAM.json": "plugins/office-3d/UPSTREAM.json",
+    "WINDOWS.md": "plugins/office-3d/WINDOWS.md",
+    "__init__.py": "plugins/office-3d/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "dashboard/manifest.json": "plugins/office-3d/dashboard/manifest.json",
+    "dashboard/plugin_api.py": "plugins/office-3d/dashboard/plugin_api.py",
+    "desktop/plugin.js": "plugins/office-3d/desktop/plugin.js",
+    "plugin.yaml": "plugins/office-3d/plugin.yaml",
+    "tests/canvas-browser.mjs": "plugins/office-3d/tests/canvas-browser.mjs",
+    "tests/duckwork-desktop.test.ts": "plugins/office-3d/tests/duckwork-desktop.test.ts",
+    "tests/fixtures/pre-ik-plugin.js": "plugins/office-3d/tests/fixtures/pre-ik-plugin.js",
+    "tests/layout-backend-semantics.py": "plugins/office-3d/tests/layout-backend-semantics.py",
+    "tests/layout-browser.mjs": "plugins/office-3d/tests/layout-browser.mjs",
+    "tests/layout-checks.html": "plugins/office-3d/tests/layout-checks.html",
+    "tests/layout-preview.mjs": "plugins/office-3d/tests/layout-preview.mjs",
+    "tests/lowpoly-perf.html": "plugins/office-3d/tests/lowpoly-perf.html",
+    "tests/pose-preview.py": "plugins/office-3d/tests/pose-preview.py",
+    "tests/pose-regression.html": "plugins/office-3d/tests/pose-regression.html",
+    "tests/profile-visibility.mjs": "plugins/office-3d/tests/profile-visibility.mjs",
+    "tests/route-query.mjs": "plugins/office-3d/tests/route-query.mjs",
+    "tests/sofa-preview.py": "plugins/office-3d/tests/sofa-preview.py",
+    "tests/sofa-regression.html": "plugins/office-3d/tests/sofa-regression.html",
+    "tests/test_display_name.py": "plugins/office-3d/tests/test_display_name.py",
+    "tests/test_fleet_root.py": "plugins/office-3d/tests/test_fleet_root.py",
+    "tests/test_gateway_liveness.py": "plugins/office-3d/tests/test_gateway_liveness.py",
+    "tests/test_profile_discovery.py": "plugins/office-3d/tests/test_profile_discovery.py",
+    "tests/vitest.config.mts": "plugins/office-3d/tests/vitest.config.mts",
+    "tests/wheel-browser.mjs": "plugins/office-3d/tests/wheel-browser.mjs",
+    "tests/wheel-checks.html": "plugins/office-3d/tests/wheel-checks.html"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "office-3d",
+    "python_files_compiled": 9,
+    "secret_findings": 0
+  },
+  "canonical_slug": "office-3d",
+  "catalog_file": "src/plugin-catalog/office-3d.yaml",
+  "identity": {
+    "catalog_id": "office-3d",
+    "canonical_slug": "office-3d",
+    "original_manifest_name": "office-3d",
+    "rebranded_manifest_name": "office-3d",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "36fd2282d3f06c4c7f17e60d90037c7eae811b604957a65bb0215bde571c61df",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "UPSTREAM.json",
+          "after_path": "UPSTREAM.json",
+          "before_sha256": "503fec601a5056d56ab151c0dd5d6e4b2da2d1fdc5e4f595d4b9e466ed29dd00",
+          "after_sha256": "878cb66f0d164d7e9e2a82c390da5bfff98cf404438b908e539b7b8b27ab634a",
+          "before_bytes": 3462,
+          "after_bytes": 3459,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

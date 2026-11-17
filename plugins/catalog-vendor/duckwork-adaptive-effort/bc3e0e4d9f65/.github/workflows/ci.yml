@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, python: '3.11', coverage: false}
+          - {os: ubuntu-24.04, python: '3.12', coverage: true}
+          - {os: ubuntu-24.04, python: '3.14', coverage: false}
+          - {os: windows-2025, python: '3.12', coverage: false}
+    env:
+      DUCKWORK_SOURCE_ROOT: ${{ github.workspace }}/.ci/duckwork
+      PYTHONPATH: ${{ github.workspace }}/.ci/duckwork
+      DUCKWORK_HOME: ${{ github.workspace }}/.ci/home
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out the verified Duckwork host
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: 0a374d167424cdc730ce9761368b62255b551e58
+          path: .ci/duckwork
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Prepare and test (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r requirements-dev.txt
+          .venv/bin/python -c "import agent.reasoning_effort; import duckwork_cli.plugins"
+          if [ "${{ matrix.coverage }}" == "true" ]; then
+            ./scripts/run_tests.sh --junitxml=test-results.xml --cov=. --cov-report=xml:coverage.xml --cov-report=term
+          else
+            ./scripts/run_tests.sh --junitxml=test-results.xml
+          fi
+      - name: Prepare and test (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .venv/Scripts/python.exe -m pip install -r requirements-dev.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
+          .venv/Scripts/python.exe -c "import agent.reasoning_effort; import duckwork_cli.plugins"
+          if ($LASTEXITCODE -ne 0) { throw 'Duckwork imports failed' }
+          ./scripts/run_tests.ps1 --junitxml=test-results.xml
+      - name: Require real integration tests and no skips
+        run: python .github/scripts/verify_test_report.py test-results.xml
+      - name: Retain test report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tests-${{ matrix.os }}-${{ matrix.python }}
+          path: test-results.xml
+          retention-days: 7
+          if-no-files-found: error
+      - name: Retain coverage report
+        if: always() && matrix.coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-${{ matrix.os }}-${{ matrix.python }}
+          path: coverage.xml
+          retention-days: 7
+          if-no-files-found: ignore
+
+  lint:
+    name: Lint and workflow validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Python lint
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -r requirements-dev.txt
+          ./scripts/run_lint.sh
+          .venv/bin/ruff check .github/scripts
+      - name: Desktop JavaScript syntax and behavior
+        run: |
+          node --check desktop/plugin.js
+          node --test tests/desktop_decision_event_behavior.test.mjs
+      - name: GitHub workflow validation
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12

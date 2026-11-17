@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=75,<82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "surp-duckwork-x402-llm"
+version = "0.5.0"
+description = "Jev-integrated smart LLM routing tools for Duckwork Agent"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "ivcained"}]
+keywords = ["duckwork-agent", "x402", "llm", "usdc", "surp", "jev", "typesafe", "decision-model", "smart-routing"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "https://surp.ivc.lol"
+Repository = "https://github.com/DuckMind/duckwork"
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools]
+py-modules = ["client", "handlers", "schemas"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

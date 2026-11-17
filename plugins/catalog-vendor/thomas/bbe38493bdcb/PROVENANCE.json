@@ -1,0 +1,536 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "thomas",
+  "content_id": "bbe38493bdcb",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 70,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "5c8bffff18d7568603f0a461ca1fd174c7fa2d0d16f7e6c34d7607b85fab29ce"
+    },
+    {
+      "bytes": 1072,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "c37caef52c441b2577237182540941b23303be7db11b3b2fdba66da36fb00c6c"
+    },
+    {
+      "bytes": 8451,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "c85897f1ef57b29f2346d601b28aa426b270111fdb9b5aa15dcb08548b8a44f6"
+    },
+    {
+      "bytes": 1695,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "c4b414f0401a91befe2c3df3313d8d7500c1b971fe1441b4deeac60a456fd867"
+    },
+    {
+      "bytes": 1307,
+      "mode": "100644",
+      "path": "catalog/thomas.yaml",
+      "sha256": "681847e27c06c9cf24fa760403d957fe807f5b2e9718144d690912c39fe080be"
+    },
+    {
+      "bytes": 650,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "1a72e0e55fa0ae43220325de3aaf85ee87b3747180027bded6bf552c60c3849c"
+    },
+    {
+      "bytes": 985,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "9b0e60df4c8fb2aa3f7f4c70848a245799fc87ad2a9311da0a9d4f64cd40282f"
+    },
+    {
+      "bytes": 2175,
+      "mode": "100644",
+      "path": "runners/predict_runner.py",
+      "sha256": "b1ed4b323c801cb8c316eb883487ed3228ee4560283e12fe5af42b63a1ad6322"
+    },
+    {
+      "bytes": 4380,
+      "mode": "100644",
+      "path": "runners/train_runner.py",
+      "sha256": "1c4d46f515e2ae56bd13feda99646fcba88268668044bb61f14f0f8e26ddc05f"
+    },
+    {
+      "bytes": 5528,
+      "mode": "100644",
+      "path": "schemas.py",
+      "sha256": "3f6616088d203ecde3dae338e4cc48e487dc83b20e35fc25f452ea1d7aff55d2"
+    },
+    {
+      "bytes": 2550,
+      "mode": "100644",
+      "path": "skills/thomas-encoder/SKILL.md",
+      "sha256": "39d0be262ff6b6b44047bb9dac3431129d748e21827fbe3fb7c98907cad88aa2"
+    },
+    {
+      "bytes": 552,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "b23d24d2c00132899a4ce159cdf9dbd20b1f49f2f9fe2bf54609b2511d23df74"
+    },
+    {
+      "bytes": 2371,
+      "mode": "100644",
+      "path": "tests/test_registration.py",
+      "sha256": "15b47551bd5e0e1d20f158aadd413857a59d9a9dd9e28d93271e6a15e09bc0da"
+    },
+    {
+      "bytes": 14974,
+      "mode": "100644",
+      "path": "tests/test_tools.py",
+      "sha256": "70a312bf73c5c7cd2f79bec2674d6939baf707a080f5d5db5b21cea9b75709c7"
+    },
+    {
+      "bytes": 25678,
+      "mode": "100644",
+      "path": "tools.py",
+      "sha256": "aa8f609d111d5b4c0a64c9258de8b520bb35514b200a3e5dc478d6f53d6dff25"
+    }
+  ],
+  "input_manifest_sha256": "bbe38493bdcb3031321d1a4a53ece71d1c5469902a54c96046d8889fb5bc9e46",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "c37caef52c441b2577237182540941b23303be7db11b3b2fdba66da36fb00c6c",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "catalog/thomas.yaml",
+      "plugin.yaml",
+      "pyproject.toml",
+      "skills/thomas-encoder/SKILL.md",
+      "tests/conftest.py",
+      "tools.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/keppy/hermes-plugin-thomas",
+    "sha": "b087cf158905e62b16c02e7bb1aa38691186ea6b",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/keppy/hermes-plugin-thomas",
+  "original_sha": "b087cf158905e62b16c02e7bb1aa38691186ea6b",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "5c8bffff18d7568603f0a461ca1fd174c7fa2d0d16f7e6c34d7607b85fab29ce",
+      "bytes": 70,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "c37caef52c441b2577237182540941b23303be7db11b3b2fdba66da36fb00c6c",
+      "bytes": 1072,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4a6cf3e1b6577e9debbe69482f1034be6b8d18b2a21ff8d1b6f0641eef5d04ce",
+      "bytes": 8463,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "58273b8ed5467f3d2e766dc7e323d0984d685715e9f10cd5a1feed0f2e22c940",
+      "bytes": 1697,
+      "mode": "100644"
+    },
+    {
+      "path": "catalog/thomas.yaml",
+      "sha256": "b1e6b72db83c54cf1c30717b80ca46dff85abe59ed0cf07d41b9467792c946fb",
+      "bytes": 1282,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "fab152438fa57e3aaeeb421cd3335f4a49ae7e5cf0c7a06549c746629e11f020",
+      "bytes": 641,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "e9cec6b5035a6133ce9614825d2d8985d5c7d5cc7276a6ba640ecd1e54eef515",
+      "bytes": 977,
+      "mode": "100644"
+    },
+    {
+      "path": "runners/predict_runner.py",
+      "sha256": "b1ed4b323c801cb8c316eb883487ed3228ee4560283e12fe5af42b63a1ad6322",
+      "bytes": 2175,
+      "mode": "100644"
+    },
+    {
+      "path": "runners/train_runner.py",
+      "sha256": "1c4d46f515e2ae56bd13feda99646fcba88268668044bb61f14f0f8e26ddc05f",
+      "bytes": 4380,
+      "mode": "100644"
+    },
+    {
+      "path": "schemas.py",
+      "sha256": "3f6616088d203ecde3dae338e4cc48e487dc83b20e35fc25f452ea1d7aff55d2",
+      "bytes": 5528,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/thomas-encoder/SKILL.md",
+      "sha256": "ceff0ada33c2c31054aa5e28b1684329e42b9457dfd5a50542d544c848f1ebdd",
+      "bytes": 2554,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "8b1ebd72699fdbcba6c8ccc6338e7dc34af0a66f3ddece3acf156ac0061b1749",
+      "bytes": 554,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_registration.py",
+      "sha256": "15b47551bd5e0e1d20f158aadd413857a59d9a9dd9e28d93271e6a15e09bc0da",
+      "bytes": 2371,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tools.py",
+      "sha256": "70a312bf73c5c7cd2f79bec2674d6939baf707a080f5d5db5b21cea9b75709c7",
+      "bytes": 14974,
+      "mode": "100644"
+    },
+    {
+      "path": "tools.py",
+      "sha256": "34409bf2e3d4463e652b12c8c9251f50c2c2e3be65e836b26164a260ff156a0c",
+      "bytes": 25708,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "2c52d2466ee469fe178f01cbd5b89d7a37dbc7081939fa4b181efe920d901d98",
+  "pin_verification": {
+    "archive_bytes": 22778,
+    "archive_sha256": "0922124587b5c6e23b14af0e0db1a6647513beba4ad21bd5c017193abb14ea27",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "b087cf158905e62b16c02e7bb1aa38691186ea6b",
+    "verified_commit_marker": "b087cf158905e62b16c02e7bb1aa38691186ea6b"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "e710b4cfb09ce50734661c8daa13227c826cbc3ded5abba69a71198fcba6af42",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "5c8bffff18d7568603f0a461ca1fd174c7fa2d0d16f7e6c34d7607b85fab29ce",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5c8bffff18d7568603f0a461ca1fd174c7fa2d0d16f7e6c34d7607b85fab29ce",
+        "source": ".gitignore",
+        "final_output_sha256": "5c8bffff18d7568603f0a461ca1fd174c7fa2d0d16f7e6c34d7607b85fab29ce",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "5c8bffff18d7568603f0a461ca1fd174c7fa2d0d16f7e6c34d7607b85fab29ce"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "c37caef52c441b2577237182540941b23303be7db11b3b2fdba66da36fb00c6c",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "c37caef52c441b2577237182540941b23303be7db11b3b2fdba66da36fb00c6c",
+        "source": "LICENSE",
+        "final_output_sha256": "c37caef52c441b2577237182540941b23303be7db11b3b2fdba66da36fb00c6c",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "c37caef52c441b2577237182540941b23303be7db11b3b2fdba66da36fb00c6c"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "c85897f1ef57b29f2346d601b28aa426b270111fdb9b5aa15dcb08548b8a44f6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7aa3781d0b98ae50d736677f7c12d5519a4d7bee97d74f9dd9234d960ab4af83",
+        "source": "README.md",
+        "final_output_sha256": "4a6cf3e1b6577e9debbe69482f1034be6b8d18b2a21ff8d1b6f0641eef5d04ce",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "7aa3781d0b98ae50d736677f7c12d5519a4d7bee97d74f9dd9234d960ab4af83"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "c4b414f0401a91befe2c3df3313d8d7500c1b971fe1441b4deeac60a456fd867",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "58273b8ed5467f3d2e766dc7e323d0984d685715e9f10cd5a1feed0f2e22c940",
+        "source": "__init__.py",
+        "final_output_sha256": "58273b8ed5467f3d2e766dc7e323d0984d685715e9f10cd5a1feed0f2e22c940",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "58273b8ed5467f3d2e766dc7e323d0984d685715e9f10cd5a1feed0f2e22c940"
+      },
+      {
+        "destination": "catalog/thomas.yaml",
+        "input_sha256": "681847e27c06c9cf24fa760403d957fe807f5b2e9718144d690912c39fe080be",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "01233aa4447c4ffa9399e8a5571142575ad46567fe5a4649cb4ae7d37af4f7ea",
+        "source": "catalog/thomas.yaml",
+        "final_output_sha256": "b1e6b72db83c54cf1c30717b80ca46dff85abe59ed0cf07d41b9467792c946fb",
+        "cli_destination": "catalog/thomas.yaml",
+        "previous_staging_sha256": "01233aa4447c4ffa9399e8a5571142575ad46567fe5a4649cb4ae7d37af4f7ea"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "1a72e0e55fa0ae43220325de3aaf85ee87b3747180027bded6bf552c60c3849c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1a72e0e55fa0ae43220325de3aaf85ee87b3747180027bded6bf552c60c3849c",
+        "source": "plugin.yaml",
+        "final_output_sha256": "fab152438fa57e3aaeeb421cd3335f4a49ae7e5cf0c7a06549c746629e11f020",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "1a72e0e55fa0ae43220325de3aaf85ee87b3747180027bded6bf552c60c3849c"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "9b0e60df4c8fb2aa3f7f4c70848a245799fc87ad2a9311da0a9d4f64cd40282f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "716681d8e9360eb835f1f4c9db77319c6e036b5e0c2e561a93a151d110e7c819",
+        "source": "pyproject.toml",
+        "final_output_sha256": "e9cec6b5035a6133ce9614825d2d8985d5c7d5cc7276a6ba640ecd1e54eef515",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "716681d8e9360eb835f1f4c9db77319c6e036b5e0c2e561a93a151d110e7c819"
+      },
+      {
+        "destination": "runners/predict_runner.py",
+        "input_sha256": "b1ed4b323c801cb8c316eb883487ed3228ee4560283e12fe5af42b63a1ad6322",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b1ed4b323c801cb8c316eb883487ed3228ee4560283e12fe5af42b63a1ad6322",
+        "source": "runners/predict_runner.py",
+        "final_output_sha256": "b1ed4b323c801cb8c316eb883487ed3228ee4560283e12fe5af42b63a1ad6322",
+        "cli_destination": "runners/predict_runner.py",
+        "previous_staging_sha256": "b1ed4b323c801cb8c316eb883487ed3228ee4560283e12fe5af42b63a1ad6322"
+      },
+      {
+        "destination": "runners/train_runner.py",
+        "input_sha256": "1c4d46f515e2ae56bd13feda99646fcba88268668044bb61f14f0f8e26ddc05f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1c4d46f515e2ae56bd13feda99646fcba88268668044bb61f14f0f8e26ddc05f",
+        "source": "runners/train_runner.py",
+        "final_output_sha256": "1c4d46f515e2ae56bd13feda99646fcba88268668044bb61f14f0f8e26ddc05f",
+        "cli_destination": "runners/train_runner.py",
+        "previous_staging_sha256": "1c4d46f515e2ae56bd13feda99646fcba88268668044bb61f14f0f8e26ddc05f"
+      },
+      {
+        "destination": "schemas.py",
+        "input_sha256": "3f6616088d203ecde3dae338e4cc48e487dc83b20e35fc25f452ea1d7aff55d2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3f6616088d203ecde3dae338e4cc48e487dc83b20e35fc25f452ea1d7aff55d2",
+        "source": "schemas.py",
+        "final_output_sha256": "3f6616088d203ecde3dae338e4cc48e487dc83b20e35fc25f452ea1d7aff55d2",
+        "cli_destination": "schemas.py",
+        "previous_staging_sha256": "3f6616088d203ecde3dae338e4cc48e487dc83b20e35fc25f452ea1d7aff55d2"
+      },
+      {
+        "destination": "skills/thomas-encoder/SKILL.md",
+        "input_sha256": "39d0be262ff6b6b44047bb9dac3431129d748e21827fbe3fb7c98907cad88aa2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ceff0ada33c2c31054aa5e28b1684329e42b9457dfd5a50542d544c848f1ebdd",
+        "source": "skills/thomas-encoder/SKILL.md",
+        "final_output_sha256": "ceff0ada33c2c31054aa5e28b1684329e42b9457dfd5a50542d544c848f1ebdd",
+        "cli_destination": "skills/thomas-encoder/SKILL.md",
+        "previous_staging_sha256": "ceff0ada33c2c31054aa5e28b1684329e42b9457dfd5a50542d544c848f1ebdd"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "b23d24d2c00132899a4ce159cdf9dbd20b1f49f2f9fe2bf54609b2511d23df74",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8b1ebd72699fdbcba6c8ccc6338e7dc34af0a66f3ddece3acf156ac0061b1749",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "8b1ebd72699fdbcba6c8ccc6338e7dc34af0a66f3ddece3acf156ac0061b1749",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "8b1ebd72699fdbcba6c8ccc6338e7dc34af0a66f3ddece3acf156ac0061b1749"
+      },
+      {
+        "destination": "tests/test_registration.py",
+        "input_sha256": "15b47551bd5e0e1d20f158aadd413857a59d9a9dd9e28d93271e6a15e09bc0da",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "15b47551bd5e0e1d20f158aadd413857a59d9a9dd9e28d93271e6a15e09bc0da",
+        "source": "tests/test_registration.py",
+        "final_output_sha256": "15b47551bd5e0e1d20f158aadd413857a59d9a9dd9e28d93271e6a15e09bc0da",
+        "cli_destination": "tests/test_registration.py",
+        "previous_staging_sha256": "15b47551bd5e0e1d20f158aadd413857a59d9a9dd9e28d93271e6a15e09bc0da"
+      },
+      {
+        "destination": "tests/test_tools.py",
+        "input_sha256": "70a312bf73c5c7cd2f79bec2674d6939baf707a080f5d5db5b21cea9b75709c7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "70a312bf73c5c7cd2f79bec2674d6939baf707a080f5d5db5b21cea9b75709c7",
+        "source": "tests/test_tools.py",
+        "final_output_sha256": "70a312bf73c5c7cd2f79bec2674d6939baf707a080f5d5db5b21cea9b75709c7",
+        "cli_destination": "tests/test_tools.py",
+        "previous_staging_sha256": "70a312bf73c5c7cd2f79bec2674d6939baf707a080f5d5db5b21cea9b75709c7"
+      },
+      {
+        "destination": "tools.py",
+        "input_sha256": "aa8f609d111d5b4c0a64c9258de8b520bb35514b200a3e5dc478d6f53d6dff25",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "34409bf2e3d4463e652b12c8c9251f50c2c2e3be65e836b26164a260ff156a0c",
+        "source": "tools.py",
+        "final_output_sha256": "34409bf2e3d4463e652b12c8c9251f50c2c2e3be65e836b26164a260ff156a0c",
+        "cli_destination": "tools.py",
+        "previous_staging_sha256": "34409bf2e3d4463e652b12c8c9251f50c2c2e3be65e836b26164a260ff156a0c"
+      }
+    ],
+    "manifest_sha256": "47f9a74b09d3cd496dd032335d5b44da96997189ffdef3a462cc43ec05b3a28d",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "catalog/thomas.yaml": "catalog/thomas.yaml",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "runners/predict_runner.py": "runners/predict_runner.py",
+    "runners/train_runner.py": "runners/train_runner.py",
+    "schemas.py": "schemas.py",
+    "skills/thomas-encoder/SKILL.md": "skills/thomas-encoder/SKILL.md",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/test_registration.py": "tests/test_registration.py",
+    "tests/test_tools.py": "tests/test_tools.py",
+    "tools.py": "tools.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "thomas",
+    "python_files_compiled": 8,
+    "secret_findings": 0
+  },
+  "canonical_slug": "thomas",
+  "catalog_file": "src/plugin-catalog/thomas.yaml",
+  "identity": {
+    "catalog_id": "thomas",
+    "canonical_slug": "thomas",
+    "original_manifest_name": "thomas",
+    "rebranded_manifest_name": "thomas",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "ba14c07cb77b160f4e267f96f6cc9f0a970de8f97fa2bfe915adb3494bd56fbc",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "7aa3781d0b98ae50d736677f7c12d5519a4d7bee97d74f9dd9234d960ab4af83",
+          "after_sha256": "4a6cf3e1b6577e9debbe69482f1034be6b8d18b2a21ff8d1b6f0641eef5d04ce",
+          "before_bytes": 8493,
+          "after_bytes": 8463,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "catalog/thomas.yaml",
+          "after_path": "catalog/thomas.yaml",
+          "before_sha256": "01233aa4447c4ffa9399e8a5571142575ad46567fe5a4649cb4ae7d37af4f7ea",
+          "after_sha256": "b1e6b72db83c54cf1c30717b80ca46dff85abe59ed0cf07d41b9467792c946fb",
+          "before_bytes": 1307,
+          "after_bytes": 1282,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "1a72e0e55fa0ae43220325de3aaf85ee87b3747180027bded6bf552c60c3849c",
+          "after_sha256": "fab152438fa57e3aaeeb421cd3335f4a49ae7e5cf0c7a06549c746629e11f020",
+          "before_bytes": 650,
+          "after_bytes": 641,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "716681d8e9360eb835f1f4c9db77319c6e036b5e0c2e561a93a151d110e7c819",
+          "after_sha256": "e9cec6b5035a6133ce9614825d2d8985d5c7d5cc7276a6ba640ecd1e54eef515",
+          "before_bytes": 995,
+          "after_bytes": 977,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

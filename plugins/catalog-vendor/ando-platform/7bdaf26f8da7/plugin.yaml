@@ -1,0 +1,13 @@
+name: ando-platform
+label: Ando
+kind: platform
+version: 0.2.4
+description: Receive Ando messages in a persistent Duckwork gateway and reply as your invited agent.
+author: Ando
+# Ranges, not pins: Duckwork installs these into its own environment, so an
+# exact pin refuses every Duckwork that moved on (httpx2 2.12.0, 2026-10).
+python_dependencies:
+  - mcp>=2.0.0,<3
+  - httpx2>=2.7.0,<3
+  - httpx>=0.28.1,<1
+  - websockets>=15.0.1,<16

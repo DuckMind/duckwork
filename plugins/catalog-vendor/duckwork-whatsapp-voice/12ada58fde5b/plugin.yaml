@@ -1,0 +1,100 @@
+name: duckwork-whatsapp-voice
+label: WhatsApp Voice Calls
+kind: standalone
+version: 0.1.12
+manifest_version: 2
+api_version: 1
+description: >-
+  Live voice calls with Duckwork over WhatsApp. Call your bot's number and talk to
+  Duckwork, or let Duckwork call you for things that matter. Uses a linked-device
+  sidecar and Gemini Live speech-to-speech.
+author: Ashwanth Balakrishnan
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags: [whatsapp, voice, calls, gemini-live]
+platforms: [linux, macos]
+requires_duckwork: ">=0.21.5"
+provides_tools:
+  - whatsapp_call_owner
+  - whatsapp_call_status
+# Gemini: reuses the key of Duckwork's own Gemini provider (GOOGLE_API_KEY, else GEMINI_API_KEY).
+optional_env:
+  - name: GOOGLE_API_KEY
+    description: "Gemini API key, shared with Duckwork's Gemini provider (only needed if Duckwork doesn't have one yet)"
+    url: "https://aistudio.google.com/apikey"
+    secret: true
+  - name: API_SERVER_KEY
+    description: "Duckwork API server key; lets the voice agent hand real work to Duckwork during a call"
+    secret: true
+config_schema:
+  owner_number:
+    type: str
+    default: ""
+    required: true
+    label: "Your WhatsApp number"
+    description: "International format, e.g. +15551234567. The only number called, and the only caller answered."
+  voice_model:
+    type: str
+    default: "gemini-3.8-live"
+    label: "Voice model"
+    description: "Gemini Live model ID."
+  voice:
+    type: str
+    default: "Kore"
+    label: "Voice"
+    description: "Gemini prebuilt voice, e.g. Kore, Puck, Charon."
+  assistant_name:
+    type: str
+    default: "Duckwork"
+    label: "Fallback name"
+    description: "Used only when Duckwork gives no persona briefing."
+  languages:
+    type: str
+    default: ""
+    label: "Languages"
+    description: "Comma-separated language codes the voice may speak and listen for, e.g. en-US, ta-IN. Empty: any language."
+  voice_instructions:
+    type: str
+    default: ""
+    label: "Voice instructions"
+    description: "Your own rules for the voice: language, tone, call length."
+  ring_timeout_seconds:
+    type: int
+    default: 45
+    label: "Ring time (seconds)"
+    description: "How long an outgoing call rings before it counts as unanswered."
+  max_call_minutes:
+    type: int
+    default: 15
+    label: "Longest call (minutes)"
+    description: "Calls end automatically after this."
+  silence_hangup_seconds:
+    type: int
+    default: 180
+    label: "Hang up after silence (seconds)"
+    description: "Ends a call when nobody has spoken for this long, e.g. left on hold."
+  answer_inbound:
+    type: bool
+    default: true
+    label: "Answer my calls"
+    description: "Pick up when your number calls the bot. Other callers are never answered."
+  send_summary:
+    type: bool
+    default: true
+    label: "Send call summary"
+    description: "Message a short WhatsApp summary after each call."
+  live_config:
+    type: dict
+    default: {}
+    label: "Gemini Live overrides"
+    description: "Any Live API setup field, merged over the defaults. Reference: https://ai.google.dev/api/live"
+  listen:
+    type: str
+    default: "127.0.0.1:8796"
+    label: "Sidecar address"
+    description: "Loopback address of the sidecar's local API."
+  duckwork_api_url:
+    type: str
+    default: "http://127.0.0.1:8642"
+    label: "Duckwork API URL"
+    description: "Where the voice reaches Duckwork."

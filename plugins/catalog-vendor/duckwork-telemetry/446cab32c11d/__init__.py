@@ -1,0 +1,875 @@
+"""duckwork-telemetry plugin — observability for Duckwork Agent.
+
+Captures tokens, cost, latency, and tool calls per session and cron job.
+Persists to local SQLite. Exposes /stats slash command.
+
+All telemetry capture goes through hooks; zero agent-visible surface except /stats.
+Errors are caught silently — telemetry never takes down a session.
+"""
+
+from __future__ import annotations
+
+__version__ = "0.9.1"
+
+import json
+import logging
+import os
+import re
+import threading
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Optional
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Approximate token store for pre_api_request → post_api_request correlation
+# ---------------------------------------------------------------------------
+_approx_store: dict[tuple, int] = {}
+_approx_lock = threading.Lock()
+
+# ---------------------------------------------------------------------------
+# One-time warning set: tracks providers already warned about estimated usage.
+# Used in post_api_request to avoid repeating the Fordex Portal probe warning.
+# ---------------------------------------------------------------------------
+_fordex_estimated_warned: set = set()
+
+# Free→paid transition alerts (issue #16).
+# Maps session_id → (model, cost_usd) for the first paid call after a series
+# of $0 calls on the same (model, provider). Injected into context by
+# pre_llm_call and cleared immediately after injection so it fires only once.
+_pending_free_paid_alerts: dict[str, tuple[str, float]] = {}
+_pending_free_paid_lock = threading.Lock()
+
+# Model-unavailable alerts (issue #43).
+# Maps session_id → (model, provider, error_code, occurrences) for the latest
+# 404 (or other "model removed") error captured by the api_request_error hook.
+# Injected into context by pre_llm_call exactly once per session, then cleared.
+_pending_model_unavailable_alerts: dict[str, tuple[str, str, int, int]] = {}
+_pending_model_unavailable_lock = threading.Lock()
+
+# Characters per token estimate (used when usage=None)
+_CHARS_PER_TOKEN = 4
+
+# ---------------------------------------------------------------------------
+# Pricing-snapshot capture throttle (v14). get_pricing_entry (Duckwork core) can
+# do network I/O for custom endpoints, so we resolve+snapshot a given
+# (provider, model) at most once per _PRICING_SNAPSHOT_TTL_S per process. DB-side
+# change detection dedupes rows regardless; this just bounds the work.
+# ---------------------------------------------------------------------------
+_PRICING_SNAPSHOT_TTL_S = 6 * 60 * 60  # 6 hours
+_pricing_snapshot_seen: dict[tuple[str, str], float] = {}
+_pricing_snapshot_lock = threading.Lock()
+
+# ---------------------------------------------------------------------------
+# Cron session ID regex
+# ---------------------------------------------------------------------------
+CRON_SESSION_RE = re.compile(r"^cron_(?P<job_id>.+)_\d{8}_\d{6}$")
+# If this test breaks, Duckwork changed the cron session_id format — check cron/scheduler.py
+
+
+def _setup_log_file() -> None:
+    duckwork_home = Path(os.environ.get("DUCKWORK_HOME", Path.home() / ".duckwork"))
+    log_dir = duckwork_home / "telemetry"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "telemetry.log"
+
+    fh = logging.FileHandler(str(log_file))
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+    plugin_logger = logging.getLogger("duckwork_telemetry")
+    plugin_logger.addHandler(fh)
+    plugin_logger.setLevel(logging.DEBUG)
+    plugin_logger.propagate = False
+
+
+def _utcnow() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _try_pricing_refresh(log: logging.Logger) -> None:
+    """Refresh pricing from remote sources once per 24h.
+
+    Uses a sentinel file (~/.duckwork/telemetry/.pricing_refresh) to track
+    last refresh time. Safe to call on every plugin load.
+    """
+    import time as _time
+
+    sentinel = (
+        Path(os.environ.get("DUCKWORK_HOME", Path.home() / ".duckwork"))
+        / "telemetry"
+        / ".pricing_refresh"
+    )
+    ttl = 86400  # 24h
+    try:
+        if sentinel.exists():
+            elapsed = _time.time() - sentinel.stat().st_mtime
+            if elapsed < ttl:
+                return
+        from . import pricing, pricing_refresh
+
+        # refresh_pricing returns (changes, manual_overrides).
+        changes, _overrides = pricing_refresh.refresh_pricing()
+        if changes:
+            log.info("pricing auto-refreshed: %d model(s) updated", len(changes))
+            # Drop the in-process pricing cache so the new prices are picked up
+            # immediately — no gateway restart needed.
+            pricing.reload_custom_pricing()
+        else:
+            log.debug("pricing auto-refresh: no changes")
+        sentinel.touch()
+    except Exception as exc:
+        log.warning("pricing auto-refresh failed (non-fatal): %s", exc)
+
+
+def _extract_cron_job_id(session_id: str, platform: str) -> str | None:
+    """Extract the job ID from a cron session ID.
+
+    Cron session IDs have the format: cron_{job_id}_{YYYYMMDD_HHMMSS}
+    (see cron/scheduler.py:1392 in duckwork-agent source).
+    Uses CRON_SESSION_RE for robust parsing — logs a warning if the format
+    doesn't match so that format changes are immediately visible.
+    """
+    if platform != "cron":
+        return None
+    m = CRON_SESSION_RE.match(session_id)
+    if m:
+        return m.group("job_id")
+    logger.warning(
+        "duckwork-telemetry: platform='cron' but session_id %r doesn't match expected "
+        "format cron_{job_id}_{YYYYMMDD_HHMMSS} — cron_job_id will be NULL. "
+        "If this recurs, check cron/scheduler.py in duckwork-agent.",
+        session_id,
+    )
+    return None
+
+
+def _is_tool_ok(result: Any) -> bool:
+    """Determine success/failure from a tool result string."""
+    if not isinstance(result, str):
+        return True
+    if result.startswith('{"error"'):
+        return False
+    try:
+        parsed = json.loads(result)
+        if isinstance(parsed, dict) and "error" in parsed:
+            return False
+    except (json.JSONDecodeError, ValueError):
+        pass
+    return True
+
+
+def register(ctx) -> None:  # noqa: ANN001
+    _setup_log_file()
+    tele_log = logging.getLogger("duckwork_telemetry")
+
+    from . import budget, core_pricing, db, moa, pricing, setup_wizard, stats
+
+    # ------------------------------------------------------------------
+    # Runtime mode: enforce (default) keeps today's guardrails; observe is
+    # opt-in telemetry-only. Missing get_config (older Duckwork) → enforce so
+    # upgrades never silently drop blocking.
+    # ------------------------------------------------------------------
+    get_config = getattr(ctx, "get_config", None)
+    raw_mode = get_config("mode", default="enforce") if callable(get_config) else "enforce"
+    # Normalise first so lists/dicts/None in YAML can't raise TypeError on
+    # the set membership check — anything unrecognised falls back to enforce.
+    mode = str(raw_mode).strip().lower()
+    if mode not in {"observe", "enforce"}:
+        tele_log.warning("invalid telemetry mode %r; falling back to enforce", raw_mode)
+        mode = "enforce"
+    enforce_budget = mode == "enforce"
+    budget.set_enforcement_mode(mode)
+    tele_log.info("duckwork-telemetry mode=%s", mode)
+
+    # ------------------------------------------------------------------
+    # Start budget file watcher (hot-reload on budget.yaml changes).
+    # Always on — the watcher only reloads config; it never enforces.
+    # ------------------------------------------------------------------
+    budget.start_budget_watcher()
+
+    # ------------------------------------------------------------------
+    # Auto-refresh pricing from remote sources (once per 24h)
+    # ------------------------------------------------------------------
+    _try_pricing_refresh(tele_log)
+
+    # ------------------------------------------------------------------
+    # Backward-compat backfill: seed known_free_models for users upgrading
+    # from pre-v5 installs who have subscription or zero-price models in
+    # their pricing.yaml but no persisted rows yet (INSERT OR IGNORE — safe
+    # to call on every load; only new rows cost anything).
+    # ------------------------------------------------------------------
+    try:
+        _free_models = pricing.get_known_free_models()
+        if _free_models:
+            _n = db.backfill_known_free_models(_free_models)
+            if _n:
+                tele_log.info("backfilled %d known-free model(s) for free→paid alert", _n)
+    except Exception as exc:
+        tele_log.error("known_free_models backfill failed: %s", exc)
+
+    # ------------------------------------------------------------------
+    # on_session_start
+    # Fired once per new session.
+    # kwargs: session_id, model, platform
+    # ------------------------------------------------------------------
+    def on_session_start(session_id: str = "", model: str = "", platform: str = "", **_kw) -> None:
+        try:
+            cron_job_id = _extract_cron_job_id(session_id, platform)
+            db.start_run(
+                session_id=session_id,
+                model=model,
+                platform=platform,
+                cron_job_id=cron_job_id,
+                profile=getattr(ctx, "profile_name", None),
+            )
+            tele_log.debug(
+                "session_start session=%s platform=%s cron_job=%s",
+                session_id,
+                platform,
+                cron_job_id,
+            )
+        except Exception as exc:
+            tele_log.error("on_session_start failed: %s", exc)
+
+    ctx.register_hook("on_session_start", on_session_start)
+
+    # ------------------------------------------------------------------
+    # pre_api_request
+    # Fired before each individual API call.
+    # We stash approx_input_tokens so post_api_request can use it as a
+    # fallback estimate when usage=None.
+    # kwargs: session_id, api_call_count, approx_input_tokens, ...
+    # ------------------------------------------------------------------
+    def pre_api_request(
+        session_id: str = "",
+        api_call_count: int = 0,
+        approx_input_tokens: int = 0,
+        **_kw,
+    ) -> None:
+        with _approx_lock:
+            _approx_store[(session_id, api_call_count)] = approx_input_tokens
+
+    ctx.register_hook("pre_api_request", pre_api_request)
+
+    # ------------------------------------------------------------------
+    # post_api_request  ← PRIMARY source for tokens/cost/latency
+    # Fired after each individual API call within a turn.
+    # kwargs: session_id, model, provider, api_duration (seconds),
+    #         usage (dict with input_tokens/output_tokens or None),
+    #         api_call_count, assistant_content_chars
+    # ------------------------------------------------------------------
+    def post_api_request(
+        session_id: str = "",
+        model: str = "",
+        provider: str = "",
+        base_url: str = "",
+        api_mode: str = "",
+        api_duration: float = 0.0,
+        usage: dict | None = None,
+        response_model: str | None = None,
+        api_call_count: int = 0,
+        assistant_content_chars: int = 0,
+        **_kw,
+    ) -> None:
+        try:
+            effective_model = response_model or model or ""
+
+            # MoA (Mixture-of-Agents) virtual provider. Duckwork reports
+            # provider="moa" and model="<preset name>", but usage/response_model
+            # belong to the preset's *aggregator* (the acting model). Resolve
+            # the preset so the call is priced and attributed under the
+            # aggregator's REAL provider/model instead of the meaningless "moa"
+            # label — otherwise the provider-aware pricing guard rejects the
+            # aggregator's true rate as a provider_assumed fallback. Reference
+            # models run through the auxiliary call_llm path (no hooks fire), so
+            # their tokens stay untracked; moa_preset flags the row so surfaces
+            # can show the recorded cost is a lower bound. See moa.py.
+            moa_preset: str | None = None
+            if moa.is_moa(provider):
+                moa_preset = (model or "").strip() or None
+                _preset = moa.resolve_preset(moa_preset or "")
+                _agg_provider, _agg_model = moa.aggregator_from_preset(_preset)
+                if _agg_provider:
+                    provider = _agg_provider
+                # response_model is the aggregator's real id; fall back to the
+                # configured aggregator model (never the preset name) when the
+                # response omits it.
+                effective_model = response_model or _agg_model or effective_model
+
+            # Always clean up the approx store for this call
+            with _approx_lock:
+                approx_in = _approx_store.pop((session_id, api_call_count), 0)
+
+            if isinstance(usage, dict):
+                tokens_in = int(usage.get("input_tokens") or 0)
+                tokens_out = int(usage.get("output_tokens") or 0)
+                cache_read_tok = int(usage.get("cache_read_tokens") or 0)
+                cache_write_tok = int(usage.get("cache_write_tokens") or 0)
+                reasoning_tok = int(usage.get("reasoning_tokens") or 0)
+                estimated = False
+            else:
+                # usage=None: estimate from pre_api_request stash + response chars
+                tele_log.debug(
+                    "post_api_request: usage=None for session=%s — estimating from "
+                    "approx_input_tokens=%d + assistant_content_chars=%d",
+                    session_id,
+                    approx_in,
+                    assistant_content_chars,
+                )
+                tokens_in = approx_in
+                tokens_out = int(assistant_content_chars / _CHARS_PER_TOKEN)
+                cache_read_tok = 0
+                cache_write_tok = 0
+                reasoning_tok = 0
+                estimated = True
+                # One-time warning: fires the first time a Fordex Portal call returns
+                # usage=None so you don't have to grep logs to know your provider
+                # isn't returning real usage data.
+                prov_lower = (provider or "").lower()
+                if "fordex" in prov_lower and provider not in _fordex_estimated_warned:
+                    _fordex_estimated_warned.add(provider)
+                    tele_log.warning(
+                        "duckwork-telemetry: provider=%r returned usage=None — cost for "
+                        "this session is ESTIMATED (not real). Run /stats providers to "
+                        "see the real vs estimated breakdown. If this persists, budget "
+                        "hard-verdicts will be degraded to soft (on_estimated.mode: "
+                        "warn_only). To silence this warning, set mode: enforce.",
+                        provider,
+                    )
+
+            full_usage = {
+                "input_tokens": tokens_in,
+                "output_tokens": tokens_out,
+                "cache_read_tokens": cache_read_tok,
+                "cache_write_tokens": cache_write_tok,
+                "reasoning_tokens": reasoning_tok,
+            }
+            # Core-sourced snapshot (v14/v15), if one is already captured for
+            # this exact (provider, model) pair: a local SQLite read, no
+            # network. Outranks pricing.yaml/_DEFAULT_PRICING but not a
+            # declared _subscription or the :free suffix rule — see
+            # pricing._lookup_form and ONBOARDING.md § Pricing Engine.
+            core_snapshot = db.get_latest_pricing_snapshot(provider, effective_model)
+            core_price = pricing.snapshot_to_price(core_snapshot) if core_snapshot else None
+            cost = pricing.estimate_cost(
+                full_usage, effective_model, provider, core_price=core_price
+            )
+            latency_ms = int(api_duration * 1000)
+
+            # Provider-assumed pricing (issue #42): the cost is real spend, but it
+            # used a source-ineligible (OpenRouter) rate because no source-eligible
+            # price existed for this provider. Flag the row so /stats and the
+            # dashboard can surface it; estimate_cost already warned once. Only a
+            # nonzero cost is meaningfully "assumed" — a $0 row (e.g. usage=None
+            # with an empty stash) is not a pricing question, so don't flag it.
+            provider_assumed = cost > 0.0 and pricing.is_provider_assumed(
+                effective_model, provider, core_price=core_price
+            )
+
+            # Free→paid transition detection (issues #16/#32/#89).
+            # Only models explicitly priced at input=0 AND output=0 (genuinely
+            # free) are tracked. An unknown model at $0 is not "free by design",
+            # and a paid model whose zero-token call happens to cost $0 (issue
+            # #89) must not be recorded as free — otherwise its next real call
+            # fires a false alert.
+            # is_free_tier_transition also catches the id-change case, where a
+            # provider drops a `:free` suffix (or renames the promo to its paid
+            # base) so the paid call arrives under a different model id than the
+            # `:free` row we recorded — e.g. nemotron-3-ultra:free → nemotron-3-ultra.
+            if cost == 0.0 and pricing.is_free_model(
+                effective_model, provider, core_price=core_price
+            ):
+                db.record_free_model(effective_model, provider)
+            elif cost > 0.0 and (
+                db.is_known_free_model(effective_model, provider)
+                or db.is_free_tier_transition(effective_model, provider)
+            ):
+                with _pending_free_paid_lock:
+                    if session_id not in _pending_free_paid_alerts:
+                        _pending_free_paid_alerts[session_id] = (effective_model, cost)
+                # Persist for the dashboard free→paid widget. INSERT OR IGNORE
+                # keeps only the first flip per (model, provider) — re-runs of
+                # the same paid model do not overwrite the detection point.
+                db.record_free_paid_transition(effective_model, provider, session_id, cost)
+                tele_log.info(
+                    "free→paid transition detected: model=%r provider=%r cost=%.6f session=%s",
+                    effective_model,
+                    provider,
+                    cost,
+                    session_id,
+                )
+
+            db.record_llm_call(
+                session_id=session_id,
+                ts=_utcnow(),
+                model=effective_model,
+                provider=provider,
+                tokens_in=tokens_in,
+                tokens_out=tokens_out,
+                cost_usd=cost,
+                latency_ms=latency_ms,
+                cache_read_tokens=cache_read_tok,
+                cache_write_tokens=cache_write_tok,
+                reasoning_tokens=reasoning_tok,
+                estimated=estimated,
+                provider_assumed=provider_assumed,
+                moa_preset=moa_preset,
+            )
+
+            # Pricing snapshot (v14): capture the core-resolved tariff + provenance
+            # for this (provider, model), throttled to ~once per TTL per process.
+            # Own guard so a pricing failure never affects the call recorded above
+            # or the agent turn. See ONBOARDING.md § Core-sourced pricing snapshots.
+            if effective_model:
+                _snap_key = (provider, effective_model)
+                _snap_now = time.monotonic()
+                _do_snapshot = False
+                with _pricing_snapshot_lock:
+                    _last = _pricing_snapshot_seen.get(_snap_key)
+                    if _last is None or (_snap_now - _last) >= _PRICING_SNAPSHOT_TTL_S:
+                        _pricing_snapshot_seen[_snap_key] = _snap_now
+                        _do_snapshot = True
+                if _do_snapshot:
+                    try:
+                        _snap, _resolved = core_pricing.resolve_with_fallback(
+                            effective_model, provider, base_url
+                        )
+                        if _snap:
+                            db.record_pricing_snapshot(
+                                provider,
+                                effective_model,
+                                _snap,
+                                base_url,
+                                api_mode,
+                                resolved_model=_resolved,
+                            )
+                    except Exception as _snap_exc:
+                        tele_log.debug("pricing snapshot capture failed: %s", _snap_exc)
+        except Exception as exc:
+            tele_log.error("post_api_request hook failed: %s", exc)
+
+    ctx.register_hook("post_api_request", post_api_request)
+
+    # ------------------------------------------------------------------
+    # api_request_error  — model-unavailable detection (issue #43)
+    # Fired by agent/conversation_loop.py at the moment of a non-retryable
+    # client error. We act ONLY on 404 (model removed/deprecated) so the user
+    # finds out when e.g. a `:free` promo ends and duckwork-agent does not
+    # silently re-route. Higher status codes are observed but not surfaced
+    # here — they belong to other features.
+    # kwargs (verified against duckwork_cli/plugins.py VALID_HOOKS and
+    # agent/conversation_loop.py at the _invoke_api_request_error_hook call
+    # site): session_id, task_id, turn_id, api_request_id, api_call_count,
+    # api_start_time, api_kwargs (dict, includes "model" the request asked for),
+    # error_type, error_message, status_code, retry_count, max_retries,
+    # retryable, reason
+    # ------------------------------------------------------------------
+    def api_request_error(
+        session_id: str = "",
+        api_kwargs: dict | None = None,
+        error_type: str = "",
+        error_message: str = "",
+        status_code: int | None = None,
+        retryable: bool = True,
+        reason: str = "",
+        model: str = "",
+        provider: str = "",
+        **_kw,
+    ) -> None:
+        try:
+            if status_code != 404:
+                return
+            # Conservative filter: 404 must be non-retryable to count as a true
+            # "model gone" signal. A retryable 404 (rare, but possible from a
+            # routing proxy) gets surfaced in the upstream retry loop instead.
+            if retryable:
+                return
+
+            # Resolve the model id from api_kwargs (what the agent actually
+            # sent on the wire) first, falling back to the top-level kwarg.
+            req_model = ""
+            if isinstance(api_kwargs, dict):
+                req_model = str(api_kwargs.get("model") or "")
+            if not req_model:
+                req_model = str(model or "")
+            if not req_model:
+                tele_log.debug("api_request_error: status_code=404 with no model id — ignored")
+                return
+
+            # Resolve the provider: prefer the hook kwarg, else look up the
+            # session's recorded provider (set by record_llm_call earlier in
+            # the session). Empty string is acceptable — get_run may be None
+            # for sessions that 404 on their very first API call.
+            req_provider = str(provider or "")
+            if not req_provider and session_id:
+                try:
+                    run = db.get_run(session_id)
+                    if run:
+                        req_provider = run.get("provider") or ""
+                except Exception:
+                    req_provider = ""
+
+            # Truncate error_message to a sane bound so a verbose upstream
+            # message doesn't bloat the row or the injected context.
+            msg = (error_message or "")[:500]
+
+            db.record_model_unavailable(req_model, req_provider, 404, msg)
+
+            if session_id:
+                with _pending_model_unavailable_lock:
+                    # Upsert the in-memory pending entry: latest 404 wins for
+                    # this session, occurrences mirrors the DB count after the
+                    # record_model_unavailable upsert above.
+                    row = db.get_model_unavailable(req_model, req_provider) or {}
+                    occ = int(row.get("occurrences") or 1)
+                    _pending_model_unavailable_alerts[session_id] = (
+                        req_model,
+                        req_provider,
+                        404,
+                        occ,
+                    )
+
+            tele_log.info(
+                "model-unavailable 404 captured: model=%r provider=%r "
+                "reason=%r retry_count=%s session=%s",
+                req_model,
+                req_provider,
+                reason,
+                _kw.get("retry_count"),
+                session_id,
+            )
+        except Exception as exc:
+            tele_log.error("api_request_error hook failed: %s", exc)
+
+    ctx.register_hook("api_request_error", api_request_error)
+
+    # ------------------------------------------------------------------
+    # post_tool_call
+    # Fired after each tool execution.
+    # kwargs: tool_name, result, duration_ms, session_id, task_id, args
+    # ------------------------------------------------------------------
+    def post_tool_call(
+        tool_name: str = "",
+        result: Any = None,
+        duration_ms: int = 0,
+        session_id: str = "",
+        **_kw,
+    ) -> None:
+        try:
+            ok = _is_tool_ok(result)
+            db.record_tool_call(
+                session_id=session_id,
+                ts=_utcnow(),
+                tool_name=tool_name,
+                ok=ok,
+                latency_ms=duration_ms,
+            )
+        except Exception as exc:
+            tele_log.error("post_tool_call hook failed: %s", exc)
+
+    ctx.register_hook("post_tool_call", post_tool_call)
+
+    # ------------------------------------------------------------------
+    # subagent_start
+    # Fired synchronously in Duckwork' _build_child_agent BEFORE async
+    # dispatch, so the parent→child edge is persisted before the child's
+    # first post_api_request. Cost is attributed to the cron root at query
+    # time (db.spend_by_scope), so this handler only records the raw edge.
+    # kwargs: parent_session_id, parent_turn_id, parent_subagent_id,
+    #         child_session_id, child_subagent_id, child_role, child_goal
+    # ------------------------------------------------------------------
+    def subagent_start(
+        parent_session_id: str = "",
+        parent_turn_id: str = "",
+        parent_subagent_id: str = "",
+        child_session_id: str = "",
+        child_subagent_id: str = "",
+        child_role: str = "",
+        **_kw,
+    ) -> None:
+        try:
+            if not child_session_id or not parent_session_id:
+                return
+            db.record_subagent_start(
+                child_session_id=child_session_id,
+                parent_session_id=parent_session_id,
+                parent_turn_id=parent_turn_id or None,
+                parent_subagent_id=parent_subagent_id or None,
+                child_subagent_id=child_subagent_id or None,
+                child_role=child_role or None,
+                started_at=_utcnow(),
+            )
+        except Exception as exc:
+            tele_log.error("subagent_start hook failed: %s", exc)
+
+    ctx.register_hook("subagent_start", subagent_start)
+
+    # ------------------------------------------------------------------
+    # subagent_stop
+    # Fired when a delegated subagent finishes. No token data here, but it
+    # DOES carry child_session_id (verified against delegate_tool.py — the
+    # in-repo doc claim that it does not is stale). We (1) log the proxy
+    # tool_call row so subagent invocations stay visible in /stats, and
+    # (2) finalize the delegation edge (stopped_at + child_status).
+    # kwargs: parent_session_id, parent_turn_id, child_session_id,
+    #         child_role, child_summary, child_status, duration_ms
+    # ------------------------------------------------------------------
+    def subagent_stop(
+        parent_session_id: str = "",
+        child_session_id: str = "",
+        child_role: str = "",
+        child_status: str = "",
+        duration_ms: int = 0,
+        **_kw,
+    ) -> None:
+        try:
+            ok = child_status not in ("failed", "error", "interrupted", "timeout")
+            db.record_tool_call(
+                session_id=parent_session_id,
+                ts=_utcnow(),
+                tool_name="delegate_task/subagent",
+                ok=ok,
+                latency_ms=duration_ms,
+            )
+            if child_session_id:
+                db.record_subagent_stop(
+                    child_session_id=child_session_id,
+                    parent_session_id=parent_session_id,
+                    child_status=child_status or None,
+                    child_role=child_role or None,
+                    stopped_at=_utcnow(),
+                )
+        except Exception as exc:
+            tele_log.error("subagent_stop hook failed: %s", exc)
+
+    ctx.register_hook("subagent_stop", subagent_stop)
+
+    # ------------------------------------------------------------------
+    # post_llm_call
+    # Fired once per turn after the tool loop completes.
+    # No token data here — we use it only to refresh session end time.
+    # kwargs: session_id, model, platform
+    # ------------------------------------------------------------------
+    def post_llm_call(session_id: str = "", **_kw) -> None:
+        try:
+            db.end_run(session_id=session_id, status="running")
+        except Exception as exc:
+            tele_log.error("post_llm_call hook failed: %s", exc)
+
+    ctx.register_hook("post_llm_call", post_llm_call)
+
+    # ------------------------------------------------------------------
+    # on_session_end
+    # Fired at the end of every run_conversation() call.
+    # kwargs: session_id, completed, interrupted, model, platform
+    # ------------------------------------------------------------------
+    def on_session_end(
+        session_id: str = "",
+        completed: bool = False,
+        interrupted: bool = False,
+        **_kw,
+    ) -> None:
+        try:
+            if interrupted:
+                status = "interrupted"
+            elif completed:
+                status = "ok"
+            else:
+                status = "error"
+            db.end_run(session_id=session_id, status=status)
+            tele_log.debug("session_end session=%s status=%s", session_id, status)
+        except Exception as exc:
+            tele_log.error("on_session_end hook failed: %s", exc)
+
+    ctx.register_hook("on_session_end", on_session_end)
+
+    # ------------------------------------------------------------------
+    # on_session_finalize
+    # Fired when the session is truly torn down (CLI atexit, gateway expiry).
+    # kwargs: session_id, platform
+    # ------------------------------------------------------------------
+    def on_session_finalize(session_id: str | None = None, **_kw) -> None:
+        if not session_id:
+            return
+        try:
+            db.end_run(session_id=session_id, status="ok")
+            tele_log.debug("session_finalize session=%s", session_id)
+        except Exception as exc:
+            tele_log.error("on_session_finalize hook failed: %s", exc)
+
+    ctx.register_hook("on_session_finalize", on_session_finalize)
+
+    # ------------------------------------------------------------------
+    # pre_llm_call  — budget SOFT alerting + sender capture
+    # This hook CANNOT abort a call (Duckwork uses its return only for context
+    # injection — see budget.py / ONBOARDING.md). We use it to (a) attach sender_id
+    # to the run for per-sender budgets, and (b) inject a one-time-per-window
+    # budget notice into the conversation. The hard tool-gate lives in
+    # pre_tool_call below.
+    # kwargs: session_id, sender_id, model, platform, user_message, is_first_turn
+    # ------------------------------------------------------------------
+    def pre_llm_call(session_id: str = "", sender_id: str = "", **_kw):
+        try:
+            if sender_id:
+                db.set_sender(session_id, sender_id)
+            db.set_profile(session_id, getattr(ctx, "profile_name", None))
+            ctx_parts: list[str] = []
+            if enforce_budget:
+                run = db.get_run(session_id)
+                if run:
+                    verdicts = budget.evaluate_run(run)
+                    budget.enforce_cron_pause(verdicts)
+                    ctx_text = budget.alert_context(verdicts)
+                    if ctx_text:
+                        tele_log.info("budget alert injected for session=%s", session_id)
+                        ctx_parts.append(ctx_text)
+            with _pending_free_paid_lock:
+                alert = _pending_free_paid_alerts.pop(session_id, None)
+            if alert:
+                alert_model, alert_cost = alert
+                ctx_parts.append(
+                    f"⚠️ [duckwork-telemetry] Model `{alert_model}` was previously $0.00 "
+                    f"— this call cost ${alert_cost:.4f}. "
+                    f"If this is unexpected, check your pricing config or `_subscription` "
+                    f"tag in ~/.duckwork/telemetry/pricing.yaml."
+                )
+                tele_log.info(
+                    "free→paid alert injected for session=%s model=%r cost=%.6f",
+                    session_id,
+                    alert_model,
+                    alert_cost,
+                )
+            with _pending_model_unavailable_lock:
+                unav = _pending_model_unavailable_alerts.pop(session_id, None)
+            if unav:
+                u_model, u_provider, u_code, u_occ = unav
+                provider_label = f" on `{u_provider}`" if u_provider else ""
+                ctx_parts.append(
+                    f"⚠️ [duckwork-telemetry] Model `{u_model}` is no longer available"
+                    f"{provider_label} (HTTP {u_code}). Seen {u_occ} time(s). "
+                    f"If the model was renamed or deprecated (e.g. a `:free` promo "
+                    f"ending), update your config/cron to use the new id."
+                )
+                tele_log.info(
+                    "model-unavailable alert injected for session=%s model=%r "
+                    "provider=%r code=%s occurrences=%s",
+                    session_id,
+                    u_model,
+                    u_provider,
+                    u_code,
+                    u_occ,
+                )
+            if ctx_parts:
+                return {"context": "\n\n".join(ctx_parts)}
+        except Exception as exc:
+            tele_log.error("pre_llm_call (budget) hook failed: %s", exc)
+        return None
+
+    ctx.register_hook("pre_llm_call", pre_llm_call)
+
+    # ------------------------------------------------------------------
+    # pre_tool_call  — budget HARD enforcement (the real gate)
+    # Returning {"action":"block","message":...} aborts the tool call and
+    # returns an error to the model instead (see plugins.py:1666). Blocking
+    # every subsequent tool ends the agentic loop at the next boundary —
+    # bounding spend without a true mid-call abort (which Duckwork doesn't
+    # expose). Cron jobs are additionally paused for future runs.
+    # Only registered in enforce mode (the default).
+    # kwargs: tool_name, args, task_id, session_id, tool_call_id
+    # ------------------------------------------------------------------
+    if enforce_budget:
+
+        def pre_tool_call(session_id: str = "", **_kw):
+            try:
+                run = db.get_run(session_id)
+                if not run:
+                    return None
+                verdicts = budget.evaluate_run(run)
+                budget.enforce_cron_pause(verdicts)
+                msg = budget.block_message_for(verdicts)
+                if msg:
+                    tele_log.warning("budget hard-block for session=%s: %s", session_id, msg)
+                    return {"action": "block", "message": msg}
+            except Exception as exc:
+                tele_log.error("pre_tool_call (budget) hook failed: %s", exc)
+            return None
+
+        ctx.register_hook("pre_tool_call", pre_tool_call)
+
+    # ------------------------------------------------------------------
+    # /stats slash command
+    # ------------------------------------------------------------------
+    ctx.register_command(
+        "stats",
+        stats.handle,
+        description="Show telemetry: tokens, cost, latency, tool usage per session/cron job",
+        args_hint="[today|week|month|cron|providers|models|raw]",
+    )
+
+    # ------------------------------------------------------------------
+    # /budget slash command
+    # ------------------------------------------------------------------
+    ctx.register_command(
+        "budget",
+        budget.handle,
+        description="Show/set spend budgets (global, per cron job, per sender, per profile)",
+        args_hint="[cron | set <scope> [<id>] <window> <usd>]",
+    )
+
+    # ------------------------------------------------------------------
+    # /setup slash command
+    # ------------------------------------------------------------------
+    ctx.register_command(
+        "setup",
+        setup_wizard.handle_command,
+        description="First-time setup wizard for pricing and budgets",
+        args_hint="[pricing|budget] [auto|minimal|skip|default|custom]",
+    )
+
+    # ------------------------------------------------------------------
+    # duckwork telemetry CLI command (out-of-session stats/budget access)
+    # ------------------------------------------------------------------
+    try:
+        from . import telemetry_cli as _tcli
+
+        def _setup_telemetry(subparser):
+            _tcli._build_parser_into(subparser.add_subparsers(dest="command", metavar="COMMAND"))
+
+        def _handle_telemetry(args):
+            _tcli._dispatch(args)
+
+        ctx.register_cli_command(
+            "telemetry",
+            help="Query telemetry data outside an active Duckwork session",
+            setup_fn=_setup_telemetry,
+            handler_fn=_handle_telemetry,
+        )
+    except (AttributeError, TypeError):
+        # register_cli_command not available in this Duckwork version — standalone
+        # duckwork-telemetry script is still fully functional.
+        pass
+
+    # ------------------------------------------------------------------
+    # Auto-setup: if pricing.yaml and/or budget.yaml are missing, run
+    # non-interactive setup on first load (unless DUCKWORK_TELEMETRY_NO_SETUP=1)
+    # ------------------------------------------------------------------
+    if os.environ.get("DUCKWORK_TELEMETRY_NO_SETUP") != "1":
+        try:
+            auto_msg = setup_wizard.run(interactive=False, include_budget=enforce_budget)
+            # Log so the user sees it in telemetry.log on first load
+            for line in auto_msg.splitlines():
+                tele_log.info(line)
+        except Exception as exc:
+            tele_log.warning("auto-setup skipped: %s", exc)
+
+    tele_log.info("duckwork-telemetry loaded — SQLite at %s", _db_path_info())
+
+
+def _db_path_info() -> str:
+    try:
+        duckwork_home = Path(os.environ.get("DUCKWORK_HOME", Path.home() / ".duckwork"))
+        return str(duckwork_home / "telemetry" / "telemetry.db")
+    except Exception:
+        return "~/.duckwork/telemetry/telemetry.db"

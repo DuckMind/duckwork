@@ -1,0 +1,415 @@
+"""Top-level, deterministic scan orchestration."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Iterable
+
+from .catalog import get_rule
+from .dependency_scan import inspect_dependencies
+from .manifest import (
+    DASHBOARD_MANIFEST,
+    VALID_HOOKS,
+    PluginMetadata,
+    has_duckwork_entry_points,
+    inspect_dashboard_manifest,
+    inspect_entry_point_manifest,
+    inspect_manifest,
+)
+from .models import Finding, ScanResult, Severity
+from .python_scan import inspect_python
+from .secret_scan import MAX_TEXT_BYTES, inspect_file
+
+IGNORED_DIRECTORIES = {
+    ".cache",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    ".virtualenv",
+    "__pycache__",
+    "build",
+    "cache",
+    "caches",
+    "dist",
+    "env",
+    "fixture",
+    "fixtures",
+    "generated",
+    "node_modules",
+    "test",
+    "test_data",
+    "testdata",
+    "tests",
+    "venv",
+    "virtualenv",
+}
+MAX_PLUGIN_ROOT_DEPTH = 4
+
+
+def scan(
+    target: str | Path,
+    *,
+    excluded_rules: Iterable[str] = (),
+    ignored_directories: Iterable[str] | None = None,
+    use_default_ignores: bool = True,
+    max_findings: int | None = None,
+) -> ScanResult:
+    """Scan a plugin tree without importing target code.
+
+    Additional ``ignored_directories`` extend the normal ignore set unless
+    ``use_default_ignores`` is false.  ``max_findings`` bounds retained
+    findings and AST traversal after the cap: if another finding would exceed
+    it, the result is marked incomplete and threshold checks fail closed.
+    """
+    root = Path(target).expanduser().resolve()
+    if not root.exists():
+        raise FileNotFoundError(f"scan target does not exist: {root}")
+    if not root.is_dir():
+        raise NotADirectoryError(f"scan target is not a directory: {root}")
+
+    if max_findings is not None and (
+        isinstance(max_findings, bool) or not isinstance(max_findings, int) or max_findings < 1
+    ):
+        raise ValueError("max_findings must be at least 1")
+    excluded = {rule.upper() for rule in excluded_rules}
+    ignored = set(IGNORED_DIRECTORIES) if use_default_ignores else set()
+    if ignored_directories is not None:
+        ignored.update(value.casefold() for value in ignored_directories)
+    result = ScanResult(root=root)
+    plugin_roots = _discover_plugin_roots(root, ignored)
+    result.plugin_count = len(plugin_roots)
+    scan_roots = plugin_roots or [root]
+    scanned_paths: set[Path] = set()
+
+    for plugin_root in scan_roots:
+        metadata, manifest_findings = inspect_manifest(plugin_root, root)
+        _extend_findings(result, manifest_findings, max_findings)
+        if result.finding_limit_reached:
+            break
+        entry_point_count = metadata.entry_point_count
+        if metadata.declaration_source != "pyproject.toml":
+            entry_point_result = inspect_entry_point_manifest(plugin_root, root)
+            if entry_point_result is not None:
+                entry_point_metadata, entry_point_findings = entry_point_result
+                entry_point_count = entry_point_metadata.entry_point_count
+                _extend_findings(result, entry_point_findings, max_findings)
+                if result.finding_limit_reached:
+                    break
+        if entry_point_count > 1:
+            result.plugin_count += entry_point_count - 1
+        if (
+            metadata.declaration_source != "dashboard/manifest.json"
+            and (plugin_root / DASHBOARD_MANIFEST).is_file()
+        ):
+            _, dashboard_findings = inspect_dashboard_manifest(plugin_root, root)
+            _extend_findings(result, dashboard_findings, max_findings)
+        if result.finding_limit_reached:
+            break
+        _extend_findings(
+            result,
+            _symlink_findings(plugin_root, root, ignored),
+            max_findings,
+        )
+        if result.finding_limit_reached:
+            break
+
+        literal_hooks: dict[str, tuple[str, int]] = {}
+        for path in _iter_files(plugin_root, ignored):
+            resolved = path.resolve()
+            if resolved in scanned_paths:
+                continue
+            scanned_paths.add(resolved)
+            if _too_large(path):
+                result.skipped_files += 1
+                continue
+            result.scanned_files += 1
+            _extend_findings(result, inspect_file(path, root), max_findings)
+            if result.finding_limit_reached:
+                break
+            if path.suffix == ".py":
+                remaining = None if max_findings is None else max_findings - len(result.findings)
+                inspection = inspect_python(
+                    path,
+                    root,
+                    metadata.declared_env,
+                    max_findings=remaining,
+                )
+                _extend_findings(result, inspection.findings, max_findings)
+                if inspection.finding_limit_reached:
+                    result.finding_limit_reached = True
+                literal_hooks.update(inspection.literal_hooks)
+                if result.finding_limit_reached:
+                    break
+
+        if result.finding_limit_reached:
+            break
+        _extend_findings(result, _hook_drift(metadata, literal_hooks, root), max_findings)
+        if result.finding_limit_reached:
+            break
+        _extend_findings(result, inspect_dependencies(plugin_root, root), max_findings)
+        if result.finding_limit_reached:
+            break
+
+    if not result.finding_limit_reached and plugin_roots and root not in plugin_roots:
+        _extend_findings(result, inspect_dependencies(root, root), max_findings)
+        for path in _iter_repository_metadata(root):
+            if result.finding_limit_reached:
+                break
+            resolved = path.resolve()
+            if resolved in scanned_paths or _too_large(path):
+                continue
+            scanned_paths.add(resolved)
+            result.scanned_files += 1
+            _extend_findings(result, inspect_file(path, root), max_findings)
+
+    if not result.finding_limit_reached:
+        _extend_findings(result, _project_hygiene(root), max_findings)
+    result.findings = _deduplicate(
+        finding for finding in result.findings if finding.rule_id not in excluded
+    )
+    return result
+
+
+def _discover_plugin_roots(root: Path, ignored_directories: set[str]) -> list[Path]:
+    if _has_plugin_marker(root):
+        return [root]
+
+    roots: set[Path] = set()
+    pending: list[tuple[Path, int]] = [(root, 0)]
+    while pending:
+        directory, depth = pending.pop()
+        if directory != root and _has_plugin_marker(directory):
+            roots.add(directory)
+            # A discovered plugin is a scan boundary. Do not treat manifests
+            # inside its fixtures, vendored code, or generated output as
+            # additional plugins.
+            continue
+        if depth >= MAX_PLUGIN_ROOT_DEPTH:
+            continue
+
+        try:
+            children = sorted(directory.iterdir(), key=lambda path: path.name)
+        except OSError:
+            continue
+        for child in reversed(children):
+            if child.is_symlink():
+                continue
+            try:
+                is_directory = child.is_dir()
+            except OSError:
+                continue
+            if not is_directory or _ignored_parts((child.name,), ignored_directories):
+                continue
+            pending.append((child, depth + 1))
+    return sorted(roots)
+
+
+def _has_plugin_marker(root: Path) -> bool:
+    return (
+        (root / "plugin.yaml").is_file()
+        or (root / "plugin.yml").is_file()
+        or (root / "dashboard" / "manifest.json").is_file()
+        or has_duckwork_entry_points(root)
+    )
+
+
+def _iter_files(root: Path, ignored_directories: set[str]) -> Iterable[Path]:
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or path.is_symlink():
+            continue
+        try:
+            relative_parts = path.relative_to(root).parts
+        except ValueError:
+            continue
+        if _ignored_parts(relative_parts, ignored_directories):
+            continue
+        yield path
+
+
+def _ignored_parts(parts: tuple[str, ...], ignored_directories: set[str]) -> bool:
+    return any(part.casefold() in ignored_directories for part in parts)
+
+
+def _symlink_findings(
+    plugin_root: Path,
+    repository_root: Path,
+    ignored_directories: set[str],
+) -> list[Finding]:
+    findings: list[Finding] = []
+    for path in sorted(plugin_root.rglob("*")):
+        if not path.is_symlink():
+            continue
+        try:
+            relative_parts = path.relative_to(plugin_root).parts
+        except ValueError:
+            continue
+        if _ignored_parts(relative_parts, ignored_directories):
+            continue
+        try:
+            path.resolve(strict=True).relative_to(plugin_root.resolve())
+        except (FileNotFoundError, OSError, ValueError):
+            rule = get_rule("HPG002")
+            findings.append(
+                Finding(
+                    rule_id="HPG002",
+                    severity=rule.default_severity,
+                    message="Symlink is broken or resolves outside the plugin root; it was not followed.",
+                    path=_relative(path, repository_root),
+                )
+            )
+    return findings
+
+
+def _iter_repository_metadata(root: Path) -> Iterable[Path]:
+    allowed = {
+        ".env",
+        ".npmrc",
+        ".netrc",
+        "action.yml",
+        "action.yaml",
+        "pyproject.toml",
+        "requirements.txt",
+    }
+    for path in sorted(root.iterdir()):
+        if path.is_file() and (
+            path.name in allowed
+            or path.name.startswith("requirements")
+            or path.suffix.lower() in {".key", ".p12", ".pem"}
+        ):
+            yield path
+
+
+def _too_large(path: Path) -> bool:
+    try:
+        return path.stat().st_size > MAX_TEXT_BYTES
+    except OSError:
+        return True
+
+
+def _hook_drift(
+    metadata: PluginMetadata,
+    literal_hooks: dict[str, tuple[str, int]],
+    root: Path,
+) -> list[Finding]:
+    findings: list[Finding] = []
+    actual = set(literal_hooks)
+    for hook in sorted(actual - VALID_HOOKS):
+        path, line = literal_hooks[hook]
+        rule = get_rule("HPG006")
+        findings.append(
+            Finding(
+                rule_id="HPG006",
+                severity=rule.default_severity,
+                message=f"Code registers unknown Duckwork hook {hook!r}.",
+                path=path,
+                line=line,
+                evidence=hook,
+            )
+        )
+    if metadata.has_hook_declarations:
+        for hook in sorted(actual - metadata.declared_hooks):
+            path, line = literal_hooks[hook]
+            rule = get_rule("HPG006")
+            findings.append(
+                Finding(
+                    rule_id="HPG006",
+                    severity=rule.default_severity,
+                    message=f"Hook {hook!r} is registered in code but absent from plugin.yaml.",
+                    path=path,
+                    line=line,
+                    evidence=hook,
+                )
+            )
+        for hook in sorted(metadata.declared_hooks - actual):
+            rule = get_rule("HPG006")
+            findings.append(
+                Finding(
+                    rule_id="HPG006",
+                    severity=Severity.LOW,
+                    message=f"Hook {hook!r} is declared but no literal ctx.register_hook call was found.",
+                    path=_relative(metadata.root / "plugin.yaml", root),
+                    evidence=hook,
+                )
+            )
+    if "pre_gateway_dispatch" in actual:
+        path, line = literal_hooks["pre_gateway_dispatch"]
+        findings.append(
+            Finding(
+                rule_id="HPG110",
+                severity=Severity.CRITICAL,
+                message="pre_gateway_dispatch runs before gateway authentication and pairing.",
+                path=path,
+                line=line,
+                evidence="pre_gateway_dispatch",
+            )
+        )
+    return findings
+
+
+def _project_hygiene(root: Path) -> list[Finding]:
+    findings: list[Finding] = []
+    if not any((root / name).is_file() for name in ("LICENSE", "LICENSE.md", "LICENSE.txt")):
+        findings.append(_project_finding("HPG301", "No LICENSE file was found."))
+    if not (root / "SECURITY.md").is_file():
+        findings.append(_project_finding("HPG302", "No SECURITY.md policy was found."))
+    has_tests = (root / "tests").is_dir() or any(root.rglob("test_*.py"))
+    if not has_tests:
+        findings.append(_project_finding("HPG303", "No automated tests were found."))
+    return findings
+
+
+def _project_finding(rule_id: str, message: str) -> Finding:
+    rule = get_rule(rule_id)
+    return Finding(
+        rule_id=rule_id,
+        severity=rule.default_severity,
+        message=message,
+        path=".",
+    )
+
+
+def _extend_findings(
+    result: ScanResult,
+    findings: Iterable[Finding],
+    max_findings: int | None,
+) -> None:
+    """Append findings without allowing an untrusted scan to grow unbounded."""
+    if max_findings is None:
+        result.findings.extend(findings)
+        return
+
+    for finding in findings:
+        if len(result.findings) >= max_findings:
+            result.finding_limit_reached = True
+            return
+        result.findings.append(finding)
+
+
+def _deduplicate(findings: Iterable[Finding]) -> list[Finding]:
+    unique: dict[tuple[object, ...], Finding] = {}
+    for finding in findings:
+        key = (
+            finding.rule_id,
+            finding.severity,
+            finding.message,
+            finding.path,
+            finding.line,
+            finding.column,
+        )
+        unique[key] = finding
+    return list(unique.values())
+
+
+def _relative(path: Path, root: Path) -> str:
+    try:
+        # Keep the lexical in-tree path. Resolving an untrusted symlink here could
+        # disclose an absolute host path in JSON, SARIF, or CI annotations.
+        return path.absolute().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return path.name

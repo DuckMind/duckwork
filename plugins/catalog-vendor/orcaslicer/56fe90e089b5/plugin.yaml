@@ -1,0 +1,30 @@
+name: orcaslicer
+version: "0.5.1"
+description: "Prepare, slice, preflight and export with OrcaSlicer profiles; upload and control printers through supported network protocols. Independent of OrcaSlicer and Fordex."
+manifest_version: 2
+api_version: 1
+license: MIT
+author: mazzanfar
+homepage: https://github.com/DuckMind/duckwork
+tags: [3d-printing, orcaslicer, slicing, printers]
+provides_tools:
+  - orca_capabilities
+  - orca_edit_project
+  - orca_open_native
+  - orca_diagnose
+  - orca_presets
+  - orca_inspect
+  - orca_prepare
+  - orca_slice
+  - orca_job
+  - orca_preview
+  - orca_export
+  - orca_printer_configure
+  - orca_printers
+  - orca_printer_status
+  - orca_camera_snapshot
+  - orca_monitor
+  - orca_preflight
+  - orca_upload
+  - orca_start
+  - orca_printer_control

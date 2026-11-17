@@ -1,0 +1,110 @@
+{
+  "meta": {
+    "timestamp": "2026-08-25T23:51:27+01:00",
+    "scope": {
+      "files_changed": 55,
+      "files_in_blast_radius": 33
+    },
+    "diff_ref": "dirty worktree based on a802c7b58fb37450c629720c2466ab4c45cf5fb7",
+    "version": "2.1.0-inline",
+    "prescan": {
+      "tools_run": [
+        "ruff",
+        "mypy",
+        "bandit",
+        "semgrep",
+        "detect-secrets",
+        "pytest"
+      ],
+      "tools_skipped": [
+        "hermaguard-prescan",
+        "hermaguard-coverage",
+        "hermaguard-locate",
+        "hermaguard-role-patterns",
+        "hermaguard-sanitize",
+        "hermaguard-verify",
+        "hermaguard-grader"
+      ],
+      "total_findings": 0
+    }
+  },
+  "summary": {
+    "total": 0,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "findings": [],
+  "blast_radius": {
+    "callers": [
+      {
+        "file": "dashboard/plugin_api.py",
+        "line": 135,
+        "symbol": "SpectatorDB",
+        "risk": "MEDIUM",
+        "notes": "Storage failures now degrade to an actionable 503"
+      },
+      {
+        "file": "src/spectator/serve.py",
+        "line": 50,
+        "symbol": "app",
+        "risk": "LOW",
+        "notes": "Standalone lazy startup inherits profile-local storage"
+      }
+    ],
+    "downstream": [
+      {
+        "callee": "HostSecretManager",
+        "change_impact": "Secret path follows profile-local data directory",
+        "risk": "MEDIUM"
+      },
+      {
+        "callee": "TranscriptPoller",
+        "change_impact": "Duckwork state DB follows active DUCKWORK_HOME",
+        "risk": "LOW"
+      }
+    ],
+    "config_affected": [
+      "DUCKWORK_HOME",
+      "SPECTATOR_DATA_DIR",
+      "SPECTATOR_STATE_DB"
+    ],
+    "revert_safety": {
+      "safe": false,
+      "procedure": "Choose legacy or profile-local state explicitly before reverting; secret identity and invites are path-bound"
+    }
+  },
+  "coverage": [
+    {"class_id": "CWE-22", "status": "clean", "reason": "Exact repository root and commit validation"},
+    {"class_id": "CWE-78", "status": "clean", "reason": "Argument-array subprocesses; no shell execution"},
+    {"class_id": "CWE-79", "status": "clean", "reason": "No unsafe dynamic HTML sinks"},
+    {"class_id": "CWE-89", "status": "clean", "reason": "Parameterised SQL"},
+    {"class_id": "CWE-287", "status": "clean", "reason": "Host and guest authentication tests pass"},
+    {"class_id": "CWE-306", "status": "clean", "reason": "Mutation routes are host authenticated"},
+    {"class_id": "CWE-311", "status": "clean", "reason": "Masking plus private runtime storage"},
+    {"class_id": "CWE-362", "status": "clean", "reason": "Single-writer lock and concurrency tests"},
+    {"class_id": "CWE-400", "status": "clean", "reason": "Bounded requests, cursors and query limits"},
+    {"class_id": "CWE-502", "status": "not_applicable", "reason": "No object deserialisation"},
+    {"class_id": "CWE-798", "status": "clean", "reason": "No embedded credentials"},
+    {"class_id": "CWE-862", "status": "clean", "reason": "Role and guest-isolation tests pass"},
+    {"class_id": "CWE-918", "status": "clean", "reason": "Host-configured HTTP transport with scheme validation"},
+    {"class_id": "HG-ASYNC", "status": "clean", "reason": "Harness lifecycle regressions covered"},
+    {"class_id": "HG-PARTIAL-WRITE", "status": "clean", "reason": "Transactional writes and recovery tests"},
+    {"class_id": "HG-STATE-TRANSITION", "status": "clean", "reason": "Invite, suggestion and lifecycle tests"}
+  ],
+  "verdict": {
+    "overall_risk": "LOW",
+    "recommended_actions": {
+      "before_merge": [
+        "Obtain independent reviewer sign-off",
+        "Run the full Hermaguard companion coverage gate when available"
+      ],
+      "before_deploy": [
+        "Choose fresh profile-local state or an approved legacy-state migration"
+      ],
+      "next_sprint": [],
+      "backlog": []
+    }
+  }
+}

@@ -1,0 +1,42 @@
+# fmsg-platform installed!
+
+## Required before inbound works
+
+1. `FMSG_API_KEY` + `FMSG_API_URL` (prompted at install; hosted default
+   `https://api.fmsg.io`)
+2. `FMSG_HOME_CHANNEL=@you@domain` — your owner address (cron / notifications)
+3. `FMSG_ALLOWED_USERS=@you@domain` — who may talk to the agent  
+   If you leave `FMSG_ALLOWED_USERS` empty but set `FMSG_HOME_CHANNEL`, the
+   plugin defaults the allowlist to the home channel at gateway start.
+4. Start the gateway and confirm `fmsg connected` is logged:
+
+```bash
+duckwork gateway restart
+duckwork gateway status
+# gateway log should include: fmsg connected — streaming from …
+```
+
+## Common footguns
+
+| Symptom | Cause |
+|---------|--------|
+| You reply to the agent; nothing happens | Gateway stopped, or sender not on the allowlist |
+| `Unauthorized user: @you@domain on fmsg` in gateway log | Empty allowlist (default deny) |
+| `duckwork send` works but replies do not | Standalone send does not need the gateway; inbound does |
+| Progress noise (`⏳ Working — N min — iteration X/150…`) floods your fmsg thread as separate permanent messages | fmsg has no message-edit API, so Duckwork core's default progress heartbeats — which normally edit one bubble in place — post a new fmsg message each time instead. Fixed automatically since v0.2.3: install seeds quiet `display.platforms.fmsg` defaults in `~/.duckwork/config.yaml` (equivalent to the block below) unless you've already set your own. If you're on an older install or want to opt back into verbose progress detail, edit `display.platforms.fmsg` in `~/.duckwork/config.yaml` yourself: <br><br>`display:`<br>`  platforms:`<br>`    fmsg:`<br>`      tool_progress: "off"`<br>`      busy_ack_detail: false`<br>`      long_running_notifications: false`<br>`      interim_assistant_messages: false`<br><br>then `duckwork gateway restart`. |
+
+## Access control
+
+- Prefer a narrow `FMSG_ALLOWED_USERS` list.
+- Do **not** set `FMSG_ALLOW_ALL_USERS=true` on a network-exposed agent, unless you want anyone to be able to fmsg your duckwork.
+- Add more senders later in `~/.duckwork/.env`, then `duckwork gateway restart`.
+
+## Sanity check
+
+```bash
+duckwork plugins list --plain --no-bundled
+# expect: enabled ... fmsg-platform
+
+# From your fmsg client, message the agent address.
+# If ignored, check gateway.log for "Unauthorized user" or missing "fmsg connected".
+```

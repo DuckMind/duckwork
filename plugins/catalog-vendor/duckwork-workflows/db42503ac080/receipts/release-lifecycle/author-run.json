@@ -1,0 +1,37 @@
+{
+  "template": "release-lifecycle",
+  "receipt_kind": "author-run",
+  "author_provenance": "the author's own machine, run 2026-10-03",
+  "graph_file": "examples/release/release-lifecycle.workflow.json",
+  "graph_sha256": "12e0c21e804037b8e4b00b4afc21ad82ea3fcbc5e0798f488a0d6c587702f893",
+  "source_digest": "0b4a97f11341379ef7cbd0a9a92185abc1f6bc76c8aa1e586a3c317abeddda04",
+  "engine": "plugin tree at 7c7f0d9 (1.2.0 line); door invoked from the worktree so enum/after_partial grammar and its runner pair at the same version",
+  "fixture": "a toy versioned project: VERSION + README.md carry the version; bump.py rewrites the set from an argument; check.py is the machine consistency gate (exit 0 iff VERSION and README agree). A bare git repo with a sibling bare remote stands in for origin. Channels file: two 'name<TAB>check' lines (mirror-copy, archive-drop) where each check is 'test -f <artifact>'.",
+  "laps": {
+    "happy": {
+      "run_id": "20261003-024436-rl-final2",
+      "path": "preflight clean+green -> route-go live / route-halt pruned -> prep bumped CHANGELOG/README/VERSION, committed, did NOT tag -> verify RE-RAN check.py itself (exit 0) + spot-read the touched files -> verdict verified -> approve HELD for human, released 'publish' -> publish re-ran the gate at action time, tagged v2.0.0, pushed, wrote the handoff pointer+command -> await-ci PARKED on the fixed probe (attempts at ~20s cadence; exit 2 before pointer existed on the earlier lap, exit 1 while fixture red, 17 attempts / 320s total on this lap until the harness touched ci_green) -> channel-intake read the channels file -> 2-lane barrier fan-out each ran ITS OWN check -> closeout verdict=released, dispatched 2 answered 2 missing 0. runner_exit done.",
+      "notes": "The parked gate is the whole point: between publish and channel-intake the runner spent ZERO tokens (machine gate poll), and the check command never entered a process argument - argv stayed byte-constant while publish swapped /tmp/wf-test/handoff/ci_check.txt contents as data."
+    },
+    "drift_halt": {
+      "run_id": "20261003-022038-rl-drift",
+      "fixture_twist": "bump command swapped for a sabotaged one: rewrites README but FORGETS VERSION",
+      "path": "prep ran the sanctioned (broken) bump, then ran the gate itself per the goal law, found it RED, HALTED with done=false and named the drift - refused to hand-edit VERSION and refused to commit known-red prep. verify independently re-ran the gate (exit 1, same drift text) -> verdict drift -> route-consistent pruned, route-drift live -> drift-halt echo committed -> approve/publish/await-ci/channels ALL pruned (8 skipped) -> closeout consumed the drift-halt arm via auto-injection: published=false, verdict=halted. runner_exit done, run GREEN.",
+      "what_it_proves": "halt-not-retry walked end to end: a red gate stops the release with the drift list as the record; nothing was tagged or pushed; the halt arm reaches the closeout instead of darkening the run."
+    },
+    "preflight_halt": {
+      "run_id": "20261003-022756-rl-preflight-halt",
+      "fixture_twist": "an uncommitted staged edit dirtying the lane",
+      "path": "preflight saw the dirty tree + drift -> proceed=false -> route-go pruned: prep/verify/approve/publish/channels NEVER SPAWNED -> halt-notice echo -> closeout verdict=halted, published=false. 4 nodes ran, 11 skipped, runner_exit done.",
+      "what_it_proves": "the abort-before-investment pair fires on the release side too: no bump, no commit, no tag on a lane that cannot be trusted."
+    },
+    "negative_probes_walked_by_accident_and_kept": [
+      "publish-honesty (earlier lap 20261003-020831): with no origin remote configured, publish REFUSED to improvise a different remote, reported published=false with the verbatim git error, and did NOT arm the handoff - await-ci then parked on exit 2 forever-with-deadline instead of faking green. The template's refusal law outran the fixture's bug.",
+      "publish-tag-conflict (lap 20261003-023129-rl-final): remote already held v2.0.0 at a different commit; publish halted rather than force-moving a shared tag, and skipped arming the watcher since nothing shipped. Correct per the law; the run was stopped by the harness afterward (fixture state, not template behavior).",
+      "incomplete-work honesty (lap rl-final2 closeout): the harness pruned the channel artifacts after publish armed the watcher, both lanes returned live=false with their own evidence, and the closeout said verdict=incomplete rather than released. The barrier law (answered-or-named, never prose) produced a truthful red."
+    ]
+  },
+  "grammar_floors": "requires 1.2.0 door+runner pair: string `enum` on schema fields (typed correction retry on a misspelled verdict) and `after_partial` on the closeout join. A 1.1.2-era door refuses both at submit (proved during this work: a mixed door/runner release bounced on 'unsupported schema keyword' before any spawn - fail-closed, zero cost).",
+  "hygiene": "all eight seeds plain-text {run.KEY}; the machine-gate argv carries ZERO seed interpolation (law-tested); no vendor ids, no estate paths, no foreign-tracker vocabulary in shipped bytes; make_public 0 scrub hits; test_example_release_lifecycle.py 28 structural checks PASS cold.",
+  "notes": "The drift lap is the receipt's center: the two most expensive failure shapes the distilled source material burned on - tagging a drifted tree, and re-running a bump that no-ops over drift - are exactly the two paths this graph structurally cannot take."
+}

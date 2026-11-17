@@ -1,0 +1,12 @@
+__pycache__/
+ai-catalog.json
+ai-catalog.inspect.json
+build/
+dist/
+*.egg-info/
+
+# Root plugin.json and mcp.json are TRACKED: Duckwork portable discovery reads
+# exactly those two names (agent_plugins.py: root/plugin.json, root/mcp.json,
+# both "must be a regular in-root file"), while the Qoder plugin host reads
+# .qoder-plugin/plugin.json and .mcp.json. Both pairs ship, and selfcheck.py
+# pins them to one version with mcp.json byte-identical to .mcp.json.

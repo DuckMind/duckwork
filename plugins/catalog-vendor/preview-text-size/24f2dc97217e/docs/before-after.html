@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  /* Values copied from Duckwork Desktop 0.22.2's shipped stylesheet for the preview pane:
+     body .875rem, line-height 1.625, max-width 48rem, h1 1.875rem, h2 1.5rem, h3 1.25rem. */
+  :root { --fg: #1f2328; --muted: #6e7781; --border: #e5e7eb; --pane: #ffffff; --chrome: #f6f8fa; --accent: #2f6feb; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #eef0f3; }
+  body {
+    width: 1200px; height: 600px; padding: 28px 32px; display: flex; flex-direction: column; gap: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "PingFang SC", sans-serif; color: var(--fg);
+  }
+  .title { display: flex; align-items: baseline; gap: 14px; }
+  .title h1 { margin: 0; font-size: 28px; font-weight: 650; letter-spacing: -.01em; }
+  .title span { font-size: 17px; color: #32383f; }
+  .row { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 0; }
+  .pane { background: var(--pane); border: 1px solid #d0d7de; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .tabbar { height: 42px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; background: var(--chrome); border-bottom: 1px solid var(--border); font-size: 13px; }
+  .tab { font-weight: 600; color: var(--fg); box-shadow: inset 0 -2px 0 var(--accent); height: 42px; display: flex; align-items: center; }
+  .modes { display: flex; gap: 12px; color: var(--muted); font-weight: 700; }
+  .modes b { color: var(--fg); text-decoration: underline; text-underline-offset: 4px; }
+  .badge { font-weight: 700; padding: 4px 12px; border-radius: 999px; font-size: 15px; }
+  .before .badge, .after .badge { background: #24292f; color: #ffffff; }
+  .viewport { flex: 1; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 140px), transparent calc(100% - 24px)); mask-image: linear-gradient(to bottom, #000 calc(100% - 140px), transparent calc(100% - 24px)); }
+  .md h1, .md h2, .md h3 { text-wrap: balance; }
+  /* the exact preview markup classes, re-expressed */
+  .md { max-width: 48rem; margin: 0 auto; padding: 12px 16px; font-size: .875rem; color: var(--fg); }
+  .md h1 { font-size: 1.875rem; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; margin: 0 0 12px; }
+  .md h2 { font-size: 1.5rem; font-weight: 600; line-height: 1.375; letter-spacing: -.01em; margin: 20px 0 10px; }
+  .md h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.375; margin: 16px 0 8px; }
+  .md p { margin: 0 0 16px; line-height: 1.625; }
+  .md ul { margin: 0 0 16px; padding-left: 24px; }
+  .md li { margin-top: 4px; line-height: 1.625; }
+  .md code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .86em; background: #eff1f3; border-radius: 4px; padding: 1px 4px; color: #a1336a; }
+  .md table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); border-radius: 8px; margin: 0 0 16px; font-size: .875rem; }
+  .md th, .md td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); line-height: 1.625; }
+  .md thead { background: #f6f8fa; color: var(--muted); }
+  .after .md { zoom: 1.25; } /* exactly what the plugin's one CSS rule does at 125% */
+</style>
+</head>
+<body>
+  <div class="title"><h1>Preview Text Size</h1><span>Duckwork Desktop file preview · the same document at 100% and 125%</span></div>
+  <div class="row">
+    <section class="pane before">
+      <div class="tabbar"><span class="tab">research_report.md</span><span class="modes"><b>Preview</b><span>Source</span><span>Edit</span></span><span class="badge">100%</span></div>
+      <div class="viewport"><div class="md" id="doc-a"></div></div>
+    </section>
+    <section class="pane after">
+      <div class="tabbar"><span class="tab">research_report.md</span><span class="modes"><b>Preview</b><span>Source</span><span>Edit</span></span><span class="badge">125%</span></div>
+      <div class="viewport"><div class="md" id="doc-b"></div></div>
+    </section>
+  </div>
+<template id="doc">
+  <h1>Synthetic reasoning data: a field guide</h1>
+  <p>Teacher-written traces now dominate open reasoning datasets. This report compares how the main recipes generate, verify and select chain-of-thought data, and what the controlled ablations actually show.</p>
+  <h2>1. Where the questions come from</h2>
+  <p>Most corpora reuse existing question pools and spend their budget on answers: several traces per question, filtered by an answer checker such as <code>math-verify</code> or a sandboxed test run.</p>
+  <ul>
+    <li><strong>Sampling depth.</strong> 16 answers per question beat more questions with fewer answers in the largest open ablation.</li>
+    <li><strong>Teacher choice.</strong> A stronger benchmark score did not make a better teacher in three separate studies.</li>
+    <li><strong>Decontamination.</strong> 8- to 13-gram overlap filters, with published thresholds.</li>
+  </ul>
+  <p>The cheapest filter is the answer checker; the most expensive is a step-level verifier, and the controlled ablations rarely show the expensive one paying for itself.</p>
+  <h3>1.1 Difficulty control</h3>
+  <p>Pass-rate banding is the common mechanism: drop questions the student always solves, keep the ones it solves some of the time, and send the rest to RL.</p>
+</template>
+<script>
+  const doc = document.getElementById('doc').innerHTML
+  document.getElementById('doc-a').innerHTML = doc
+  document.getElementById('doc-b').innerHTML = doc
+</script>
+</body>
+</html>

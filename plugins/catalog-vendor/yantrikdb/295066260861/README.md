@@ -1,0 +1,547 @@
+# yantrikdb-duckwork-plugin
+
+[![CI](https://github.com/DuckMind/duckwork)](https://github.com/DuckMind/duckwork)
+[![Tests](https://img.shields.io/badge/tests-497%20passing-brightgreen)](https://github.com/DuckMind/duckwork)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)](https://github.com/DuckMind/duckwork)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/yantrikdb-duckwork-plugin)](https://pypi.org/project/yantrikdb-hermes-plugin/)
+[![Downloads](https://img.shields.io/pypi/dm/yantrikdb-duckwork-plugin)](https://pypi.org/project/yantrikdb-hermes-plugin/)
+[![YantrikDB engine](https://img.shields.io/badge/yantrikdb%20engine-%E2%89%A50.12.1,%3C0.24.0-orange)](https://github.com/yantrikos/yantrikdb)
+[![Duckwork Agent](https://img.shields.io/badge/duckwork--agent-plugin-8a2be2)](https://github.com/DuckMind/duckwork)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![mypy](https://img.shields.io/badge/mypy-checked-2a6db2)](https://mypy-lang.org/)
+
+> **YantrikDB as a memory provider for [Duckwork Agent](https://github.com/DuckMind/duckwork).** Self-maintaining memory — canonicalizes duplicates, surfaces contradictions, explains recall — in a drop-in plugin. As of **v0.2.0** the default backend is **in-process** (`pip install` and go, no separate server).
+
+This repository **is** the canonical distribution. Per Duckwork maintainer guidance, new memory providers aren't being merged upstream — the recommended pattern is standalone plugins that users install via `pip` and register with their Duckwork home directory. That keeps the version cadence, CI gating, issue triage, and review cycle on the plugin author's side, so fixes ship the same day they're ready instead of waiting on upstream review bandwidth.
+
+![Self-directing memory loop: gap → task → agenda → learn → close](./assets/demos/self-directing/demo.gif)
+
+## Quick install
+
+```bash
+pip install yantrikdb-duckwork-plugin   # ~10 MB, in the same Python env as Duckwork
+yantrikdb-duckwork install              # registers the plugin with Duckwork
+duckwork memory setup                   # → select "yantrikdb"
+```
+
+No server, no token, no GPU. From here the agent remembers and recalls on its own — tell it "I prefer dark mode in VS Code" in one session, ask "what editor theme do I like?" in the next, and it answers from `yantrikdb_recall` with a `why_retrieved` reason attached. Full install options — including `duckwork plugins install`, `uv`/`pipx` environments, and the HTTP backend for HA clusters — are under [Install](#install-default--embedded-backend) below.
+
+Not using Duckwork? The same engine ships as an MCP server ([yantrikdb-mcp](https://github.com/yantrikos/yantrikdb-mcp)) for Claude Code, Cursor, and other MCP-capable agents, or as a plain Python import ([yantrikdb](https://github.com/yantrikos/yantrikdb)) for anything else — same `recall`/`remember`/`conflicts()` primitives, different transport.
+
+## Why this exists
+
+Two recurring observations from the Duckwork community map directly to what yantrikdb does:
+
+> "Compression was silently dropping earlier constraints by turn 50." — Duckwork developer building a long-running coding agent ([user-stories](https://duckwork-agent.fordex.com/docs/user-stories))
+
+The `on_pre_compress` hook injects the highest-salience memories before Duckwork compresses, so constraints survive long sessions. Recency-aware ranking + `conflicts()` makes superseded claims visible instead of letting them silently outrank their replacements.
+
+> "Spent 200-400 hours building a memory kernel because standard vector approaches dropped important constraints; successful implementations used temporal context graphs with lifecycle management — promotion / demotion / supersession — rather than vector similarity alone." — Duckwork developer who built their own memory layer after vector approaches failed ([user-stories](https://duckwork-agent.fordex.com/docs/user-stories))
+
+This is the substrate yantrikdb already ships: temporal context graph via `relate()`, lifecycle via `consolidation_status` + `forget()` + the `think()` maintenance pass, recency ranking, first-class conflicts/canonicalization. Drop-in via `duckwork plugins install`. The 200-400 hours are someone else's; you get the substrate.
+
+### And what other Duckwork memory providers don't have
+
+| Capability | yantrikdb-duckwork-plugin | Most others |
+|---|---|---|
+| Agent-authored skills with outcome ledger (`yantrikdb_skill_define` / `_search` / `_outcome`) | ✓ first-class, DB-native peer to Duckwork' filesystem Markdown skills | filesystem-only (Duckwork built-in) |
+| Contradiction tracking (`conflicts()` + `resolve_conflict()`) | ✓ first-class primitive | not in [mem0's 2026 taxonomy](https://docs.mem0.ai) |
+| Explainable recall (`why_retrieved` per result) | ✓ list of scoring reasons returned with every result | rarely surfaced |
+| Owner-scoping for multi-platform Duckwork (Telegram + WhatsApp + Discord routed by canonical owner) | ✓ v0.4.10 identity-map + v0.4.11 shared group spaces | one shared namespace, manual scoping |
+| Embedded mode default (no server, no token, no GPU) | ✓ v0.2.0+ | varies |
+| HTTP backend for HA clusters | ✓ v0.5.0 (against yantrikdb-server) | varies |
+| Reproducible recall benchmark (`benchmarks/run_recall_bench.py`) | ✓ v0.6.0 — recall@k / MRR / answer-containment, CI-guarded | claims, rarely a runnable number |
+| Self-tuning recall (`recall(reinforce=[...])`) | ✓ v0.6.0 — reinforced memories climb over time, opt-in | static ranking |
+| Proactive memory hygiene (`yantrikdb_hygiene`) | ✓ v0.7.0 — engine-backed stale scan + consolidate-or-forget | manual cleanup |
+| Knowledge gaps (`yantrikdb_knowledge_gaps`) | ✓ v0.7.0 — "what is my memory missing?" from real recall demand | not surfaced |
+| Verbatim conversation buffer (`yantrikdb_recent_turns`) | ✓ v0.7.0 — survives compression, auto-captured | host context only |
+| Durable task store (`yantrikdb_tasks`) | ✓ v0.7.0 — namespace-scoped chores in the substrate | ephemeral / external |
+| Self-directing loop (gaps → tasks → agenda) | ✓ v0.8.0 — the memory queues its own gaps and hands the agent an agenda | none |
+| Idempotent writes (`remember(idempotency_key=…)`) | ✓ v0.9.0 — retries dedupe to zero writes; divergent payloads surface a conflict | duplicate on retry |
+| Consumer-simulation contract gate | ✓ v0.9.0 — feature-probed semantic tests that catch engine behavioral breaks | none |
+
+## The self-directing substrate (v0.8)
+
+The loop no other Duckwork memory provider can do — the memory **notices what it doesn't know, queues the work, hands the agent its own agenda, and closes the loop** when the gap is answered. **On by default since v0.10.0** (it was opt-in through v0.9.x, which meant most installs never saw it); bounded to `gap_task_max` new tasks per session and `agenda_max_items` prompt lines, and gated on *recurring* poorly-answered queries so one weak recall can't mint a task. Disable with `YANTRIKDB_AUTO_GAP_TASKS=false` / `YANTRIKDB_SURFACE_AGENDA=false`. Runnable via `python demos/self_directing_memory.py`. Details: **[assets/demos/self-directing/](./assets/demos/self-directing/)**.
+
+### Running an agent 24/7
+
+Duckwork fires `on_session_end` only at real session boundaries — CLI exit, `/reset`, gateway session expiry. An always-on deployment (a Pi, a Telegram or Discord gateway) can go a long time without one, so since **v0.12.0** consolidation and the self-directing gap-to-task loop also run on a cadence: every `YANTRIKDB_MAINTENANCE_CADENCE_TURNS` turns (default 40) once `YANTRIKDB_MAINTENANCE_MIN_INTERVAL_SECONDS` (default 1800) have passed. Both conditions must hold, it runs in the background, and never two at once. Set the cadence to `0` for session-end only.
+
+### More than one person talking to the agent?
+
+If several people share one agent — a group chat, a family or team bot, a shared gateway — turn on owner scoping so each person gets their own memory namespace and the agent stops attributing one user's facts to another:
+
+```bash
+echo "YANTRIKDB_OWNER_SCOPING=true" >> ~/.duckwork/.env
+```
+
+Off by default because it changes where new memories are written; existing ones stay readable (`YANTRIKDB_INCLUDE_BASE_NAMESPACE_RECALL`, default on).
+
+### Standing rules — your guardrails (v0.14.0)
+
+Write rules you want obeyed every turn into `$DUCKWORK_HOME/yantrikdb-constitution.md`:
+
+```markdown
+- Never run destructive commands without asking.
+- Answer in British English.
+- Never reveal internal hostnames.
+```
+
+They are injected first and **outrank recalled memory and any mounted knowledge pack's rules**. Four things make them a guardrail rather than just another block: they are never trimmed when the context window fills (a rule that vanishes under pressure was never a rule), they still apply when the memory backend is unavailable, truncation of an oversize file is logged rather than silent, and **there is no tool to edit them** — the agent cannot rewrite its own rules; the file is the interface and you are the editor.
+
+### Running a fleet of agents (v0.13.0)
+
+Duckwork users run N agents, not one. Each agent already gets its own namespace (`{base}:{workspace}:{identity}`) automatically, so nothing contaminates anything else — verified with 6 separate processes writing one embedded database concurrently: 0 errors, 0 leakage.
+
+Two things make a fleet legible rather than just isolated:
+
+```bash
+# agents learn from each other: explicit `remember` writes become shared
+echo "YANTRIKDB_SHARED_BRAIN_NAMESPACE=team-brain" >> ~/.duckwork/.env
+# an agent can see its siblings: memory counts, last activity, open tasks
+echo "YANTRIKDB_FLEET_VIEW=true" >> ~/.duckwork/.env
+```
+
+The fleet view is read-only, never crosses workspaces, declares truncation rather than implying full coverage, and is **refused outright when `YANTRIKDB_OWNER_SCOPING` is on** — under owner scoping siblings are people, not agents, and enumerating them would break the isolation you turned on.
+
+For a fleet at scale, point every agent at one `yantrikdb-server` (`YANTRIKDB_MODE=http`): one engine and one corpus instead of N. Note that packs are embedded-only today, so that path trades attachable expertise for shared scale — server-side pack endpoints are requested upstream.
+
+### Attachable expertise — knowledge packs (v0.11.0)
+
+A **pack** is a sealed, signed knowledge file. Mount it to gain its knowledge and rules for a task; unmount to give them back, leaving your own memory byte-for-byte unchanged. No other Duckwork memory provider can do this.
+
+```bash
+echo "YANTRIKDB_PACKS_ENABLED=true" >> ~/.duckwork/.env
+# optional: mount packs for every session (transient - unmounted on shutdown)
+echo "YANTRIKDB_AUTO_MOUNT_PACKS=wordpress-expert-0.2.0.ydbpack" >> ~/.duckwork/.env
+```
+
+The agent drives it with `yantrikdb_packs`: `inspect` a pack's manifest before trusting it, `mount` for the session, `install` to keep it across restarts, `unmount` / `uninstall` to reverse. While mounted, the pack's constitution and coverage are injected into the system prompt (capped, and scaled by the adaptive budget) and **recall reaches the pack's records**, not just its rules.
+
+Mounting is refused when a pack's vectors come from a different embedding space — that refusal is what stops confidently wrong answers, so it's reported rather than forced. Packs are embedded-mode only; in HTTP mode the database lives on the server and packs are the operator's business there.
+
+### Context cost
+
+Tool schemas are re-sent on every request, so the tool surface is a per-turn cost. Since v0.10.0 the default profile is `core` — 7 tools, ~1.7k tokens — instead of all 18 (~3.6k):
+
+| `YANTRIKDB_TOOL_PROFILE` | tools | ≈ tokens/turn |
+|---|---|---|
+| `core` (default) | 7 | ~1,725 |
+| `full` | 18 | ~3,606 |
+
+Nothing is disabled by `core`: `think()` runs automatically at session end, conflicts/hygiene/gaps surface in the system prompt, and the remaining tools are operator diagnostics that stay fully callable. Set `full` to expose them to the model.
+
+## End-to-end demo — substrate growing through the skill lifecycle
+
+![Constellation animation of the substrate growing](./assets/demos/skill-lifecycle/demo_visual.gif)
+
+Six skills from prior sessions, color-coded by type. Session 1: the agent adds a 7th (pink, just-created). Session 2 search highlights the relevant node, outcome recorded turns it green. Source: [`demo_visual.py`](./assets/demos/skill-lifecycle/demo_visual.py).
+
+### What's actually running underneath
+
+![LLM-driven skill lifecycle](./assets/demos/skill-lifecycle/demo_llm.gif)
+
+`gpt-4o-mini` receives the plugin's 15 tool schemas via OpenAI's chat-completions API and chooses when to call each one. In session 1 it autonomously picks the `skill_id` (`release.yantrikos.clean`), `applies_to` tags, and body for a workflow it just learned. In session 2 — fresh provider instance, same substrate — it searches the substrate, finds the skill, follows it, and records an outcome. Two real rids land. The autonomy loop closes in ~10 seconds.
+
+Sources: [`demo_llm.py`](./assets/demos/skill-lifecycle/demo_llm.py) + [`transcript-llm.txt`](./assets/demos/skill-lifecycle/transcript-llm.txt) + [`demo_llm.tape`](./assets/demos/skill-lifecycle/demo_llm.tape) for rendering. A scripted (no API key required) deterministic version is also included: [`demo.py`](./assets/demos/skill-lifecycle/demo.py) / [`demo.gif`](./assets/demos/skill-lifecycle/demo.gif).
+
+The plugin's `handle_tool_call` dispatch path you see in both demos is the same entry point Duckwork invokes internally. For larger-scale evidence of LLM-driven autonomy: [`yantrikdb.com/guides/autonomous-skills/`](https://yantrikdb.com/guides/autonomous-skills/) documents 17 skills authored by Claude across many sessions on one production substrate, with 9 showing cross-session reuse via the outcome ledger.
+
+## Install (default — embedded backend)
+
+The v0.2.0 default backend is **in-process**: no separate server, no token, no GPU, no network. Bundled `potion-base-2M` static embedder (~8 MB, dim=64) loads on first call (~80 ms one-time warmup) and stays in-process.
+
+### Option A — `duckwork plugins install` (v0.4.5+, one command for the plugin source)
+
+```bash
+source ~/.duckwork/duckwork-agent/venv/bin/activate
+duckwork plugins install yantrikos/yantrikdb-duckwork-plugin
+pip install yantrikdb                    # ~10 MB; in the same Python env as Duckwork
+duckwork memory setup                      # → Select "yantrikdb" and press Enter
+duckwork memory status                     # → Provider: yantrikdb  Status: available ✓
+```
+
+`duckwork plugins install` clones the repo into `~/.duckwork/plugins/yantrikdb/` based on `plugin.yaml`'s `name:` field. The `pip install yantrikdb` step gets the engine — `duckwork plugins install` doesn't auto-install pip dependencies, so this is a separate step. **Crucially: pip-install into the same Python environment Duckwork runs from.** If Duckwork was installed via `pipx`, use `pipx inject duckwork-agent yantrikdb`. If you're using a regular venv, source it first.
+
+If your Duckwork environment uses `uv` and does not have `pip` available, install with the Duckwork Python explicitly:
+
+```bash
+uv pip install --python ~/.duckwork/duckwork-agent/venv/bin/python yantrikdb
+```
+
+### Option B — `pip install yantrikdb-duckwork-plugin` (bundled package path)
+
+```bash
+source ~/.duckwork/duckwork-agent/venv/bin/activate
+pip install yantrikdb-duckwork-plugin     # pulls yantrikdb engine + the provider source
+yantrikdb-duckwork install                # registers ~/.duckwork/plugins/yantrikdb
+duckwork memory setup                     # → Select "yantrikdb" and press Enter
+duckwork memory status                    # → Provider: yantrikdb  Status: available ✓
+```
+
+If your Duckwork environment uses `uv` and does not have `pip` available, install with the Duckwork Python explicitly:
+
+```bash
+uv pip install --python ~/.duckwork/duckwork-agent/venv/bin/python yantrikdb-duckwork-plugin
+~/.duckwork/duckwork-agent/venv/bin/yantrikdb-duckwork install
+```
+
+`yantrikdb-duckwork install` registers the pip-installed provider with Duckwork by creating a lightweight shim at `~/.duckwork/plugins/yantrikdb` (or `$DUCKWORK_HOME/plugins/yantrikdb`). The shim imports the real provider from the installed `yantrikdb-duckwork-plugin` package, so future package upgrades are picked up without copying the whole provider tree. Use `yantrikdb-duckwork install --copy` if your environment prefers a physical copy instead of the default shim.
+
+### Updating
+
+Option A updates the plugin checkout and the engine dependency separately:
+
+```bash
+source ~/.duckwork/duckwork-agent/venv/bin/activate
+duckwork plugins update yantrikdb
+pip install --upgrade yantrikdb
+duckwork gateway restart                    # if Duckwork is running as a gateway/service
+duckwork memory status
+```
+
+If your Duckwork CLI does not have `duckwork plugins update`, reinstall the plugin source in place:
+
+```bash
+duckwork plugins install yantrikos/yantrikdb-duckwork-plugin --force
+```
+
+Option B updates the pip package, then refreshes the registered shim:
+
+```bash
+source ~/.duckwork/duckwork-agent/venv/bin/activate
+pip install --upgrade yantrikdb-duckwork-plugin
+yantrikdb-duckwork install --force
+duckwork gateway restart                    # if Duckwork is running as a gateway/service
+duckwork memory status
+```
+
+For uv-only environments, target the Duckwork Python explicitly:
+
+```bash
+uv pip install --python ~/.duckwork/duckwork-agent/venv/bin/python --upgrade yantrikdb
+uv pip install --python ~/.duckwork/duckwork-agent/venv/bin/python --upgrade yantrikdb-duckwork-plugin
+```
+
+`--force` replaces the registered plugin directory. Back up any plugin-local files first if you keep custom files under `~/.duckwork/plugins/yantrikdb/`; normal YantrikDB settings belong in `~/.duckwork/.env` and are not touched.
+
+### Uninstalling
+
+Option A uses Duckwork' plugin manager for the plugin source, plus pip for the engine dependency:
+
+```bash
+source ~/.duckwork/duckwork-agent/venv/bin/activate
+duckwork plugins remove yantrikdb
+pip uninstall yantrikdb
+duckwork memory setup                      # choose another provider, or disable external memory
+duckwork gateway restart                   # if Duckwork is running as a gateway/service
+```
+
+Option B removes the user-plugin registration, then optionally removes the pip packages:
+
+```bash
+source ~/.duckwork/duckwork-agent/venv/bin/activate
+yantrikdb-duckwork uninstall
+pip uninstall yantrikdb-duckwork-plugin yantrikdb
+duckwork memory setup                      # choose another provider, or disable external memory
+duckwork gateway restart                   # if Duckwork is running as a gateway/service
+```
+
+If your installed version does not yet have `yantrikdb-duckwork uninstall`, remove the registration manually:
+
+```bash
+rm -rf ~/.duckwork/plugins/yantrikdb
+pip uninstall yantrikdb-duckwork-plugin yantrikdb
+```
+
+### Same-venv guidance (both options)
+
+`yantrikdb` and `yantrikdb-duckwork-plugin` must be importable from whatever Python interpreter Duckwork uses:
+
+- **`pipx install duckwork-agent`** → `pipx inject duckwork-agent yantrikdb yantrikdb-duckwork-plugin`
+- **Default Duckwork venv** → `source ~/.duckwork/duckwork-agent/venv/bin/activate` first, then `pip install ...`
+- **Other plain venv** → `source path/to/duckwork-venv/bin/activate` first, then `pip install ...`
+- **uv-only venv** → `uv pip install --python path/to/duckwork-venv/bin/python ...`
+- **System Python** → just `pip install`
+
+If `duckwork memory status` shows `Status: not available ✗` after install, the most common cause is the plugin landed in a different Python than Duckwork is using. `which duckwork && which python` will confirm.
+
+### Optional: tier up the embedder
+
+```bash
+echo "YANTRIKDB_EMBEDDER=potion-base-8M" >> ~/.duckwork/.env     # 28 MB, dim=256, ~92% MiniLM
+# or potion-base-32M for 121 MB, dim=512, ~95% MiniLM
+# or multilingual via the v0.4.2 model2vec path:
+echo "YANTRIKDB_EMBEDDER_MODEL2VEC=minishlab/potion-multilingual-128M" >> ~/.duckwork/.env
+# or the broader HF ecosystem via sentence-transformers:
+echo "YANTRIKDB_EMBEDDER_HF=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" >> ~/.duckwork/.env
+```
+
+### Optional: quiet the HuggingFace embedder
+
+`YANTRIKDB_EMBEDDER_HF` uses `sentence-transformers`, which by default emits noise to stdout — tqdm progress bars on every encode and a one-time HF Hub auth warning at startup. The plugin disables the per-encode progress bars internally (v0.4.12+). For the rest, add to your `.env`:
+
+```bash
+HF_HUB_DISABLE_PROGRESS_BARS=1
+TRANSFORMERS_VERBOSITY=error
+# Optional, when running fully offline after the first download:
+HF_HUB_OFFLINE=1
+```
+
+Without these, sentence-transformers / huggingface_hub output can pollute the agent's own stdout stream.
+
+## Install (alternative — HTTP backend, for HA cluster setups)
+
+If you run multiple Duckwork instances that need to share one memory store, or you want HA via raft:
+
+```bash
+docker run -d -p 7438:7438 -v yantrikdb-data:/var/lib/yantrikdb \
+  --name yantrikdb ghcr.io/yantrikos/yantrikdb:latest
+docker exec yantrikdb yantrikdb token --data-dir /var/lib/yantrikdb \
+  create --db default --label duckwork
+# → ydb_abc123...
+
+cat >> ~/.duckwork/.env <<EOF
+YANTRIKDB_MODE=http
+YANTRIKDB_URL=http://localhost:7438
+YANTRIKDB_TOKEN=ydb_abc123...
+EOF
+```
+
+Same plugin, same 8 tools, same hooks, same provider contract — just talks HTTP to a separately-managed server instead of running the engine in-process.
+
+### Running several agents on one host
+
+Duckwork builds a memory provider per agent/session, and in embedded mode they all resolve to the same database. Since **v0.9.3** they also share **one engine** per `(db_path, embedder)` inside a process, instead of each opening its own — which matters because every engine runs its own background materializer workers and compactor.
+
+Measured on a 32-logical-CPU box, 6,000 records, 6 providers, idle (sampled only once the materializer had drained, not after a fixed sleep):
+
+| engine | engine per provider (≤ v0.9.2) | shared engine (v0.9.3) |
+|---|---|---|
+| **0.10.1+** (required) | 137 threads, 0.16% of machine | 52 threads, **0.05% of machine** |
+| 0.10.0 (pre-[#113](https://github.com/yantrikos/yantrikdb/issues/113)) | 152 threads, 31.9% of machine | 52 threads, 3.7% of machine |
+
+On the required engine this is a **resource** win, not a CPU one: **~85 fewer OS threads**, N× fewer SQLite connections and file handles, and no duplicate embedding-model load per agent (costly on the `sentence-transformers` path). The large CPU numbers in the bottom row came from each extra engine multiplying an engine-side defect, fixed in 0.10.1 — which is why v0.9.3 requires it.
+
+Sharing is on by default; set `YANTRIKDB_SHARE_ENGINE=false` to restore per-provider engines. If your agents run in **separate processes** (not just separate sessions), the cache can't span them — point them at one `yantrikdb-server` in HTTP mode instead, which gives the same single-engine benefit across process boundaries.
+
+Full config, tool reference, troubleshooting: **[yantrikdb/README.md](yantrikdb/README.md)**.
+
+## What it does
+
+The differentiator versus other Duckwork memory plugins is not the vector store — it's what happens *after* the write:
+
+| Feature | Plain vector memory | YantrikDB |
+|---|---|---|
+| Duplicate facts | pile up | canonicalized by `think()` |
+| Contradictions | silently overwrite | surfaced via `conflicts()`, closed via `resolve_conflict()` |
+| Stale facts | outrank fresh ones | recency-aware ranking without deletion |
+| Why did a memory rank? | ¯\\_(ツ)_/¯ | every `recall()` result carries a `why_retrieved` reason list |
+| Cross-entity recall | semantic-only | graph edges from `relate()` boost related memories |
+
+Twelve tools exposed to the agent by default: `yantrikdb_remember`, `_recall`, `_forget`, `_think`, `_conflicts`, `_resolve_conflict`, `_relate`, `_stats`, plus the trigger-lifecycle consumers `_pending_triggers`, `_acknowledge_trigger`, `_dismiss_trigger`, `_act_on_trigger` (v0.4.13+). Three additional **opt-in** skill tools (v0.3.0+): `_skill_search`, `_skill_define`, `_skill_outcome` — see [Skills](#skills-opt-in-v030) below.
+
+### Tool response envelope (v0.4.16+)
+
+Every tool response carries the same four envelope fields so an LLM later asked "what did I just do?" can't confabulate success on a silent failure:
+
+```json
+{
+  "status": "ok" | "failed",
+  "ok": true | false,
+  "tool": "yantrikdb_remember",
+  "ts": 1748394801.42,
+  ...tool-specific keys preserved verbatim (rid, stored, results, ...)
+}
+```
+
+Failure responses additionally carry `error` (legacy key) and `reason` (alias). The envelope is purely additive — existing agent code that reads `rid` / `stored` / `results` / etc. continues working unchanged.
+
+Why this matters: tool failures used to be communicated as `{"error": "..."}` only. When the agent's narrative LLM was later asked to summarize the session, it could confabulate plausible completion because the failure wasn't loudly present in machine-readable form. The new `status: "failed"` + `ok: false` are intentionally redundant — the word "failed" lands during narrative summarization, the boolean lands for programmatic consumers. Pattern documented by yantrikdb-agi after a real incident where the agent described a `telegram_send` that never happened.
+
+### Trigger lifecycle (v0.4.13+)
+
+`yantrikdb_think` flags redundancies, conflicts, and surprise cross-domain connections as **triggers** — substrate signals the agent can inspect and close out:
+
+- `yantrikdb_pending_triggers` — list what's waiting (with `urgency`, `reason`, `suggested_action`, and the `source_rids` that produced it).
+- `yantrikdb_acknowledge_trigger` — agent saw it, no follow-up needed.
+- `yantrikdb_dismiss_trigger` — false positive or out of scope.
+- `yantrikdb_act_on_trigger` — agent took action; records an audit-trail entry.
+
+All three closers remove the trigger from `pending_triggers`. Without these tools (pre-v0.4.13) the pending queue grew indefinitely because the producer (`think()`) had no matching consumer surface.
+
+### Compared to other Duckwork memory providers
+
+Each row in the table below is backed by [`tests/comparison/findings_scale_lxc/<provider>/`](tests/comparison/findings_scale_lxc/) — the actual `findings_scale.yaml`, `transcript.md`, and `raw/` response capture from running a 1000-fact + 20-query probe against that provider on a real Duckwork 0.9.0 install (LXC 129, commit `4610551`). The corpus is deterministic (`fixtures/corpus_1k.json`, seed=20260512: 600 realistic agent-memory facts + 300 noise + 50 planted duplicates + 50 planted contradictions); the probe is provider-agnostic and reproducible. Methodology details in [`tests/comparison/README.md`](tests/comparison/README.md).
+
+| Provider | Hosting | Verified at 1000 scale | Writes (ok/attempted; latency) | Recall latency | Precision@5 | `why_retrieved` field | Maintenance behaviour observed |
+|---|---|---|---|---|---|---|---|
+| **yantrikdb** (this) | embedded | yes — 256/1000 writes [^queuecap] | 256/1000; p50 0.48 ms / p99 5.13 ms | p50 3.78 ms / p99 32.94 ms | **0.80** (16/20) | yes — `why_retrieved` per result | contradiction API: `yantrikdb_conflicts`; duplicates kept separate (canonicalisation via explicit `think()`) |
+| [byterover](https://github.com/DuckMind/duckwork) | cloud | couldn't verify — requires `brv` CLI auth | — | — | — | — | — |
+| [hindsight](https://github.com/DuckMind/duckwork) | cloud-default (local-stub mode used) | yes — 1000/1000 writes | 1000/1000; p50 0.27 ms / p99 0.31 ms | p50 0.28 ms / p99 0.30 ms | **0.00** (0/20) [^localstub] | no | — |
+| [holographic](https://github.com/DuckMind/duckwork) | embedded (SQLite + FTS5) | yes — 1000/1000 writes [^hrrcap] | 1000/1000; p50 23.43 ms / p99 68.52 ms | p50 0.06 ms / p99 0.23 ms | **0.00** (0/20) [^keyword] | no | — |
+| [honcho](https://github.com/DuckMind/duckwork) | self-hosted | couldn't verify — requires honcho-server URL or api key | — | — | — | — | — |
+| [mem0](https://github.com/DuckMind/duckwork) | cloud or self-host | couldn't verify — requires `mem0.api_key` | — | — | — | — | — |
+| [openviking](https://github.com/DuckMind/duckwork) | self-hosted | couldn't verify — requires `OPENVIKING_ENDPOINT` | — | — | — | — | — |
+| [retaindb](https://github.com/DuckMind/duckwork) | cloud | couldn't verify — requires `RETAINDB_API_KEY` | — | — | — | — | — |
+| [supermemory](https://github.com/DuckMind/duckwork) | cloud | couldn't verify — requires `SUPERMEMORY_API_KEY` | — | — | — | — | — |
+
+[^queuecap]: yantrikdb v0.4.2 plugin against yantrikdb engine 0.7.8 on Linux: the engine's ingest queue is bounded at 256 pending ops and didn't drain during the 1000-fact burst (probe hit `RuntimeError('ingest queue full ...; retry after 50ms')` from fact 257 onward, even with 60-attempt × 100 ms backoff). Recall on the 256 stored facts is solid (P@5 = 0.80). Surfaced upstream as a likely queue-drain regression in the manylinux build of 0.7.8 — the Duckwork plugin itself doesn't loop the writes.
+
+[^localstub]: `HINDSIGHT_MODE=local_embedded` was set so `is_available()` returns true without an API key, but in this configuration writes return immediately (sub-millisecond) and recall returns no results — the local mode appears to be a no-op stub rather than a real local backend. Full retrieval almost certainly requires the cloud account.
+
+[^hrrcap]: At ~256 stored items, the engine emits `HRR storage near capacity: SNR=2.00 (dim=1024, n_items=...)` warnings on every subsequent write. The capacity warning is part of holographic's normal output; it's not an error and writes continue to succeed, but retrieval quality is expected to degrade past that point.
+
+[^keyword]: Holographic's recall is keyword-based (FTS5 + HRR cleanup); the probe's queries are full sentences (`"What color scheme does the user prefer in VS Code?"`). The 0/20 result is a query-format mismatch, not a retrieval failure — keyword-shaped queries probably hit. The honest takeaway is that holographic and yantrikdb target different query shapes, not that one is "better".
+
+**Where the verified data lives** — every cell in the table maps to a file:
+
+- `findings_scale.yaml` — structured cells (the table is generated from these by [`compare.py`](tests/comparison/compare.py))
+- `transcript.md` — human-readable session log with timing
+- `raw/recall-Q*.json` — captured raw recall responses for every query
+- `fixtures/corpus_1k.json`, `fixtures/queries_1k.json` — the deterministic corpus + queries used
+
+**How to re-run it** — clone the repo, `scp tests/comparison/` to a Duckwork-installed machine, `python3 runner_scale.py --all`. The harness will skip-with-honest-reason for any provider whose `is_available()` returns False (e.g. missing API key); for the ones that initialise, it produces a fresh `findings_scale.yaml`. Pull requests welcomed when accounts unlock more rows.
+
+Five lifecycle hooks: `on_session_end` auto-consolidates, `on_pre_compress` preserves high-salience memories through context compression, `on_memory_write` mirrors built-in `MEMORY.md` / `USER.md` additions, **`on_turn_start` (v0.10.0) adapts the prompt budget** to the context Duckwork reports as remaining — injecting less as the window fills, and exactly as much as before when the host says nothing — and **`on_delegation` (v0.10.0) persists what sub-agents found** — Duckwork calls it when a delegated child returns, and no other memory provider implements it, so elsewhere a sub-agent's finding dies with its session. Stored as an episodic memory in the parent's namespace, stamped with the child session id; bounded, fail-soft, disable with `YANTRIKDB_CAPTURE_DELEGATIONS=false`.
+
+## Skills (opt-in, v0.3.0+)
+
+Skills are **procedural memory**: reusable patterns the agent distills from observed success and pulls back next session. They live in YantrikDB's shared `skill_substrate` namespace alongside skills authored by other consumers (Lane B SDK, server handlers, WisePick). Duckwork-authored skills are tagged `metadata.source=duckwork` so any downstream consumer can filter them in or out cleanly.
+
+**Disabled by default.** Adding the plugin to an existing Duckwork install doesn't change the tool schema the model sees. Enable explicitly when you want the agentic skill loop:
+
+```bash
+echo "YANTRIKDB_SKILLS_ENABLED=true" >> ~/.duckwork/.env
+```
+
+When enabled, three new tools join the schema:
+
+| Tool | Purpose |
+|---|---|
+| `yantrikdb_skill_search` | Semantic search over agent-authored skills, namespace-isolated from regular memory recall. |
+| `yantrikdb_skill_define` | Distill a procedural pattern into a reusable skill (`skill_id`, `body`, `skill_type`, `applies_to`). Client-side validation reproduces yantrikdb-server's wrapper checks. |
+| `yantrikdb_skill_outcome` | Record success/failure for a skill after it's used. Append-only event log; rollup is the agent's call, not the substrate's. |
+
+The agentic loop closes: agent observes a successful sequence → distills it via `define` → next session pulls it via `search` → records outcome via `outcome` → over time, ranking reflects what actually works.
+
+**Lifecycle distinction worth understanding.** Duckwork' own filesystem skills (`$DUCKWORK_HOME/skills/*.md`) are *human-authored, durable, version-controlled*. YantrikDB skills are *agent-authored, runtime-evolving, semantic-search-queryable*. Different kinds of canonical, not competing authorities. The model picks by lifecycle.
+
+### Explainability is a side effect, not a bolt-on
+
+Every `recall()` result already carries the structured ranking-reason list — that's the engine's standard response shape. The model can *read* it without prompt engineering. From the live Duckwork session captured in `VERIFICATION.md`, DeepSeek's natural-language summary of the recall:
+
+> *"All 3 memories returned, ranked by relevance × recency × importance. The top result ranked highest (semantic match + keyword + high importance + recency), followed by [...] (keyword match), then [...] (high importance but no direct keyword overlap)."*
+
+DeepSeek wasn't told the reason codes existed; it parsed them from the tool response and reflected them in its explanation. That's the architectural shape we wanted: the explainability surface is the recall response itself, transport-agnostic, model-agnostic, and visible to anyone who looks at the JSON. No separate "explain" tool. No second LLM call. The cost of explainability is zero because it was never separate.
+
+## Verification
+
+- **96 unit tests** covering request formation, error taxonomy, provider contract, hook semantics, circuit breaker, text truncation, mode-aware availability — all mocked, no network required.
+- **2 live integration tests** (`tests/integration/test_live.py`) that exercise the full flow against a real `yantrikdb-server`. Skipped by default; run with `YANTRIKDB_INTEGRATION_URL` + `YANTRIKDB_INTEGRATION_TOKEN` set.
+- **End-to-end Duckwork demos** against an unmodified Duckwork 0.9.0 install for both backends, captured in **[VERIFICATION.md](VERIFICATION.md)** — DeepSeek-driven sessions calling all 8 tools, with `why_retrieved` reason codes flowing through the model's reasoning verbatim.
+
+### Performance (steady-state, post-warmup)
+
+| Op | v0.1 HTTP (Apr 14) | v0.2 Embedded (May 9) |
+|---|---|---|
+| `record_text` p50 | 13.8 ms | **0.60 ms** |
+| `recall_text` p50 | 24.0 ms | **2.58 ms** |
+| `record_text` p99 | 55.3 ms | 10.66 ms |
+| `recall_text` p99 | 67.2 ms | 13.24 ms |
+| Cold start | n/a | 77 ms (one-time) |
+| Required infrastructure | yantrikdb-server + token | none |
+| `pip install` footprint | wheel + requests | wheel + 2 small libs (~10 MB total) |
+
+Even embedded p99 tail latency is faster than HTTP p50 — bad-case embedded beats typical-case HTTP. Long-running soak validation is in progress upstream ([yantrikos/yantrikdb saga task #2](https://github.com/yantrikos/yantrikdb)); these numbers are 100-iteration micro-benchmarks, not 24-hour production traces.
+
+### About the embedder quality claims
+
+Tier 1 (`with_default()`, ~8 MB) uses [`potion-base-2M`](https://huggingface.co/minishlab/potion-base-2M) via [`model2vec-rs`](https://github.com/MinishLab/model2vec-rs) — a pure-Rust static embedding (lookup table + mean-pool + L2-normalize), no transformer forward pass. Tier 2 (`potion-base-8M`, 28 MB) and Tier 3 (`potion-base-32M`, 121 MB) trade larger model files for higher recall and live behind `set_embedder_named()` (downloaded on first use, cached under user data dir).
+
+**Quality numbers cited in this README are R@5 vs `sentence-transformers/all-MiniLM-L6-v2` (dim=384) on the upstream [evaluation corpus](https://github.com/yantrikos/yantrikdb/blob/main/scratch/eval_potion_2m.py).** The "~89% / ~92% / ~95% of MiniLM" approximations are from that specific eval; your mileage will vary on a different corpus or task. Semantic separation is also corpus-size dependent — at 3 records all vectors look similar (top score ~0.58); at 8+ with real diversity the score range opens up (top score ~0.84). If you're evaluating, run against your own data.
+
+CI runs ruff + mypy + pytest on Python 3.11 / 3.12 / 3.13 / 3.14 on every push.
+
+## Benchmarks (recall quality, v0.6.0+)
+
+"Best in class" is only worth saying if you can reproduce it. `benchmarks/run_recall_bench.py` spins up a real embedded YantrikDB, ingests a curated MIT-clean memory-QA corpus (`benchmarks/dataset.json` — 40 memories, 37 queries across preferences / architecture / people / work / infra), runs the real provider recall path, and scores it:
+
+```bash
+python benchmarks/run_recall_bench.py            # baseline
+python benchmarks/run_recall_bench.py --reinforce  # + self-tuning lift
+```
+
+Current run (bundled `potion-2M` embedder, deterministic):
+
+| metric | @1 | @3 | @5 |
+|---|---|---|---|
+| recall | 0.865 | 1.000 | 1.000 |
+| answer-containment | 0.865 | 1.000 | 1.000 |
+
+**MRR 0.928.** With `--reinforce`, reinforcing each query's gold memory lifts recall@1 to 0.865 and MRR to 0.928 — a measurable self-tuning gain that the loop produces on its own. `tests/test_recall_benchmark.py` asserts conservative floors so a ranking regression fails CI (it skips when the native engine wheel isn't installed). Extend the corpus to benchmark against your own data. Details: **[benchmarks/README.md](benchmarks/README.md)**.
+
+## Running the tests
+
+```bash
+python -m pytest tests/                          # unit tests
+YANTRIKDB_INTEGRATION_URL=http://localhost:7438 \
+YANTRIKDB_INTEGRATION_TOKEN=ydb_... \
+  python -m pytest tests/integration/ -v         # live integration
+```
+
+## Status
+
+**v0.4.2** (current) — first-class embedder loaders for the `model2vec` family and the HF `sentence-transformers` ecosystem; embedding dim auto-probed; default install stays slim via optional `[model2vec]` and `[sentence-transformers]` pip extras. 151 tests passing on Python 3.11/3.12/3.13. **Standalone-by-design** per Duckwork maintainer guidance — Duckwork is not accepting new memory providers upstream; standalone plugins installed via `pip` are the recommended pattern. PR [#9989](https://github.com/DuckMind/duckwork) closed 2026-05-13 with that resolution.
+
+### Release cadence
+
+| Version | Date | Highlight |
+|---|---|---|
+| v0.1.0 | 2026-04-14 | HTTP backend, 8 tools, 96 tests |
+| v0.2.0 | 2026-05-09 | Embedded backend default, ~10 MB install, sub-ms recall |
+| v0.3.0 | 2026-05-09 | Skill substrate bridge (opt-in) |
+| v0.3.1 | 2026-05-09 | PyPI distribution + `yantrikdb-duckwork` CLI installer |
+| v0.4.1 | 2026-05-12 | Pluggable embedders (custom Python class via `YANTRIKDB_EMBEDDER_CLASS`) |
+| v0.4.2 | 2026-05-12 | First-class `model2vec` + `sentence-transformers` loaders, auto-probed dim |
+
+### Durability signals
+
+The maintainer doesn't promise "I won't quit" — promises like that aren't testable. What's testable:
+
+- Every release ships with tests + CI (Python 3.11 / 3.12 / 3.13) + tagged CHANGELOG + a publish gate where 151 tests + ruff + mypy must pass before the wheel uploads to PyPI.
+- First user issue on this repo (multilingual embedding support) was filed and shipped to PyPI the same day — 25 minutes from raised to released.
+- Underlying yantrikdb engine: ~11.3k/mo PyPI downloads; flagship server repo has 171 GitHub stars. Cross-stack ownership (engine + HTTP server + MCP server + this plugin) — 14+ months of parallel maintenance, not a one-week hobby.
+- Independent recognition: accepted into the [Cursor Directory](https://cursor.directory/plugins/yantrikdb) (300k+ developer reach) and (sibling project) the Anthropic MCP Directory.
+- Substrate design deposited as a peer-citable preprint: [10.5281/zenodo.20128887](https://doi.org/10.5281/zenodo.20128887).
+
+That's what I can give you. The technical merits are above; the maintenance shape is here so you can audit before adopting.
+
+See [yantrikdb/CHANGELOG.md](yantrikdb/CHANGELOG.md) for full release notes and [yantrikdb/ARCHITECTURE.md](yantrikdb/ARCHITECTURE.md) for the control flow, error taxonomy, and threading model (covering both backends).
+
+## Related projects
+
+The rest of the YantrikDB stack, if you need memory somewhere other than Duckwork:
+
+- [yantrikdb](https://github.com/yantrikos/yantrikdb) — the embeddable Rust/Python engine this plugin runs in-process (`pip install yantrikdb`).
+- [yantrikdb-server](https://github.com/yantrikos/yantrikdb-server) — HTTP gateway and HA cluster, for the alternative HTTP backend above.
+- [yantrikdb-mcp](https://github.com/yantrikos/yantrikdb-mcp) — the same memory as an MCP server for Claude Code, Cursor and Windsurf (`pip install yantrikdb-mcp`).
+- [openclaw-memory-yantrikdb](https://github.com/yantrikos/openclaw-memory-yantrikdb) — the same substrate as a memory plugin for OpenClaw, over plain HTTP.
+- [yantrikdb-client](https://github.com/yantrikos/yantrikdb-client) — typed Python client for the HTTP server.
+- [langchain-yantrikdb](https://github.com/yantrikos/langchain-yantrikdb) — YantrikDB as a LangChain `VectorStore` and `ChatMessageHistory`.
+- [yantrik-memory](https://github.com/yantrikos/yantrik-memory) — framework-agnostic memory layer with traits and bond evolution.
+
+## License
+
+This plugin is **MIT** (matching Duckwork — the code is intended for upstream contribution). The [YantrikDB server](https://github.com/yantrikos/yantrikdb-server) is Apache-2.0 as of 2026-08-18 (previously AGPL-3.0), so there is no copyleft boundary to reason about at all; the plugin talks to it over HTTP and embeds no server code. See [yantrikdb/SECURITY.md](yantrikdb/SECURITY.md#license-boundary-apache-20-vs-mit) for the full note.
+
+## Links
+
+- **Plugin docs**: [yantrikdb/README.md](yantrikdb/README.md)
+- **Architecture**: [yantrikdb/ARCHITECTURE.md](yantrikdb/ARCHITECTURE.md)
+- **Verification transcripts**: [VERIFICATION.md](VERIFICATION.md)
+- **Duckwork Agent**: <https://github.com/DuckMind/duckwork>
+- **YantrikDB server**: <https://github.com/yantrikos/yantrikdb-server>
+- **YantrikDB docs**: <https://yantrikdb.com>

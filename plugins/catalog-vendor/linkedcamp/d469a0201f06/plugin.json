@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "linkedcamp",
+  "version": "1.0.0",
+  "description": "Plan, build and run LinkedIn and email outreach campaigns in LinkedCamp from Duckwork: audience searches, multi-step sequences, leads, inbox replies, sending-account health and campaign analytics.",
+  "author": {
+    "name": "LinkedCamp",
+    "url": "https://www.linkedcamp.com"
+  },
+  "homepage": "https://www.linkedcamp.com/mcp",
+  "repository": "https://github.com/DuckMind/duckwork",
+  "license": "MIT",
+  "keywords": [
+    "linkedin",
+    "outreach",
+    "sales",
+    "email",
+    "campaigns",
+    "mcp"
+  ],
+  "extensions": {
+    "com.fordex.duckwork": {
+      "servers": {
+        "linkedcamp": {
+          "trust": "untrusted"
+        }
+      }
+    }
+  }
+}

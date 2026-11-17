@@ -1,0 +1,28 @@
+# Test patterns for Duckwork custom-dangerous-patterns plugin.
+#
+# These patterns are deliberately safe and disabled by default.
+# Enable them to exercise the approval/blocking flow without
+# using real dangerous commands.
+#
+# Test these by enabling and running:
+#   duckwork custom-dangerous-patterns enable --group testing
+#
+# The two patterns create a complete test matrix:
+#   - echo deny     → matches deny           → blocked immediately
+#   - echo anything → matches block          → native approval prompt
+
+patterns:
+  - pattern: '\becho\b'
+    description: '[TEST] Block any echo command'
+    enabled: false
+    group: testing
+    examples:
+      - 'echo hello'
+
+deny_patterns:
+  - pattern: '\becho\s+deny\b'
+    description: '[TEST] Deny echo deny'
+    enabled: false
+    group: testing
+    examples:
+      - 'echo deny'

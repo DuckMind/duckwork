@@ -1,0 +1,61 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@v4
+        with:
+          path: duckwork-agent-memory
+
+      # The test suite imports a few Duckwork modules (e.g. agent.memory_provider,
+      # tools.registry) via pytest's `pythonpath = ["../duckwork-agent"]`. Those are
+      # stdlib-only imports, so a sibling checkout on the path is enough — no need
+      # to install Duckwork' own dependencies.
+      - name: Check out Duckwork Agent (sibling, on PYTHONPATH for tests)
+        uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          path: duckwork-agent
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Sync dev environment
+        working-directory: duckwork-agent-memory
+        run: uv sync --extra dev
+
+      - name: Lint (ruff)
+        working-directory: duckwork-agent-memory
+        run: uv run ruff check .
+
+      - name: Test (pytest)
+        working-directory: duckwork-agent-memory
+        run: uv run pytest -v
+
+  version-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: pyproject.toml and plugin.yaml versions must match
+        run: |
+          py=$(grep -m1 '^version' pyproject.toml | sed -E 's/.*"([^"]+)".*/\1/')
+          pl=$(grep -m1 -E '^version:' plugin.yaml | sed -E 's/version:[[:space:]]*//; s/["'"'"']//g; s/[[:space:]]//g')
+          echo "pyproject.toml=$py  plugin.yaml=$pl"
+          if [ "$py" != "$pl" ]; then
+            echo "::error::version mismatch — pyproject.toml=$py, plugin.yaml=$pl (keep them in sync)"
+            exit 1
+          fi

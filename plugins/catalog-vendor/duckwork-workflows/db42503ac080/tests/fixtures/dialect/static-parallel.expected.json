@@ -1,0 +1,42 @@
+{
+  "verdict": "importable",
+  "reason": "literal meta; `parallel([...])` of thunks each returning a direct `agent(...)` call with heterogeneous prompts (-> ONE fanout node, items carry their own goal, no quorum = barrier); phase() statements and phase: options are accepted and dropped (row 4); the summary references the whole batch result (-> after:['audits'], auto-injected output)",
+  "rows": [
+    2,
+    4,
+    12
+  ],
+  "graph_sketch": {
+    "name": "static-parallel",
+    "nodes": [
+      {
+        "id": "audits",
+        "type": "agent",
+        "fanout": {
+          "items": [
+            {
+              "id": "auth",
+              "goal": "Audit src/auth/ for missing permission checks."
+            },
+            {
+              "id": "db",
+              "goal": "Audit src/db/ for unparameterised SQL."
+            },
+            {
+              "id": "api",
+              "goal": "Audit src/api/ for unvalidated request bodies."
+            }
+          ]
+        }
+      },
+      {
+        "id": "summary",
+        "type": "agent",
+        "after": [
+          "audits"
+        ],
+        "goal": "Summarise the three audit results injected below into one prioritised list."
+      }
+    ]
+  }
+}

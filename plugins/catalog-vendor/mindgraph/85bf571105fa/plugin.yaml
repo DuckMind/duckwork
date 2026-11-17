@@ -1,0 +1,18 @@
+manifest_version: 1
+name: mindgraph
+version: 0.10.0
+description: "MindGraph — semantic graph memory with hybrid retrieval, goal/decision tracking, and cross-document synthesis."
+author: Shan Rizvi
+
+pip_dependencies:
+  - mindgraph-sdk>=0.4.0
+
+requires_env:
+  - name: MINDGRAPH_API_KEY
+    description: "MindGraph API key"
+    url: "https://mindgraph.cloud"
+    secret: true
+
+# Optional env vars (not prompted — set manually in ~/.duckwork/.env if needed):
+#   MINDGRAPH_BASE_URL   Override the API endpoint (default: https://api.mindgraph.cloud)
+#   MINDGRAPH_AGENT_ID   Stamped on every write for provenance (default: duckwork)

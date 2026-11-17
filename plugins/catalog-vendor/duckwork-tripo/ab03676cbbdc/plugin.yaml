@@ -1,0 +1,52 @@
+name: duckwork-tripo
+version: "0.4.0"
+description: "Tripo 3D for Duckwork: text, image or multiview to 3D, retexturing, rigging, preset animations, retopology and format conversion on Tripo's v3 API, with an inline 3D viewer in Duckwork Desktop. Duckwork asks before every credit-spending call and shows the estimated cost. Unofficial; not affiliated with Tripo or VAST."
+author: Adolanium
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+manifest_version: 1
+kind: standalone
+requires_duckwork: ">=0.21.6"
+
+provides_tools:
+  - tripo_generate_model
+  - tripo_generate_image
+  - tripo_texture
+  - tripo_rig_check
+  - tripo_rig
+  - tripo_animate
+  - tripo_retopology
+  - tripo_convert
+  - tripo_parts
+  - tripo_uv
+  - tripo_multiview
+  - tripo_task
+  - tripo_download
+  - tripo_balance
+
+provides_hooks:
+  - pre_tool_call
+  - pre_llm_call
+
+requires_env:
+  - name: TRIPO_API_KEY
+    description: "Tripo API key (starts with tsk_). Create one in the Tripo developer console under API Keys."
+    url: https://platform.tripo3d.ai/api-keys
+    secret: true
+
+config_schema:
+  session_limit:
+    type: int
+    default: 100
+    label: "Credits per chat before every call asks"
+    description: "After a chat has spent this many Tripo credits, every paid call asks again, even ones you allowed for the session. 0 turns the limit off. Overrides TRIPO_SESSION_LIMIT."
+  downloads_folder:
+    type: str
+    default: ""
+    label: "Viewer download folder"
+    description: "Where the viewer's free Download > Original saves models. Empty means Downloads/Tripo."
+  auto_spin:
+    type: bool
+    default: true
+    label: "Spin models in the viewer"
+    description: "Start each 3D viewer slowly turning. Turn it off to start still."

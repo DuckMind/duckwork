@@ -1,0 +1,16 @@
+name: antigravity-subscription-directsdk
+manifest_version: 2
+version: 1.0.21
+kind: model-provider
+description: "Run Duckwork on an Antigravity / Gemini subscription via the official agy CLI (DirectSDK path). Streams tokens progressively, persists multi-turn trajectories via agy --conversation (up to 239k tokens), discovers models dynamically per account, maps thinking effort, tracks quota in /usage, and aborts reported native tool steps."
+author: "soyelmismo"
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+platforms:
+  - linux
+  - macos
+  - windows
+requires_duckwork: ">=0.21.4"
+external_dependencies:
+  - command: agy
+capabilities: []

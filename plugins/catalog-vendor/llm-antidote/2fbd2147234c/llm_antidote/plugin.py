@@ -1,0 +1,421 @@
+"""Duckwork registration and lifecycle hooks."""
+
+from __future__ import annotations
+
+import json
+import logging
+import uuid
+from dataclasses import dataclass, field
+from typing import Any, cast
+
+from .audit import MetadataAudit
+from .commands import run_cli, setup_cli
+from .deployment import RuntimePolicyBinding, load_runtime_settings
+from .policy import PolicyDecision, PolicyEngine
+from .runtime import RuntimeRoutes
+from .state import SessionRiskStore
+
+logger = logging.getLogger("llm_antidote.plugin")
+
+_MISSING = object()
+_SETTING_KEYS = (
+    "mode",
+    "taint_ttl_minutes",
+    "pending_ttl_minutes",
+    "taint_scope",
+    "max_scan_bytes",
+    "audit_capacity",
+    "safe_read_roots",
+    "sensitive_roots",
+    "allow_outbound_tools",
+    "admission_enforcement",
+    "admission_policy_path",
+    "admission_policy_signature_path",
+    "admission_policy_public_key",
+    "admission_trusted_policy_sha256",
+    "admission_require_model_binding",
+    "admission_require_route_observation",
+    "admission_model_lock_path",
+    "admission_model_source",
+    "admission_model_name",
+)
+_NON_RESERVING_CATEGORIES = {"oversized_arguments"}
+_SETTING_DEFAULTS = {
+    "mode": "balanced",
+    "taint_ttl_minutes": "60",
+    "pending_ttl_minutes": "5",
+    "taint_scope": "egress_persist_shell",
+    "max_scan_bytes": "1048576",
+    "audit_capacity": "200",
+    "admission_require_model_binding": "true",
+    "admission_require_route_observation": "true",
+}
+
+
+def _changed_from_default(key: str, value: Any) -> bool:
+    default = _SETTING_DEFAULTS.get(key)
+    if default is None:
+        return True
+    return str(value).strip().lower() != default
+
+
+def _tool_succeeded(status: Any, error_type: Any, result: Any) -> bool:
+    if error_type:
+        return False
+    clean = str(status or "success").lower()
+    if clean in {"blocked", "denied", "error", "failed", "timeout"}:
+        return False
+    if isinstance(result, str):
+        try:
+            parsed = json.loads(result)
+        except (TypeError, ValueError):
+            return True
+        if isinstance(parsed, dict):
+            error = parsed.get("error")
+            if error is not None and error != "" and error is not False:
+                return False
+    return True
+
+
+def _read_settings(ctx: Any) -> dict[str, Any]:
+    settings: dict[str, Any] = {}
+    for key in _SETTING_KEYS:
+        value = ctx.get_config(key, _MISSING)
+        if value is _MISSING or value is None or value == "":
+            continue
+        if not _changed_from_default(key, value):
+            continue
+        settings[key] = value
+    return settings
+
+
+def _reserves_access(decision: PolicyDecision) -> bool:
+    return bool(set(decision.sensitive) - _NON_RESERVING_CATEGORIES)
+
+
+@dataclass
+class AntidoteRuntime:
+    mode: str
+    engine: PolicyEngine
+    risks: SessionRiskStore
+    audit: MetadataAudit
+    routes: RuntimeRoutes
+    binding: RuntimePolicyBinding
+    anonymous_key: str = field(default_factory=lambda: f"anonymous-{uuid.uuid4().hex}")
+
+    def session_keys(self, session_id: str = "", task_id: str = "") -> tuple[str, ...]:
+        """Correlate by session id, falling back to task id, else a per-instance key.
+
+        Deliberately never merges session and task ids: a shared/global task id must
+        not join unrelated sessions, and sessions without ids must not collapse into
+        one shared bucket.
+        """
+        for value in (session_id, task_id):
+            if value:
+                return (str(value),)
+        return (self.anonymous_key,)
+
+    def route_admission(self) -> tuple[bool, str]:
+        """Whether tool calls may proceed given the enforced model binding.
+
+        In enforced mode with a bound model, admission requires a positively
+        observed route whose model matches the admitted model. An unobserved route
+        or an empty model string is treated as unadmitted when
+        ``require_route_observation`` is set (the default), closing the fail-open
+        window before the first API request. If model binding is required but no
+        admitted model is configured, admission is refused
+        (``admission.model_route_unconfigured``) rather than silently skipping the
+        route check.
+        """
+        binding = self.binding
+        if not binding.enforced:
+            return True, ""
+        if not binding.model_name:
+            if binding.verified:
+                return False, "admission.model_route_unconfigured"
+            return True, ""
+        observed = str(self.routes.snapshot().get("model") or "")
+        if not observed:
+            if binding.require_route_observation:
+                return False, "admission.model_route_unobserved"
+            return True, ""
+        if observed != binding.model_name:
+            return False, "admission.model_route_mismatch"
+        return True, ""
+
+    def route_admitted(self) -> bool:
+        return self.route_admission()[0]
+
+    def decide(
+        self,
+        *,
+        tool_name: str,
+        args: Any,
+        session_id: str = "",
+        task_id: str = "",
+        tool_call_id: str = "",
+    ) -> PolicyDecision:
+        keys = self.session_keys(session_id, task_id)
+        admitted, reason = self.route_admission()
+        if not admitted:
+            if reason == "admission.model_route_unobserved":
+                message = (
+                    "llmAntidote blocked a tool call because the served model route has not been "
+                    "verified."
+                )
+            elif reason == "admission.model_route_unconfigured":
+                message = (
+                    "llmAntidote blocked a tool call because enforcement is on and model binding "
+                    "is required, but no admitted model is configured (admission_model_name)."
+                )
+            else:
+                message = (
+                    "llmAntidote blocked a tool call because the served model does not match the "
+                    "admitted model route."
+                )
+            decision = PolicyDecision(
+                action="block",
+                would_action="block",
+                rule_ids=(reason,),
+                message=message,
+            )
+            self.audit.record(
+                action=decision.action,
+                would_action=decision.would_action,
+                tool_name=tool_name,
+                rule_ids=decision.rule_ids,
+                session_key=keys[0],
+            )
+            return decision
+        session_tainted = any(self.risks.is_tainted(key) for key in keys)
+        pending = any(self.risks.has_pending(key) for key in keys)
+        decision = self.engine.assess(
+            tool_name,
+            args,
+            session_tainted=session_tainted or pending,
+        )
+        if decision.would_action != "allow":
+            self.audit.record(
+                action=decision.action,
+                would_action=decision.would_action,
+                tool_name=tool_name,
+                rule_ids=decision.rule_ids,
+                session_key=keys[0],
+            )
+        if (
+            self.mode != "audit"
+            and decision.action != "block"
+            and _reserves_access(decision)
+        ):
+            self.risks.reserve_pending(keys, tool_call_id)
+        return decision
+
+    def post_tool(
+        self,
+        *,
+        tool_name: str,
+        args: Any,
+        result: Any = None,
+        status: Any = None,
+        error_type: Any = None,
+        session_id: str = "",
+        task_id: str = "",
+        tool_call_id: str = "",
+    ) -> None:
+        keys = self.session_keys(session_id, task_id)
+        if not _tool_succeeded(status, error_type, result):
+            self.risks.release_pending(keys, tool_call_id)
+            return
+        decision = self.engine.assess(tool_name, args, session_tainted=False)
+        self.risks.release_pending(keys, tool_call_id)
+        if decision.sensitive:
+            self.risks.mark_many(keys, decision.sensitive)
+
+    def observe_route(self, *, provider: Any = "", model: Any = "", base_url: Any = "") -> None:
+        self.routes.observe(provider=provider, model=model, base_url=base_url)
+        if self.binding.enforced:
+            admitted, reason = self.route_admission()
+            if not admitted and reason == "admission.model_route_mismatch":
+                self.audit.record(
+                    action="block",
+                    would_action="block",
+                    tool_name="pre_api_request",
+                    rule_ids=(reason,),
+                    session_key="route",
+                )
+
+    def status(self) -> dict[str, object]:
+        admitted, reason = self.route_admission()
+        return {
+            "mode": self.mode,
+            "risk": self.risks.summary(),
+            "audit": self.audit.summary(),
+            "runtime_route": self.routes.snapshot(),
+            "admission": self.binding.summary(),
+            "route_admitted": admitted,
+            "route_reason": reason,
+        }
+
+    def status_text(self) -> str:
+        status = self.status()
+        risk = cast(dict[str, Any], status["risk"])
+        audit = cast(dict[str, Any], status["audit"])
+        route = cast(dict[str, Any], status["runtime_route"])
+        admission = cast(dict[str, Any], status["admission"])
+        categories = ", ".join(risk.get("categories", [])) or "none"
+        model = route.get("model") or "not observed"
+        provider = route.get("provider") or "not observed"
+        raw_policy = admission.get("policy")
+        policy: dict[str, Any] = raw_policy if isinstance(raw_policy, dict) else {}
+        policy_line = "standalone (unsigned local settings)"
+        if admission.get("enforcement") == "enforced":
+            policy_line = (
+                f"{policy.get('name', '')}@{policy.get('version', 0)} "
+                f"{str(policy.get('sha256', ''))[:12]}"
+            )
+        admitted = admission.get("admitted_model") or "not bound"
+        return (
+            "llmAntidote status\n"
+            f"- enforcement: {admission.get('enforcement', 'standalone')}\n"
+            f"- mode: {self.mode}\n"
+            f"- policy: {policy_line}\n"
+            f"- admitted model: {admitted}\n"
+            f"- route admitted: {status.get('route_admitted')}\n"
+            f"- route reason: {status.get('route_reason') or 'ok'}\n"
+            f"- tainted sessions: {risk.get('tainted_sessions', 0)}\n"
+            f"- pending sensitive access: {risk.get('pending_sessions', 0)}\n"
+            f"- taint categories: {categories}\n"
+            f"- retained audit events: {audit.get('retained_events', 0)}\n"
+            f"- latest model route: {provider} / {model}"
+        )
+
+
+def build_runtime(ctx: Any) -> AntidoteRuntime:
+    resolved = load_runtime_settings(_read_settings(ctx))
+    return AntidoteRuntime(
+        mode=resolved.policy.mode,
+        engine=PolicyEngine(resolved.policy),
+        risks=SessionRiskStore(resolved.taint_ttl_minutes, resolved.pending_ttl_minutes),
+        audit=MetadataAudit(resolved.audit_capacity),
+        routes=RuntimeRoutes(),
+        binding=resolved.binding,
+    )
+
+
+def register(ctx: Any) -> None:
+    runtime = build_runtime(ctx)
+    binding = runtime.binding
+    logger.info(
+        "llmAntidote active: enforcement=%s mode=%s model_bound=%s route_observation_required=%s",
+        "enforced" if binding.enforced else "standalone",
+        runtime.mode,
+        bool(binding.model_name),
+        binding.require_route_observation,
+    )
+    if binding.enforced and binding.verified and not binding.model_name:
+        logger.warning(
+            "llmAntidote enforcement is on and model binding is required, but no admitted "
+            "model is configured (admission_model_name is empty); tool calls will be blocked "
+            "with admission.model_route_unconfigured until it is set."
+        )
+
+    def pre_tool_call(
+        tool_name: str = "",
+        args: Any = None,
+        session_id: str = "",
+        task_id: str = "",
+        tool_call_id: str = "",
+        turn_id: str = "",
+        **_: Any,
+    ) -> dict[str, str] | None:
+        decision = runtime.decide(
+            tool_name=tool_name,
+            args=args,
+            session_id=session_id,
+            task_id=task_id,
+            tool_call_id=tool_call_id or turn_id,
+        )
+        if decision.action == "block":
+            return {"action": "block", "message": decision.message}
+        if decision.action == "approve":
+            rule = decision.rule_ids[0] if decision.rule_ids else "policy"
+            return {
+                "action": "approve",
+                "message": decision.message,
+                "rule_key": f"llm-antidote:{rule}",
+            }
+        return None
+
+    def post_tool_call(
+        tool_name: str = "",
+        args: Any = None,
+        result: Any = None,
+        status: Any = None,
+        error_type: Any = None,
+        session_id: str = "",
+        task_id: str = "",
+        tool_call_id: str = "",
+        turn_id: str = "",
+        **_: Any,
+    ) -> None:
+        runtime.post_tool(
+            tool_name=tool_name,
+            args=args,
+            result=result,
+            status=status,
+            error_type=error_type,
+            session_id=session_id,
+            task_id=task_id,
+            tool_call_id=tool_call_id or turn_id,
+        )
+
+    def pre_api_request(
+        provider: Any = "",
+        model: Any = "",
+        base_url: Any = "",
+        **_: Any,
+    ) -> None:
+        runtime.observe_route(provider=provider, model=model, base_url=base_url)
+
+    def on_session_start(session_id: str = "", **_: Any) -> None:
+        runtime.risks.clear(session_id)
+
+    def on_session_reset(
+        session_id: str = "",
+        old_session_id: str = "",
+        new_session_id: str = "",
+        **_: Any,
+    ) -> None:
+        runtime.risks.clear(session_id, old_session_id, new_session_id)
+
+    def on_session_finalize(session_id: str = "", **_: Any) -> None:
+        runtime.risks.clear(session_id)
+
+    def slash_command(raw_args: str) -> str:
+        command = (raw_args or "status").strip().lower()
+        if command in {"", "status"}:
+            return runtime.status_text()
+        if command == "clear":
+            runtime.risks.clear_all()
+            return "llmAntidote cleared all in-process session taint metadata."
+        return "Usage: /antidote [status|clear]"
+
+    ctx.register_hook("pre_tool_call", pre_tool_call)
+    ctx.register_hook("post_tool_call", post_tool_call)
+    ctx.register_hook("pre_api_request", pre_api_request)
+    ctx.register_hook("on_session_start", on_session_start)
+    ctx.register_hook("on_session_reset", on_session_reset)
+    ctx.register_hook("on_session_finalize", on_session_finalize)
+    ctx.register_command(
+        "antidote",
+        slash_command,
+        description="Show or clear llmAntidote runtime risk metadata",
+        args_hint="[status|clear]",
+    )
+    ctx.register_cli_command(
+        "antidote",
+        "Inspect models, evaluate behavior, and enforce fleet admission",
+        setup_cli,
+        lambda args: run_cli(args, runtime=runtime),
+        description="Runtime guardrails, behavioral evaluation, and signed fleet admission",
+    )

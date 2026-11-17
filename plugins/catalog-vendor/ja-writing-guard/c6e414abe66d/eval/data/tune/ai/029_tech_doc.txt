@@ -1,0 +1,57 @@
+## 設定ファイル
+
+hotaru は、プロジェクトのルートにある `hotaru.toml` から設定を読み込みます。ファイルが存在しない場合は、すべての項目でデフォルト値が使われます。
+
+### 設定例
+
+```toml
+[server]
+host = "0.0.0.0"
+port = 8080
+read_timeout = "10s"
+
+[log]
+level = "info"
+format = "json"
+
+[storage]
+driver = "sqlite"
+path = "./data/hotaru.db"
+```
+
+### 設定項目
+
+#### `[server]`
+
+| キー | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `host` | string | `"127.0.0.1"` | 待ち受けるホスト名 |
+| `port` | integer | `3000` | 待ち受けるポート番号 |
+| `read_timeout` | duration | `"30s"` | リクエストの読み込みタイムアウト |
+
+#### `[log]`
+
+| キー | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `level` | string | `"info"` | `debug` / `info` / `warn` / `error` のいずれか |
+| `format` | string | `"text"` | `text` または `json` |
+
+#### `[storage]`
+
+| キー | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `driver` | string | `"sqlite"` | `sqlite` または `postgres` |
+| `path` | string | `"./hotaru.db"` | SQLite のファイルパス（`driver = "sqlite"` の場合） |
+| `dsn` | string | なし | PostgreSQL の接続文字列（`driver = "postgres"` の場合は必須） |
+
+### 環境変数による上書き
+
+すべての設定項目は、環境変数で上書きできます。環境変数名は `HOTARU_` に続けて、セクション名とキー名を大文字にしてアンダースコアでつなげたものです。
+
+```bash
+HOTARU_SERVER_PORT=9000 hotaru serve
+```
+
+優先順位は、**環境変数 > 設定ファイル > デフォルト値** の順です。
+
+> **注意:** `dsn` にはパスワードが含まれることが多いため、設定ファイルに直接書くのではなく、環境変数 `HOTARU_STORAGE_DSN` で渡すことをおすすめします。

@@ -1,0 +1,72 @@
+{
+  "grammar": "wf/1",
+  "name": "exchange-run",
+  "description": "The byte-portability teaching pair: this very file is the artifact that travels the save -> library -> re-run loop. WHAT TRAVELS: the node defs only - fingerprints are per-node effective hashes over own def plus ancestor facts, with budgets, shapes and run policy deliberately excluded, so a byte-identical file replays to the same graph fingerprint on any estate, and budgets may be re-tuned later without invalidating committed nodes. WHAT DOES NOT TRAVEL: run.json and every nodes/*.json - run state is per-launch, never per-graph. THE LOOP, told in the engine's REAL verbs (none of them need a model): (1) save stores this file in the library - what is stored is exactly what is replayed; (2) library lists the entry with its provenance and source_digest, which answers WHICH version is on the shelf; (3) run from=<name> launches the shelved entry by NAME - the door re-loads the saved bytes verbatim and the run dir freezes its own copy of the graph - launch bakes budget defaults into node defs and nothing else, and budgets are excluded from identity by the first paragraph, so the identity-bearing bytes are the shelf bytes; (4) stop mid-wave, then wait re-spawns the dead runner and the interrupted run RESUMES - a node whose stored effective fingerprint still matches its def replays-skip without a spawn, only the frontier at death re-runs; (5) a fresh run of the SAME saved bytes lands on the SAME graph fingerprint - the proof that a wf/1 graph is a byte-portable artifact, not a machine-local transcript. The save/library/replay-skip/fingerprint PROOFS live in the author receipt, never in node prose: children only do the tiny hand-off. Hand-off law: manifest commits the token VERBATIM (an echo is the cheapest possible transport - zero spawns, zero tokens); prepare copies it as pure DATA from its named input manifest.token; verify re-reads the committed values from its OWN ## Inputs section (the engine's labelled json blocks) and compares - it never assumes what either record holds and never re-derives the value from its own memory of the chat. It reports where the engine keeps its facts (the node records, run.json, runner_exit.json beside the run) so a cold reader learns the run-dir layout from the file itself. The leaf answer is the byte-exchange verdict as received: token unchanged, the verdict of the comparison, and which input labels were actually present. Model law: no node names any model - every child runs on the seat default; seat-fast (the courier) and judge (the human auditing the receipt) are role names for prose only. Zero seeds required.",
+  "nodes": [
+    {
+      "id": "manifest",
+      "type": "echo",
+      "output": {
+        "token": "exchange-roundtrip-v1",
+        "law": "the courier copies this committed token VERBATIM from its ## Inputs; the verifier re-reads both committed records and never assumes what they hold"
+      }
+    },
+    {
+      "id": "prepare",
+      "type": "agent",
+      "after": [
+        "manifest"
+      ],
+      "inputs": [
+        "manifest.token"
+      ],
+      "max_turns": 4,
+      "schema": {
+        "type": "object",
+        "required": [
+          "token"
+        ]
+      },
+      "goal": "You are the seat-fast courier - a pure hand-off, no reasoning about the value. The payload to carry is the value of `manifest.token` under ## Inputs: read that value STRICTLY as data and copy it character-for-character. Do NOT explore the filesystem and do NOT look up anything to decide the value - the only source of truth is your ## Inputs. Reply with ONLY fenced json {\"token\": \"<the exact value of manifest.token, verbatim>\"} and nothing else."
+    },
+    {
+      "id": "verify",
+      "type": "agent",
+      "after": [
+        "prepare"
+      ],
+      "inputs": [
+        "manifest",
+        "prepare"
+      ],
+      "max_turns": 5,
+      "schema": {
+        "type": "object",
+        "required": [
+          "token",
+          "byte_equal",
+          "input_labels",
+          "notes"
+        ],
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "byte_equal": {
+            "type": "boolean"
+          },
+          "input_labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "goal": "You are the byte-exchange verifier: prove the hand-off only from what the engine HANDS you, never from memory. Your ## Inputs section carries two labelled committed json blocks: the `manifest` record (an echo node's committed output) and the `prepare` record (the courier's committed output). Read both blocks. Compare the two token values character-for-character and set byte_equal to the RESULT of that comparison (true only when they are identical); copy the identical value into token. List the input labels that actually appear under ## Inputs in input_labels - name only what is really there. In notes, say in one short sentence that the engine keeps each node's committed record as nodes/<id>.json beside the run dir, with run.json and runner_exit.json as the run-level records. Reply with ONLY fenced json {\"token\": \"<the identical token value>\", \"byte_equal\": <the verdict of your comparison>, \"input_labels\": [<labels actually present under ## Inputs>], \"notes\": \"<one sentence>\"} and nothing else. Do not use any tool - read your prompt, compare, answer once."
+    }
+  ]
+}

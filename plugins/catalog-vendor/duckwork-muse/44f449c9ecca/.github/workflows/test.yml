@@ -1,0 +1,47 @@
+name: test
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ['3.11']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Timezone data for Windows calendar tests
+        if: runner.os == 'Windows'
+        run: python -m pip install tzdata
+      - run: python -m unittest discover -s tests -v
+      - run: python -m compileall -q duckwork_muse tests
+  duckwork:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plugin
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: f594424e58f18ebc2607decaa72f300e0a26a24b
+          path: duckwork-core
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: python -m pip install -e ../duckwork-core
+      - run: python tests/native_smoke.py
+      - name: Official plugin validation in a scratch profile
+        shell: bash
+        run: |
+          MUSE_TEST_HOME=$(mktemp -d)
+          DUCKWORK_HOME="$MUSE_TEST_HOME" duckwork plugins validate . --json

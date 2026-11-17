@@ -1,0 +1,67 @@
+"""Config and language helpers. Reads standard Duckwork config; never reads or stores secrets."""
+
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+from agent.secret_scope import get_secret
+
+logger = logging.getLogger(__name__)
+
+API_KEY_ENV = "SONIOX_API_KEY"
+
+
+def get_api_key() -> str | None:
+    """Resolve the active profile's Soniox key through Duckwork' secret scope."""
+    value = get_secret(API_KEY_ENV, "")
+    key = value.strip() if isinstance(value, str) else ""
+    return key or None
+
+
+def _load_config() -> dict[str, Any]:
+    from duckwork_cli.config import load_config
+
+    cfg = load_config()
+    return cfg if isinstance(cfg, dict) else {}
+
+
+def load_section(name: str) -> dict[str, Any]:
+    """Top-level Duckwork config section (``tts`` / ``stt``), ``{}`` on any failure."""
+    try:
+        section = _load_config().get(name)
+    except Exception:  # Duckwork config unavailable (tests, import-time probes)
+        logger.debug("Duckwork config unavailable for section %r", name)
+        return {}
+    return section if isinstance(section, dict) else {}
+
+
+def provider_section(section: dict[str, Any], provider: str = "soniox") -> dict[str, Any]:
+    sub = section.get(provider)
+    return sub if isinstance(sub, dict) else {}
+
+
+def normalize_language(value: Any) -> str | None:
+    """``zh-CN`` / ``EN_us`` -> ``zh`` / ``en`` (Soniox takes bare ISO language codes)."""
+    if not isinstance(value, str):
+        return None
+    code = value.strip().replace("_", "-").split("-")[0].lower()
+    return code or None
+
+
+def language_hints(value: str | list[str] | None, default: str | None = None) -> list[str]:
+    """Normalized, de-duplicated hint list from a string (comma separated) or list."""
+    if isinstance(value, str):
+        items = value.split(",")
+    elif isinstance(value, (list, tuple)):
+        items = list(value)
+    else:
+        items = []
+    hints: list[str] = []
+    for item in items:
+        code = normalize_language(item)
+        if code and code not in hints:
+            hints.append(code)
+    if not hints and default:
+        hints.append(default)
+    return hints

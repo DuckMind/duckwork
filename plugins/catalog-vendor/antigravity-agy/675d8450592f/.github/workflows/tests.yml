@@ -1,0 +1,37 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    strategy:
+      fail-fast: false
+      matrix:
+        # POSIX only: the transport manages agy as a process group (start_new_session / killpg).
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      # The plugin imports Duckwork core (providers, tools, duckwork_cli) from a checkout, like an installed plugin.
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          path: duckwork-agent
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"  # duckwork-agent pins its core dependencies for Python >= 3.14
+      - name: Install duckwork-agent
+        run: python -m pip install -e ./duckwork-agent pytest
+      - name: Validate the plugin the way the Duckwork catalog CI does
+        run: duckwork plugins validate ./plugin
+      - name: Run the plugin suite (fake agy only; no Antigravity quota is used)
+        working-directory: plugin
+        env:
+          DUCKWORK_AGENT_REPO: ${{ github.workspace }}/duckwork-agent
+        run: python -m pytest -q

@@ -1,0 +1,21 @@
+name: scalekit
+version: 0.1.0
+description: Tools layer for Duckwork. Call any Scalekit connector.
+author: Scalekit
+requires_env:
+  - name: SCALEKIT_CLIENT_ID
+    description: "Copy it from Dashboard, Developers, Settings, API Credentials. It looks like skc_1234."
+    url: https://app.scalekit.com
+  - name: SCALEKIT_CLIENT_SECRET
+    description: "Copy it from Dashboard, Developers, Settings, API Credentials. It looks like test_abcdef1234567890. This is the Scalekit account secret, not a Gmail or Slack token."
+    secret: true
+    url: https://app.scalekit.com
+  - name: SCALEKIT_ENVIRONMENT_URL
+    description: "Copy it from Dashboard, Developers, Settings, API Credentials. It looks like https://your-env.scalekit.dev."
+    url: https://app.scalekit.com
+provides_tools:
+  - scalekit_authorize
+  - scalekit_execute_tool
+  - scalekit_list_connections
+  - scalekit_proxy
+provides_hooks: []

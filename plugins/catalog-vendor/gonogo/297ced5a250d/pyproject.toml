@@ -1,0 +1,29 @@
+# Duckwork reads [project].dependencies from this file and installs them into its
+# own venv on `duckwork plugins install` / `enable`, re-applying them after every
+# `duckwork update`. Keep the declared range honest: this plugin calls gonogo's
+# public API (Case, Prediction, CaseResult, group_results, decide, Report,
+# compare). The grouped-trial/holdout-safety behavior requires gonogo 0.3;
+# 0.2 is incompatible even if its public function names still import.
+
+[project]
+name = "duckwork-plugin-gonogo"
+version = "0.2.0"
+description = "Duckwork plugin: turn a pilot-scale eval score into a ship / don't-ship decision."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "James Dominguez" }]
+keywords = ["duckwork", "plugin", "evals", "calibration", "selective-prediction"]
+dependencies = [
+  "gonogo-eval>=0.3,<0.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pyyaml>=6"]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Source = "https://github.com/DuckMind/duckwork"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,94 @@
+# Skill Lifecycle Demo
+
+End-to-end demo showing the [`yantrikdb-duckwork-plugin`](https://github.com/DuckMind/duckwork) skill substrate handling the **define → restart → search → outcome** loop — the autonomy loop described in [`yantrikdb/README.md`](https://github.com/DuckMind/duckwork) and on [`yantrikdb.com/guides/autonomous-skills/`](https://yantrikdb.com/guides/autonomous-skills/).
+
+## Constellation animation (the fireworks)
+
+![Substrate growing](./demo_visual.gif)
+
+A visual time-lapse of the substrate growing. 6 seed skills appear as glowing nodes color-coded by skill_type (procedure, reference, lesson, rule). The agent adds a 7th. A search query in session 2 highlights the relevant node. The outcome recorded against it turns green with a ✓. Source: [`demo_visual.py`](./demo_visual.py) — renders with `matplotlib` + `networkx` + `imageio`, no external dependencies on the running engine. Renders in ~5s on any machine.
+
+## LLM-driven recording (what's actually running)
+
+![LLM-driven skill lifecycle](./demo_llm.gif)
+
+`gpt-4o-mini` receives the plugin's 11 tool schemas via OpenAI's chat-completions API and chooses when to call each one. The model picked the `skill_id` (`release.yantrikos.clean`), `applies_to` tags, body text, search query, and outcome note autonomously. Two real rids land in the substrate; the autonomy loop closes in ~10 seconds. Source: [`demo_llm.py`](./demo_llm.py) + [`transcript-llm.txt`](./transcript-llm.txt).
+
+## Scripted recording (deterministic plumbing demo)
+
+![Scripted skill lifecycle](./demo.gif)
+
+The same `handle_tool_call` path, with the agent's tool-call decisions hard-coded for reproducibility. Useful for verifying the plugin works without needing an API key. Source: [`demo.py`](./demo.py) + [`transcript.txt`](./transcript.txt).
+
+## Two demos, two levels of evidence
+
+| Script | What's live | What's scripted | Captured run |
+|---|---|---|---|
+| **`demo.py`** | Plugin + engine + substrate + `handle_tool_call` dispatch | Agent's decision *when* to call each tool (deterministic for reproducibility) | [`transcript.txt`](./transcript.txt) |
+| **`demo_llm.py`** | Plugin + engine + substrate + `handle_tool_call` dispatch + **the LLM** (gpt-4o-mini) emitting tool calls from the plugin's actual tool schemas via OpenAI's chat-completions API | Nothing — the model chose the `skill_id`, `applies_to` tags, body text, search query, outcome note, and *when* to call each tool. | [`transcript-llm.txt`](./transcript-llm.txt) |
+
+The LLM-driven run took ~10 seconds end-to-end and shipped two real rids:
+- `019e4788-6bce…` — the skill the model chose to define (id `release.yantrikos.clean`, applies_to `["release", "git", "python", "ci"]`)
+- `019e4788-8154…` — the outcome the model recorded after using the skill in a fresh session
+
+`demo_llm.py` is the architecture Duckwork wraps in its full agent loop — the plugin's `get_tool_schemas()` returns 11 OpenAI-tool-compatible schemas, they go into the chat completion call, the model emits tool calls, we dispatch via the same `handle_tool_call` entry point Duckwork uses internally, and the result feeds back into the conversation. Duckwork adds session management, multi-turn orchestration, and provider routing on top.
+
+## Reproduce
+
+```bash
+pip install yantrikdb yantrikdb-duckwork-plugin openai
+
+# Scripted (no API key, deterministic, ~25s):
+python assets/demos/skill-lifecycle/demo.py
+
+# LLM-driven (needs OPENAI_API_KEY, ~10s):
+export OPENAI_API_KEY=sk-...
+python assets/demos/skill-lifecycle/demo_llm.py
+```
+
+## On animated GIFs
+
+A [`demo.tape`](./demo.tape) script is included for [`vhs`](https://github.com/charmbracelet/vhs) rendering. The Windows VHS path (v0.11.0) hangs indefinitely on `Set Shell` directives — known limitation, see [VHS issues](https://github.com/charmbracelet/vhs/issues). The tape script renders on macOS/Linux. Captured text transcripts above are the canonical artifacts until that's resolved.
+
+## What's shown
+
+| Step | What the plugin does | What you see |
+|---|---|---|
+| 1 | Fresh ephemeral substrate, 0 skills | `yantrikdb_stats` returns zero memories, zero operations |
+| 2 | Agent observes a repeated pattern, calls `yantrikdb_skill_define` for a release-workflow procedure | rid returned, `stored: true`, substrate operations count ticks up |
+| 3 | Simulated session restart — provider torn down + a fresh instance created | new `YantrikDBMemoryProvider()` instance, same SQLite file underneath |
+| 4 | Session 2's agent calls `yantrikdb_skill_search("how to ship a release")` | the skill from session 1 returned, ranked by relevance |
+| 5 | Agent follows the procedure, calls `yantrikdb_skill_outcome(succeeded=True, note=…)` | rid returned, `recorded: true`, outcome ledger appended |
+
+The demo runs in ~25 seconds against a fresh ephemeral SQLite DB. No LLM in the loop. The LLM-driven part — "agent decides to call skill_define / skill_search" — is scripted here so the recording is deterministic; everything below that line (the plugin's `handle_tool_call` dispatch, the engine's `yantrikdb` Rust core, the SQLite writes, the embedding+search, the response shapes) is live code.
+
+## What this is and isn't
+
+**This is**: the same `handle_tool_call` entry point Duckwork uses to invoke yantrikdb tools when its agent's LLM emits a tool call. The plugin code is real ([`yantrikdb_duckwork_plugin.YantrikDBMemoryProvider`](https://github.com/DuckMind/duckwork)). The engine is real (`yantrikdb` on PyPI). The substrate is real (SQLite under the temp dir).
+
+**This is not**: a recording of Claude / GPT / Qwen deciding to call these tools in response to a natural-language prompt. That part is scripted for the recording to run cleanly in <30s — the demo proves the plugin's plumbing, not the LLM's autonomy.
+
+For evidence of LLM-driven autonomy, see [`yantrikdb.com/guides/autonomous-skills/`](https://yantrikdb.com/guides/autonomous-skills/), which documents 17 skills authored by Claude (via the `yantrikdb-mcp` server) on one production substrate, with 9 of them showing cross-session reuse via the outcome ledger.
+
+## Reproduce
+
+```bash
+# In any environment where yantrikdb-duckwork-plugin is installed:
+pip install yantrikdb-duckwork-plugin yantrikdb
+
+# Run the demo (Windows shown — on POSIX, just use `python`):
+python assets/demos/skill-lifecycle/demo.py
+```
+
+The script creates a fresh temp dir for `YANTRIKDB_DB_PATH`, walks through the five steps, and prints what each `handle_tool_call` returns. Output is structured JSON from the plugin (truncated in the recording for readability).
+
+## Re-rendering the GIF
+
+Install [`vhs`](https://github.com/charmbracelet/vhs) — `winget install charmbracelet.vhs` on Windows, or follow the repo for macOS/Linux. Then:
+
+```bash
+cd assets/demos/skill-lifecycle
+vhs demo.tape
+```
+
+Outputs `demo.gif` (~800 KB, embeddable in READMEs) and `demo.mp4`.

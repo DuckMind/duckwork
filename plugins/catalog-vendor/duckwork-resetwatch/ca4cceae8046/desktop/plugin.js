@@ -1,0 +1,2297 @@
+/**
+ * Resetwatch: remaining subscription quota and reset clocks for Duckwork Desktop.
+ *
+ * One uncompiled plugin.js. A full page (sidebar + palette +
+ * keybind), not a HUD, plus an opt-in status-bar popup. Live rows come
+ * from gateway RPCs plus probe.py for CLI and app logins Duckwork does not
+ * OAuth itself. Manual clocks cover plans with no public remaining-quota API.
+ *
+ * 1. Import the SDK as a namespace so missing named exports cannot crash load.
+ * 2. No hardcoded colours. No polling faster than 5 minutes, and none while
+ *    neither the page nor the popup is open.
+ * 3. No cookies, no scrape, no composer chip, no right pane. Unknown quota stays unknown.
+ */
+
+import * as sdk from '@duckwork/plugin-sdk'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { jsx, jsxs } from 'react/jsx-runtime'
+
+const PLUGIN_ID = 'resetwatch'
+const PLUGIN_NAME = 'Resetwatch'
+const ROUTE = '/resetwatch'
+const VERSION = '0.2.25'
+const POLL_MS = 5 * 60 * 1000
+// Manual Refresh floor. probe.py enforces the same 60s on --fresh, so a
+// click inside this window would only replay the cache anyway.
+const REFRESH_COOLDOWN_MS = 60 * 1000
+
+const host = sdk.host
+const {
+  useValue,
+  atom,
+  useQuery,
+  queryClient,
+  ROUTES_AREA,
+  SIDEBAR_NAV_AREA,
+  PALETTE_AREA,
+  KEYBINDS_AREA,
+  STATUSBAR_AREAS,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Badge,
+  haptic,
+  usePluginI18n
+} = sdk
+
+// Desktop UI text. Desktop's ctx.i18n looks a key up by dotted path in the
+// active language, then in English, then returns the key itself. Functions take the values to insert. A translation only needs the
+// keys it translates: add it to LOCALES, e.g. zh: { common: { refresh: '...' } }.
+// Card text from vendors and probe.py, and the self-updater, stay English.
+const EN = {
+  name: PLUGIN_NAME,
+  open: {
+    palette: 'Resetwatch: Open',
+    keybind: 'Open Resetwatch'
+  },
+  common: {
+    refresh: 'Refresh',
+    cancel: 'Cancel'
+  },
+  mode: {
+    remaining: 'Remaining %',
+    used: 'Used %'
+  },
+  chip: {
+    least: 'Least remaining'
+  },
+  page: {
+    subtitleLeft: 'How much is left, and when it comes back',
+    subtitleUsed: 'How much is used, and when it resets',
+    displayMode: 'Quota display mode',
+    chipWindow: 'Status bar window',
+    gateway: state => `gateway ${state}`,
+    gatewayChecked: (state, time) => `gateway ${state} · checked ${time}`,
+    statusBar: 'Status bar',
+    statusBarAdd: 'Add a usage popup to the status bar. It refreshes only while open.',
+    statusBarRemove: 'Remove the usage popup from the status bar',
+    refreshing: 'Refreshing…',
+    refreshWait: 'Wait a minute between refreshes',
+    refreshHint: 'Skip the cache and ask every vendor again',
+    intro: 'Live rows are plans already signed in on this machine: Duckwork OAuth first, then Claude Code, Codex, Cursor, Kimi, Grok, GLM, DeepSeek, OpenCode Go, Ollama Cloud, MiniMax, Novita, DeepInfra, AI Gateway, Command Code, and GitHub Copilot when those CLIs, apps, or API keys are logged in. Kimi and GLM can also use Duckwork Coding Plan API keys. Command Code uses COMMANDCODE_API_KEY or the cmd CLI login. GitHub Copilot uses a GitHub login already on this machine. Click a section name to fold it up.',
+    automatic: 'Automatic',
+    allOff: 'All providers are off. Enable a provider in Providers and order to see live usage.',
+    noWindows: 'No quota windows yet. Check Providers and order, sign into an enabled provider, then refresh.'
+  },
+  providers: {
+    title: 'Providers and order',
+    hint: 'Choose which providers to fetch and show. Move providers to set their card order. Saved for this Desktop installation across profiles. An in-progress refresh may finish.',
+    moveUp: name => `Move ${name} up`,
+    moveDown: name => `Move ${name} down`,
+    reset: 'Reset providers'
+  },
+  card: {
+    left: percent => `${percent}% left`,
+    used: percent => `${percent}% used`,
+    unavailable: 'unavailable'
+  },
+  reset: {
+    now: when => `Reset now · ${when}`,
+    minutes: (minutes, when) => `Resets in ${minutes}m · ${when}`,
+    hours: (hours, minutes, when) => `Resets in ${hours}h ${minutes}m · ${when}`,
+    days: (days, hours, when) => `Resets in ${days}d ${hours}h · ${when}`,
+    at: when => `Resets ${when}`,
+    unknown: 'Reset time unavailable'
+  },
+  clocks: {
+    title: 'Manual clocks',
+    add: 'Add clock',
+    close: 'Close',
+    custom: 'Custom',
+    name: 'Name',
+    namePlaceholder: 'Plan name',
+    left: '% left',
+    resets: 'Resets',
+    url: 'Dashboard URL (optional)',
+    typed: 'Typed by you. Update when the vendor page changes.',
+    open: 'Open',
+    edit: 'Edit',
+    remove: 'Remove',
+    save: 'Save'
+  },
+  popup: {
+    open: 'Open usage and reset clocks',
+    lowest: (name, percent) => `${PLUGIN_NAME}: ${name}, ${percent}% left`,
+    idle: `${PLUGIN_NAME}: usage and reset clocks`,
+    label: `${PLUGIN_NAME} usage`,
+    usage: 'Usage',
+    title: 'Usage & reset',
+    displayMode: 'Quick quota display mode',
+    updating: 'Updating',
+    refreshWait: 'Wait at least one minute between refreshes',
+    refreshHint: 'Refresh usage',
+    unknownProfile: 'Unknown profile',
+    remaining: 'Remaining',
+    used: 'Used',
+    offline: 'Offline, cached data',
+    showingLast: 'Showing last data while updating',
+    stale: 'Stale cache, waiting for refresh',
+    latest: 'Latest check',
+    noPercent: 'Provider did not report a percentage',
+    firstRead: 'Reading usage for the first time. Later opens show the last check right away.',
+    empty: 'No usage data yet. Open the full page to check providers.',
+    checked: time => `Checked ${time} | Refreshes every 5 min while open`,
+    cadence: 'Refreshes every 5 min while open',
+    fullPage: 'Full page',
+    ringUnavailable: 'usage unavailable',
+    ringUsed: percent => `${percent}% used`,
+    ringRemaining: percent => `${percent}% remaining`
+  },
+  errors: {
+    liveUsage: 'Could not read live usage',
+    refreshFailed: 'Refresh failed',
+    refreshFailedWith: message => `Refresh failed: ${message}`,
+    refreshUnavailable: 'Refresh unavailable on this SDK',
+    fordexUsage: 'Could not read Fordex usage',
+    subscription: 'Could not read subscription state',
+    accountLimits: 'Could not read signed-in account limits',
+    usageCommand: 'Could not run /usage',
+    noOwner: 'Could not find the owner of the focused session',
+    noRoute: profile => `No Desktop route for ${profile}`,
+    noHome: 'Could not find Duckwork home for probe.py',
+    badProfile: 'Invalid Duckwork profile name',
+    noHttpx: 'Found Python without httpx on this Gateway. Could not use the gateway runtime, backend DUCKWORK_PYTHON/VIRTUAL_ENV, or home/PATH interpreters.',
+    noProbe: 'probe.py not found in the standalone or combined-package installation on this Gateway',
+    noPython: 'No working Python found on this Gateway to start probe.py (checked backend DUCKWORK_PYTHON and home/PATH interpreters)',
+    shellRefused: reason => `shell.exec refused: ${reason}`,
+    shellNeedsSession: 'shell.exec refused: this Duckwork runs probe.py only for a focused local session. Open a chat, then refresh.',
+    probeRun: 'Could not run probe.py',
+    probeNoPython: 'Could not run probe.py (no working Duckwork Python)'
+  }
+}
+
+const LOCALES = { en: EN }
+
+let i18n = null
+
+// Same lookup as Desktop's, for builds without ctx.i18n.
+function englishText(key, args) {
+  const value = String(key).split('.').reduce((node, part) =>
+    node && typeof node === 'object' ? node[part] : undefined, EN)
+  if (typeof value === 'function') return value(...args)
+  return typeof value === 'string' ? value : key
+}
+
+// Outside React. Reads the active language at call time.
+function tr(key, ...args) {
+  return i18n ? i18n.t(key, ...args) : englishText(key, args)
+}
+
+// In components. The SDK hook re-renders them when the language changes.
+function useTr() {
+  const t = typeof usePluginI18n === 'function' ? usePluginI18n(PLUGIN_ID) : null
+  return t && i18n ? t : tr
+}
+
+// Vendor reset text and unparseable times arrive without "Resets".
+function isBareReset(card) {
+  return !!card.resetText || (!!card.resetAt && Number.isNaN(new Date(card.resetAt).getTime()))
+}
+
+const text = {
+  primary: 'var(--ui-text-primary)',
+  secondary: 'var(--ui-text-secondary)',
+  tertiary: 'var(--ui-text-tertiary)',
+  quaternary: 'var(--ui-text-quaternary)',
+  red: 'var(--ui-red)',
+  yellow: 'var(--ui-yellow)',
+  green: 'var(--ui-green)',
+  accent: 'var(--ui-accent)'
+}
+
+const PRESETS = [
+  { id: 'cursor', name: 'Cursor', url: 'https://cursor.com/dashboard/spending' },
+  { id: 'claude', name: 'Claude', url: 'https://claude.ai/settings/usage' },
+  { id: 'chatgpt', name: 'ChatGPT', url: 'https://chatgpt.com' },
+  { id: 'gemini', name: 'Gemini', url: 'https://gemini.google.com/app' },
+  { id: 'grok', name: 'Grok', url: 'https://grok.com' },
+  { id: 'perplexity', name: 'Perplexity', url: 'https://www.perplexity.ai' },
+  { id: 'custom', name: 'Custom', url: '' }
+]
+
+let storage = null
+let quickUsageSupported = false
+let os = null
+
+const $clocks = atom([])
+const $now = atom(Date.now())
+const $missingState = atom(null)
+const $providerPreferences = atom({ disabled: [], order: [] })
+const $displayMode = atom('remaining')
+const $chipWindow = atom('')
+const $refreshUntil = atom({})
+const $freshRequests = atom({})
+const $refreshErrors = atom({})
+const $quickOpen = atom(false)
+const $quickUsage = atom(false)
+const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000
+const QUOTA_CACHE_KEY = 'quick_cache'
+
+// Account quota belongs to a connection/profile, not an individual chat tab.
+function liveQueryKey(connectionId, profile, disabled = []) {
+  return [PLUGIN_ID, 'live', connectionId, profile || '', [...disabled].sort().join(',')]
+}
+
+function quotaCacheEntries() {
+  const entries = stored(QUOTA_CACHE_KEY, {})
+  return entries && typeof entries === 'object' && !Array.isArray(entries) ? entries : {}
+}
+
+// Drop snapshots past the 24h limit so old account data does not linger.
+function freshQuotaCacheEntries() {
+  const now = Date.now()
+  return Object.fromEntries(Object.entries(quotaCacheEntries()).filter(([, entry]) =>
+    entry && Number.isFinite(entry.checkedAt) && entry.checkedAt <= now && now - entry.checkedAt <= CACHE_MAX_AGE_MS))
+}
+
+function pruneQuotaCache() {
+  const entries = quotaCacheEntries()
+  const fresh = freshQuotaCacheEntries()
+  if (Object.keys(fresh).length !== Object.keys(entries).length) remember(QUOTA_CACHE_KEY, fresh)
+}
+
+function clearRefreshError(contextKey) {
+  const previous = $refreshErrors.get()
+  if (!(contextKey in previous)) return
+  const next = { ...previous }
+  delete next[contextKey]
+  $refreshErrors.set(next)
+}
+
+function validQuotaCacheCard(card) {
+  if (!card || typeof card !== 'object' || Array.isArray(card) ||
+    typeof card.id !== 'string' || typeof card.label !== 'string') return false
+  const textFields = ['source', 'provider', 'group', 'account', 'resetText', 'detail']
+  if (textFields.some(field => card[field] != null && typeof card[field] !== 'string')) return false
+  if (['remaining', 'used'].some(field => card[field] != null &&
+    (typeof card[field] !== 'number' || !Number.isFinite(card[field]) || card[field] < 0 || card[field] > 100))) return false
+  if (card.resetAt != null && card.resetAt !== '' &&
+    ((typeof card.resetAt !== 'string' && typeof card.resetAt !== 'number') ||
+      !Number.isFinite(new Date(card.resetAt).getTime()))) return false
+  return card.error == null || card.error === false
+}
+
+// Snapshots persist only while the status-bar popup is turned on.
+function readQuotaCache(key) {
+  if (!$quickUsage.get() || !key[2] || !key[3]) return undefined
+  const cached = quotaCacheEntries()[JSON.stringify(key)]
+  if (!cached || !Array.isArray(cached.cards) || !Number.isFinite(cached.checkedAt)) return undefined
+  if (!cached.cards.every(validQuotaCacheCard)) return undefined
+  const age = Date.now() - cached.checkedAt
+  if (age < 0 || age > CACHE_MAX_AGE_MS) return undefined
+  return { ...cached, errors: [], cached: true }
+}
+
+function saveQuotaCache(key, payload) {
+  if (!$quickUsage.get() || !key[2] || !key[3] || !payload || !Array.isArray(payload.cards) ||
+    !Number.isFinite(payload.checkedAt)) return
+  const successful = payload.cards.filter(card => card && !card.error)
+  // An empty successful check (for example after logout) must replace old data.
+  // Failed checks retain the previous snapshot instead of pretending it is empty.
+  if (!successful.length && (payload.cards.length || payload.errors?.length)) return
+  if (!successful.every(validQuotaCacheCard)) return
+  // Persist only usage fields, never raw RPC/probe responses or errors.
+  const cards = successful.map(card => ({
+    id: card.id, source: card.source, provider: card.provider, group: card.group,
+    account: card.account, label: card.label, remaining: card.remaining,
+    used: card.used, resetAt: card.resetAt, resetText: card.resetText, detail: card.detail
+  }))
+  remember(QUOTA_CACHE_KEY, { ...freshQuotaCacheEntries(), [JSON.stringify(key)]: { cards, errors: [],
+    checkedAt: payload.checkedAt, observedAt: observedTime(payload), hadSession: payload.hadSession, haveAccountRpc: payload.haveAccountRpc } })
+}
+
+function saveQuickUsage(on) {
+  $quickUsage.set(!!on)
+  remember('quick_usage', !!on)
+  if (!on) {
+    $quickOpen.set(false)
+    remember(QUOTA_CACHE_KEY, {})
+  }
+}
+
+// A check from an earlier day shows its date too.
+function checkedTime(checkedAt, nowMs) {
+  if (!Number.isFinite(checkedAt)) return ''
+  const date = new Date(checkedAt)
+  return date.toDateString() === new Date(nowMs).toDateString()
+    ? date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+    : date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+}
+
+// Re-render exactly when a refresh cooldown ends; $now ticks only every 30s.
+function useCoolingDown(until) {
+  const [tick, setTick] = useState(0)
+  const wait = until - Date.now()
+  useEffect(() => {
+    if (wait <= 0) return undefined
+    const id = setTimeout(() => setTick(value => value + 1), wait + 50)
+    return () => clearTimeout(id)
+  }, [until, tick])
+  return wait > 0
+}
+
+function stored(key, fallback) {
+  return storage ? storage.get(key, fallback) : fallback
+}
+
+function remember(key, value) {
+  if (storage) storage.set(key, value)
+}
+
+function loadClocks() {
+  const raw = stored('clocks', [])
+  const list = Array.isArray(raw) ? raw : []
+  $clocks.set(
+    list.filter(
+      clock =>
+        clock &&
+        typeof clock.id === 'string' &&
+        typeof clock.name === 'string' &&
+        clampPercent(clock.remaining) !== null
+    )
+  )
+}
+
+function saveClocks(next) {
+  $clocks.set(next)
+  remember('clocks', next)
+}
+
+function tap() {
+  if (typeof haptic === 'function') haptic('tap')
+}
+
+function clampPercent(value) {
+  if (value === null || value === undefined || value === '') return null
+  const n = Number(value)
+  if (!Number.isFinite(n)) return null
+  return Math.max(0, Math.min(100, Math.round(n)))
+}
+
+function remainingFromUsed(used) {
+  const usedPct = clampPercent(used)
+  if (usedPct === null) return null
+  return Math.max(0, 100 - usedPct)
+}
+
+function normalizeDisplayMode(value) {
+  return value === 'used' ? 'used' : 'remaining'
+}
+
+function saveDisplayMode(value) {
+  const mode = normalizeDisplayMode(value)
+  $displayMode.set(mode)
+  remember('display_mode', mode)
+}
+
+// Empty means the chip keeps today's rule: the window with the least left.
+function normalizeChipWindow(value) {
+  if (typeof value !== 'string') return ''
+  const label = value.trim()
+  if (!label || label.length > 80) return ''
+  return label
+}
+
+function saveChipWindow(value) {
+  const label = normalizeChipWindow(value)
+  $chipWindow.set(label)
+  remember('chip_window', label)
+}
+
+function chipWindowChoices(cards, selected) {
+  const choices = []
+  const seen = new Set()
+  for (const card of cards || []) {
+    if (!card || card.error) continue
+    const label = String(card.label || '').trim()
+    const key = label.toLowerCase()
+    if (!label || seen.has(key)) continue
+    seen.add(key)
+    choices.push(label)
+  }
+  const current = normalizeChipWindow(selected)
+  if (current && !seen.has(current.toLowerCase())) choices.push(current)
+  const value = choices.find(label => label.toLowerCase() === current.toLowerCase()) || ''
+  return { choices, value }
+}
+
+function quotaPercent(card, mode) {
+  return normalizeDisplayMode(mode) === 'used'
+    ? clampPercent(card.used) ?? remainingFromUsed(card.remaining)
+    : clampPercent(card.remaining) ?? remainingFromUsed(card.used)
+}
+
+function toneForRemaining(remaining) {
+  if (remaining === null || remaining === undefined) return 'ok'
+  if (remaining <= 10) return 'bad'
+  if (remaining <= 30) return 'warn'
+  return 'ok'
+}
+
+function toneColor(tone) {
+  if (tone === 'bad') return text.red
+  if (tone === 'warn') return text.yellow
+  return text.secondary
+}
+
+function formatReset(resetAt, resetText, nowMs) {
+  if (resetText) return resetText
+  if (!resetAt) return ''
+  const date = new Date(resetAt)
+  if (Number.isNaN(date.getTime())) return String(resetAt)
+  const delta = date.getTime() - (nowMs || Date.now())
+  const local = date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  })
+  if (delta <= 0) return tr('reset.now', local)
+  const minutes = Math.round(delta / 60000)
+  if (minutes < 1) return tr('reset.now', local)
+  if (minutes < 60) return tr('reset.minutes', minutes, local)
+  const hours = Math.floor(minutes / 60)
+  const rem = minutes % 60
+  if (hours < 24) return tr('reset.hours', hours, rem, local)
+  const days = Math.floor(hours / 24)
+  return tr('reset.days', days, hours % 24, local)
+}
+
+function toDatetimeLocal(iso) {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = n => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function fromDatetimeLocal(value) {
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
+
+function isFordexProvider(name) {
+  return /^fordex\b/i.test(String(name || '').trim())
+}
+
+function providerKey(name) {
+  const key = String(name || '').trim().toLowerCase()
+  if (key === 'claude') return 'anthropic'
+  if (key === 'codex') return 'openai-codex'
+  if (isFordexProvider(key)) return 'fordex'
+  if (key === 'kimi-coding') return 'kimi'
+  if (key === 'xai-oauth' || key === 'xai') return 'grok'
+  if (key === 'zai' || key === 'zcode' || key === 'zhipu' || key === 'glm-coding' || key === 'zai-coding-plan') return 'glm'
+  if (key === 'deep-seek') return 'deepseek'
+  if (key === 'opencode_go' || key === 'opencode-go-sub' || key === 'go') return 'opencode-go'
+  if (key === 'ollama-cloud' || key === 'ollama_cloud') return 'ollama'
+  if (key === 'minimax-cn' || key === 'minimax_cn' || key === 'minimax-token-plan') return 'minimax'
+  if (key === 'novita-ai' || key === 'novitaai') return 'novita'
+  if (key === 'deep-infra') return 'deepinfra'
+  if (key === 'ai-gateway' || key === 'vercel' || key === 'vercel-ai-gateway') return 'ai-gateway'
+  if (key === 'github-copilot' || key === 'github') return 'copilot'
+  return key
+}
+
+function isHttpUrl(url) {
+  return /^https?:\/\//i.test(String(url || '').trim())
+}
+
+function newClockId() {
+  return `clock:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`
+}
+
+function errorMessage(error, fallback) {
+  if (typeof error === 'string' && error && error !== '[object Object]') return error
+  if (error && typeof error.message === 'string' && error.message && error.message !== '[object Object]') {
+    return error.message
+  }
+  return fallback
+}
+
+const PROVIDER_LABELS = {
+  anthropic: 'Claude',
+  'openai-codex': 'Codex',
+  openrouter: 'OpenRouter',
+  cursor: 'Cursor',
+  kimi: 'Kimi',
+  'kimi-coding': 'Kimi',
+  grok: 'Grok',
+  'xai-oauth': 'Grok',
+  xai: 'Grok',
+  glm: 'GLM',
+  zai: 'GLM',
+  zcode: 'GLM',
+  zhipu: 'GLM',
+  'zai-coding-plan': 'GLM',
+  deepseek: 'DeepSeek',
+  'deep-seek': 'DeepSeek',
+  'opencode-go': 'OpenCode Go',
+  opencode_go: 'OpenCode Go',
+  go: 'OpenCode Go',
+  ollama: 'Ollama Cloud',
+  'ollama-cloud': 'Ollama Cloud',
+  ollama_cloud: 'Ollama Cloud',
+  minimax: 'MiniMax',
+  'minimax-cn': 'MiniMax',
+  novita: 'Novita',
+  'novita-ai': 'Novita',
+  deepinfra: 'DeepInfra',
+  'deep-infra': 'DeepInfra',
+  'ai-gateway': 'AI Gateway',
+  vercel: 'AI Gateway',
+  'vercel-ai-gateway': 'AI Gateway',
+  commandcode: 'Command Code',
+  copilot: 'GitHub Copilot',
+  'github-copilot': 'GitHub Copilot',
+  github: 'GitHub Copilot',
+  fordex: 'Fordex'
+}
+
+const LIVE_PROVIDERS = [
+  'fordex', 'anthropic', 'openai-codex', 'openrouter', 'cursor', 'kimi', 'grok',
+  'glm', 'deepseek', 'opencode-go', 'ollama', 'minimax', 'novita', 'deepinfra',
+  'ai-gateway', 'commandcode', 'copilot'
+]
+
+function normalizeProviderPreferences(raw) {
+  const valid = values => [...new Set((Array.isArray(values) ? values : [])
+    .map(providerKey).filter(key => LIVE_PROVIDERS.includes(key)))]
+  return { disabled: valid(raw && raw.disabled).sort(), order: valid(raw && raw.order) }
+}
+
+function saveProviderPreferences(next) {
+  const value = normalizeProviderPreferences(next)
+  remember('providers', value)
+  $providerPreferences.set(value)
+}
+
+function cardProvider(card) {
+  if (String(card.id).startsWith('fordex:')) return 'fordex'
+  return accountCardProvider(card.id) || providerKey(card.provider)
+}
+
+function arrangeProviderCards(cards, preferences) {
+  const { disabled, order } = normalizeProviderPreferences(preferences)
+  const rank = key => { const index = order.indexOf(key); return index < 0 ? order.length : index }
+  return (cards || []).filter(card => !disabled.includes(cardProvider(card)))
+    .sort((a, b) => rank(cardProvider(a)) - rank(cardProvider(b)))
+}
+
+function ProviderControls({ preferences }) {
+  const t = useTr()
+  const order = [...preferences.order, ...LIVE_PROVIDERS.filter(key => !preferences.order.includes(key))]
+  const move = (index, delta) => {
+    if (index + delta < 0 || index + delta >= order.length) return
+    const next = [...order]
+    const moved = next.splice(index, 1)[0]
+    next.splice(index + delta, 0, moved)
+    saveProviderPreferences({ ...preferences, order: next })
+  }
+  return jsxs('details', {
+    children: [
+      jsx('summary', { style: { cursor: 'pointer', color: text.secondary }, children: t('providers.title') }),
+      jsx('p', { style: { color: text.tertiary, fontSize: '0.75rem' },
+        children: t('providers.hint') }),
+      ...order.map((key, index) => jsxs('div', {
+        style: { display: 'flex', alignItems: 'center', gap: 8, maxWidth: 400, padding: '4px 0' },
+        children: [
+          jsxs('label', { style: { flex: 1, display: 'flex', gap: 8 }, children: [
+            jsx('input', { type: 'checkbox', checked: !preferences.disabled.includes(key),
+              onChange: event => saveProviderPreferences({ ...preferences,
+                disabled: event.target.checked ? preferences.disabled.filter(item => item !== key) : [...preferences.disabled, key] }) }),
+            PROVIDER_LABELS[key]
+          ] }),
+          jsx(SmallButton, { disabled: index === 0, title: t('providers.moveUp', PROVIDER_LABELS[key]), onClick: () => move(index, -1), children: '↑' }),
+          jsx(SmallButton, { disabled: index === order.length - 1, title: t('providers.moveDown', PROVIDER_LABELS[key]), onClick: () => move(index, 1), children: '↓' })
+        ]
+      }, key)),
+      jsx(SmallButton, { onClick: () => saveProviderPreferences({}), children: t('providers.reset') })
+    ]
+  })
+}
+
+function fordexPortalTitle(planName) {
+  const plan = String(planName || '').trim()
+  if (!plan || /^fordex(\s+portal)?$/i.test(plan)) return 'Fordex Portal'
+  return `Fordex Portal (${plan})`
+}
+
+function providerTitle(provider, plan) {
+  const key = String(provider || '').trim().toLowerCase()
+  const base = PROVIDER_LABELS[key] || provider || 'Account'
+  return plan ? `${base} (${plan})` : base
+}
+
+function parseUsageOutput(text) {
+  const groups = []
+  let current = null
+  let inLimits = false
+  for (const raw of String(text || '').split('\n')) {
+    const line = raw.replace(/\*\*/g, '').replace(/^📈\s*/, '').trim()
+    if (!line) continue
+    if (/^(account limits|fordex credits)$/i.test(line)) {
+      inLimits = true
+      current = null
+      continue
+    }
+    if (/^(session (token )?usage|session info|rate limits)\b/i.test(line)) {
+      inLimits = false
+      current = null
+      continue
+    }
+    if (!inLimits && !/^provider:/i.test(line)) continue
+    const provider = line.match(/^Provider:\s+(.+)$/i)
+    if (provider) {
+      inLimits = true
+      current = { provider: provider[1].trim(), windows: [], details: [] }
+      groups.push(current)
+      continue
+    }
+    const windowMatch = line.match(
+      /^(.+?):\s+(\d+)% remaining \((\d+)% used\)(?:\s+[•·-]\s+(.+))?$/i
+    )
+    if (windowMatch) {
+      if (!current) {
+        current = { provider: 'Account', windows: [], details: [] }
+        groups.push(current)
+      }
+      const suffix = (windowMatch[4] || '').trim()
+      const resetText = /^resets\s+/i.test(suffix) ? suffix.replace(/^resets\s+/i, '') : ''
+      const detail = resetText ? '' : suffix
+      current.windows.push({
+        label: windowMatch[1].trim(),
+        remaining: Number(windowMatch[2]),
+        used: Number(windowMatch[3]),
+        resetText,
+        detail
+      })
+      continue
+    }
+    if (/^unavailable:/i.test(line)) continue
+    if (current) current.details.push(line)
+  }
+  return groups
+}
+
+function remainingFromBar(bar) {
+  if (!bar) return { remaining: null, used: null }
+  const used = clampPercent(bar.pct_used)
+  if (used !== null) return { remaining: remainingFromUsed(used), used }
+  if (typeof bar.fill_fraction === 'number' && Number.isFinite(bar.fill_fraction)) {
+    // Duckwork fill_fraction is remaining (remaining_usd / total_usd), not consumed.
+    const remaining = clampPercent(bar.fill_fraction * 100)
+    return { remaining, used: remainingFromUsed(remaining) }
+  }
+  return { remaining: null, used: null }
+}
+
+function cardsFromUsageBars(bars) {
+  if (!bars || bars.available === false) return []
+  const cards = []
+  const planName = fordexPortalTitle(bars.plan_name)
+  const pushBar = (bar, label, { showPercent = true } = {}) => {
+    if (!bar) return
+    const { remaining, used } = remainingFromBar(bar)
+    cards.push({
+      id: `fordex:${label}`,
+      source: 'live',
+      provider: planName,
+      label,
+      remaining: showPercent ? remaining : null,
+      used: showPercent ? used : null,
+      resetAt: bars.renews_at || null,
+      resetText: bars.renews_display || '',
+      detail:
+        bar.remaining_display && bar.total_display
+          ? `${bar.remaining_display} of ${bar.total_display} left`
+          : bars.subscription_remaining_display || ''
+    })
+  }
+  pushBar(bars.plan_bar, 'Subscription')
+  if (bars.has_topup) pushBar(bars.topup_bar, 'Top-up credits', { showPercent: false })
+  return cards
+}
+
+function cardsFromUsageGroups(groups, skipFordex) {
+  const cards = []
+  for (const group of groups || []) {
+    if (skipFordex && isFordexProvider(group.provider)) continue
+    const extra = (group.details || []).filter(line => !/^\(or run \/topup\)$/i.test(line))
+    const windows = group.windows || []
+    windows.forEach((window, index) => {
+      cards.push({
+        id: `usage:${group.provider}:${index}:${window.label}`,
+        source: 'live',
+        provider: group.provider,
+        label: window.label,
+        remaining: clampPercent(window.remaining),
+        used: clampPercent(window.used),
+        resetAt: null,
+        resetText: window.resetText || '',
+        detail: [window.detail, index === windows.length - 1 ? extra.join(' · ') : ''].filter(Boolean).join(' · ')
+      })
+    })
+    if (!windows.length && extra.length) {
+      cards.push({
+        id: `usage:${group.provider}:note`,
+        source: 'live',
+        provider: group.provider,
+        label: group.provider,
+        remaining: null,
+        used: null,
+        resetAt: null,
+        resetText: '',
+        detail: extra.join(' · ')
+      })
+    }
+  }
+  return cards
+}
+
+function maskEmailLabel(label) {
+  const text = String(label || '').trim()
+  const at = text.indexOf('@')
+  if (at <= 0 || at === text.length - 1 || text.includes(' ')) return text
+  return `${text.slice(0, Math.min(2, at))}**${text.slice(at)}`
+}
+
+function familyTitle(provider) {
+  const key = providerKey(provider)
+  if (key === 'anthropic' || key === 'claude') return 'Claude'
+  if (key === 'openai-codex') return 'Codex'
+  return PROVIDER_LABELS[key] || String(provider || 'Account')
+}
+
+function snapshotAccountLabel(snap) {
+  return maskEmailLabel(String(snap && snap.account_label ? snap.account_label : '').trim())
+}
+
+function snapshotAccountKey(snap) {
+  const key = String(snap && snap.account_key ? snap.account_key : '').trim()
+  if (key) return accountIdTag(key)
+  return accountIdTag(snapshotAccountLabel(snap))
+}
+
+function accountIdTag(label) {
+  return String(label || '').trim().replace(/:/g, '-')
+}
+
+function accountCardProvider(id) {
+  const text = String(id || '')
+  if (!text.startsWith('account:')) return ''
+  const rest = text.slice('account:'.length)
+  const colon = rest.indexOf(':')
+  const provider = colon === -1 ? rest : rest.slice(0, colon)
+  return providerKey(provider)
+}
+
+function cardsFromAccountSnapshots(snapshots) {
+  const cards = []
+  for (const snap of snapshots || []) {
+    const accountLabel = snapshotAccountLabel(snap)
+    const provider = providerTitle(snap.provider, snap.plan)
+    const group = accountLabel ? familyTitle(snap.provider) : provider
+    const accountTag = snapshotAccountKey(snap) ? `:${snapshotAccountKey(snap)}` : ''
+    const extra = (snap.details || []).join(' · ')
+    const windows = snap.windows || []
+    const failed = Boolean(snap.error)
+    if (failed) {
+      // probe.py found a login but the fetch failed. Show why instead of
+      // silently dropping the vendor from the page.
+      cards.push({
+        id: `account:${snap.provider}${accountTag}:error`,
+        source: 'live',
+        provider,
+        group,
+        account: accountLabel,
+        label: accountLabel || provider,
+        remaining: null,
+        used: null,
+        resetAt: null,
+        resetText: '',
+        detail: extra || `Could not fetch usage: ${String(snap.error)}`,
+        error: true
+      })
+      continue
+    }
+    windows.forEach((window, index) => {
+      cards.push({
+        id: `account:${snap.provider}${accountTag}:${index}:${window.label}`,
+        source: 'live',
+        provider,
+        group,
+        account: index === 0 ? accountLabel : '',
+        label: window.label,
+        remaining: clampPercent(window.remaining_percent) ?? remainingFromUsed(window.used_percent),
+        used: clampPercent(window.used_percent),
+        resetAt: window.reset_at || null,
+        resetText: '',
+        detail: [window.detail, index === windows.length - 1 ? extra : ''].filter(Boolean).join(' · ')
+      })
+    })
+    if (!windows.length && extra) {
+      cards.push({
+        id: `account:${snap.provider}${accountTag}:note`,
+        source: 'live',
+        provider,
+        group,
+        account: accountLabel,
+        label: accountLabel || provider,
+        remaining: null,
+        used: null,
+        resetAt: null,
+        resetText: '',
+        detail: extra
+      })
+    }
+  }
+  return cards
+}
+
+function readSessionId() {
+  const focused = host.state.focusedSessionId
+  const active = host.state.activeSessionId
+  return (focused && focused.get && focused.get()) || (active && active.get && active.get()) || ''
+}
+
+function duckworkHomeFromConfig(payload) {
+  const sections = (payload && payload.sections) || []
+  for (const section of sections) {
+    for (const row of section.rows || []) {
+      if (row && row[0] === 'Config File' && row[1]) {
+        return String(row[1]).replace(/[\\/]+config\.ya?ml$/i, '')
+      }
+    }
+  }
+  return ''
+}
+
+function duckworkHomeCandidates(fromConfig) {
+  const out = []
+  const push = value => {
+    const text = String(value || '').trim()
+    if (text && !out.includes(text)) out.push(text)
+    // Profiles share the base home's plugin install and Python runtime.
+    const base = text.replace(/[\\/]profiles[\\/][^\\/]+[\\/]*$/i, '')
+    if (base && base !== text && !out.includes(base)) out.push(base)
+  }
+  push(fromConfig)
+  // config.show belongs to the selected gateway. Renderer environment paths
+  // can belong to another machine and must not become backend candidates.
+  return out
+}
+
+function quoteShell(path) {
+  // shell.exec takes a single command string (no argv). Quote for spaces.
+  return `"${String(path).replace(/"/g, '\\"')}"`
+}
+
+function probePythonCandidates(home) {
+  const root = String(home || '').replace(/[\\/]+$/, '')
+  const posix = [`${root}/duckwork-agent/.venv/bin/python`, `${root}/duckwork-agent/venv/bin/python`]
+  const win = [
+    `${root}/duckwork-agent/.venv/Scripts/python.exe`,
+    `${root}/duckwork-agent/venv/Scripts/python.exe`
+  ]
+  const isWin = /^[A-Za-z]:[\\/]/.test(root) || root.includes('\\')
+  const venv = isWin ? [...win, ...posix] : [...posix, ...win]
+  // Duckwork' own interpreter when the install says where it is. Nix and other
+  // packaged installs keep no venv under the Duckwork home; Duckwork exports
+  // DUCKWORK_PYTHON instead. Expand it on the backend using its shell syntax.
+  const runtime = [isWin ? '%DUCKWORK_PYTHON%' : '$DUCKWORK_PYTHON']
+  // Bare interpreters last. On Mac and Windows these are usually a system
+  // Python without httpx, which would "succeed" with an import error card.
+  const generic = ['python3', 'python']
+  const out = []
+  for (const item of [...runtime, ...venv, ...generic]) {
+    if (item && !out.includes(item)) out.push(item)
+  }
+  return out
+}
+
+// Python itself reports a missing script this way. Anything else that
+// looks like "not found" means the interpreter path is wrong.
+function probeFailureKind(result) {
+  const err = result && result.stderr ? String(result.stderr) : ''
+  if (/can't open file|No such file or directory: '.*probe\.py'/i.test(err)) return 'no-probe'
+  if (
+    result &&
+    (result.code === 126 ||
+      result.code === 127 ||
+      result.code === 9009 ||
+      /is not recognized|not found|No such file or directory|cannot find the path|Permission denied/i.test(err))
+  ) {
+    return 'no-python'
+  }
+  return 'failed'
+}
+
+// probe.py always exits 0 with a JSON list. When the interpreter lacks httpx
+// that list includes a note card saying so. Treat it as "wrong Python" and keep
+// looking rather than accepting it as the result.
+function probeMissingDeps(parsed) {
+  if (!Array.isArray(parsed)) return ''
+  for (const snap of parsed) {
+    if (!snap || String(snap.provider || '').toLowerCase() !== 'resetwatch') continue
+    const note = (snap.details || []).find(line => /cannot import httpx/i.test(String(line)))
+    if (note) return String(note)
+  }
+  return ''
+}
+
+function pickProbeFailure(failures) {
+  const list = (failures || []).filter(item => item && item.message)
+  if (!list.length) return ''
+  // A real probe error (traceback, bad JSON) beats path guessing noise.
+  const real = [...list].reverse().find(item => item.kind === 'failed')
+  if (real) return real.message
+  const kinds = new Set(list.map(item => item.kind))
+  if (kinds.has('no-deps')) {
+    return tr('errors.noHttpx')
+  }
+  if (kinds.has('no-probe') && !kinds.has('no-python')) {
+    return tr('errors.noProbe')
+  }
+  if (kinds.has('no-python') && !kinds.has('no-probe')) {
+    return tr('errors.noPython')
+  }
+  return list[list.length - 1].message
+}
+
+async function profileRequester(connectionId, profile) {
+  if (connectionId === null) throw new Error(tr('errors.noOwner'))
+  const active = String(profile || '').trim()
+  if (!active || !connectionId || typeof host.profileRoutes !== 'function' || typeof host.requestProfile !== 'function') {
+    return { request: (method, params = {}) => host.request(method, params), profile: active }
+  }
+  const routes = await host.profileRoutes()
+  const sourceRoutes = routes.filter(item => item && item.connectionId === connectionId)
+  const route = sourceRoutes.find(item => item.profile === active) || sourceRoutes.find(item => item.targetProfile === active)
+  if (!route) throw new Error(tr('errors.noRoute', active))
+  return {
+    request: (method, params = {}) => host.requestProfile(route, method, params),
+    profile: route.targetProfile || route.profile
+  }
+}
+
+// Duckwork main serves the session-scoped shell.exec ({ session_id, command }).
+// Older backends serve the sidecar variant, whose closed params refuse a
+// session_id, so retry bare once when the scoped call is refused.
+// A refusal is the same for every interpreter and path, so it is tagged and
+// ends the candidate search instead of being retried.
+async function shellExec(request, sid, command) {
+  const reason = error => String((error && error.message) || error || '')
+  const refused = message => Object.assign(new Error(message), { refused: true })
+  if (sid) {
+    try {
+      return await request('shell.exec', { command, session_id: sid })
+    } catch (error) {
+      if (!/invalid[ _]params|extra[ _]forbidden|extra inputs/i.test(reason(error))) throw refused(tr('errors.shellRefused', reason(error)))
+    }
+  }
+  try {
+    return await request('shell.exec', { command })
+  } catch (error) {
+    if (!sid && /invalid[ _]params|extra inputs/i.test(reason(error))) throw refused(tr('errors.shellNeedsSession'))
+    throw refused(tr('errors.shellRefused', reason(error)))
+  }
+}
+
+// shell.exec returns only the last 4000 characters of stdout. Each probe
+// invocation requests at most eight snapshots and probe.py also caps bytes.
+const PROBE_SLICE = 8
+
+function pinnedPage(text, expectedToken) {
+  let parsed
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    throw new Error('probe returned non-JSON')
+  }
+  // probe.py main() reports a crash as a bare card list, even when paging.
+  if (Array.isArray(parsed)) {
+    if (!expectedToken) return { snapshot_token: null, snapshots: parsed }
+    const crash = parsed.find(snap => snap && snap.provider === 'resetwatch')
+    throw new Error((crash && String((crash.details || [])[0] || '')) || 'probe returned invalid snapshot pin')
+  }
+  const token = parsed && parsed.snapshot_token
+  if (!/^[a-f0-9]{32}$/.test(token) || (expectedToken && token !== expectedToken) || !Array.isArray(parsed.snapshots)) {
+    throw new Error('probe returned invalid snapshot pin')
+  }
+  return parsed
+}
+
+async function probeNextSlice(request, sid, python, probe, flags, token, offset) {
+  const result = await shellExec(request, sid,
+    `${quoteShell(python)} ${quoteShell(probe)}${flags.replace(' --fresh', '')} --snapshot-token=${token} --slice=${offset}:${PROBE_SLICE}`)
+  if (!result || result.code) {
+    throw new Error((result && String(result.stderr || '').trim()) || (result ? `probe exit ${result.code}` : 'probe returned nothing'))
+  }
+  const text = String(result.stdout || '').trim()
+  return pinnedPage(text, token).snapshots
+}
+
+async function probeStockAccountUsage(request, opts) {
+  try {
+    const shown = await request('config.show', {})
+    const homes = duckworkHomeCandidates(duckworkHomeFromConfig(shown))
+    if (!homes.length) return { snapshots: null, error: tr('errors.noHome') }
+    const profileArg = String((opts && opts.profile) || '').trim()
+    if (profileArg && !/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(profileArg)) {
+      return { snapshots: null, error: tr('errors.badProfile') }
+    }
+    const disabled = normalizeProviderPreferences({ disabled: opts && opts.disabled }).disabled
+    const flags = [
+      '--gateway-runtime',
+      disabled.length ? `--disabled-providers=${disabled.join(',')}` : '',
+      profileArg ? `--profile ${quoteShell(profileArg)}` : '',
+      opts && opts.cliOnly ? '--cli-only' : '',
+      opts && opts.fresh ? '--fresh' : ''
+    ]
+      .filter(Boolean)
+      .map(flag => ` ${flag}`)
+      .join('')
+    const failures = []
+    // The plugin folder is "resetwatch" when installed by hand, but a plain
+    // clone of the repo lands as "duckwork-resetwatch". Accept both.
+    const folders = ['resetwatch', 'duckwork-resetwatch']
+    const probePaths = folders.flatMap(folder => [
+      `desktop-plugins/${folder}/probe.py`,
+      `plugins/${folder}/desktop/probe.py`
+    ])
+    // Each attempt spawns a process, so prune as we learn: an interpreter
+    // that does not exist is skipped for every folder, and a folder Python
+    // could not open is skipped for every interpreter.
+    const deadPythons = new Set()
+    const deadProbes = new Set()
+    const pythons = [...new Set(homes.flatMap(probePythonCandidates).filter(item => item !== 'python3' && item !== 'python')),
+      'python3', 'python']
+    for (const home of homes) {
+      for (const python of pythons) {
+        if (deadPythons.has(python)) continue
+        for (const relativePath of probePaths) {
+          const probe = `${home}/${relativePath}`
+          if (deadProbes.has(probe)) continue
+          try {
+            const result = await shellExec(request, opts && opts.sessionId,
+              `${quoteShell(python)} ${quoteShell(probe)}${flags} --pin-snapshot --slice=0:${PROBE_SLICE}`)
+            if (!result || result.code) {
+              const err = result && result.stderr ? String(result.stderr).trim() : ''
+              const kind = probeFailureKind(result)
+              failures.push({
+                kind,
+                message: err || (result ? `probe exit ${result.code}` : 'probe returned nothing')
+              })
+              if (kind === 'no-python') {
+                deadPythons.add(python)
+                break
+              }
+              if (kind === 'no-probe') deadProbes.add(probe)
+              continue
+            }
+            const text = String(result.stdout || '').trim()
+            const first = pinnedPage(text)
+            const missingDeps = probeMissingDeps(first.snapshots)
+            if (missingDeps) {
+              // Wrong interpreter for every home, not just this one.
+              failures.push({ kind: 'no-deps', message: missingDeps })
+              deadPythons.add(python)
+              break
+            }
+            if (!first.snapshot_token) return { snapshots: first.snapshots, error: null }
+            try {
+              const all = [...first.snapshots]
+              let offset = all.length
+              // A short page can mean byte-budget exhaustion, not end of list.
+              for (let page = 0; offset && page < 256; page++) {
+                const next = await probeNextSlice(request, opts && opts.sessionId, python, probe, flags, first.snapshot_token, offset)
+                if (!next.length) break
+                all.push(...next)
+                offset += next.length
+                if (page === 255) throw new Error('probe returned too many pages')
+              }
+              return { snapshots: all, error: null }
+            } catch (error) {
+              // A valid first page owns this invocation. Never restart with
+              // another interpreter or a newer cache after a pin fails.
+              return { snapshots: null, error: errorMessage(error, 'probe snapshot failed') }
+            }
+          } catch (error) {
+            if (error && error.refused) return { snapshots: null, error: error.message }
+            failures.push({ kind: 'failed', message: errorMessage(error, 'probe failed') })
+          }
+        }
+      }
+    }
+    return {
+      snapshots: null,
+      error: pickProbeFailure(failures) || tr('errors.probeNoPython')
+    }
+  } catch (error) {
+    return { snapshots: null, error: errorMessage(error, tr('errors.probeRun')) }
+  }
+}
+
+function go(route) {
+  if (typeof host.navigate === 'function') host.navigate(route)
+}
+
+// The probe can answer from its own cache, so the oldest vendor observation,
+// not the time of this request, is when the shown numbers were checked.
+function probeObservedAt(snapshots, now) {
+  let oldest = now
+  for (const snap of snapshots || []) {
+    const at = Number(snap && snap.observed_at) * 1000
+    if (Number.isFinite(at) && at > 0 && at < oldest) oldest = at
+  }
+  return oldest
+}
+
+function observedTime(payload) {
+  if (!payload) return undefined
+  return Number.isFinite(payload.observedAt) ? payload.observedAt : payload.checkedAt
+}
+
+async function fetchLiveCards(sessionId, opts, connectionId, profile) {
+  const cards = []
+  const errors = []
+  const sid = sessionId || readSessionId()
+  const fresh = !!(opts && opts.fresh)
+  const disabled = normalizeProviderPreferences({ disabled: opts && opts.disabled }).disabled
+  const selective = disabled.length > 0
+  const fordexEnabled = !disabled.includes('fordex')
+  if (disabled.length === LIVE_PROVIDERS.length) {
+    return { cards: [], errors: [], hadSession: Boolean(sid), haveAccountRpc: false }
+  }
+  let haveAccountRpc = false
+  const target = await profileRequester(connectionId, profile)
+  const request = target.request
+
+  const [barsResult, accountResult] = await Promise.allSettled([
+    fordexEnabled ? request('usage.bars', {}) : Promise.resolve(null),
+    selective ? Promise.resolve(null) : request('account.usage', {})
+  ])
+
+  let barsError = ''
+  if (barsResult.status === 'fulfilled') {
+    cards.push(...cardsFromUsageBars(barsResult.value))
+  } else {
+    const error = barsResult.reason
+    barsError = error && error.message ? error.message : tr('errors.fordexUsage')
+  }
+
+  if (fordexEnabled && !cards.length) {
+    try {
+      const sub = await request('subscription.state', {})
+      if (sub && sub.usage) cards.push(...cardsFromUsageBars(sub.usage))
+    } catch (error) {
+      errors.push(error && error.message ? error.message : tr('errors.subscription'))
+    }
+  }
+  // Only report the usage.bars failure if the fallback did not fill the Fordex cards.
+  if (barsError && !cards.some(card => String(card.id).startsWith('fordex:'))) {
+    errors.push(barsError)
+  }
+
+  const accountProviders = new Set()
+  if (!selective && accountResult.status === 'fulfilled') {
+    haveAccountRpc = true
+    const account = accountResult.value
+    const snaps = (account && account.snapshots) || []
+    for (const snap of snaps) {
+      if (snap && snap.provider) accountProviders.add(providerKey(snap.provider))
+    }
+    cards.push(...cardsFromAccountSnapshots(snaps))
+  } else if (!selective) {
+    const error = accountResult.reason
+    const message = error && error.message ? error.message : ''
+    if (!/unknown method|not found|-32601/i.test(message)) {
+      errors.push(message || tr('errors.accountLimits'))
+    }
+  }
+
+  const probeResult = disabled.filter(key => key !== 'fordex').length === LIVE_PROVIDERS.length - 1
+    ? { snapshots: [], error: null }
+    : await probeStockAccountUsage(request, { cliOnly: haveAccountRpc, fresh, profile: target.profile, disabled, sessionId: sid })
+  const probed = probeResult && probeResult.snapshots
+  if (probeResult && probeResult.error && !(probed && probed.length)) {
+    errors.push(probeResult.error)
+  }
+  let haveClaudeProbe = false
+  if (probed && probed.length) {
+    const labelledKeys = new Set(
+      probed
+        .filter(snap => snap && snap.provider && snapshotAccountLabel(snap))
+        .map(snap => providerKey(snap.provider))
+    )
+    if (labelledKeys.size) {
+      for (let index = cards.length - 1; index >= 0; index -= 1) {
+        const key = accountCardProvider(cards[index] && cards[index].id)
+        if (key && labelledKeys.has(key)) cards.splice(index, 1)
+      }
+    }
+    const extra = haveAccountRpc
+      ? probed.filter(snap => {
+          if (!snap || !snap.provider) return false
+          if (snapshotAccountLabel(snap)) return true
+          return !accountProviders.has(providerKey(snap.provider))
+        })
+      : probed
+    for (const snap of extra) {
+      const key = providerKey(snap && snap.provider)
+      if (key === 'anthropic' || key === 'claude') haveClaudeProbe = true
+    }
+    if (extra.length) cards.push(...cardsFromAccountSnapshots(extra))
+  }
+  const checkedAt = Date.now()
+  const observedAt = probeObservedAt(probed, checkedAt)
+
+  // Claude often comes from Duckwork /usage when the probe has Codex/etc. but
+  // no Anthropic row. Only skip that fallback once Claude is already present.
+  // Never surface a stale focused-session "session not found".
+  if (!selective && !haveAccountRpc && sid && !haveClaudeProbe) {
+    try {
+      const result = await request('slash.exec', { command: 'usage', session_id: sid })
+      const output = result && typeof result.output === 'string' ? result.output : ''
+      const skipFordex = cards.some(card => String(card.id).startsWith('fordex:'))
+      cards.push(...cardsFromUsageGroups(parseUsageOutput(output), skipFordex))
+    } catch (error) {
+      const message = error && error.message ? error.message : ''
+      if (!/session not found/i.test(message)) {
+        errors.push(message || tr('errors.usageCommand'))
+      }
+    }
+  }
+
+  const seen = new Set()
+  const unique = []
+  for (const card of cards) {
+    if (seen.has(card.id)) continue
+    seen.add(card.id)
+    unique.push(card)
+  }
+  return { cards: arrangeProviderCards(unique, { disabled }), errors, hadSession: Boolean(sid), haveAccountRpc, checkedAt, observedAt }
+}
+
+function SmallButton({ onClick, children, active, title, disabled }) {
+  return jsx('button', {
+    type: 'button',
+    title,
+    disabled: !!disabled,
+    onClick,
+    style: {
+      fontSize: '0.6875rem',
+      padding: '2px 8px',
+      border: `1px solid ${active ? 'var(--ui-accent)' : 'var(--ui-stroke-secondary)'}`,
+      borderRadius: 4,
+      color: active ? text.primary : text.secondary,
+      background: active ? 'var(--ui-control-active-background)' : 'transparent',
+      opacity: disabled ? 0.5 : 1,
+      cursor: disabled ? 'default' : 'pointer'
+    },
+    children
+  })
+}
+
+function Field({ label, children }) {
+  return jsxs('label', {
+    style: { display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0, flex: 1 },
+    children: [
+      jsx('span', { style: { fontSize: '0.6875rem', color: text.tertiary }, children: label }),
+      children
+    ]
+  })
+}
+
+function NativeInput({ value, onChange, type, placeholder, style }) {
+  return jsx('input', {
+    type: type || 'text',
+    value: value || '',
+    placeholder,
+    onChange: event => onChange(event.target.value),
+    style: {
+      height: 28,
+      padding: '0 8px',
+      borderRadius: 6,
+      border: '1px solid var(--ui-stroke-secondary)',
+      background: 'transparent',
+      color: text.primary,
+      fontSize: '0.8125rem',
+      outline: 'none',
+      ...style
+    }
+  })
+}
+
+function UsageBar({ remaining, percent, label }) {
+  const tone = toneForRemaining(remaining)
+  const fill = tone === 'bad' ? text.red : tone === 'warn' ? text.yellow : 'var(--ui-text-primary)'
+  return jsx('div', {
+    role: 'meter',
+    'aria-label': label,
+    'aria-valuemin': 0,
+    'aria-valuemax': 100,
+    'aria-valuenow': percent,
+    style: {
+      width: 92,
+      height: 6,
+      borderRadius: 99,
+      background: 'var(--ui-stroke-secondary)',
+      overflow: 'hidden',
+      flexShrink: 0
+    },
+    children: jsx('div', {
+      style: {
+        width: `${percent}%`,
+        height: '100%',
+        borderRadius: 99,
+        background: fill
+      }
+    })
+  })
+}
+
+function displayDetail(card) {
+  const detail = String((card && card.detail) || '').trim()
+  if (!detail) return ''
+  // The meter and percentage already show the same unitless fraction.
+  if (card.remaining !== null && card.remaining !== undefined) {
+    if (/^[\d,]+\s+of\s+[\d,]+\s+left$/i.test(detail)) return ''
+  }
+  return detail
+}
+
+function renderDetailText(detail) {
+  const value = String(detail || '')
+  const marker = 'Peak pricing now'
+  const index = value.indexOf(marker)
+  if (index < 0) return value
+  return jsxs(Fragment, {
+    children: [
+      value.slice(0, index),
+      jsx('span', { style: { fontWeight: 700 }, children: marker }),
+      value.slice(index + marker.length)
+    ]
+  })
+}
+
+function LimitCard({ card, nowMs, actions }) {
+  const t = useTr()
+  const displayMode = useValue($displayMode)
+  const remaining = quotaPercent(card, 'remaining')
+  const percent = quotaPercent(card, displayMode)
+  const tone = toneForRemaining(remaining)
+  const reset = formatReset(card.resetAt, card.resetText, nowMs)
+  const percentLabel = t(displayMode === 'used' ? 'card.used' : 'card.left', percent)
+  const detail = displayDetail(card)
+  return jsxs('div', {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 16,
+      padding: '12px 14px',
+      borderRadius: 10,
+      border: '1px solid var(--ui-stroke-secondary)',
+      background: 'var(--ui-bg-secondary, transparent)'
+    },
+    children: [
+      jsxs('div', {
+        style: { flex: 1, minWidth: 0 },
+        children: [
+          jsx('div', {
+            style: { fontSize: '0.875rem', fontWeight: 600, color: text.primary },
+            children: card.label
+          }),
+          card.account
+            ? jsx('div', {
+                style: { fontSize: '0.75rem', color: text.tertiary, marginTop: 2 },
+                children: card.account
+              })
+            : null,
+          reset
+            ? jsx('div', {
+                style: { fontSize: '0.75rem', color: text.tertiary, marginTop: 2 },
+                children: isBareReset(card) && !reset.startsWith('Reset') ? t('reset.at', reset) : reset
+              })
+            : null,
+          detail
+            ? jsx('div', {
+                style: { fontSize: '0.75rem', color: text.tertiary, marginTop: 2 },
+                children: renderDetailText(detail)
+              })
+            : null
+        ]
+      }),
+      card.error
+        ? jsx('div', {
+            title: detail,
+            style: { fontSize: '0.75rem', color: text.quaternary, flexShrink: 0 },
+            children: t('card.unavailable')
+          })
+        : percent === null
+          ? null
+          : jsxs('div', {
+              style: { display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 },
+              children: [
+                jsx(UsageBar, { remaining, percent, label: `${card.label}: ${percentLabel}` }),
+                jsx('div', {
+                  style: { fontSize: '0.8125rem', color: toneColor(tone), minWidth: 64, textAlign: 'right' },
+                  children: percentLabel
+                })
+              ]
+            }),
+      actions || null
+    ]
+  })
+}
+
+function useSectionOpen(key) {
+  const [open, setOpen] = useState(() => {
+    const saved = stored(`sectionOpen:${key}`, null)
+    return saved === null || saved === undefined ? true : !!saved
+  })
+  return [
+    open,
+    () => {
+      const next = !open
+      setOpen(next)
+      remember(`sectionOpen:${key}`, next)
+    }
+  ]
+}
+
+function SectionHeader({ title, open, onToggle, extra }) {
+  return jsxs('div', {
+    style: { display: 'flex', alignItems: 'center', gap: 8 },
+    children: [
+      jsxs('button', {
+        type: 'button',
+        onClick: () => {
+          tap()
+          onToggle()
+        },
+        'aria-expanded': open,
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          flex: 1,
+          minWidth: 0,
+          padding: 0,
+          border: 'none',
+          background: 'transparent',
+          color: text.primary,
+          cursor: 'pointer',
+          textAlign: 'left'
+        },
+        children: [
+          jsx('span', {
+            style: { fontSize: '0.7rem', color: text.tertiary, width: 10 },
+            children: open ? '▾' : '▸'
+          }),
+          jsx('h2', {
+            style: { fontSize: '0.75rem', fontWeight: 600, color: text.primary, margin: 0 },
+            children: title
+          })
+        ]
+      }),
+      extra || null
+    ]
+  })
+}
+
+function ProviderBlock({ title, cards, nowMs, empty, actionsFor }) {
+  const [open, toggle] = useSectionOpen(`provider:${title}`)
+  return jsxs('section', {
+    style: { display: 'flex', flexDirection: 'column', gap: 8 },
+    children: [
+      jsx(SectionHeader, { title, open, onToggle: toggle }),
+      !open
+        ? null
+        : !cards.length
+          ? jsx('div', { style: { fontSize: '0.8125rem', color: text.tertiary }, children: empty })
+          : cards.map(card =>
+              jsx(
+                LimitCard,
+                { card, nowMs, actions: actionsFor ? actionsFor(card) : null },
+                card.id
+              )
+            )
+    ]
+  })
+}
+
+function ClockForm({ onSave, onCancel }) {
+  const t = useTr()
+  const [presetId, setPresetId] = useState('gemini')
+  const preset = PRESETS.find(item => item.id === presetId) || PRESETS[0]
+  const [name, setName] = useState(preset.name)
+  const [left, setLeft] = useState('70')
+  const [resetLocal, setResetLocal] = useState('')
+  const [url, setUrl] = useState(preset.url)
+
+  useEffect(() => {
+    const next = PRESETS.find(item => item.id === presetId) || PRESETS[0]
+    if (presetId !== 'custom') {
+      setName(next.name)
+      setUrl(next.url)
+    }
+  }, [presetId])
+
+  const remaining = clampPercent(left)
+  const canSave = Boolean(name.trim()) && remaining !== null
+
+  return jsxs('div', {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+      padding: 12,
+      borderRadius: 10,
+      border: '1px solid var(--ui-stroke-secondary)'
+    },
+    children: [
+      jsxs('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 }, children: [
+        PRESETS.map(item =>
+          jsx(
+            SmallButton,
+            {
+              active: presetId === item.id,
+              onClick: () => {
+                tap()
+                setPresetId(item.id)
+              },
+              children: item.id === 'custom' ? t('clocks.custom') : item.name
+            },
+            item.id
+          )
+        )
+      ] }),
+      jsxs('div', { style: { display: 'grid', gridTemplateColumns: '1fr 90px 1fr', gap: 8 }, children: [
+        jsx(Field, { label: t('clocks.name'), children: jsx(NativeInput, { value: name, onChange: setName, placeholder: t('clocks.namePlaceholder') }) }),
+        jsx(Field, {
+          label: t('clocks.left'),
+          children: jsx(NativeInput, { value: left, onChange: setLeft, type: 'number', placeholder: '70' })
+        }),
+        jsx(Field, {
+          label: t('clocks.resets'),
+          children: jsx(NativeInput, { value: resetLocal, onChange: setResetLocal, type: 'datetime-local' })
+        })
+      ] }),
+      jsx(Field, {
+        label: t('clocks.url'),
+        children: jsx(NativeInput, { value: url, onChange: setUrl, placeholder: 'https://' })
+      }),
+      jsxs('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' }, children: [
+        jsx(SmallButton, { onClick: onCancel, children: t('common.cancel') }),
+        jsx(SmallButton, {
+          active: true,
+          disabled: !canSave,
+          onClick: () => {
+            if (!canSave) return
+            tap()
+            onSave({
+              id: newClockId(),
+              name: name.trim(),
+              remaining,
+              resetAt: fromDatetimeLocal(resetLocal),
+              url: url.trim()
+            })
+          },
+          children: t('clocks.add')
+        })
+      ] })
+    ]
+  })
+}
+
+function EditClock({ clock, onSave, onCancel }) {
+  const t = useTr()
+  const [name, setName] = useState(clock.name)
+  const [left, setLeft] = useState(String(clock.remaining))
+  const [resetLocal, setResetLocal] = useState(toDatetimeLocal(clock.resetAt))
+  const [url, setUrl] = useState(clock.url || '')
+  const remaining = clampPercent(left)
+  const canSave = Boolean(name.trim()) && remaining !== null
+  return jsxs('div', {
+    style: { display: 'flex', flexDirection: 'column', gap: 8, minWidth: 220 },
+    children: [
+      jsx(NativeInput, { value: name, onChange: setName }),
+      jsxs('div', { style: { display: 'flex', gap: 8 }, children: [
+        jsx(NativeInput, { value: left, onChange: setLeft, type: 'number', style: { width: 72 } }),
+        jsx(NativeInput, { value: resetLocal, onChange: setResetLocal, type: 'datetime-local' })
+      ] }),
+      jsx(NativeInput, { value: url, onChange: setUrl, placeholder: 'https://' }),
+      jsxs('div', { style: { display: 'flex', gap: 6, justifyContent: 'flex-end' }, children: [
+        jsx(SmallButton, { onClick: onCancel, children: t('common.cancel') }),
+        jsx(SmallButton, {
+          active: true,
+          disabled: !canSave,
+          onClick: () => {
+            if (!canSave) return
+            onSave({ ...clock, name: name.trim(), remaining, resetAt: fromDatetimeLocal(resetLocal), url: url.trim() })
+          },
+          children: t('clocks.save')
+        })
+      ] })
+    ]
+  })
+}
+
+function useLiveCardsPolled(gateway, sessionId, connectionId, profile, disabled = []) {
+  const sid = sessionId || ''
+  const selection = disabled.join(',')
+  const [data, setData] = useState({ cards: [], errors: [], hadSession: false, haveAccountRpc: false })
+  const [isFetching, setFetching] = useState(false)
+  const genRef = useRef(0)
+  const inFlight = useRef(false)
+
+  const load = (opts) => {
+    if (gateway !== 'open' || inFlight.current) return
+    inFlight.current = true
+    const gen = ++genRef.current
+    setFetching(true)
+    fetchLiveCards(sid, { ...opts, disabled }, connectionId, profile)
+      .then(next => {
+        if (gen !== genRef.current) return
+        setData(next)
+      })
+      .catch(error => {
+        if (gen !== genRef.current) return
+        setData({
+          cards: [],
+          errors: [errorMessage(error, tr('errors.liveUsage'))],
+          hadSession: Boolean(sid),
+          haveAccountRpc: false
+        })
+      })
+      .finally(() => {
+        if (gen !== genRef.current) return
+        inFlight.current = false
+        setFetching(false)
+      })
+  }
+
+  useEffect(() => {
+    setData({ cards: [], errors: [], hadSession: Boolean(sid), haveAccountRpc: false })
+    load()
+    const id = setInterval(() => load(), POLL_MS)
+    return () => {
+      genRef.current += 1
+      // A fetch from the old session may still be running. Its result is
+      // discarded above, so it must not block the first load of the new one.
+      inFlight.current = false
+      clearInterval(id)
+    }
+  }, [gateway, sid, connectionId, profile, selection])
+
+  return { data, isFetching, refetch: () => load({ fresh: true }) }
+}
+
+function useLiveCardsQuery(gateway, sessionId, connectionId, profile, disabled = [], active = true) {
+  const sid = sessionId || ''
+  const key = liveQueryKey(connectionId, profile, disabled)
+  const contextKey = JSON.stringify(key)
+  const refreshUntil = useValue($refreshUntil)
+  const freshRequests = useValue($freshRequests)
+  const refreshErrors = useValue($refreshErrors)
+  const manualError = refreshErrors[contextKey] || ''
+  const query = useQuery({
+    queryKey: key,
+    queryFn: async () => {
+      const data = await fetchLiveCards(sid, { disabled }, connectionId, profile)
+      saveQuotaCache(key, data)
+      clearRefreshError(contextKey)
+      return data
+    },
+    initialData: () => readQuotaCache(key),
+    initialDataUpdatedAt: () => readQuotaCache(key)?.checkedAt,
+    enabled: gateway === 'open' && active,
+    staleTime: POLL_MS,
+    gcTime: CACHE_MAX_AGE_MS,
+    refetchInterval: POLL_MS,
+    retry: false
+  })
+  const refetch = () => {
+    if (gateway !== 'open' || query.isFetching || $freshRequests.get()[contextKey] ||
+      ($refreshUntil.get()[contextKey] || 0) > Date.now()) return Promise.resolve(null)
+    $refreshUntil.set({ ...$refreshUntil.get(), [contextKey]: Date.now() + REFRESH_COOLDOWN_MS })
+    clearRefreshError(contextKey)
+    $freshRequests.set({ ...$freshRequests.get(), [contextKey]: true })
+    const request = queryClient && typeof queryClient.fetchQuery === 'function'
+      ? queryClient.fetchQuery({
+        queryKey: [...key, 'fresh'],
+        queryFn: () => fetchLiveCards(sid, { fresh: true, disabled }, connectionId, profile),
+        staleTime: 0,
+        retry: false
+      })
+      : typeof query.refetch === 'function'
+        ? Promise.resolve(query.refetch()).then(result => {
+          if (result.error) throw result.error
+          return result.data
+        })
+        : Promise.reject(new Error(tr('errors.refreshUnavailable')))
+    return request
+      .then(data => {
+        saveQuotaCache(key, data)
+        clearRefreshError(contextKey)
+        if (queryClient && typeof queryClient.setQueryData === 'function') queryClient.setQueryData(key, data)
+        return data
+      })
+      .catch(error => {
+        // Keep the last good cards, but say the refresh did not land.
+        $refreshErrors.set({ ...$refreshErrors.get(), [contextKey]: errorMessage(error, tr('errors.refreshFailed')) })
+        return null
+      })
+      .finally(() => {
+        const next = { ...$freshRequests.get() }
+        delete next[contextKey]
+        $freshRequests.set(next)
+      })
+  }
+  let data = query.data
+  if (query.error) {
+    const base = data || { cards: [], errors: [], hadSession: Boolean(sid), haveAccountRpc: false }
+    data = { ...base, errors: [...(base.errors || []), errorMessage(query.error, tr('errors.liveUsage'))] }
+  }
+  if (manualError) {
+    const base = data || { cards: [], errors: [], hadSession: false, haveAccountRpc: false }
+    data = { ...base, errors: [...(base.errors || []), tr('errors.refreshFailedWith', manualError)] }
+  }
+  return { data, isFetching: !!(query.isFetching || freshRequests[contextKey]), refetch,
+    cooldownUntil: refreshUntil[contextKey] || 0 }
+}
+
+const useLiveCards = typeof useQuery === 'function' ? useLiveCardsQuery : useLiveCardsPolled
+
+function groupLiveCards(cards) {
+  const groups = []
+  const index = new Map()
+  for (const card of cards || []) {
+    const key = card.group || card.provider || 'Account'
+    if (!index.has(key)) {
+      const group = { title: key, cards: [] }
+      index.set(key, group)
+      groups.push(group)
+    }
+    index.get(key).cards.push(card)
+  }
+  return groups
+}
+
+function useFocusedLiveCards(active = true) {
+  const gateway = useValue(host.state.gateway)
+  const sessionId = useValue(host.state.focusedSessionId)
+  const owner = useValue(host.state.focusedSessionOwner || $missingState)
+  const focusedProfile = useValue(host.state.focusedSessionProfile || $missingState)
+  const activeConnectionId = useValue(host.state.connectionId || $missingState)
+  const activeProfile = useValue(host.state.profile || $missingState)
+  const hasOwnerState = !!host.state.focusedSessionOwner
+  // A null owner means Desktop could not place the focused session. Do not
+  // combine its profile with another connection's account.
+  const unresolved = hasOwnerState
+    ? !owner || !owner.connectionId || !owner.profile
+    : focusedProfile && focusedProfile !== activeProfile
+  const connectionId = unresolved ? null : hasOwnerState ? owner.connectionId : activeConnectionId || ''
+  const profile = hasOwnerState ? owner && owner.profile : focusedProfile || activeProfile
+  const preferences = useValue($providerPreferences)
+  const live = useLiveCards(gateway, sessionId, connectionId, profile, preferences.disabled, active)
+  return { gateway, profile, preferences, live }
+}
+
+function PluginPageContent() {
+  const t = useTr()
+  const { gateway, preferences, live } = useFocusedLiveCards()
+  const nowMs = useValue($now)
+  const clocks = useValue($clocks)
+  const displayMode = useValue($displayMode)
+  const chipWindow = useValue($chipWindow)
+  const [adding, setAdding] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [liveOpen, toggleLive] = useSectionOpen('live')
+  const [manualOpen, toggleManual] = useSectionOpen('manual')
+  const quickUsage = useValue($quickUsage)
+  const [cooldownUntil, setCooldownUntil] = useState(0)
+  const coolingDown = useCoolingDown(Math.max(cooldownUntil, live.cooldownUntil || 0))
+  const payload = live.data || { cards: [], errors: [], hadSession: false }
+  const cards = useMemo(
+    () => arrangeProviderCards(payload.cards, preferences),
+    [payload.cards, preferences]
+  )
+  const groups = useMemo(
+    () => groupLiveCards(cards).filter(group => group.cards.length),
+    [cards]
+  )
+  const chipChoices = chipWindowChoices(cards, chipWindow)
+
+  useEffect(() => {
+    $now.set(Date.now())
+  }, [])
+
+  const openExternal = url => {
+    if (!isHttpUrl(url)) return
+    tap()
+    if (os && typeof os.openExternal === 'function') os.openExternal(url)
+  }
+
+  const clockCards = clocks.map(clock => ({
+    id: clock.id,
+    source: 'manual',
+    provider: clock.name,
+    label: clock.name,
+    remaining: clock.remaining,
+    used: remainingFromUsed(clock.remaining),
+    resetAt: clock.resetAt,
+    resetText: '',
+    detail: clock.url ? clock.url.replace(/^https?:\/\//, '') : t('clocks.typed'),
+    url: clock.url
+  }))
+
+  return jsxs('div', {
+    style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 },
+    children: [
+      jsxs('div', {
+        style: {
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 10,
+          padding: '10px 16px 6px',
+          borderBottom: '1px solid var(--ui-stroke-secondary)'
+        },
+        children: [
+          jsx('h1', { style: { fontSize: '1rem', fontWeight: 600, color: text.primary, margin: 0 }, children: t('name') }),
+          jsx('span', {
+            style: { color: text.tertiary, fontSize: '0.75rem' },
+            children: t(displayMode === 'used' ? 'page.subtitleUsed' : 'page.subtitleLeft')
+          }),
+          Badge ? jsx(Badge, { variant: 'muted', children: VERSION }) : null,
+          jsxs('div', {
+            style: { marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' },
+            children: [
+              jsxs('select', {
+                'aria-label': t('page.displayMode'),
+                value: displayMode,
+                onChange: event => saveDisplayMode(event.target.value),
+                style: {
+                  fontSize: '0.75rem',
+                  color: text.primary,
+                  background: 'var(--ui-bg-primary)',
+                  border: '1px solid var(--ui-stroke-secondary)',
+                  borderRadius: 4,
+                  padding: '2px 6px'
+                },
+                children: [
+                  jsx('option', { value: 'remaining', children: t('mode.remaining') }),
+                  jsx('option', { value: 'used', children: t('mode.used') })
+                ]
+              }),
+              jsxs('select', {
+                'aria-label': t('page.chipWindow'),
+                value: chipChoices.value,
+                onChange: event => saveChipWindow(event.target.value),
+                style: {
+                  fontSize: '0.75rem',
+                  color: text.primary,
+                  background: 'var(--ui-bg-primary)',
+                  border: '1px solid var(--ui-stroke-secondary)',
+                  borderRadius: 4,
+                  padding: '2px 6px'
+                },
+                children: [
+                  jsx('option', { value: '', children: t('chip.least') }),
+                  ...chipChoices.choices.map(label => jsx('option', { value: label, children: label }, label))
+                ]
+              }),
+              jsx('span', {
+                style: { fontSize: '0.6875rem', color: text.tertiary },
+                children: Number.isFinite(observedTime(payload))
+                  ? t('page.gatewayChecked', gateway || 'idle', checkedTime(observedTime(payload), nowMs))
+                  : t('page.gateway', gateway || 'idle')
+              }),
+              quickUsageSupported
+                ? jsx(SmallButton, {
+                  active: quickUsage,
+                  title: t(quickUsage ? 'page.statusBarRemove' : 'page.statusBarAdd'),
+                  onClick: () => {
+                    tap()
+                    saveQuickUsage(!quickUsage)
+                  },
+                  children: t('page.statusBar')
+                })
+                : null,
+              jsx(SmallButton, {
+                disabled: !!live.isFetching || coolingDown,
+                title: t(coolingDown ? 'page.refreshWait' : 'page.refreshHint'),
+                onClick: () => {
+                  if (live.isFetching || coolingDown) return
+                  tap()
+                  setCooldownUntil(Date.now() + REFRESH_COOLDOWN_MS)
+                  if (live.refetch) live.refetch()
+                  else if (queryClient) queryClient.invalidateQueries({ queryKey: [PLUGIN_ID, 'live'] })
+                },
+                children: live.isFetching ? t('page.refreshing') : t('common.refresh')
+              })
+            ]
+          })
+        ]
+      }),
+      jsxs('div', {
+        style: {
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          padding: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 22
+        },
+        children: [
+          jsx('p', {
+            style: { margin: 0, maxWidth: 640, fontSize: '0.8125rem', color: text.secondary, lineHeight: 1.45 },
+            children: t('page.intro')
+          }),
+          jsx(ProviderControls, { preferences }),
+          jsxs('section', {
+            style: { display: 'flex', flexDirection: 'column', gap: 12 },
+            children: [
+              jsx(SectionHeader, {
+                title: t('page.automatic'),
+                open: liveOpen,
+                onToggle: toggleLive
+              }),
+              !liveOpen
+                ? null
+                : jsxs('div', {
+                    style: { display: 'flex', flexDirection: 'column', gap: 16, paddingLeft: 16 },
+                    children: [
+                      groups.length
+                        ? jsx('div', {
+                            style: {
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))',
+                              gap: 22,
+                              alignItems: 'start'
+                            },
+                            children: groups.map(group =>
+                              jsx(ProviderBlock, { title: group.title, cards: group.cards, nowMs }, group.title)
+                            )
+                          })
+                        : jsx('div', {
+                            style: { fontSize: '0.8125rem', color: text.tertiary },
+                            children: preferences.disabled.length === LIVE_PROVIDERS.length
+                              ? t('page.allOff')
+                              : t('page.noWindows')
+                          }),
+                      payload.errors && payload.errors.length
+                        ? jsx('div', {
+                            style: { fontSize: '0.75rem', color: text.tertiary },
+                            children: payload.errors.join(' · ')
+                          })
+                        : null
+                    ]
+                  })
+            ]
+          }),
+          jsxs('section', {
+            style: { display: 'flex', flexDirection: 'column', gap: 8 },
+            children: [
+              jsx(SectionHeader, {
+                title: t('clocks.title'),
+                open: manualOpen,
+                onToggle: toggleManual,
+                extra: jsx(SmallButton, {
+                  active: adding,
+                  onClick: () => {
+                    tap()
+                    if (!manualOpen) toggleManual()
+                    setAdding(open => !open)
+                  },
+                  children: t(adding ? 'clocks.close' : 'clocks.add')
+                })
+              }),
+              !manualOpen || !adding
+                ? null
+                : jsx(ClockForm, {
+                    onSave: clock => {
+                      saveClocks([...clocks, clock])
+                      setAdding(false)
+                    },
+                    onCancel: () => setAdding(false)
+                  }),
+              !manualOpen
+                ? null
+                : clockCards.map(card => {
+                    const clock = clocks.find(item => item.id === card.id)
+                    return editingId === card.id && clock
+                      ? jsx(
+                          EditClock,
+                          {
+                            clock,
+                            onSave: next => {
+                              saveClocks(clocks.map(item => (item.id === next.id ? next : item)))
+                              setEditingId(null)
+                            },
+                            onCancel: () => setEditingId(null)
+                          },
+                          card.id
+                        )
+                      : jsx(
+                          LimitCard,
+                          {
+                            card,
+                            nowMs,
+                            actions: jsxs('div', {
+                              style: { display: 'flex', gap: 6 },
+                              children: [
+                                isHttpUrl(card.url)
+                                  ? jsx(SmallButton, {
+                                      onClick: () => openExternal(card.url),
+                                      children: t('clocks.open')
+                                    })
+                                  : null,
+                                jsx(SmallButton, {
+                                  onClick: () => {
+                                    tap()
+                                    setEditingId(card.id)
+                                  },
+                                  children: t('clocks.edit')
+                                }),
+                                jsx(SmallButton, {
+                                  onClick: () => {
+                                    tap()
+                                    saveClocks(clocks.filter(item => item.id !== card.id))
+                                  },
+                                  children: t('clocks.remove')
+                                })
+                              ]
+                            })
+                          },
+                          card.id
+                        )
+                  })
+            ]
+          })
+        ]
+      })
+    ]
+  })
+}
+
+
+function QuotaRing({ card, mode, size = 64, showValue = true }) {
+  const t = useTr()
+  const percent = card.error ? null : quotaPercent(card, mode)
+  const remaining = quotaPercent(card, 'remaining')
+  const color = percent === null ? text.quaternary : remaining <= 10 ? text.red : remaining <= 30 ? text.yellow : text.accent
+  const label = `${card.provider || ''} ${card.label}: ${percent === null ? t('popup.ringUnavailable') : t(mode === 'used' ? 'popup.ringUsed' : 'popup.ringRemaining', percent)}`
+  return jsxs('div', {
+    role: percent === null ? 'img' : 'meter', 'aria-label': label,
+    ...(percent === null ? {} : { 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': percent }),
+    'data-resetwatch-ring': card.id,
+    style: { position: 'relative', width: size, height: size, flexShrink: 0, color },
+    children: [
+      jsxs('svg', { viewBox: '0 0 64 64', width: size, height: size, 'aria-hidden': true, children: [
+        jsx('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: 'var(--ui-stroke-secondary)', strokeWidth: 4 }),
+        percent === null ? null : jsx('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: 'currentColor', strokeWidth: 4,
+          pathLength: 100, strokeDasharray: `${percent} 100`, strokeLinecap: percent === 0 ? 'butt' : 'round', transform: 'rotate(-90 32 32)' })
+      ] }),
+      showValue ? jsx('span', { style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center',
+        fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums' },
+        children: percent === null ? '?' : `${percent}%` }) : null
+    ]
+  })
+}
+
+// The chip shows whichever window has the least left.
+function lowestQuotaCard(cards) {
+  return (cards || []).filter(card => !card.error && quotaPercent(card, 'remaining') !== null)
+    .reduce((low, card) => !low || quotaPercent(card, 'remaining') < quotaPercent(low, 'remaining') ? card : low, null)
+}
+
+// A saved label pins the chip. No match, or a match with no percentage,
+// falls back to the least left.
+function chipQuotaCard(cards, windowLabel) {
+  const wanted = normalizeChipWindow(windowLabel).toLowerCase()
+  if (wanted) {
+    const matched = lowestQuotaCard((cards || []).filter(card =>
+      String(card.label || '').trim().toLowerCase() === wanted))
+    if (matched) return matched
+  }
+  return lowestQuotaCard(cards)
+}
+
+function QuickUsageSlot() {
+  return useValue($quickUsage) ? jsx(QuickUsage, {}) : null
+}
+
+function QuickUsage() {
+  const t = useTr()
+  const open = useValue($quickOpen)
+  // Closed, the chip reads the shared cache only. Vendors are asked while it is open.
+  const { gateway, profile, preferences, live } = useFocusedLiveCards(open)
+  const nowMs = useValue($now)
+  const mode = useValue($displayMode)
+  const chipWindow = useValue($chipWindow)
+  const cards = arrangeProviderCards(live.data?.cards || [], preferences)
+  const groups = groupLiveCards(cards)
+  const coolingDown = useCoolingDown(live.cooldownUntil || 0)
+  const lowest = chipQuotaCard(cards, chipWindow)
+  const lowestPercent = lowest ? quotaPercent(lowest, mode) : null
+  const checkedAt = observedTime(live.data)
+  const stale = checkedAt && nowMs - checkedAt >= POLL_MS
+  const label = t(mode === 'used' ? 'popup.used' : 'popup.remaining')
+  return jsxs(Popover, { open, onOpenChange: value => $quickOpen.set(value), children: [
+    jsx(PopoverTrigger, { asChild: true, children: jsxs('button', {
+      type: 'button', 'aria-label': t('popup.open'), 'data-resetwatch-trigger': true,
+      title: lowest
+        ? t('popup.lowest', [lowest.provider, lowest.label].filter(Boolean).join(' '), quotaPercent(lowest, 'remaining'))
+        : t('popup.idle'),
+      style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '0 6px', height: '100%',
+        color: text.tertiary, background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.6875rem',
+        fontVariantNumeric: 'tabular-nums' },
+      children: [jsx(QuotaRing, { card: lowest || { id: 'unknown', label: t('popup.usage'), remaining: null, used: null },
+        mode, size: 12, showValue: false }), lowestPercent === null ? t('popup.usage') : `${lowestPercent}%`]
+    }) }),
+    jsxs(PopoverContent, {
+      side: 'top', align: 'end', sideOffset: 8, 'aria-label': t('popup.label'), 'data-resetwatch-popup': true,
+      style: { width: 'min(420px, calc(100vw - 24px))', padding: 14, color: text.primary },
+      children: [
+        jsxs('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }, children: [
+          jsx('strong', { style: { flex: 1, fontSize: 14 }, children: t('popup.title') }),
+          jsx('select', { 'aria-label': t('popup.displayMode'), value: mode, onChange: event => saveDisplayMode(event.target.value),
+            style: { color: text.primary, background: 'var(--ui-bg-primary)', border: '1px solid var(--ui-stroke-secondary)', borderRadius: 4, fontSize: 11 },
+            children: [jsx('option', { value: 'remaining', children: t('mode.remaining') }), jsx('option', { value: 'used', children: t('mode.used') })] }),
+          jsx(SmallButton, { disabled: gateway !== 'open' || live.isFetching || coolingDown,
+            title: t(coolingDown ? 'popup.refreshWait' : 'popup.refreshHint'),
+            onClick: () => live.refetch(), children: live.isFetching ? t('popup.updating') : t('common.refresh') })
+        ] }),
+        jsx('div', { style: { fontSize: 11, color: text.tertiary, marginBottom: 10 }, children:
+          `${profile || t('popup.unknownProfile')} | ${label} | ${t(gateway !== 'open' ? 'popup.offline' : live.isFetching ? 'popup.showingLast' : stale ? 'popup.stale' : 'popup.latest')}` }),
+        jsx('div', { style: { maxHeight: 'min(480px, 65vh)', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }, children:
+          groups.length ? groups.map(group => jsxs('section', { children: [
+            jsx('div', { style: { fontSize: 12, fontWeight: 600, marginBottom: 7 }, children: group.title }),
+            ...group.cards.map(card => jsxs('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: '7px 0',
+              borderBottom: '1px solid var(--ui-stroke-secondary)' }, children: [
+              jsx(QuotaRing, { card, mode }),
+              jsxs('div', { style: { minWidth: 0, flex: 1 }, children: [
+                jsx('div', { style: { fontSize: 12, fontWeight: 500 }, children: card.label }),
+                card.account ? jsx('div', { style: { fontSize: 11, color: text.tertiary }, children: card.account }) : null,
+                jsx('div', { style: { fontSize: 11, color: text.secondary, marginTop: 3 },
+                  children: formatReset(card.resetAt, card.resetText, nowMs) || t('reset.unknown') }),
+                card.error || quotaPercent(card, mode) === null ? jsx('div', { style: { fontSize: 11, color: text.tertiary, overflowWrap: 'anywhere' },
+                  children: card.detail || t('popup.noPercent') }) : null
+              ] })
+            ] }, card.id))
+          ] }, group.title)) : jsx('div', { style: { padding: '20px 0', fontSize: 12, color: text.secondary },
+            children: t(live.isFetching ? 'popup.firstRead' : 'popup.empty') }) }),
+        live.data?.errors?.length ? jsx('div', { role: 'status', style: { fontSize: 11, color: text.yellow, marginTop: 8, overflowWrap: 'anywhere' },
+          children: live.data.errors.join(' | ') }) : null,
+        jsxs('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }, children: [
+          jsx('span', { style: { flex: 1, fontSize: 10, color: text.tertiary }, children: checkedAt
+            ? t('popup.checked', checkedTime(checkedAt, nowMs)) : t('popup.cadence') }),
+          jsx(SmallButton, { onClick: () => { $quickOpen.set(false); go(ROUTE) }, children: t('popup.fullPage') })
+        ] })
+      ]
+    })
+  ] })
+}
+
+
+
+function Page() {
+  return jsxs('div', {
+    style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 },
+    children: [
+      jsx('div', { style: { flex: 1, minHeight: 0, overflow: 'hidden' }, children: jsx(PluginPageContent, {}) }),
+      null
+    ]
+  });
+}
+
+export default {
+  id: PLUGIN_ID,
+  name: PLUGIN_NAME,
+  description: 'Remaining quota and reset clocks for the plans you already pay for.',
+  defaultEnabled: true,
+  register(ctx) {
+    const onDispose = typeof ctx.onDispose === 'function' ? fn => ctx.onDispose(fn) : () => {}
+    i18n = ctx.i18n && typeof ctx.i18n.register === 'function' && typeof ctx.i18n.t === 'function' ? ctx.i18n : null
+    if (i18n) i18n.register(LOCALES)
+    storage = ctx.storage || null
+    os = ctx.os || null
+    loadClocks()
+    $providerPreferences.set(normalizeProviderPreferences(stored('providers', {})))
+    $displayMode.set(normalizeDisplayMode(stored('display_mode', 'remaining')))
+    $chipWindow.set(normalizeChipWindow(stored('chip_window', '')))
+    $quickUsage.set(stored('quick_usage', false) === true)
+    pruneQuotaCache()
+    $now.set(Date.now())
+    const clockTimer = setInterval(() => $now.set(Date.now()), 30000)
+    onDispose(() => clearInterval(clockTimer))
+
+    // Desktop reads these labels once, so they are re-registered in the new language.
+    const labelled = () => {
+      const rows = [
+        {
+          id: 'nav',
+          area: SIDEBAR_NAV_AREA,
+          order: 62,
+          data: { path: ROUTE, label: tr('name'), codicon: 'watch' }
+        },
+        {
+          id: 'open',
+          area: PALETTE_AREA,
+          data: {
+            id: 'resetwatch.open',
+            label: tr('open.palette'),
+            keywords: ['usage', 'quota', 'reset', 'limits', 'subscription'],
+            run: () => go(ROUTE)
+          }
+        }
+      ]
+      if (KEYBINDS_AREA) {
+        rows.push({
+          id: 'open-key',
+          area: KEYBINDS_AREA,
+          data: {
+            id: 'resetwatch.open',
+            label: tr('open.keybind'),
+            category: tr('name'),
+            defaults: ['mod+alt+r'],
+            run: () => go(ROUTE)
+          }
+        })
+      }
+      return rows
+    }
+    const contributions = [
+      { id: 'page', area: ROUTES_AREA, data: { path: ROUTE }, render: () => jsx(Page, {}) },
+      ...labelled()
+    ]
+    quickUsageSupported = !!(Popover && PopoverContent && PopoverTrigger && typeof useQuery === 'function')
+    if (quickUsageSupported) {
+      contributions.push({ id: 'quick-usage', area: (STATUSBAR_AREAS && STATUSBAR_AREAS.right) || 'statusBar.right',
+        order: 100, render: () => jsx(QuickUsageSlot, {}) })
+    }
+    ctx.registerMany(contributions)
+    if (i18n && typeof i18n.onLocaleChange === 'function') i18n.onLocaleChange(() => ctx.registerMany(labelled()))
+    onDispose(() => {
+      storage = null
+      os = null
+      i18n = null
+    })
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "The minimal human-in-the-loop shape: an agent drafts, a person decides, grammar enforces that the arms are mutually exclusive",
+        "Complementary when-predicates + prune make the dead arm vanish instead of hanging the run",
+        "Fastest contract lap for testing gate answer plumbing end to end"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "6 nodes, 3 gate, 2 branch gates: draft -> approve -> publish | rewrite",
+        "Replies are fixed-fence payloads: seed bytes to diff against, no prose to parse",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "draft",
+      "id": "draft-approve",
+      "to": "approve",
+      "variant": "default"
+    },
+    {
+      "from": "approve",
+      "id": "approve-publish_gate",
+      "to": "publish_gate",
+      "variant": "security"
+    },
+    {
+      "from": "approve",
+      "id": "approve-rewrite_gate",
+      "to": "rewrite_gate",
+      "variant": "security"
+    },
+    {
+      "from": "publish_gate",
+      "id": "publish_gate-publish",
+      "to": "publish",
+      "variant": "default"
+    },
+    {
+      "from": "rewrite_gate",
+      "id": "rewrite_gate-rewrite",
+      "to": "rewrite",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "gates",
+      "label": "Gates",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/approve-publish.html",
+    "quality_profile": "standard",
+    "subtitle": "draft -> human approval -> complementary prune gates -> exactly one publish|rewrite arm",
+    "title": "approve-publish"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "draft",
+      "label": "Draft",
+      "lane": "work",
+      "sublabel": "reply exactly result",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "approve",
+      "label": "Approve",
+      "lane": "gates",
+      "sublabel": "publish",
+      "tag": "human hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "publish_gate",
+      "label": "Publish Gate",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "rewrite_gate",
+      "label": "Rewrite Gate",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 3,
+      "id": "publish",
+      "label": "Publish",
+      "lane": "work",
+      "sublabel": "reply exactly result",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "rewrite",
+      "label": "Rewrite",
+      "lane": "work",
+      "sublabel": "reply exactly result",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 2
+    },
+    {
+      "fromCol": 3,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 3
+    }
+  ],
+  "schema_version": 2
+}

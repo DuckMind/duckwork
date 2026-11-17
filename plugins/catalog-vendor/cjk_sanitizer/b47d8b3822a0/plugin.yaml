@@ -1,0 +1,5 @@
+name: cjk_sanitizer
+version: "1.0.0"
+description: Strip unwanted Chinese (CJK) and Cyrillic characters from LLM output. Korean Hangul and Japanese Kana are preserved.
+provides_hooks:
+  - transform_llm_output

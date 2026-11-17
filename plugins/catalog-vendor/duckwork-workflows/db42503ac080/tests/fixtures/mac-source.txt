@@ -1,0 +1,538 @@
+DESKTOP_HEAD
+5dd70d7cb6560c3ff8aff294ec44ec4f8d1558e5
+DESKTOP_DIRTY
+SOURCE_SHA256
+48cdf5a1083c0c6b9b2c815719942b6071c1e6291d697c55e2f2814e714aa9da  apps/desktop/src/lib/transcript-directives.ts
+a6c688e5fc1ed3b7a9c48ca4bbb9a639e0fa68faa7a771cff3ee877bd4799f48  apps/desktop/src/lib/transcript-directives.test.ts
+c4f65d401f03d2b2b673f1b8e76da5da5cad96dcfa2b2e9366c89c89900a644e  apps/desktop/src/components/assistant-ui/transcript-directive.tsx
+e918bb1b299726348e911bf73f6e6e0f79606443998869c005053455aac857d2  apps/desktop/src/app/contrib/controller.tsx
+e2c30e959fc021ff9e9cdc89cc754ba92d364991d3c030c9a3e533e593bf853f  apps/desktop/src/sdk/index.ts
+===== parser =====
+import type { ReactNode } from 'react'
+
+/**
+ * TRANSCRIPT DIRECTIVES — the transcript as a contribution area.
+ *
+ * A plugin registers a named directive; the model addresses it by emitting a
+ * paragraph of the form `::name{key="value"}` and that leaf renders as the
+ * plugin's component, inline in the assistant message. This is the deliberate
+ * counterpart to artifact promotion: artifacts are heuristic (substantial
+ * fences get promoted whether or not the model asked), directives are
+ * addressed (nothing renders unless a plugin claimed the name).
+ *
+ * The product parser requires the entire paragraph to be one directive, so
+ * mid-prose text and malformed or unclaimed directives stay prose.
+ *
+ * For the guided chat segmenter, the guard is the CLAIM, not its position:
+ * a name nobody registered — and a malformed one — stays exactly the text it
+ * always was. Position used to be the guard too (a directive had to be the
+ * whole paragraph), and that cost more than it bought: a model that wrote the
+ * directive at the end of its sentence instead of alone under it put raw
+ * `::onboarding{step="look"}` in front of the user AND swallowed the card,
+ * which on a step whose card is the only way forward stops the conversation
+ * dead. So a directive is recognised wherever it starts a word, and the
+ * paragraph around it keeps rendering as prose.
+ *
+ * Attributes are untrusted model output: plugins validate their own fields.
+ */
+
+export const TRANSCRIPT_DIRECTIVE_AREA = 'transcript.directives'
+
+/** Props handed to a directive contribution's `render`. */
+export interface TranscriptDirectiveProps {
+  /** Parsed, untrusted attributes (e.g. `{ file: 'demo.html' }`). */
+  attrs: Readonly<Record<string, string>>
+  /** Original directive source text (diagnostics / fallback rendering). */
+  source: string
+  /** True while the surrounding message is still streaming. */
+  streaming: boolean
+}
+
+/** Payload of a `transcript.directives` contribution's `data`. */
+export interface TranscriptDirectiveContribution {
+  /** The name the model addresses: `::<name>{...}`. Lowercase, `[a-z0-9-]`,
+   *  unique across plugins — first registration wins on collision. */
+  name: string
+  /** Renders the directive leaf. Mounted inside the contribution error
+   *  boundary, so a throw degrades to an inline error, not a dead message. */
+  render: (props: TranscriptDirectiveProps) => ReactNode
+}
+
+export interface ParsedTranscriptDirective {
+  name: string
+  attrs: Record<string, string>
+  source: string
+}
+
+export type TranscriptParagraphSegment =
+  { kind: 'prose'; text: string } | { kind: 'directive'; directive: ParsedTranscriptDirective }
+
+// The whole paragraph, nothing else on the line: `::name` or `::name{...}`.
+// Length caps bound the attr scan on adversarial input.
+const DIRECTIVE_RE = /^::([a-z][a-z0-9-]{0,63})(?:\{([^{}]{0,1024})\})?$/
+
+// `::name` or `::name{...}`, anywhere a word can start — so `std::vector` is
+// never a directive. Length caps bound the attr scan on adversarial input.
+const SEGMENT_RE = /(?<=^|\s)::([a-z][a-z0-9-]{0,63})(?:\{([^{}]{0,1024})\})?/g
+
+// `key="value"` pairs; single quotes accepted for model sloppiness.
+const ATTR_RE = /([a-z][\w-]{0,63})=(?:"([^"]*)"|'([^']*)')/gi
+
+/**
+ * Parse a paragraph as a transcript directive. Returns null unless the ENTIRE
+ * trimmed text is one directive — prose containing `::` stays prose.
+ * Pure and synchronous — safe to call during render.
+ */
+export function parseTranscriptDirective(text: string): ParsedTranscriptDirective | null {
+  const trimmed = text.trim()
+
+  // Cheap reject before the regex: directives are short single lines.
+  if (!trimmed.startsWith('::') || trimmed.length > 1200 || trimmed.includes('\n')) {
+    return null
+  }
+
+  const match = DIRECTIVE_RE.exec(trimmed)
+
+  if (!match) {
+    return null
+  }
+
+  const attrs: Record<string, string> = {}
+
+  if (match[2]) {
+    for (const pair of match[2].matchAll(ATTR_RE)) {
+      attrs[pair[1].toLowerCase()] = pair[2] ?? pair[3] ?? ''
+    }
+  }
+
+  return { name: match[1], attrs, source: trimmed }
+}
+
+function parseAttrs(body: string | undefined): ParsedTranscriptDirective['attrs'] {
+  const attrs: Record<string, string> = {}
+
+  for (const pair of (body ?? '').matchAll(ATTR_RE)) {
+    attrs[pair[1].toLowerCase()] = pair[2] ?? pair[3] ?? ''
+  }
+
+  return attrs
+}
+
+/**
+ * True when a STILL-STREAMING paragraph should be withheld as a directive in
+ * progress. Deltas land ~3 chars at a time, and `::ask{question="Wha` cannot
+ * parse until the final `}` lands — exactly the window where raw directive
+ * text used to flash. A lone `:` is the same line one delta earlier. The
+ * check covers the paragraph-leading case (the authored shape for onboarding
+ * cards); a directive a model appends mid-sentence streams as prose until it
+ * completes, which reads as ordinary typing rather than leaked markup.
+ *
+ * Only ever consult this while the message is streaming: a SETTLED paragraph
+ * that starts with `::` but doesn't parse is an authoring bug the user should
+ * see as text, and callers must keep that behavior.
+ */
+export function isDirectiveInProgress(text: string): boolean {
+  const trimmed = text.trimStart()
+
+  return trimmed === ':' || trimmed.startsWith('::')
+}
+
+/**
+ * Split a paragraph into its prose runs and the directives embedded in them,
+ * in the order they were written. Null when it holds no directive at all.
+ *
+ * Pure and synchronous — safe to call during render. Deciding which of these
+ * are real is the caller's job: only a claimed name becomes a card, so an
+ * unregistered `::whatever` is folded straight back into the prose it came in.
+ */
+export function segmentTranscriptDirectives(text: string): TranscriptParagraphSegment[] | null {
+  if (!text.includes('::') || text.length > 4800) {
+    return null
+  }
+
+  const out: TranscriptParagraphSegment[] = []
+  let cursor = 0
+
+  SEGMENT_RE.lastIndex = 0
+
+  for (const match of text.matchAll(SEGMENT_RE)) {
+    const start = match.index ?? 0
+
+    // A brace the attr group refused (unclosed, or past the length cap) means
+    // the name matched but its attributes did not. Half of a directive is not
+    // one: render a card with the attributes silently dropped and it is broken
+    // in a way nobody can see. Leave the whole thing as the text it is.
+    if (match[2] === undefined && text[start + match[0].length] === '{') {
+      continue
+    }
+
+    if (start > cursor) {
+      out.push({ kind: 'prose', text: text.slice(cursor, start) })
+    }
+
+    out.push({
+      kind: 'directive',
+      directive: { name: match[1], attrs: parseAttrs(match[2]), source: match[0] }
+    })
+    cursor = start + match[0].length
+  }
+
+  if (out.length === 0) {
+    return null
+  }
+
+  if (cursor < text.length) {
+    out.push({ kind: 'prose', text: text.slice(cursor) })
+  }
+
+  return out
+}
+===== parser tests =====
+import { describe, expect, it } from 'vitest'
+
+import { parseTranscriptDirective } from './transcript-directives'
+
+describe('parseTranscriptDirective', () => {
+  it('parses a bare directive with no attributes', () => {
+    expect(parseTranscriptDirective('::tasks')).toEqual({ name: 'tasks', attrs: {}, source: '::tasks' })
+  })
+
+  it('parses double-quoted attributes', () => {
+    expect(parseTranscriptDirective('::preview{file="demo.html"}')).toEqual({
+      name: 'preview',
+      attrs: { file: 'demo.html' },
+      source: '::preview{file="demo.html"}'
+    })
+  })
+
+  it('parses multiple attributes and accepts single quotes', () => {
+    expect(parseTranscriptDirective(`::vis{file="a b.html" height='480'}`)?.attrs).toEqual({
+      file: 'a b.html',
+      height: '480'
+    })
+  })
+
+  it('lowercases attribute keys but preserves values', () => {
+    expect(parseTranscriptDirective('::vis{File="A.html"}')?.attrs).toEqual({ file: 'A.html' })
+  })
+
+  it('tolerates surrounding whitespace', () => {
+    expect(parseTranscriptDirective('  ::tasks{id="1"}  ')?.name).toBe('tasks')
+  })
+
+  it('rejects prose containing a directive mid-text', () => {
+    expect(parseTranscriptDirective('see ::preview{file="x.html"} above')).toBeNull()
+  })
+
+  it('rejects multi-line paragraphs', () => {
+    expect(parseTranscriptDirective('::preview{file="x.html"}\nmore')).toBeNull()
+  })
+
+  it('rejects C++ scope-resolution lookalikes', () => {
+    expect(parseTranscriptDirective('::std')).toEqual({ name: 'std', attrs: {}, source: '::std' })
+    expect(parseTranscriptDirective('std::vector<int>')).toBeNull()
+    expect(parseTranscriptDirective('::Vector')).toBeNull()
+  })
+
+  it('rejects unquoted attribute values', () => {
+    expect(parseTranscriptDirective('::preview{file=demo.html}')?.attrs).toEqual({})
+  })
+
+  it('bounds pathological input instead of scanning it', () => {
+    expect(parseTranscriptDirective(`::x{${'a="b" '.repeat(400)}}`)).toBeNull()
+  })
+})
+===== renderer =====
+import type { FC, ReactNode } from 'react'
+import { useMemo } from 'react'
+
+import { type Contribution, useContributions } from '@/contrib'
+import { ContribBoundary, ContribRender } from '@/contrib/react/boundary'
+import { isOnboardingEnabled } from '@/lib/onboarding-enabled'
+import {
+  type ParsedTranscriptDirective,
+  parseTranscriptDirective,
+  segmentTranscriptDirectives,
+  TRANSCRIPT_DIRECTIVE_AREA,
+  type TranscriptDirectiveContribution,
+  type TranscriptParagraphSegment
+} from '@/lib/transcript-directives'
+
+// B4 reworks the parser; until then the prototype's parser is an onboarding feature.
+const onboardingEnabled = isOnboardingEnabled()
+
+/**
+ * The transcript's directive slot. Given text, renders the plugin component
+ * for every claimed `::name{...}` in it, in order — several, because models
+ * merge lines under formatting pressure. Nothing renders for a name no plugin
+ * claimed; that text stays the prose it always was.
+ *
+ * Resolution is registry-backed (`transcript.directives`), so hot-loading a
+ * plugin upgrades already-rendered paragraphs in place, exactly like every
+ * other contribution area.
+ */
+
+/** Extract the paragraph's text when it is text-only — directives never carry
+ *  inline markup, so any non-string child disqualifies the paragraph. */
+export function paragraphPlainText(children: ReactNode): string | null {
+  if (typeof children === 'string') {
+    return children
+  }
+
+  if (Array.isArray(children) && children.length > 0 && children.every(child => typeof child === 'string')) {
+    return children.join('')
+  }
+
+  return null
+}
+
+/** The contribution claiming `name`, if any. First registration wins. */
+function claimFor(contributions: readonly Contribution[], name: string) {
+  return contributions.find(c => (c.data as TranscriptDirectiveContribution | undefined)?.name === name)
+}
+
+const DirectiveEntry: FC<{
+  contribution: Contribution
+  parsed: ParsedTranscriptDirective
+  streaming: boolean
+}> = ({ contribution, parsed, streaming }) => {
+  const render = (contribution.data as TranscriptDirectiveContribution).render
+
+  // Stable component IDENTITY per (render, parsed) — a fresh type per parent
+  // render would remount the widget (card-sized jump). Streaming arrives as a
+  // real prop on that stable type, so the settle flip re-renders the same
+  // mount instead of being memo-skipped (ref-only reads were exactly that).
+  const Leaf = useMemo(
+    () =>
+      function DirectiveLeafHost({ streaming: live }: { streaming: boolean }) {
+        return <>{render({ attrs: parsed.attrs, source: parsed.source, streaming: live })}</>
+      },
+    [render, parsed]
+  )
+
+  return (
+    <ContribBoundary id={contribution.id} variant="chip">
+      <Leaf streaming={streaming} />
+    </ContribBoundary>
+  )
+}
+
+export const TranscriptDirectiveLeaf: FC<{ text: string; streaming?: boolean }> = ({ text, streaming }) => {
+  const contributions = useContributions(TRANSCRIPT_DIRECTIVE_AREA)
+
+  const segments = useMemo<TranscriptParagraphSegment[] | null>(() => {
+    if (onboardingEnabled) {
+      return segmentTranscriptDirectives(text)
+    }
+
+    const parsed = parseTranscriptDirective(text)
+
+    return parsed ? [{ kind: 'directive', directive: parsed }] : null
+  }, [text])
+
+  const entries = useMemo(
+    () =>
+      (segments ?? []).flatMap(segment => {
+        if (segment.kind !== 'directive') {
+          return []
+        }
+
+        const match = claimFor(contributions, segment.directive.name)
+
+        return match ? [{ key: `${match.id}:${segment.directive.source}`, match, parsed: segment.directive }] : []
+      }),
+    [contributions, segments]
+  )
+
+  const match = entries[0]?.match
+  const parsed = entries[0]?.parsed
+  // SAFETY: claimFor resolved this entry from the directive area by its registered name.
+  const render = (match?.data as TranscriptDirectiveContribution | undefined)?.render
+
+  // Stable component identity for ContribRender (which mounts this AS a
+  // component): a fresh closure per render would remount the widget on
+  // every parent render.
+  const renderLeaf = useMemo(
+    () =>
+      render && parsed
+        ? () => render({ attrs: parsed.attrs, source: parsed.source, streaming: streaming ?? false })
+        : null,
+    [render, parsed, streaming]
+  )
+
+  if (!onboardingEnabled) {
+    if (!match || !renderLeaf) {
+      return null
+    }
+
+    return (
+      <ContribBoundary id={match.id} variant="chip">
+        <ContribRender render={renderLeaf} />
+      </ContribBoundary>
+    )
+  }
+
+  if (entries.length === 0) {
+    return null
+  }
+
+  return (
+    <>
+      {entries.map(entry => (
+        <DirectiveEntry
+          contribution={entry.match}
+          key={entry.key}
+          parsed={entry.parsed}
+          streaming={streaming ?? false}
+        />
+      ))}
+    </>
+  )
+}
+
+/** A paragraph resolved against the registry: the prose to keep as prose, and
+ *  the claimed directives to render as cards, in the order they were written. */
+export type ResolvedParagraphSegment = { kind: 'prose'; text: string } | { kind: 'directive'; source: string }
+
+/**
+ * How a paragraph should render. Null means "as the plain `<p>` it always
+ * was" — no directive in it, or none that anyone registered.
+ *
+ * A directive nobody claimed is folded back into the prose around it, which is
+ * what keeps this from taking text away from the reader: the only thing that
+ * can be lifted out of a sentence is markup a plugin is standing by to draw.
+ */
+export function useResolvedParagraph(text: string | null): ResolvedParagraphSegment[] | null {
+  const contributions = useContributions(TRANSCRIPT_DIRECTIVE_AREA)
+
+  return useMemo(() => {
+    if (!onboardingEnabled) {
+      const parsed = text === null ? null : parseTranscriptDirective(text)
+
+      return parsed && claimFor(contributions, parsed.name) ? [{ kind: 'directive', source: parsed.source }] : null
+    }
+
+    const segments = text === null ? null : segmentTranscriptDirectives(text)
+
+    if (!segments) {
+      return null
+    }
+
+    const out: ResolvedParagraphSegment[] = []
+    let claimed = false
+
+    for (const segment of segments) {
+      const isCard = segment.kind === 'directive' && claimFor(contributions, segment.directive.name) !== undefined
+
+      if (isCard) {
+        claimed = true
+        out.push({ kind: 'directive', source: segment.directive.source })
+
+        continue
+      }
+
+      // Prose, or an unclaimed directive that is only ever text. Merge into the
+      // run before it so a fold never splits one sentence across two <p>s.
+      const raw = segment.kind === 'prose' ? segment.text : segment.directive.source
+      const previous = out.at(-1)
+
+      if (previous?.kind === 'prose') {
+        previous.text += raw
+      } else {
+        out.push({ kind: 'prose', text: raw })
+      }
+    }
+
+    if (!claimed) {
+      return null
+    }
+
+    return out.filter(segment => segment.kind === 'directive' || segment.text.trim() !== '')
+  }, [contributions, text])
+}
+===== contribution lookup =====
+apps/desktop/src/app/contrib/controller.tsx-42-import { Slot } from '@/contrib/react/slot'
+apps/desktop/src/app/contrib/controller.tsx-43-import { registry } from '@/contrib/registry'
+apps/desktop/src/app/contrib/controller.tsx-44-import { discoverRuntimePlugins } from '@/contrib/runtime-loader'
+apps/desktop/src/app/contrib/controller.tsx-45-import { LocalizedTabTitle, translateNow } from '@/i18n'
+apps/desktop/src/app/contrib/controller.tsx-46-import { NEW_SESSION_TITLE, sessionTitle as storedSessionTitle } from '@/lib/chat-runtime'
+apps/desktop/src/app/contrib/controller.tsx-47-import { Download, FileText, LayoutDashboard, PanelBottom, PanelTop, Terminal, Upload, Users, Zap } from '@/lib/icons'
+apps/desktop/src/app/contrib/controller.tsx-48-import { type KeybindContribution, KEYBINDS_AREA } from '@/lib/keybinds/actions'
+apps/desktop/src/app/contrib/controller.tsx-49-import { isOnboardingEnabled } from '@/lib/onboarding-enabled'
+apps/desktop/src/app/contrib/controller.tsx:50:import { TRANSCRIPT_DIRECTIVE_AREA, type TranscriptDirectiveContribution } from '@/lib/transcript-directives'
+apps/desktop/src/app/contrib/controller.tsx-51-import { setYoloEnabled } from '@/lib/yolo-session'
+apps/desktop/src/app/contrib/controller.tsx-52-import {
+apps/desktop/src/app/contrib/controller.tsx-53-  $fileBrowserOpen,
+apps/desktop/src/app/contrib/controller.tsx-54-  $panesFlipped,
+apps/desktop/src/app/contrib/controller.tsx-55-  $sidebarOpen,
+apps/desktop/src/app/contrib/controller.tsx-56-  FILE_BROWSER_DEFAULT_WIDTH,
+apps/desktop/src/app/contrib/controller.tsx-57-  FILE_BROWSER_MAX_WIDTH,
+apps/desktop/src/app/contrib/controller.tsx-58-  FILE_BROWSER_MIN_WIDTH,
+apps/desktop/src/app/contrib/controller.tsx-59-  setFileBrowserOpen,
+apps/desktop/src/app/contrib/controller.tsx-60-  setSidebarOpen,
+apps/desktop/src/app/contrib/controller.tsx-61-  SIDEBAR_DEFAULT_WIDTH,
+apps/desktop/src/app/contrib/controller.tsx-62-  SIDEBAR_MAX_WIDTH
+apps/desktop/src/app/contrib/controller.tsx-63-} from '@/store/layout'
+apps/desktop/src/app/contrib/controller.tsx-64-import { $profileRailVisible } from '@/store/profile-rail-prefs'
+apps/desktop/src/app/contrib/controller.tsx-65-import { runExportProfileFlow, runImportProfileFlow } from '@/store/profile-share'
+apps/desktop/src/app/contrib/controller.tsx-66-import {
+apps/desktop/src/app/contrib/controller.tsx-67-  $reviewOpen,
+apps/desktop/src/app/contrib/controller.tsx-68-  $reviewScopeCwd,
+--
+apps/desktop/src/app/contrib/controller.tsx-309-  },
+apps/desktop/src/app/contrib/controller.tsx-310-  // The core `::preview{file="…"}` transcript directive — the model (or a
+apps/desktop/src/app/contrib/controller.tsx-311-  // skill) renders a workspace HTML file LIVE inside its own message
+apps/desktop/src/app/contrib/controller.tsx-312-  // (sandboxed srcdoc iframe; falls back to the classic preview card for
+apps/desktop/src/app/contrib/controller.tsx-313-  // non-HTML targets and remote gateways). Also the reference consumer for
+apps/desktop/src/app/contrib/controller.tsx-314-  // the `transcript.directives` area plugins register into.
+apps/desktop/src/app/contrib/controller.tsx-315-  {
+apps/desktop/src/app/contrib/controller.tsx-316-    id: 'transcript.preview',
+apps/desktop/src/app/contrib/controller.tsx:317:    area: TRANSCRIPT_DIRECTIVE_AREA,
+apps/desktop/src/app/contrib/controller.tsx-318-    data: {
+apps/desktop/src/app/contrib/controller.tsx-319-      name: 'preview',
+apps/desktop/src/app/contrib/controller.tsx-320-      render: ({ attrs, streaming }) => <InlinePreviewDirective attrs={attrs} streaming={streaming} />
+apps/desktop/src/app/contrib/controller.tsx-321-    } satisfies TranscriptDirectiveContribution
+apps/desktop/src/app/contrib/controller.tsx-322-  },
+apps/desktop/src/app/contrib/controller.tsx-323-  ...(isOnboardingEnabled()
+apps/desktop/src/app/contrib/controller.tsx-324-    ? [
+apps/desktop/src/app/contrib/controller.tsx-325-        {
+apps/desktop/src/app/contrib/controller.tsx-326-          id: 'transcript.onboarding',
+apps/desktop/src/app/contrib/controller.tsx:327:          area: TRANSCRIPT_DIRECTIVE_AREA,
+apps/desktop/src/app/contrib/controller.tsx-328-          data: {
+apps/desktop/src/app/contrib/controller.tsx-329-            name: 'onboarding',
+apps/desktop/src/app/contrib/controller.tsx-330-            render: ({ attrs, streaming }) => <OnboardingChatDirective attrs={attrs} streaming={streaming} />
+apps/desktop/src/app/contrib/controller.tsx-331-          } satisfies TranscriptDirectiveContribution
+apps/desktop/src/app/contrib/controller.tsx-332-        },
+apps/desktop/src/app/contrib/controller.tsx-333-        // ::ask is the guided chat's question card, registered only with the
+apps/desktop/src/app/contrib/controller.tsx-334-        // onboarding flag. B4 decides its wider use.
+apps/desktop/src/app/contrib/controller.tsx-335-        {
+apps/desktop/src/app/contrib/controller.tsx-336-          id: 'transcript.ask',
+apps/desktop/src/app/contrib/controller.tsx:337:          area: TRANSCRIPT_DIRECTIVE_AREA,
+apps/desktop/src/app/contrib/controller.tsx-338-          data: {
+apps/desktop/src/app/contrib/controller.tsx-339-            name: 'ask',
+apps/desktop/src/app/contrib/controller.tsx-340-            render: ({ attrs, streaming }) => <AskDirective attrs={attrs} streaming={streaming} />
+apps/desktop/src/app/contrib/controller.tsx-341-          } satisfies TranscriptDirectiveContribution
+apps/desktop/src/app/contrib/controller.tsx-342-        }
+apps/desktop/src/app/contrib/controller.tsx-343-      ]
+apps/desktop/src/app/contrib/controller.tsx-344-    : []),
+apps/desktop/src/app/contrib/controller.tsx-345-  {
+apps/desktop/src/app/contrib/controller.tsx-346-    id: 'layout.reset',
+apps/desktop/src/app/contrib/controller.tsx-347-    area: PALETTE_AREA,
+apps/desktop/src/app/contrib/controller.tsx-348-    data: {
+apps/desktop/src/app/contrib/controller.tsx-349-      id: 'layout.reset',
+apps/desktop/src/app/contrib/controller.tsx-350-      label: 'Reset layout',
+apps/desktop/src/app/contrib/controller.tsx-351-      icon: LayoutDashboard,
+apps/desktop/src/app/contrib/controller.tsx-352-      keywords: ['layout', 'reset', 'default', 'panes'],
+apps/desktop/src/app/contrib/controller.tsx-353-      run: resetLayoutTree
+apps/desktop/src/app/contrib/controller.tsx-354-    } satisfies PaletteContribution
+apps/desktop/src/app/contrib/controller.tsx-355-  },
+===== SDK area export =====
+apps/desktop/src/sdk/index.ts-1858-export { type AgoLabels, coarseElapsed, fmtDateTime, fmtDayTime, formatAgo, relativeTime } from '@/lib/time'
+apps/desktop/src/sdk/index.ts-1859-/** The transcript as a contribution area: register a named `::directive{...}`
+apps/desktop/src/sdk/index.ts-1860- *  and the model can render your component inline in assistant messages. */
+apps/desktop/src/sdk/index.ts-1861-export {
+apps/desktop/src/sdk/index.ts:1862:  TRANSCRIPT_DIRECTIVE_AREA,
+apps/desktop/src/sdk/index.ts-1863-  type TranscriptDirectiveContribution,
+apps/desktop/src/sdk/index.ts-1864-  type TranscriptDirectiveProps
+apps/desktop/src/sdk/index.ts-1865-} from '@/lib/transcript-directives'
+apps/desktop/src/sdk/index.ts-1866-export { cn } from '@/lib/utils'

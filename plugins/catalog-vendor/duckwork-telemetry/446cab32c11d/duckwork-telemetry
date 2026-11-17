@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve the plugin directory, following symlinks so this works from any PATH location.
+PLUGIN_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+
+# Auto-detect the Python that Duckwork uses by reading its wrapper script.
+# The wrapper contains a line like: exec "/path/to/venv/bin/duckwork" "$@"
+_detect_duckwork_python() {
+    local duckwork_bin
+    duckwork_bin="$(command -v duckwork 2>/dev/null)" || return 1
+    duckwork_bin="$(readlink -f "$duckwork_bin")"
+    local venv_dir
+    # Wrapper format assumed: exec "/abs/path/bin/duckwork" "$@"  (double-quoted)
+    venv_dir="$(grep -m1 'exec "' "$duckwork_bin" 2>/dev/null \
+        | sed 's|.*exec "\(.*\)/duckwork".*|\1|')"
+    [ -n "$venv_dir" ] && [ -x "$venv_dir/python3" ] && echo "$venv_dir/python3"
+}
+
+PYTHON="${DUCKWORK_PYTHON:-$(_detect_duckwork_python || echo python3)}"
+
+exec "$PYTHON" "$PLUGIN_DIR/_cli_entrypoint.py" "$@"

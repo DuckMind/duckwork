@@ -1,0 +1,29 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "kumiho-memory",
+  "version": "0.1.0",
+  "description": "Recall decisions, preferences and facts across conversations in your Kumiho Cloud workspace. Hosted OAuth MCP connector and six memory skills for Duckwork Agent.",
+  "author": {
+    "name": "Kumiho Inc.",
+    "url": "https://kumiho.io"
+  },
+  "homepage": "https://kumiho.io",
+  "repository": "https://github.com/KumihoIO/kumiho-plugins",
+  "license": "MIT",
+  "keywords": [
+    "memory",
+    "kumiho",
+    "mcp",
+    "duckwork",
+    "decisions"
+  ],
+  "extensions": {
+    "com.fordex.duckwork": {
+      "servers": {
+        "kumiho-memory": {
+          "trust": "untrusted"
+        }
+      }
+    }
+  }
+}

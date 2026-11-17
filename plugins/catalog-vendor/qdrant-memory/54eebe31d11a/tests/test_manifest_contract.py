@@ -1,0 +1,54 @@
+"""Keep directory and packaged Duckwork manifest metadata aligned with the project."""
+
+import tomllib
+from pathlib import Path
+
+from ruamel.yaml import YAML
+
+ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_PATHS = (ROOT / "plugin.yaml", ROOT / "qdrant_memory/plugin.yaml")
+
+
+def test_manifests_declare_v2_metadata_and_match_runtime_dependencies():
+    """Verify both supported manifests declare v2 metadata and project dependencies."""
+    yaml = YAML(typ="safe")
+    manifests = [yaml.load(path.read_text(encoding="utf-8")) for path in MANIFEST_PATHS]
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+
+    assert manifests[0] == manifests[1]
+    manifest = manifests[0]
+    from qdrant_memory.version import VERSION
+
+    assert str(manifest["version"]) == project["version"] == VERSION
+    for name in ("README.md", "README.zh-CN.md", "docs/standalone.md", "docs/mcp.md"):
+        text = (ROOT / name).read_text(encoding="utf-8")
+        assert f"duckwork-plugin-qdrant-memory[mcp]=={VERSION}" in text
+        assert "duckwork-plugin-qdrant-memory[mcp]==0.2.0" not in text
+    assert manifest["manifest_version"] == 2
+    assert manifest["author"] == "Kang Liu"
+    assert manifest["license"] == "MIT"
+    assert manifest["homepage"] == "https://github.com/DuckMind/duckwork"
+    assert manifest["tags"] == ["memory", "qdrant", "vector-search"]
+    assert manifest["python_dependencies"] == project["dependencies"]
+    assert manifest["provides_hooks"] == []
+    assert "hooks" not in manifest
+
+
+def test_duckwork_manifest_parser_surfaces_v2_metadata():
+    """Verify Duckwork parses the published v2 metadata and dependencies."""
+    from duckwork_cli.plugins_manifest import parse_manifest_file
+
+    parsed = parse_manifest_file(MANIFEST_PATHS[0], ROOT, "project", "")
+
+    assert parsed is not None
+    assert parsed.manifest_version == 2
+    assert parsed.author == "Kang Liu"
+    assert parsed.license == "MIT"
+    assert parsed.homepage == "https://github.com/DuckMind/duckwork"
+    assert parsed.tags == ["memory", "qdrant", "vector-search"]
+    assert parsed.python_dependencies == [
+        "qdrant-client>=1.15,<2",
+        "httpx>=0.28,<1",
+        "portalocker>=3.2,<4",
+    ]
+    assert parsed.provides_hooks == []

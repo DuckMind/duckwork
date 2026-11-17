@@ -1,0 +1,20 @@
+name: optmem-duckwork
+version: 0.3.3
+requires_duckwork: ">=0.21.2"
+description: "OptMem — permanent append-only memory with decay compression and BM25 search. Portable reimplementation of Victor Taelin's OptMem (byte-compatible log), installed as a Duckwork external memory provider with Hybrid and OptMem-only modes."
+# Canonical name is `optmem-duckwork`, not the bare upstream key: this is an
+# independent Duckwork integration of Victor Taelin's OptMem design, and the
+# Duckwork plugin catalog reserves the bare upstream name for the affiliated
+# project (plugin-catalog/README.md, "Names"). The Python package, the on-disk
+# store keep their names; the CLI becomes `duckwork optmem-duckwork`.
+#
+# NO provides_tools / provides_hooks. A memory provider is a different contract
+# from a plugin: its tools and lifecycle hooks are exposed through the
+# MemoryProvider interface (`get_tool_schemas`, `on_memory_write`,
+# `on_turn_start`), which the host's MemoryManager wires directly — never
+# through ctx.register_tool / ctx.register_hook. Declaring them here makes
+# `duckwork plugins doctor` fail: `on_memory_write`/`on_turn_start` are not in the
+# host's VALID_HOOKS (hard ERROR), and a declared-but-unregistered tool/hook is a
+# WARNING. Every bundled provider (honcho, mem0, holographic, …) declares
+# neither list. The catalog entry (docs/catalog/optmem-duckwork.yaml) is where the
+# interface surface is listed for discovery, matching cognee and entropicmem.

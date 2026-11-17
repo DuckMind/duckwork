@@ -1,0 +1,437 @@
+"""Plan approval rendering and in-memory decision correlation; no Duckwork imports."""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import threading
+import uuid
+
+
+def gate_bypassed(entry) -> bool:
+    """Only an absent or untouched in-flight decision is an automatic allowance."""
+    return entry is None or bool(
+        isinstance(entry, dict)
+        and entry.get("choice") is None
+        and not entry.get("cancelled")
+        and not entry.get("presented")
+    )
+
+
+def clarify_answer(result, question, choices) -> str | None:
+    """Read only a matching, answered response from the clarify result JSON."""
+    try:
+        value = json.loads(result)
+        responses = value.get("responses", [value]) if isinstance(value, dict) else value
+        if not isinstance(responses, list):
+            return None
+        for response in responses:
+            if not isinstance(response, dict) or response.get("question") != question:
+                continue
+            if "choices_offered" in response and response["choices_offered"] != choices:
+                continue
+            if "status" in response and response["status"] != "answered":
+                continue
+            answer = response.get("user_response")
+            return answer.strip() if isinstance(answer, str) else None
+    except (TypeError, ValueError):
+        return None
+    return None
+
+
+def make_rule_key(activation_id, revision, digest) -> str:
+    act8 = re.sub(r"[^a-z0-9]", "", str(activation_id).lower())[:8].ljust(8, "0")
+    key = f"plan-mode:{act8}:{revision}:{digest[:8]}:{uuid.uuid4().hex[:8]}"
+    assert re.fullmatch(r"[a-z0-9:-]+", key)
+    return key
+
+
+def plan_digest(path) -> tuple[str, str]:
+    with open(path, "rb") as stream:
+        data = stream.read(1024 * 1024 + 1)
+    if len(data) > 1024 * 1024:
+        raise ValueError("The plan exceeds the 1 MiB approval limit.")
+    return hashlib.sha256(data).hexdigest(), data.decode("utf-8", errors="replace")
+
+
+def _plain(text: str) -> str:
+    # Underscores are kept: compact plans name snake_case functions and __init__.py files, and an identifier is worth
+    # more in a chat summary than hiding _underscore emphasis_. One character class, so it is linear and idempotent.
+    # Link text and destination stop at brackets and newlines (one level of parentheses and a title are allowed), so a
+    # line of unmatched "[" or "](" stays linear.
+    for _ in range(2):  # the second pass unwraps a linked image, [![alt](img)](url)
+        text = re.sub(r"!?\[([^\[\]]+)\]\((?:[^()\[\]\n]|\([^()\[\]\n]*\))*\)", r"\1", text)
+    return " ".join(re.sub(r"[*`~]", "", re.sub(r"^\s*#+\s+", "", text)).split())
+
+
+def _title(text, summary, name) -> str:
+    title = _plain(summary) if str(summary).strip() else ""
+    if not title:
+        lines = _unfenced(text)
+        headings = [_plain(match[2]) for match in map(_HEADING.match, lines) if match]
+        title = next((heading for heading in headings
+                      if heading.lower() != "plan" and not _META_SECTION.match(heading)
+                          and not _FORMAT_LABEL.match(heading)), "")
+        if not title and headings:
+            # Only section labels ("## Summary"): the first line of text under them names the plan. A plan without
+            # headings keeps the file name, as in 0.3.5.
+            for line in lines:
+                if line.strip() and not _HEADING.match(line):
+                    item = _LIST_ITEM.match(line.strip())
+                    title = _plain(item[1] if item else line)[:80]
+                    break
+    return re.sub(r"(?i)^plan(?:\s*\([^)]*\))?(?:\s*:\s*|\s+[—–-]\s+)", "", title) or name
+
+
+# Platforms whose approval card cuts the whole prompt at a fixed size (WhatsApp Cloud: 1024-char body).
+_CARD_LIMITS = {"whatsapp_cloud": 1000}
+
+
+# Section headings that hold the work itself (core /plan asks for "Step-by-step tasks"): the work word ends the label,
+# so a task heading such as "Apply changes to parser" is not one. Section labels that never hold the work are made only
+# of meta words ("Tests / validation"), so a task such as "Test endpoint" is kept, or end in a label word.
+_SECTION_END = r"\s*(?:\([^)]*\))?\s*:?$"
+_STEP_SECTION = re.compile(rf"(?i)\b(steps?|tasks?|implementation|to-?dos?|milestones?|phases?|execution){_SECTION_END}")
+_WORK_SECTION = re.compile(rf"(?i)\b(steps?|tasks?|implementation|to-?dos?|milestones?|phases?|execution|changes){_SECTION_END}")
+# The compact format writes a per-file Changes list (sometimes grouped as "### Parser implementation") before its
+# numbered Steps. A step section outside any Changes-like section is preferred; without one, selection is as in 0.3.4.
+_CHANGES_WORD = re.compile(r"(?i)\bchanges\b")
+_APPROACH_SECTION = re.compile(rf"(?i)\b(approach|plan){_SECTION_END}")
+_META_WORD = (r"(?:goals?|current context|context|assumptions|background|summary|overview|"
+              r"(?:test(?:ing)?|validation|verification|qa|rollback) (?:plan|steps)|"
+              r"architecture(?:\s*/\s*proposed approach)?|tests?|testing|validation|verification|risks?|tradeoffs|open questions|notes?|"
+              r"out of scope|non-goals|files(?: likely to change)?)")
+_META_SECTION = re.compile(rf"(?i)^{_META_WORD}(?:\s*(?:[/,&]|\band\b)\s*(?:{_META_WORD})?)*:?$")
+# A work word followed by a label word ("Implementation notes", "Task overview") is a label section too; a task such
+# as "Write release notes" is not.
+_META_TAIL = re.compile(r"(?i)^(?:steps?|tasks?|implementation|to-?dos?|milestones?|phases?|execution|changes|approach|"
+                        r"plan)\s+(?:notes?|context|assumptions|background|overview|summary|risks?|tradeoffs|"
+                        r"open questions|non-goals|out of scope)\s*:?$")
+# Section names of the compact and lean plan formats. Titles skip them too; step selection keeps _META_SECTION.
+_FORMAT_LABEL = re.compile(r"(?i)^(?:key changes|changes(?: per file)?|decisions(?: and assumptions)?|steps)\s*:?$")
+_STEP_PREFIX = re.compile(r"(?i)^(?:step|phase|task)\s*\d+(?:\.\d+)*[a-z]?(?![a-z0-9])\s*[:.)—–-]*\s*")
+_HEADING = re.compile(r"^ {0,3}(#{1,6})\s+(.+?)(?:\s+#+)?\s*$")  # 4+ spaces is indented code
+_LIST_ITEM = re.compile(r"^(?:\d+[.)]|[-*+])\s+(.+)$")
+
+
+def _unfenced(text: str) -> list[str]:
+    """The plan's lines with fenced code blanked, so a `# comment` in a snippet is not a heading."""
+    lines, fence = [], ""
+    for line in text.splitlines():
+        marker = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)  # 4+ spaces is indented code
+        if fence:
+            # Only a bare marker of the opener's kind and at least its length closes the fence.
+            if marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence) and not marker[2].strip():
+                fence = ""
+            lines.append("")
+        elif marker:
+            fence = marker[1]
+            lines.append("")
+        else:
+            lines.append(line)
+    return lines
+
+
+def _steps(text: str) -> list[str]:
+    """Pick the plan's steps for a short chat summary, not its section headings."""
+    lines = _unfenced(text)
+    # One pass: (line, level, text, label is meta or sits under one), each heading's direct children and
+    # section end, and whether its section holds numbered items (meta parts excluded).
+    headings, children, ends, numbered, under_step, under_changes, open_ = [], [], [], [], [], [], []
+    for index, line in enumerate(lines):
+        if (match := _HEADING.match(line)):
+            level, heading = len(match[1]), _plain(match[2])
+            while open_ and headings[open_[-1]][1] >= level:
+                ends[open_.pop()] = index
+            # A label section's sub-headings are labels too; the document title (level 1) passes nothing down.
+            meta = (bool(_META_SECTION.match(heading) or _META_TAIL.search(heading))
+                    or bool(open_ and headings[open_[-1]][1] > 1 and headings[open_[-1]][3]))
+            if open_:
+                children[open_[-1]].append(len(headings))
+            # A section nested under a "Step N" heading is that step's detail ("### Changes"), not the plan's work list.
+            under_step.append(any(_STEP_PREFIX.match(headings[position][2]) for position in open_))
+            # Likewise "### Parser implementation" under "## Changes" groups changes; it must not outrank "## Steps".
+            # The document title (level 1) is not a section: "# Parser changes" must not hide the plan's own Steps.
+            under_changes.append(any(headings[position][1] > 1 and _CHANGES_WORD.search(headings[position][2])
+                                     for position in open_))
+            headings.append((index, level, heading, meta))
+            children.append([]); ends.append(len(lines)); numbered.append(False)
+            open_.append(len(headings) - 1)
+        elif open_ and not headings[open_[-1]][3] and _LIST_ITEM.match(line) and line[0].isdigit():
+            for position in open_:
+                numbered[position] = True
+
+    def section_items(position: int) -> list[str]:
+        named = [headings[child][2] for child in children[position] if not headings[child][3]]
+        if named:
+            return named  # direct sub-headings are the steps; their own sub-headings are details
+        body_end = headings[children[position][0]][0] if children[position] else ends[position]
+        return [match[1] for line in lines[headings[position][0] + 1:body_end] if (match := _LIST_ITEM.match(line))]
+
+    def clean(items: list[str]) -> list[str]:
+        return [_STEP_PREFIX.sub("", _plain(item)) or _plain(item) for item in items]
+
+    for pattern, outside_changes in ((_STEP_SECTION, True), (_WORK_SECTION, False), (_APPROACH_SECTION, False)):
+        for position, (_, level, heading, meta) in enumerate(headings):
+            if (level > 1 and not meta and pattern.search(heading) and not _STEP_PREFIX.match(heading)
+                    and not under_step[position] and not (outside_changes and under_changes[position])):
+                items = section_items(position)
+                if items:
+                    return clean(items)
+    step_headings = [heading for _, level, heading, meta in headings
+                     if level > 1 and not meta and _STEP_PREFIX.match(heading)]
+    if step_headings:
+        return clean(step_headings)
+    # No step section, in document order: numbered items, plus sub-headings that hold no numbered list (bullets under
+    # a heading are its details). Label sections are skipped.
+    by_line = {heading[0]: position for position, heading in enumerate(headings)}
+    owner, current = [], None
+    for index in range(len(lines)):
+        current = by_line.get(index, current)
+        owner.append(current)
+    items = {index: match[1] for index, line in enumerate(lines)
+             if index not in by_line and not (owner[index] is not None and headings[owner[index]][3])
+             and (match := _LIST_ITEM.match(line))}
+    ordered = []
+    for index in range(len(lines)):
+        if index in by_line:
+            position = by_line[index]
+            _, level, heading, meta = headings[position]
+            if 2 <= level <= 3 and not meta and not numbered[position]:
+                ordered.append(heading)
+        elif index in items and lines[index][0].isdigit():
+            ordered.append(items[index])
+    if ordered:
+        return ordered
+    bullet_items = [item for index, item in items.items() if not lines[index][0].isdigit()]
+    return bullet_items or [line for line in text.splitlines() if line.strip()]
+
+
+def approval_text(text, path, revision, platform, summary="") -> str:
+    name = Path(path).name
+    if str(platform).lower() in {"cli", "terminal"}:
+        # The modal classic CLI panel does not wrap embedded newlines. Non-streaming
+        # replies may not be printed, so include a way to view the plan before approval.
+        title = _title(text, summary, name)[:160]
+        return (f"Plan rev {revision} ({name}): {title}. Approve to start implementing, deny to keep planning "
+                "(the plan is in the reply above; if it is not, deny and run /planmode show).")
+    if str(platform).lower() in {"telegram", "slack", "discord"}:
+        title = _title(text, summary, name)
+        steps = _steps(text)
+        result = f"Plan rev {revision}: {title}"
+        result += "".join(f"\n{index}. {_plain(step)}" for index, step in enumerate(steps[:6], 1))
+        return result if len(result) <= 250 else result[:249] + "…"
+    limit = _CARD_LIMITS.get(str(platform).lower(), 3500)
+    prefix = f"Plan rev {revision} ({name}) — approve to start implementing, deny to keep planning.\n\n"
+    result = prefix + text
+    if len(result) <= limit:
+        return result
+    suffix = f"\n… (truncated; full plan: {path})"
+    return result[:max(0, limit - len(suffix))] + suffix[:limit]
+
+
+_PATCH_OPERATION = re.compile(r"\*\*\*\s*(Update|Add|Delete|Move)\s+File:")  # the host V4A parser's markers
+_LINE_BREAKS = re.compile(r"[\r\n\v\f\x1c-\x1e\x85\u2028\u2029]")
+
+
+def edit_review_text(tool_name, args, platform, *, revision=0, targets=(), session_key="", cwd=None) -> str:
+    """Bounded file-edit preview; targets are extracted by the planning writer parser."""
+    try:
+        base = os.path.realpath(cwd) if cwd is not None else None
+    except (OSError, ValueError, TypeError):
+        base = str(cwd)
+    prefix = base.rstrip(os.sep) + os.sep if base is not None else None
+    resolved, classified = {}, {}  # memos: a large patch names many files, often in the same directories
+    outside = []  # targets outside the session cwd, counted in the header so the character cap cannot hide them
+
+    def realpath(path):
+        if path not in resolved:
+            resolved[path] = os.path.realpath(path)
+        return resolved[path]
+
+    def within(path):  # string checks: pathlib's relative_to dominated large patches
+        return path == base or path.startswith(prefix)
+
+    def relative(path):
+        return "." if path == base else path[len(prefix):] if path.startswith(prefix) else path
+
+    def classify(shown):
+        inside = True
+        try:
+            if base is not None and shown and not shown.startswith("~"):
+                # Resolve the parent directories, so a symlinked directory cannot hide an outside target, but keep
+                # the entry itself: a delete or move acts on a symlink, while a content write goes through it.
+                # Relative targets resolve from the session cwd, as the file tools do.
+                given = shown if os.path.isabs(shown) else os.path.join(base, shown)
+                parent, name = os.path.split(given)
+                entry = os.path.join(realpath(parent), name) if name not in ("", ".", "..") else realpath(given)
+                shown, inside = relative(entry), within(entry)
+                if os.path.islink(entry):
+                    real = realpath(entry)
+                    shown, inside = shown + " → " + relative(real), inside and within(real)
+        except (OSError, ValueError, TypeError):
+            try:  # an unresolvable path is shown as given; an absolute one outside the cwd still counts
+                inside = not os.path.isabs(shown) or within(shown)
+            except (ValueError, TypeError):
+                inside = False
+        if base is not None and shown.startswith("~"):
+            inside = False  # the host expands "~" to a profile home that can lie anywhere: shown as given, counted
+        # Only line breaks are replaced (the CLI prompt is one line); other whitespace is part of the name.
+        return _LINE_BREAKS.sub(" ", shown), inside
+
+    def display(target, header=False):
+        key = str(target)
+        if key not in classified:
+            classified[key] = classify(key)
+        shown, inside = classified[key]
+        if header and not inside:
+            outside.append(shown)
+        return shown
+
+    limit = 250 if str(platform).strip().lower() in {"telegram", "slack", "discord"} else 1000
+    shown = [display(target, header=True) for target in targets]
+    # Outside targets come first, so the cap below cannot cut the name the outside count refers to.
+    flagged = set(outside)
+    paths = ", ".join([x for x in shown if x in flagged] + [x for x in shown if x not in flagged]) or "(unknown path)"
+    if len(paths) > limit // 4:  # long names must not push the counts below out of the capped message
+        paths = paths[:limit // 4 - 1] + "…"
+    operations = []  # deletes and moves: always listed, since they carry no +/- lines
+    if tool_name == "write_file":
+        body = ["+" + line for line in str(args.get("content") or "").splitlines()]
+        sample, added, removed = body[:8], len(body), 0
+    elif str(args.get("mode") or "replace").strip().lower() == "patch":
+        files, body = [], []
+        # Split the way the host parser does (on newlines, dropping a trailing CR), so no operation line it applies
+        # can be split apart here and missed.
+        raw = [part[:-1] if part.endswith("\r") else part for part in str(args.get("patch") or "").split("\n")]
+        index = 0
+        while index < len(raw):
+            line, index = raw[index], index + 1
+            match = _PATCH_OPERATION.match(line)
+            payload = line[match.end():].strip() if match else ""
+            if match and match[1] == "Move":
+                cut = payload.find("->", 1)
+                if cut <= 0:
+                    # The host's path rewrite joins "*** Move File: a" with an arrow on a later line ("\n-> b").
+                    ahead = index
+                    while ahead < len(raw) and not raw[ahead].strip():
+                        ahead += 1
+                    if ahead < len(raw) and raw[ahead].lstrip().startswith("->"):
+                        payload, index = f"{payload} {raw[ahead].strip()}", ahead + 1
+                        cut = payload.find("->", 1)
+                # Fit the pair once the header's length is known (#46); an arrowless move stays as given.
+                operations.append((display(payload[:cut].strip()), display(payload[cut + 2:].strip())) if cut > 0
+                                  else f"Move File: {payload}")
+            elif match and match[1] == "Delete":
+                operations.append(f"Delete File: {display(payload)}")
+            elif match:
+                files.append(f"{match[1]} File: {display(payload)}")
+                body.append(files[-1])
+            elif line.startswith(("+", "-")):
+                body.append(line)
+        added = sum(line.startswith("+") for line in body)
+        removed = sum(line.startswith("-") for line in body)
+        if len(files) < 2:  # a file name repeats the header unless the patch spans several files
+            body = [line for line in body if line not in files]
+        sample = body[:8]
+    else:
+        old = ["-" + line for line in str(args.get("old_string") or "").splitlines()]
+        new = ["+" + line for line in str(args.get("new_string") or "").splitlines()]
+        body = old + new
+        sample = (old[:max(4, 8 - len(new))] + new)[:8]  # a long removal still leaves room for the replacement
+        added, removed = len(new), len(old)
+    hidden = len(body) - len(sample)
+    # write_file replaces the whole file, so it shows its size, not a +/− change that would claim nothing was removed.
+    counts = (f"{added} line{'' if added == 1 else 's'}" if tool_name == "write_file"
+              else f"+{added}/−{removed} lines")
+    deletes = sum(isinstance(operation, str) and operation.startswith("Delete") for operation in operations)
+    for number, word in ((deletes, "delete"), (len(operations) - deletes, "move"), (len(outside), "path")):
+        if number:
+            counts += f", {number} {word}{'' if number == 1 else 's'}"
+    if outside:
+        counts += " outside the working directory"
+    header = f"Plan-mode edit review (plan rev {revision}): {tool_name} {paths} ({counts})"
+    classic_cli = str(platform).strip().lower() in {"cli", "terminal", "local", ""} and not str(session_key).startswith("ui:")
+    separator, joiner = (" — ", " ⏎ ") if classic_cli else ("\n", "\n")
+    room = limit - len(header) - len(separator) - len("Move File:  -> ")
+
+    def tail(text, size):
+        return text if len(text) <= size else "…" + text[len(text) - size + 1:]
+
+    def move(source, destination):  # both sides keep their tails within the remaining prompt budget (#46)
+        if len(source) + len(destination) <= room:
+            return f"Move File: {source} -> {destination}"
+        destination = tail(destination, max(room - 12, 12))
+        return f"Move File: {tail(source, max(room - len(destination), 12))} -> {destination}"
+
+    width = max(40, limit // 6)  # one long content line must not crowd out the rest of the preview
+    lines = [_LINE_BREAKS.sub(" ", line if isinstance(line, str) else move(*line)) for line in operations] + [
+        line if len(line) <= width else line[:width - 1] + "…" for line in (_LINE_BREAKS.sub(" ", x) for x in sample)]
+    if hidden:
+        lines.append(f"… {hidden} more line{'' if hidden == 1 else 's'}")
+    result = header + (separator + joiner.join(lines) if lines else "")
+    return result if len(result) <= limit else result[:limit - 1] + "…"
+
+
+class DecisionLedger:
+    """Bounded, single-use decisions. Observer callbacks do no I/O and never raise."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._entries: dict[str, dict] = {}
+
+    def mark_inflight(self, rule_key, tool_call_id) -> None:
+        with self._lock:
+            self._entries[rule_key] = {
+                "choice": None, "cancelled": False,
+                "tool_call_id": tool_call_id or None, "presented": False,
+            }
+            while len(self._entries) > 256:
+                self._entries.pop(next(iter(self._entries)))
+
+    def _record(self, kw, *, response: bool) -> None:
+        try:
+            pattern = kw.get("pattern_key")
+            if not isinstance(pattern, str) or not pattern.startswith("plugin_rule:plan-mode:"):
+                return
+            with self._lock:
+                entry = self._entries.get(pattern.removeprefix("plugin_rule:"))
+                if entry is None:
+                    return  # late/unrelated decisions cannot recreate a consumed entry
+                if response:
+                    choice = kw.get("choice")
+                    entry["choice"] = choice if isinstance(choice, str) else None
+                    entry["cancelled"] = bool(kw.get("cancelled"))
+                else:
+                    entry["presented"] = True
+                if kw.get("tool_call_id"):
+                    entry["tool_call_id"] = str(kw["tool_call_id"])
+        except Exception:
+            return
+
+    def record_presented(self, **kw) -> None:
+        self._record(kw, response=False)
+
+    def record_response(self, **kw) -> None:
+        self._record(kw, response=True)
+
+    def take(self, rule_key) -> dict | None:
+        with self._lock:
+            return self._entries.pop(rule_key, None)
+
+    def is_inflight(self, rule_key) -> bool:
+        with self._lock:
+            entry = self._entries.get(rule_key)
+            return entry is not None and entry["choice"] is None
+
+
+def is_human_approval(entry, tool_call_id) -> bool:
+    return bool(
+        entry
+        and entry.get("choice") in {"once", "session", "always"}
+        and not entry.get("cancelled")
+        and (not entry.get("tool_call_id") or not tool_call_id
+             or entry["tool_call_id"] == tool_call_id)
+    )

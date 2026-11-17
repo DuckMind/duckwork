@@ -1,0 +1,19 @@
+[project]
+name = "duckwork-soniox"
+version = "0.2.0"
+description = "Native BYOK Soniox TTS and STT providers for Duckwork Agent"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = []  # httpx is bundled with Duckwork Agent
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+extend-exclude = [".venv-test"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

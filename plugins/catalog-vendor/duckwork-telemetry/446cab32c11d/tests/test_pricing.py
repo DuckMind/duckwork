@@ -1,0 +1,1526 @@
+"""Tests for pricing.py — cost calculation and unknown-model handling."""
+
+from __future__ import annotations
+
+import shutil
+import textwrap
+from pathlib import Path
+
+import duckwork_telemetry.pricing as pricing
+import pytest
+
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+@pytest.fixture(autouse=True)
+def reset_pricing(tmp_path_factory, monkeypatch):
+    """Isolate pricing from the developer's live ~/.duckwork file.
+
+    Point DUCKWORK_HOME at a throwaway dir seeded with the committed, deterministic
+    tests/fixtures/pricing.yaml — so tests run against known data, never the
+    machine's auto-refreshed file. Uses tmp_path_factory (not tmp_path) so this
+    dir never collides with tests that point DUCKWORK_HOME at their own tmp_path.
+
+    Tests that need a different custom file override DUCKWORK_HOME themselves (a
+    later monkeypatch.setenv wins) and reset the cache after writing.
+    """
+    home = tmp_path_factory.mktemp("pricing_home")
+    tele = home / "telemetry"
+    tele.mkdir()
+    shutil.copy(FIXTURES / "pricing.yaml", tele / "pricing.yaml")
+    monkeypatch.setenv("DUCKWORK_HOME", str(home))
+
+    pricing._custom_pricing = None
+    pricing._warned_unknown.clear()
+    pricing._warned_provider_assumed.clear()
+    yield
+    pricing._custom_pricing = None
+    pricing._warned_unknown.clear()
+    pricing._warned_provider_assumed.clear()
+
+
+# ---------------------------------------------------------------------------
+# Basic calculation — new usage-dict signature
+# ---------------------------------------------------------------------------
+
+
+def test_known_model_anthropic():
+    cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "claude-sonnet-4-6")
+    assert abs(cost - 3.00) < 1e-9
+
+
+def test_known_model_output():
+    cost = pricing.estimate_cost({"output_tokens": 1_000_000}, "claude-sonnet-4-6")
+    assert abs(cost - 15.00) < 1e-9
+
+
+def test_known_model_both():
+    # 1M in @ $3, 1M out @ $15 → $18
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000}, "claude-sonnet-4-6"
+    )
+    assert abs(cost - 18.00) < 1e-9
+
+
+def test_small_token_count():
+    # 1000 input tokens of claude-sonnet-4-6 @ $3/M → $0.003 (1000/1_000_000 * 3.0)
+    cost = pricing.estimate_cost({"input_tokens": 1000}, "claude-sonnet-4-6")
+    assert abs(cost - 0.003) < 1e-9
+
+
+def test_zero_tokens():
+    cost = pricing.estimate_cost({"input_tokens": 0, "output_tokens": 0}, "claude-sonnet-4-6")
+    assert cost == 0.0
+
+
+def test_is_free_model():
+    """is_free_model is True only for models priced at input=0 AND output=0 (issue #89)."""
+    # Genuinely free: explicit $0/$0 rates.
+    assert pricing.is_free_model("owl-alpha", "fordex") is True
+    # Paid models: nonzero input/output rates must never be treated as free.
+    assert pricing.is_free_model("deepseek-chat", "fordex") is False
+    assert pricing.is_free_model("claude-sonnet-4-6", "fordex") is False
+    assert pricing.is_free_model("gpt-4o", "fordex") is False
+    # Unknown model: no explicit pricing → not free.
+    assert pricing.is_free_model("nvidia/totally-unknown-model", "nvidia") is False
+    # ":free" suffix rule resolves to $0 → free.
+    assert pricing.is_free_model("nvidia/nemotron-3-super-120b-a12b:free", "nvidia") is True
+
+
+def test_deepseek_pricing():
+    # deepseek-chat is served by V4.1-Flash and billed at Flash rates (issue #121).
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000}, "deepseek-chat"
+    )
+    assert abs(cost - (0.15 + 0.60)) < 1e-6
+
+
+# Issue #121: DeepSeek's current ids used to fall through to the retired V3
+# prefix rate (0.27/1.10) with a generic 0.10x cache_read. These are the
+# off-peak rates published by DeepSeek and mirrored by Duckwork core (peak = 2x,
+# time-of-day pricing is tracked in #122).
+_DEEPSEEK_FLASH = dict(input=0.15, output=0.60, cache_read=0.003, cache_write=0.15)
+_DEEPSEEK_PRO = dict(input=0.66, output=1.98, cache_read=0.022, cache_write=0.66)
+
+
+@pytest.mark.parametrize(
+    "model,expected",
+    [
+        ("deepseek-flash", _DEEPSEEK_FLASH),
+        ("deepseek-v4-flash", _DEEPSEEK_FLASH),
+        ("deepseek-chat", _DEEPSEEK_FLASH),
+        ("deepseek-reasoner", _DEEPSEEK_FLASH),
+        ("deepseek-v4-pro", _DEEPSEEK_PRO),
+        # Dated variants resolve through the exact keys acting as prefixes.
+        ("deepseek-v4-pro-20260423", _DEEPSEEK_PRO),
+        # Unknown current-generation id falls to the bare "deepseek" prefix.
+        ("deepseek-v4.1-flash", _DEEPSEEK_FLASH),
+    ],
+)
+def test_deepseek_current_ids_priced_at_current_rates(model, expected):
+    resolved = pricing._resolve_pricing(model, "custom:deepseek", None)
+    assert resolved is not None
+    for key, value in expected.items():
+        assert resolved[key] == pytest.approx(value), key
+
+
+@pytest.mark.parametrize(
+    "model",
+    [
+        "deepseek/deepseek-v4-pro-20260423",
+        "deepseek/deepseek-v4-pro",
+        "deepseek/deepseek-v4-flash",
+        "deepseek/deepseek-chat",
+        "deepseek/deepseek-r1",
+        "deepseek/deepseek-v3.2",
+    ],
+)
+def test_deepseek_vendor_qualified_ids_keep_pre_121_fallback(model):
+    """Slash-qualified ids are aggregator ids (Fordex / OpenRouter), never
+    DeepSeek-direct. A prod replay showed DeepSeek-direct list rates overshoot
+    Fordex's real resale price by 83-87% while the old 0.27/1.10 fallback was within
+    3-8%. Their authoritative price is the core snapshot; the static fallback must
+    resolve exactly as on origin/main: the bare "deepseek" prefix at 0.27/1.10
+    with the generic 0.10x cache_read (0.027)."""
+    resolved = pricing._resolve_pricing(model, "fordex", None)
+    assert resolved is not None
+    assert resolved["input"] == pytest.approx(0.27)
+    assert resolved["output"] == pytest.approx(1.10)
+    assert resolved["cache_read"] == pytest.approx(0.027)
+
+
+def test_deepseek_legacy_open_weight_ids_unchanged():
+    """v3 / r1 are open-weight names also served by third parties: keep their rates."""
+    v3 = pricing._resolve_pricing("deepseek-v3", "custom:deepseek", None)
+    r1 = pricing._resolve_pricing("deepseek-r1", "custom:deepseek", None)
+    assert (v3["input"], v3["output"]) == (0.27, 1.10)
+    assert (r1["input"], r1["output"]) == (0.55, 2.19)
+
+
+def test_deepseek_flash_cost_matches_issue_121_example():
+    cost = pricing.estimate_cost(
+        {
+            "input_tokens": 177,
+            "output_tokens": 705,
+            "cache_read_tokens": 321280,
+            "reasoning_tokens": 0,
+        },
+        "deepseek-flash",
+        "custom:deepseek",
+    )
+    assert cost == pytest.approx(0.00141339)
+
+
+def test_openai_gpt4o():
+    cost = pricing.estimate_cost({"input_tokens": 1_000_000, "output_tokens": 1_000_000}, "gpt-4o")
+    assert abs(cost - (2.50 + 10.00)) < 1e-6
+
+
+# ---------------------------------------------------------------------------
+# Case-insensitive matching
+# ---------------------------------------------------------------------------
+
+
+def test_case_insensitive():
+    cost_lower = pricing.estimate_cost({"input_tokens": 1000}, "claude-sonnet-4-6")
+    cost_upper = pricing.estimate_cost({"input_tokens": 1000}, "CLAUDE-SONNET-4-6")
+    assert abs(cost_lower - cost_upper) < 1e-12
+
+
+# ---------------------------------------------------------------------------
+# Prefix matching
+# ---------------------------------------------------------------------------
+
+
+def test_prefix_match_unknown_variant():
+    # A hypothetical future claude-sonnet-4-9-... should hit the prefix
+    cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "claude-sonnet-99")
+    assert abs(cost - 3.00) < 1e-6
+
+
+def test_prefix_match_opus():
+    cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "claude-opus-5-0-future")
+    assert abs(cost - 5.00) < 1e-6
+
+
+# ---------------------------------------------------------------------------
+# Unknown model
+# ---------------------------------------------------------------------------
+
+
+def test_unknown_model_returns_zero(caplog):
+    import logging
+
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        cost = pricing.estimate_cost(
+            {"input_tokens": 5000, "output_tokens": 2000}, "totally-unknown-model-xyz"
+        )
+    assert cost == 0.0
+
+
+def test_unknown_model_warns_once(caplog):
+    import logging
+
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        pricing.estimate_cost({"input_tokens": 100, "output_tokens": 100}, "new-unknown-model")
+        pricing.estimate_cost({"input_tokens": 100, "output_tokens": 100}, "new-unknown-model")
+    # Should only warn once
+    warns = [r for r in caplog.records if "new-unknown-model" in r.message]
+    assert len(warns) == 1
+
+
+def test_empty_model_returns_zero():
+    cost = pricing.estimate_cost({"input_tokens": 1000, "output_tokens": 1000}, "")
+    assert cost == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Custom pricing via YAML override
+# ---------------------------------------------------------------------------
+
+
+def test_custom_pricing_yaml(tmp_path, monkeypatch):
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    tele_dir = tmp_path / "telemetry"
+    tele_dir.mkdir()
+    (tele_dir / "pricing.yaml").write_text(
+        textwrap.dedent("""
+        my-custom-model:
+          input: 10.00
+          output: 20.00
+    """)
+    )
+    pricing._custom_pricing = None
+
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000}, "my-custom-model"
+    )
+    assert abs(cost - 30.00) < 1e-6
+
+
+def test_custom_pricing_overrides_default(tmp_path, monkeypatch):
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    tele_dir = tmp_path / "telemetry"
+    tele_dir.mkdir()
+    (tele_dir / "pricing.yaml").write_text(
+        textwrap.dedent("""
+        claude-sonnet-4-6:
+          input: 99.00
+          output: 99.00
+    """)
+    )
+    pricing._custom_pricing = None
+
+    cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "claude-sonnet-4-6")
+    assert abs(cost - 99.00) < 1e-6
+
+
+def test_custom_pricing_missing_file(tmp_path, monkeypatch):
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    (tmp_path / "telemetry").mkdir()
+    # No pricing.yaml file — should fall back to defaults silently
+    pricing._custom_pricing = None
+    cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "gpt-4o")
+    assert abs(cost - 2.50) < 1e-6
+
+
+def test_custom_pricing_malformed_yaml(tmp_path, monkeypatch, caplog):
+    import logging
+
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    tele_dir = tmp_path / "telemetry"
+    tele_dir.mkdir()
+    (tele_dir / "pricing.yaml").write_text(":::invalid yaml:::")
+    pricing._custom_pricing = None
+    with caplog.at_level(logging.WARNING):
+        cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "gpt-4o")
+    # Should fall back to defaults
+    assert abs(cost - 2.50) < 1e-6
+
+
+# ---------------------------------------------------------------------------
+# New tests for cache/reasoning split (Refinement 1)
+# ---------------------------------------------------------------------------
+
+
+def test_cache_pricing_cheaper_than_fresh_input():
+    """Cache reads should cost less than fresh input tokens for the same total."""
+    # 500k cache_read + 100k input (total 600k "input-side")
+    cost_with_cache = pricing.estimate_cost(
+        {"cache_read_tokens": 500_000, "input_tokens": 100_000},
+        "claude-sonnet-4-6",
+    )
+    # All 600k as fresh input
+    cost_all_fresh = pricing.estimate_cost(
+        {"input_tokens": 600_000},
+        "claude-sonnet-4-6",
+    )
+    assert cost_with_cache < cost_all_fresh
+
+
+def test_cache_read_and_write_split_exact():
+    """cache_read and cache_write are billed at their own rates, separately
+    from fresh input — and the total is the exact per-component sum (no
+    double-counting via prompt_tokens)."""
+    usage = {
+        "input_tokens": 100_000,
+        "cache_read_tokens": 500_000,
+        "cache_write_tokens": 200_000,
+        "output_tokens": 50_000,
+        # prompt_tokens would be input+cache_read+cache_write = 800_000; must be ignored
+        "prompt_tokens": 800_000,
+    }
+    cost = pricing.estimate_cost(usage, "claude-sonnet-4-6")
+    # claude-sonnet-4-6: input 3.00, output 15.00, cache_read 0.30, cache_write 3.75
+    expected = (100_000 * 3.00 + 500_000 * 0.30 + 200_000 * 3.75 + 50_000 * 15.00) / 1_000_000
+    assert abs(cost - expected) < 1e-9
+
+    # cache_read is cheaper than fresh input; cache_write is more expensive.
+    all_fresh = pricing.estimate_cost(
+        {"input_tokens": 800_000, "output_tokens": 50_000}, "claude-sonnet-4-6"
+    )
+    # Our split has 500k at the cheap cache_read rate, so total input-side
+    # cost must be LOWER than treating all 800k as fresh input despite the
+    # 200k cache_write premium.
+    assert cost < all_fresh
+
+
+def test_no_double_count_prompt_tokens():
+    """prompt_tokens must NOT be used — only input + cache_read are counted."""
+    # If prompt_tokens were counted, cost would be higher
+    usage = {
+        "prompt_tokens": 1000,
+        "input_tokens": 800,
+        "cache_read_tokens": 200,
+    }
+    cost = pricing.estimate_cost(usage, "claude-sonnet-4-6")
+    # Should only count 800 input + 200 cache_read, NOT 1000 prompt_tokens
+    expected_input = 800 * 3.00 / 1_000_000
+    expected_cache = 200 * 0.30 / 1_000_000
+    assert abs(cost - (expected_input + expected_cache)) < 1e-10
+
+
+def test_reasoning_tokens_billed_as_output():
+    """reasoning_tokens should be billed at the output rate by default."""
+    cost = pricing.estimate_cost(
+        {"reasoning_tokens": 1000, "output_tokens": 0},
+        "claude-sonnet-4-6",
+    )
+    expected = 1000 * 15.00 / 1_000_000
+    assert abs(cost - expected) < 1e-10
+
+
+def test_estimate_cost_empty_usage():
+    """`estimate_cost({}, model)` should return 0.0."""
+    assert pricing.estimate_cost({}, "claude-sonnet-4-6") == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Auto-refreshed (dateless) key covers dated model variants by prefix
+# (CAMBIO 1: the gateway records models with a date suffix, but pricing.yaml
+#  keys arrive from OpenRouter without the date.)
+# ---------------------------------------------------------------------------
+
+
+def _write_pricing_yaml(tmp_path, monkeypatch, body: str):
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    tele_dir = tmp_path / "telemetry"
+    tele_dir.mkdir(exist_ok=True)
+    (tele_dir / "pricing.yaml").write_text(body)
+    pricing._custom_pricing = None
+
+
+def test_dated_model_covered_by_dateless_prefix_key(tmp_path, monkeypatch):
+    """A dated model from the gateway is costed via the dateless auto key by
+    prefix. This is the bug fix: was $0.00 before, real cost now."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "google/gemini-3-flash-preview":
+            input: 0.5
+            output: 3.0
+        defaults:
+          cache_read_multiplier: 0.10
+          cache_write_multiplier: 1.25
+    """),
+    )
+
+    cost = pricing.estimate_cost(
+        {"input_tokens": 19291, "output_tokens": 704},
+        "google/gemini-3-flash-preview-20251217",
+    )
+    expected = (19291 * 0.5 + 704 * 3.0) / 1e6
+    assert abs(cost - expected) < 1e-12
+
+
+def test_exact_match_still_preferred_over_prefix(tmp_path, monkeypatch):
+    """An exact key resolves by exact match, not the dateless-prefix path."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "google/gemini-2.5-flash-lite":
+            input: 0.10
+            output: 0.40
+          "google/gemini-2.5-flash":
+            input: 99.0
+            output: 99.0
+    """),
+    )
+
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "google/gemini-2.5-flash-lite",
+    )
+    # Must use the exact lite price, NOT the longer/other 'flash' key.
+    assert abs(cost - (0.10 + 0.40)) < 1e-9
+
+
+def test_regression_dated_claude_resolves_by_prefix():
+    """A dated Claude model still resolves to $3/$15 via prefix (no custom file)."""
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "claude-sonnet-4-20250514",
+    )
+    assert abs(cost - (3.00 + 15.00)) < 1e-9
+
+
+def test_regression_unknown_model_no_false_positive(tmp_path, monkeypatch):
+    """Widening the prefix scan must not turn unknown models into matches."""
+    # Even with custom keys present, a truly unrelated model stays $0.00.
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "google/gemini-3-flash-preview":
+            input: 0.5
+            output: 3.0
+    """),
+    )
+    cost = pricing.estimate_cost(
+        {"input_tokens": 5000, "output_tokens": 2000}, "totally-unknown-model-xyz"
+    )
+    assert cost == 0.0
+
+
+def test_cache_multiplier_fallback(caplog):
+    """Models without explicit cache_read use input * 0.10 default multiplier."""
+    import logging
+
+    # gpt-4o has no explicit cache_read price
+    with caplog.at_level(logging.DEBUG, logger="duckwork_telemetry.pricing"):
+        cost = pricing.estimate_cost({"cache_read_tokens": 1_000_000}, "gpt-4o")
+    # Expected: 1M * (2.50 * 0.10) / 1M = $0.25
+    expected = 2.50 * 0.10
+    assert abs(cost - expected) < 1e-9
+
+
+# ---------------------------------------------------------------------------
+# Gemini direct-provider lookups
+#
+# Duckwork hooks fire with model=gemini-3-flash-preview, provider=gemini when
+# calling Google AI Studio directly (not via OpenRouter). Verify the bare
+# Gemini family names resolve to the correct entries, including the
+# previously-buggy fallthrough where Gemini 3 was priced as Gemini 1.5 Flash.
+# ---------------------------------------------------------------------------
+
+
+def test_gemini_3_flash_preview_direct():
+    """gemini-3-flash-preview (no google/ prefix) resolves to its real price."""
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 0}, "gemini-3-flash-preview"
+    )
+    assert abs(cost - 0.50) < 1e-6  # not 0.075 (legacy Flash 1.5 fallback)
+
+
+def test_gemini_3_flash_preview_cache_read_explicit():
+    cost = pricing.estimate_cost({"cache_read_tokens": 1_000_000}, "gemini-3-flash-preview")
+    assert abs(cost - 0.05) < 1e-6  # 10% of input — also matches Google's published price
+
+
+def test_gemini_2_5_flash_direct():
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000}, "gemini-2.5-flash"
+    )
+    expected = 0.30 + 2.50
+    assert abs(cost - expected) < 1e-6
+
+
+def test_gemini_2_5_flash_lite_direct():
+    cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "gemini-2.5-flash-lite")
+    assert abs(cost - 0.10) < 1e-6
+
+
+def test_gemini_3_5_flash_direct():
+    cost = pricing.estimate_cost({"output_tokens": 1_000_000}, "gemini-3.5-flash")
+    assert abs(cost - 9.00) < 1e-6
+
+
+def test_gemini_dated_variant_resolves_by_prefix():
+    """gemini-3-flash-preview-20251217 (dated) hits the gemini-3-flash prefix."""
+    cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "gemini-3-flash-preview-20251217")
+    assert abs(cost - 0.50) < 1e-6
+
+
+def test_gemini_1_5_no_longer_resident(caplog):
+    """gemini-1.5-flash was removed from the default table (deprecated 2026-Q2).
+
+    Without the legacy 'gemini' catch-all prefix, an unknown 1.5 variant now
+    surfaces as a warning instead of being silently priced. This is the desired
+    behavior — a deprecated entry shouldn't be the silent default.
+    """
+    import logging
+
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "gemini-1.5-flash-tuned")
+    # 1.5-flash prefix is gone — falls through to unknown
+    assert cost == 0.0
+
+
+def test_gemini_no_generic_catchall_regression(caplog):
+    """A bare 'gemini-anything' must NOT silently match the old generic 'gemini' prefix.
+
+    Regression guard: previously the bare 'gemini' prefix swept any unknown
+    variant into Flash 1.5 pricing ($0.075/$0.30), underestimating Gemini 3
+    direct-Google calls by ~6.5x. After the cleanup, the catch-all is removed.
+    """
+    import logging
+
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "gemini-future-foo")
+    assert cost == 0.0  # not 0.075
+
+
+# ---------------------------------------------------------------------------
+# Google name normalization — issue #2 follow-up (PR 2)
+#
+# The same Gemini model can reach the gateway under two forms:
+#   - direct Google AI Studio  → bare "gemini-3-flash-preview"
+#   - OpenRouter routing       → "google/gemini-3-flash-preview"
+#
+# Both forms must resolve to the same price entry, regardless of which form
+# the pricing data carries. The normalization is google-specific — other
+# provider prefixes (anthropic/, meta-llama/, openrouter/) must never be
+# stripped naively, since they have distinct pricing semantics.
+# ---------------------------------------------------------------------------
+
+
+def test_google_prefix_and_bare_form_resolve_to_same_price():
+    """gemini-3-flash-preview ↔ google/gemini-3-flash-preview return the same entry.
+
+    The bare form lives in _DEFAULT_PRICING. The google/-prefixed form must
+    resolve via the alt-form fallback to the same dict — same input/output/
+    cache_read across the board.
+    """
+    bare = pricing._lookup_base("gemini-3-flash-preview")
+    prefixed = pricing._lookup_base("google/gemini-3-flash-preview")
+    assert bare is not None, "bare gemini-3-flash-preview missing from _DEFAULT_PRICING"
+    assert prefixed is not None, "google/gemini-3-flash-preview should normalize to bare"
+    for field in ("input", "output", "cache_read"):
+        assert bare.get(field) == prefixed.get(field), (
+            f"{field}: bare={bare.get(field)} prefixed={prefixed.get(field)}"
+        )
+
+    # End-to-end cost check — both forms must produce identical dollar amounts.
+    usage = {"input_tokens": 1_000_000, "output_tokens": 500_000}
+    cost_bare = pricing.estimate_cost(usage, "gemini-3-flash-preview")
+    cost_prefixed = pricing.estimate_cost(usage, "google/gemini-3-flash-preview")
+    assert abs(cost_bare - cost_prefixed) < 1e-9
+
+
+def test_non_google_provider_prefix_resolves_to_its_own_entry():
+    """meta-llama/llama-3.1-405b-instruct must keep resolving to its exact entry.
+
+    Regression guard: a naive "strip any provider/ prefix" implementation
+    would let meta-llama/* be re-interpreted as bare llama-*, potentially
+    masking the dedicated meta-llama/* entries in _DEFAULT_PRICING. The
+    google/ normalization is opt-in and must leave every other provider
+    prefix untouched.
+    """
+    # The exact meta-llama/* entry stays authoritative — same dict before and
+    # after this PR.
+    prefixed = pricing._lookup_base("meta-llama/llama-3.1-405b-instruct")
+    assert prefixed == {"input": 2.70, "output": 2.70}
+
+    # A meta-llama/* variant that is NOT an exact key must NOT fall back to
+    # the bare llama-3.1-405 prefix via naive stripping. It must stay None
+    # so the unknown-model warning surfaces — exactly the failure mode the
+    # google/ normalization is scoped to avoid recreating elsewhere.
+    assert pricing._lookup_base("meta-llama/llama-99-imaginary") is None
+
+    # And the alt-form helper must refuse to normalize meta-llama/*.
+    assert pricing._google_alt_form("meta-llama/llama-3.1-405b-instruct") is None
+
+
+def test_unprefixed_non_gemini_model_unaffected_by_normalization():
+    """claude-sonnet-4-6 (no provider prefix, not Gemini) resolves identically before/after.
+
+    The normalization triggers only when the model id starts with "google/"
+    or "gemini-". Anything else must take the original lookup path and
+    produce its existing price. Catches the failure mode where the alt-form
+    branch is reached for models that shouldn't be normalized at all.
+    """
+    base = pricing._lookup_base("claude-sonnet-4-6")
+    assert base is not None
+    # Direct cost via estimate_cost should match the fixture's claude-sonnet-4-6 entry
+    # (input=3.0, output=15.0).
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "claude-sonnet-4-6",
+    )
+    assert abs(cost - (3.0 + 15.0)) < 1e-9
+
+    # And the alt-form helper must return None for non-Gemini, non-google/* ids.
+    assert pricing._google_alt_form("claude-sonnet-4-6") is None
+    assert pricing._google_alt_form("anthropic/claude-sonnet-4-6") is None
+    assert pricing._google_alt_form("meta-llama/llama-3.1-405b-instruct") is None
+
+
+# ---------------------------------------------------------------------------
+# Review follow-ups requested on PR #15 — pin invariants the alt-form lookup
+# depends on but doesn't currently exercise.
+# ---------------------------------------------------------------------------
+
+
+def test_equal_length_prefix_tie_break_prefers_custom_over_default(monkeypatch):
+    """At equal prefix length, the higher-precedence source wins (custom > default).
+
+    The prefix scan combines custom + defaults + prefix table and sorts by
+    descending prefix length. Among equal-length prefixes, Python's stable sort
+    preserves insertion order, so the custom source (inserted first) must win.
+    Pins the invariant documented in _lookup_form's docstring.
+    """
+    shared_prefix = "tie-break-model-"
+    custom_price = {"input": 1.0, "output": 2.0}
+    default_price = {"input": 9.0, "output": 9.0}
+
+    monkeypatch.setattr(
+        pricing,
+        "_load_custom_pricing",
+        lambda: {"models": {shared_prefix: custom_price}},
+    )
+    monkeypatch.setattr(pricing, "_DEFAULT_PRICING", {shared_prefix: default_price})
+    monkeypatch.setattr(pricing, "_PREFIX_PRICING", [])
+
+    # Not an exact key -> forces the prefix scan; both sources carry the same
+    # prefix at equal length, so the stable-sort tie-break decides the winner.
+    result = pricing._lookup_base(shared_prefix + "20251217")
+    assert result == custom_price, f"expected custom to win the tie, got {result}"
+
+
+def test_google_alt_form_resolves_dated_variant_via_longest_prefix(monkeypatch):
+    """google/gemini-3-flash-preview-<date> resolves via alt-form + longest-prefix.
+
+    A dated OpenRouter-routed id has no exact key and its google/ prefix blocks
+    the bare-gemini entries on the first pass. The alt-form fallback strips
+    google/ and the longest-prefix scan then matches the longest applicable key:
+    the exact "gemini-3-flash-preview" entry in _DEFAULT_PRICING (len 22) wins
+    over the shorter "gemini-3-flash" family prefix in _PREFIX_PRICING (len 14).
+    Exercises the intersection of name normalization and the longest-prefix matcher.
+    """
+    monkeypatch.setattr(pricing, "_load_custom_pricing", lambda: {"models": {}})
+
+    dated_prefixed = "google/gemini-3-flash-preview-20251217"
+    dated_bare = "gemini-3-flash-preview-20251217"
+
+    resolved = pricing._lookup_base(dated_prefixed)
+    assert resolved is not None, (
+        "google/-prefixed dated variant should resolve via alt-form + prefix scan"
+    )
+    assert resolved == pricing._lookup_base(dated_bare)
+
+    usage = {"input_tokens": 1_000_000, "output_tokens": 500_000}
+    assert (
+        abs(pricing.estimate_cost(usage, dated_prefixed) - pricing.estimate_cost(usage, dated_bare))
+        < 1e-9
+    )
+
+
+# ---------------------------------------------------------------------------
+# Provider-aware lookup (issue #24) + NVIDIA NIM seeds (issue #12 Phase 1)
+#
+# An OpenRouter-sourced price must never cost a call another provider served.
+# The guard keys on each entry's _source vs the call's provider. Seeds with no
+# _source (_DEFAULT_PRICING, prefix table, hand-added overrides) stay neutral.
+# ---------------------------------------------------------------------------
+
+
+def test_openrouter_entry_assumed_for_fordex_with_warning(tmp_path, monkeypatch, caplog):
+    """When the ONLY match for a provider=fordex call is OpenRouter-sourced, the
+    rate is applied as a best-effort estimate (NOT silently $0) and a one-time
+    WARNING fires (issue #42).
+
+    This inverts the original issue-#24 safe-default ("fail to zero"): for a
+    cost tracker, a flagged best-effort number a user will react to beats a
+    silent under-count they will not. The flat-sub / wrong-rate cases stay
+    protected by a source-neutral `_subscription` (or hand-added) entry, which
+    pre-empts this fallback — see test_subscription_model_zero_cost_no_warning.
+    """
+    import logging
+
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "qwen3.7-plus":
+            input: 0.40
+            output: 1.60
+            _source: openrouter
+    """),
+    )
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        cost = pricing.estimate_cost(
+            {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+            "qwen3.7-plus",
+            provider="fordex",
+        )
+    # Best-effort: the OpenRouter rate is recorded, not a silent $0.
+    assert abs(cost - (0.40 + 1.60)) < 1e-9
+    # And the user is warned, with both the model and the provider named.
+    msgs = [r.message for r in caplog.records]
+    assert any("qwen3.7-plus" in m and "fordex" in m for m in msgs)
+
+
+def test_openrouter_entry_used_for_openrouter(tmp_path, monkeypatch):
+    """The same OpenRouter entry IS eligible for a provider=openrouter call."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "qwen3.7-plus":
+            input: 0.40
+            output: 1.60
+            _source: openrouter
+    """),
+    )
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "qwen3.7-plus",
+        provider="openrouter",
+    )
+    assert abs(cost - (0.40 + 1.60)) < 1e-9
+
+
+def test_empty_provider_keeps_backward_compat(tmp_path, monkeypatch):
+    """provider="" (default) keeps the historical provider-blind behaviour:
+    an OpenRouter entry is still eligible."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "qwen3.7-plus":
+            input: 0.40
+            output: 1.60
+            _source: openrouter
+    """),
+    )
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000}, "qwen3.7-plus"
+    )
+    assert abs(cost - (0.40 + 1.60)) < 1e-9
+
+
+def test_sourceless_override_is_neutral_for_any_provider(tmp_path, monkeypatch):
+    """A hand-added entry with no _source prices any provider's call."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "claude-sonnet-4-6":
+            input: 99.00
+            output: 99.00
+    """),
+    )
+    for prov in ("anthropic", "fordex", "openrouter", ""):
+        cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "claude-sonnet-4-6", prov)
+        assert abs(cost - 99.00) < 1e-6, f"failed for provider={prov!r}"
+
+
+def test_subscription_model_zero_cost_no_warning(tmp_path, monkeypatch, caplog):
+    """A _subscription model resolves to $0.00 WITHOUT an unknown-model warning
+    (issue #24, Option A): it is a declared flat-sub rate, not a lookup miss."""
+    import logging
+
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "qwen3.7-plus":
+            input: 0.0
+            output: 0.0
+            _subscription: true
+    """),
+    )
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        cost = pricing.estimate_cost(
+            {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+            "qwen3.7-plus",
+            provider="fordex",
+        )
+    assert cost == 0.0
+    assert not any("qwen3.7-plus" in r.message for r in caplog.records)
+
+
+def test_subscription_models_tracked_in_loader(tmp_path, monkeypatch):
+    """_load_custom_pricing exposes _subscription flags and _source metadata."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "qwen3.7-plus":
+            input: 0.0
+            output: 0.0
+            _subscription: true
+          "qwen/qwen3.7-plus":
+            input: 0.40
+            output: 1.60
+            _source: openrouter
+    """),
+    )
+    custom = pricing._load_custom_pricing()
+    assert "qwen3.7-plus" in custom["subscription_models"]
+    assert custom["model_sources"]["qwen/qwen3.7-plus"] == "openrouter"
+    # Price-key dict must NOT carry the _-prefixed metadata
+    assert "_subscription" not in custom["models"]["qwen3.7-plus"]
+    assert "_source" not in custom["models"]["qwen/qwen3.7-plus"]
+
+
+# ---------------------------------------------------------------------------
+# snapshot_to_price — converts a pricing_snapshots DB row into the canonical
+# price-dict shape _resolve_pricing expects (core-pricing-primary).
+# ---------------------------------------------------------------------------
+
+
+def test_snapshot_to_price_maps_all_rate_fields():
+    snapshot = {
+        "input_cost_per_million": 3.0,
+        "output_cost_per_million": 15.0,
+        "cache_read_cost_per_million": 0.3,
+        "cache_write_cost_per_million": 3.75,
+        "request_cost": None,
+        "source": "official_docs_snapshot",
+        "provider": "anthropic",
+        "model": "claude-sonnet-4-6",
+    }
+    assert pricing.snapshot_to_price(snapshot) == {
+        "input": 3.0,
+        "output": 15.0,
+        "cache_read": 0.3,
+        "cache_write": 3.75,
+    }
+
+
+def test_snapshot_to_price_omits_none_fields():
+    """A None cache field must be dropped, not passed through as None — so the
+    multiplier-derivation fallback in _resolve_pricing still kicks in."""
+    snapshot = {
+        "input_cost_per_million": 1.0,
+        "output_cost_per_million": 2.0,
+        "cache_read_cost_per_million": None,
+        "cache_write_cost_per_million": None,
+        "request_cost": None,
+    }
+    assert pricing.snapshot_to_price(snapshot) == {"input": 1.0, "output": 2.0}
+
+
+def test_snapshot_to_price_drops_request_cost():
+    """request_cost has no analog in the 5-component formula — must never leak
+    into the returned dict."""
+    snapshot = {
+        "input_cost_per_million": 1.0,
+        "output_cost_per_million": 2.0,
+        "cache_read_cost_per_million": None,
+        "cache_write_cost_per_million": None,
+        "request_cost": 0.005,
+    }
+    assert "request_cost" not in pricing.snapshot_to_price(snapshot)
+
+
+def test_snapshot_to_price_none_when_no_input_or_output():
+    """A request-cost-only snapshot (input/output both None) has no complete
+    input+output tariff — must return None, not an empty/partial dict, so the
+    caller falls through to the pricing.yaml chain instead of pricing the call
+    at $0 for missing components."""
+    snapshot = {
+        "input_cost_per_million": None,
+        "output_cost_per_million": None,
+        "cache_read_cost_per_million": None,
+        "cache_write_cost_per_million": None,
+        "request_cost": 0.005,
+    }
+    assert pricing.snapshot_to_price(snapshot) is None
+
+
+def test_snapshot_to_price_none_when_only_output_set():
+    """A partial snapshot (output set, input missing) is still not a usable
+    price — there is no fallback for a missing input rate, so this must
+    return None rather than a dict that later prices input at $0."""
+    snapshot = {
+        "input_cost_per_million": None,
+        "output_cost_per_million": 3.0,
+        "cache_read_cost_per_million": None,
+        "cache_write_cost_per_million": None,
+        "request_cost": None,
+    }
+    assert pricing.snapshot_to_price(snapshot) is None
+
+
+# ---------------------------------------------------------------------------
+# core_price priority (core-pricing-primary): a core-sourced snapshot outranks
+# every pricing.yaml/_DEFAULT_PRICING candidate except _subscription and the
+# :free suffix rule.
+# ---------------------------------------------------------------------------
+
+
+def test_core_price_wins_over_plain_custom_entry(tmp_path, monkeypatch):
+    """A core-sourced snapshot outranks a plain (non-subscription) custom entry."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "acme/model-x":
+            input: 9.00
+            output: 9.00
+    """),
+    )
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "acme/model-x",
+        provider="acme",
+        core_price={"input": 1.0, "output": 2.0},
+    )
+    assert abs(cost - 3.00) < 1e-9
+
+
+def test_core_price_wins_over_existing_pricing_entry():
+    """A core-sourced snapshot outranks the shipped pricing table too — the
+    committed fixture entry for claude-sonnet-4-6 mirrors _DEFAULT_PRICING
+    (3.00/15.00), so this proves the snapshot beats both at once."""
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "claude-sonnet-4-6",
+        provider="anthropic",
+        core_price={"input": 1.0, "output": 2.0},
+    )
+    assert abs(cost - 3.00) < 1e-9  # not 3.00 + 15.00 = 18.00
+
+
+def test_subscription_still_wins_over_core_price(tmp_path, monkeypatch):
+    """A declared _subscription entry outranks a core snapshot — the core has
+    no way to know about a user's flat-rate deal."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "qwen3.7-plus":
+            input: 0.0
+            output: 0.0
+            _subscription: true
+    """),
+    )
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "qwen3.7-plus",
+        provider="fordex",
+        core_price={"input": 5.0, "output": 5.0},
+    )
+    assert cost == 0.0
+
+
+def test_free_suffix_still_wins_over_core_price():
+    """The `:free` suffix rule outranks a core snapshot: core's canonicalization
+    keeps the `:free` suffix but there is no verified guarantee it resolves to
+    $0 rather than the paid base rate — the whole point of the existing rule."""
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000},
+        "some-vendor/special:free",
+        provider="openrouter",
+        core_price={"input": 5.0, "output": 5.0},
+    )
+    assert cost == 0.0
+
+
+def test_dated_free_slug_still_wins_over_core_price(tmp_path, monkeypatch):
+    """Regression guard tying this change to issue #54: a dated `:free` slug
+    with no exact pricing.yaml entry must resolve to $0 even when a (wrongly
+    paid-priced) core snapshot exists for that exact dated+free id."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "stepfun/step-3.7-flash:free":
+            input: 0
+            output: 0
+            _subscription: true
+          "stepfun/step-3.7-flash":
+            input: 0.2
+            output: 1.15
+        model_sources:
+          "stepfun/step-3.7-flash": openrouter
+    """),
+    )
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "stepfun/step-3.7-flash-20260528:free",
+        provider="fordex",
+        core_price={"input": 0.2, "output": 1.15},
+    )
+    assert cost == 0.0
+
+
+def test_no_core_price_leaves_existing_chain_unchanged():
+    """core_price=None (the default, and what a cold-start pair gets before its
+    first snapshot capture) must not change a single existing assertion in this
+    file — every test above this one in test_pricing.py calls estimate_cost
+    without core_price and must keep passing unmodified."""
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000}, "claude-sonnet-4-6"
+    )
+    assert abs(cost - 18.00) < 1e-9
+
+
+def test_incomplete_snapshot_core_price_none_falls_back_to_pricing_yaml():
+    """A snapshot that fails snapshot_to_price's input+output completeness
+    check produces core_price=None (the caller never passes a partial dict) —
+    proving the incomplete-snapshot case falls through to the existing
+    pricing.yaml/_DEFAULT_PRICING chain instead of pricing at $0."""
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "claude-sonnet-4-6",
+        provider="anthropic",
+        core_price=None,
+    )
+    assert abs(cost - 18.00) < 1e-9
+
+
+def test_core_price_derives_cache_from_multiplier(tmp_path, monkeypatch):
+    """A snapshot with no cache fields still gets the standard multiplier-
+    derived cache_read, exactly like a pricing.yaml entry that omits it."""
+    cost = pricing.estimate_cost(
+        {"cache_read_tokens": 1_000_000},
+        "claude-sonnet-4-6",
+        provider="anthropic",
+        core_price={"input": 10.0, "output": 20.0},
+    )
+    assert abs(cost - 1.00) < 1e-9  # 10.0 * default 0.10 cache_read multiplier
+
+
+def test_core_price_never_flags_provider_assumed(tmp_path, monkeypatch):
+    """Even when a source-ineligible pricing.yaml candidate also exists, a
+    snapshot-sourced cost is never flagged provider_assumed — the snapshot is
+    already resolved for this exact (provider, model) pair, so the issue #42
+    collision guard's failure mode does not apply to it."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "moonshotai/kimi-k2.6":
+            input: 0.68
+            output: 3.41
+            _source: openrouter
+    """),
+    )
+    assert (
+        pricing.is_provider_assumed(
+            "moonshotai/kimi-k2.6", "fordex", core_price={"input": 1.0, "output": 1.0}
+        )
+        is False
+    )
+
+
+def test_core_price_counts_as_explicitly_priced():
+    """A model with no pricing.yaml/_DEFAULT_PRICING entry at all still counts
+    as explicitly priced when only a core snapshot prices it — not an unknown-
+    model lookup miss (this is what lets a $0 core-priced call still register
+    as known-free for the free→paid transition alert)."""
+    assert (
+        pricing.is_explicitly_priced(
+            "totally-new-model-xyz", "acme", core_price={"input": 1.0, "output": 1.0}
+        )
+        is True
+    )
+
+
+# ---------------------------------------------------------------------------
+# Provider-assumed fallback (issue #42) — inverted safe-default for the lookup
+# path. A source-ineligible entry is applied (flagged + warned once) instead of
+# recording a silent $0, but only when no eligible candidate exists.
+# ---------------------------------------------------------------------------
+
+
+def test_provider_assumed_warns_once_per_pair(tmp_path, monkeypatch, caplog):
+    """The provider-assumed warning fires once per (model, provider) pair."""
+    import logging
+
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "moonshotai/kimi-k2.6":
+            input: 0.68
+            output: 3.41
+            _source: openrouter
+    """),
+    )
+    pricing._warned_provider_assumed.clear()
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        for _ in range(3):
+            pricing.estimate_cost(
+                {"input_tokens": 100, "output_tokens": 100},
+                "moonshotai/kimi-k2.6",
+                provider="fordex",
+            )
+    warns = [r for r in caplog.records if "moonshotai/kimi-k2.6" in r.message]
+    assert len(warns) == 1
+    # A different provider for the same model warns again (distinct pairing).
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        pricing.estimate_cost({"input_tokens": 100}, "moonshotai/kimi-k2.6", provider="fireworks")
+    warns = [r for r in caplog.records if "moonshotai/kimi-k2.6" in r.message]
+    assert len(warns) == 2
+
+
+def test_provider_assumed_via_prefix_match(tmp_path, monkeypatch):
+    """The inverted default also covers a prefix-only ineligible match: a dated
+    variant whose only price is an OpenRouter-sourced dateless key still gets a
+    best-effort cost for a mismatched provider instead of $0."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "moonshotai/kimi-k2.6":
+            input: 0.68
+            output: 3.41
+            _source: openrouter
+    """),
+    )
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "moonshotai/kimi-k2.6-20260601",  # dated variant → prefix match only
+        provider="fordex",
+    )
+    assert abs(cost - (0.68 + 3.41)) < 1e-9
+
+
+def test_empty_provider_does_not_warn_assumed(tmp_path, monkeypatch, caplog):
+    """provider="" stays backward-compatible: the OpenRouter entry is directly
+    eligible (not 'assumed'), so no provider-assumed warning fires."""
+    import logging
+
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "moonshotai/kimi-k2.6":
+            input: 0.68
+            output: 3.41
+            _source: openrouter
+    """),
+    )
+    pricing._warned_provider_assumed.clear()
+    with caplog.at_level(logging.WARNING, logger="duckwork_telemetry.pricing"):
+        cost = pricing.estimate_cost({"input_tokens": 1_000_000}, "moonshotai/kimi-k2.6")
+    assert abs(cost - 0.68) < 1e-9
+    assert not any("best-effort" in r.message for r in caplog.records)
+
+
+def test_is_provider_assumed_predicate(tmp_path, monkeypatch):
+    """is_provider_assumed is True only for a source-ineligible best-effort match."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "moonshotai/kimi-k2.6":
+            input: 0.68
+            output: 3.41
+            _source: openrouter
+    """),
+    )
+    # Mismatched provider with no eligible price → assumed.
+    assert pricing.is_provider_assumed("moonshotai/kimi-k2.6", "fordex") is True
+    # Same entry under openrouter is directly eligible → not assumed.
+    assert pricing.is_provider_assumed("moonshotai/kimi-k2.6", "openrouter") is False
+    # Backward-compat blind lookup is eligible → not assumed.
+    assert pricing.is_provider_assumed("moonshotai/kimi-k2.6", "") is False
+    # Source-neutral default model is never assumed.
+    assert pricing.is_provider_assumed("claude-sonnet-4-6", "fordex") is False
+    # Unknown model is not assumed (it is simply unpriced).
+    assert pricing.is_provider_assumed("totally-unknown-xyz", "fordex") is False
+
+
+def test_provider_assumed_is_explicitly_priced(tmp_path, monkeypatch):
+    """A provider-assumed price counts as explicitly priced (it produces a real
+    cost), so it is not mistaken for an unknown model."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "moonshotai/kimi-k2.6":
+            input: 0.68
+            output: 3.41
+            _source: openrouter
+    """),
+    )
+    assert pricing.is_explicitly_priced("moonshotai/kimi-k2.6", "fordex") is True
+
+
+# ── NVIDIA NIM seeds + same-id collision with OpenRouter ──
+
+
+def test_nim_seed_used_for_nvidia_provider():
+    """A NIM model resolves to its build.nvidia.com seed (no custom file)."""
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "nvidia/nemotron-70b-instruct",
+        provider="nvidia",
+    )
+    assert abs(cost - (1.20 + 1.20)) < 1e-9
+
+
+def test_nim_openrouter_collision_excluded_for_nvidia(tmp_path, monkeypatch):
+    """Same model id on both NIM and OpenRouter at different prices: a
+    provider=nvidia call must fall through the OpenRouter entry to the seed."""
+    _write_pricing_yaml(
+        tmp_path,
+        monkeypatch,
+        textwrap.dedent("""
+        models:
+          "nvidia/nemotron-3-super-120b-a12b":
+            input: 0.09
+            output: 0.45
+            _source: openrouter
+    """),
+    )
+    # provider=nvidia → OpenRouter entry excluded → _DEFAULT_PRICING seed (0.10/0.50)
+    cost_nim = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "nvidia/nemotron-3-super-120b-a12b",
+        provider="nvidia",
+    )
+    assert abs(cost_nim - (0.10 + 0.50)) < 1e-9
+    # provider=openrouter → OpenRouter entry eligible (0.09/0.45)
+    cost_or = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "nvidia/nemotron-3-super-120b-a12b",
+        provider="openrouter",
+    )
+    assert abs(cost_or - (0.09 + 0.45)) < 1e-9
+
+
+def test_nim_ultra_free_suffix_resolves_zero():
+    """A `:free` call resolves to $0 via the ":free" suffix rule, NOT the paid
+    `nemotron-3-ultra` prefix — no manual pricing entry needed. Covers both the
+    bare-id free form and the OpenRouter-style suffixed free form (issue #32)."""
+    bare_free = pricing.estimate_cost(
+        {"input_tokens": 1_000_000}, "nvidia/nemotron-3-ultra:free", provider="nvidia"
+    )
+    suffixed_free = pricing.estimate_cost(
+        {"input_tokens": 1_000_000},
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
+        provider="openrouter",
+    )
+    assert bare_free == 0.0
+    assert suffixed_free == 0.0
+    # And both are explicitly priced → recorded as known-free → transition-capable.
+    assert pricing.is_explicitly_priced("nvidia/nemotron-3-ultra:free", "nvidia")
+    assert pricing.is_explicitly_priced("nvidia/nemotron-3-ultra-550b-a55b:free", "openrouter")
+
+
+def test_dated_free_slug_resolves_zero_not_the_paid_base(tmp_path, monkeypatch):
+    """Issue #54: a `:free` slug carrying an intercalated date must stay $0.
+
+    The gateway reports `stepfun/step-3.7-flash-20260528:free` while the table
+    holds BOTH a declared-free base and the paid OpenRouter-sourced base for the
+    same family. The date segment sits between the model name and the tier
+    suffix, so a prefix match would land on the paid entry and bill a free call
+    at $0.2/$1.15 — the trap the issue warns about. The `:free` short-circuit
+    runs before the prefix scan, which is what keeps that from happening.
+
+    Existing `:free` coverage uses model-name segments (`-550b-a55b:free`); this
+    pins the date-segment shape AND the cross-provider case, where the paid base
+    is `_source: openrouter` but the call is served by `fordex`.
+    """
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    (tmp_path / "telemetry").mkdir()
+    (tmp_path / "telemetry" / "pricing.yaml").write_text(
+        "models:\n"
+        '  "stepfun/step-3.7-flash:free":\n'
+        "    input: 0\n"
+        "    output: 0\n"
+        "    _subscription: true\n"
+        '  "stepfun/step-3.7-flash":\n'
+        "    input: 0.2\n"
+        "    output: 1.15\n"
+        "    _auto: true\n"
+        "model_sources:\n"
+        '  "stepfun/step-3.7-flash": openrouter\n'
+    )
+    pricing.reload_custom_pricing()
+    try:
+        usage = {"input_tokens": 1_000_000, "output_tokens": 1_000_000}
+        # The repro, and the same slug a month later — no YAML edit in between.
+        assert pricing.estimate_cost(usage, "stepfun/step-3.7-flash-20260528:free", "fordex") == 0.0
+        assert pricing.estimate_cost(usage, "stepfun/step-3.7-flash-20260628:free", "fordex") == 0.0
+        # Undated `:free` keeps working, and it is a known price (not a lookup miss),
+        # so no "no price entry" and no estimated-price warning.
+        assert pricing.estimate_cost(usage, "stepfun/step-3.7-flash:free", "fordex") == 0.0
+        assert pricing.is_explicitly_priced("stepfun/step-3.7-flash-20260528:free", "fordex")
+        # The paid slug must NOT be dragged to $0: dropping `:free` still bills,
+        # dated or not. This is what makes the free→paid transition detectable.
+        paid = pricing.estimate_cost(usage, "stepfun/step-3.7-flash", "openrouter")
+        paid_dated = pricing.estimate_cost(usage, "stepfun/step-3.7-flash-20260528", "openrouter")
+        assert abs(paid - (0.2 + 1.15)) < 1e-9
+        assert abs(paid_dated - (0.2 + 1.15)) < 1e-9
+    finally:
+        pricing.reload_custom_pricing()
+
+
+def test_nim_super_free_suffix_resolves_zero():
+    """Regression: a seeded model's `:free` variant must resolve to $0, not the
+    seeded paid price via prefix. Pre-fix, `…-super-120b-a12b:free` billed at the
+    paid $0.09/$0.45 rate via prefix match (issue #32)."""
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000, "output_tokens": 1_000_000},
+        "nvidia/nemotron-3-super-120b-a12b:free",
+        provider="openrouter",
+    )
+    assert cost == 0.0
+
+
+def test_free_suffix_overridable_by_explicit_entry(tmp_path, monkeypatch):
+    """An explicit custom `:free` entry still wins over the built-in $0 rule, so
+    users can pin a different price for a `:free` id if a gateway ever charges
+    for one (issue #32)."""
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    (tmp_path / "telemetry").mkdir()
+    # Pin a NONZERO price to the `:free` id: if the built-in $0 rule fired first
+    # this call would cost $0, so a nonzero result proves the explicit custom
+    # entry takes precedence over the suffix rule.
+    (tmp_path / "telemetry" / "pricing.yaml").write_text(
+        'models:\n  "nvidia/nemotron-3-ultra:free":\n    input: 1.23\n    output: 0.0\n'
+    )
+    pricing.reload_custom_pricing()
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000}, "nvidia/nemotron-3-ultra:free", provider="nvidia"
+    )
+    assert abs(cost - 1.23) < 1e-9
+    pricing.reload_custom_pricing()
+
+
+def test_nim_ultra_paid_resolves_bare_and_suffixed():
+    """The paid seed answers both the bare id and the OpenRouter-style suffixed
+    id (via prefix), so cost>0 once the promo ends — what fires the alert."""
+    bare = pricing.estimate_cost(
+        {"input_tokens": 1_000_000}, "nvidia/nemotron-3-ultra", provider="nvidia"
+    )
+    suffixed = pricing.estimate_cost(
+        {"input_tokens": 1_000_000}, "nvidia/nemotron-3-ultra-550b-a55b", provider="nvidia"
+    )
+    assert abs(bare - 0.50) < 1e-9
+    assert abs(suffixed - 0.50) < 1e-9
+
+
+def test_nim_seed_survives_simulated_refresh():
+    """Seeds live in _DEFAULT_PRICING (code), so they are immune to a YAML
+    sync overwriting the same model id — the seed still resolves for NIM."""
+    # No custom file at all: the seed must answer directly.
+    cost = pricing.estimate_cost(
+        {"input_tokens": 1_000_000}, "nvidia/nemotron-nano-9b", provider="nvidia"
+    )
+    assert abs(cost - 0.04) < 1e-9
+
+
+# ---------------------------------------------------------------------------
+# is_explicitly_priced — distinguishes genuine-free from unknown (issue #16)
+# ---------------------------------------------------------------------------
+
+
+def test_is_explicitly_priced_known_model():
+    assert pricing.is_explicitly_priced("claude-sonnet-4-6") is True
+    assert pricing.is_explicitly_priced("gpt-4o") is True
+    assert pricing.is_explicitly_priced("nvidia/nemotron-70b-instruct", "nvidia") is True
+
+
+def test_is_explicitly_priced_zero_price_model():
+    assert pricing.is_explicitly_priced("owl-alpha") is True  # input=0, output=0
+
+
+def test_is_explicitly_priced_unknown_model():
+    assert pricing.is_explicitly_priced("completely-unknown-xyz-model") is False
+    # A genuinely unknown nvidia id (no prefix seed, no ":free") stays unpriced.
+    # Note: any `…:free` id IS explicitly priced ($0 via the suffix rule, issue
+    # #32) — that path is covered by the NIM free-suffix tests above.
+    assert pricing.is_explicitly_priced("nvidia/totally-unknown-model") is False
+
+
+def test_is_explicitly_priced_subscription_model(tmp_path, monkeypatch):
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    (tmp_path / "telemetry").mkdir()
+    (tmp_path / "telemetry" / "pricing.yaml").write_text(
+        "models:\n  hermes-4-qwen-72b:\n    input: 0.0\n    output: 0.0\n    _subscription: true\n"
+    )
+    pricing.reload_custom_pricing()
+    assert pricing.is_explicitly_priced("hermes-4-qwen-72b") is True
+    pricing.reload_custom_pricing()
+
+
+# ---------------------------------------------------------------------------
+# get_known_free_models — backfill list for pre-v5 installs (issue #16)
+# ---------------------------------------------------------------------------
+
+
+def test_get_known_free_models_includes_zero_price_models():
+    """Models with explicit input=0, output=0 in the fixture are returned."""
+    models = pricing.get_known_free_models()
+    assert "owl-alpha" in models
+    assert "openrouter/owl-alpha" in models
+
+
+def test_get_known_free_models_no_duplicates():
+    """Each model appears at most once in the result."""
+    models = pricing.get_known_free_models()
+    assert len(models) == len(set(models))
+
+
+def test_get_known_free_models_excludes_paid_models():
+    """Paid models (input > 0 or output > 0) are NOT returned."""
+    models = pricing.get_known_free_models()
+    assert "claude-sonnet-4-6" not in models
+    assert "gpt-4o" not in models
+
+
+def test_get_known_free_models_includes_subscription_models(tmp_path, monkeypatch):
+    """Subscription models (_subscription: true) appear in the backfill list."""
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    (tmp_path / "telemetry").mkdir()
+    (tmp_path / "telemetry" / "pricing.yaml").write_text(
+        "models:\n"
+        "  hermes-4-qwen-72b:\n"
+        "    input: 0.0\n"
+        "    output: 0.0\n"
+        "    _subscription: true\n"
+        "  paid-model:\n"
+        "    input: 3.0\n"
+        "    output: 15.0\n"
+        "    _subscription: true\n"
+    )
+    pricing.reload_custom_pricing()
+    models = pricing.get_known_free_models()
+    assert "hermes-4-qwen-72b" in models
+    assert "paid-model" not in models
+    pricing.reload_custom_pricing()
+
+
+# ---------------------------------------------------------------------------
+# Canonical home routing (DUCKWORK_TELEMETRY_HOME) — per-profile cost center
+# ---------------------------------------------------------------------------
+
+
+def test_custom_pricing_reads_from_telemetry_home(tmp_path, monkeypatch):
+    """_load_custom_pricing reads pricing.yaml from the canonical home when
+    DUCKWORK_TELEMETRY_HOME is set."""
+    import duckwork_telemetry.pricing as pricing
+
+    shared_tele = tmp_path / "shared" / "telemetry"
+    shared_tele.mkdir(parents=True)
+    (shared_tele / "pricing.yaml").write_text(
+        "models:\n  my/model:\n    input: 1.0\n    output: 2.0\n"
+    )
+    monkeypatch.setenv("DUCKWORK_TELEMETRY_HOME", str(tmp_path / "shared"))
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path / "profile"))
+    pricing._custom_pricing = None  # clear module cache
+
+    loaded = pricing._load_custom_pricing()
+    assert "my/model" in loaded["models"]
+
+
+# ---------------------------------------------------------------------------
+# Ordering-change pin (core-pricing-primary): the `:free` suffix rule now runs
+# before the _DEFAULT_PRICING exact-match step (previously after). Currently
+# unobservable because no _DEFAULT_PRICING/_PREFIX_PRICING key ends in
+# ":free" — this test fails loudly if that ever changes, instead of silently
+# altering which price a `:free` id resolves to.
+# ---------------------------------------------------------------------------
+
+
+def test_no_default_or_prefix_key_ends_in_free_suffix():
+    assert not any(k.endswith(":free") for k in pricing._DEFAULT_PRICING)
+    assert not any(prefix.endswith(":free") for prefix, _ in pricing._PREFIX_PRICING)

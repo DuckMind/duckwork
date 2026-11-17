@@ -1,0 +1,55 @@
+name: Graduate community skill
+description: Propose promoting a companion skill into the official mermail-skills package
+title: "[graduation] "
+labels: ["graduation", "official-skill"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        See graduation criteria in [MAINTAINERS.md](https://github.com/Nudgen-Marketing/mermail-skills/blob/main/MAINTAINERS.md#graduation).
+  - type: input
+    id: companion_url
+    attributes:
+      label: Companion repository URL
+    validations:
+      required: true
+  - type: input
+    id: proposed_name
+    attributes:
+      label: Proposed official skill name
+      placeholder: mermail-example-workflow
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence of use and safety
+      description: Installs, dogfood notes, issue feedback, security review summary
+    validations:
+      required: true
+  - type: textarea
+    id: tools
+    attributes:
+      label: MCP tool ownership plan
+      description: How tools map into tool-coverage.json without duplicates
+    validations:
+      required: true
+  - type: dropdown
+    id: license
+    attributes:
+      label: License for graduated files
+      options:
+        - MIT (already)
+        - Contributor agrees to relicense MIT
+        - Other (explain in evidence)
+    validations:
+      required: true
+  - type: checkboxes
+    id: ready
+    attributes:
+      label: Checklist
+      options:
+        - label: Skill follows official security norms (email untrusted, approvals, no email-as-PayBox-authority)
+          required: true
+        - label: Author or maintainer can open the graduation PR using templates/skill/
+          required: true

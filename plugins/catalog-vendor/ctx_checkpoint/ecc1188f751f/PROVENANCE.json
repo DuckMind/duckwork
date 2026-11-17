@@ -1,0 +1,314 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "ctx_checkpoint",
+  "content_id": "ecc1188f751f",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 4165,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "337f5900d4caa4f9554ed74388b91d65c25212304fcdbf54c0798df481b1cddc"
+    },
+    {
+      "bytes": 6,
+      "mode": "100644",
+      "path": "VERSION",
+      "sha256": "175307e07ac7f0bdc0f3dba371ba3a202aaf3c0117368a93d2331e1bea4af4f3"
+    },
+    {
+      "bytes": 26221,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "53e4576874cedea3c0e5a4b4c7369c7a8ec943b04a446a88b73114306bf033ce"
+    },
+    {
+      "bytes": 16658,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "9b490a1fec1f8e1c3d770bdff7b6ebaca549ef4e123efb1d9b114f5ba34af0b5"
+    },
+    {
+      "bytes": 131,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "ca6d22900d542fa777460da599b025abf6ba8866e2bae79e4937dfea02c642de"
+    },
+    {
+      "bytes": 10954,
+      "mode": "100644",
+      "path": "tests/test_contract_negotiation.py",
+      "sha256": "e3e3b072648fcc962af4ad5485932fcae5bae941e866f107a3b90abebe6b202c"
+    },
+    {
+      "bytes": 9486,
+      "mode": "100644",
+      "path": "tests/test_provider_contract.py",
+      "sha256": "6f37a2ce11fd78559ee46bc271d5f37250e8d2cbde0df1a181f0f4983e807e72"
+    }
+  ],
+  "input_manifest_sha256": "ecc1188f751f28751d9190094410b0bc8f9d7a5bc798d07fbece7692ad1645b0",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MPL-2.0",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "9b490a1fec1f8e1c3d770bdff7b6ebaca549ef4e123efb1d9b114f5ba34af0b5",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MPL-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "tests/test_contract_negotiation.py",
+      "tests/test_provider_contract.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "tests/test_contract_negotiation.py",
+      "tests/test_provider_contract.py"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/GottZ/ctx",
+    "sha": "98749f3cf929a37d4c4a68512e1cd4db6f4bad6d",
+    "subdir": "integrations/hermes/plugin/ctx_checkpoint"
+  },
+  "original_repo": "https://github.com/GottZ/ctx",
+  "original_sha": "98749f3cf929a37d4c4a68512e1cd4db6f4bad6d",
+  "original_subdir": "integrations/hermes/plugin/ctx_checkpoint",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "8aaf58d30289626247428c73a933db95d181647288dc88db78b77969f9d932f4",
+      "bytes": 4332,
+      "mode": "100644"
+    },
+    {
+      "path": "VERSION",
+      "sha256": "175307e07ac7f0bdc0f3dba371ba3a202aaf3c0117368a93d2331e1bea4af4f3",
+      "bytes": 6,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "e37d4f9853438b680d88c75a90478466b7bf362f24b8ef69e78e21b34bf1c22d",
+      "bytes": 26365,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "9b490a1fec1f8e1c3d770bdff7b6ebaca549ef4e123efb1d9b114f5ba34af0b5",
+      "bytes": 16658,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "ca3cc0a9f798401f9d34313d09b27e51b474064f5a3056ada6c167ae9b8cc41a",
+      "bytes": 275,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_contract_negotiation.py",
+      "sha256": "f5dcf479067d41ba38d08650d9184952eb795496c7bd63840f0e645d3af0d7f6",
+      "bytes": 11098,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_provider_contract.py",
+      "sha256": "404b7acc035d9753528f807a107fd5c61f900fc74f33fcdc4a872d50a905727c",
+      "bytes": 9630,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "defc8e281fe82868548c2a84cfabfdb97c2e1826a7a70729503db083c743a0fb",
+  "pin_verification": {
+    "archive_bytes": 12105013,
+    "archive_sha256": "3b5f3e8c13adb40cccee1da78d951a22e5023cf57b10db597fc86221cabcee3f",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "98749f3cf929a37d4c4a68512e1cd4db6f4bad6d",
+    "verified_commit_marker": "98749f3cf929a37d4c4a68512e1cd4db6f4bad6d"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "088828d15f25092b59400357dd62136f7f667a866d6ced2b14e1b0bdf314f623",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "337f5900d4caa4f9554ed74388b91d65c25212304fcdbf54c0798df481b1cddc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b07ae90452deac5332cebe9661e9bfb694e4ffd6831415f75cdc8c06905edf4e",
+        "source": "README.md",
+        "final_output_sha256": "8aaf58d30289626247428c73a933db95d181647288dc88db78b77969f9d932f4",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "16bcd881163123b01dfaf36a51710e98952b03175f9ab742c6b598bdcf7645f3"
+      },
+      {
+        "destination": "VERSION",
+        "input_sha256": "175307e07ac7f0bdc0f3dba371ba3a202aaf3c0117368a93d2331e1bea4af4f3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "175307e07ac7f0bdc0f3dba371ba3a202aaf3c0117368a93d2331e1bea4af4f3",
+        "source": "VERSION",
+        "final_output_sha256": "175307e07ac7f0bdc0f3dba371ba3a202aaf3c0117368a93d2331e1bea4af4f3",
+        "cli_destination": "VERSION",
+        "previous_staging_sha256": "175307e07ac7f0bdc0f3dba371ba3a202aaf3c0117368a93d2331e1bea4af4f3"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "53e4576874cedea3c0e5a4b4c7369c7a8ec943b04a446a88b73114306bf033ce",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "547b211c075ed1516634d5e20d9280f66dfb5d12b6e1fbc6d9d5c131eb4566a2",
+        "source": "__init__.py",
+        "final_output_sha256": "e37d4f9853438b680d88c75a90478466b7bf362f24b8ef69e78e21b34bf1c22d",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "e37d4f9853438b680d88c75a90478466b7bf362f24b8ef69e78e21b34bf1c22d"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "9b490a1fec1f8e1c3d770bdff7b6ebaca549ef4e123efb1d9b114f5ba34af0b5",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "9b490a1fec1f8e1c3d770bdff7b6ebaca549ef4e123efb1d9b114f5ba34af0b5",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "9b490a1fec1f8e1c3d770bdff7b6ebaca549ef4e123efb1d9b114f5ba34af0b5",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "9b490a1fec1f8e1c3d770bdff7b6ebaca549ef4e123efb1d9b114f5ba34af0b5"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "ca6d22900d542fa777460da599b025abf6ba8866e2bae79e4937dfea02c642de",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1dc4306b5eb8dd58f106ba3a425ce2e73970ea520cf0477bb89f17c3d3b3c7fc",
+        "source": "plugin.yaml",
+        "final_output_sha256": "ca3cc0a9f798401f9d34313d09b27e51b474064f5a3056ada6c167ae9b8cc41a",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "ca3cc0a9f798401f9d34313d09b27e51b474064f5a3056ada6c167ae9b8cc41a"
+      },
+      {
+        "destination": "tests/test_contract_negotiation.py",
+        "input_sha256": "e3e3b072648fcc962af4ad5485932fcae5bae941e866f107a3b90abebe6b202c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5d2bc61b482ebbad6ffd32c2a822718ee98fc0d9d01fb1de746fc5a074c31cbe",
+        "source": "tests/test_contract_negotiation.py",
+        "final_output_sha256": "f5dcf479067d41ba38d08650d9184952eb795496c7bd63840f0e645d3af0d7f6",
+        "cli_destination": "tests/test_contract_negotiation.py",
+        "previous_staging_sha256": "f5dcf479067d41ba38d08650d9184952eb795496c7bd63840f0e645d3af0d7f6"
+      },
+      {
+        "destination": "tests/test_provider_contract.py",
+        "input_sha256": "6f37a2ce11fd78559ee46bc271d5f37250e8d2cbde0df1a181f0f4983e807e72",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d56b15bc0fa58994e539ce72db0a45fd86cac0f8629ef7b1dbc52476bed3dafd",
+        "source": "tests/test_provider_contract.py",
+        "final_output_sha256": "404b7acc035d9753528f807a107fd5c61f900fc74f33fcdc4a872d50a905727c",
+        "cli_destination": "tests/test_provider_contract.py",
+        "previous_staging_sha256": "404b7acc035d9753528f807a107fd5c61f900fc74f33fcdc4a872d50a905727c"
+      }
+    ],
+    "manifest_sha256": "1c357179424311486fbc5b309b90b7a4b1d2352e38ae414d47de6a39aa3cc95c",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "integrations/hermes/plugin/ctx_checkpoint/README.md",
+    "VERSION": "integrations/hermes/plugin/ctx_checkpoint/VERSION",
+    "__init__.py": "integrations/hermes/plugin/ctx_checkpoint/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "integrations/hermes/plugin/ctx_checkpoint/plugin.yaml",
+    "tests/test_contract_negotiation.py": "integrations/hermes/plugin/ctx_checkpoint/tests/test_contract_negotiation.py",
+    "tests/test_provider_contract.py": "integrations/hermes/plugin/ctx_checkpoint/tests/test_provider_contract.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "ctx_checkpoint",
+    "python_files_compiled": 3,
+    "secret_findings": 0
+  },
+  "canonical_slug": "ctx_checkpoint",
+  "catalog_file": "src/plugin-catalog/ctx_checkpoint.yaml",
+  "identity": {
+    "catalog_id": "ctx_checkpoint",
+    "canonical_slug": "ctx_checkpoint",
+    "original_manifest_name": "ctx_checkpoint",
+    "rebranded_manifest_name": "ctx_checkpoint",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "8c59af88b0e171e3cbc252187ecaee84293bdcb1edd8b8b290e75149dddeeadd",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "16bcd881163123b01dfaf36a51710e98952b03175f9ab742c6b598bdcf7645f3",
+          "after_sha256": "8aaf58d30289626247428c73a933db95d181647288dc88db78b77969f9d932f4",
+          "before_bytes": 4340,
+          "after_bytes": 4332,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

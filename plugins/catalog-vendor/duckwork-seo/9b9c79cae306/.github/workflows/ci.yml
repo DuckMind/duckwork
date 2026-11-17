@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  catalog-validation:
+    name: Duckwork 0.22.2 validation (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out Duckwork Agent 0.22.2
+        uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: d923a5eb487a17c0a68801bba9ef0f56c81040a8 # v0.22.2
+          fetch-depth: 0
+          persist-credentials: false
+          path: .ci/duckwork-agent
+
+      - name: Prepare the locked Duckwork environment
+        uses: ./.ci/duckwork-agent/.github/actions/setup-pm
+        with:
+          toolchain: python
+          extras: '[]'
+          python-cache-dependency-glob: .ci/duckwork-agent/uv.lock
+
+      - name: Stage the committed plugin tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          plugin_under_test="$RUNNER_TEMP/duckwork-seo"
+          mkdir -p "$plugin_under_test"
+          git archive --format=tar HEAD | tar -xf - -C "$plugin_under_test"
+          printf 'PLUGIN_UNDER_TEST=%s\n' "$plugin_under_test" >> "$GITHUB_ENV"
+
+      - name: Verify the Duckwork release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C .ci/duckwork-agent rev-parse HEAD)" = d923a5eb487a17c0a68801bba9ef0f56c81040a8
+          test "$(git -C .ci/duckwork-agent describe --tags --exact-match)" = v0.22.2
+          duckwork --version | grep -F 'Duckwork Agent v0.22.2'
+
+      - name: Run the catalog admission validator
+        shell: bash
+        run: duckwork plugins validate "$PLUGIN_UNDER_TEST" --install-deps --json
+
+      - name: Check runtime discovery
+        shell: bash
+        run: duckwork plugins doctor "$PLUGIN_UNDER_TEST" --ci
+
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements.txt pytest
+
+      - name: Compile Python sources
+        run: python -m compileall -q __init__.py hooks scripts
+
+      - name: Run offline test suite
+        run: python -m pytest -q -k "not test_render_page_never_mode_against_example_com"
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Audit declared dependencies
+        run: |
+          python -m pip install pip-audit
+          python -m pip_audit -r requirements.txt --progress-spinner off
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Scan tracked files for credential patterns
+        shell: bash
+        run: |
+          set -euo pipefail
+          pattern='AIza[0-9A-Za-z_-]{35}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|gh[ous]_[A-Za-z0-9]{36}|AKIA[0-9A-Z]{16}|GOCSPX-[A-Za-z0-9_-]{20,}|sk-(proj-)?[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}'
+          hits=$(git grep -nEI "$pattern" -- ':!tests/**' ':!**/auth-setup.md' || true)
+          hits=$(printf '%s\n' "$hits" | grep -vE 'DUMMY|EXAMPLE|YOUR_|REDACTED|placeholder|<[A-Z0-9_-]+>' || true)
+          if [[ -n "$hits" ]]; then
+            printf 'Potential credential patterns:\n%s\n' "$hits"
+            exit 1
+          fi

@@ -1,0 +1,25 @@
+{
+  "file": "cursor-plugin/.cursor-plugin/plugin.json",
+  "host": "Cursor plugin manifest",
+  "verifiedAgainst": "https://cursor.com/docs/reference/plugins.md",
+  "verifiedOn": "2026-09-23",
+  "checks": [
+    {
+      "name": "documented required fields present",
+      "kind": "requiredPresent",
+      "path": [],
+      "required": ["name", "description", "version", "author", "homepage", "repository", "license", "keywords"]
+    },
+    {
+      "name": "keys subset of documented + known extras (displayName, logo)",
+      "kind": "keysSubset",
+      "path": [],
+      "allowed": ["name", "displayName", "description", "version", "author", "homepage", "repository", "license", "keywords", "logo"]
+    },
+    {
+      "name": "no mcpServers key (this host keeps the server URL in mcp.json, not here)",
+      "kind": "absent",
+      "path": ["mcpServers"]
+    }
+  ]
+}

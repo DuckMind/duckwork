@@ -1,0 +1,867 @@
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from tinyfish_duckwork import rest_client
+from tinyfish_duckwork import setup_cli as cli
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    cli.setup_tinyfish_cli(parser)
+    return parser
+
+
+def _configured_config(**overrides: Any) -> dict[str, Any]:
+    config: dict[str, Any] = {
+        "web": {"search_backend": "tinyfish", "extract_backend": "tinyfish"},
+    }
+    config.update(overrides)
+    return config
+
+
+class FakeProvider:
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+        self.search_result: dict[str, Any] = {
+            "success": True,
+            "data": {"web": [{"url": "https://example.com"}]},
+        }
+        self.fetch_result: list[dict[str, Any]] = [{"content": "ok"}]
+        self.search_exception: Exception | None = None
+        self.fetch_exception: Exception | None = None
+
+    def is_available(self) -> bool:
+        return True
+
+    def search(self, query: str, limit: int = 5) -> dict[str, Any]:
+        assert query and limit == 1
+        self.calls.append("search")
+        if self.search_exception is not None:
+            raise self.search_exception
+        return self.search_result
+
+    def extract(self, urls: list[str], **kwargs: Any) -> list[dict[str, Any]]:
+        assert urls == ["https://docs.tinyfish.ai/"]
+        assert kwargs.get("format") == "markdown"
+        self.calls.append("fetch")
+        if self.fetch_exception is not None:
+            raise self.fetch_exception
+        return self.fetch_result
+
+
+@pytest.fixture
+def env(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    """Fake Duckwork config/env layer shared by CLI tests."""
+
+    state: dict[str, Any] = {
+        "config": _configured_config(),
+        "saved_configs": [],
+        "env": {"TINYFISH_API_KEY": "tf_test"},
+        "saved_env": [],
+        "provider": FakeProvider(),
+    }
+    monkeypatch.setattr(cli, "_load_config", lambda: state["config"])
+    monkeypatch.setattr(
+        cli, "_save_config", lambda config: state["saved_configs"].append(config)
+    )
+    monkeypatch.setattr(cli, "_get_env", lambda name: state["env"].get(name, ""))
+
+    def fake_save_env_secure(name: str, value: str) -> dict[str, Any]:
+        state["saved_env"].append((name, value))
+        return {"success": True, "stored_as": name, "validated": False}
+
+    monkeypatch.setattr(cli, "_save_env_secure", fake_save_env_secure)
+    monkeypatch.setattr(
+        cli, "_read_saved_env", lambda name: dict(state["saved_env"]).get(name, "")
+    )
+    monkeypatch.setattr(
+        cli, "_api_key", lambda: state["env"].get("TINYFISH_API_KEY", "")
+    )
+    monkeypatch.setattr(cli, "TinyFishWebSearchProvider", lambda: state["provider"])
+    monkeypatch.setattr(cli, "_validate_key", lambda api_key: None)
+    monkeypatch.setattr(cli, "_agent_browser_installed", lambda: True)
+    state["enabled_toolsets"] = []
+    monkeypatch.setattr(
+        cli,
+        "_enable_toolset",
+        lambda name: state["enabled_toolsets"].append(name) or True,
+    )
+    monkeypatch.delenv("TINYFISH_API_KEY", raising=False)
+    return state
+
+
+def test_setup_writes_web_backends(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["config"] = {}
+    args = _parser().parse_args(["setup", "--yes"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    saved = env["saved_configs"][-1]
+    assert saved["web"]["search_backend"] == "tinyfish"
+    assert saved["web"]["extract_backend"] == "tinyfish"
+    assert saved["web"]["backend"] == "tinyfish"
+    assert "doctor --live" in capsys.readouterr().out
+
+
+def test_setup_preserves_existing_shared_backend(env: dict[str, Any]) -> None:
+    env["config"] = {"web": {"backend": "tavily"}}
+    args = _parser().parse_args(["setup", "--yes"])
+
+    cli.dispatch_tinyfish_cli(args)
+
+    saved = env["saved_configs"][-1]
+    assert saved["web"]["backend"] == "tavily"
+    assert saved["web"]["search_backend"] == "tinyfish"
+
+
+def test_setup_respects_no_web_backend(env: dict[str, Any]) -> None:
+    env["config"] = {}
+    args = _parser().parse_args(["setup", "--yes", "--no-web-backend"])
+
+    cli.dispatch_tinyfish_cli(args)
+
+    assert env["saved_configs"] == []
+
+
+def test_setup_non_tty_without_yes_does_not_write_config(env: dict[str, Any]) -> None:
+    # A piped setup must not rewrite config without explicit --yes opt-in.
+    env["config"] = {}
+    args = _parser().parse_args(["setup"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    assert env["saved_configs"] == []
+
+
+def test_setup_saves_api_key(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = _parser().parse_args(["setup", "--yes", "--api-key", "tf_new"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    assert env["saved_env"] == [("TINYFISH_API_KEY", "tf_new")]
+    assert "Saved TINYFISH_API_KEY" in capsys.readouterr().out
+
+
+def test_setup_key_save_refusal_exits_nonzero(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    # A managed install refuses the write while the secure save still reports success.
+    monkeypatch.setattr(cli, "_read_saved_env", lambda name: "")
+    args = _parser().parse_args(["setup", "--yes", "--api-key", "tf_new"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 1
+
+    captured = capsys.readouterr()
+    assert "Could not save TINYFISH_API_KEY" in captured.err
+    assert "Saved TINYFISH_API_KEY" not in captured.out
+
+
+def test_setup_warns_when_shell_var_shadows_saved_key(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setenv("TINYFISH_API_KEY", "tf_stale_shell_value")
+    args = _parser().parse_args(["setup", "--yes", "--api-key", "tf_new"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    out = capsys.readouterr().out
+    assert "Saved TINYFISH_API_KEY" in out
+    assert "shadows it at runtime" in out
+
+
+def test_setup_never_writes_mcp_config(env: dict[str, Any]) -> None:
+    env["config"] = {}
+    args = _parser().parse_args(["setup", "--yes"])
+
+    cli.dispatch_tinyfish_cli(args)
+
+    assert "mcp_servers" not in env["saved_configs"][-1]
+
+
+def test_setup_live_runs_doctor(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = _parser().parse_args(["setup", "--yes", "--live"])
+
+    exit_code = cli.dispatch_tinyfish_cli(args, provider=env["provider"])
+
+    assert exit_code == 0
+    assert env["provider"].calls == ["search", "fetch"]
+    assert "live_search_ok: yes" in capsys.readouterr().out
+
+
+def test_status_reports_non_secret_fields(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = _parser().parse_args(["status", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert payload["api_key_env_var"] == "TINYFISH_API_KEY"
+    assert payload["api_key_configured"] is True
+    assert payload["web_backend_configured"] is True
+    assert payload["credit_policy"] == {"browser": "request", "agent": "request"}
+    assert payload["routing_context_enabled"] is True
+    assert payload["mcp_configured"] is False
+    assert payload["plugin_version"]
+
+
+def test_status_reports_cli_seeded_key_name(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["env"] = {"MCP_TINYFISH_API_KEY": "tf_cli"}
+    args = _parser().parse_args(["status", "--json"])
+
+    cli.dispatch_tinyfish_cli(args)
+
+    assert (
+        json.loads(capsys.readouterr().out)["api_key_env_var"] == "MCP_TINYFISH_API_KEY"
+    )
+
+
+def test_status_never_prints_key_value(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["env"] = {"TINYFISH_API_KEY": "tf_secret_value"}
+
+    cli.dispatch_tinyfish_cli(_parser().parse_args(["status"]))
+    cli.dispatch_tinyfish_cli(_parser().parse_args(["status", "--json"]))
+
+    assert "tf_secret_value" not in capsys.readouterr().out
+
+
+def test_dispatch_defaults_to_status(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = argparse.Namespace()
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+    assert "TinyFish Duckwork plugin status" in capsys.readouterr().out
+
+
+def test_doctor_ok_exits_zero(env: dict[str, Any]) -> None:
+    args = _parser().parse_args(["doctor"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 0
+
+
+def test_doctor_unconfigured_recommends_setup(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["config"] = {}
+    env["env"] = {}
+    args = _parser().parse_args(["doctor"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 1
+    assert (
+        "Recommended next step: run `duckwork tinyfish setup`." in capsys.readouterr().out
+    )
+
+
+def test_doctor_live_success(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = _parser().parse_args(["doctor", "--live", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["live_search_ok"] is True
+    assert payload["live_fetch_ok"] is True
+    assert env["provider"].calls == ["search", "fetch"]
+
+
+def test_doctor_live_failure_recommends_key_check(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["provider"].search_result = {
+        "success": False,
+        "error": "TinyFish REST search failed",
+    }
+    args = _parser().parse_args(["doctor", "--live"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 1
+
+    out = capsys.readouterr().out
+    assert "Recommended next step: verify your TinyFish API key" in out
+
+
+def test_doctor_live_exception_reports_safe_error(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["provider"].search_exception = RuntimeError("tf_secret in exception text")
+    env["provider"].fetch_exception = RuntimeError("tf_secret in exception text")
+    args = _parser().parse_args(["doctor", "--live", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 1
+
+    payload = json.loads(capsys.readouterr().out)
+    assert (
+        payload["live_search_error"] == "TinyFish Search check failed (RuntimeError)."
+    )
+    assert payload["live_fetch_error"] == "TinyFish Fetch check failed (RuntimeError)."
+    assert "tf_secret" not in json.dumps(payload)
+
+
+def test_doctor_live_fetch_error_document_fails_check(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["provider"].fetch_result = [{"content": "", "error": "fetch blocked"}]
+    args = _parser().parse_args(["doctor", "--live", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 1
+    assert json.loads(capsys.readouterr().out)["live_fetch_error"] == "fetch blocked"
+
+
+def test_doctor_live_paid_denied_policy_fails(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["config"] = _configured_config(tinyfish={"credit_policy": {"browser": "deny"}})
+    args = _parser().parse_args(["doctor", "--live-paid", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 1
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["live_paid_ok"] is False
+    assert payload["live_paid_error"] == "TinyFish browser policy is deny."
+
+
+def test_doctor_live_paid_success(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    env["config"] = _configured_config(tinyfish={"credit_policy": {"browser": "allow"}})
+    monkeypatch.setattr(
+        cli,
+        "request_credit_approval",
+        lambda feature, operation, target=None: (True, ""),
+    )
+    monkeypatch.setattr(
+        rest_client, "create_browser_session", lambda **kwargs: {"session_id": "sess_1"}
+    )
+    monkeypatch.setattr(
+        rest_client, "close_browser_session", lambda session_id, *, api_key: True
+    )
+    args = _parser().parse_args(["doctor", "--live-paid", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["live_paid_ok"] is True
+    assert payload["live_paid_browser_cleanup_ok"] is True
+
+
+def test_doctor_live_paid_missing_session_id_notes_inactivity_expiry(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(
+        cli,
+        "request_credit_approval",
+        lambda feature, operation, target=None: (True, ""),
+    )
+    monkeypatch.setattr(rest_client, "create_browser_session", lambda **kwargs: {})
+    monkeypatch.setattr(
+        rest_client,
+        "close_browser_session",
+        lambda session_id, *, api_key: pytest.fail("nothing closeable"),
+    )
+    args = _parser().parse_args(["doctor", "--live-paid", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 1
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["live_paid_ok"] is False
+    assert "1h inactivity timeout" in payload["live_paid_error"]
+
+
+def test_doctor_live_paid_cleanup_failure_fails_and_recommends_policy_review(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(
+        cli,
+        "request_credit_approval",
+        lambda feature, operation, target=None: (True, ""),
+    )
+    monkeypatch.setattr(
+        rest_client, "create_browser_session", lambda **kwargs: {"session_id": "sess_1"}
+    )
+    monkeypatch.setattr(
+        rest_client, "close_browser_session", lambda session_id, *, api_key: False
+    )
+    args = _parser().parse_args(["doctor", "--live-paid"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 1
+
+    out = capsys.readouterr().out
+    assert "live_paid_error: TinyFish Browser session cleanup failed." in out
+    assert "Recommended next step: review the browser credit policy" in out
+
+
+def test_doctor_live_paid_approval_denial_fails(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(
+        cli,
+        "request_credit_approval",
+        lambda feature, operation, target=None: (False, "Approval denied by user."),
+    )
+    args = _parser().parse_args(["doctor", "--live-paid", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args, provider=env["provider"]) == 1
+    assert (
+        json.loads(capsys.readouterr().out)["live_paid_error"]
+        == "Approval denied by user."
+    )
+
+
+def test_credits_status_json(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = _parser().parse_args(["credits", "status", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+    assert json.loads(capsys.readouterr().out) == {
+        "credit_policy": {"browser": "request", "agent": "request"}
+    }
+
+
+def test_credits_set_saves_policy(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = _parser().parse_args(["credits", "set", "browser", "allow"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    saved = env["saved_configs"][-1]
+    assert saved["tinyfish"]["credit_policy"] == {"browser": "allow"}
+    assert "Set TinyFish browser credit policy to allow." in capsys.readouterr().out
+
+
+def test_credits_reset_restores_request_default(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["config"] = _configured_config(tinyfish={"credit_policy": {"browser": "deny"}})
+    args = _parser().parse_args(["credits", "reset"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    saved = env["saved_configs"][-1]
+    assert saved["tinyfish"]["credit_policy"] == {
+        "browser": "request",
+        "agent": "request",
+    }
+    out = capsys.readouterr().out
+    assert "request" in out
+    assert "deny" not in out
+
+
+def test_browser_enable_sets_cloud_provider(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = _parser().parse_args(["browser", "enable"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    assert env["saved_configs"][-1]["browser"]["cloud_provider"] == "tinyfish"
+    out = capsys.readouterr().out
+    assert "Set browser.cloud_provider to tinyfish." in out
+    assert "Policy 'request'" in out
+
+
+def test_browser_enable_is_idempotent(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["config"] = _configured_config(browser={"cloud_provider": "tinyfish"})
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["browser", "enable"])) == 0
+
+    assert env["saved_configs"] == []
+    assert "already" in capsys.readouterr().out
+
+
+def test_browser_disable_removes_only_tinyfish(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["config"] = _configured_config(browser={"cloud_provider": "tinyfish"})
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["browser", "disable"])) == 0
+
+    assert "cloud_provider" not in env["saved_configs"][-1]["browser"]
+    assert "Removed browser.cloud_provider" in capsys.readouterr().out
+
+
+def test_browser_disable_leaves_other_provider_alone(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["config"] = _configured_config(browser={"cloud_provider": "browserbase"})
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["browser", "disable"])) == 0
+
+    assert env["saved_configs"] == []
+    assert "nothing to change" in capsys.readouterr().out
+
+
+def test_browser_status_reports_provider_and_policy(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["config"] = _configured_config(browser={"cloud_provider": "tinyfish"})
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["browser", "status"])) == 0
+
+    out = capsys.readouterr().out
+    assert "browser.cloud_provider: tinyfish" in out
+    assert "tinyfish.credit_policy.browser: request" in out
+
+
+def test_usage_prints_wallet(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(
+        rest_client,
+        "wallet",
+        lambda *, api_key, timeout=30.0: {
+            "available_balance": "12.34",
+            "currency": "USD",
+            "as_of": "2026-08-26T00:00:00Z",
+            "auto_reload": {"state": "enabled", "threshold": "5", "recharge_to": "25"},
+            "pending_top_up": None,
+            "rates": {
+                "meters": [
+                    {
+                        "label": "Browser",
+                        "unit_amount": "0.01",
+                        "currency": "USD",
+                        "per": "minute",
+                    }
+                ]
+            },
+        },
+    )
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["usage"])) == 0
+
+    out = capsys.readouterr().out
+    assert "Available balance: $12.34 USD" in out
+    assert "Auto-reload: enabled (at $5 USD, recharge to $25 USD)" in out
+    assert "Browser: $0.01 USD per minute" in out
+
+
+def test_usage_wallet_not_found_is_friendly_success(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def raise_not_found(*, api_key: str, timeout: float = 30.0) -> dict[str, Any]:
+        raise rest_client.TinyFishWalletNotFound("no wallet")
+
+    monkeypatch.setattr(rest_client, "wallet", raise_not_found)
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["usage"])) == 0
+
+    out = capsys.readouterr().out
+    assert "Wallet balance unavailable." in out
+    assert cli.API_KEY_URL in out
+
+
+def test_usage_error_exits_nonzero(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def raise_error(*, api_key: str, timeout: float = 30.0) -> dict[str, Any]:
+        raise rest_client.TinyFishRestError("TinyFish Wallet returned HTTP 500")
+
+    monkeypatch.setattr(rest_client, "wallet", raise_error)
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["usage"])) == 1
+    assert "Error: TinyFish Wallet returned HTTP 500" in capsys.readouterr().out
+
+
+def test_usage_requires_api_key(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["env"] = {}
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["usage"])) == 1
+    assert "TINYFISH_API_KEY" in capsys.readouterr().err
+
+
+def test_usage_missing_key_with_json_emits_json_payload(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["env"] = {}
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["usage", "--json"])) == 1
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert payload["success"] is False
+    assert payload["wallet_available"] is None
+    assert "TINYFISH_API_KEY" in payload["error"]
+    assert captured.err == ""
+
+
+def test_in_session_status_command(env: dict[str, Any]) -> None:
+    provider = env["provider"]
+
+    text = cli.tinyfish_status_command("", provider=provider)
+    assert "TinyFish Duckwork plugin status" in text
+    assert provider.calls == []
+
+    live_text = cli.tinyfish_status_command("live", provider=provider)
+    assert "live_search_ok: yes" in live_text
+    assert provider.calls == ["search", "fetch"]
+
+    assert cli.tinyfish_status_command("bogus", provider=provider) == (
+        "Usage: /tinyfish-status [live]"
+    )
+
+
+# Keys `tinyfish doctor` parses from `status --json`.
+_TINYFISH_CLI_STATUS_KEYS = frozenset(
+    {
+        "ok",
+        "api_key_configured",
+        "api_key_env_var",
+        "plugin_version",
+        "provider_available",
+        "web_backend_configured",
+    }
+)
+
+
+def test_status_json_carries_every_key_the_tinyfish_cli_parses(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A missing key degrades `tinyfish doctor` to 'unparseable output'."""
+    args = _parser().parse_args(["status", "--json"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert _TINYFISH_CLI_STATUS_KEYS <= payload.keys()
+
+
+def test_status_json_exits_zero_even_when_unhealthy(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A non-zero exit reads as 'plugin not installed' in `tinyfish doctor`."""
+    env["config"] = {}
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["status", "--json"])) == 0
+    assert json.loads(capsys.readouterr().out)["ok"] is False
+
+
+def test_plugin_manifest_name_is_what_uninstall_keys_on() -> None:
+    """`tinyfish connect --uninstall` runs `duckwork plugins uninstall tinyfish`."""
+    manifest = Path(__file__).resolve().parents[1] / "plugin.yaml"
+    names = [
+        line.partition(":")[2].strip().strip("'\"")
+        for line in manifest.read_text(encoding="utf-8").splitlines()
+        if line.startswith("name:")
+    ]
+
+    assert names == ["tinyfish"]
+
+
+def test_setup_rejects_key_tinyfish_refuses(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(cli, "_validate_key", lambda api_key: "TinyFish rejected")
+    args = _parser().parse_args(["setup", "--yes", "--api-key", "tf_bad"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 1
+
+    assert env["saved_env"] == []
+    assert "TinyFish rejected" in capsys.readouterr().err
+
+
+def test_setup_without_key_points_at_key_page(
+    env: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    env["env"] = {}
+    env["config"] = {}
+    args = _parser().parse_args(["setup", "--yes"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 1
+
+    assert "agent.tinyfish.ai/api-keys?source=duckwork" in capsys.readouterr().err
+    assert env["saved_configs"] == []
+
+
+def test_validate_key_flags_unauthorized(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unauthorized(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        raise rest_client.TinyFishRestError("TinyFish Search returned HTTP 401", 401)
+
+    monkeypatch.setattr(rest_client, "search", unauthorized)
+
+    assert "rejected" in str(cli._validate_key("tf_bad"))
+
+
+def test_validate_key_tolerates_network_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    def offline(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        raise rest_client.TinyFishRestError("Could not reach TinyFish Search")
+
+    monkeypatch.setattr(rest_client, "search", offline)
+
+    assert cli._validate_key("tf_maybe") is None
+
+
+def test_browser_enable_points_at_agent_browser_setup_when_missing(
+    env: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(cli, "_agent_browser_installed", lambda: False)
+    env["config"] = {}
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["browser", "enable"])) == 0
+
+    assert "duckwork tools post-setup agent_browser" in capsys.readouterr().out
+
+
+def test_browser_enable_runs_agent_browser_setup_when_confirmed(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ran: list[list[str]] = []
+    monkeypatch.setattr(cli, "_agent_browser_installed", lambda: False)
+    monkeypatch.setattr(cli, "_confirm", lambda *args, **kwargs: True)
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        ran.append(argv)
+        return cli.subprocess.CompletedProcess(argv, 0)
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+    env["config"] = {}
+
+    cli.dispatch_tinyfish_cli(_parser().parse_args(["browser", "enable"]))
+
+    assert ran == [
+        [cli.sys.executable, "-m", "duckwork_cli.main", *cli.AGENT_BROWSER_SETUP]
+    ]
+
+
+def test_setup_enables_web_toolset(env: dict[str, Any]) -> None:
+    cli.dispatch_tinyfish_cli(_parser().parse_args(["setup", "--yes"]))
+
+    assert env["enabled_toolsets"] == ["web"]
+
+
+def test_setup_without_web_backend_leaves_toolsets_alone(env: dict[str, Any]) -> None:
+    cli.dispatch_tinyfish_cli(
+        _parser().parse_args(["setup", "--yes", "--no-web-backend"])
+    )
+
+    assert env["enabled_toolsets"] == []
+
+
+def test_browser_enable_enables_browser_toolset(env: dict[str, Any]) -> None:
+    env["config"] = {}
+
+    cli.dispatch_tinyfish_cli(_parser().parse_args(["browser", "enable"]))
+
+    assert env["enabled_toolsets"] == ["browser"]
+
+
+@pytest.mark.parametrize(
+    ("listed", "enable_rc", "calls", "stream", "message"),
+    [
+        ("  ✗ disabled  web  🔍 Web", 0, 2, "out", "Enabled Duckwork' web toolset"),
+        ("  ✗ disabled  web  🔍 Web", 1, 2, "err", "run `duckwork tools enable web`"),
+        ("  ✓ enabled  web  🔍 Web", 0, 1, "out", ""),
+    ],
+)
+def test_enable_toolset_only_touches_disabled_toolsets(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    listed: str,
+    enable_rc: int,
+    calls: int,
+    stream: str,
+    message: str,
+) -> None:
+    ran: list[list[str]] = []
+
+    def fake_run(argv: list[str], **kwargs: Any) -> Any:
+        ran.append(argv)
+        assert kwargs["encoding"] == "utf-8" and kwargs["errors"] == "replace"
+        if argv[-2:] == ["tools", "list"]:
+            return cli.subprocess.CompletedProcess(argv, 0, stdout=listed + "\n")
+        return cli.subprocess.CompletedProcess(argv, enable_rc, stdout="")
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+
+    cli._enable_toolset("web")
+
+    assert len(ran) == calls
+    assert all(
+        argv[:3] == [cli.sys.executable, "-m", "duckwork_cli.main"] for argv in ran
+    )
+    out = capsys.readouterr()
+    assert message in getattr(out, stream)
+    if calls == 1:
+        assert out.out == "" and out.err == ""
+
+
+def test_setup_rejected_key_leaves_web_routing_untouched(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(cli, "_validate_key", lambda api_key: "rejected")
+    env["config"] = {}
+
+    args = _parser().parse_args(["setup", "--yes", "--api-key", "tf_bad"])
+
+    assert cli.dispatch_tinyfish_cli(args) == 1
+    assert env["saved_configs"] == []
+    assert env["enabled_toolsets"] == []
+
+
+def test_setup_fails_when_web_toolset_cannot_be_enabled(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(cli, "_enable_toolset", lambda name: False)
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["setup", "--yes"])) == 1
+
+
+def test_browser_enable_fails_when_agent_browser_install_fails(
+    env: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Duckwork' post-setup exits 0 even when the install failed.
+    monkeypatch.setattr(cli, "_agent_browser_installed", lambda: False)
+    monkeypatch.setattr(cli, "_confirm", lambda *args, **kwargs: True)
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda argv, **kwargs: cli.subprocess.CompletedProcess(argv, 0),
+    )
+    env["config"] = {}
+
+    assert cli.dispatch_tinyfish_cli(_parser().parse_args(["browser", "enable"])) == 1

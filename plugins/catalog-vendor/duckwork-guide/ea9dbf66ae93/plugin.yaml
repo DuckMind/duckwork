@@ -1,0 +1,23 @@
+name: duckwork-guide
+version: 0.8.11
+description: >-
+  Self-diagnosis for Duckwork: health checks across `config`, `mcp`, `skills`,
+  `commands`, `hooks`, `plugins`, `memories`, `sessions`, and `update`, plus
+  playbooks in the tap; read-only.
+manifest_version: 1
+api_version: 1
+license: MIT
+# Loader-enforced version floor (duckwork_cli/plugins_manifest.py::requires_duckwork_error):
+# unsatisfied Duckwork builds record an error and skip the plugin before import.
+requires_duckwork: ">=0.21"
+homepage: https://github.com/DuckMind/duckwork
+tags: [diagnostics, observability, troubleshooting]
+python_dependencies:
+  - PyYAML>=6.0,<7
+# No `capabilities:` block = zero privileged capabilities. This plugin only
+# reads config and inspects state, so the consent screen stays trivial.
+config_schema:
+  proactive:
+    type: bool
+    default: false
+    description: "Fire drift checks on session start/end (opt-in)"

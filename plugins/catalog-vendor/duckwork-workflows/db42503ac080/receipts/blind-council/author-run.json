@@ -1,0 +1,27 @@
+{
+  "template": "blind-council",
+  "receipt_kind": "author-run",
+  "author_estate": "author estate (cross-estate clean-run seat)",
+  "graph_file": "examples/review/blind-council.workflow.json",
+  "graph_sha256": "a9f756c743945db00e51b183f3ab9eacd8d141023ea1fc64cb503d8a20effb60",
+  "source_digest": "f38028629a8ee8d22c6d8401b2e4a1b9d2955823e83ed0dfb807d038edcf1ceb",
+  "run_id": "20261001-000202-author-run-blind-council",
+  "runs_root": "~/.duckwork/workflows",
+  "runner_exit": {
+    "reason": "done",
+    "at": "2026-10-01T00:10:07+00:00",
+    "graph_fingerprint": "f4e5556bd5cfa7c5"
+  },
+  "outcome": "4/4 nodes done (seat-a partial-harvest: answer harvested from stdout, rc=1; verdict committed and used downstream). Blindness held: seats ran with zero shared context; synthesis reported cross-seat divergence.",
+  "seat_binding_proof": "capability slots resolved at launch: council_a -> the estate's frontier-reasoning alias, council_b -> the estate's fast-economy alias, via plugins.entries.duckwork-workflows.settings.models (dry_run model table printed the mapping); third seat rode the seat default route; zero {run.*} placeholders in any spawned prompt (grep of logs/*.prompt.md). Model names elided per the Core-10 model-alias law; the binding shape is the portable fact.",
+  "subject_of_lap": "a real review target: the merged examples/ops/incident-response.json (#86) was the artifact under council review — the template was exercised end-to-end on live work, not a toy.",
+  "notes": "First author lap exposed no defects in the template itself. Seat-a turn-cap path produced partial-harvest, which the runner consumed correctly.",
+  "revision": "v3: digests restamped for the v3 template bytes (file a9f756c7…, source f3802862…). The live lap above ran the v1 bytes (e8e0cc47…/f5c6e1c3…). v2 was provenance/prose only; v3 moved the seat-only blindness contract from defaults.context to per-seat context (an effective-prompt fix the maintainer's baked-context probe demands) — no edge/schema change. A fresh author lap on v3 bytes is scheduled; until it lands this receipt proves v1 bytes end-to-end and v3 by validate + baked-context regression (tests/test_example_blind_council.py). UPDATE: the scheduled fresh author lap on v3 bytes has now landed (see v3_lap) - the original lap ran v1 bytes; both boundaries stated, no laundering.",
+  "v3_lap": {
+    "run_id": "20261001-205228-blind-council-v3-author-",
+    "graph_fingerprint": "5265ebb19b3375ef",
+    "ran_bytes": "v3 template bytes (file a9f756c7, source f3802862) - CURRENT pins; executed-byte boundary closed",
+    "outcome": "runner_exit done; seat-a (council_a -> estate frontier alias), seat-b (council_b -> fast-economy alias), seat-local + synthesis on seat default; synthesis partial-harvest consumed correctly: verdict 'ready' with a 5-item verify_list against a live review target (the quorum-probe draft) - unanimity law held even on a ready verdict.",
+    "baked_context_proof": "seat prompts carried the seat-only blindness contract; synthesis prompt carried merge mandate without the prohibition (per-seat context landed; defaults no longer leaks the seat rule)"
+  }
+}

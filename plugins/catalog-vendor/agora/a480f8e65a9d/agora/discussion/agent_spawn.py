@@ -1,0 +1,407 @@
+"""Spawn real Duckwork profile agents for Agora discussions.
+
+Each "speak" in a discussion is a real `duckwork -p <profile> chat -q` subprocess —
+not a stateless ctx.llm.complete call. This means the agent has:
+
+  - SOUL.md (role identity)
+  - MEMORY.md (accumulated experience)
+  - Tools (terminal, read_file, web_search, skill_manage, ...)
+  - Session context (when --resume is used, full conversation history)
+
+This is the difference between "an actor pretending to be the Developer" and
+"actually calling the Developer into the meeting".
+"""
+from __future__ import annotations
+
+import logging
+import os
+import re
+import subprocess
+from pathlib import Path
+from typing import Optional
+
+from ..utils import find_duckwork_binary, get_global_root, capture_duckwork_import_env
+
+logger = logging.getLogger(__name__)
+
+# Marker the agent must use to delimit its discussion reply.
+REPLY_MARKER = "DISCUSSION_REPLY:"
+
+# Stderr pattern for session_id (Duckwork writes "session_id: <id>" on exit).
+SESSION_ID_PATTERN = re.compile(r"session_id:\s*(\S+)")
+
+
+def spawn_agent_speak(
+    profile_name: str,
+    prompt: str,
+    *,
+    session_id: str | None = None,
+    workdir: str | None = None,
+    timeout: int = 3600,
+    extra_env: dict[str, str] | None = None,
+    allow_unattended: bool = False,
+) -> dict:
+    """Spawn a Duckwork profile agent to respond to a discussion prompt.
+
+    Args:
+        profile_name:  Duckwork profile name (e.g. "alice", "leader-1")
+        prompt:        The full discussion prompt to send
+        session_id:    If given, --resume this session to keep conversation context
+        workdir:       Working directory for the agent (project dir)
+        timeout:       Max seconds to wait (default 3600 = 1 hour)
+        extra_env:     Additional environment variables
+        allow_unattended: Pass ``--yolo --accept-hooks`` to the subprocess.
+                       Defaults to False; set from the project's
+                       ``allow_unattended`` setting.
+
+    Returns:
+        dict with keys:
+          reply:       str  — the agent's discussion reply text
+          session_id:  str  — session ID for future --resume
+          error:       str|None
+    """
+    duckwork_bin = find_duckwork_binary()
+
+    # Build environment
+    env = dict(os.environ)
+    if extra_env:
+        env.update(extra_env)
+
+    # Set workdir via TERMINAL_CWD
+    if workdir and os.path.isabs(workdir) and os.path.isdir(workdir):
+        env["TERMINAL_CWD"] = workdir
+
+    # Set DUCKWORK_KANBAN_BOARD if the project has a dedicated board.
+    if "DUCKWORK_KANBAN_BOARD" not in env:
+        _set_project_board_env(env, workdir)
+
+    # First attempt (with --resume if session_id given)
+    result = _run_agent_subprocess(
+        duckwork_bin, profile_name, prompt, session_id,
+        workdir, timeout, env,
+        allow_unattended=allow_unattended,
+    )
+
+    # Auto-recovery: if --resume failed because the session doesn't exist,
+    # retry WITHOUT --resume to create a fresh session.
+    if session_id and _is_session_not_found_error(result):
+        logger.warning(
+            "Agent %s session %s not found — retrying without --resume "
+            "(will create a new session)",
+            profile_name, session_id,
+        )
+        result = _run_agent_subprocess(
+            duckwork_bin, profile_name, prompt, None,
+            workdir, timeout, env,
+            allow_unattended=allow_unattended,
+        )
+
+    return result
+
+
+def _run_agent_subprocess(
+    duckwork_bin: str,
+    profile_name: str,
+    prompt: str,
+    session_id: str | None,
+    workdir: str | None,
+    timeout: int,
+    env: dict[str, str],
+    allow_unattended: bool = False,
+) -> dict:
+    """Run a single agent subprocess invocation.
+
+    ``allow_unattended`` decides whether the subprocess gets
+    ``--yolo --accept-hooks``. It defaults to False because a ``-q`` invocation
+    has nobody present to answer an approval prompt: without the flag the
+    agent's flagged actions fail closed, which is the safe default for a plugin
+    that was just installed. Projects opt in via ``allow_unattended`` on
+    ``agora_start_project``.
+    """
+    cmd = [
+        duckwork_bin,
+        "-p", profile_name,
+    ]
+    if allow_unattended:
+        cmd.extend(["--yolo", "--accept-hooks"])
+    cmd.extend(["--toolsets", "duckwork-cli"])
+    if session_id:
+        cmd.extend(["--resume", session_id])
+    cmd.extend(["chat", "-Q", "-q", prompt])
+
+    logger.info(
+        "Spawning agent: profile=%s session=%s timeout=%ds",
+        profile_name, session_id or "(new)", timeout,
+    )
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            env=env,
+            cwd=workdir if workdir and os.path.isabs(workdir) and os.path.isdir(workdir) else None,
+        )
+    except subprocess.TimeoutExpired:
+        logger.warning("Agent %s timed out after %ds", profile_name, timeout)
+        return {
+            "reply": "",
+            "session_id": session_id or "",
+            "error": f"Agent timed out after {timeout}s",
+        }
+    except Exception as exc:
+        logger.error("Failed to spawn agent %s: %s", profile_name, exc)
+        return {
+            "reply": "",
+            "session_id": session_id or "",
+            "error": str(exc),
+        }
+
+    stdout = result.stdout or ""
+    stderr = result.stderr or ""
+
+    # Extract session_id from stderr
+    new_session_id = session_id or ""
+    sid_match = SESSION_ID_PATTERN.search(stderr)
+    if sid_match:
+        new_session_id = sid_match.group(1)
+
+    # Extract reply after DISCUSSION_REPLY: marker
+    reply = _extract_reply(stdout)
+
+    if not reply:
+        # If no marker found, use the full stdout as fallback
+        reply = stdout.strip()
+        if not reply and stderr:
+            reply = f"[Agent error: {stderr.strip()[:200]}]"
+
+    logger.info(
+        "Agent %s responded (session=%s, reply_len=%d)",
+        profile_name, new_session_id, len(reply),
+    )
+
+    return {
+        "reply": reply,
+        "session_id": new_session_id,
+        "error": None if reply else "Empty response",
+    }
+
+
+def _is_session_not_found_error(result: dict) -> bool:
+    """Check if the agent failed because the resumed session doesn't exist."""
+    if result.get("error") and "session" in result["error"].lower():
+        return True
+    reply = result.get("reply", "")
+    if reply and "session not found" in reply.lower():
+        return True
+    # Empty reply with session-related error
+    if not reply and result.get("error") and "not found" in result["error"].lower():
+        return True
+    return False
+
+
+def spawn_chair_speak(
+    chair_profile: str,
+    prompt: str,
+    *,
+    workdir: str | None = None,
+    timeout: int = 3600,
+    allow_unattended: bool = False,
+) -> dict:
+    """Spawn the chair (Leader) agent for meta-decisions.
+
+    Chair calls are typically shorter (evaluate/summarize), so a shorter
+    timeout is used. The chair does NOT need --resume because each chair
+    call is an independent meta-decision, not a continuous conversation.
+    """
+    return spawn_agent_speak(
+        profile_name=chair_profile,
+        prompt=prompt,
+        session_id=None,  # chair calls are stateless meta-decisions
+        workdir=workdir,
+        timeout=timeout,
+        allow_unattended=allow_unattended,
+    )
+
+
+def _set_project_board_env(env: dict[str, str], workdir: str | None) -> None:
+    """Look up the project's kanban board name and set DUCKWORK_KANBAN_BOARD.
+
+    Tries to find a project whose workdir matches, then reads its ``board``
+    field.  Falls back gracefully if the project registry can't be read.
+    """
+    try:
+        import json
+        from ..utils import get_registry_dir
+        projects_dir = get_registry_dir("projects")
+        for pf in projects_dir.glob("*.json"):
+            try:
+                proj = json.loads(pf.read_text())
+                # Match by workdir or by board field existence
+                if workdir and proj.get("workdir") == workdir:
+                    board = proj.get("board")
+                    if board:
+                        env["DUCKWORK_KANBAN_BOARD"] = board
+                        return
+            except Exception:
+                continue
+    except Exception:
+        pass  # non-fatal — agents just won't have board-scoped kanban
+
+
+def _extract_reply(text: str) -> str:
+    """Extract the content after DISCUSSION_REPLY: marker."""
+    idx = text.find(REPLY_MARKER)
+    if idx == -1:
+        return ""
+    reply = text[idx + len(REPLY_MARKER):].strip()
+    # Strip trailing session_id line if present
+    reply = re.sub(r"\nsession_id:\s*\S+$", "", reply).strip()
+    return reply
+
+
+# --------------------------------------------------------------------------- #
+#  spawn_discussion_driver — shared background-spawn for DiscussionDriver     #
+# --------------------------------------------------------------------------- #
+
+def spawn_discussion_driver(
+    motion_id: str,
+    chair: str,
+    participants: list[str],
+    workdir: str = "",
+    project_name: str = "",
+    max_steps: int = 30,
+) -> dict:
+    """Spawn the DiscussionDriver as a background process.
+
+    Writes a runner script to ``~/.duckwork/agora/run_discussion_<motion_id>.py``
+    and Popen's it with stdout/stderr redirected to a log file.  This is the
+    shared spawn logic used by both the ``/agora`` tool (``agora_raise_motion``)
+    and the dashboard's ``start_discussion`` endpoint.
+
+    Args:
+        motion_id:     The motion to discuss.
+        chair:         Chair (leader) profile name.
+        participants:  List of worker profile names.
+        workdir:       Working directory for the discussion.
+        project_name:  Project name (for logging/context).
+        max_steps:     Max discussion steps.
+
+    Returns:
+        dict with keys:
+          - status:   "spawned" | "error"
+          - log:      path to the log file (str)
+          - runner:   path to the runner script (str)
+          - error:    error message (only when status == "error")
+    """
+    import os
+    import sys
+    from pathlib import Path
+
+    try:
+        # Determine the agora plugin root for sys.path insertion in the runner
+        # agent_spawn.py lives at <plugin_root>/agora/discussion/agent_spawn.py
+        plugin_root = Path(__file__).resolve().parent.parent.parent
+
+        # Use the GLOBAL ~/.duckwork/agora for runner/log paths — not the
+        # profile-scoped DUCKWORK_HOME (which is ~/.duckwork/profiles/<name>/
+        # when -p is used).  The motion DB lives in the global agora dir,
+        # so runner scripts and logs must go there too for consistency.
+        global_agora = get_global_root() / "agora"
+        global_agora.mkdir(parents=True, exist_ok=True)
+
+        runner_path = global_agora / f"run_discussion_{motion_id}.py"
+        log_path = global_agora / f"discussion_{motion_id}.log"
+
+        # Build the runner script content
+        # Use repr() for safe string embedding
+        _runner_core_roots, _runner_deps_dirs = capture_duckwork_import_env()
+        _import_paths = _runner_core_roots + _runner_deps_dirs
+        runner_script = f'''\
+#!/usr/bin/env python3
+"""Auto-generated discussion runner for motion {motion_id}."""
+import sys, types
+from pathlib import Path
+
+# Load the plugin the way Duckwork does — as a package named
+# ``duckwork_plugins.agora`` with its own search path — so the modules inside it
+# can resolve their relative imports. Importing the plugin root as a bare
+# top-level package would strand every ``from ... import`` that crosses a
+# package boundary, and putting the root on sys.path would shadow core's own
+# tools/ and hooks/ packages.
+_plugin_root = Path({str(plugin_root)!r})
+_ns = sys.modules.get("duckwork_plugins")
+if _ns is None:
+    _ns = types.ModuleType("duckwork_plugins")
+    _ns.__path__ = []
+    sys.modules["duckwork_plugins"] = _ns
+
+_pkg_name = "duckwork_plugins.agora"
+if _pkg_name not in sys.modules:
+    _pkg = types.ModuleType(_pkg_name)
+    _pkg.__path__ = [str(_plugin_root)]
+    _pkg.__package__ = _pkg_name
+    sys.modules[_pkg_name] = _pkg
+
+from duckwork_plugins.agora.agora.discussion.driver import DiscussionDriver
+driver = DiscussionDriver(
+    motion_id={motion_id!r},
+    chair_profile={chair!r},
+    participants={participants!r},
+    workdir={workdir!r},
+    project_name={project_name!r},
+    max_steps={max_steps!r},
+)
+result = driver.run()
+print(f"Discussion result: {{result.decision}} ({{result.steps_completed}} steps)")
+'''
+        runner_path.write_text(runner_script)
+
+        # Spawn it in the background
+        #
+        # Duckwork' own process runs with the core tree AND the selected
+        # environment's site-packages on sys.path — the launcher inserts the
+        # first, duckwork_bootstrap -> pm.environments.activate_dependencies the
+        # second. A child inherits neither, and sys.executable is Duckwork'
+        # bundled tool Python, so without them the runner cannot import
+        # duckwork_cli (or any third-party dependency) and the driver dies on
+        # import. Both paths were discovered from sys.path when this file was
+        # written — never guessed.
+        runner_env = dict(os.environ)
+        if _import_paths:
+            inherited = runner_env.get("PYTHONPATH", "")
+            runner_env["PYTHONPATH"] = os.pathsep.join(
+                _import_paths + ([inherited] if inherited else [])
+            )
+        with open(log_path, "a") as log_fd:
+            _proc = subprocess.Popen(
+                # Same interpreter as this process — a bare "python3" from PATH
+                # is Duckwork' bundled tool Python, which cannot import duckwork_cli.
+                [sys.executable, str(runner_path)],
+                stdout=log_fd,
+                stderr=log_fd,
+                env=runner_env,
+                start_new_session=True,
+                cwd=workdir if workdir and os.path.isabs(workdir) and os.path.isdir(workdir) else None,
+            )
+            # Popen duplicates the fd; log_fd is closed when the with block
+            # exits, but the child retains its own copy via start_new_session.
+
+        logger.info(
+            "Discussion driver spawned for motion %s (PID %s, log=%s)",
+            motion_id, _proc.pid, log_path,
+        )
+        return {
+            "status": "spawned",
+            "log": str(log_path),
+            "runner": str(runner_path),
+        }
+    except Exception as exc:
+        logger.error("Failed to spawn discussion driver for motion %s: %s", motion_id, exc)
+        return {
+            "status": "error",
+            "log": str(log_path) if "log_path" in locals() else "",
+            "runner": str(runner_path) if "runner_path" in locals() else "",
+            "error": str(exc),
+        }

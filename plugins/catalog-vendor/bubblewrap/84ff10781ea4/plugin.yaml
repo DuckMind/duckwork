@@ -1,0 +1,53 @@
+name: bubblewrap
+label: Bubblewrap
+version: 1.2.1
+manifest_version: 2
+kind: backend
+author: NousResearch
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+description: >
+  Bubblewrap terminal backend for Linux: every terminal and execute_code
+  command runs in its own bwrap sandbox on this machine, at the same paths.
+  Read-only root, writable working directory (per profile), the dot entries
+  of the home directory (credential stores always) and the Duckwork home hidden,
+  a scratch directory per sandbox, private /tmp and /proc,
+  agent and docker sockets masked, and memory, CPU and process limits.
+  Select it with `duckwork config set terminal.backend bubblewrap`.
+requires_duckwork: ">=0.22.2"
+platforms: [linux]
+tags: [terminal, sandbox, bubblewrap, linux]
+provides_tools: []
+provides_hooks: []
+capabilities: []
+config_schema:
+  profile:
+    type: str
+    default: network
+    label: Profile
+    description: "restricted: read-only working directory, no network. workspace: writable working directory, no network. network: writable working directory and the host network."
+  binds:
+    type: list
+    default: []
+    label: Extra binds
+    description: "Extra host paths to mount, as a list of {src, dest, readonly} (readonly defaults to true; dest defaults to src). Sources under a hidden path are dropped."
+  memory_mb:
+    type: int
+    default: 256
+    label: Memory limit (MB)
+    description: "Address-space limit per command (RLIMIT_AS). 0 disables it."
+  cpu_seconds:
+    type: int
+    default: 30
+    label: CPU limit (seconds)
+    description: "CPU time per command (RLIMIT_CPU). 0 disables it."
+  max_procs:
+    type: int
+    default: 256
+    label: Process limit
+    description: "Processes and threads a command may add on top of what your user already runs (RLIMIT_NPROC). 0 disables it."
+  home_allow:
+    type: list
+    default: []
+    label: Extra home entries
+    description: "More dot entries of the home directory to show read-only, for example [\".zz-tool\", \".config/nvim\"]. Dot entries off the shipped allowlist are hidden; credential stores stay hidden."

@@ -1,0 +1,22 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why it works",
+      "items": [
+        "Forge-agnostic fix lifecycle: halt gates abort BEFORE expensive setup",
+        "Baseline probe records which checks were ALREADY red on untouched code",
+        "Verify compares against the baseline \u2014 pre-existing red never blocks the fix"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Contract",
+      "items": [
+        "{{nodes}} nodes, {{gates}} gates, {{echoes}} echoes, {{branches}} branches: classify -> halt pair -> baseline -> fix -> verify",
+        "Halt-first ordering is the cost discipline: never pay for setup a halt avoids",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Seats share no context: pinned aliases plus a free seat, so agreement means independent eyes, not a shared echo",
+        "The synthesis seat must state dissent explicitly \u2014 unanimity is reported, never assumed",
+        "Model binding lives in the graph bytes, so who judged what is recomputable, not remembered"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "4 nodes: 4 seats fan-in to synthesis; run_context seeds artifact + question + focus",
+        "Seat payloads are schema fences; synthesis merges with per-seat attribution and a dissent field",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "seat-a",
+      "id": "seat-a-synthesis",
+      "to": "synthesis",
+      "variant": "default"
+    },
+    {
+      "from": "seat-b",
+      "id": "seat-b-synthesis",
+      "to": "synthesis",
+      "variant": "default"
+    },
+    {
+      "from": "seat-local",
+      "id": "seat-local-synthesis",
+      "to": "synthesis",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/blind-council.html",
+    "quality_profile": "standard",
+    "subtitle": "Independent review seats with no shared context, merged by a synthesis seat that must state dissent. run_conte",
+    "title": "blind-council"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "seat-a",
+      "label": "Seat A",
+      "lane": "work",
+      "sublabel": "review this artifact",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 0,
+      "id": "seat-b",
+      "label": "Seat B",
+      "lane": "work",
+      "sublabel": "review this artifact",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 0,
+      "id": "seat-local",
+      "label": "Seat Local",
+      "lane": "work",
+      "sublabel": "review this artifact",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 184
+    },
+    {
+      "col": 1,
+      "id": "synthesis",
+      "label": "Synthesis",
+      "lane": "work",
+      "sublabel": "merge the three seat",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 1
+    }
+  ],
+  "schema_version": 2
+}

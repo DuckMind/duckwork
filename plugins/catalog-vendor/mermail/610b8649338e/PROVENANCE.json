@@ -1,0 +1,3688 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/Nudgen-Marketing/mermail-skills/269a711bf683845d75009df4984bf25eee83b0bd/assets/logo.png": "assets/icon.png"
+    },
+    "image": "assets/icon.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": [
+      {
+        "before_path": "_catalog_assets/assets/logo.png",
+        "after_path": "assets/icon.png",
+        "before_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "after_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "before_bytes": 9181,
+        "after_bytes": 9181,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      }
+    ]
+  },
+  "catalog_id": "mermail",
+  "content_id": "610b8649338e",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 90,
+      "mode": "100644",
+      "path": ".app.json.example",
+      "sha256": "e5f4c7563b9e971bb2d0a6febb4a63addc280f3d44c52aa27abfea4f51915b0b"
+    },
+    {
+      "bytes": 413,
+      "mode": "100644",
+      "path": ".claude-plugin/marketplace.json",
+      "sha256": "36eeadc3d6e19de728642c743ce230935c1279ebc4319900603c337afb63e7fb"
+    },
+    {
+      "bytes": 574,
+      "mode": "100644",
+      "path": ".claude-plugin/plugin.json",
+      "sha256": "24e669684482bc8b9113aaa47a3d4489c9a6a3920fa1799d8361fcb969092704"
+    },
+    {
+      "bytes": 163,
+      "mode": "100644",
+      "path": ".codex-plugin/mcp.json",
+      "sha256": "04d4ab6866dab21b29c09313b5df4a773094debd77b0994c554630521fc203fa"
+    },
+    {
+      "bytes": 1645,
+      "mode": "100644",
+      "path": ".codex-plugin/plugin.json",
+      "sha256": "137787adfbc081385fb15f2803977462acdcbc272fb78d85d7ce6961c0543881"
+    },
+    {
+      "bytes": 81,
+      "mode": "100644",
+      "path": ".codexignore",
+      "sha256": "738439791993719930ee82969a12da3083acd45f1de730567a619828f5dd45e5"
+    },
+    {
+      "bytes": 118,
+      "mode": "100644",
+      "path": ".cursor-plugin/mcp.json",
+      "sha256": "50f64c9817952631805a2b6518daf8582142003f1c805b56c93c5a7275a7ebc0"
+    },
+    {
+      "bytes": 703,
+      "mode": "100644",
+      "path": ".cursor-plugin/plugin.json",
+      "sha256": "504ad491a1c6d563e9a7d77c036f99a40fa2d63cf1bc4cea87e4708bdbdd2f43"
+    },
+    {
+      "bytes": 122,
+      "mode": "100644",
+      "path": ".env.example",
+      "sha256": "d002dc1b23f3b283f9db0177f49fd27a280ce6d940e7570efdff86e2d693c786"
+    },
+    {
+      "bytes": 873,
+      "mode": "100644",
+      "path": ".github/CODEOWNERS",
+      "sha256": "26c18789e01a1ed1f4207100a65385b9d23a57d2ec4ecfee0fa4e3d6d2f7d002"
+    },
+    {
+      "bytes": 1266,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/bug.yml",
+      "sha256": "581f2b461ec5e81beaeea7f231ff10b9e33aa2b087a6ea0e6b1edc82bcce274c"
+    },
+    {
+      "bytes": 1363,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/community-companion-idea.yml",
+      "sha256": "a28e2f8d5d9646bce1b4cef892654286be04be975f7518fcd3eb6266637f2dc0"
+    },
+    {
+      "bytes": 394,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "sha256": "ddcef0d57a25911210ef7fa26887864a28d134a0cdab0acd179b8db0f65644c4"
+    },
+    {
+      "bytes": 1698,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/graduate-community-skill.yml",
+      "sha256": "29b170986154628292d7847048c245e0169d0069ae23221c99b7b88ad323f2e2"
+    },
+    {
+      "bytes": 1815,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/new-official-skill-proposal.yml",
+      "sha256": "9e5bcb3d7b22efc27a207d9210f4cb1ccabc7c3d1c24e6a56ee92ed78f685dab"
+    },
+    {
+      "bytes": 853,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/skill-improvement.yml",
+      "sha256": "fec92495fcb773c8c5b460b21355612bdf9eb4649fe37cf16d40e4faa1fdaab3"
+    },
+    {
+      "bytes": 1188,
+      "mode": "100644",
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "sha256": "89ca70c5bd59dc78b819530780801af748f1369a3ca53f986732bbbb8dffbd80"
+    },
+    {
+      "bytes": 193,
+      "mode": "100644",
+      "path": ".github/dependabot.yml",
+      "sha256": "e6714156ceca913ca03c2235c80c76c735ebc9312279ad69ffb86457efd7670c"
+    },
+    {
+      "bytes": 2444,
+      "mode": "100644",
+      "path": ".github/workflows/clawhub-package-publish.yml",
+      "sha256": "625e0dd407e1fb06cc942051d43329ee7e82860cacf5413a1114408eddc8e77a"
+    },
+    {
+      "bytes": 5210,
+      "mode": "100644",
+      "path": ".github/workflows/clawhub-skill-publish.yml",
+      "sha256": "a9c97c81c9cd548d1ec59acc12032929317611773f36598130505bc236749083"
+    },
+    {
+      "bytes": 2414,
+      "mode": "100644",
+      "path": ".github/workflows/cursor-directory.yml",
+      "sha256": "c2c209137bd8522a87d605b4caa9180a5174eea072f8288c599aa2e10ae49b54"
+    },
+    {
+      "bytes": 498,
+      "mode": "100644",
+      "path": ".github/workflows/hol-plugin-scanner.yml",
+      "sha256": "98ba8f35e7be288872bdd9f830309ee32d421b4ab143573e5abb1584191a0bf3"
+    },
+    {
+      "bytes": 814,
+      "mode": "100644",
+      "path": ".github/workflows/validate.yml",
+      "sha256": "1a82fb1738a95b4363f7d647303cc4d9f88028cc60549bf635f2b2b88f074e35"
+    },
+    {
+      "bytes": 74,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "8135f80526e9e1ca0e8a2cd0a78e7a66164949ccdf49a336b505c27cf1b7ee93"
+    },
+    {
+      "bytes": 193,
+      "mode": "100644",
+      "path": ".mcp.json",
+      "sha256": "6f52fd84dcfa244b43222c22603217ade7f75c2c9b2cd16f4717dfc0504a018b"
+    },
+    {
+      "bytes": 573,
+      "mode": "100644",
+      "path": ".plugin/plugin.json",
+      "sha256": "6f1a8487b92cbd5e9d94dab4b26fba700cd78a6e775462f43681b3db46715a16"
+    },
+    {
+      "bytes": 4805,
+      "mode": "100644",
+      "path": "AUTHORING.md",
+      "sha256": "18138fbb9ed23b4b2765451b56baa447b400663e39a589a69702baee2676192b"
+    },
+    {
+      "bytes": 4817,
+      "mode": "100644",
+      "path": "CLAWHUB.md",
+      "sha256": "c124deb60e5f22b84ad80ae329f326adbed2829b3bcb3e0f81f526acc05be119"
+    },
+    {
+      "bytes": 4170,
+      "mode": "100644",
+      "path": "CODEX_MARKETPLACE.md",
+      "sha256": "0c6fcd5e7db7c011747bf05d1f8efcc57533a5ae61a4a1e31f58de0e43def835"
+    },
+    {
+      "bytes": 5484,
+      "mode": "100644",
+      "path": "CODE_OF_CONDUCT.md",
+      "sha256": "1f7ce51baf4f774e4294b4d3de49223ccda0661e80965d08ef7fa8255dba6da3"
+    },
+    {
+      "bytes": 5339,
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "19a13a7f8d59fe920cd8f94ac97df6315edeaaae3c817147298b739b597440cc"
+    },
+    {
+      "bytes": 10425,
+      "mode": "100644",
+      "path": "CONTRIBUTING_A_SKILL.md",
+      "sha256": "2d0dd6e5a760e30bb1c05b5f7a51cae1640e25b4b68bc47b837479f3412c095d"
+    },
+    {
+      "bytes": 2534,
+      "mode": "100644",
+      "path": "CURSOR_DIRECTORY.md",
+      "sha256": "32b490a5c6c4173448f75b9b3103091adf34d060b593b829d9e9ec74340bf8fa"
+    },
+    {
+      "bytes": 3970,
+      "mode": "100644",
+      "path": "CURSOR_MARKETPLACE.md",
+      "sha256": "9dfd4aa8b73b7fe4cd41013f1663674d68d178d8cbfac29a38b7ec755a3a803d"
+    },
+    {
+      "bytes": 1073,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "0c3aaea33a09d5c8469383d49d1edeae0c94fe8fb7590d4d5b4fd6e4dc50280a"
+    },
+    {
+      "bytes": 3429,
+      "mode": "100644",
+      "path": "MAINTAINERS.md",
+      "sha256": "be9d2df8cba1e3ab17b12fd35799ae6d9507b414fd94fa921fcb273f5a487b98"
+    },
+    {
+      "bytes": 7450,
+      "mode": "100644",
+      "path": "PORTAL_SUBMISSION.md",
+      "sha256": "324fe1d549cf87748ba982c26e7c3573539b16eb49261000dfad4007276e9f26"
+    },
+    {
+      "bytes": 9676,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "cb48dbe7de77bcc6603ec6db63d4a69f472588ebae1f5aaafacebbbd8f3f506e"
+    },
+    {
+      "bytes": 2692,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "7574d7d994458ec8d567fabf35c2a8b6548e4658dbceb8a0479e84617aeb7c35"
+    },
+    {
+      "bytes": 9181,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/logo.png",
+      "sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7"
+    },
+    {
+      "bytes": 9181,
+      "mode": "100644",
+      "path": "assets/icon.png",
+      "sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7"
+    },
+    {
+      "bytes": 9181,
+      "mode": "100644",
+      "path": "assets/logo.png",
+      "sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7"
+    },
+    {
+      "bytes": 11461,
+      "mode": "100644",
+      "path": "assets/logo.svg",
+      "sha256": "596ac6d819dbe5b67c206fadfe2d4af05edb7b7ca6829c2720d1a96d64d2995e"
+    },
+    {
+      "bytes": 1482072,
+      "mode": "100644",
+      "path": "assets/screenshot-1.png",
+      "sha256": "9a658d2efdfeff3fccbc358391fae48354c26a69b7721666e3ded32489fa95f2"
+    },
+    {
+      "bytes": 1641585,
+      "mode": "100644",
+      "path": "assets/screenshot-2.png",
+      "sha256": "8931c981233735ea66bdc19c045276e092f3940ff136e8064347b817605d2c40"
+    },
+    {
+      "bytes": 817,
+      "mode": "100644",
+      "path": "compatibility.json",
+      "sha256": "6a75e0c8d2d0e8ad6237ba471b4f09da4361140f2d883525d126fd9a1cfbe16a"
+    },
+    {
+      "bytes": 201,
+      "mode": "100644",
+      "path": "mcp.json",
+      "sha256": "80936f58f66b3aebe12864720e20be8075a194d611c68c627d697683d017833e"
+    },
+    {
+      "bytes": 332,
+      "mode": "100644",
+      "path": "openclaw.plugin.json",
+      "sha256": "1e4d3a2ca8e113f966fb35aeac403faae42c92e985c23e7c0d8a4e0686bdca14"
+    },
+    {
+      "bytes": 191,
+      "mode": "100644",
+      "path": "package-lock.json",
+      "sha256": "a5c02a1b9f1734dd38cceb567b0d78d4956840899e071a2b97e0da5e05472dae"
+    },
+    {
+      "bytes": 1090,
+      "mode": "100644",
+      "path": "package.json",
+      "sha256": "d9f7da4f430d803752873084822ef497bb6c3115f605356d6e8ff5ef1d227b79"
+    },
+    {
+      "bytes": 573,
+      "mode": "100644",
+      "path": "plugin.json",
+      "sha256": "36ab72a210ae4a91e66ae616964f164ff2a98975ac5a8808709169ce7cb8c370"
+    },
+    {
+      "bytes": 9165,
+      "mode": "100644",
+      "path": "scripts/__pycache__/clawhub-ci-publish.cpython-314.pyc",
+      "sha256": "1c09720cc067f56c8ec83c1325cfa06894e56127f523ee2cdd6a55f0b7044054"
+    },
+    {
+      "bytes": 1441,
+      "mode": "100755",
+      "path": "scripts/build-openai-skills-zip.sh",
+      "sha256": "e0841d8b2d986c81b755c888ed79ed0d4123a1c271d3de21720ed189a8ca67fa"
+    },
+    {
+      "bytes": 5460,
+      "mode": "100644",
+      "path": "scripts/clawhub-ci-publish.py",
+      "sha256": "c8d315b7cf4c1d5201b8a8ffc80ede3968f73e6040d969ce0af1f3a58579b5e1"
+    },
+    {
+      "bytes": 2073,
+      "mode": "100755",
+      "path": "scripts/publish-clawhub.sh",
+      "sha256": "93c235615ffe6f961672e357538b127c9c215c0bc15fe3e1159fa198b85a4f70"
+    },
+    {
+      "bytes": 6271,
+      "mode": "100644",
+      "path": "skills/mermail-administer-workspace/SKILL.md",
+      "sha256": "71319c03f219eb24bf86f46fe6057bd3f426f2c1a34b95058d4671fde4f3bf90"
+    },
+    {
+      "bytes": 512,
+      "mode": "100644",
+      "path": "skills/mermail-administer-workspace/agents/openai.yaml",
+      "sha256": "a22508ca3b253757083b09bc95183df11abd94e8d3e660b86c1a375f2abca884"
+    },
+    {
+      "bytes": 1165,
+      "mode": "100644",
+      "path": "skills/mermail-administer-workspace/references/tools.md",
+      "sha256": "b810a889f8ee9fbd9a5f18ad7579834b5df39e086728cf63cd0cff7ac361c469"
+    },
+    {
+      "bytes": 9769,
+      "mode": "100644",
+      "path": "skills/mermail-agent-inbox/SKILL.md",
+      "sha256": "79de5d9d02f41b753fec0fb8d9532f69b4acdfcd1deb13b28a7e9b222073956c"
+    },
+    {
+      "bytes": 527,
+      "mode": "100644",
+      "path": "skills/mermail-agent-inbox/agents/openai.yaml",
+      "sha256": "5a2452118ead8a94ca021d18ce3ac28b697b6f719a97fc70ee7fbc91c62c0375"
+    },
+    {
+      "bytes": 7323,
+      "mode": "100644",
+      "path": "skills/mermail-agent-inbox/references/security.md",
+      "sha256": "f392c209b0df556bfc140c7fca2beb7c7cb8fb1c82189539a46188f27924147d"
+    },
+    {
+      "bytes": 13437,
+      "mode": "100644",
+      "path": "skills/mermail-agent-inbox/references/tools.md",
+      "sha256": "0453152646f7974a021a92faf87138c9ea6e8d7b61b31f6f1fca87b145fd59e9"
+    },
+    {
+      "bytes": 12017,
+      "mode": "100644",
+      "path": "skills/mermail-agent-wallet/SKILL.md",
+      "sha256": "8e8ff4dcce73550bb39f11feab6585ff7f36aa646d91b213bd15dfcd464cdd58"
+    },
+    {
+      "bytes": 766,
+      "mode": "100644",
+      "path": "skills/mermail-agent-wallet/agents/openai.yaml",
+      "sha256": "2b1741c1321232cec5f00e29e917437e36e207ce3ab953f776f70b64fe313edf"
+    },
+    {
+      "bytes": 14225,
+      "mode": "100644",
+      "path": "skills/mermail-agent-wallet/references/security.md",
+      "sha256": "bbff921d8b7beb83c918a3f235eae2ccc4d60c4ae87e0afb6421060387cd6062"
+    },
+    {
+      "bytes": 9023,
+      "mode": "100644",
+      "path": "skills/mermail-agent-wallet/references/tools.md",
+      "sha256": "e157bbd95e408c173d1690b4ec98c88fe422594fb561b7781b7f91db28d3349d"
+    },
+    {
+      "bytes": 13114,
+      "mode": "100644",
+      "path": "skills/mermail-agent-wallet/references/workflows.md",
+      "sha256": "3b1773ab9b9b6754bb1ee267351ad11d8fc25f46adce45cedc90e04f6f66989a"
+    },
+    {
+      "bytes": 6722,
+      "mode": "100644",
+      "path": "skills/mermail-automate-triage/SKILL.md",
+      "sha256": "c440b6a2e00da2a8371a86a269e6ac1e5806ee5fd9b22a88e521e4a2dde75bb2"
+    },
+    {
+      "bytes": 502,
+      "mode": "100644",
+      "path": "skills/mermail-automate-triage/agents/openai.yaml",
+      "sha256": "48668f7b8ba71cea48d74d76f8b7fbdfd896d881bb8b462fe593a5f42e1ca38d"
+    },
+    {
+      "bytes": 3247,
+      "mode": "100644",
+      "path": "skills/mermail-automate-triage/references/security.md",
+      "sha256": "f89eee6f9326443842fd1a3a188c1df640fb8da756487016ed00aa406142e752"
+    },
+    {
+      "bytes": 1094,
+      "mode": "100644",
+      "path": "skills/mermail-automate-triage/references/tools.md",
+      "sha256": "c1c8b262d50b0ba5a7061f84eb9882f91b747a36f5f42bc02f2daf682ebd0287"
+    },
+    {
+      "bytes": 7155,
+      "mode": "100644",
+      "path": "skills/mermail-cli/SKILL.md",
+      "sha256": "d6ef8abbbd77e86c811ffa6adc18de4ba3c4ee4abfdd3ea6a6922441a4101afd"
+    },
+    {
+      "bytes": 502,
+      "mode": "100644",
+      "path": "skills/mermail-cli/agents/openai.yaml",
+      "sha256": "fc2c3b0a76c5f3924ca22cb31b488a195a51ebeeb2071826f20ac464f8c95d15"
+    },
+    {
+      "bytes": 4032,
+      "mode": "100644",
+      "path": "skills/mermail-cli/references/security.md",
+      "sha256": "d9a2c9b863b045df0a5ab44a4ddc021496d0e4cd460f5d002cc59a821c34015f"
+    },
+    {
+      "bytes": 5352,
+      "mode": "100644",
+      "path": "skills/mermail-cli/references/tools.md",
+      "sha256": "402af5e323f3631ad583638758a5f7e548b7f90c41ec7d447336a5802714b758"
+    },
+    {
+      "bytes": 5587,
+      "mode": "100644",
+      "path": "skills/mermail-cli/references/workflows.md",
+      "sha256": "5b6b6cd975462c2baaab8e0189fab4a6f2945c0dd5e8307c81e92a33ce4589ec"
+    },
+    {
+      "bytes": 7902,
+      "mode": "100644",
+      "path": "skills/mermail-compose-email/SKILL.md",
+      "sha256": "49f19fc571396c494ff927fc1b04e0c672e106b2970d38e0348a60e22dcdfbbc"
+    },
+    {
+      "bytes": 501,
+      "mode": "100644",
+      "path": "skills/mermail-compose-email/agents/openai.yaml",
+      "sha256": "f7131b18ef9b22f1c725eaa4b4590210ed830f0965610299f1dd3d8b7269f0c9"
+    },
+    {
+      "bytes": 3546,
+      "mode": "100644",
+      "path": "skills/mermail-compose-email/references/security.md",
+      "sha256": "d00707045ce2cc042d2b29f8a6093363edc2b6ea5976c7ef0bd58bd963813ac1"
+    },
+    {
+      "bytes": 6286,
+      "mode": "100644",
+      "path": "skills/mermail-compose-email/references/tools.md",
+      "sha256": "df7c83784c4a19377e9d17a292b253779afdff9ab709dad313c103533555b0c8"
+    },
+    {
+      "bytes": 5640,
+      "mode": "100644",
+      "path": "skills/mermail-compose-email/references/workflows.md",
+      "sha256": "d244ee00c90803a644d7d7852144ec7b3ca5ced965df6d67f1bb29079dc9f457"
+    },
+    {
+      "bytes": 7048,
+      "mode": "100644",
+      "path": "skills/mermail-composio/SKILL.md",
+      "sha256": "9c22d088c0c43e1d6a76258337af5582981fcdb26958491b79d6c437c23b1118"
+    },
+    {
+      "bytes": 525,
+      "mode": "100644",
+      "path": "skills/mermail-composio/agents/openai.yaml",
+      "sha256": "471ae904a9081c46a62982c4845a3b7ea54fab9f4ce93a045cd375d2ec25c2ed"
+    },
+    {
+      "bytes": 3222,
+      "mode": "100644",
+      "path": "skills/mermail-composio/references/security.md",
+      "sha256": "cbaa7d1113abe68479187274e9dcae86f798cfc09d1802391156beb34e8307ad"
+    },
+    {
+      "bytes": 4725,
+      "mode": "100644",
+      "path": "skills/mermail-composio/references/tools.md",
+      "sha256": "689e802e15ae8b32f656ef0f93508f25a1e5117f28d518c714b180bd653347f1"
+    },
+    {
+      "bytes": 3830,
+      "mode": "100644",
+      "path": "skills/mermail-composio/references/workflows.md",
+      "sha256": "b3e5b1bd58a2e07e58f35494f89600046695b95f44a66437121145adc83b5d05"
+    },
+    {
+      "bytes": 5167,
+      "mode": "100644",
+      "path": "skills/mermail-gtm-agent/SKILL.md",
+      "sha256": "15d8da68762aece031a3b54b0b982e2d060fb99e8cf9d212547bfdb941b7de11"
+    },
+    {
+      "bytes": 491,
+      "mode": "100644",
+      "path": "skills/mermail-gtm-agent/agents/openai.yaml",
+      "sha256": "5218d1a17441c3906c67a9cf916c2071cf7c25923209beccaaad8fa2def5ea0e"
+    },
+    {
+      "bytes": 2109,
+      "mode": "100644",
+      "path": "skills/mermail-gtm-agent/references/security.md",
+      "sha256": "f1fed773f00e69364c62859dd7f7fca6753364167217295f77cf550534f567b0"
+    },
+    {
+      "bytes": 2492,
+      "mode": "100644",
+      "path": "skills/mermail-gtm-agent/references/tools.md",
+      "sha256": "b7e9c5fb619611d2347d4bd7736345222d5bec642243effe03ed43a2fe53ca66"
+    },
+    {
+      "bytes": 1940,
+      "mode": "100644",
+      "path": "skills/mermail-gtm-agent/references/workflows.md",
+      "sha256": "98b79bc83d0a00343231f8bb18a3c20ab6c85e89896180cfc3267d0493735b78"
+    },
+    {
+      "bytes": 8937,
+      "mode": "100644",
+      "path": "skills/mermail-mail-agent/SKILL.md",
+      "sha256": "337c16d91f8b598aa2c1e40fe0d90f421d8324fa22a047d609bc7c1ab890e7e7"
+    },
+    {
+      "bytes": 491,
+      "mode": "100644",
+      "path": "skills/mermail-mail-agent/agents/openai.yaml",
+      "sha256": "f78b4d27666dd409525cb57214954eef511eb8239a4135f1e836c6f035e32365"
+    },
+    {
+      "bytes": 4983,
+      "mode": "100644",
+      "path": "skills/mermail-mail-agent/references/security.md",
+      "sha256": "a150779eada82320226aafddaf3d9a788a97635bfd9e53744373d389a4e91aa6"
+    },
+    {
+      "bytes": 5882,
+      "mode": "100644",
+      "path": "skills/mermail-mail-agent/references/tools.md",
+      "sha256": "ee73f140fd09bb0fe7a03a71c8ef74dbac31654845ef550ef4bcfe67dcf691a8"
+    },
+    {
+      "bytes": 4919,
+      "mode": "100644",
+      "path": "skills/mermail-mail-agent/references/workflows.md",
+      "sha256": "4bbeee3d2d1874f06fd4e16fdf08f4123470e504fd4e5a5c85a94a634a5b7e72"
+    },
+    {
+      "bytes": 8678,
+      "mode": "100644",
+      "path": "skills/mermail-manage-inbox/SKILL.md",
+      "sha256": "4ac787d32d9414d594174b1a0a930dbce3e6dad078a3bd73bbb5190a9f5c7079"
+    },
+    {
+      "bytes": 495,
+      "mode": "100644",
+      "path": "skills/mermail-manage-inbox/agents/openai.yaml",
+      "sha256": "b9a998a67d1c684085d05b43286061dae0f9b7b9d9dcf8bffcaa4ce540e61f74"
+    },
+    {
+      "bytes": 4081,
+      "mode": "100644",
+      "path": "skills/mermail-manage-inbox/references/security.md",
+      "sha256": "bbc5773ddc9f3dfe6787c8c8caf3ca36fa7a03e82cfec6921190b539cd21ee91"
+    },
+    {
+      "bytes": 6588,
+      "mode": "100644",
+      "path": "skills/mermail-manage-inbox/references/tools.md",
+      "sha256": "4ea216fcd3766fa92c0eededdb327fc9acc40f1d2b0cdb0a4d5b65c934fda200"
+    },
+    {
+      "bytes": 4835,
+      "mode": "100644",
+      "path": "skills/mermail-manage-inbox/references/workflows.md",
+      "sha256": "11034c3bba4a5473d2e60b33c74dfbb1e5bc0f66cd611314e99007252b7a0367"
+    },
+    {
+      "bytes": 7989,
+      "mode": "100644",
+      "path": "skills/mermail-mcp/SKILL.md",
+      "sha256": "2d56f994f481a44f60bcc04cd071b5adcdc7e1b83e4ad9998999b6df20f0f332"
+    },
+    {
+      "bytes": 482,
+      "mode": "100644",
+      "path": "skills/mermail-mcp/agents/openai.yaml",
+      "sha256": "8a5e9a3e7e8dca45595a78a9ad2a2236461141010ace7136f830bbd6fd3f6ea6"
+    },
+    {
+      "bytes": 5696,
+      "mode": "100644",
+      "path": "skills/mermail-mcp/references/platforms.md",
+      "sha256": "d9425bc0f71b28fc17ffe790e0561bb15256df6e52375a75173e94f24fc752e3"
+    },
+    {
+      "bytes": 3430,
+      "mode": "100644",
+      "path": "skills/mermail-mcp/references/security.md",
+      "sha256": "a8153dfafede25c269c59012091144485cb1a5c2016a4671406dea2879d6e78f"
+    },
+    {
+      "bytes": 5440,
+      "mode": "100644",
+      "path": "skills/mermail-mcp/references/troubleshooting.md",
+      "sha256": "d30b1d10f777c7e3149935adb8b725c15c41113e5d77bf51ddfec61fc4e9ec88"
+    },
+    {
+      "bytes": 3583,
+      "mode": "100755",
+      "path": "skills/mermail-mcp/scripts/check-connection.mjs",
+      "sha256": "0743cf19fdbf95931ed3bf38adaced316951a08ae923d338f8b5d703ba48b489"
+    },
+    {
+      "bytes": 6435,
+      "mode": "100644",
+      "path": "skills/mermail-research-agent/SKILL.md",
+      "sha256": "47d7820a65a76062e8d1f0f1ae1491fe37d2e1dd09fd48503164d8d3f11dffd9"
+    },
+    {
+      "bytes": 548,
+      "mode": "100644",
+      "path": "skills/mermail-research-agent/agents/openai.yaml",
+      "sha256": "0ba534f2cb95200cb53f7a8c78a069536ce8be5a647c485742a235862e1c9ae4"
+    },
+    {
+      "bytes": 7117,
+      "mode": "100644",
+      "path": "skills/mermail-research-agent/references/cmc-research.md",
+      "sha256": "a8458f012b0f0ec278f24ff7c2e0792da09deec567109398747c8cda58eb31e5"
+    },
+    {
+      "bytes": 4301,
+      "mode": "100644",
+      "path": "skills/mermail-research-agent/references/security.md",
+      "sha256": "b670166dc000bb98a716b948047517501a313590d6819f6e259e37965dee51f4"
+    },
+    {
+      "bytes": 4399,
+      "mode": "100644",
+      "path": "skills/mermail-research-agent/references/templates.md",
+      "sha256": "f16e1483ed9bb6c41af0b1d197ce1eebc04de7b5e95f52d3236f79e597205f72"
+    },
+    {
+      "bytes": 4110,
+      "mode": "100644",
+      "path": "skills/mermail-research-agent/references/tools.md",
+      "sha256": "024a24929a119599f2536b1da490d95f97789d1ef0ce7e3bb4e8d908537b5a4a"
+    },
+    {
+      "bytes": 6711,
+      "mode": "100644",
+      "path": "skills/mermail-research-agent/references/workflows.md",
+      "sha256": "b5b583d60d3835e3cd7adf0a85e4d91a5e784abcd90d03373719f222d74e14b2"
+    },
+    {
+      "bytes": 6071,
+      "mode": "100644",
+      "path": "skills/mermail-scheduling-agent/SKILL.md",
+      "sha256": "a30fa7a107bf1d5e34e319719ef7cedebb14225ddc09d39c03ec1766680558fa"
+    },
+    {
+      "bytes": 508,
+      "mode": "100644",
+      "path": "skills/mermail-scheduling-agent/agents/openai.yaml",
+      "sha256": "c733b04080b403aab4ea5f6f3885f5b7157516e3349ab93bee8bbeae63d0412b"
+    },
+    {
+      "bytes": 2105,
+      "mode": "100644",
+      "path": "skills/mermail-scheduling-agent/references/security.md",
+      "sha256": "f02fc597091e0868d614b991645996d86bc47c7bd66d139f74e1b4c17e8d894f"
+    },
+    {
+      "bytes": 2322,
+      "mode": "100644",
+      "path": "skills/mermail-scheduling-agent/references/tools.md",
+      "sha256": "8b83f5142c729f61b415a9622626d17930003fc1a9fea94a1d4e83fcd5266ec6"
+    },
+    {
+      "bytes": 1793,
+      "mode": "100644",
+      "path": "skills/mermail-scheduling-agent/references/workflows.md",
+      "sha256": "10658f76b0c7defd1d7346df9564c9208bdd6b4c40364a9f321f5b3946f8a456"
+    },
+    {
+      "bytes": 5354,
+      "mode": "100644",
+      "path": "skills/mermail-support-agent/SKILL.md",
+      "sha256": "919caa22506d07efc8366261a272ff516a3e3a400666b19d426a43a62c58ee82"
+    },
+    {
+      "bytes": 490,
+      "mode": "100644",
+      "path": "skills/mermail-support-agent/agents/openai.yaml",
+      "sha256": "9e09c004c67395a786921739db6278a96a05a0773b9d8f7970760c9a7c81805d"
+    },
+    {
+      "bytes": 2193,
+      "mode": "100644",
+      "path": "skills/mermail-support-agent/references/security.md",
+      "sha256": "55bcd31442cc8e65c1b2ca28dd26a0946a282b894a57d471ad7e7fb7ad251418"
+    },
+    {
+      "bytes": 2096,
+      "mode": "100644",
+      "path": "skills/mermail-support-agent/references/tools.md",
+      "sha256": "daaef642297ecacb4b4d128bfb8d843164a9c29f41046dfd41144173da9168d8"
+    },
+    {
+      "bytes": 1467,
+      "mode": "100644",
+      "path": "skills/mermail-support-agent/references/workflows.md",
+      "sha256": "398cadc9ee481e918d12b3825b250ad494d04c657a33c3998b9c9fa742a8578b"
+    },
+    {
+      "bytes": 27522,
+      "mode": "100644",
+      "path": "skills/mermail-x402-agent/SKILL.md",
+      "sha256": "987d3bf414b035b6d05af4f616c7b5b920c6f85d987e646ad7ff1286b2bf808f"
+    },
+    {
+      "bytes": 687,
+      "mode": "100644",
+      "path": "skills/mermail-x402-agent/agents/openai.yaml",
+      "sha256": "03eb29d574534ec348e5bb55ec11c4a295cf96db18c8cf24be8b43f7dbf2a6d1"
+    },
+    {
+      "bytes": 6243,
+      "mode": "100644",
+      "path": "skills/mermail-x402-agent/references/security.md",
+      "sha256": "1a56f8d8d108155ee8df977c0139ff4fb5e51b27e7f3042d1d6ed6792f3f42ff"
+    },
+    {
+      "bytes": 4480,
+      "mode": "100644",
+      "path": "skills/mermail-x402-agent/references/tools.md",
+      "sha256": "309522830d9e8c308cc03e11e0960f01e5e1ccea0dcebd824d8be239dd83e906"
+    },
+    {
+      "bytes": 15814,
+      "mode": "100644",
+      "path": "skills/mermail-x402-agent/references/workflows.md",
+      "sha256": "cf004cde25b478764ba511cc1f07f9e51f095be9cee46dff63479c1ed5ed59c8"
+    },
+    {
+      "bytes": 9622,
+      "mode": "100644",
+      "path": "skills/mermail-xstocks-desk/SKILL.md",
+      "sha256": "ad489bf68c0fbbedad8ccd4ab66d0b27e1d9b39ef456178b7ccb9e10ee84b5b4"
+    },
+    {
+      "bytes": 607,
+      "mode": "100644",
+      "path": "skills/mermail-xstocks-desk/agents/openai.yaml",
+      "sha256": "14a2ef409ad89a26834e67a0e32646bbf3355aeb127bd68d9c3f378086205fc5"
+    },
+    {
+      "bytes": 5930,
+      "mode": "100644",
+      "path": "skills/mermail-xstocks-desk/references/paybox-jupiter.md",
+      "sha256": "f0d9e9c07bfe7b909a835b631e1efbd110c159bbe80d994fac15fb009af22ac3"
+    },
+    {
+      "bytes": 3940,
+      "mode": "100644",
+      "path": "skills/mermail-xstocks-desk/references/security.md",
+      "sha256": "875ee7dffafc91aaf9d5a299fadaf098d9f6ef30d21868aff8785d0496f9d4dc"
+    },
+    {
+      "bytes": 3057,
+      "mode": "100644",
+      "path": "skills/mermail-xstocks-desk/references/templates.md",
+      "sha256": "86a289d3f3c6d60197089369a26f529e777bf103a222cc4abc5cba8ff9c069c9"
+    },
+    {
+      "bytes": 4555,
+      "mode": "100644",
+      "path": "skills/mermail-xstocks-desk/references/tools.md",
+      "sha256": "219d7ee5429c93b5d43c7dfaec1b80d6bb82f535ca70e6bfe5f767102460c907"
+    },
+    {
+      "bytes": 6686,
+      "mode": "100644",
+      "path": "skills/mermail-xstocks-desk/references/workflows.md",
+      "sha256": "04a2f54c9aa533fc733840773fc24df13094d510bb86474a783553a2675357c9"
+    },
+    {
+      "bytes": 3984,
+      "mode": "100644",
+      "path": "skills/mermail/SKILL.md",
+      "sha256": "5ca90c95d1f727b037bf8aacf3c6b0176813a69fa0bbf3741846ed551b4e583e"
+    },
+    {
+      "bytes": 455,
+      "mode": "100644",
+      "path": "skills/mermail/agents/openai.yaml",
+      "sha256": "65857aba032f2b0072b0445b2510e9863c956174d1dbbc3c7c713a1761cffffe"
+    },
+    {
+      "bytes": 7798,
+      "mode": "100644",
+      "path": "skills/mermail/references/routing.md",
+      "sha256": "768709481dd0a4c13517c7b48a47eeca004d56cb48876fb680f631857ee44a44"
+    },
+    {
+      "bytes": 748,
+      "mode": "100644",
+      "path": "templates/skill/README.md",
+      "sha256": "51e7d0074955f38c7c5945f38d76e1f423aa72c56ac8a4a153fc3c7add6ddbf3"
+    },
+    {
+      "bytes": 1331,
+      "mode": "100644",
+      "path": "templates/skill/SKILL.md",
+      "sha256": "a0e8668c371667d420a5339792f9035bb04c183e29f8ddd46c6b27b6874b17b4"
+    },
+    {
+      "bytes": 399,
+      "mode": "100644",
+      "path": "templates/skill/agents/openai.yaml",
+      "sha256": "1991f71c9669faf5251bed67b027a65d7e3cc442ce3e842bd34bb667286020b5"
+    },
+    {
+      "bytes": 1459,
+      "mode": "100644",
+      "path": "templates/skill/references/security.md",
+      "sha256": "9ea7b01df17ffc98f6ba7671eb143b6ca538299fae5339a327e16f4ddf0db074"
+    },
+    {
+      "bytes": 791,
+      "mode": "100644",
+      "path": "templates/skill/references/tools.md",
+      "sha256": "5daa8d34c35f22cba709011c7f5fac05a53c719f0bf8a87639f34785981545a4"
+    },
+    {
+      "bytes": 3409,
+      "mode": "100644",
+      "path": "tests/research-agent.mjs",
+      "sha256": "34630a67a58c0fa2ca95fe93892c370eb89dd98dc290e57c0e295e04c4a6e31d"
+    },
+    {
+      "bytes": 49462,
+      "mode": "100644",
+      "path": "tests/scenarios.json",
+      "sha256": "e700f3263e4a02482e660594f9d87391788d7546e081b1e7cc775256b96e3b94"
+    },
+    {
+      "bytes": 83369,
+      "mode": "100644",
+      "path": "tests/validate.mjs",
+      "sha256": "f38ddb8f268e0cb1ef59d897f766709705ecd21125ad297f9050cf72b300f5e3"
+    },
+    {
+      "bytes": 4212,
+      "mode": "100644",
+      "path": "tool-coverage.json",
+      "sha256": "ebec6f9df625e5d6d2fdc3e64923a5cf60e7f05a5b6351e2f82c2c87d7c95309"
+    }
+  ],
+  "input_manifest_sha256": "610b8649338ec4d03979ab3fe3697787f940800bf889ad978124999295157409",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "0c3aaea33a09d5c8469383d49d1edeae0c94fe8fb7590d4d5b4fd6e4dc50280a",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "compatibility.json",
+      "skills/mermail-mcp/references/platforms.md"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [
+    {
+      "path": "scripts/__pycache__/clawhub-ci-publish.cpython-314.pyc",
+      "reason": "W1 CLI excludes generated dependency/cache/venv directories",
+      "sha256": "1c09720cc067f56c8ec83c1325cfa06894e56127f523ee2cdd6a55f0b7044054"
+    }
+  ],
+  "original": {
+    "repo": "https://github.com/Nudgen-Marketing/mermail-skills",
+    "sha": "269a711bf683845d75009df4984bf25eee83b0bd",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/Nudgen-Marketing/mermail-skills",
+  "original_sha": "269a711bf683845d75009df4984bf25eee83b0bd",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".app.json.example",
+      "sha256": "e5f4c7563b9e971bb2d0a6febb4a63addc280f3d44c52aa27abfea4f51915b0b",
+      "bytes": 90,
+      "mode": "100644"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "sha256": "36eeadc3d6e19de728642c743ce230935c1279ebc4319900603c337afb63e7fb",
+      "bytes": 413,
+      "mode": "100644"
+    },
+    {
+      "path": ".claude-plugin/plugin.json",
+      "sha256": "24e669684482bc8b9113aaa47a3d4489c9a6a3920fa1799d8361fcb969092704",
+      "bytes": 574,
+      "mode": "100644"
+    },
+    {
+      "path": ".codex-plugin/mcp.json",
+      "sha256": "04d4ab6866dab21b29c09313b5df4a773094debd77b0994c554630521fc203fa",
+      "bytes": 163,
+      "mode": "100644"
+    },
+    {
+      "path": ".codex-plugin/plugin.json",
+      "sha256": "137787adfbc081385fb15f2803977462acdcbc272fb78d85d7ce6961c0543881",
+      "bytes": 1645,
+      "mode": "100644"
+    },
+    {
+      "path": ".codexignore",
+      "sha256": "738439791993719930ee82969a12da3083acd45f1de730567a619828f5dd45e5",
+      "bytes": 81,
+      "mode": "100644"
+    },
+    {
+      "path": ".cursor-plugin/mcp.json",
+      "sha256": "50f64c9817952631805a2b6518daf8582142003f1c805b56c93c5a7275a7ebc0",
+      "bytes": 118,
+      "mode": "100644"
+    },
+    {
+      "path": ".cursor-plugin/plugin.json",
+      "sha256": "504ad491a1c6d563e9a7d77c036f99a40fa2d63cf1bc4cea87e4708bdbdd2f43",
+      "bytes": 703,
+      "mode": "100644"
+    },
+    {
+      "path": ".env.example",
+      "sha256": "d002dc1b23f3b283f9db0177f49fd27a280ce6d940e7570efdff86e2d693c786",
+      "bytes": 122,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/CODEOWNERS",
+      "sha256": "26c18789e01a1ed1f4207100a65385b9d23a57d2ec4ecfee0fa4e3d6d2f7d002",
+      "bytes": 873,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug.yml",
+      "sha256": "581f2b461ec5e81beaeea7f231ff10b9e33aa2b087a6ea0e6b1edc82bcce274c",
+      "bytes": 1266,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/community-companion-idea.yml",
+      "sha256": "a28e2f8d5d9646bce1b4cef892654286be04be975f7518fcd3eb6266637f2dc0",
+      "bytes": 1363,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "sha256": "ddcef0d57a25911210ef7fa26887864a28d134a0cdab0acd179b8db0f65644c4",
+      "bytes": 394,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/graduate-community-skill.yml",
+      "sha256": "29b170986154628292d7847048c245e0169d0069ae23221c99b7b88ad323f2e2",
+      "bytes": 1698,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/new-official-skill-proposal.yml",
+      "sha256": "9e5bcb3d7b22efc27a207d9210f4cb1ccabc7c3d1c24e6a56ee92ed78f685dab",
+      "bytes": 1815,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/skill-improvement.yml",
+      "sha256": "fec92495fcb773c8c5b460b21355612bdf9eb4649fe37cf16d40e4faa1fdaab3",
+      "bytes": 853,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "sha256": "89ca70c5bd59dc78b819530780801af748f1369a3ca53f986732bbbb8dffbd80",
+      "bytes": 1188,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "sha256": "e6714156ceca913ca03c2235c80c76c735ebc9312279ad69ffb86457efd7670c",
+      "bytes": 193,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/clawhub-package-publish.yml",
+      "sha256": "625e0dd407e1fb06cc942051d43329ee7e82860cacf5413a1114408eddc8e77a",
+      "bytes": 2444,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/clawhub-skill-publish.yml",
+      "sha256": "a9c97c81c9cd548d1ec59acc12032929317611773f36598130505bc236749083",
+      "bytes": 5210,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/cursor-directory.yml",
+      "sha256": "c2c209137bd8522a87d605b4caa9180a5174eea072f8288c599aa2e10ae49b54",
+      "bytes": 2414,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/hol-plugin-scanner.yml",
+      "sha256": "98ba8f35e7be288872bdd9f830309ee32d421b4ab143573e5abb1584191a0bf3",
+      "bytes": 498,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/validate.yml",
+      "sha256": "1a82fb1738a95b4363f7d647303cc4d9f88028cc60549bf635f2b2b88f074e35",
+      "bytes": 814,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "8135f80526e9e1ca0e8a2cd0a78e7a66164949ccdf49a336b505c27cf1b7ee93",
+      "bytes": 74,
+      "mode": "100644"
+    },
+    {
+      "path": ".mcp.json",
+      "sha256": "6f52fd84dcfa244b43222c22603217ade7f75c2c9b2cd16f4717dfc0504a018b",
+      "bytes": 193,
+      "mode": "100644"
+    },
+    {
+      "path": ".plugin/plugin.json",
+      "sha256": "6f1a8487b92cbd5e9d94dab4b26fba700cd78a6e775462f43681b3db46715a16",
+      "bytes": 573,
+      "mode": "100644"
+    },
+    {
+      "path": "AUTHORING.md",
+      "sha256": "18138fbb9ed23b4b2765451b56baa447b400663e39a589a69702baee2676192b",
+      "bytes": 4805,
+      "mode": "100644"
+    },
+    {
+      "path": "CLAWHUB.md",
+      "sha256": "c124deb60e5f22b84ad80ae329f326adbed2829b3bcb3e0f81f526acc05be119",
+      "bytes": 4817,
+      "mode": "100644"
+    },
+    {
+      "path": "CODEX_MARKETPLACE.md",
+      "sha256": "0c6fcd5e7db7c011747bf05d1f8efcc57533a5ae61a4a1e31f58de0e43def835",
+      "bytes": 4170,
+      "mode": "100644"
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "sha256": "1f7ce51baf4f774e4294b4d3de49223ccda0661e80965d08ef7fa8255dba6da3",
+      "bytes": 5484,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "19a13a7f8d59fe920cd8f94ac97df6315edeaaae3c817147298b739b597440cc",
+      "bytes": 5339,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING_A_SKILL.md",
+      "sha256": "2d0dd6e5a760e30bb1c05b5f7a51cae1640e25b4b68bc47b837479f3412c095d",
+      "bytes": 10425,
+      "mode": "100644"
+    },
+    {
+      "path": "CURSOR_DIRECTORY.md",
+      "sha256": "32b490a5c6c4173448f75b9b3103091adf34d060b593b829d9e9ec74340bf8fa",
+      "bytes": 2534,
+      "mode": "100644"
+    },
+    {
+      "path": "CURSOR_MARKETPLACE.md",
+      "sha256": "9dfd4aa8b73b7fe4cd41013f1663674d68d178d8cbfac29a38b7ec755a3a803d",
+      "bytes": 3970,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "0c3aaea33a09d5c8469383d49d1edeae0c94fe8fb7590d4d5b4fd6e4dc50280a",
+      "bytes": 1073,
+      "mode": "100644"
+    },
+    {
+      "path": "MAINTAINERS.md",
+      "sha256": "be9d2df8cba1e3ab17b12fd35799ae6d9507b414fd94fa921fcb273f5a487b98",
+      "bytes": 3429,
+      "mode": "100644"
+    },
+    {
+      "path": "PORTAL_SUBMISSION.md",
+      "sha256": "324fe1d549cf87748ba982c26e7c3573539b16eb49261000dfad4007276e9f26",
+      "bytes": 7450,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "468bd72f409b972184b606eb5ea032ee94f251e01f5e2bd0bc17c070a6116af0",
+      "bytes": 9688,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "7574d7d994458ec8d567fabf35c2a8b6548e4658dbceb8a0479e84617aeb7c35",
+      "bytes": 2692,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/icon.png",
+      "sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+      "bytes": 9181,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/logo.png",
+      "sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+      "bytes": 9181,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/logo.svg",
+      "sha256": "596ac6d819dbe5b67c206fadfe2d4af05edb7b7ca6829c2720d1a96d64d2995e",
+      "bytes": 11461,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/screenshot-1.png",
+      "sha256": "9a658d2efdfeff3fccbc358391fae48354c26a69b7721666e3ded32489fa95f2",
+      "bytes": 1482072,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/screenshot-2.png",
+      "sha256": "8931c981233735ea66bdc19c045276e092f3940ff136e8064347b817605d2c40",
+      "bytes": 1641585,
+      "mode": "100644"
+    },
+    {
+      "path": "compatibility.json",
+      "sha256": "c31d60b954dcc93c1b7ec029289a0b51e7e6cb83d51bf031c337121dde1a5a2f",
+      "bytes": 819,
+      "mode": "100644"
+    },
+    {
+      "path": "mcp.json",
+      "sha256": "80936f58f66b3aebe12864720e20be8075a194d611c68c627d697683d017833e",
+      "bytes": 201,
+      "mode": "100644"
+    },
+    {
+      "path": "openclaw.plugin.json",
+      "sha256": "1e4d3a2ca8e113f966fb35aeac403faae42c92e985c23e7c0d8a4e0686bdca14",
+      "bytes": 332,
+      "mode": "100644"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "a5c02a1b9f1734dd38cceb567b0d78d4956840899e071a2b97e0da5e05472dae",
+      "bytes": 191,
+      "mode": "100644"
+    },
+    {
+      "path": "package.json",
+      "sha256": "d9f7da4f430d803752873084822ef497bb6c3115f605356d6e8ff5ef1d227b79",
+      "bytes": 1090,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.json",
+      "sha256": "36ab72a210ae4a91e66ae616964f164ff2a98975ac5a8808709169ce7cb8c370",
+      "bytes": 573,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/build-openai-skills-zip.sh",
+      "sha256": "e0841d8b2d986c81b755c888ed79ed0d4123a1c271d3de21720ed189a8ca67fa",
+      "bytes": 1441,
+      "mode": "100755"
+    },
+    {
+      "path": "scripts/clawhub-ci-publish.py",
+      "sha256": "c8d315b7cf4c1d5201b8a8ffc80ede3968f73e6040d969ce0af1f3a58579b5e1",
+      "bytes": 5460,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/publish-clawhub.sh",
+      "sha256": "93c235615ffe6f961672e357538b127c9c215c0bc15fe3e1159fa198b85a4f70",
+      "bytes": 2073,
+      "mode": "100755"
+    },
+    {
+      "path": "skills/mermail-administer-workspace/SKILL.md",
+      "sha256": "71319c03f219eb24bf86f46fe6057bd3f426f2c1a34b95058d4671fde4f3bf90",
+      "bytes": 6271,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-administer-workspace/agents/openai.yaml",
+      "sha256": "a22508ca3b253757083b09bc95183df11abd94e8d3e660b86c1a375f2abca884",
+      "bytes": 512,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-administer-workspace/references/tools.md",
+      "sha256": "b810a889f8ee9fbd9a5f18ad7579834b5df39e086728cf63cd0cff7ac361c469",
+      "bytes": 1165,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-inbox/SKILL.md",
+      "sha256": "79de5d9d02f41b753fec0fb8d9532f69b4acdfcd1deb13b28a7e9b222073956c",
+      "bytes": 9769,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-inbox/agents/openai.yaml",
+      "sha256": "5a2452118ead8a94ca021d18ce3ac28b697b6f719a97fc70ee7fbc91c62c0375",
+      "bytes": 527,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-inbox/references/security.md",
+      "sha256": "f392c209b0df556bfc140c7fca2beb7c7cb8fb1c82189539a46188f27924147d",
+      "bytes": 7323,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-inbox/references/tools.md",
+      "sha256": "0453152646f7974a021a92faf87138c9ea6e8d7b61b31f6f1fca87b145fd59e9",
+      "bytes": 13437,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-wallet/SKILL.md",
+      "sha256": "8e8ff4dcce73550bb39f11feab6585ff7f36aa646d91b213bd15dfcd464cdd58",
+      "bytes": 12017,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-wallet/agents/openai.yaml",
+      "sha256": "2b1741c1321232cec5f00e29e917437e36e207ce3ab953f776f70b64fe313edf",
+      "bytes": 766,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-wallet/references/security.md",
+      "sha256": "bbff921d8b7beb83c918a3f235eae2ccc4d60c4ae87e0afb6421060387cd6062",
+      "bytes": 14225,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-wallet/references/tools.md",
+      "sha256": "e157bbd95e408c173d1690b4ec98c88fe422594fb561b7781b7f91db28d3349d",
+      "bytes": 9023,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-agent-wallet/references/workflows.md",
+      "sha256": "3b1773ab9b9b6754bb1ee267351ad11d8fc25f46adce45cedc90e04f6f66989a",
+      "bytes": 13114,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-automate-triage/SKILL.md",
+      "sha256": "c440b6a2e00da2a8371a86a269e6ac1e5806ee5fd9b22a88e521e4a2dde75bb2",
+      "bytes": 6722,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-automate-triage/agents/openai.yaml",
+      "sha256": "48668f7b8ba71cea48d74d76f8b7fbdfd896d881bb8b462fe593a5f42e1ca38d",
+      "bytes": 502,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-automate-triage/references/security.md",
+      "sha256": "f89eee6f9326443842fd1a3a188c1df640fb8da756487016ed00aa406142e752",
+      "bytes": 3247,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-automate-triage/references/tools.md",
+      "sha256": "c1c8b262d50b0ba5a7061f84eb9882f91b747a36f5f42bc02f2daf682ebd0287",
+      "bytes": 1094,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-cli/SKILL.md",
+      "sha256": "d6ef8abbbd77e86c811ffa6adc18de4ba3c4ee4abfdd3ea6a6922441a4101afd",
+      "bytes": 7155,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-cli/agents/openai.yaml",
+      "sha256": "fc2c3b0a76c5f3924ca22cb31b488a195a51ebeeb2071826f20ac464f8c95d15",
+      "bytes": 502,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-cli/references/security.md",
+      "sha256": "d9a2c9b863b045df0a5ab44a4ddc021496d0e4cd460f5d002cc59a821c34015f",
+      "bytes": 4032,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-cli/references/tools.md",
+      "sha256": "402af5e323f3631ad583638758a5f7e548b7f90c41ec7d447336a5802714b758",
+      "bytes": 5352,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-cli/references/workflows.md",
+      "sha256": "5b6b6cd975462c2baaab8e0189fab4a6f2945c0dd5e8307c81e92a33ce4589ec",
+      "bytes": 5587,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-compose-email/SKILL.md",
+      "sha256": "49f19fc571396c494ff927fc1b04e0c672e106b2970d38e0348a60e22dcdfbbc",
+      "bytes": 7902,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-compose-email/agents/openai.yaml",
+      "sha256": "f7131b18ef9b22f1c725eaa4b4590210ed830f0965610299f1dd3d8b7269f0c9",
+      "bytes": 501,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-compose-email/references/security.md",
+      "sha256": "d00707045ce2cc042d2b29f8a6093363edc2b6ea5976c7ef0bd58bd963813ac1",
+      "bytes": 3546,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-compose-email/references/tools.md",
+      "sha256": "df7c83784c4a19377e9d17a292b253779afdff9ab709dad313c103533555b0c8",
+      "bytes": 6286,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-compose-email/references/workflows.md",
+      "sha256": "d244ee00c90803a644d7d7852144ec7b3ca5ced965df6d67f1bb29079dc9f457",
+      "bytes": 5640,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-composio/SKILL.md",
+      "sha256": "9c22d088c0c43e1d6a76258337af5582981fcdb26958491b79d6c437c23b1118",
+      "bytes": 7048,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-composio/agents/openai.yaml",
+      "sha256": "471ae904a9081c46a62982c4845a3b7ea54fab9f4ce93a045cd375d2ec25c2ed",
+      "bytes": 525,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-composio/references/security.md",
+      "sha256": "cbaa7d1113abe68479187274e9dcae86f798cfc09d1802391156beb34e8307ad",
+      "bytes": 3222,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-composio/references/tools.md",
+      "sha256": "689e802e15ae8b32f656ef0f93508f25a1e5117f28d518c714b180bd653347f1",
+      "bytes": 4725,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-composio/references/workflows.md",
+      "sha256": "b3e5b1bd58a2e07e58f35494f89600046695b95f44a66437121145adc83b5d05",
+      "bytes": 3830,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-gtm-agent/SKILL.md",
+      "sha256": "15d8da68762aece031a3b54b0b982e2d060fb99e8cf9d212547bfdb941b7de11",
+      "bytes": 5167,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-gtm-agent/agents/openai.yaml",
+      "sha256": "5218d1a17441c3906c67a9cf916c2071cf7c25923209beccaaad8fa2def5ea0e",
+      "bytes": 491,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-gtm-agent/references/security.md",
+      "sha256": "f1fed773f00e69364c62859dd7f7fca6753364167217295f77cf550534f567b0",
+      "bytes": 2109,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-gtm-agent/references/tools.md",
+      "sha256": "b7e9c5fb619611d2347d4bd7736345222d5bec642243effe03ed43a2fe53ca66",
+      "bytes": 2492,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-gtm-agent/references/workflows.md",
+      "sha256": "98b79bc83d0a00343231f8bb18a3c20ab6c85e89896180cfc3267d0493735b78",
+      "bytes": 1940,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mail-agent/SKILL.md",
+      "sha256": "337c16d91f8b598aa2c1e40fe0d90f421d8324fa22a047d609bc7c1ab890e7e7",
+      "bytes": 8937,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mail-agent/agents/openai.yaml",
+      "sha256": "f78b4d27666dd409525cb57214954eef511eb8239a4135f1e836c6f035e32365",
+      "bytes": 491,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mail-agent/references/security.md",
+      "sha256": "a150779eada82320226aafddaf3d9a788a97635bfd9e53744373d389a4e91aa6",
+      "bytes": 4983,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mail-agent/references/tools.md",
+      "sha256": "ee73f140fd09bb0fe7a03a71c8ef74dbac31654845ef550ef4bcfe67dcf691a8",
+      "bytes": 5882,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mail-agent/references/workflows.md",
+      "sha256": "4bbeee3d2d1874f06fd4e16fdf08f4123470e504fd4e5a5c85a94a634a5b7e72",
+      "bytes": 4919,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-manage-inbox/SKILL.md",
+      "sha256": "4ac787d32d9414d594174b1a0a930dbce3e6dad078a3bd73bbb5190a9f5c7079",
+      "bytes": 8678,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-manage-inbox/agents/openai.yaml",
+      "sha256": "b9a998a67d1c684085d05b43286061dae0f9b7b9d9dcf8bffcaa4ce540e61f74",
+      "bytes": 495,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-manage-inbox/references/security.md",
+      "sha256": "bbc5773ddc9f3dfe6787c8c8caf3ca36fa7a03e82cfec6921190b539cd21ee91",
+      "bytes": 4081,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-manage-inbox/references/tools.md",
+      "sha256": "4ea216fcd3766fa92c0eededdb327fc9acc40f1d2b0cdb0a4d5b65c934fda200",
+      "bytes": 6588,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-manage-inbox/references/workflows.md",
+      "sha256": "11034c3bba4a5473d2e60b33c74dfbb1e5bc0f66cd611314e99007252b7a0367",
+      "bytes": 4835,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mcp/SKILL.md",
+      "sha256": "2d56f994f481a44f60bcc04cd071b5adcdc7e1b83e4ad9998999b6df20f0f332",
+      "bytes": 7989,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mcp/agents/openai.yaml",
+      "sha256": "8a5e9a3e7e8dca45595a78a9ad2a2236461141010ace7136f830bbd6fd3f6ea6",
+      "bytes": 482,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mcp/references/platforms.md",
+      "sha256": "6d094919822b737f2f30ef07602235d16539ceb54d3caa82f6ced03059407081",
+      "bytes": 5704,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mcp/references/security.md",
+      "sha256": "a8153dfafede25c269c59012091144485cb1a5c2016a4671406dea2879d6e78f",
+      "bytes": 3430,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mcp/references/troubleshooting.md",
+      "sha256": "d30b1d10f777c7e3149935adb8b725c15c41113e5d77bf51ddfec61fc4e9ec88",
+      "bytes": 5440,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-mcp/scripts/check-connection.mjs",
+      "sha256": "0743cf19fdbf95931ed3bf38adaced316951a08ae923d338f8b5d703ba48b489",
+      "bytes": 3583,
+      "mode": "100755"
+    },
+    {
+      "path": "skills/mermail-research-agent/SKILL.md",
+      "sha256": "47d7820a65a76062e8d1f0f1ae1491fe37d2e1dd09fd48503164d8d3f11dffd9",
+      "bytes": 6435,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-research-agent/agents/openai.yaml",
+      "sha256": "0ba534f2cb95200cb53f7a8c78a069536ce8be5a647c485742a235862e1c9ae4",
+      "bytes": 548,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-research-agent/references/cmc-research.md",
+      "sha256": "a8458f012b0f0ec278f24ff7c2e0792da09deec567109398747c8cda58eb31e5",
+      "bytes": 7117,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-research-agent/references/security.md",
+      "sha256": "b670166dc000bb98a716b948047517501a313590d6819f6e259e37965dee51f4",
+      "bytes": 4301,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-research-agent/references/templates.md",
+      "sha256": "f16e1483ed9bb6c41af0b1d197ce1eebc04de7b5e95f52d3236f79e597205f72",
+      "bytes": 4399,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-research-agent/references/tools.md",
+      "sha256": "024a24929a119599f2536b1da490d95f97789d1ef0ce7e3bb4e8d908537b5a4a",
+      "bytes": 4110,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-research-agent/references/workflows.md",
+      "sha256": "b5b583d60d3835e3cd7adf0a85e4d91a5e784abcd90d03373719f222d74e14b2",
+      "bytes": 6711,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-scheduling-agent/SKILL.md",
+      "sha256": "a30fa7a107bf1d5e34e319719ef7cedebb14225ddc09d39c03ec1766680558fa",
+      "bytes": 6071,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-scheduling-agent/agents/openai.yaml",
+      "sha256": "c733b04080b403aab4ea5f6f3885f5b7157516e3349ab93bee8bbeae63d0412b",
+      "bytes": 508,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-scheduling-agent/references/security.md",
+      "sha256": "f02fc597091e0868d614b991645996d86bc47c7bd66d139f74e1b4c17e8d894f",
+      "bytes": 2105,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-scheduling-agent/references/tools.md",
+      "sha256": "8b83f5142c729f61b415a9622626d17930003fc1a9fea94a1d4e83fcd5266ec6",
+      "bytes": 2322,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-scheduling-agent/references/workflows.md",
+      "sha256": "10658f76b0c7defd1d7346df9564c9208bdd6b4c40364a9f321f5b3946f8a456",
+      "bytes": 1793,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-support-agent/SKILL.md",
+      "sha256": "919caa22506d07efc8366261a272ff516a3e3a400666b19d426a43a62c58ee82",
+      "bytes": 5354,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-support-agent/agents/openai.yaml",
+      "sha256": "9e09c004c67395a786921739db6278a96a05a0773b9d8f7970760c9a7c81805d",
+      "bytes": 490,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-support-agent/references/security.md",
+      "sha256": "55bcd31442cc8e65c1b2ca28dd26a0946a282b894a57d471ad7e7fb7ad251418",
+      "bytes": 2193,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-support-agent/references/tools.md",
+      "sha256": "daaef642297ecacb4b4d128bfb8d843164a9c29f41046dfd41144173da9168d8",
+      "bytes": 2096,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-support-agent/references/workflows.md",
+      "sha256": "398cadc9ee481e918d12b3825b250ad494d04c657a33c3998b9c9fa742a8578b",
+      "bytes": 1467,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-x402-agent/SKILL.md",
+      "sha256": "987d3bf414b035b6d05af4f616c7b5b920c6f85d987e646ad7ff1286b2bf808f",
+      "bytes": 27522,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-x402-agent/agents/openai.yaml",
+      "sha256": "03eb29d574534ec348e5bb55ec11c4a295cf96db18c8cf24be8b43f7dbf2a6d1",
+      "bytes": 687,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-x402-agent/references/security.md",
+      "sha256": "1a56f8d8d108155ee8df977c0139ff4fb5e51b27e7f3042d1d6ed6792f3f42ff",
+      "bytes": 6243,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-x402-agent/references/tools.md",
+      "sha256": "309522830d9e8c308cc03e11e0960f01e5e1ccea0dcebd824d8be239dd83e906",
+      "bytes": 4480,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-x402-agent/references/workflows.md",
+      "sha256": "cf004cde25b478764ba511cc1f07f9e51f095be9cee46dff63479c1ed5ed59c8",
+      "bytes": 15814,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-xstocks-desk/SKILL.md",
+      "sha256": "ad489bf68c0fbbedad8ccd4ab66d0b27e1d9b39ef456178b7ccb9e10ee84b5b4",
+      "bytes": 9622,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-xstocks-desk/agents/openai.yaml",
+      "sha256": "14a2ef409ad89a26834e67a0e32646bbf3355aeb127bd68d9c3f378086205fc5",
+      "bytes": 607,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-xstocks-desk/references/paybox-jupiter.md",
+      "sha256": "f0d9e9c07bfe7b909a835b631e1efbd110c159bbe80d994fac15fb009af22ac3",
+      "bytes": 5930,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-xstocks-desk/references/security.md",
+      "sha256": "875ee7dffafc91aaf9d5a299fadaf098d9f6ef30d21868aff8785d0496f9d4dc",
+      "bytes": 3940,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-xstocks-desk/references/templates.md",
+      "sha256": "86a289d3f3c6d60197089369a26f529e777bf103a222cc4abc5cba8ff9c069c9",
+      "bytes": 3057,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-xstocks-desk/references/tools.md",
+      "sha256": "219d7ee5429c93b5d43c7dfaec1b80d6bb82f535ca70e6bfe5f767102460c907",
+      "bytes": 4555,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail-xstocks-desk/references/workflows.md",
+      "sha256": "04a2f54c9aa533fc733840773fc24df13094d510bb86474a783553a2675357c9",
+      "bytes": 6686,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail/SKILL.md",
+      "sha256": "5ca90c95d1f727b037bf8aacf3c6b0176813a69fa0bbf3741846ed551b4e583e",
+      "bytes": 3984,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail/agents/openai.yaml",
+      "sha256": "65857aba032f2b0072b0445b2510e9863c956174d1dbbc3c7c713a1761cffffe",
+      "bytes": 455,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/mermail/references/routing.md",
+      "sha256": "768709481dd0a4c13517c7b48a47eeca004d56cb48876fb680f631857ee44a44",
+      "bytes": 7798,
+      "mode": "100644"
+    },
+    {
+      "path": "templates/skill/README.md",
+      "sha256": "51e7d0074955f38c7c5945f38d76e1f423aa72c56ac8a4a153fc3c7add6ddbf3",
+      "bytes": 748,
+      "mode": "100644"
+    },
+    {
+      "path": "templates/skill/SKILL.md",
+      "sha256": "a0e8668c371667d420a5339792f9035bb04c183e29f8ddd46c6b27b6874b17b4",
+      "bytes": 1331,
+      "mode": "100644"
+    },
+    {
+      "path": "templates/skill/agents/openai.yaml",
+      "sha256": "1991f71c9669faf5251bed67b027a65d7e3cc442ce3e842bd34bb667286020b5",
+      "bytes": 399,
+      "mode": "100644"
+    },
+    {
+      "path": "templates/skill/references/security.md",
+      "sha256": "9ea7b01df17ffc98f6ba7671eb143b6ca538299fae5339a327e16f4ddf0db074",
+      "bytes": 1459,
+      "mode": "100644"
+    },
+    {
+      "path": "templates/skill/references/tools.md",
+      "sha256": "5daa8d34c35f22cba709011c7f5fac05a53c719f0bf8a87639f34785981545a4",
+      "bytes": 791,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/research-agent.mjs",
+      "sha256": "34630a67a58c0fa2ca95fe93892c370eb89dd98dc290e57c0e295e04c4a6e31d",
+      "bytes": 3409,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/scenarios.json",
+      "sha256": "e700f3263e4a02482e660594f9d87391788d7546e081b1e7cc775256b96e3b94",
+      "bytes": 49462,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/validate.mjs",
+      "sha256": "f38ddb8f268e0cb1ef59d897f766709705ecd21125ad297f9050cf72b300f5e3",
+      "bytes": 83369,
+      "mode": "100644"
+    },
+    {
+      "path": "tool-coverage.json",
+      "sha256": "ebec6f9df625e5d6d2fdc3e64923a5cf60e7f05a5b6351e2f82c2c87d7c95309",
+      "bytes": 4212,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "6ca9c33dc343647f6552e8620f947cc98f6ce77bf142c445e86a4a3c095b88d5",
+  "pin_verification": {
+    "archive_bytes": 2955395,
+    "archive_sha256": "d24c0d3e094555d0992d6216a176984e988ed284e8143ebf96439123f6f459f6",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "269a711bf683845d75009df4984bf25eee83b0bd",
+    "verified_commit_marker": "269a711bf683845d75009df4984bf25eee83b0bd"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "21d2aa270ed762ac843b98b7ceeb0eb75e14bbd598eea0f5a805e7dfd371ba8c",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".app.json.example",
+        "input_sha256": "e5f4c7563b9e971bb2d0a6febb4a63addc280f3d44c52aa27abfea4f51915b0b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e5f4c7563b9e971bb2d0a6febb4a63addc280f3d44c52aa27abfea4f51915b0b",
+        "source": ".app.json.example",
+        "final_output_sha256": "e5f4c7563b9e971bb2d0a6febb4a63addc280f3d44c52aa27abfea4f51915b0b",
+        "cli_destination": ".app.json.example",
+        "previous_staging_sha256": "e5f4c7563b9e971bb2d0a6febb4a63addc280f3d44c52aa27abfea4f51915b0b"
+      },
+      {
+        "destination": ".claude-plugin/marketplace.json",
+        "input_sha256": "36eeadc3d6e19de728642c743ce230935c1279ebc4319900603c337afb63e7fb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "36eeadc3d6e19de728642c743ce230935c1279ebc4319900603c337afb63e7fb",
+        "source": ".claude-plugin/marketplace.json",
+        "final_output_sha256": "36eeadc3d6e19de728642c743ce230935c1279ebc4319900603c337afb63e7fb",
+        "cli_destination": ".claude-plugin/marketplace.json",
+        "previous_staging_sha256": "36eeadc3d6e19de728642c743ce230935c1279ebc4319900603c337afb63e7fb"
+      },
+      {
+        "destination": ".claude-plugin/plugin.json",
+        "input_sha256": "24e669684482bc8b9113aaa47a3d4489c9a6a3920fa1799d8361fcb969092704",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "24e669684482bc8b9113aaa47a3d4489c9a6a3920fa1799d8361fcb969092704",
+        "source": ".claude-plugin/plugin.json",
+        "final_output_sha256": "24e669684482bc8b9113aaa47a3d4489c9a6a3920fa1799d8361fcb969092704",
+        "cli_destination": ".claude-plugin/plugin.json",
+        "previous_staging_sha256": "24e669684482bc8b9113aaa47a3d4489c9a6a3920fa1799d8361fcb969092704"
+      },
+      {
+        "destination": ".codex-plugin/mcp.json",
+        "input_sha256": "04d4ab6866dab21b29c09313b5df4a773094debd77b0994c554630521fc203fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "04d4ab6866dab21b29c09313b5df4a773094debd77b0994c554630521fc203fa",
+        "source": ".codex-plugin/mcp.json",
+        "final_output_sha256": "04d4ab6866dab21b29c09313b5df4a773094debd77b0994c554630521fc203fa",
+        "cli_destination": ".codex-plugin/mcp.json",
+        "previous_staging_sha256": "04d4ab6866dab21b29c09313b5df4a773094debd77b0994c554630521fc203fa"
+      },
+      {
+        "destination": ".codex-plugin/plugin.json",
+        "input_sha256": "137787adfbc081385fb15f2803977462acdcbc272fb78d85d7ce6961c0543881",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "137787adfbc081385fb15f2803977462acdcbc272fb78d85d7ce6961c0543881",
+        "source": ".codex-plugin/plugin.json",
+        "final_output_sha256": "137787adfbc081385fb15f2803977462acdcbc272fb78d85d7ce6961c0543881",
+        "cli_destination": ".codex-plugin/plugin.json",
+        "previous_staging_sha256": "137787adfbc081385fb15f2803977462acdcbc272fb78d85d7ce6961c0543881"
+      },
+      {
+        "destination": ".codexignore",
+        "input_sha256": "738439791993719930ee82969a12da3083acd45f1de730567a619828f5dd45e5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "738439791993719930ee82969a12da3083acd45f1de730567a619828f5dd45e5",
+        "source": ".codexignore",
+        "final_output_sha256": "738439791993719930ee82969a12da3083acd45f1de730567a619828f5dd45e5",
+        "cli_destination": ".codexignore",
+        "previous_staging_sha256": "738439791993719930ee82969a12da3083acd45f1de730567a619828f5dd45e5"
+      },
+      {
+        "destination": ".cursor-plugin/mcp.json",
+        "input_sha256": "50f64c9817952631805a2b6518daf8582142003f1c805b56c93c5a7275a7ebc0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "50f64c9817952631805a2b6518daf8582142003f1c805b56c93c5a7275a7ebc0",
+        "source": ".cursor-plugin/mcp.json",
+        "final_output_sha256": "50f64c9817952631805a2b6518daf8582142003f1c805b56c93c5a7275a7ebc0",
+        "cli_destination": ".cursor-plugin/mcp.json",
+        "previous_staging_sha256": "50f64c9817952631805a2b6518daf8582142003f1c805b56c93c5a7275a7ebc0"
+      },
+      {
+        "destination": ".cursor-plugin/plugin.json",
+        "input_sha256": "504ad491a1c6d563e9a7d77c036f99a40fa2d63cf1bc4cea87e4708bdbdd2f43",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "504ad491a1c6d563e9a7d77c036f99a40fa2d63cf1bc4cea87e4708bdbdd2f43",
+        "source": ".cursor-plugin/plugin.json",
+        "final_output_sha256": "504ad491a1c6d563e9a7d77c036f99a40fa2d63cf1bc4cea87e4708bdbdd2f43",
+        "cli_destination": ".cursor-plugin/plugin.json",
+        "previous_staging_sha256": "504ad491a1c6d563e9a7d77c036f99a40fa2d63cf1bc4cea87e4708bdbdd2f43"
+      },
+      {
+        "destination": ".env.example",
+        "input_sha256": "d002dc1b23f3b283f9db0177f49fd27a280ce6d940e7570efdff86e2d693c786",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d002dc1b23f3b283f9db0177f49fd27a280ce6d940e7570efdff86e2d693c786",
+        "source": ".env.example",
+        "final_output_sha256": "d002dc1b23f3b283f9db0177f49fd27a280ce6d940e7570efdff86e2d693c786",
+        "cli_destination": ".env.example",
+        "previous_staging_sha256": "d002dc1b23f3b283f9db0177f49fd27a280ce6d940e7570efdff86e2d693c786"
+      },
+      {
+        "destination": ".github/CODEOWNERS",
+        "input_sha256": "26c18789e01a1ed1f4207100a65385b9d23a57d2ec4ecfee0fa4e3d6d2f7d002",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "26c18789e01a1ed1f4207100a65385b9d23a57d2ec4ecfee0fa4e3d6d2f7d002",
+        "source": ".github/CODEOWNERS",
+        "final_output_sha256": "26c18789e01a1ed1f4207100a65385b9d23a57d2ec4ecfee0fa4e3d6d2f7d002",
+        "cli_destination": ".github/CODEOWNERS",
+        "previous_staging_sha256": "26c18789e01a1ed1f4207100a65385b9d23a57d2ec4ecfee0fa4e3d6d2f7d002"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/bug.yml",
+        "input_sha256": "581f2b461ec5e81beaeea7f231ff10b9e33aa2b087a6ea0e6b1edc82bcce274c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "581f2b461ec5e81beaeea7f231ff10b9e33aa2b087a6ea0e6b1edc82bcce274c",
+        "source": ".github/ISSUE_TEMPLATE/bug.yml",
+        "final_output_sha256": "581f2b461ec5e81beaeea7f231ff10b9e33aa2b087a6ea0e6b1edc82bcce274c",
+        "cli_destination": ".github/ISSUE_TEMPLATE/bug.yml",
+        "previous_staging_sha256": "581f2b461ec5e81beaeea7f231ff10b9e33aa2b087a6ea0e6b1edc82bcce274c"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/community-companion-idea.yml",
+        "input_sha256": "a28e2f8d5d9646bce1b4cef892654286be04be975f7518fcd3eb6266637f2dc0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a28e2f8d5d9646bce1b4cef892654286be04be975f7518fcd3eb6266637f2dc0",
+        "source": ".github/ISSUE_TEMPLATE/community-companion-idea.yml",
+        "final_output_sha256": "a28e2f8d5d9646bce1b4cef892654286be04be975f7518fcd3eb6266637f2dc0",
+        "cli_destination": ".github/ISSUE_TEMPLATE/community-companion-idea.yml",
+        "previous_staging_sha256": "a28e2f8d5d9646bce1b4cef892654286be04be975f7518fcd3eb6266637f2dc0"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/config.yml",
+        "input_sha256": "ddcef0d57a25911210ef7fa26887864a28d134a0cdab0acd179b8db0f65644c4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ddcef0d57a25911210ef7fa26887864a28d134a0cdab0acd179b8db0f65644c4",
+        "source": ".github/ISSUE_TEMPLATE/config.yml",
+        "final_output_sha256": "ddcef0d57a25911210ef7fa26887864a28d134a0cdab0acd179b8db0f65644c4",
+        "cli_destination": ".github/ISSUE_TEMPLATE/config.yml",
+        "previous_staging_sha256": "ddcef0d57a25911210ef7fa26887864a28d134a0cdab0acd179b8db0f65644c4"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/graduate-community-skill.yml",
+        "input_sha256": "29b170986154628292d7847048c245e0169d0069ae23221c99b7b88ad323f2e2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "29b170986154628292d7847048c245e0169d0069ae23221c99b7b88ad323f2e2",
+        "source": ".github/ISSUE_TEMPLATE/graduate-community-skill.yml",
+        "final_output_sha256": "29b170986154628292d7847048c245e0169d0069ae23221c99b7b88ad323f2e2",
+        "cli_destination": ".github/ISSUE_TEMPLATE/graduate-community-skill.yml",
+        "previous_staging_sha256": "29b170986154628292d7847048c245e0169d0069ae23221c99b7b88ad323f2e2"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/new-official-skill-proposal.yml",
+        "input_sha256": "9e5bcb3d7b22efc27a207d9210f4cb1ccabc7c3d1c24e6a56ee92ed78f685dab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9e5bcb3d7b22efc27a207d9210f4cb1ccabc7c3d1c24e6a56ee92ed78f685dab",
+        "source": ".github/ISSUE_TEMPLATE/new-official-skill-proposal.yml",
+        "final_output_sha256": "9e5bcb3d7b22efc27a207d9210f4cb1ccabc7c3d1c24e6a56ee92ed78f685dab",
+        "cli_destination": ".github/ISSUE_TEMPLATE/new-official-skill-proposal.yml",
+        "previous_staging_sha256": "9e5bcb3d7b22efc27a207d9210f4cb1ccabc7c3d1c24e6a56ee92ed78f685dab"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/skill-improvement.yml",
+        "input_sha256": "fec92495fcb773c8c5b460b21355612bdf9eb4649fe37cf16d40e4faa1fdaab3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fec92495fcb773c8c5b460b21355612bdf9eb4649fe37cf16d40e4faa1fdaab3",
+        "source": ".github/ISSUE_TEMPLATE/skill-improvement.yml",
+        "final_output_sha256": "fec92495fcb773c8c5b460b21355612bdf9eb4649fe37cf16d40e4faa1fdaab3",
+        "cli_destination": ".github/ISSUE_TEMPLATE/skill-improvement.yml",
+        "previous_staging_sha256": "fec92495fcb773c8c5b460b21355612bdf9eb4649fe37cf16d40e4faa1fdaab3"
+      },
+      {
+        "destination": ".github/PULL_REQUEST_TEMPLATE.md",
+        "input_sha256": "89ca70c5bd59dc78b819530780801af748f1369a3ca53f986732bbbb8dffbd80",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "89ca70c5bd59dc78b819530780801af748f1369a3ca53f986732bbbb8dffbd80",
+        "source": ".github/PULL_REQUEST_TEMPLATE.md",
+        "final_output_sha256": "89ca70c5bd59dc78b819530780801af748f1369a3ca53f986732bbbb8dffbd80",
+        "cli_destination": ".github/PULL_REQUEST_TEMPLATE.md",
+        "previous_staging_sha256": "89ca70c5bd59dc78b819530780801af748f1369a3ca53f986732bbbb8dffbd80"
+      },
+      {
+        "destination": ".github/dependabot.yml",
+        "input_sha256": "e6714156ceca913ca03c2235c80c76c735ebc9312279ad69ffb86457efd7670c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e6714156ceca913ca03c2235c80c76c735ebc9312279ad69ffb86457efd7670c",
+        "source": ".github/dependabot.yml",
+        "final_output_sha256": "e6714156ceca913ca03c2235c80c76c735ebc9312279ad69ffb86457efd7670c",
+        "cli_destination": ".github/dependabot.yml",
+        "previous_staging_sha256": "e6714156ceca913ca03c2235c80c76c735ebc9312279ad69ffb86457efd7670c"
+      },
+      {
+        "destination": ".github/workflows/clawhub-package-publish.yml",
+        "input_sha256": "625e0dd407e1fb06cc942051d43329ee7e82860cacf5413a1114408eddc8e77a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "625e0dd407e1fb06cc942051d43329ee7e82860cacf5413a1114408eddc8e77a",
+        "source": ".github/workflows/clawhub-package-publish.yml",
+        "final_output_sha256": "625e0dd407e1fb06cc942051d43329ee7e82860cacf5413a1114408eddc8e77a",
+        "cli_destination": ".github/workflows/clawhub-package-publish.yml",
+        "previous_staging_sha256": "625e0dd407e1fb06cc942051d43329ee7e82860cacf5413a1114408eddc8e77a"
+      },
+      {
+        "destination": ".github/workflows/clawhub-skill-publish.yml",
+        "input_sha256": "a9c97c81c9cd548d1ec59acc12032929317611773f36598130505bc236749083",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a9c97c81c9cd548d1ec59acc12032929317611773f36598130505bc236749083",
+        "source": ".github/workflows/clawhub-skill-publish.yml",
+        "final_output_sha256": "a9c97c81c9cd548d1ec59acc12032929317611773f36598130505bc236749083",
+        "cli_destination": ".github/workflows/clawhub-skill-publish.yml",
+        "previous_staging_sha256": "a9c97c81c9cd548d1ec59acc12032929317611773f36598130505bc236749083"
+      },
+      {
+        "destination": ".github/workflows/cursor-directory.yml",
+        "input_sha256": "c2c209137bd8522a87d605b4caa9180a5174eea072f8288c599aa2e10ae49b54",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c2c209137bd8522a87d605b4caa9180a5174eea072f8288c599aa2e10ae49b54",
+        "source": ".github/workflows/cursor-directory.yml",
+        "final_output_sha256": "c2c209137bd8522a87d605b4caa9180a5174eea072f8288c599aa2e10ae49b54",
+        "cli_destination": ".github/workflows/cursor-directory.yml",
+        "previous_staging_sha256": "c2c209137bd8522a87d605b4caa9180a5174eea072f8288c599aa2e10ae49b54"
+      },
+      {
+        "destination": ".github/workflows/hol-plugin-scanner.yml",
+        "input_sha256": "98ba8f35e7be288872bdd9f830309ee32d421b4ab143573e5abb1584191a0bf3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "98ba8f35e7be288872bdd9f830309ee32d421b4ab143573e5abb1584191a0bf3",
+        "source": ".github/workflows/hol-plugin-scanner.yml",
+        "final_output_sha256": "98ba8f35e7be288872bdd9f830309ee32d421b4ab143573e5abb1584191a0bf3",
+        "cli_destination": ".github/workflows/hol-plugin-scanner.yml",
+        "previous_staging_sha256": "98ba8f35e7be288872bdd9f830309ee32d421b4ab143573e5abb1584191a0bf3"
+      },
+      {
+        "destination": ".github/workflows/validate.yml",
+        "input_sha256": "1a82fb1738a95b4363f7d647303cc4d9f88028cc60549bf635f2b2b88f074e35",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1a82fb1738a95b4363f7d647303cc4d9f88028cc60549bf635f2b2b88f074e35",
+        "source": ".github/workflows/validate.yml",
+        "final_output_sha256": "1a82fb1738a95b4363f7d647303cc4d9f88028cc60549bf635f2b2b88f074e35",
+        "cli_destination": ".github/workflows/validate.yml",
+        "previous_staging_sha256": "1a82fb1738a95b4363f7d647303cc4d9f88028cc60549bf635f2b2b88f074e35"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "8135f80526e9e1ca0e8a2cd0a78e7a66164949ccdf49a336b505c27cf1b7ee93",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8135f80526e9e1ca0e8a2cd0a78e7a66164949ccdf49a336b505c27cf1b7ee93",
+        "source": ".gitignore",
+        "final_output_sha256": "8135f80526e9e1ca0e8a2cd0a78e7a66164949ccdf49a336b505c27cf1b7ee93",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "8135f80526e9e1ca0e8a2cd0a78e7a66164949ccdf49a336b505c27cf1b7ee93"
+      },
+      {
+        "destination": ".mcp.json",
+        "input_sha256": "6f52fd84dcfa244b43222c22603217ade7f75c2c9b2cd16f4717dfc0504a018b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6f52fd84dcfa244b43222c22603217ade7f75c2c9b2cd16f4717dfc0504a018b",
+        "source": ".mcp.json",
+        "final_output_sha256": "6f52fd84dcfa244b43222c22603217ade7f75c2c9b2cd16f4717dfc0504a018b",
+        "cli_destination": ".mcp.json",
+        "previous_staging_sha256": "6f52fd84dcfa244b43222c22603217ade7f75c2c9b2cd16f4717dfc0504a018b"
+      },
+      {
+        "destination": ".plugin/plugin.json",
+        "input_sha256": "6f1a8487b92cbd5e9d94dab4b26fba700cd78a6e775462f43681b3db46715a16",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6f1a8487b92cbd5e9d94dab4b26fba700cd78a6e775462f43681b3db46715a16",
+        "source": ".plugin/plugin.json",
+        "final_output_sha256": "6f1a8487b92cbd5e9d94dab4b26fba700cd78a6e775462f43681b3db46715a16",
+        "cli_destination": ".plugin/plugin.json",
+        "previous_staging_sha256": "6f1a8487b92cbd5e9d94dab4b26fba700cd78a6e775462f43681b3db46715a16"
+      },
+      {
+        "destination": "AUTHORING.md",
+        "input_sha256": "18138fbb9ed23b4b2765451b56baa447b400663e39a589a69702baee2676192b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "18138fbb9ed23b4b2765451b56baa447b400663e39a589a69702baee2676192b",
+        "source": "AUTHORING.md",
+        "final_output_sha256": "18138fbb9ed23b4b2765451b56baa447b400663e39a589a69702baee2676192b",
+        "cli_destination": "AUTHORING.md",
+        "previous_staging_sha256": "18138fbb9ed23b4b2765451b56baa447b400663e39a589a69702baee2676192b"
+      },
+      {
+        "destination": "CLAWHUB.md",
+        "input_sha256": "c124deb60e5f22b84ad80ae329f326adbed2829b3bcb3e0f81f526acc05be119",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c124deb60e5f22b84ad80ae329f326adbed2829b3bcb3e0f81f526acc05be119",
+        "source": "CLAWHUB.md",
+        "final_output_sha256": "c124deb60e5f22b84ad80ae329f326adbed2829b3bcb3e0f81f526acc05be119",
+        "cli_destination": "CLAWHUB.md",
+        "previous_staging_sha256": "c124deb60e5f22b84ad80ae329f326adbed2829b3bcb3e0f81f526acc05be119"
+      },
+      {
+        "destination": "CODEX_MARKETPLACE.md",
+        "input_sha256": "0c6fcd5e7db7c011747bf05d1f8efcc57533a5ae61a4a1e31f58de0e43def835",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c6fcd5e7db7c011747bf05d1f8efcc57533a5ae61a4a1e31f58de0e43def835",
+        "source": "CODEX_MARKETPLACE.md",
+        "final_output_sha256": "0c6fcd5e7db7c011747bf05d1f8efcc57533a5ae61a4a1e31f58de0e43def835",
+        "cli_destination": "CODEX_MARKETPLACE.md",
+        "previous_staging_sha256": "0c6fcd5e7db7c011747bf05d1f8efcc57533a5ae61a4a1e31f58de0e43def835"
+      },
+      {
+        "destination": "CODE_OF_CONDUCT.md",
+        "input_sha256": "1f7ce51baf4f774e4294b4d3de49223ccda0661e80965d08ef7fa8255dba6da3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1f7ce51baf4f774e4294b4d3de49223ccda0661e80965d08ef7fa8255dba6da3",
+        "source": "CODE_OF_CONDUCT.md",
+        "final_output_sha256": "1f7ce51baf4f774e4294b4d3de49223ccda0661e80965d08ef7fa8255dba6da3",
+        "cli_destination": "CODE_OF_CONDUCT.md",
+        "previous_staging_sha256": "1f7ce51baf4f774e4294b4d3de49223ccda0661e80965d08ef7fa8255dba6da3"
+      },
+      {
+        "destination": "CONTRIBUTING.md",
+        "input_sha256": "19a13a7f8d59fe920cd8f94ac97df6315edeaaae3c817147298b739b597440cc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "19a13a7f8d59fe920cd8f94ac97df6315edeaaae3c817147298b739b597440cc",
+        "source": "CONTRIBUTING.md",
+        "final_output_sha256": "19a13a7f8d59fe920cd8f94ac97df6315edeaaae3c817147298b739b597440cc",
+        "cli_destination": "CONTRIBUTING.md",
+        "previous_staging_sha256": "19a13a7f8d59fe920cd8f94ac97df6315edeaaae3c817147298b739b597440cc"
+      },
+      {
+        "destination": "CONTRIBUTING_A_SKILL.md",
+        "input_sha256": "2d0dd6e5a760e30bb1c05b5f7a51cae1640e25b4b68bc47b837479f3412c095d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2d0dd6e5a760e30bb1c05b5f7a51cae1640e25b4b68bc47b837479f3412c095d",
+        "source": "CONTRIBUTING_A_SKILL.md",
+        "final_output_sha256": "2d0dd6e5a760e30bb1c05b5f7a51cae1640e25b4b68bc47b837479f3412c095d",
+        "cli_destination": "CONTRIBUTING_A_SKILL.md",
+        "previous_staging_sha256": "2d0dd6e5a760e30bb1c05b5f7a51cae1640e25b4b68bc47b837479f3412c095d"
+      },
+      {
+        "destination": "CURSOR_DIRECTORY.md",
+        "input_sha256": "32b490a5c6c4173448f75b9b3103091adf34d060b593b829d9e9ec74340bf8fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "32b490a5c6c4173448f75b9b3103091adf34d060b593b829d9e9ec74340bf8fa",
+        "source": "CURSOR_DIRECTORY.md",
+        "final_output_sha256": "32b490a5c6c4173448f75b9b3103091adf34d060b593b829d9e9ec74340bf8fa",
+        "cli_destination": "CURSOR_DIRECTORY.md",
+        "previous_staging_sha256": "32b490a5c6c4173448f75b9b3103091adf34d060b593b829d9e9ec74340bf8fa"
+      },
+      {
+        "destination": "CURSOR_MARKETPLACE.md",
+        "input_sha256": "9dfd4aa8b73b7fe4cd41013f1663674d68d178d8cbfac29a38b7ec755a3a803d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9dfd4aa8b73b7fe4cd41013f1663674d68d178d8cbfac29a38b7ec755a3a803d",
+        "source": "CURSOR_MARKETPLACE.md",
+        "final_output_sha256": "9dfd4aa8b73b7fe4cd41013f1663674d68d178d8cbfac29a38b7ec755a3a803d",
+        "cli_destination": "CURSOR_MARKETPLACE.md",
+        "previous_staging_sha256": "9dfd4aa8b73b7fe4cd41013f1663674d68d178d8cbfac29a38b7ec755a3a803d"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "0c3aaea33a09d5c8469383d49d1edeae0c94fe8fb7590d4d5b4fd6e4dc50280a",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "0c3aaea33a09d5c8469383d49d1edeae0c94fe8fb7590d4d5b4fd6e4dc50280a",
+        "source": "LICENSE",
+        "final_output_sha256": "0c3aaea33a09d5c8469383d49d1edeae0c94fe8fb7590d4d5b4fd6e4dc50280a",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "0c3aaea33a09d5c8469383d49d1edeae0c94fe8fb7590d4d5b4fd6e4dc50280a"
+      },
+      {
+        "destination": "MAINTAINERS.md",
+        "input_sha256": "be9d2df8cba1e3ab17b12fd35799ae6d9507b414fd94fa921fcb273f5a487b98",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "be9d2df8cba1e3ab17b12fd35799ae6d9507b414fd94fa921fcb273f5a487b98",
+        "source": "MAINTAINERS.md",
+        "final_output_sha256": "be9d2df8cba1e3ab17b12fd35799ae6d9507b414fd94fa921fcb273f5a487b98",
+        "cli_destination": "MAINTAINERS.md",
+        "previous_staging_sha256": "be9d2df8cba1e3ab17b12fd35799ae6d9507b414fd94fa921fcb273f5a487b98"
+      },
+      {
+        "destination": "PORTAL_SUBMISSION.md",
+        "input_sha256": "324fe1d549cf87748ba982c26e7c3573539b16eb49261000dfad4007276e9f26",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "324fe1d549cf87748ba982c26e7c3573539b16eb49261000dfad4007276e9f26",
+        "source": "PORTAL_SUBMISSION.md",
+        "final_output_sha256": "324fe1d549cf87748ba982c26e7c3573539b16eb49261000dfad4007276e9f26",
+        "cli_destination": "PORTAL_SUBMISSION.md",
+        "previous_staging_sha256": "324fe1d549cf87748ba982c26e7c3573539b16eb49261000dfad4007276e9f26"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "cb48dbe7de77bcc6603ec6db63d4a69f472588ebae1f5aaafacebbbd8f3f506e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "468bd72f409b972184b606eb5ea032ee94f251e01f5e2bd0bc17c070a6116af0",
+        "source": "README.md",
+        "final_output_sha256": "468bd72f409b972184b606eb5ea032ee94f251e01f5e2bd0bc17c070a6116af0",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "468bd72f409b972184b606eb5ea032ee94f251e01f5e2bd0bc17c070a6116af0"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "7574d7d994458ec8d567fabf35c2a8b6548e4658dbceb8a0479e84617aeb7c35",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7574d7d994458ec8d567fabf35c2a8b6548e4658dbceb8a0479e84617aeb7c35",
+        "source": "SECURITY.md",
+        "final_output_sha256": "7574d7d994458ec8d567fabf35c2a8b6548e4658dbceb8a0479e84617aeb7c35",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "7574d7d994458ec8d567fabf35c2a8b6548e4658dbceb8a0479e84617aeb7c35"
+      },
+      {
+        "destination": "assets/icon.png",
+        "input_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "source": "_catalog_assets/assets/logo.png",
+        "final_output_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "cli_destination": "_catalog_assets/assets/logo.png",
+        "previous_staging_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "assets/icon.png",
+        "input_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "source": "assets/icon.png",
+        "final_output_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "cli_destination": "assets/icon.png",
+        "previous_staging_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7"
+      },
+      {
+        "destination": "assets/logo.png",
+        "input_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "source": "assets/logo.png",
+        "final_output_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+        "cli_destination": "assets/logo.png",
+        "previous_staging_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7"
+      },
+      {
+        "destination": "assets/logo.svg",
+        "input_sha256": "596ac6d819dbe5b67c206fadfe2d4af05edb7b7ca6829c2720d1a96d64d2995e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "596ac6d819dbe5b67c206fadfe2d4af05edb7b7ca6829c2720d1a96d64d2995e",
+        "source": "assets/logo.svg",
+        "final_output_sha256": "596ac6d819dbe5b67c206fadfe2d4af05edb7b7ca6829c2720d1a96d64d2995e",
+        "cli_destination": "assets/logo.svg",
+        "previous_staging_sha256": "596ac6d819dbe5b67c206fadfe2d4af05edb7b7ca6829c2720d1a96d64d2995e"
+      },
+      {
+        "destination": "assets/screenshot-1.png",
+        "input_sha256": "9a658d2efdfeff3fccbc358391fae48354c26a69b7721666e3ded32489fa95f2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9a658d2efdfeff3fccbc358391fae48354c26a69b7721666e3ded32489fa95f2",
+        "source": "assets/screenshot-1.png",
+        "final_output_sha256": "9a658d2efdfeff3fccbc358391fae48354c26a69b7721666e3ded32489fa95f2",
+        "cli_destination": "assets/screenshot-1.png",
+        "previous_staging_sha256": "9a658d2efdfeff3fccbc358391fae48354c26a69b7721666e3ded32489fa95f2"
+      },
+      {
+        "destination": "assets/screenshot-2.png",
+        "input_sha256": "8931c981233735ea66bdc19c045276e092f3940ff136e8064347b817605d2c40",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8931c981233735ea66bdc19c045276e092f3940ff136e8064347b817605d2c40",
+        "source": "assets/screenshot-2.png",
+        "final_output_sha256": "8931c981233735ea66bdc19c045276e092f3940ff136e8064347b817605d2c40",
+        "cli_destination": "assets/screenshot-2.png",
+        "previous_staging_sha256": "8931c981233735ea66bdc19c045276e092f3940ff136e8064347b817605d2c40"
+      },
+      {
+        "destination": "compatibility.json",
+        "input_sha256": "6a75e0c8d2d0e8ad6237ba471b4f09da4361140f2d883525d126fd9a1cfbe16a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c31d60b954dcc93c1b7ec029289a0b51e7e6cb83d51bf031c337121dde1a5a2f",
+        "source": "compatibility.json",
+        "final_output_sha256": "c31d60b954dcc93c1b7ec029289a0b51e7e6cb83d51bf031c337121dde1a5a2f",
+        "cli_destination": "compatibility.json",
+        "previous_staging_sha256": "c31d60b954dcc93c1b7ec029289a0b51e7e6cb83d51bf031c337121dde1a5a2f"
+      },
+      {
+        "destination": "mcp.json",
+        "input_sha256": "80936f58f66b3aebe12864720e20be8075a194d611c68c627d697683d017833e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "80936f58f66b3aebe12864720e20be8075a194d611c68c627d697683d017833e",
+        "source": "mcp.json",
+        "final_output_sha256": "80936f58f66b3aebe12864720e20be8075a194d611c68c627d697683d017833e",
+        "cli_destination": "mcp.json",
+        "previous_staging_sha256": "80936f58f66b3aebe12864720e20be8075a194d611c68c627d697683d017833e"
+      },
+      {
+        "destination": "openclaw.plugin.json",
+        "input_sha256": "1e4d3a2ca8e113f966fb35aeac403faae42c92e985c23e7c0d8a4e0686bdca14",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1e4d3a2ca8e113f966fb35aeac403faae42c92e985c23e7c0d8a4e0686bdca14",
+        "source": "openclaw.plugin.json",
+        "final_output_sha256": "1e4d3a2ca8e113f966fb35aeac403faae42c92e985c23e7c0d8a4e0686bdca14",
+        "cli_destination": "openclaw.plugin.json",
+        "previous_staging_sha256": "1e4d3a2ca8e113f966fb35aeac403faae42c92e985c23e7c0d8a4e0686bdca14"
+      },
+      {
+        "destination": "package-lock.json",
+        "input_sha256": "a5c02a1b9f1734dd38cceb567b0d78d4956840899e071a2b97e0da5e05472dae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a5c02a1b9f1734dd38cceb567b0d78d4956840899e071a2b97e0da5e05472dae",
+        "source": "package-lock.json",
+        "final_output_sha256": "a5c02a1b9f1734dd38cceb567b0d78d4956840899e071a2b97e0da5e05472dae",
+        "cli_destination": "package-lock.json",
+        "previous_staging_sha256": "a5c02a1b9f1734dd38cceb567b0d78d4956840899e071a2b97e0da5e05472dae"
+      },
+      {
+        "destination": "package.json",
+        "input_sha256": "d9f7da4f430d803752873084822ef497bb6c3115f605356d6e8ff5ef1d227b79",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d9f7da4f430d803752873084822ef497bb6c3115f605356d6e8ff5ef1d227b79",
+        "source": "package.json",
+        "final_output_sha256": "d9f7da4f430d803752873084822ef497bb6c3115f605356d6e8ff5ef1d227b79",
+        "cli_destination": "package.json",
+        "previous_staging_sha256": "d9f7da4f430d803752873084822ef497bb6c3115f605356d6e8ff5ef1d227b79"
+      },
+      {
+        "destination": "plugin.json",
+        "input_sha256": "36ab72a210ae4a91e66ae616964f164ff2a98975ac5a8808709169ce7cb8c370",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "36ab72a210ae4a91e66ae616964f164ff2a98975ac5a8808709169ce7cb8c370",
+        "source": "plugin.json",
+        "final_output_sha256": "36ab72a210ae4a91e66ae616964f164ff2a98975ac5a8808709169ce7cb8c370",
+        "cli_destination": "plugin.json",
+        "previous_staging_sha256": "36ab72a210ae4a91e66ae616964f164ff2a98975ac5a8808709169ce7cb8c370"
+      },
+      {
+        "destination": "scripts/build-openai-skills-zip.sh",
+        "input_sha256": "e0841d8b2d986c81b755c888ed79ed0d4123a1c271d3de21720ed189a8ca67fa",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "e0841d8b2d986c81b755c888ed79ed0d4123a1c271d3de21720ed189a8ca67fa",
+        "source": "scripts/build-openai-skills-zip.sh",
+        "final_output_sha256": "e0841d8b2d986c81b755c888ed79ed0d4123a1c271d3de21720ed189a8ca67fa",
+        "cli_destination": "scripts/build-openai-skills-zip.sh",
+        "previous_staging_sha256": "e0841d8b2d986c81b755c888ed79ed0d4123a1c271d3de21720ed189a8ca67fa"
+      },
+      {
+        "destination": "scripts/clawhub-ci-publish.py",
+        "input_sha256": "c8d315b7cf4c1d5201b8a8ffc80ede3968f73e6040d969ce0af1f3a58579b5e1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c8d315b7cf4c1d5201b8a8ffc80ede3968f73e6040d969ce0af1f3a58579b5e1",
+        "source": "scripts/clawhub-ci-publish.py",
+        "final_output_sha256": "c8d315b7cf4c1d5201b8a8ffc80ede3968f73e6040d969ce0af1f3a58579b5e1",
+        "cli_destination": "scripts/clawhub-ci-publish.py",
+        "previous_staging_sha256": "c8d315b7cf4c1d5201b8a8ffc80ede3968f73e6040d969ce0af1f3a58579b5e1"
+      },
+      {
+        "destination": "scripts/publish-clawhub.sh",
+        "input_sha256": "93c235615ffe6f961672e357538b127c9c215c0bc15fe3e1159fa198b85a4f70",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "93c235615ffe6f961672e357538b127c9c215c0bc15fe3e1159fa198b85a4f70",
+        "source": "scripts/publish-clawhub.sh",
+        "final_output_sha256": "93c235615ffe6f961672e357538b127c9c215c0bc15fe3e1159fa198b85a4f70",
+        "cli_destination": "scripts/publish-clawhub.sh",
+        "previous_staging_sha256": "93c235615ffe6f961672e357538b127c9c215c0bc15fe3e1159fa198b85a4f70"
+      },
+      {
+        "destination": "skills/mermail/SKILL.md",
+        "input_sha256": "5ca90c95d1f727b037bf8aacf3c6b0176813a69fa0bbf3741846ed551b4e583e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5ca90c95d1f727b037bf8aacf3c6b0176813a69fa0bbf3741846ed551b4e583e",
+        "source": "skills/mermail/SKILL.md",
+        "final_output_sha256": "5ca90c95d1f727b037bf8aacf3c6b0176813a69fa0bbf3741846ed551b4e583e",
+        "cli_destination": "skills/mermail/SKILL.md",
+        "previous_staging_sha256": "5ca90c95d1f727b037bf8aacf3c6b0176813a69fa0bbf3741846ed551b4e583e"
+      },
+      {
+        "destination": "skills/mermail/agents/openai.yaml",
+        "input_sha256": "65857aba032f2b0072b0445b2510e9863c956174d1dbbc3c7c713a1761cffffe",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "65857aba032f2b0072b0445b2510e9863c956174d1dbbc3c7c713a1761cffffe",
+        "source": "skills/mermail/agents/openai.yaml",
+        "final_output_sha256": "65857aba032f2b0072b0445b2510e9863c956174d1dbbc3c7c713a1761cffffe",
+        "cli_destination": "skills/mermail/agents/openai.yaml",
+        "previous_staging_sha256": "65857aba032f2b0072b0445b2510e9863c956174d1dbbc3c7c713a1761cffffe"
+      },
+      {
+        "destination": "skills/mermail/references/routing.md",
+        "input_sha256": "768709481dd0a4c13517c7b48a47eeca004d56cb48876fb680f631857ee44a44",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "768709481dd0a4c13517c7b48a47eeca004d56cb48876fb680f631857ee44a44",
+        "source": "skills/mermail/references/routing.md",
+        "final_output_sha256": "768709481dd0a4c13517c7b48a47eeca004d56cb48876fb680f631857ee44a44",
+        "cli_destination": "skills/mermail/references/routing.md",
+        "previous_staging_sha256": "768709481dd0a4c13517c7b48a47eeca004d56cb48876fb680f631857ee44a44"
+      },
+      {
+        "destination": "skills/mermail-administer-workspace/SKILL.md",
+        "input_sha256": "71319c03f219eb24bf86f46fe6057bd3f426f2c1a34b95058d4671fde4f3bf90",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "71319c03f219eb24bf86f46fe6057bd3f426f2c1a34b95058d4671fde4f3bf90",
+        "source": "skills/mermail-administer-workspace/SKILL.md",
+        "final_output_sha256": "71319c03f219eb24bf86f46fe6057bd3f426f2c1a34b95058d4671fde4f3bf90",
+        "cli_destination": "skills/mermail-administer-workspace/SKILL.md",
+        "previous_staging_sha256": "71319c03f219eb24bf86f46fe6057bd3f426f2c1a34b95058d4671fde4f3bf90"
+      },
+      {
+        "destination": "skills/mermail-administer-workspace/agents/openai.yaml",
+        "input_sha256": "a22508ca3b253757083b09bc95183df11abd94e8d3e660b86c1a375f2abca884",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a22508ca3b253757083b09bc95183df11abd94e8d3e660b86c1a375f2abca884",
+        "source": "skills/mermail-administer-workspace/agents/openai.yaml",
+        "final_output_sha256": "a22508ca3b253757083b09bc95183df11abd94e8d3e660b86c1a375f2abca884",
+        "cli_destination": "skills/mermail-administer-workspace/agents/openai.yaml",
+        "previous_staging_sha256": "a22508ca3b253757083b09bc95183df11abd94e8d3e660b86c1a375f2abca884"
+      },
+      {
+        "destination": "skills/mermail-administer-workspace/references/tools.md",
+        "input_sha256": "b810a889f8ee9fbd9a5f18ad7579834b5df39e086728cf63cd0cff7ac361c469",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b810a889f8ee9fbd9a5f18ad7579834b5df39e086728cf63cd0cff7ac361c469",
+        "source": "skills/mermail-administer-workspace/references/tools.md",
+        "final_output_sha256": "b810a889f8ee9fbd9a5f18ad7579834b5df39e086728cf63cd0cff7ac361c469",
+        "cli_destination": "skills/mermail-administer-workspace/references/tools.md",
+        "previous_staging_sha256": "b810a889f8ee9fbd9a5f18ad7579834b5df39e086728cf63cd0cff7ac361c469"
+      },
+      {
+        "destination": "skills/mermail-agent-inbox/SKILL.md",
+        "input_sha256": "79de5d9d02f41b753fec0fb8d9532f69b4acdfcd1deb13b28a7e9b222073956c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "79de5d9d02f41b753fec0fb8d9532f69b4acdfcd1deb13b28a7e9b222073956c",
+        "source": "skills/mermail-agent-inbox/SKILL.md",
+        "final_output_sha256": "79de5d9d02f41b753fec0fb8d9532f69b4acdfcd1deb13b28a7e9b222073956c",
+        "cli_destination": "skills/mermail-agent-inbox/SKILL.md",
+        "previous_staging_sha256": "79de5d9d02f41b753fec0fb8d9532f69b4acdfcd1deb13b28a7e9b222073956c"
+      },
+      {
+        "destination": "skills/mermail-agent-inbox/agents/openai.yaml",
+        "input_sha256": "5a2452118ead8a94ca021d18ce3ac28b697b6f719a97fc70ee7fbc91c62c0375",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5a2452118ead8a94ca021d18ce3ac28b697b6f719a97fc70ee7fbc91c62c0375",
+        "source": "skills/mermail-agent-inbox/agents/openai.yaml",
+        "final_output_sha256": "5a2452118ead8a94ca021d18ce3ac28b697b6f719a97fc70ee7fbc91c62c0375",
+        "cli_destination": "skills/mermail-agent-inbox/agents/openai.yaml",
+        "previous_staging_sha256": "5a2452118ead8a94ca021d18ce3ac28b697b6f719a97fc70ee7fbc91c62c0375"
+      },
+      {
+        "destination": "skills/mermail-agent-inbox/references/security.md",
+        "input_sha256": "f392c209b0df556bfc140c7fca2beb7c7cb8fb1c82189539a46188f27924147d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f392c209b0df556bfc140c7fca2beb7c7cb8fb1c82189539a46188f27924147d",
+        "source": "skills/mermail-agent-inbox/references/security.md",
+        "final_output_sha256": "f392c209b0df556bfc140c7fca2beb7c7cb8fb1c82189539a46188f27924147d",
+        "cli_destination": "skills/mermail-agent-inbox/references/security.md",
+        "previous_staging_sha256": "f392c209b0df556bfc140c7fca2beb7c7cb8fb1c82189539a46188f27924147d"
+      },
+      {
+        "destination": "skills/mermail-agent-inbox/references/tools.md",
+        "input_sha256": "0453152646f7974a021a92faf87138c9ea6e8d7b61b31f6f1fca87b145fd59e9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0453152646f7974a021a92faf87138c9ea6e8d7b61b31f6f1fca87b145fd59e9",
+        "source": "skills/mermail-agent-inbox/references/tools.md",
+        "final_output_sha256": "0453152646f7974a021a92faf87138c9ea6e8d7b61b31f6f1fca87b145fd59e9",
+        "cli_destination": "skills/mermail-agent-inbox/references/tools.md",
+        "previous_staging_sha256": "0453152646f7974a021a92faf87138c9ea6e8d7b61b31f6f1fca87b145fd59e9"
+      },
+      {
+        "destination": "skills/mermail-agent-wallet/SKILL.md",
+        "input_sha256": "8e8ff4dcce73550bb39f11feab6585ff7f36aa646d91b213bd15dfcd464cdd58",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8e8ff4dcce73550bb39f11feab6585ff7f36aa646d91b213bd15dfcd464cdd58",
+        "source": "skills/mermail-agent-wallet/SKILL.md",
+        "final_output_sha256": "8e8ff4dcce73550bb39f11feab6585ff7f36aa646d91b213bd15dfcd464cdd58",
+        "cli_destination": "skills/mermail-agent-wallet/SKILL.md",
+        "previous_staging_sha256": "8e8ff4dcce73550bb39f11feab6585ff7f36aa646d91b213bd15dfcd464cdd58"
+      },
+      {
+        "destination": "skills/mermail-agent-wallet/agents/openai.yaml",
+        "input_sha256": "2b1741c1321232cec5f00e29e917437e36e207ce3ab953f776f70b64fe313edf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2b1741c1321232cec5f00e29e917437e36e207ce3ab953f776f70b64fe313edf",
+        "source": "skills/mermail-agent-wallet/agents/openai.yaml",
+        "final_output_sha256": "2b1741c1321232cec5f00e29e917437e36e207ce3ab953f776f70b64fe313edf",
+        "cli_destination": "skills/mermail-agent-wallet/agents/openai.yaml",
+        "previous_staging_sha256": "2b1741c1321232cec5f00e29e917437e36e207ce3ab953f776f70b64fe313edf"
+      },
+      {
+        "destination": "skills/mermail-agent-wallet/references/security.md",
+        "input_sha256": "bbff921d8b7beb83c918a3f235eae2ccc4d60c4ae87e0afb6421060387cd6062",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bbff921d8b7beb83c918a3f235eae2ccc4d60c4ae87e0afb6421060387cd6062",
+        "source": "skills/mermail-agent-wallet/references/security.md",
+        "final_output_sha256": "bbff921d8b7beb83c918a3f235eae2ccc4d60c4ae87e0afb6421060387cd6062",
+        "cli_destination": "skills/mermail-agent-wallet/references/security.md",
+        "previous_staging_sha256": "bbff921d8b7beb83c918a3f235eae2ccc4d60c4ae87e0afb6421060387cd6062"
+      },
+      {
+        "destination": "skills/mermail-agent-wallet/references/tools.md",
+        "input_sha256": "e157bbd95e408c173d1690b4ec98c88fe422594fb561b7781b7f91db28d3349d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e157bbd95e408c173d1690b4ec98c88fe422594fb561b7781b7f91db28d3349d",
+        "source": "skills/mermail-agent-wallet/references/tools.md",
+        "final_output_sha256": "e157bbd95e408c173d1690b4ec98c88fe422594fb561b7781b7f91db28d3349d",
+        "cli_destination": "skills/mermail-agent-wallet/references/tools.md",
+        "previous_staging_sha256": "e157bbd95e408c173d1690b4ec98c88fe422594fb561b7781b7f91db28d3349d"
+      },
+      {
+        "destination": "skills/mermail-agent-wallet/references/workflows.md",
+        "input_sha256": "3b1773ab9b9b6754bb1ee267351ad11d8fc25f46adce45cedc90e04f6f66989a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3b1773ab9b9b6754bb1ee267351ad11d8fc25f46adce45cedc90e04f6f66989a",
+        "source": "skills/mermail-agent-wallet/references/workflows.md",
+        "final_output_sha256": "3b1773ab9b9b6754bb1ee267351ad11d8fc25f46adce45cedc90e04f6f66989a",
+        "cli_destination": "skills/mermail-agent-wallet/references/workflows.md",
+        "previous_staging_sha256": "3b1773ab9b9b6754bb1ee267351ad11d8fc25f46adce45cedc90e04f6f66989a"
+      },
+      {
+        "destination": "skills/mermail-automate-triage/SKILL.md",
+        "input_sha256": "c440b6a2e00da2a8371a86a269e6ac1e5806ee5fd9b22a88e521e4a2dde75bb2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c440b6a2e00da2a8371a86a269e6ac1e5806ee5fd9b22a88e521e4a2dde75bb2",
+        "source": "skills/mermail-automate-triage/SKILL.md",
+        "final_output_sha256": "c440b6a2e00da2a8371a86a269e6ac1e5806ee5fd9b22a88e521e4a2dde75bb2",
+        "cli_destination": "skills/mermail-automate-triage/SKILL.md",
+        "previous_staging_sha256": "c440b6a2e00da2a8371a86a269e6ac1e5806ee5fd9b22a88e521e4a2dde75bb2"
+      },
+      {
+        "destination": "skills/mermail-automate-triage/agents/openai.yaml",
+        "input_sha256": "48668f7b8ba71cea48d74d76f8b7fbdfd896d881bb8b462fe593a5f42e1ca38d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "48668f7b8ba71cea48d74d76f8b7fbdfd896d881bb8b462fe593a5f42e1ca38d",
+        "source": "skills/mermail-automate-triage/agents/openai.yaml",
+        "final_output_sha256": "48668f7b8ba71cea48d74d76f8b7fbdfd896d881bb8b462fe593a5f42e1ca38d",
+        "cli_destination": "skills/mermail-automate-triage/agents/openai.yaml",
+        "previous_staging_sha256": "48668f7b8ba71cea48d74d76f8b7fbdfd896d881bb8b462fe593a5f42e1ca38d"
+      },
+      {
+        "destination": "skills/mermail-automate-triage/references/security.md",
+        "input_sha256": "f89eee6f9326443842fd1a3a188c1df640fb8da756487016ed00aa406142e752",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f89eee6f9326443842fd1a3a188c1df640fb8da756487016ed00aa406142e752",
+        "source": "skills/mermail-automate-triage/references/security.md",
+        "final_output_sha256": "f89eee6f9326443842fd1a3a188c1df640fb8da756487016ed00aa406142e752",
+        "cli_destination": "skills/mermail-automate-triage/references/security.md",
+        "previous_staging_sha256": "f89eee6f9326443842fd1a3a188c1df640fb8da756487016ed00aa406142e752"
+      },
+      {
+        "destination": "skills/mermail-automate-triage/references/tools.md",
+        "input_sha256": "c1c8b262d50b0ba5a7061f84eb9882f91b747a36f5f42bc02f2daf682ebd0287",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c1c8b262d50b0ba5a7061f84eb9882f91b747a36f5f42bc02f2daf682ebd0287",
+        "source": "skills/mermail-automate-triage/references/tools.md",
+        "final_output_sha256": "c1c8b262d50b0ba5a7061f84eb9882f91b747a36f5f42bc02f2daf682ebd0287",
+        "cli_destination": "skills/mermail-automate-triage/references/tools.md",
+        "previous_staging_sha256": "c1c8b262d50b0ba5a7061f84eb9882f91b747a36f5f42bc02f2daf682ebd0287"
+      },
+      {
+        "destination": "skills/mermail-cli/SKILL.md",
+        "input_sha256": "d6ef8abbbd77e86c811ffa6adc18de4ba3c4ee4abfdd3ea6a6922441a4101afd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d6ef8abbbd77e86c811ffa6adc18de4ba3c4ee4abfdd3ea6a6922441a4101afd",
+        "source": "skills/mermail-cli/SKILL.md",
+        "final_output_sha256": "d6ef8abbbd77e86c811ffa6adc18de4ba3c4ee4abfdd3ea6a6922441a4101afd",
+        "cli_destination": "skills/mermail-cli/SKILL.md",
+        "previous_staging_sha256": "d6ef8abbbd77e86c811ffa6adc18de4ba3c4ee4abfdd3ea6a6922441a4101afd"
+      },
+      {
+        "destination": "skills/mermail-cli/agents/openai.yaml",
+        "input_sha256": "fc2c3b0a76c5f3924ca22cb31b488a195a51ebeeb2071826f20ac464f8c95d15",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc2c3b0a76c5f3924ca22cb31b488a195a51ebeeb2071826f20ac464f8c95d15",
+        "source": "skills/mermail-cli/agents/openai.yaml",
+        "final_output_sha256": "fc2c3b0a76c5f3924ca22cb31b488a195a51ebeeb2071826f20ac464f8c95d15",
+        "cli_destination": "skills/mermail-cli/agents/openai.yaml",
+        "previous_staging_sha256": "fc2c3b0a76c5f3924ca22cb31b488a195a51ebeeb2071826f20ac464f8c95d15"
+      },
+      {
+        "destination": "skills/mermail-cli/references/security.md",
+        "input_sha256": "d9a2c9b863b045df0a5ab44a4ddc021496d0e4cd460f5d002cc59a821c34015f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d9a2c9b863b045df0a5ab44a4ddc021496d0e4cd460f5d002cc59a821c34015f",
+        "source": "skills/mermail-cli/references/security.md",
+        "final_output_sha256": "d9a2c9b863b045df0a5ab44a4ddc021496d0e4cd460f5d002cc59a821c34015f",
+        "cli_destination": "skills/mermail-cli/references/security.md",
+        "previous_staging_sha256": "d9a2c9b863b045df0a5ab44a4ddc021496d0e4cd460f5d002cc59a821c34015f"
+      },
+      {
+        "destination": "skills/mermail-cli/references/tools.md",
+        "input_sha256": "402af5e323f3631ad583638758a5f7e548b7f90c41ec7d447336a5802714b758",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "402af5e323f3631ad583638758a5f7e548b7f90c41ec7d447336a5802714b758",
+        "source": "skills/mermail-cli/references/tools.md",
+        "final_output_sha256": "402af5e323f3631ad583638758a5f7e548b7f90c41ec7d447336a5802714b758",
+        "cli_destination": "skills/mermail-cli/references/tools.md",
+        "previous_staging_sha256": "402af5e323f3631ad583638758a5f7e548b7f90c41ec7d447336a5802714b758"
+      },
+      {
+        "destination": "skills/mermail-cli/references/workflows.md",
+        "input_sha256": "5b6b6cd975462c2baaab8e0189fab4a6f2945c0dd5e8307c81e92a33ce4589ec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b6b6cd975462c2baaab8e0189fab4a6f2945c0dd5e8307c81e92a33ce4589ec",
+        "source": "skills/mermail-cli/references/workflows.md",
+        "final_output_sha256": "5b6b6cd975462c2baaab8e0189fab4a6f2945c0dd5e8307c81e92a33ce4589ec",
+        "cli_destination": "skills/mermail-cli/references/workflows.md",
+        "previous_staging_sha256": "5b6b6cd975462c2baaab8e0189fab4a6f2945c0dd5e8307c81e92a33ce4589ec"
+      },
+      {
+        "destination": "skills/mermail-compose-email/SKILL.md",
+        "input_sha256": "49f19fc571396c494ff927fc1b04e0c672e106b2970d38e0348a60e22dcdfbbc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "49f19fc571396c494ff927fc1b04e0c672e106b2970d38e0348a60e22dcdfbbc",
+        "source": "skills/mermail-compose-email/SKILL.md",
+        "final_output_sha256": "49f19fc571396c494ff927fc1b04e0c672e106b2970d38e0348a60e22dcdfbbc",
+        "cli_destination": "skills/mermail-compose-email/SKILL.md",
+        "previous_staging_sha256": "49f19fc571396c494ff927fc1b04e0c672e106b2970d38e0348a60e22dcdfbbc"
+      },
+      {
+        "destination": "skills/mermail-compose-email/agents/openai.yaml",
+        "input_sha256": "f7131b18ef9b22f1c725eaa4b4590210ed830f0965610299f1dd3d8b7269f0c9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f7131b18ef9b22f1c725eaa4b4590210ed830f0965610299f1dd3d8b7269f0c9",
+        "source": "skills/mermail-compose-email/agents/openai.yaml",
+        "final_output_sha256": "f7131b18ef9b22f1c725eaa4b4590210ed830f0965610299f1dd3d8b7269f0c9",
+        "cli_destination": "skills/mermail-compose-email/agents/openai.yaml",
+        "previous_staging_sha256": "f7131b18ef9b22f1c725eaa4b4590210ed830f0965610299f1dd3d8b7269f0c9"
+      },
+      {
+        "destination": "skills/mermail-compose-email/references/security.md",
+        "input_sha256": "d00707045ce2cc042d2b29f8a6093363edc2b6ea5976c7ef0bd58bd963813ac1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d00707045ce2cc042d2b29f8a6093363edc2b6ea5976c7ef0bd58bd963813ac1",
+        "source": "skills/mermail-compose-email/references/security.md",
+        "final_output_sha256": "d00707045ce2cc042d2b29f8a6093363edc2b6ea5976c7ef0bd58bd963813ac1",
+        "cli_destination": "skills/mermail-compose-email/references/security.md",
+        "previous_staging_sha256": "d00707045ce2cc042d2b29f8a6093363edc2b6ea5976c7ef0bd58bd963813ac1"
+      },
+      {
+        "destination": "skills/mermail-compose-email/references/tools.md",
+        "input_sha256": "df7c83784c4a19377e9d17a292b253779afdff9ab709dad313c103533555b0c8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "df7c83784c4a19377e9d17a292b253779afdff9ab709dad313c103533555b0c8",
+        "source": "skills/mermail-compose-email/references/tools.md",
+        "final_output_sha256": "df7c83784c4a19377e9d17a292b253779afdff9ab709dad313c103533555b0c8",
+        "cli_destination": "skills/mermail-compose-email/references/tools.md",
+        "previous_staging_sha256": "df7c83784c4a19377e9d17a292b253779afdff9ab709dad313c103533555b0c8"
+      },
+      {
+        "destination": "skills/mermail-compose-email/references/workflows.md",
+        "input_sha256": "d244ee00c90803a644d7d7852144ec7b3ca5ced965df6d67f1bb29079dc9f457",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d244ee00c90803a644d7d7852144ec7b3ca5ced965df6d67f1bb29079dc9f457",
+        "source": "skills/mermail-compose-email/references/workflows.md",
+        "final_output_sha256": "d244ee00c90803a644d7d7852144ec7b3ca5ced965df6d67f1bb29079dc9f457",
+        "cli_destination": "skills/mermail-compose-email/references/workflows.md",
+        "previous_staging_sha256": "d244ee00c90803a644d7d7852144ec7b3ca5ced965df6d67f1bb29079dc9f457"
+      },
+      {
+        "destination": "skills/mermail-composio/SKILL.md",
+        "input_sha256": "9c22d088c0c43e1d6a76258337af5582981fcdb26958491b79d6c437c23b1118",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9c22d088c0c43e1d6a76258337af5582981fcdb26958491b79d6c437c23b1118",
+        "source": "skills/mermail-composio/SKILL.md",
+        "final_output_sha256": "9c22d088c0c43e1d6a76258337af5582981fcdb26958491b79d6c437c23b1118",
+        "cli_destination": "skills/mermail-composio/SKILL.md",
+        "previous_staging_sha256": "9c22d088c0c43e1d6a76258337af5582981fcdb26958491b79d6c437c23b1118"
+      },
+      {
+        "destination": "skills/mermail-composio/agents/openai.yaml",
+        "input_sha256": "471ae904a9081c46a62982c4845a3b7ea54fab9f4ce93a045cd375d2ec25c2ed",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "471ae904a9081c46a62982c4845a3b7ea54fab9f4ce93a045cd375d2ec25c2ed",
+        "source": "skills/mermail-composio/agents/openai.yaml",
+        "final_output_sha256": "471ae904a9081c46a62982c4845a3b7ea54fab9f4ce93a045cd375d2ec25c2ed",
+        "cli_destination": "skills/mermail-composio/agents/openai.yaml",
+        "previous_staging_sha256": "471ae904a9081c46a62982c4845a3b7ea54fab9f4ce93a045cd375d2ec25c2ed"
+      },
+      {
+        "destination": "skills/mermail-composio/references/security.md",
+        "input_sha256": "cbaa7d1113abe68479187274e9dcae86f798cfc09d1802391156beb34e8307ad",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cbaa7d1113abe68479187274e9dcae86f798cfc09d1802391156beb34e8307ad",
+        "source": "skills/mermail-composio/references/security.md",
+        "final_output_sha256": "cbaa7d1113abe68479187274e9dcae86f798cfc09d1802391156beb34e8307ad",
+        "cli_destination": "skills/mermail-composio/references/security.md",
+        "previous_staging_sha256": "cbaa7d1113abe68479187274e9dcae86f798cfc09d1802391156beb34e8307ad"
+      },
+      {
+        "destination": "skills/mermail-composio/references/tools.md",
+        "input_sha256": "689e802e15ae8b32f656ef0f93508f25a1e5117f28d518c714b180bd653347f1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "689e802e15ae8b32f656ef0f93508f25a1e5117f28d518c714b180bd653347f1",
+        "source": "skills/mermail-composio/references/tools.md",
+        "final_output_sha256": "689e802e15ae8b32f656ef0f93508f25a1e5117f28d518c714b180bd653347f1",
+        "cli_destination": "skills/mermail-composio/references/tools.md",
+        "previous_staging_sha256": "689e802e15ae8b32f656ef0f93508f25a1e5117f28d518c714b180bd653347f1"
+      },
+      {
+        "destination": "skills/mermail-composio/references/workflows.md",
+        "input_sha256": "b3e5b1bd58a2e07e58f35494f89600046695b95f44a66437121145adc83b5d05",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b3e5b1bd58a2e07e58f35494f89600046695b95f44a66437121145adc83b5d05",
+        "source": "skills/mermail-composio/references/workflows.md",
+        "final_output_sha256": "b3e5b1bd58a2e07e58f35494f89600046695b95f44a66437121145adc83b5d05",
+        "cli_destination": "skills/mermail-composio/references/workflows.md",
+        "previous_staging_sha256": "b3e5b1bd58a2e07e58f35494f89600046695b95f44a66437121145adc83b5d05"
+      },
+      {
+        "destination": "skills/mermail-gtm-agent/SKILL.md",
+        "input_sha256": "15d8da68762aece031a3b54b0b982e2d060fb99e8cf9d212547bfdb941b7de11",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "15d8da68762aece031a3b54b0b982e2d060fb99e8cf9d212547bfdb941b7de11",
+        "source": "skills/mermail-gtm-agent/SKILL.md",
+        "final_output_sha256": "15d8da68762aece031a3b54b0b982e2d060fb99e8cf9d212547bfdb941b7de11",
+        "cli_destination": "skills/mermail-gtm-agent/SKILL.md",
+        "previous_staging_sha256": "15d8da68762aece031a3b54b0b982e2d060fb99e8cf9d212547bfdb941b7de11"
+      },
+      {
+        "destination": "skills/mermail-gtm-agent/agents/openai.yaml",
+        "input_sha256": "5218d1a17441c3906c67a9cf916c2071cf7c25923209beccaaad8fa2def5ea0e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5218d1a17441c3906c67a9cf916c2071cf7c25923209beccaaad8fa2def5ea0e",
+        "source": "skills/mermail-gtm-agent/agents/openai.yaml",
+        "final_output_sha256": "5218d1a17441c3906c67a9cf916c2071cf7c25923209beccaaad8fa2def5ea0e",
+        "cli_destination": "skills/mermail-gtm-agent/agents/openai.yaml",
+        "previous_staging_sha256": "5218d1a17441c3906c67a9cf916c2071cf7c25923209beccaaad8fa2def5ea0e"
+      },
+      {
+        "destination": "skills/mermail-gtm-agent/references/security.md",
+        "input_sha256": "f1fed773f00e69364c62859dd7f7fca6753364167217295f77cf550534f567b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f1fed773f00e69364c62859dd7f7fca6753364167217295f77cf550534f567b0",
+        "source": "skills/mermail-gtm-agent/references/security.md",
+        "final_output_sha256": "f1fed773f00e69364c62859dd7f7fca6753364167217295f77cf550534f567b0",
+        "cli_destination": "skills/mermail-gtm-agent/references/security.md",
+        "previous_staging_sha256": "f1fed773f00e69364c62859dd7f7fca6753364167217295f77cf550534f567b0"
+      },
+      {
+        "destination": "skills/mermail-gtm-agent/references/tools.md",
+        "input_sha256": "b7e9c5fb619611d2347d4bd7736345222d5bec642243effe03ed43a2fe53ca66",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b7e9c5fb619611d2347d4bd7736345222d5bec642243effe03ed43a2fe53ca66",
+        "source": "skills/mermail-gtm-agent/references/tools.md",
+        "final_output_sha256": "b7e9c5fb619611d2347d4bd7736345222d5bec642243effe03ed43a2fe53ca66",
+        "cli_destination": "skills/mermail-gtm-agent/references/tools.md",
+        "previous_staging_sha256": "b7e9c5fb619611d2347d4bd7736345222d5bec642243effe03ed43a2fe53ca66"
+      },
+      {
+        "destination": "skills/mermail-gtm-agent/references/workflows.md",
+        "input_sha256": "98b79bc83d0a00343231f8bb18a3c20ab6c85e89896180cfc3267d0493735b78",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "98b79bc83d0a00343231f8bb18a3c20ab6c85e89896180cfc3267d0493735b78",
+        "source": "skills/mermail-gtm-agent/references/workflows.md",
+        "final_output_sha256": "98b79bc83d0a00343231f8bb18a3c20ab6c85e89896180cfc3267d0493735b78",
+        "cli_destination": "skills/mermail-gtm-agent/references/workflows.md",
+        "previous_staging_sha256": "98b79bc83d0a00343231f8bb18a3c20ab6c85e89896180cfc3267d0493735b78"
+      },
+      {
+        "destination": "skills/mermail-mail-agent/SKILL.md",
+        "input_sha256": "337c16d91f8b598aa2c1e40fe0d90f421d8324fa22a047d609bc7c1ab890e7e7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "337c16d91f8b598aa2c1e40fe0d90f421d8324fa22a047d609bc7c1ab890e7e7",
+        "source": "skills/mermail-mail-agent/SKILL.md",
+        "final_output_sha256": "337c16d91f8b598aa2c1e40fe0d90f421d8324fa22a047d609bc7c1ab890e7e7",
+        "cli_destination": "skills/mermail-mail-agent/SKILL.md",
+        "previous_staging_sha256": "337c16d91f8b598aa2c1e40fe0d90f421d8324fa22a047d609bc7c1ab890e7e7"
+      },
+      {
+        "destination": "skills/mermail-mail-agent/agents/openai.yaml",
+        "input_sha256": "f78b4d27666dd409525cb57214954eef511eb8239a4135f1e836c6f035e32365",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f78b4d27666dd409525cb57214954eef511eb8239a4135f1e836c6f035e32365",
+        "source": "skills/mermail-mail-agent/agents/openai.yaml",
+        "final_output_sha256": "f78b4d27666dd409525cb57214954eef511eb8239a4135f1e836c6f035e32365",
+        "cli_destination": "skills/mermail-mail-agent/agents/openai.yaml",
+        "previous_staging_sha256": "f78b4d27666dd409525cb57214954eef511eb8239a4135f1e836c6f035e32365"
+      },
+      {
+        "destination": "skills/mermail-mail-agent/references/security.md",
+        "input_sha256": "a150779eada82320226aafddaf3d9a788a97635bfd9e53744373d389a4e91aa6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a150779eada82320226aafddaf3d9a788a97635bfd9e53744373d389a4e91aa6",
+        "source": "skills/mermail-mail-agent/references/security.md",
+        "final_output_sha256": "a150779eada82320226aafddaf3d9a788a97635bfd9e53744373d389a4e91aa6",
+        "cli_destination": "skills/mermail-mail-agent/references/security.md",
+        "previous_staging_sha256": "a150779eada82320226aafddaf3d9a788a97635bfd9e53744373d389a4e91aa6"
+      },
+      {
+        "destination": "skills/mermail-mail-agent/references/tools.md",
+        "input_sha256": "ee73f140fd09bb0fe7a03a71c8ef74dbac31654845ef550ef4bcfe67dcf691a8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ee73f140fd09bb0fe7a03a71c8ef74dbac31654845ef550ef4bcfe67dcf691a8",
+        "source": "skills/mermail-mail-agent/references/tools.md",
+        "final_output_sha256": "ee73f140fd09bb0fe7a03a71c8ef74dbac31654845ef550ef4bcfe67dcf691a8",
+        "cli_destination": "skills/mermail-mail-agent/references/tools.md",
+        "previous_staging_sha256": "ee73f140fd09bb0fe7a03a71c8ef74dbac31654845ef550ef4bcfe67dcf691a8"
+      },
+      {
+        "destination": "skills/mermail-mail-agent/references/workflows.md",
+        "input_sha256": "4bbeee3d2d1874f06fd4e16fdf08f4123470e504fd4e5a5c85a94a634a5b7e72",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4bbeee3d2d1874f06fd4e16fdf08f4123470e504fd4e5a5c85a94a634a5b7e72",
+        "source": "skills/mermail-mail-agent/references/workflows.md",
+        "final_output_sha256": "4bbeee3d2d1874f06fd4e16fdf08f4123470e504fd4e5a5c85a94a634a5b7e72",
+        "cli_destination": "skills/mermail-mail-agent/references/workflows.md",
+        "previous_staging_sha256": "4bbeee3d2d1874f06fd4e16fdf08f4123470e504fd4e5a5c85a94a634a5b7e72"
+      },
+      {
+        "destination": "skills/mermail-manage-inbox/SKILL.md",
+        "input_sha256": "4ac787d32d9414d594174b1a0a930dbce3e6dad078a3bd73bbb5190a9f5c7079",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4ac787d32d9414d594174b1a0a930dbce3e6dad078a3bd73bbb5190a9f5c7079",
+        "source": "skills/mermail-manage-inbox/SKILL.md",
+        "final_output_sha256": "4ac787d32d9414d594174b1a0a930dbce3e6dad078a3bd73bbb5190a9f5c7079",
+        "cli_destination": "skills/mermail-manage-inbox/SKILL.md",
+        "previous_staging_sha256": "4ac787d32d9414d594174b1a0a930dbce3e6dad078a3bd73bbb5190a9f5c7079"
+      },
+      {
+        "destination": "skills/mermail-manage-inbox/agents/openai.yaml",
+        "input_sha256": "b9a998a67d1c684085d05b43286061dae0f9b7b9d9dcf8bffcaa4ce540e61f74",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b9a998a67d1c684085d05b43286061dae0f9b7b9d9dcf8bffcaa4ce540e61f74",
+        "source": "skills/mermail-manage-inbox/agents/openai.yaml",
+        "final_output_sha256": "b9a998a67d1c684085d05b43286061dae0f9b7b9d9dcf8bffcaa4ce540e61f74",
+        "cli_destination": "skills/mermail-manage-inbox/agents/openai.yaml",
+        "previous_staging_sha256": "b9a998a67d1c684085d05b43286061dae0f9b7b9d9dcf8bffcaa4ce540e61f74"
+      },
+      {
+        "destination": "skills/mermail-manage-inbox/references/security.md",
+        "input_sha256": "bbc5773ddc9f3dfe6787c8c8caf3ca36fa7a03e82cfec6921190b539cd21ee91",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bbc5773ddc9f3dfe6787c8c8caf3ca36fa7a03e82cfec6921190b539cd21ee91",
+        "source": "skills/mermail-manage-inbox/references/security.md",
+        "final_output_sha256": "bbc5773ddc9f3dfe6787c8c8caf3ca36fa7a03e82cfec6921190b539cd21ee91",
+        "cli_destination": "skills/mermail-manage-inbox/references/security.md",
+        "previous_staging_sha256": "bbc5773ddc9f3dfe6787c8c8caf3ca36fa7a03e82cfec6921190b539cd21ee91"
+      },
+      {
+        "destination": "skills/mermail-manage-inbox/references/tools.md",
+        "input_sha256": "4ea216fcd3766fa92c0eededdb327fc9acc40f1d2b0cdb0a4d5b65c934fda200",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4ea216fcd3766fa92c0eededdb327fc9acc40f1d2b0cdb0a4d5b65c934fda200",
+        "source": "skills/mermail-manage-inbox/references/tools.md",
+        "final_output_sha256": "4ea216fcd3766fa92c0eededdb327fc9acc40f1d2b0cdb0a4d5b65c934fda200",
+        "cli_destination": "skills/mermail-manage-inbox/references/tools.md",
+        "previous_staging_sha256": "4ea216fcd3766fa92c0eededdb327fc9acc40f1d2b0cdb0a4d5b65c934fda200"
+      },
+      {
+        "destination": "skills/mermail-manage-inbox/references/workflows.md",
+        "input_sha256": "11034c3bba4a5473d2e60b33c74dfbb1e5bc0f66cd611314e99007252b7a0367",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "11034c3bba4a5473d2e60b33c74dfbb1e5bc0f66cd611314e99007252b7a0367",
+        "source": "skills/mermail-manage-inbox/references/workflows.md",
+        "final_output_sha256": "11034c3bba4a5473d2e60b33c74dfbb1e5bc0f66cd611314e99007252b7a0367",
+        "cli_destination": "skills/mermail-manage-inbox/references/workflows.md",
+        "previous_staging_sha256": "11034c3bba4a5473d2e60b33c74dfbb1e5bc0f66cd611314e99007252b7a0367"
+      },
+      {
+        "destination": "skills/mermail-mcp/SKILL.md",
+        "input_sha256": "2d56f994f481a44f60bcc04cd071b5adcdc7e1b83e4ad9998999b6df20f0f332",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2d56f994f481a44f60bcc04cd071b5adcdc7e1b83e4ad9998999b6df20f0f332",
+        "source": "skills/mermail-mcp/SKILL.md",
+        "final_output_sha256": "2d56f994f481a44f60bcc04cd071b5adcdc7e1b83e4ad9998999b6df20f0f332",
+        "cli_destination": "skills/mermail-mcp/SKILL.md",
+        "previous_staging_sha256": "2d56f994f481a44f60bcc04cd071b5adcdc7e1b83e4ad9998999b6df20f0f332"
+      },
+      {
+        "destination": "skills/mermail-mcp/agents/openai.yaml",
+        "input_sha256": "8a5e9a3e7e8dca45595a78a9ad2a2236461141010ace7136f830bbd6fd3f6ea6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8a5e9a3e7e8dca45595a78a9ad2a2236461141010ace7136f830bbd6fd3f6ea6",
+        "source": "skills/mermail-mcp/agents/openai.yaml",
+        "final_output_sha256": "8a5e9a3e7e8dca45595a78a9ad2a2236461141010ace7136f830bbd6fd3f6ea6",
+        "cli_destination": "skills/mermail-mcp/agents/openai.yaml",
+        "previous_staging_sha256": "8a5e9a3e7e8dca45595a78a9ad2a2236461141010ace7136f830bbd6fd3f6ea6"
+      },
+      {
+        "destination": "skills/mermail-mcp/references/platforms.md",
+        "input_sha256": "d9425bc0f71b28fc17ffe790e0561bb15256df6e52375a75173e94f24fc752e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6d094919822b737f2f30ef07602235d16539ceb54d3caa82f6ced03059407081",
+        "source": "skills/mermail-mcp/references/platforms.md",
+        "final_output_sha256": "6d094919822b737f2f30ef07602235d16539ceb54d3caa82f6ced03059407081",
+        "cli_destination": "skills/mermail-mcp/references/platforms.md",
+        "previous_staging_sha256": "6d094919822b737f2f30ef07602235d16539ceb54d3caa82f6ced03059407081"
+      },
+      {
+        "destination": "skills/mermail-mcp/references/security.md",
+        "input_sha256": "a8153dfafede25c269c59012091144485cb1a5c2016a4671406dea2879d6e78f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a8153dfafede25c269c59012091144485cb1a5c2016a4671406dea2879d6e78f",
+        "source": "skills/mermail-mcp/references/security.md",
+        "final_output_sha256": "a8153dfafede25c269c59012091144485cb1a5c2016a4671406dea2879d6e78f",
+        "cli_destination": "skills/mermail-mcp/references/security.md",
+        "previous_staging_sha256": "a8153dfafede25c269c59012091144485cb1a5c2016a4671406dea2879d6e78f"
+      },
+      {
+        "destination": "skills/mermail-mcp/references/troubleshooting.md",
+        "input_sha256": "d30b1d10f777c7e3149935adb8b725c15c41113e5d77bf51ddfec61fc4e9ec88",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d30b1d10f777c7e3149935adb8b725c15c41113e5d77bf51ddfec61fc4e9ec88",
+        "source": "skills/mermail-mcp/references/troubleshooting.md",
+        "final_output_sha256": "d30b1d10f777c7e3149935adb8b725c15c41113e5d77bf51ddfec61fc4e9ec88",
+        "cli_destination": "skills/mermail-mcp/references/troubleshooting.md",
+        "previous_staging_sha256": "d30b1d10f777c7e3149935adb8b725c15c41113e5d77bf51ddfec61fc4e9ec88"
+      },
+      {
+        "destination": "skills/mermail-mcp/scripts/check-connection.mjs",
+        "input_sha256": "0743cf19fdbf95931ed3bf38adaced316951a08ae923d338f8b5d703ba48b489",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "0743cf19fdbf95931ed3bf38adaced316951a08ae923d338f8b5d703ba48b489",
+        "source": "skills/mermail-mcp/scripts/check-connection.mjs",
+        "final_output_sha256": "0743cf19fdbf95931ed3bf38adaced316951a08ae923d338f8b5d703ba48b489",
+        "cli_destination": "skills/mermail-mcp/scripts/check-connection.mjs",
+        "previous_staging_sha256": "0743cf19fdbf95931ed3bf38adaced316951a08ae923d338f8b5d703ba48b489"
+      },
+      {
+        "destination": "skills/mermail-research-agent/SKILL.md",
+        "input_sha256": "47d7820a65a76062e8d1f0f1ae1491fe37d2e1dd09fd48503164d8d3f11dffd9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "47d7820a65a76062e8d1f0f1ae1491fe37d2e1dd09fd48503164d8d3f11dffd9",
+        "source": "skills/mermail-research-agent/SKILL.md",
+        "final_output_sha256": "47d7820a65a76062e8d1f0f1ae1491fe37d2e1dd09fd48503164d8d3f11dffd9",
+        "cli_destination": "skills/mermail-research-agent/SKILL.md",
+        "previous_staging_sha256": "47d7820a65a76062e8d1f0f1ae1491fe37d2e1dd09fd48503164d8d3f11dffd9"
+      },
+      {
+        "destination": "skills/mermail-research-agent/agents/openai.yaml",
+        "input_sha256": "0ba534f2cb95200cb53f7a8c78a069536ce8be5a647c485742a235862e1c9ae4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0ba534f2cb95200cb53f7a8c78a069536ce8be5a647c485742a235862e1c9ae4",
+        "source": "skills/mermail-research-agent/agents/openai.yaml",
+        "final_output_sha256": "0ba534f2cb95200cb53f7a8c78a069536ce8be5a647c485742a235862e1c9ae4",
+        "cli_destination": "skills/mermail-research-agent/agents/openai.yaml",
+        "previous_staging_sha256": "0ba534f2cb95200cb53f7a8c78a069536ce8be5a647c485742a235862e1c9ae4"
+      },
+      {
+        "destination": "skills/mermail-research-agent/references/cmc-research.md",
+        "input_sha256": "a8458f012b0f0ec278f24ff7c2e0792da09deec567109398747c8cda58eb31e5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a8458f012b0f0ec278f24ff7c2e0792da09deec567109398747c8cda58eb31e5",
+        "source": "skills/mermail-research-agent/references/cmc-research.md",
+        "final_output_sha256": "a8458f012b0f0ec278f24ff7c2e0792da09deec567109398747c8cda58eb31e5",
+        "cli_destination": "skills/mermail-research-agent/references/cmc-research.md",
+        "previous_staging_sha256": "a8458f012b0f0ec278f24ff7c2e0792da09deec567109398747c8cda58eb31e5"
+      },
+      {
+        "destination": "skills/mermail-research-agent/references/security.md",
+        "input_sha256": "b670166dc000bb98a716b948047517501a313590d6819f6e259e37965dee51f4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b670166dc000bb98a716b948047517501a313590d6819f6e259e37965dee51f4",
+        "source": "skills/mermail-research-agent/references/security.md",
+        "final_output_sha256": "b670166dc000bb98a716b948047517501a313590d6819f6e259e37965dee51f4",
+        "cli_destination": "skills/mermail-research-agent/references/security.md",
+        "previous_staging_sha256": "b670166dc000bb98a716b948047517501a313590d6819f6e259e37965dee51f4"
+      },
+      {
+        "destination": "skills/mermail-research-agent/references/templates.md",
+        "input_sha256": "f16e1483ed9bb6c41af0b1d197ce1eebc04de7b5e95f52d3236f79e597205f72",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f16e1483ed9bb6c41af0b1d197ce1eebc04de7b5e95f52d3236f79e597205f72",
+        "source": "skills/mermail-research-agent/references/templates.md",
+        "final_output_sha256": "f16e1483ed9bb6c41af0b1d197ce1eebc04de7b5e95f52d3236f79e597205f72",
+        "cli_destination": "skills/mermail-research-agent/references/templates.md",
+        "previous_staging_sha256": "f16e1483ed9bb6c41af0b1d197ce1eebc04de7b5e95f52d3236f79e597205f72"
+      },
+      {
+        "destination": "skills/mermail-research-agent/references/tools.md",
+        "input_sha256": "024a24929a119599f2536b1da490d95f97789d1ef0ce7e3bb4e8d908537b5a4a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "024a24929a119599f2536b1da490d95f97789d1ef0ce7e3bb4e8d908537b5a4a",
+        "source": "skills/mermail-research-agent/references/tools.md",
+        "final_output_sha256": "024a24929a119599f2536b1da490d95f97789d1ef0ce7e3bb4e8d908537b5a4a",
+        "cli_destination": "skills/mermail-research-agent/references/tools.md",
+        "previous_staging_sha256": "024a24929a119599f2536b1da490d95f97789d1ef0ce7e3bb4e8d908537b5a4a"
+      },
+      {
+        "destination": "skills/mermail-research-agent/references/workflows.md",
+        "input_sha256": "b5b583d60d3835e3cd7adf0a85e4d91a5e784abcd90d03373719f222d74e14b2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b5b583d60d3835e3cd7adf0a85e4d91a5e784abcd90d03373719f222d74e14b2",
+        "source": "skills/mermail-research-agent/references/workflows.md",
+        "final_output_sha256": "b5b583d60d3835e3cd7adf0a85e4d91a5e784abcd90d03373719f222d74e14b2",
+        "cli_destination": "skills/mermail-research-agent/references/workflows.md",
+        "previous_staging_sha256": "b5b583d60d3835e3cd7adf0a85e4d91a5e784abcd90d03373719f222d74e14b2"
+      },
+      {
+        "destination": "skills/mermail-scheduling-agent/SKILL.md",
+        "input_sha256": "a30fa7a107bf1d5e34e319719ef7cedebb14225ddc09d39c03ec1766680558fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a30fa7a107bf1d5e34e319719ef7cedebb14225ddc09d39c03ec1766680558fa",
+        "source": "skills/mermail-scheduling-agent/SKILL.md",
+        "final_output_sha256": "a30fa7a107bf1d5e34e319719ef7cedebb14225ddc09d39c03ec1766680558fa",
+        "cli_destination": "skills/mermail-scheduling-agent/SKILL.md",
+        "previous_staging_sha256": "a30fa7a107bf1d5e34e319719ef7cedebb14225ddc09d39c03ec1766680558fa"
+      },
+      {
+        "destination": "skills/mermail-scheduling-agent/agents/openai.yaml",
+        "input_sha256": "c733b04080b403aab4ea5f6f3885f5b7157516e3349ab93bee8bbeae63d0412b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c733b04080b403aab4ea5f6f3885f5b7157516e3349ab93bee8bbeae63d0412b",
+        "source": "skills/mermail-scheduling-agent/agents/openai.yaml",
+        "final_output_sha256": "c733b04080b403aab4ea5f6f3885f5b7157516e3349ab93bee8bbeae63d0412b",
+        "cli_destination": "skills/mermail-scheduling-agent/agents/openai.yaml",
+        "previous_staging_sha256": "c733b04080b403aab4ea5f6f3885f5b7157516e3349ab93bee8bbeae63d0412b"
+      },
+      {
+        "destination": "skills/mermail-scheduling-agent/references/security.md",
+        "input_sha256": "f02fc597091e0868d614b991645996d86bc47c7bd66d139f74e1b4c17e8d894f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f02fc597091e0868d614b991645996d86bc47c7bd66d139f74e1b4c17e8d894f",
+        "source": "skills/mermail-scheduling-agent/references/security.md",
+        "final_output_sha256": "f02fc597091e0868d614b991645996d86bc47c7bd66d139f74e1b4c17e8d894f",
+        "cli_destination": "skills/mermail-scheduling-agent/references/security.md",
+        "previous_staging_sha256": "f02fc597091e0868d614b991645996d86bc47c7bd66d139f74e1b4c17e8d894f"
+      },
+      {
+        "destination": "skills/mermail-scheduling-agent/references/tools.md",
+        "input_sha256": "8b83f5142c729f61b415a9622626d17930003fc1a9fea94a1d4e83fcd5266ec6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8b83f5142c729f61b415a9622626d17930003fc1a9fea94a1d4e83fcd5266ec6",
+        "source": "skills/mermail-scheduling-agent/references/tools.md",
+        "final_output_sha256": "8b83f5142c729f61b415a9622626d17930003fc1a9fea94a1d4e83fcd5266ec6",
+        "cli_destination": "skills/mermail-scheduling-agent/references/tools.md",
+        "previous_staging_sha256": "8b83f5142c729f61b415a9622626d17930003fc1a9fea94a1d4e83fcd5266ec6"
+      },
+      {
+        "destination": "skills/mermail-scheduling-agent/references/workflows.md",
+        "input_sha256": "10658f76b0c7defd1d7346df9564c9208bdd6b4c40364a9f321f5b3946f8a456",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "10658f76b0c7defd1d7346df9564c9208bdd6b4c40364a9f321f5b3946f8a456",
+        "source": "skills/mermail-scheduling-agent/references/workflows.md",
+        "final_output_sha256": "10658f76b0c7defd1d7346df9564c9208bdd6b4c40364a9f321f5b3946f8a456",
+        "cli_destination": "skills/mermail-scheduling-agent/references/workflows.md",
+        "previous_staging_sha256": "10658f76b0c7defd1d7346df9564c9208bdd6b4c40364a9f321f5b3946f8a456"
+      },
+      {
+        "destination": "skills/mermail-support-agent/SKILL.md",
+        "input_sha256": "919caa22506d07efc8366261a272ff516a3e3a400666b19d426a43a62c58ee82",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "919caa22506d07efc8366261a272ff516a3e3a400666b19d426a43a62c58ee82",
+        "source": "skills/mermail-support-agent/SKILL.md",
+        "final_output_sha256": "919caa22506d07efc8366261a272ff516a3e3a400666b19d426a43a62c58ee82",
+        "cli_destination": "skills/mermail-support-agent/SKILL.md",
+        "previous_staging_sha256": "919caa22506d07efc8366261a272ff516a3e3a400666b19d426a43a62c58ee82"
+      },
+      {
+        "destination": "skills/mermail-support-agent/agents/openai.yaml",
+        "input_sha256": "9e09c004c67395a786921739db6278a96a05a0773b9d8f7970760c9a7c81805d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9e09c004c67395a786921739db6278a96a05a0773b9d8f7970760c9a7c81805d",
+        "source": "skills/mermail-support-agent/agents/openai.yaml",
+        "final_output_sha256": "9e09c004c67395a786921739db6278a96a05a0773b9d8f7970760c9a7c81805d",
+        "cli_destination": "skills/mermail-support-agent/agents/openai.yaml",
+        "previous_staging_sha256": "9e09c004c67395a786921739db6278a96a05a0773b9d8f7970760c9a7c81805d"
+      },
+      {
+        "destination": "skills/mermail-support-agent/references/security.md",
+        "input_sha256": "55bcd31442cc8e65c1b2ca28dd26a0946a282b894a57d471ad7e7fb7ad251418",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "55bcd31442cc8e65c1b2ca28dd26a0946a282b894a57d471ad7e7fb7ad251418",
+        "source": "skills/mermail-support-agent/references/security.md",
+        "final_output_sha256": "55bcd31442cc8e65c1b2ca28dd26a0946a282b894a57d471ad7e7fb7ad251418",
+        "cli_destination": "skills/mermail-support-agent/references/security.md",
+        "previous_staging_sha256": "55bcd31442cc8e65c1b2ca28dd26a0946a282b894a57d471ad7e7fb7ad251418"
+      },
+      {
+        "destination": "skills/mermail-support-agent/references/tools.md",
+        "input_sha256": "daaef642297ecacb4b4d128bfb8d843164a9c29f41046dfd41144173da9168d8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "daaef642297ecacb4b4d128bfb8d843164a9c29f41046dfd41144173da9168d8",
+        "source": "skills/mermail-support-agent/references/tools.md",
+        "final_output_sha256": "daaef642297ecacb4b4d128bfb8d843164a9c29f41046dfd41144173da9168d8",
+        "cli_destination": "skills/mermail-support-agent/references/tools.md",
+        "previous_staging_sha256": "daaef642297ecacb4b4d128bfb8d843164a9c29f41046dfd41144173da9168d8"
+      },
+      {
+        "destination": "skills/mermail-support-agent/references/workflows.md",
+        "input_sha256": "398cadc9ee481e918d12b3825b250ad494d04c657a33c3998b9c9fa742a8578b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "398cadc9ee481e918d12b3825b250ad494d04c657a33c3998b9c9fa742a8578b",
+        "source": "skills/mermail-support-agent/references/workflows.md",
+        "final_output_sha256": "398cadc9ee481e918d12b3825b250ad494d04c657a33c3998b9c9fa742a8578b",
+        "cli_destination": "skills/mermail-support-agent/references/workflows.md",
+        "previous_staging_sha256": "398cadc9ee481e918d12b3825b250ad494d04c657a33c3998b9c9fa742a8578b"
+      },
+      {
+        "destination": "skills/mermail-x402-agent/SKILL.md",
+        "input_sha256": "987d3bf414b035b6d05af4f616c7b5b920c6f85d987e646ad7ff1286b2bf808f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "987d3bf414b035b6d05af4f616c7b5b920c6f85d987e646ad7ff1286b2bf808f",
+        "source": "skills/mermail-x402-agent/SKILL.md",
+        "final_output_sha256": "987d3bf414b035b6d05af4f616c7b5b920c6f85d987e646ad7ff1286b2bf808f",
+        "cli_destination": "skills/mermail-x402-agent/SKILL.md",
+        "previous_staging_sha256": "987d3bf414b035b6d05af4f616c7b5b920c6f85d987e646ad7ff1286b2bf808f"
+      },
+      {
+        "destination": "skills/mermail-x402-agent/agents/openai.yaml",
+        "input_sha256": "03eb29d574534ec348e5bb55ec11c4a295cf96db18c8cf24be8b43f7dbf2a6d1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "03eb29d574534ec348e5bb55ec11c4a295cf96db18c8cf24be8b43f7dbf2a6d1",
+        "source": "skills/mermail-x402-agent/agents/openai.yaml",
+        "final_output_sha256": "03eb29d574534ec348e5bb55ec11c4a295cf96db18c8cf24be8b43f7dbf2a6d1",
+        "cli_destination": "skills/mermail-x402-agent/agents/openai.yaml",
+        "previous_staging_sha256": "03eb29d574534ec348e5bb55ec11c4a295cf96db18c8cf24be8b43f7dbf2a6d1"
+      },
+      {
+        "destination": "skills/mermail-x402-agent/references/security.md",
+        "input_sha256": "1a56f8d8d108155ee8df977c0139ff4fb5e51b27e7f3042d1d6ed6792f3f42ff",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1a56f8d8d108155ee8df977c0139ff4fb5e51b27e7f3042d1d6ed6792f3f42ff",
+        "source": "skills/mermail-x402-agent/references/security.md",
+        "final_output_sha256": "1a56f8d8d108155ee8df977c0139ff4fb5e51b27e7f3042d1d6ed6792f3f42ff",
+        "cli_destination": "skills/mermail-x402-agent/references/security.md",
+        "previous_staging_sha256": "1a56f8d8d108155ee8df977c0139ff4fb5e51b27e7f3042d1d6ed6792f3f42ff"
+      },
+      {
+        "destination": "skills/mermail-x402-agent/references/tools.md",
+        "input_sha256": "309522830d9e8c308cc03e11e0960f01e5e1ccea0dcebd824d8be239dd83e906",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "309522830d9e8c308cc03e11e0960f01e5e1ccea0dcebd824d8be239dd83e906",
+        "source": "skills/mermail-x402-agent/references/tools.md",
+        "final_output_sha256": "309522830d9e8c308cc03e11e0960f01e5e1ccea0dcebd824d8be239dd83e906",
+        "cli_destination": "skills/mermail-x402-agent/references/tools.md",
+        "previous_staging_sha256": "309522830d9e8c308cc03e11e0960f01e5e1ccea0dcebd824d8be239dd83e906"
+      },
+      {
+        "destination": "skills/mermail-x402-agent/references/workflows.md",
+        "input_sha256": "cf004cde25b478764ba511cc1f07f9e51f095be9cee46dff63479c1ed5ed59c8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cf004cde25b478764ba511cc1f07f9e51f095be9cee46dff63479c1ed5ed59c8",
+        "source": "skills/mermail-x402-agent/references/workflows.md",
+        "final_output_sha256": "cf004cde25b478764ba511cc1f07f9e51f095be9cee46dff63479c1ed5ed59c8",
+        "cli_destination": "skills/mermail-x402-agent/references/workflows.md",
+        "previous_staging_sha256": "cf004cde25b478764ba511cc1f07f9e51f095be9cee46dff63479c1ed5ed59c8"
+      },
+      {
+        "destination": "skills/mermail-xstocks-desk/SKILL.md",
+        "input_sha256": "ad489bf68c0fbbedad8ccd4ab66d0b27e1d9b39ef456178b7ccb9e10ee84b5b4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ad489bf68c0fbbedad8ccd4ab66d0b27e1d9b39ef456178b7ccb9e10ee84b5b4",
+        "source": "skills/mermail-xstocks-desk/SKILL.md",
+        "final_output_sha256": "ad489bf68c0fbbedad8ccd4ab66d0b27e1d9b39ef456178b7ccb9e10ee84b5b4",
+        "cli_destination": "skills/mermail-xstocks-desk/SKILL.md",
+        "previous_staging_sha256": "ad489bf68c0fbbedad8ccd4ab66d0b27e1d9b39ef456178b7ccb9e10ee84b5b4"
+      },
+      {
+        "destination": "skills/mermail-xstocks-desk/agents/openai.yaml",
+        "input_sha256": "14a2ef409ad89a26834e67a0e32646bbf3355aeb127bd68d9c3f378086205fc5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "14a2ef409ad89a26834e67a0e32646bbf3355aeb127bd68d9c3f378086205fc5",
+        "source": "skills/mermail-xstocks-desk/agents/openai.yaml",
+        "final_output_sha256": "14a2ef409ad89a26834e67a0e32646bbf3355aeb127bd68d9c3f378086205fc5",
+        "cli_destination": "skills/mermail-xstocks-desk/agents/openai.yaml",
+        "previous_staging_sha256": "14a2ef409ad89a26834e67a0e32646bbf3355aeb127bd68d9c3f378086205fc5"
+      },
+      {
+        "destination": "skills/mermail-xstocks-desk/references/paybox-jupiter.md",
+        "input_sha256": "f0d9e9c07bfe7b909a835b631e1efbd110c159bbe80d994fac15fb009af22ac3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f0d9e9c07bfe7b909a835b631e1efbd110c159bbe80d994fac15fb009af22ac3",
+        "source": "skills/mermail-xstocks-desk/references/paybox-jupiter.md",
+        "final_output_sha256": "f0d9e9c07bfe7b909a835b631e1efbd110c159bbe80d994fac15fb009af22ac3",
+        "cli_destination": "skills/mermail-xstocks-desk/references/paybox-jupiter.md",
+        "previous_staging_sha256": "f0d9e9c07bfe7b909a835b631e1efbd110c159bbe80d994fac15fb009af22ac3"
+      },
+      {
+        "destination": "skills/mermail-xstocks-desk/references/security.md",
+        "input_sha256": "875ee7dffafc91aaf9d5a299fadaf098d9f6ef30d21868aff8785d0496f9d4dc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "875ee7dffafc91aaf9d5a299fadaf098d9f6ef30d21868aff8785d0496f9d4dc",
+        "source": "skills/mermail-xstocks-desk/references/security.md",
+        "final_output_sha256": "875ee7dffafc91aaf9d5a299fadaf098d9f6ef30d21868aff8785d0496f9d4dc",
+        "cli_destination": "skills/mermail-xstocks-desk/references/security.md",
+        "previous_staging_sha256": "875ee7dffafc91aaf9d5a299fadaf098d9f6ef30d21868aff8785d0496f9d4dc"
+      },
+      {
+        "destination": "skills/mermail-xstocks-desk/references/templates.md",
+        "input_sha256": "86a289d3f3c6d60197089369a26f529e777bf103a222cc4abc5cba8ff9c069c9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "86a289d3f3c6d60197089369a26f529e777bf103a222cc4abc5cba8ff9c069c9",
+        "source": "skills/mermail-xstocks-desk/references/templates.md",
+        "final_output_sha256": "86a289d3f3c6d60197089369a26f529e777bf103a222cc4abc5cba8ff9c069c9",
+        "cli_destination": "skills/mermail-xstocks-desk/references/templates.md",
+        "previous_staging_sha256": "86a289d3f3c6d60197089369a26f529e777bf103a222cc4abc5cba8ff9c069c9"
+      },
+      {
+        "destination": "skills/mermail-xstocks-desk/references/tools.md",
+        "input_sha256": "219d7ee5429c93b5d43c7dfaec1b80d6bb82f535ca70e6bfe5f767102460c907",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "219d7ee5429c93b5d43c7dfaec1b80d6bb82f535ca70e6bfe5f767102460c907",
+        "source": "skills/mermail-xstocks-desk/references/tools.md",
+        "final_output_sha256": "219d7ee5429c93b5d43c7dfaec1b80d6bb82f535ca70e6bfe5f767102460c907",
+        "cli_destination": "skills/mermail-xstocks-desk/references/tools.md",
+        "previous_staging_sha256": "219d7ee5429c93b5d43c7dfaec1b80d6bb82f535ca70e6bfe5f767102460c907"
+      },
+      {
+        "destination": "skills/mermail-xstocks-desk/references/workflows.md",
+        "input_sha256": "04a2f54c9aa533fc733840773fc24df13094d510bb86474a783553a2675357c9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "04a2f54c9aa533fc733840773fc24df13094d510bb86474a783553a2675357c9",
+        "source": "skills/mermail-xstocks-desk/references/workflows.md",
+        "final_output_sha256": "04a2f54c9aa533fc733840773fc24df13094d510bb86474a783553a2675357c9",
+        "cli_destination": "skills/mermail-xstocks-desk/references/workflows.md",
+        "previous_staging_sha256": "04a2f54c9aa533fc733840773fc24df13094d510bb86474a783553a2675357c9"
+      },
+      {
+        "destination": "templates/skill/README.md",
+        "input_sha256": "51e7d0074955f38c7c5945f38d76e1f423aa72c56ac8a4a153fc3c7add6ddbf3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "51e7d0074955f38c7c5945f38d76e1f423aa72c56ac8a4a153fc3c7add6ddbf3",
+        "source": "templates/skill/README.md",
+        "final_output_sha256": "51e7d0074955f38c7c5945f38d76e1f423aa72c56ac8a4a153fc3c7add6ddbf3",
+        "cli_destination": "templates/skill/README.md",
+        "previous_staging_sha256": "51e7d0074955f38c7c5945f38d76e1f423aa72c56ac8a4a153fc3c7add6ddbf3"
+      },
+      {
+        "destination": "templates/skill/SKILL.md",
+        "input_sha256": "a0e8668c371667d420a5339792f9035bb04c183e29f8ddd46c6b27b6874b17b4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a0e8668c371667d420a5339792f9035bb04c183e29f8ddd46c6b27b6874b17b4",
+        "source": "templates/skill/SKILL.md",
+        "final_output_sha256": "a0e8668c371667d420a5339792f9035bb04c183e29f8ddd46c6b27b6874b17b4",
+        "cli_destination": "templates/skill/SKILL.md",
+        "previous_staging_sha256": "a0e8668c371667d420a5339792f9035bb04c183e29f8ddd46c6b27b6874b17b4"
+      },
+      {
+        "destination": "templates/skill/agents/openai.yaml",
+        "input_sha256": "1991f71c9669faf5251bed67b027a65d7e3cc442ce3e842bd34bb667286020b5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1991f71c9669faf5251bed67b027a65d7e3cc442ce3e842bd34bb667286020b5",
+        "source": "templates/skill/agents/openai.yaml",
+        "final_output_sha256": "1991f71c9669faf5251bed67b027a65d7e3cc442ce3e842bd34bb667286020b5",
+        "cli_destination": "templates/skill/agents/openai.yaml",
+        "previous_staging_sha256": "1991f71c9669faf5251bed67b027a65d7e3cc442ce3e842bd34bb667286020b5"
+      },
+      {
+        "destination": "templates/skill/references/security.md",
+        "input_sha256": "9ea7b01df17ffc98f6ba7671eb143b6ca538299fae5339a327e16f4ddf0db074",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9ea7b01df17ffc98f6ba7671eb143b6ca538299fae5339a327e16f4ddf0db074",
+        "source": "templates/skill/references/security.md",
+        "final_output_sha256": "9ea7b01df17ffc98f6ba7671eb143b6ca538299fae5339a327e16f4ddf0db074",
+        "cli_destination": "templates/skill/references/security.md",
+        "previous_staging_sha256": "9ea7b01df17ffc98f6ba7671eb143b6ca538299fae5339a327e16f4ddf0db074"
+      },
+      {
+        "destination": "templates/skill/references/tools.md",
+        "input_sha256": "5daa8d34c35f22cba709011c7f5fac05a53c719f0bf8a87639f34785981545a4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5daa8d34c35f22cba709011c7f5fac05a53c719f0bf8a87639f34785981545a4",
+        "source": "templates/skill/references/tools.md",
+        "final_output_sha256": "5daa8d34c35f22cba709011c7f5fac05a53c719f0bf8a87639f34785981545a4",
+        "cli_destination": "templates/skill/references/tools.md",
+        "previous_staging_sha256": "5daa8d34c35f22cba709011c7f5fac05a53c719f0bf8a87639f34785981545a4"
+      },
+      {
+        "destination": "tests/research-agent.mjs",
+        "input_sha256": "34630a67a58c0fa2ca95fe93892c370eb89dd98dc290e57c0e295e04c4a6e31d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "34630a67a58c0fa2ca95fe93892c370eb89dd98dc290e57c0e295e04c4a6e31d",
+        "source": "tests/research-agent.mjs",
+        "final_output_sha256": "34630a67a58c0fa2ca95fe93892c370eb89dd98dc290e57c0e295e04c4a6e31d",
+        "cli_destination": "tests/research-agent.mjs",
+        "previous_staging_sha256": "34630a67a58c0fa2ca95fe93892c370eb89dd98dc290e57c0e295e04c4a6e31d"
+      },
+      {
+        "destination": "tests/scenarios.json",
+        "input_sha256": "e700f3263e4a02482e660594f9d87391788d7546e081b1e7cc775256b96e3b94",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e700f3263e4a02482e660594f9d87391788d7546e081b1e7cc775256b96e3b94",
+        "source": "tests/scenarios.json",
+        "final_output_sha256": "e700f3263e4a02482e660594f9d87391788d7546e081b1e7cc775256b96e3b94",
+        "cli_destination": "tests/scenarios.json",
+        "previous_staging_sha256": "e700f3263e4a02482e660594f9d87391788d7546e081b1e7cc775256b96e3b94"
+      },
+      {
+        "destination": "tests/validate.mjs",
+        "input_sha256": "f38ddb8f268e0cb1ef59d897f766709705ecd21125ad297f9050cf72b300f5e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f38ddb8f268e0cb1ef59d897f766709705ecd21125ad297f9050cf72b300f5e3",
+        "source": "tests/validate.mjs",
+        "final_output_sha256": "f38ddb8f268e0cb1ef59d897f766709705ecd21125ad297f9050cf72b300f5e3",
+        "cli_destination": "tests/validate.mjs",
+        "previous_staging_sha256": "f38ddb8f268e0cb1ef59d897f766709705ecd21125ad297f9050cf72b300f5e3"
+      },
+      {
+        "destination": "tool-coverage.json",
+        "input_sha256": "ebec6f9df625e5d6d2fdc3e64923a5cf60e7f05a5b6351e2f82c2c87d7c95309",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ebec6f9df625e5d6d2fdc3e64923a5cf60e7f05a5b6351e2f82c2c87d7c95309",
+        "source": "tool-coverage.json",
+        "final_output_sha256": "ebec6f9df625e5d6d2fdc3e64923a5cf60e7f05a5b6351e2f82c2c87d7c95309",
+        "cli_destination": "tool-coverage.json",
+        "previous_staging_sha256": "ebec6f9df625e5d6d2fdc3e64923a5cf60e7f05a5b6351e2f82c2c87d7c95309"
+      }
+    ],
+    "manifest_sha256": "fed7af5009cbd4244ca2f5d1457b40eae20023f58642b74adc5e2ab74f44911a",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".app.json.example": ".app.json.example",
+    ".claude-plugin/marketplace.json": ".claude-plugin/marketplace.json",
+    ".claude-plugin/plugin.json": ".claude-plugin/plugin.json",
+    ".codex-plugin/mcp.json": ".codex-plugin/mcp.json",
+    ".codex-plugin/plugin.json": ".codex-plugin/plugin.json",
+    ".codexignore": ".codexignore",
+    ".cursor-plugin/mcp.json": ".cursor-plugin/mcp.json",
+    ".cursor-plugin/plugin.json": ".cursor-plugin/plugin.json",
+    ".env.example": ".env.example",
+    ".github/CODEOWNERS": ".github/CODEOWNERS",
+    ".github/ISSUE_TEMPLATE/bug.yml": ".github/ISSUE_TEMPLATE/bug.yml",
+    ".github/ISSUE_TEMPLATE/community-companion-idea.yml": ".github/ISSUE_TEMPLATE/community-companion-idea.yml",
+    ".github/ISSUE_TEMPLATE/config.yml": ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/graduate-community-skill.yml": ".github/ISSUE_TEMPLATE/graduate-community-skill.yml",
+    ".github/ISSUE_TEMPLATE/new-official-skill-proposal.yml": ".github/ISSUE_TEMPLATE/new-official-skill-proposal.yml",
+    ".github/ISSUE_TEMPLATE/skill-improvement.yml": ".github/ISSUE_TEMPLATE/skill-improvement.yml",
+    ".github/PULL_REQUEST_TEMPLATE.md": ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/dependabot.yml": ".github/dependabot.yml",
+    ".github/workflows/clawhub-package-publish.yml": ".github/workflows/clawhub-package-publish.yml",
+    ".github/workflows/clawhub-skill-publish.yml": ".github/workflows/clawhub-skill-publish.yml",
+    ".github/workflows/cursor-directory.yml": ".github/workflows/cursor-directory.yml",
+    ".github/workflows/hol-plugin-scanner.yml": ".github/workflows/hol-plugin-scanner.yml",
+    ".github/workflows/validate.yml": ".github/workflows/validate.yml",
+    ".gitignore": ".gitignore",
+    ".mcp.json": ".mcp.json",
+    ".plugin/plugin.json": ".plugin/plugin.json",
+    "AUTHORING.md": "AUTHORING.md",
+    "CLAWHUB.md": "CLAWHUB.md",
+    "CODEX_MARKETPLACE.md": "CODEX_MARKETPLACE.md",
+    "CODE_OF_CONDUCT.md": "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md": "CONTRIBUTING.md",
+    "CONTRIBUTING_A_SKILL.md": "CONTRIBUTING_A_SKILL.md",
+    "CURSOR_DIRECTORY.md": "CURSOR_DIRECTORY.md",
+    "CURSOR_MARKETPLACE.md": "CURSOR_MARKETPLACE.md",
+    "LICENSE": "LICENSE",
+    "MAINTAINERS.md": "MAINTAINERS.md",
+    "PORTAL_SUBMISSION.md": "PORTAL_SUBMISSION.md",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "_catalog_assets/assets/logo.png": "assets/logo.png",
+    "assets/icon.png": "assets/icon.png",
+    "assets/logo.png": "assets/logo.png",
+    "assets/logo.svg": "assets/logo.svg",
+    "assets/screenshot-1.png": "assets/screenshot-1.png",
+    "assets/screenshot-2.png": "assets/screenshot-2.png",
+    "compatibility.json": "compatibility.json",
+    "mcp.json": "mcp.json",
+    "openclaw.plugin.json": "openclaw.plugin.json",
+    "package-lock.json": "package-lock.json",
+    "package.json": "package.json",
+    "plugin.json": "plugin.json",
+    "scripts/__pycache__/clawhub-ci-publish.cpython-314.pyc": "scripts/__pycache__/clawhub-ci-publish.cpython-314.pyc",
+    "scripts/build-openai-skills-zip.sh": "scripts/build-openai-skills-zip.sh",
+    "scripts/clawhub-ci-publish.py": "scripts/clawhub-ci-publish.py",
+    "scripts/publish-clawhub.sh": "scripts/publish-clawhub.sh",
+    "skills/mermail-administer-workspace/SKILL.md": "skills/mermail-administer-workspace/SKILL.md",
+    "skills/mermail-administer-workspace/agents/openai.yaml": "skills/mermail-administer-workspace/agents/openai.yaml",
+    "skills/mermail-administer-workspace/references/tools.md": "skills/mermail-administer-workspace/references/tools.md",
+    "skills/mermail-agent-inbox/SKILL.md": "skills/mermail-agent-inbox/SKILL.md",
+    "skills/mermail-agent-inbox/agents/openai.yaml": "skills/mermail-agent-inbox/agents/openai.yaml",
+    "skills/mermail-agent-inbox/references/security.md": "skills/mermail-agent-inbox/references/security.md",
+    "skills/mermail-agent-inbox/references/tools.md": "skills/mermail-agent-inbox/references/tools.md",
+    "skills/mermail-agent-wallet/SKILL.md": "skills/mermail-agent-wallet/SKILL.md",
+    "skills/mermail-agent-wallet/agents/openai.yaml": "skills/mermail-agent-wallet/agents/openai.yaml",
+    "skills/mermail-agent-wallet/references/security.md": "skills/mermail-agent-wallet/references/security.md",
+    "skills/mermail-agent-wallet/references/tools.md": "skills/mermail-agent-wallet/references/tools.md",
+    "skills/mermail-agent-wallet/references/workflows.md": "skills/mermail-agent-wallet/references/workflows.md",
+    "skills/mermail-automate-triage/SKILL.md": "skills/mermail-automate-triage/SKILL.md",
+    "skills/mermail-automate-triage/agents/openai.yaml": "skills/mermail-automate-triage/agents/openai.yaml",
+    "skills/mermail-automate-triage/references/security.md": "skills/mermail-automate-triage/references/security.md",
+    "skills/mermail-automate-triage/references/tools.md": "skills/mermail-automate-triage/references/tools.md",
+    "skills/mermail-cli/SKILL.md": "skills/mermail-cli/SKILL.md",
+    "skills/mermail-cli/agents/openai.yaml": "skills/mermail-cli/agents/openai.yaml",
+    "skills/mermail-cli/references/security.md": "skills/mermail-cli/references/security.md",
+    "skills/mermail-cli/references/tools.md": "skills/mermail-cli/references/tools.md",
+    "skills/mermail-cli/references/workflows.md": "skills/mermail-cli/references/workflows.md",
+    "skills/mermail-compose-email/SKILL.md": "skills/mermail-compose-email/SKILL.md",
+    "skills/mermail-compose-email/agents/openai.yaml": "skills/mermail-compose-email/agents/openai.yaml",
+    "skills/mermail-compose-email/references/security.md": "skills/mermail-compose-email/references/security.md",
+    "skills/mermail-compose-email/references/tools.md": "skills/mermail-compose-email/references/tools.md",
+    "skills/mermail-compose-email/references/workflows.md": "skills/mermail-compose-email/references/workflows.md",
+    "skills/mermail-composio/SKILL.md": "skills/mermail-composio/SKILL.md",
+    "skills/mermail-composio/agents/openai.yaml": "skills/mermail-composio/agents/openai.yaml",
+    "skills/mermail-composio/references/security.md": "skills/mermail-composio/references/security.md",
+    "skills/mermail-composio/references/tools.md": "skills/mermail-composio/references/tools.md",
+    "skills/mermail-composio/references/workflows.md": "skills/mermail-composio/references/workflows.md",
+    "skills/mermail-gtm-agent/SKILL.md": "skills/mermail-gtm-agent/SKILL.md",
+    "skills/mermail-gtm-agent/agents/openai.yaml": "skills/mermail-gtm-agent/agents/openai.yaml",
+    "skills/mermail-gtm-agent/references/security.md": "skills/mermail-gtm-agent/references/security.md",
+    "skills/mermail-gtm-agent/references/tools.md": "skills/mermail-gtm-agent/references/tools.md",
+    "skills/mermail-gtm-agent/references/workflows.md": "skills/mermail-gtm-agent/references/workflows.md",
+    "skills/mermail-mail-agent/SKILL.md": "skills/mermail-mail-agent/SKILL.md",
+    "skills/mermail-mail-agent/agents/openai.yaml": "skills/mermail-mail-agent/agents/openai.yaml",
+    "skills/mermail-mail-agent/references/security.md": "skills/mermail-mail-agent/references/security.md",
+    "skills/mermail-mail-agent/references/tools.md": "skills/mermail-mail-agent/references/tools.md",
+    "skills/mermail-mail-agent/references/workflows.md": "skills/mermail-mail-agent/references/workflows.md",
+    "skills/mermail-manage-inbox/SKILL.md": "skills/mermail-manage-inbox/SKILL.md",
+    "skills/mermail-manage-inbox/agents/openai.yaml": "skills/mermail-manage-inbox/agents/openai.yaml",
+    "skills/mermail-manage-inbox/references/security.md": "skills/mermail-manage-inbox/references/security.md",
+    "skills/mermail-manage-inbox/references/tools.md": "skills/mermail-manage-inbox/references/tools.md",
+    "skills/mermail-manage-inbox/references/workflows.md": "skills/mermail-manage-inbox/references/workflows.md",
+    "skills/mermail-mcp/SKILL.md": "skills/mermail-mcp/SKILL.md",
+    "skills/mermail-mcp/agents/openai.yaml": "skills/mermail-mcp/agents/openai.yaml",
+    "skills/mermail-mcp/references/platforms.md": "skills/mermail-mcp/references/platforms.md",
+    "skills/mermail-mcp/references/security.md": "skills/mermail-mcp/references/security.md",
+    "skills/mermail-mcp/references/troubleshooting.md": "skills/mermail-mcp/references/troubleshooting.md",
+    "skills/mermail-mcp/scripts/check-connection.mjs": "skills/mermail-mcp/scripts/check-connection.mjs",
+    "skills/mermail-research-agent/SKILL.md": "skills/mermail-research-agent/SKILL.md",
+    "skills/mermail-research-agent/agents/openai.yaml": "skills/mermail-research-agent/agents/openai.yaml",
+    "skills/mermail-research-agent/references/cmc-research.md": "skills/mermail-research-agent/references/cmc-research.md",
+    "skills/mermail-research-agent/references/security.md": "skills/mermail-research-agent/references/security.md",
+    "skills/mermail-research-agent/references/templates.md": "skills/mermail-research-agent/references/templates.md",
+    "skills/mermail-research-agent/references/tools.md": "skills/mermail-research-agent/references/tools.md",
+    "skills/mermail-research-agent/references/workflows.md": "skills/mermail-research-agent/references/workflows.md",
+    "skills/mermail-scheduling-agent/SKILL.md": "skills/mermail-scheduling-agent/SKILL.md",
+    "skills/mermail-scheduling-agent/agents/openai.yaml": "skills/mermail-scheduling-agent/agents/openai.yaml",
+    "skills/mermail-scheduling-agent/references/security.md": "skills/mermail-scheduling-agent/references/security.md",
+    "skills/mermail-scheduling-agent/references/tools.md": "skills/mermail-scheduling-agent/references/tools.md",
+    "skills/mermail-scheduling-agent/references/workflows.md": "skills/mermail-scheduling-agent/references/workflows.md",
+    "skills/mermail-support-agent/SKILL.md": "skills/mermail-support-agent/SKILL.md",
+    "skills/mermail-support-agent/agents/openai.yaml": "skills/mermail-support-agent/agents/openai.yaml",
+    "skills/mermail-support-agent/references/security.md": "skills/mermail-support-agent/references/security.md",
+    "skills/mermail-support-agent/references/tools.md": "skills/mermail-support-agent/references/tools.md",
+    "skills/mermail-support-agent/references/workflows.md": "skills/mermail-support-agent/references/workflows.md",
+    "skills/mermail-x402-agent/SKILL.md": "skills/mermail-x402-agent/SKILL.md",
+    "skills/mermail-x402-agent/agents/openai.yaml": "skills/mermail-x402-agent/agents/openai.yaml",
+    "skills/mermail-x402-agent/references/security.md": "skills/mermail-x402-agent/references/security.md",
+    "skills/mermail-x402-agent/references/tools.md": "skills/mermail-x402-agent/references/tools.md",
+    "skills/mermail-x402-agent/references/workflows.md": "skills/mermail-x402-agent/references/workflows.md",
+    "skills/mermail-xstocks-desk/SKILL.md": "skills/mermail-xstocks-desk/SKILL.md",
+    "skills/mermail-xstocks-desk/agents/openai.yaml": "skills/mermail-xstocks-desk/agents/openai.yaml",
+    "skills/mermail-xstocks-desk/references/paybox-jupiter.md": "skills/mermail-xstocks-desk/references/paybox-jupiter.md",
+    "skills/mermail-xstocks-desk/references/security.md": "skills/mermail-xstocks-desk/references/security.md",
+    "skills/mermail-xstocks-desk/references/templates.md": "skills/mermail-xstocks-desk/references/templates.md",
+    "skills/mermail-xstocks-desk/references/tools.md": "skills/mermail-xstocks-desk/references/tools.md",
+    "skills/mermail-xstocks-desk/references/workflows.md": "skills/mermail-xstocks-desk/references/workflows.md",
+    "skills/mermail/SKILL.md": "skills/mermail/SKILL.md",
+    "skills/mermail/agents/openai.yaml": "skills/mermail/agents/openai.yaml",
+    "skills/mermail/references/routing.md": "skills/mermail/references/routing.md",
+    "templates/skill/README.md": "templates/skill/README.md",
+    "templates/skill/SKILL.md": "templates/skill/SKILL.md",
+    "templates/skill/agents/openai.yaml": "templates/skill/agents/openai.yaml",
+    "templates/skill/references/security.md": "templates/skill/references/security.md",
+    "templates/skill/references/tools.md": "templates/skill/references/tools.md",
+    "tests/research-agent.mjs": "tests/research-agent.mjs",
+    "tests/scenarios.json": "tests/scenarios.json",
+    "tests/validate.mjs": "tests/validate.mjs",
+    "tool-coverage.json": "tool-coverage.json"
+  },
+  "verification": {
+    "manifest": "plugin.json",
+    "manifest_name": "mermail",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "mermail",
+  "catalog_file": "src/plugin-catalog/mermail.yaml",
+  "identity": {
+    "catalog_id": "mermail",
+    "canonical_slug": "mermail",
+    "original_manifest_name": "mermail",
+    "rebranded_manifest_name": "mermail",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "fb3b8881b4e5ab536aa8a484a6854027593b33ac7caf4f27acddad42733f39ba",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "_catalog_assets/assets/logo.png",
+          "after_path": "assets/icon.png",
+          "before_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+          "after_sha256": "e566741b3c361734b64fe7e070586fb84250fb56a0b6b4bd9ff526a693b19ec7",
+          "before_bytes": 9181,
+          "after_bytes": 9181,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

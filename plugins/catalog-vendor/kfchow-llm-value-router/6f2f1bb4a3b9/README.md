@@ -1,0 +1,196 @@
+# kfchow-llm-value-router
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23186874.svg)](https://doi.org/10.5281/zenodo.23186874)
+
+> **Cite:** KFChow AI Lab (2026). *kfchow-llm-value-router: Jev-driven per-turn model routing for Duckwork Agent, resolved from the KFChow AI Lab value leaderboard.* Zenodo. https://doi.org/10.5281/zenodo.23186874
+
+**Powered by the KFChow AI Lab value leaderboard (https://kfchow.com/llm)**
+
+A Duckwork plugin that routes each turn to the cheapest model that is *good
+enough* for it — and can escalate the hard turns to a premium rung — with a
+strict fail-open contract: if anything goes wrong, the request proceeds
+byte-identical. Ships in **shadow mode**: it observes and logs decisions until
+you deliberately flip it to live.
+
+Developer: KFChow <hotline@kfchow.com> · License: MIT
+
+## What it does
+
+On the **first provider call of each turn** the plugin classifies the turn
+once; the stored decision (including "no rewrite") is re-applied on every
+later call of the same turn — tool-loop follow-ups and in-attempt retries
+keep the routed model instead of silently reverting. The plugin:
+
+1. checks eligibility — only providers/models you list in the config are ever
+   touched, and a turn already on a free-tier model is never re-routed;
+2. asks a vendor classifier (TypeSafe "Jev", a 3–10s bounded call) which pool
+   the turn belongs to (routine vs strong) and how confident it is;
+3. in `shadow` mode (default): records the decision and leaves the request
+   untouched; in `live` mode: rewrites the request's model to the tier's rung;
+4. conversely, when a turn starts on a **mid** rung and the classifier says it
+   needs a strong model, the ESCALATION path can rewrite to the provider's
+   premium rung — guarded by a credit probe that **fails closed** so an
+   exhausted metered account never receives a doomed rewrite.
+
+### The 4-tier ladder (v1.0.6)
+
+One classify per turn → pool + confidence → exactly one tier:
+
+| tier | condition | target rung |
+|------|-----------|-------------|
+| premium | pool=paid AND conf ≥ `escalate_confidence_gate` (default **0.80**) | provider's premium rung (credit-probed, fail-closed) |
+| free | pool=free AND conf ≥ `confidence_gate` | provider's free rung |
+| **flash** | pool=free AND `flash_gate` ≤ conf < `confidence_gate` (default band 0.35–0.65) | provider's **flash** rung — near-routine turns off the mid rung at a fraction of its price |
+| mid (stay) | everything else | unchanged — pool=paid below the escalation gate NEVER downgrades |
+
+`flash_gate` defaults to 0.35; the flash rung resolves per provider
+(`rungs.<provider>.flash`, falling back to the flat `flash_model` key) exactly
+like the free rung. With no flash rung configured the band simply stays mid —
+fail-open. Flash never touches the credit probe: it is the stable workhorse
+tier, and host retry/fail-open covers a flash 404. Escalation defaults to the
+0.80 gate (an explicit `escalate_confidence_gate` override still wins), so the
+0.65–0.79 band no longer false-escalates.
+
+Model rungs come from the KFChow value leaderboard (https://kfchow.com/llm)
+via the bundled resolver script — never hardcoded — because rankings update
+twice daily and free-tier model ids expire silently.
+
+## Safety & privacy (full details in [docs/SAFETY.md](docs/SAFETY.md))
+
+- **Fail-open**: any error/timeout/malformed answer returns `None`; the
+  original request is untouched. The plugin can fail to route; it never fails
+  a turn. With no flash rung configured the flash band stays mid — an absent
+  tier can never break a turn.
+- **Shadow by default**; live requires a deliberate config edit by a human.
+- **Credit probe fails closed**: escalation to a paid premium rung only fires
+  when the metered lane answers a live probe; unknown state = no escalation.
+  The flash tier never probes and never needs a key.
+- **A rewrite never crosses providers**: rungs resolve per provider.
+- **Local-only telemetry**: decision logs go to `~/.duckwork/jev/lane2-live.jsonl`
+  (0600), nothing is uploaded.
+- **`send_excerpt` toggle**: the classifier is sent turn shape features
+  (counts, flags) plus, by default, a capped 1200-char excerpt of the last
+  user message — this is load-bearing (shape-only scoring mislabels hard
+  questions, measured 0.31 vs 1.00 accuracy). Set `"send_excerpt": false` in
+  the config to keep task text out of BOTH the vendor call and the log;
+  expect reduced routing accuracy.
+- **Optional keys, never forced**: `JEVI_API_KEY` (vendor classifier) and
+  `FORDEX_API_KEY` (credit probe) are optional environment variables. Without
+  them the plugin degrades safely — without the Jev key it routes nothing
+  (fail-open); without the Fordex key it simply never escalates on metered
+  providers. Keys come from the process environment; the vendored client has
+  one fallback — a plain `~/.duckwork/secrets/jev.creds` file **you own** (line
+  1 = key, 0600) — used only when `JEVI_API_KEY` is unset. Nothing is ever
+  read from `.env` files.
+
+## Install (plugin)
+
+**Option A — from the plugin catalog** (once listed):
+
+```bash
+duckwork plugins install kfchow-llm-value-router
+```
+
+**Option B — manual, from this repo:**
+
+```bash
+git clone https://github.com/kfchow-ai/kfchow-llm-value-router.git
+duckwork plugins install ./kfchow-llm-value-router
+```
+
+Then set the optional keys (either is enough to start; both enable full
+behaviour) and copy the example config:
+
+```bash
+export JEVI_API_KEY=...    # vendor classifier — omit to run resolver-only
+export FORDEX_API_KEY=...    # credit probe — omit to disable escalation on metered providers
+mkdir -p ~/.duckwork/jev
+cp examples/lane2_config.example.json ~/.duckwork/jev/lane2_config.json
+```
+
+Config lives at `~/.duckwork/jev/lane2_config.json` (honours `DUCKWORK_HOME`).
+Resolve your rungs before flipping anything to live:
+
+```bash
+python3 scripts/llm-rank-resolver.py        # writes ~/.duckwork/jev/llm_rungs.json
+python3 scripts/llm-rank-resolver.py --dry-run   # print only
+```
+
+Then fill the resolved ids into the `rungs` section per provider. Stays in
+`shadow` until you set `"mode": "live"`.
+
+## Install (skill — the method, without the plugin)
+
+The repo also ships the leaderboard-to-rungs method as a standalone Duckwork
+skill, so you can use the resolver without the routing middleware:
+
+```bash
+# via a skills tap
+duckwork skills tap add kfchow-ai/kfchow-llm-value-router
+duckwork skills install kfchow-ai/kfchow-llm-value-router/skills/llm-value-leaderboard-rungs
+
+# or single-repo install
+duckwork skills install kfchow-ai/kfchow-llm-value-router/skills/llm-value-leaderboard-rungs
+```
+
+## The KFChow value rule
+
+premium = the highest AAII score among the **top-5 by value** on
+https://kfchow.com/llm; mid = the same rule under a **$1.00/Mtok** price
+ceiling, so the rungs are separated by price band rather than hand-picking.
+The resolver re-derives them from the live feed every run and exits 1 —
+keeping the last good file — whenever the feed cannot be parsed.
+
+## FAQ — the traps we hit so you don't have to
+
+**The feed parses but returns zero rows.**
+The ranking lives in each RSS ITEM's `<description>`, not the channel-level
+description (that's prose). Scope your parser to `<item>` first, then read
+the description inside it.
+
+**Paid models suddenly fail with HTTP 404.**
+On at least one metered provider, credit exhaustion is a **404** ("requires
+available credits"), not a 402. Don't build escalation logic that assumes an
+empty balance looks like a payment-required error — probe the paid lane and
+fail closed before escalating.
+
+**A strong "thinking" model returns `content: null`.**
+Reasoning-heavy models on some providers return the answer in a
+`reasoning_content` field with `content: null`, and the endpoint requires a
+session header (`x-opencode-session`) plus a real user agent. Read both
+fields and send the headers before declaring the response empty.
+
+**My free model id stopped working with no warning.**
+Free-period ids expire silently. Never hardcode them — resolve from the
+leaderboard feed on a cadence (it updates twice daily).
+
+**Can I route between different providers in one rewrite?**
+No — never. The request's `base_url`/`api_key` belong to the ORIGINATING
+provider; swapping only the model id sends the wrong id to the wrong
+endpoint. Rungs are resolved per provider and rewrites stay same-provider.
+
+## Files
+
+```
+├── plugin.yaml                # manifest (provides_middleware: [llm_request, llm_execution])
+├── __init__.py                # the middleware (request: classify+rewrite; execution: re-apply)
+├── scripts/jev_client.py      # vendored vendor client (env-first key)
+├── scripts/llm-rank-resolver.py  # feed -> rungs resolver
+├── skills/llm-value-leaderboard-rungs/   # the method as a standalone skill
+├── examples/lane2_config.example.json   # config template (shadow)
+├── docs/SAFETY.md             # fail-open / fail-closed / disclosure contract
+└── tests/                     # offline test suite (no network, no keys)
+```
+
+## Development
+
+```bash
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q
+```
+
+All tests are offline: the vendor call is exercised through a transport test
+seam, the feed through fixture XML. Nothing in the suite touches a network or
+a key.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

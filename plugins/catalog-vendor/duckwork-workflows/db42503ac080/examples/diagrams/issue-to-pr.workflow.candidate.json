@@ -1,0 +1,353 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Forge-agnostic fix lifecycle: halt gates abort BEFORE expensive setup",
+        "Baseline probe records which checks were ALREADY red on untouched code",
+        "Verify compares against the baseline \u2014 pre-existing red never blocks the fix"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "15 nodes, 5 gates, 2 echoes, 4 branches: classify -> halt pair -> baseline -> fix -> verify",
+        "Halt-first ordering is the cost discipline: never pay for setup a halt avoids",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "intake",
+      "id": "intake-route-work",
+      "to": "route-work",
+      "variant": "security"
+    },
+    {
+      "from": "intake",
+      "id": "intake-route-halt",
+      "to": "route-halt",
+      "variant": "security"
+    },
+    {
+      "from": "route-halt",
+      "id": "route-halt-halt-notice",
+      "to": "halt-notice",
+      "variant": "default"
+    },
+    {
+      "from": "route-work",
+      "id": "route-work-baseline",
+      "to": "baseline",
+      "variant": "default"
+    },
+    {
+      "from": "baseline",
+      "id": "baseline-fix",
+      "to": "fix",
+      "variant": "default"
+    },
+    {
+      "from": "fix",
+      "id": "fix-verify",
+      "to": "verify",
+      "variant": "default"
+    },
+    {
+      "from": "verify",
+      "id": "verify-route-verified",
+      "to": "route-verified",
+      "variant": "security"
+    },
+    {
+      "from": "verify",
+      "id": "verify-route-regressed",
+      "to": "route-regressed",
+      "variant": "security"
+    },
+    {
+      "from": "route-regressed",
+      "id": "route-regressed-verify-halt",
+      "to": "verify-halt",
+      "variant": "default"
+    },
+    {
+      "from": "route-verified",
+      "id": "route-verified-review",
+      "to": "review",
+      "variant": "default"
+    },
+    {
+      "from": "review",
+      "id": "review-approve",
+      "to": "approve",
+      "variant": "default"
+    },
+    {
+      "from": "approve",
+      "id": "approve-publish",
+      "to": "publish",
+      "variant": "default"
+    },
+    {
+      "from": "publish",
+      "id": "publish-cleanup",
+      "to": "cleanup",
+      "variant": "default"
+    },
+    {
+      "from": "approve",
+      "id": "approve-cleanup",
+      "to": "cleanup",
+      "variant": "default"
+    },
+    {
+      "from": "halt-notice",
+      "id": "halt-notice-cleanup",
+      "to": "cleanup",
+      "variant": "default"
+    },
+    {
+      "from": "verify-halt",
+      "id": "verify-halt-cleanup",
+      "to": "cleanup",
+      "variant": "default"
+    },
+    {
+      "from": "cleanup",
+      "id": "cleanup-report",
+      "to": "report",
+      "variant": "default"
+    },
+    {
+      "from": "intake",
+      "id": "intake-report",
+      "to": "report",
+      "variant": "default"
+    },
+    {
+      "from": "verify",
+      "id": "verify-report",
+      "to": "report",
+      "variant": "default"
+    },
+    {
+      "from": "review",
+      "id": "review-report",
+      "to": "report",
+      "variant": "default"
+    },
+    {
+      "from": "publish",
+      "id": "publish-report",
+      "to": "report",
+      "variant": "default"
+    },
+    {
+      "from": "halt-notice",
+      "id": "halt-notice-report",
+      "to": "report",
+      "variant": "default"
+    },
+    {
+      "from": "verify-halt",
+      "id": "verify-halt-report",
+      "to": "report",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "gates",
+      "label": "Gates",
+      "variant": "normal"
+    },
+    {
+      "id": "room",
+      "label": "Deterministic",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/issue-to-pr.html",
+    "quality_profile": "standard",
+    "subtitle": "Issue-to-pull-request lifecycle distilled to forge-agnostic DAG shape: read-and-classify -> complementary halt",
+    "title": "issue-to-pr"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "intake",
+      "label": "Intake",
+      "lane": "work",
+      "sublabel": "read and classify",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "route-halt",
+      "label": "Route Halt",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "route-work",
+      "label": "Route Work",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 2,
+      "id": "baseline",
+      "label": "Baseline",
+      "lane": "work",
+      "sublabel": "establish the pre",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "halt-notice",
+      "label": "Halt Notice",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "fix",
+      "label": "Fix",
+      "lane": "work",
+      "sublabel": "implement the fix in",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 4,
+      "id": "verify",
+      "label": "Verify",
+      "lane": "work",
+      "sublabel": "independent",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "approve",
+      "label": "Approve",
+      "lane": "gates",
+      "sublabel": "issue run issue id",
+      "tag": "human hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "cleanup",
+      "label": "Cleanup",
+      "lane": "work",
+      "sublabel": "close out the",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "publish",
+      "label": "Publish",
+      "lane": "work",
+      "sublabel": "the human answered",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 5,
+      "id": "report",
+      "label": "Report",
+      "lane": "work",
+      "sublabel": "write the closeout",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 184
+    },
+    {
+      "col": 5,
+      "id": "review",
+      "label": "Review",
+      "lane": "work",
+      "sublabel": "independent scope",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 276
+    },
+    {
+      "col": 5,
+      "id": "route-regressed",
+      "label": "Route Regress\u2026",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 5,
+      "id": "route-verified",
+      "label": "Route Verified",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 184
+    },
+    {
+      "col": 5,
+      "id": "verify-halt",
+      "label": "Verify Halt",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 4
+    },
+    {
+      "fromCol": 5,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 5
+    }
+  ],
+  "schema_version": 2
+}

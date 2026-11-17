@@ -1,0 +1,795 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/apoapostolov/hermes-agent-awesome-plugins/4bc502523a597a673c852a3b09e1c7e4dced1e6f/public/provider-status/docs/hero.png": "docs/hero.png"
+    },
+    "image": "docs/hero.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "provider-status",
+  "content_id": "925ae541ea05",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 4311,
+      "mode": "100644",
+      "path": "LIMITATIONS.md",
+      "sha256": "668611454dc11b2c067689721f46b5b211b8946a5c893ff45bdf75ed67a1d77d"
+    },
+    {
+      "bytes": 4179,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "d1cc6b497bb3621c84171f0310c06bff2a1dc9b5025caffb7c6b929d3c578752"
+    },
+    {
+      "bytes": 7047,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "a9cc6a45ca5034324d135122679d782d738a71689c50ce91be1840130f9607ec"
+    },
+    {
+      "bytes": 1161,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "11c409f8034058751c61f9c859b1e788c73b22ced6703c0b89504ba722ad97e3"
+    },
+    {
+      "bytes": 390,
+      "mode": "100644",
+      "path": "config.json.example",
+      "sha256": "cde0c4847049acdfe91ed168123db480cfe9de00d14f3e7c575271d4ecd1c32d"
+    },
+    {
+      "bytes": 285,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "7a719c854aae88db4257d83ae378e437c491dff8c0b81141fb486d73acc9792d"
+    },
+    {
+      "bytes": 93567,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "b6277a144de3b16a0f2927e130a39b0a9a2cb0f0877373d96b0988d4d23e7cfd"
+    },
+    {
+      "bytes": 84739,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "d3328c3302046f92511b97a03e77336da60f9625b72c9bf658c800ece1e43a04"
+    },
+    {
+      "bytes": 335970,
+      "mode": "100644",
+      "path": "docs/hero.png",
+      "sha256": "450fbdc157ac2f179f38024eddfa06c024fe90b497a4d695284920a48acc2daa"
+    },
+    {
+      "bytes": 96552,
+      "mode": "100644",
+      "path": "docs/screenshot.png",
+      "sha256": "45f6d2fa68b82b4e82f2fe3e3b7c599a393d7b48094c83c06ebceefc17b94fe6"
+    },
+    {
+      "bytes": 7803,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "d8fd5e2e83a505a572b5a95349db41bb563fc1fd682ae552a0a224fb391ff7d4"
+    },
+    {
+      "bytes": 4831,
+      "mode": "100644",
+      "path": "presence.py",
+      "sha256": "1bda9c33960e5563a4e1782d3526619b0717ddd319736578669696b3bae9d1f9"
+    },
+    {
+      "bytes": 11976,
+      "mode": "100644",
+      "path": "presence_config.py",
+      "sha256": "fef08ef2859aaad477aa9c85c5a8f65545409bd22cddfb58371ecb35b6efc3d9"
+    },
+    {
+      "bytes": 9870,
+      "mode": "100644",
+      "path": "presence_metrics.py",
+      "sha256": "f20d59c1e7100c7faac039a52243f7d305298e47978fbecda9e248a4dc0d7e66"
+    },
+    {
+      "bytes": 9789,
+      "mode": "100644",
+      "path": "presence_render.py",
+      "sha256": "8475f840ae899b783b57abbbc18af6446b5f9eb51e1c7cfeceeca9a1d94c938b"
+    },
+    {
+      "bytes": 2857,
+      "mode": "100644",
+      "path": "pulse_tool.py",
+      "sha256": "30a6dea130575afbfa0df60be9ab63624d81e681463b83d14730f16c591244ad"
+    },
+    {
+      "bytes": 6118,
+      "mode": "100644",
+      "path": "quota_bridge.py",
+      "sha256": "e1ffc84906561b421e58736703d7672165f2d45db61dcc2f5fde2fd646280a29"
+    },
+    {
+      "bytes": 988,
+      "mode": "100644",
+      "path": "schemas.py",
+      "sha256": "8a5cf2d293abde4f8b7fb25a36c165904344eacb03c3bfe5fb029ff1377791f3"
+    },
+    {
+      "bytes": 6249,
+      "mode": "100644",
+      "path": "skills/provider-status/SKILL.md",
+      "sha256": "3ef1f16361f4a4dd1cd6dbdd45c5642825db673003eba05d6e9b7cff5f10bc92"
+    },
+    {
+      "bytes": 3788,
+      "mode": "100644",
+      "path": "tests_deepseek_hours.py",
+      "sha256": "7447c0f867e62c2da39e7898b374b40264482f26ff72c545325c1be2f299b29f"
+    },
+    {
+      "bytes": 3053,
+      "mode": "100644",
+      "path": "tests_glm_hours.py",
+      "sha256": "29694b4c3342f485ebe342952197d228de7eda27fafd8db9d22bb224bbfe0a76"
+    },
+    {
+      "bytes": 4719,
+      "mode": "100644",
+      "path": "tests_logout.py",
+      "sha256": "1b17551b148a3f41bd9480b566aa7ece5849d5291cc2c1bd927c821a73949809"
+    },
+    {
+      "bytes": 12974,
+      "mode": "100644",
+      "path": "tests_pet.mjs",
+      "sha256": "6d61d9129747d22c29ce290819151470f59e8db18060ef2e38d63e819f2bd5fa"
+    },
+    {
+      "bytes": 18022,
+      "mode": "100644",
+      "path": "tests_presence.py",
+      "sha256": "57fa31a84af728d040b4392f6f7c6293ace15e6d2db5a755e037bbf80aca97fe"
+    },
+    {
+      "bytes": 4175,
+      "mode": "100644",
+      "path": "tests_public_edition.py",
+      "sha256": "f6a59867c6e41020358a6526d93b9876d1a22e9940222fe41797df5fa7976440"
+    }
+  ],
+  "input_manifest_sha256": "925ae541ea05c506eba2dafa3feb6171e59f88ec41f0fb5801725fbce4e63452",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "11c409f8034058751c61f9c859b1e788c73b22ced6703c0b89504ba722ad97e3",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "LIMITATIONS.md",
+      "README.md",
+      "__init__.py",
+      "dashboard/plugin_api.py",
+      "desktop/plugin.js",
+      "plugin.yaml",
+      "presence_metrics.py",
+      "presence_render.py",
+      "quota_bridge.py",
+      "schemas.py",
+      "skills/provider-status/SKILL.md",
+      "tests_logout.py",
+      "tests_presence.py",
+      "tests_public_edition.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/apoapostolov/hermes-agent-awesome-plugins",
+    "sha": "4bc502523a597a673c852a3b09e1c7e4dced1e6f",
+    "subdir": "public/provider-status"
+  },
+  "original_repo": "https://github.com/apoapostolov/hermes-agent-awesome-plugins",
+  "original_sha": "4bc502523a597a673c852a3b09e1c7e4dced1e6f",
+  "original_subdir": "public/provider-status",
+  "output_files": [
+    {
+      "path": "LIMITATIONS.md",
+      "sha256": "e50201e506458f2d5b5c94e1da18960d0443bca5e22cb66d003f1528f4033f47",
+      "bytes": 4236,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "ea65dabe58962136128da5d7dc4bcb21e66a260ea7fddd2631f0c40e2ead1de6",
+      "bytes": 4111,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "76f89d668fd784bb01364d2e32a40b3a3050aedf85f34aa9959f9a6f5e03080e",
+      "bytes": 7049,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "11c409f8034058751c61f9c859b1e788c73b22ced6703c0b89504ba722ad97e3",
+      "bytes": 1161,
+      "mode": "100644"
+    },
+    {
+      "path": "config.json.example",
+      "sha256": "cde0c4847049acdfe91ed168123db480cfe9de00d14f3e7c575271d4ecd1c32d",
+      "bytes": 390,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "7a719c854aae88db4257d83ae378e437c491dff8c0b81141fb486d73acc9792d",
+      "bytes": 285,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "4b0e9116724ed10f640d945a2e42b5735aa6c14930c310ea0a602a0cc5bcd9ce",
+      "bytes": 93635,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "14ad3b89bcf4ead0f6e09a854868496ae8ef74ef09bbb2f32f0e1c079f8a1248",
+      "bytes": 84691,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/hero.png",
+      "sha256": "450fbdc157ac2f179f38024eddfa06c024fe90b497a4d695284920a48acc2daa",
+      "bytes": 335970,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/screenshot.png",
+      "sha256": "45f6d2fa68b82b4e82f2fe3e3b7c599a393d7b48094c83c06ebceefc17b94fe6",
+      "bytes": 96552,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "ae6692019f06e1c0e196eb97d5cd16e87bf7c6293788eef5a219408bd9594620",
+      "bytes": 7748,
+      "mode": "100644"
+    },
+    {
+      "path": "presence.py",
+      "sha256": "1bda9c33960e5563a4e1782d3526619b0717ddd319736578669696b3bae9d1f9",
+      "bytes": 4831,
+      "mode": "100644"
+    },
+    {
+      "path": "presence_config.py",
+      "sha256": "fef08ef2859aaad477aa9c85c5a8f65545409bd22cddfb58371ecb35b6efc3d9",
+      "bytes": 11976,
+      "mode": "100644"
+    },
+    {
+      "path": "presence_metrics.py",
+      "sha256": "b68d934b010378eb298242626ee2b1e907db48a794430b8a99823312041d2c86",
+      "bytes": 9872,
+      "mode": "100644"
+    },
+    {
+      "path": "presence_render.py",
+      "sha256": "4a2b2462822484f8615ce729a09395c549246abe4bf76896e9fa3177713129ac",
+      "bytes": 9791,
+      "mode": "100644"
+    },
+    {
+      "path": "pulse_tool.py",
+      "sha256": "30a6dea130575afbfa0df60be9ab63624d81e681463b83d14730f16c591244ad",
+      "bytes": 2857,
+      "mode": "100644"
+    },
+    {
+      "path": "quota_bridge.py",
+      "sha256": "4c6abf3579bfc63d2593c91c2caae5e781a7c4a2c5b59172efc62f707a6d018f",
+      "bytes": 6120,
+      "mode": "100644"
+    },
+    {
+      "path": "schemas.py",
+      "sha256": "0d1dbcd5b664fa4562c291f4bba9a2123fde0266009217b2601a15d19b1454f0",
+      "bytes": 990,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/provider-status/SKILL.md",
+      "sha256": "d29c094dd0041ec44336291d73ae9f76d1a93f96b267c507c9304e6c752aedcd",
+      "bytes": 6198,
+      "mode": "100644"
+    },
+    {
+      "path": "tests_deepseek_hours.py",
+      "sha256": "7447c0f867e62c2da39e7898b374b40264482f26ff72c545325c1be2f299b29f",
+      "bytes": 3788,
+      "mode": "100644"
+    },
+    {
+      "path": "tests_glm_hours.py",
+      "sha256": "29694b4c3342f485ebe342952197d228de7eda27fafd8db9d22bb224bbfe0a76",
+      "bytes": 3053,
+      "mode": "100644"
+    },
+    {
+      "path": "tests_logout.py",
+      "sha256": "de4f285ac35af2920b95916062ed25d882881f83bd8f868bef3fad9ae3e32e0b",
+      "bytes": 4721,
+      "mode": "100644"
+    },
+    {
+      "path": "tests_pet.mjs",
+      "sha256": "6d61d9129747d22c29ce290819151470f59e8db18060ef2e38d63e819f2bd5fa",
+      "bytes": 12974,
+      "mode": "100644"
+    },
+    {
+      "path": "tests_presence.py",
+      "sha256": "f784d04d73107e2f6a8f085dc3f84175fa88a814d3053c89604b4f7c9b3c3b40",
+      "bytes": 18024,
+      "mode": "100644"
+    },
+    {
+      "path": "tests_public_edition.py",
+      "sha256": "8df7941da4e0855af6ccbf44779de732298552689a2b434736200b5b6a1df3d9",
+      "bytes": 4197,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "268c108df3c8fca5f9172c3371a1f741979ec354f09862fe3ae1cfb78c6c9357",
+  "pin_verification": {
+    "archive_bytes": 44564936,
+    "archive_sha256": "24600c5a1270fb341d21362be8ed9a08ba80ddf1d14fbca31c574353e1c3d94a",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "4bc502523a597a673c852a3b09e1c7e4dced1e6f",
+    "verified_commit_marker": "4bc502523a597a673c852a3b09e1c7e4dced1e6f"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "2507ed5af483bcf1d062ac2c79644ce4061d01573231bf1491de4517fe685a20",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "LIMITATIONS.md",
+        "input_sha256": "668611454dc11b2c067689721f46b5b211b8946a5c893ff45bdf75ed67a1d77d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "45934577cb7bd3458aa55c3eae50a3a82805cbd7cda0e4e9433971cde3a61a5d",
+        "source": "LIMITATIONS.md",
+        "final_output_sha256": "e50201e506458f2d5b5c94e1da18960d0443bca5e22cb66d003f1528f4033f47",
+        "cli_destination": "LIMITATIONS.md",
+        "previous_staging_sha256": "45934577cb7bd3458aa55c3eae50a3a82805cbd7cda0e4e9433971cde3a61a5d"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "d1cc6b497bb3621c84171f0310c06bff2a1dc9b5025caffb7c6b929d3c578752",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "96b9f45cd987cc8adeccfb5a7e53f68d4ffe659b8b62dc8cca6ade8ebed83613",
+        "source": "README.md",
+        "final_output_sha256": "ea65dabe58962136128da5d7dc4bcb21e66a260ea7fddd2631f0c40e2ead1de6",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "96b9f45cd987cc8adeccfb5a7e53f68d4ffe659b8b62dc8cca6ade8ebed83613"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "a9cc6a45ca5034324d135122679d782d738a71689c50ce91be1840130f9607ec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "76f89d668fd784bb01364d2e32a40b3a3050aedf85f34aa9959f9a6f5e03080e",
+        "source": "__init__.py",
+        "final_output_sha256": "76f89d668fd784bb01364d2e32a40b3a3050aedf85f34aa9959f9a6f5e03080e",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "76f89d668fd784bb01364d2e32a40b3a3050aedf85f34aa9959f9a6f5e03080e"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "11c409f8034058751c61f9c859b1e788c73b22ced6703c0b89504ba722ad97e3",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "11c409f8034058751c61f9c859b1e788c73b22ced6703c0b89504ba722ad97e3",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "11c409f8034058751c61f9c859b1e788c73b22ced6703c0b89504ba722ad97e3",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "11c409f8034058751c61f9c859b1e788c73b22ced6703c0b89504ba722ad97e3"
+      },
+      {
+        "destination": "config.json.example",
+        "input_sha256": "cde0c4847049acdfe91ed168123db480cfe9de00d14f3e7c575271d4ecd1c32d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cde0c4847049acdfe91ed168123db480cfe9de00d14f3e7c575271d4ecd1c32d",
+        "source": "config.json.example",
+        "final_output_sha256": "cde0c4847049acdfe91ed168123db480cfe9de00d14f3e7c575271d4ecd1c32d",
+        "cli_destination": "config.json.example",
+        "previous_staging_sha256": "cde0c4847049acdfe91ed168123db480cfe9de00d14f3e7c575271d4ecd1c32d"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "7a719c854aae88db4257d83ae378e437c491dff8c0b81141fb486d73acc9792d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7a719c854aae88db4257d83ae378e437c491dff8c0b81141fb486d73acc9792d",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "7a719c854aae88db4257d83ae378e437c491dff8c0b81141fb486d73acc9792d",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "7a719c854aae88db4257d83ae378e437c491dff8c0b81141fb486d73acc9792d"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "b6277a144de3b16a0f2927e130a39b0a9a2cb0f0877373d96b0988d4d23e7cfd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4b0e9116724ed10f640d945a2e42b5735aa6c14930c310ea0a602a0cc5bcd9ce",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "4b0e9116724ed10f640d945a2e42b5735aa6c14930c310ea0a602a0cc5bcd9ce",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "4b0e9116724ed10f640d945a2e42b5735aa6c14930c310ea0a602a0cc5bcd9ce"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "d3328c3302046f92511b97a03e77336da60f9625b72c9bf658c800ece1e43a04",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2a66543059b0c3c4bbda1c42f1708eeb1df2ceef543f6b3eea63a2c5e9044dd5",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "14ad3b89bcf4ead0f6e09a854868496ae8ef74ef09bbb2f32f0e1c079f8a1248",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "2a66543059b0c3c4bbda1c42f1708eeb1df2ceef543f6b3eea63a2c5e9044dd5"
+      },
+      {
+        "destination": "docs/hero.png",
+        "input_sha256": "450fbdc157ac2f179f38024eddfa06c024fe90b497a4d695284920a48acc2daa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "450fbdc157ac2f179f38024eddfa06c024fe90b497a4d695284920a48acc2daa",
+        "source": "docs/hero.png",
+        "final_output_sha256": "450fbdc157ac2f179f38024eddfa06c024fe90b497a4d695284920a48acc2daa",
+        "cli_destination": "docs/hero.png",
+        "previous_staging_sha256": "450fbdc157ac2f179f38024eddfa06c024fe90b497a4d695284920a48acc2daa"
+      },
+      {
+        "destination": "docs/screenshot.png",
+        "input_sha256": "45f6d2fa68b82b4e82f2fe3e3b7c599a393d7b48094c83c06ebceefc17b94fe6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "45f6d2fa68b82b4e82f2fe3e3b7c599a393d7b48094c83c06ebceefc17b94fe6",
+        "source": "docs/screenshot.png",
+        "final_output_sha256": "45f6d2fa68b82b4e82f2fe3e3b7c599a393d7b48094c83c06ebceefc17b94fe6",
+        "cli_destination": "docs/screenshot.png",
+        "previous_staging_sha256": "45f6d2fa68b82b4e82f2fe3e3b7c599a393d7b48094c83c06ebceefc17b94fe6"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "d8fd5e2e83a505a572b5a95349db41bb563fc1fd682ae552a0a224fb391ff7d4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dbe82cf05af5ce2b7c4e9d7b9efa3772d36892dfa9b2ecc18c9e72b85e1fad70",
+        "source": "plugin.yaml",
+        "final_output_sha256": "ae6692019f06e1c0e196eb97d5cd16e87bf7c6293788eef5a219408bd9594620",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "dbe82cf05af5ce2b7c4e9d7b9efa3772d36892dfa9b2ecc18c9e72b85e1fad70"
+      },
+      {
+        "destination": "presence.py",
+        "input_sha256": "1bda9c33960e5563a4e1782d3526619b0717ddd319736578669696b3bae9d1f9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1bda9c33960e5563a4e1782d3526619b0717ddd319736578669696b3bae9d1f9",
+        "source": "presence.py",
+        "final_output_sha256": "1bda9c33960e5563a4e1782d3526619b0717ddd319736578669696b3bae9d1f9",
+        "cli_destination": "presence.py",
+        "previous_staging_sha256": "1bda9c33960e5563a4e1782d3526619b0717ddd319736578669696b3bae9d1f9"
+      },
+      {
+        "destination": "presence_config.py",
+        "input_sha256": "fef08ef2859aaad477aa9c85c5a8f65545409bd22cddfb58371ecb35b6efc3d9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fef08ef2859aaad477aa9c85c5a8f65545409bd22cddfb58371ecb35b6efc3d9",
+        "source": "presence_config.py",
+        "final_output_sha256": "fef08ef2859aaad477aa9c85c5a8f65545409bd22cddfb58371ecb35b6efc3d9",
+        "cli_destination": "presence_config.py",
+        "previous_staging_sha256": "fef08ef2859aaad477aa9c85c5a8f65545409bd22cddfb58371ecb35b6efc3d9"
+      },
+      {
+        "destination": "presence_metrics.py",
+        "input_sha256": "f20d59c1e7100c7faac039a52243f7d305298e47978fbecda9e248a4dc0d7e66",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b68d934b010378eb298242626ee2b1e907db48a794430b8a99823312041d2c86",
+        "source": "presence_metrics.py",
+        "final_output_sha256": "b68d934b010378eb298242626ee2b1e907db48a794430b8a99823312041d2c86",
+        "cli_destination": "presence_metrics.py",
+        "previous_staging_sha256": "b68d934b010378eb298242626ee2b1e907db48a794430b8a99823312041d2c86"
+      },
+      {
+        "destination": "presence_render.py",
+        "input_sha256": "8475f840ae899b783b57abbbc18af6446b5f9eb51e1c7cfeceeca9a1d94c938b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4a2b2462822484f8615ce729a09395c549246abe4bf76896e9fa3177713129ac",
+        "source": "presence_render.py",
+        "final_output_sha256": "4a2b2462822484f8615ce729a09395c549246abe4bf76896e9fa3177713129ac",
+        "cli_destination": "presence_render.py",
+        "previous_staging_sha256": "4a2b2462822484f8615ce729a09395c549246abe4bf76896e9fa3177713129ac"
+      },
+      {
+        "destination": "pulse_tool.py",
+        "input_sha256": "30a6dea130575afbfa0df60be9ab63624d81e681463b83d14730f16c591244ad",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "30a6dea130575afbfa0df60be9ab63624d81e681463b83d14730f16c591244ad",
+        "source": "pulse_tool.py",
+        "final_output_sha256": "30a6dea130575afbfa0df60be9ab63624d81e681463b83d14730f16c591244ad",
+        "cli_destination": "pulse_tool.py",
+        "previous_staging_sha256": "30a6dea130575afbfa0df60be9ab63624d81e681463b83d14730f16c591244ad"
+      },
+      {
+        "destination": "quota_bridge.py",
+        "input_sha256": "e1ffc84906561b421e58736703d7672165f2d45db61dcc2f5fde2fd646280a29",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4c6abf3579bfc63d2593c91c2caae5e781a7c4a2c5b59172efc62f707a6d018f",
+        "source": "quota_bridge.py",
+        "final_output_sha256": "4c6abf3579bfc63d2593c91c2caae5e781a7c4a2c5b59172efc62f707a6d018f",
+        "cli_destination": "quota_bridge.py",
+        "previous_staging_sha256": "4c6abf3579bfc63d2593c91c2caae5e781a7c4a2c5b59172efc62f707a6d018f"
+      },
+      {
+        "destination": "schemas.py",
+        "input_sha256": "8a5cf2d293abde4f8b7fb25a36c165904344eacb03c3bfe5fb029ff1377791f3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0d1dbcd5b664fa4562c291f4bba9a2123fde0266009217b2601a15d19b1454f0",
+        "source": "schemas.py",
+        "final_output_sha256": "0d1dbcd5b664fa4562c291f4bba9a2123fde0266009217b2601a15d19b1454f0",
+        "cli_destination": "schemas.py",
+        "previous_staging_sha256": "0d1dbcd5b664fa4562c291f4bba9a2123fde0266009217b2601a15d19b1454f0"
+      },
+      {
+        "destination": "skills/provider-status/SKILL.md",
+        "input_sha256": "3ef1f16361f4a4dd1cd6dbdd45c5642825db673003eba05d6e9b7cff5f10bc92",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3fa09aab00c26d810f7eeed56866eff7c391a81ab889a4eb32b121699a13009d",
+        "source": "skills/provider-status/SKILL.md",
+        "final_output_sha256": "d29c094dd0041ec44336291d73ae9f76d1a93f96b267c507c9304e6c752aedcd",
+        "cli_destination": "skills/provider-status/SKILL.md",
+        "previous_staging_sha256": "3fa09aab00c26d810f7eeed56866eff7c391a81ab889a4eb32b121699a13009d"
+      },
+      {
+        "destination": "tests_deepseek_hours.py",
+        "input_sha256": "7447c0f867e62c2da39e7898b374b40264482f26ff72c545325c1be2f299b29f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7447c0f867e62c2da39e7898b374b40264482f26ff72c545325c1be2f299b29f",
+        "source": "tests_deepseek_hours.py",
+        "final_output_sha256": "7447c0f867e62c2da39e7898b374b40264482f26ff72c545325c1be2f299b29f",
+        "cli_destination": "tests_deepseek_hours.py",
+        "previous_staging_sha256": "7447c0f867e62c2da39e7898b374b40264482f26ff72c545325c1be2f299b29f"
+      },
+      {
+        "destination": "tests_glm_hours.py",
+        "input_sha256": "29694b4c3342f485ebe342952197d228de7eda27fafd8db9d22bb224bbfe0a76",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "29694b4c3342f485ebe342952197d228de7eda27fafd8db9d22bb224bbfe0a76",
+        "source": "tests_glm_hours.py",
+        "final_output_sha256": "29694b4c3342f485ebe342952197d228de7eda27fafd8db9d22bb224bbfe0a76",
+        "cli_destination": "tests_glm_hours.py",
+        "previous_staging_sha256": "29694b4c3342f485ebe342952197d228de7eda27fafd8db9d22bb224bbfe0a76"
+      },
+      {
+        "destination": "tests_logout.py",
+        "input_sha256": "1b17551b148a3f41bd9480b566aa7ece5849d5291cc2c1bd927c821a73949809",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "de4f285ac35af2920b95916062ed25d882881f83bd8f868bef3fad9ae3e32e0b",
+        "source": "tests_logout.py",
+        "final_output_sha256": "de4f285ac35af2920b95916062ed25d882881f83bd8f868bef3fad9ae3e32e0b",
+        "cli_destination": "tests_logout.py",
+        "previous_staging_sha256": "de4f285ac35af2920b95916062ed25d882881f83bd8f868bef3fad9ae3e32e0b"
+      },
+      {
+        "destination": "tests_pet.mjs",
+        "input_sha256": "6d61d9129747d22c29ce290819151470f59e8db18060ef2e38d63e819f2bd5fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6d61d9129747d22c29ce290819151470f59e8db18060ef2e38d63e819f2bd5fa",
+        "source": "tests_pet.mjs",
+        "final_output_sha256": "6d61d9129747d22c29ce290819151470f59e8db18060ef2e38d63e819f2bd5fa",
+        "cli_destination": "tests_pet.mjs",
+        "previous_staging_sha256": "6d61d9129747d22c29ce290819151470f59e8db18060ef2e38d63e819f2bd5fa"
+      },
+      {
+        "destination": "tests_presence.py",
+        "input_sha256": "57fa31a84af728d040b4392f6f7c6293ace15e6d2db5a755e037bbf80aca97fe",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f784d04d73107e2f6a8f085dc3f84175fa88a814d3053c89604b4f7c9b3c3b40",
+        "source": "tests_presence.py",
+        "final_output_sha256": "f784d04d73107e2f6a8f085dc3f84175fa88a814d3053c89604b4f7c9b3c3b40",
+        "cli_destination": "tests_presence.py",
+        "previous_staging_sha256": "f784d04d73107e2f6a8f085dc3f84175fa88a814d3053c89604b4f7c9b3c3b40"
+      },
+      {
+        "destination": "tests_public_edition.py",
+        "input_sha256": "f6a59867c6e41020358a6526d93b9876d1a22e9940222fe41797df5fa7976440",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8df7941da4e0855af6ccbf44779de732298552689a2b434736200b5b6a1df3d9",
+        "source": "tests_public_edition.py",
+        "final_output_sha256": "8df7941da4e0855af6ccbf44779de732298552689a2b434736200b5b6a1df3d9",
+        "cli_destination": "tests_public_edition.py",
+        "previous_staging_sha256": "8df7941da4e0855af6ccbf44779de732298552689a2b434736200b5b6a1df3d9"
+      }
+    ],
+    "manifest_sha256": "c369694b4bdd50c3e3aa2ce2bc08ff2caf23cddf62c140ab3b1ffae9814b698d",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "LIMITATIONS.md": "public/provider-status/LIMITATIONS.md",
+    "README.md": "public/provider-status/README.md",
+    "__init__.py": "public/provider-status/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "config.json.example": "public/provider-status/config.json.example",
+    "dashboard/manifest.json": "public/provider-status/dashboard/manifest.json",
+    "dashboard/plugin_api.py": "public/provider-status/dashboard/plugin_api.py",
+    "desktop/plugin.js": "public/provider-status/desktop/plugin.js",
+    "docs/hero.png": "public/provider-status/docs/hero.png",
+    "docs/screenshot.png": "public/provider-status/docs/screenshot.png",
+    "plugin.yaml": "public/provider-status/plugin.yaml",
+    "presence.py": "public/provider-status/presence.py",
+    "presence_config.py": "public/provider-status/presence_config.py",
+    "presence_metrics.py": "public/provider-status/presence_metrics.py",
+    "presence_render.py": "public/provider-status/presence_render.py",
+    "pulse_tool.py": "public/provider-status/pulse_tool.py",
+    "quota_bridge.py": "public/provider-status/quota_bridge.py",
+    "schemas.py": "public/provider-status/schemas.py",
+    "skills/provider-status/SKILL.md": "public/provider-status/skills/provider-status/SKILL.md",
+    "tests_deepseek_hours.py": "public/provider-status/tests_deepseek_hours.py",
+    "tests_glm_hours.py": "public/provider-status/tests_glm_hours.py",
+    "tests_logout.py": "public/provider-status/tests_logout.py",
+    "tests_pet.mjs": "public/provider-status/tests_pet.mjs",
+    "tests_presence.py": "public/provider-status/tests_presence.py",
+    "tests_public_edition.py": "public/provider-status/tests_public_edition.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "provider-status",
+    "python_files_compiled": 14,
+    "secret_findings": 0
+  },
+  "canonical_slug": "provider-status",
+  "catalog_file": "src/plugin-catalog/provider-status.yaml",
+  "identity": {
+    "catalog_id": "provider-status",
+    "canonical_slug": "provider-status",
+    "original_manifest_name": "provider-status",
+    "rebranded_manifest_name": "provider-status",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "e421e014dad1f3b73b82034a72c745e37096471264b531dbb65f1b8cad395b85",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "LIMITATIONS.md",
+          "after_path": "LIMITATIONS.md",
+          "before_sha256": "45934577cb7bd3458aa55c3eae50a3a82805cbd7cda0e4e9433971cde3a61a5d",
+          "after_sha256": "e50201e506458f2d5b5c94e1da18960d0443bca5e22cb66d003f1528f4033f47",
+          "before_bytes": 4321,
+          "after_bytes": 4236,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "96b9f45cd987cc8adeccfb5a7e53f68d4ffe659b8b62dc8cca6ade8ebed83613",
+          "after_sha256": "ea65dabe58962136128da5d7dc4bcb21e66a260ea7fddd2631f0c40e2ead1de6",
+          "before_bytes": 4188,
+          "after_bytes": 4111,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "desktop/plugin.js",
+          "after_path": "desktop/plugin.js",
+          "before_sha256": "2a66543059b0c3c4bbda1c42f1708eeb1df2ceef543f6b3eea63a2c5e9044dd5",
+          "after_sha256": "14ad3b89bcf4ead0f6e09a854868496ae8ef74ef09bbb2f32f0e1c079f8a1248",
+          "before_bytes": 84787,
+          "after_bytes": 84691,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "dbe82cf05af5ce2b7c4e9d7b9efa3772d36892dfa9b2ecc18c9e72b85e1fad70",
+          "after_sha256": "ae6692019f06e1c0e196eb97d5cd16e87bf7c6293788eef5a219408bd9594620",
+          "before_bytes": 7805,
+          "after_bytes": 7748,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "skills/provider-status/SKILL.md",
+          "after_path": "skills/provider-status/SKILL.md",
+          "before_sha256": "3fa09aab00c26d810f7eeed56866eff7c391a81ab889a4eb32b121699a13009d",
+          "after_sha256": "d29c094dd0041ec44336291d73ae9f76d1a93f96b267c507c9304e6c752aedcd",
+          "before_bytes": 6255,
+          "after_bytes": 6198,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

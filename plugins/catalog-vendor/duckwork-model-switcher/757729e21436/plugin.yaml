@@ -1,0 +1,22 @@
+manifest_version: 1
+name: duckwork-model-switcher
+version: 0.3.2
+description: "Choose models across Duckwork profiles, preview changes, and reuse your setup with presets."
+kind: standalone
+author:
+  name: Nico Estrem
+  email: 103498114+nicolasestrem@users.noreply.github.com
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags:
+  - dashboard
+  - models
+  - presets
+  - profiles
+  - configuration
+# No CLI/gateway surface. The only code surface is the Dashboard extension
+# (dashboard/manifest.json + dashboard/dist/index.js + dashboard/plugin_api.py,
+# mounted by the Dashboard at /api/plugins/duckwork-model-switcher/) — the
+# backend path is declared by dashboard/manifest.json's "api" field, not here.
+# The root __init__.py is the entry point Duckwork requires beside this manifest;
+# there are no tools, hooks or commands to declare.

@@ -1,0 +1,506 @@
+"""OpenSpec Duckwork tool schemas."""
+
+WORKDIR_PROP = {
+    "type": "string",
+    "description": (
+        "Project directory containing the openspec/ folder. Defaults to the "
+        "agent/session working directory. Use an absolute path when known."
+    ),
+}
+
+OPENSPEC_CONTEXT = {
+    "name": "openspec_context",
+    "description": (
+        "Resolve a copyable OpenSpec identifier into working context. Paste an "
+        "identifier like 'puzzletea' (a registered repo, by its vanity name) or "
+        "'puzzletea/os_a1b2c3' (a specific change or spec within it) and this returns the "
+        "repo path plus the change proposal/tasks/design/specs content, or the spec content. "
+        "The bare repo name lists active changes and current specs with their tokens. Use the "
+        "returned 'path' as 'workdir' for the other openspec_* tools. Call this "
+        "first whenever the user gives you an OpenSpec identifier."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "identifier": {
+                "type": "string",
+                "description": "A repo vanity name ('puzzletea') or name/change-token ('puzzletea/os_a1b2c3').",
+            },
+        },
+        "required": ["identifier"],
+    },
+}
+
+
+OPENSPEC_LIST = {
+    "name": "openspec_list",
+    "description": (
+        "List OpenSpec changes or specs in a project. Use before choosing a "
+        "change/spec to inspect, validate, or coordinate with kanban tasks."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "workdir": WORKDIR_PROP,
+            "kind": {
+                "type": "string",
+                "enum": ["changes", "specs"],
+                "description": "Which OpenSpec items to list. Defaults to changes.",
+            },
+            "sort": {
+                "type": "string",
+                "enum": ["recent", "name"],
+                "description": "Sort order. Defaults to recent.",
+            },
+        },
+    },
+}
+
+OPENSPEC_SHOW = {
+    "name": "openspec_show",
+    "description": (
+        "Show an OpenSpec change or spec as JSON. Use to read proposals, tasks, "
+        "designs, specs, deltas, and requirement/scenario content."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "workdir": WORKDIR_PROP,
+            "name": {"type": "string", "description": "Change or spec name to show."},
+            "type": {
+                "type": "string",
+                "enum": ["change", "spec"],
+                "description": "Disambiguate item type when needed.",
+            },
+            "deltas_only": {
+                "type": "boolean",
+                "description": "For changes, return only requirement deltas.",
+            },
+            "requirements_only": {
+                "type": "boolean",
+                "description": "For JSON output, omit scenarios and return requirement text only.",
+            },
+            "no_scenarios": {
+                "type": "boolean",
+                "description": "For JSON output, exclude scenario content.",
+            },
+            "requirement": {
+                "type": "string",
+                "description": "Optional 1-based requirement id to show, matching openspec --requirement.",
+            },
+        },
+        "required": ["name"],
+    },
+}
+
+OPENSPEC_VALIDATE = {
+    "name": "openspec_validate",
+    "description": (
+        "Validate OpenSpec artifacts. Use after editing specs/proposals/tasks or "
+        "before completing kanban tasks tied to OpenSpec work."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "workdir": WORKDIR_PROP,
+            "target": {
+                "type": "string",
+                "description": "Specific change/spec name to validate. Omit when using scope.",
+            },
+            "scope": {
+                "type": "string",
+                "enum": ["target", "all", "changes", "specs"],
+                "description": "Validation scope. Defaults to target if target is supplied, otherwise all.",
+            },
+            "type": {
+                "type": "string",
+                "enum": ["change", "spec"],
+                "description": "Disambiguate target type when needed.",
+            },
+            "strict": {
+                "type": "boolean",
+                "description": "Enable strict validation. Defaults to true.",
+            },
+        },
+    },
+}
+
+OPENSPEC_STATUS = {
+    "name": "openspec_status",
+    "description": (
+        "Show artifact completion status for an OpenSpec change as JSON. Useful "
+        "for turning proposal/task progress into kanban updates."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "workdir": WORKDIR_PROP,
+            "change": {"type": "string", "description": "OpenSpec change id/name."},
+            "schema": {"type": "string", "description": "Optional schema override."},
+        },
+        "required": ["change"],
+    },
+}
+
+OPENSPEC_INSTRUCTIONS = {
+    "name": "openspec_instructions",
+    "description": (
+        "Return enriched OpenSpec instructions for creating an artifact or "
+        "applying tasks. Use before implementing a spec-driven change."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "workdir": WORKDIR_PROP,
+            "artifact": {
+                "type": "string",
+                "description": "Artifact/instruction name, e.g. proposal, design, tasks, specs, apply. 'spec' is accepted as an alias for 'specs'.",
+            },
+            "change": {"type": "string", "description": "Optional change id/name."},
+            "schema": {"type": "string", "description": "Optional schema override."},
+        },
+    },
+}
+
+PROJECT_PROPS = {
+    "workdir": WORKDIR_PROP,
+    "identifier": {
+        "type": "string",
+        "description": "Optional registered OpenSpec source identifier/name. Used when workdir is not supplied.",
+    },
+    "project": {
+        "type": "string",
+        "description": "Alias for identifier: a registered OpenSpec source name or token.",
+    },
+}
+
+OPENSPEC_IDEA_CREATE = {
+    "name": "openspec_idea_create",
+    "description": "Create a markdown idea under openspec/ideas from a title and prompt.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "title": {"type": "string", "description": "Idea title."},
+            "prompt": {"type": "string", "description": "Raw human/agent idea text to preserve."},
+            "origin": {"type": "string", "description": "Idea origin, e.g. human, agent, or mixed."},
+            "source": {"type": "string", "description": "Alias for origin."},
+            "tags": {"type": "array", "items": {"type": "string"}},
+            "notes": {"type": "string"},
+            "slug": {"type": "string", "description": "Optional preferred file slug."},
+        },
+        "required": ["title", "prompt"],
+    },
+}
+
+OPENSPEC_IDEA_ENRICH = {
+    "name": "openspec_idea_enrich",
+    "description": "Write or update a structured enrichment report for an existing OpenSpec idea.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "idea": {"type": "string", "description": "Idea slug/name under openspec/ideas without .md."},
+            "slug": {"type": "string", "description": "Alias for idea."},
+            "problem": {"type": "string"},
+            "proposed_direction": {"type": "string"},
+            "key_questions": {"type": "array", "items": {"type": "string"}},
+            "feasibility": {"type": "string", "enum": ["Low", "Medium", "High"]},
+            "tshirt_size": {"type": "string", "enum": ["XS", "S", "M", "L", "XL"]},
+            "size_justification": {"type": "string"},
+            "risks": {"type": "array", "items": {"type": "string"}},
+            "suggested_next_step": {"type": "string"},
+        },
+        "required": ["idea"],
+    },
+}
+
+OPENSPEC_IDEA_PROMOTE = {
+    "name": "openspec_idea_promote",
+    "description": "Promote an existing OpenSpec idea into a new change scaffold with traceability.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "idea": {"type": "string"},
+            "slug": {"type": "string", "description": "Alias for idea."},
+            "change": {"type": "string", "description": "Kebab-case OpenSpec change id to create."},
+            "change_id": {"type": "string", "description": "Alias for change."},
+            "summary": {"type": "string"},
+            "force": {"type": "boolean"},
+        },
+        "required": ["idea", "change"],
+    },
+}
+
+OPENSPEC_TASK_LIST = {
+    "name": "openspec_task_list",
+    "description": "List checklist tasks for an OpenSpec change with ids, text, status, and counts.",
+    "parameters": {"type": "object", "properties": {**PROJECT_PROPS, "change": {"type": "string"}, "change_id": {"type": "string"}}, "required": ["change"]},
+}
+
+OPENSPEC_CHANGE_SEQUENCE_SET = {
+    "name": "openspec_change_sequence_set",
+    "description": (
+        "Declare dashboard-local review order and dependency/proof relationships for active OpenSpec changes. "
+        "Use after creating multiple related changes so the dashboard and later agents know the intended sequence. "
+        "Stores metadata in the Duckwork OpenSpec plugin DB only; it does not modify OpenSpec files."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "changes": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Ordered change names or tokens, e.g. five prerequisite changes followed by the final proving change.",
+            },
+            "group_id": {"type": "string", "description": "Optional sequence group label. Defaults to 'default'."},
+            "dependencies": {
+                "type": "object",
+                "additionalProperties": {"type": "array", "items": {"type": "string"}},
+                "description": "Optional map of change name/token -> prerequisite/proving change names/tokens. Example: {final: [phase1, phase2]}.",
+            },
+            "depends_on": {
+                "type": "object",
+                "additionalProperties": {"type": "array", "items": {"type": "string"}},
+                "description": "Alias for dependencies.",
+            },
+        },
+        "required": ["changes"],
+    },
+}
+
+OPENSPEC_TASK_SET_STATUS = {
+    "name": "openspec_task_set_status",
+    "description": "Set selected checklist task ids in an OpenSpec change to todo or done.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "change": {"type": "string"},
+            "change_id": {"type": "string"},
+            "tasks": {"type": "array", "items": {"type": "string"}},
+            "task_ids": {"type": "array", "items": {"type": "string"}},
+            "status": {"type": "string", "enum": ["todo", "done"]},
+        },
+        "required": ["change", "tasks", "status"],
+    },
+}
+
+OPENSPEC_CHANGE_CREATE = {
+    "name": "openspec_change_create",
+    "description": "Create a draft OpenSpec change scaffold directly from title/summary and optional tasks/spec placeholder.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "change": {"type": "string"},
+            "change_id": {"type": "string"},
+            "title": {"type": "string"},
+            "summary": {"type": "string"},
+            "tasks": {"type": "array", "items": {"type": "string"}},
+            "with_spec": {"type": "boolean"},
+            "force": {"type": "boolean"},
+        },
+        "required": ["change", "title", "summary"],
+    },
+}
+
+OPENSPEC_CHANGE_PROMOTE = {
+    "name": "openspec_change_promote",
+    "description": "Promote a draft OpenSpec change to todo by ensuring tasks and a valid spec placeholder exist.",
+    "parameters": {
+        "type": "object",
+        "properties": {**PROJECT_PROPS, "change": {"type": "string"}, "change_id": {"type": "string"}, "tasks": {"type": "array", "items": {"type": "string"}}, "replace_tasks": {"type": "boolean"}},
+        "required": ["change"],
+    },
+}
+
+OPENSPEC_CHANGE_ARCHIVE = {
+    "name": "openspec_change_archive",
+    "description": "Archive a completed OpenSpec change, refusing incomplete tasks unless force is true.",
+    "parameters": {"type": "object", "properties": {**PROJECT_PROPS, "change": {"type": "string"}, "change_id": {"type": "string"}, "force": {"type": "boolean"}}, "required": ["change"]},
+}
+
+OPENSPEC_CHANGE_UNARCHIVE = {
+    "name": "openspec_change_unarchive",
+    "description": "Move an archived OpenSpec change back to the active changes directory.",
+    "parameters": {"type": "object", "properties": {**PROJECT_PROPS, "change": {"type": "string"}, "change_id": {"type": "string"}, "force": {"type": "boolean"}}, "required": ["change"]},
+}
+
+OPENSPEC_SPEC_DIFF = {
+    "name": "openspec_spec_diff",
+    "description": (
+        "Compare a change's delta spec against its baseline, or a worktree spec "
+        "against its HEAD version, and return a structured semantic delta at the "
+        "requirement and scenario level plus a unified line diff fallback. "
+        "Filesystem-backed — does not require the OpenSpec CLI binary. "
+        "Pass 'change' to diff a change's delta spec against the baseline spec; "
+        "omit 'change' to diff the current worktree spec against its HEAD version."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "spec": {
+                "type": "string",
+                "description": "Spec name (e.g. 'agent-tools') or relative path under openspec/specs/.",
+            },
+            "change": {
+                "type": "string",
+                "description": "Change id — when provided, diff the change's delta spec against the baseline. Omit for worktree-vs-HEAD comparison.",
+            },
+        },
+        "required": ["spec"],
+    },
+}
+
+OPENSPEC_SPEC_CREATE = {
+    "name": "openspec_spec_create",
+    "description": (
+        "Create a spec from structured input (title, purpose, requirements with "
+        "scenarios) and write a properly formatted spec.md. Filesystem-backed — "
+        "does not require the OpenSpec CLI binary. Pass 'change' to write a "
+        "change-scoped delta spec under openspec/changes/<change>/specs/; omit to "
+        "write a baseline spec under openspec/specs/. Use 'force' to overwrite an "
+        "existing spec. The requirements structure matches what openspec_spec_show "
+        "returns, enabling round-trip edit workflows."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "spec": {
+                "type": "string",
+                "description": "Spec name (kebab-case, e.g. 'agent-tools'). Used as the directory name.",
+            },
+            "change": {
+                "type": "string",
+                "description": "Change id — when provided, writes under openspec/changes/<change>/specs/<spec>/. Omit for baseline openspec/specs/<spec>/.",
+            },
+            "title": {
+                "type": "string",
+                "description": "Spec title (used in the '# Title' header).",
+            },
+            "purpose": {
+                "type": "string",
+                "description": "Spec purpose statement (used in the '## Purpose' section).",
+            },
+            "requirements": {
+                "type": "array",
+                "description": "Array of requirements. Each: {name, description, scenarios: [{name, steps: [{type, text}]}]}. 'type' is GIVEN/WHEN/THEN/AND/BUT.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "description": {"type": "string"},
+                        "scenarios": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string"},
+                                    "steps": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {"type": "string", "description": "GIVEN, WHEN, THEN, AND, or BUT"},
+                                                "text": {"type": "string"},
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            "force": {
+                "type": "boolean",
+                "description": "Overwrite an existing spec at the target path. Defaults to false.",
+            },
+        },
+        "required": ["spec", "title", "purpose", "requirements"],
+    },
+}
+
+OPENSPEC_SPEC_SHOW = {
+    "name": "openspec_spec_show",
+    "description": (
+        "Read a spec as structured JSON (title, purpose, requirements with "
+        "scenarios and steps). Filesystem-backed — does not require the OpenSpec "
+        "CLI binary. Pass 'change' to read a change-scoped delta spec; omit to "
+        "read a baseline spec."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "spec": {
+                "type": "string",
+                "description": "Spec name (e.g. 'agent-tools') or relative path.",
+            },
+            "change": {
+                "type": "string",
+                "description": "Change id — when provided, reads from openspec/changes/<change>/specs/. Omit for baseline openspec/specs/.",
+            },
+        },
+        "required": ["spec"],
+    },
+}
+
+OPENSPEC_CLI = {
+    "name": "openspec_cli",
+    "description": (
+        "Run the openspec CLI binary directly and return raw output. "
+        "Use this for CLI commands that need the exact upstream JSON format "
+        "(e.g. `openspec status --change <name> --json` returns applyRequires, "
+        "artifacts, contextFiles, actionContext). The plugin's other tools "
+        "(openspec_show, openspec_status, etc.) return different JSON shapes — "
+        "use openspec_cli when you need the CLI's native output. "
+        "Requires the openspec binary to be installed."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "command": {
+                "type": "string",
+                "description": (
+                    "Openspec CLI command and arguments without the binary name "
+                    "(e.g. 'status --change my-change', 'list --specs', "
+                    "'instructions apply --change my-change')."
+                ),
+            },
+            "workdir": {
+                "type": "string",
+                "description": "Working directory (repo root). Defaults to current directory.",
+            },
+            "json_output": {
+                "type": "boolean",
+                "description": "If true (default), appends --json to the command and returns parsed JSON. If false, returns raw text output.",
+            },
+        },
+        "required": ["command"],
+    },
+}
+
+OPENSPEC_SPEC_LIST = {
+    "name": "openspec_spec_list",
+    "description": (
+        "List specs in a project. Filesystem-backed — does not require the "
+        "OpenSpec CLI binary. Pass 'change' to list delta specs within a change; "
+        "omit to list baseline specs."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            **PROJECT_PROPS,
+            "change": {
+                "type": "string",
+                "description": "Change id — when provided, lists specs under openspec/changes/<change>/specs/. Omit for baseline openspec/specs/.",
+            },
+        },
+    },
+}

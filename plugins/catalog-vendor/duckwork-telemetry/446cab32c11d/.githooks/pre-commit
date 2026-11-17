@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Pre-commit hook — mirrors .github/workflows/ci.yml so a green local commit
+# means a green CI. Run order matches CI exactly: the lint job runs
+# `ruff format --check` FIRST, and the test job has `needs: lint`, so a
+# formatting miss fails the whole pipeline (and makes the test job look like it
+# "failed" even though no test broke). Catch it here instead.
+#
+# Enable once per clone:
+#   git config core.hooksPath .githooks
+#
+# Bypass for a single commit (use sparingly):
+#   git commit --no-verify
+
+set -euo pipefail
+
+# CI pins ruff via .ruff-version. A different local version silently voids this
+# hook's promise: ruff 0.16.0 formats Python blocks inside Markdown while
+# 0.15.15 skips them, so a clean local run can still fail CI (or the reverse).
+# Warn loudly rather than block — you may have a good reason to run another one.
+if [ -f .ruff-version ]; then
+  pinned="$(tr -d '[:space:]' < .ruff-version)"
+  local_ruff="$(ruff --version | awk '{print $2}')"
+  if [ "$pinned" != "$local_ruff" ]; then
+    echo "⚠ ruff version skew: local $local_ruff, CI pins $pinned" >&2
+    echo "  A green run here does NOT guarantee a green CI." >&2
+    echo "  Match it with: pip install 'ruff==$pinned'" >&2
+  fi
+fi
+
+echo "▶ ruff format --check ."
+ruff format --check .
+
+echo "▶ ruff check ."
+ruff check .
+
+echo "▶ pytest tests/"
+pytest tests/ -q --tb=short
+
+echo "✓ all pre-commit checks passed"

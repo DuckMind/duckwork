@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.11"
+          - "3.12"
+          - "3.13"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install --disable-pip-version-check -e ".[dev]"
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Check formatting
+        run: ruff format --check .
+
+      - name: Test
+        run: pytest --cov=duckwork_plugin_guard --cov-report=term-missing
+
+      - name: Build distributions
+        run: python -m build
+
+  duckwork-install-policy:
+    name: Duckwork ${{ matrix.duckwork-version }} install policy
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - duckwork-version: v0.20.5
+            duckwork-commit: fcbd1076a93841fa88855acce810e342a5b78101
+          - duckwork-version: v0.20.6
+            duckwork-commit: 5fc308a70719a83cccdbba4c0e39c23f5a8239d5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out Duckwork scanner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.duckwork-commit }}
+          path: .duckwork-compat
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install scanner dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[dev]"
+
+      - name: Require a safe native install verdict
+        env:
+          DUCKWORK_COMPAT_ROOT: ${{ github.workspace }}/.duckwork-compat
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, os.environ["DUCKWORK_COMPAT_ROOT"])
+          from tools.plugin_guard import format_scan_report, scan_plugin
+
+          result = scan_plugin(Path("src"), source="duckwork-plugin-guard/src")
+          print(format_scan_report(result))
+          if result.verdict != "safe":
+              raise SystemExit(
+                  f"Duckwork install scanner returned {result.verdict!r}; expected 'safe'"
+              )
+          PY
+
+      - name: Verify the slim loader contract
+        run: >-
+          python -m pytest
+          tests/test_duckwork_plugin.py::test_native_shims_load_with_duckwork_style_spec_and_manifests_are_consistent
+          tests/test_duckwork_plugin.py::test_native_manifests_and_package_entry_point_stay_in_sync

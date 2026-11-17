@@ -1,0 +1,86 @@
+{
+  "service": "grok",
+  "title": "Ace Data Cloud Grok Video",
+  "kind": "video",
+  "description": "Grok Imagine fast text-to-video generation through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_grok",
+  "generate_path": "/grok/videos",
+  "task_path": "/grok/tasks",
+  "defaults": {
+    "model": "grok-imagine-video-1.5-fast:reverse",
+    "resolution": "480p",
+    "duration": 6
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "prompt"
+    ],
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "type": "string",
+        "maxLength": 4000
+      },
+      "duration": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "aspect_ratio": {
+        "enum": [
+          "1:1",
+          "16:9",
+          "9:16",
+          "4:3",
+          "3:4",
+          "3:2",
+          "2:3"
+        ],
+        "type": "string",
+        "maxLength": 4000
+      },
+      "model": {
+        "type": "string",
+        "enum": [
+          "grok-imagine-video-1.5-fast:reverse"
+        ],
+        "maxLength": 4000
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_grok_generate",
+  "tools": [
+    "acedatacloud_grok_generate",
+    "acedatacloud_grok_task"
+  ],
+  "toolset": "acedatacloud-grok"
+}

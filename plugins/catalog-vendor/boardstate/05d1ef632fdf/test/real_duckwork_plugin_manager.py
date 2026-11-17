@@ -1,0 +1,79 @@
+"""Real-Duckwork PluginManager and registry dispatch acceptance.
+
+Run with the pinned Duckwork interpreter and an isolated DUCKWORK_HOME containing
+the plugin at plugins/boardstate. This intentionally uses the production
+PluginManager and tool registry rather than the local recording context.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+
+from duckwork_cli.plugins import PluginManager
+from tools.registry import registry
+
+
+def _dispatch(manager: PluginManager, name: str, args: dict) -> dict:
+    result = registry.dispatch(name, args, scope=manager.scope_key)
+    assert isinstance(result, str), result
+    parsed = json.loads(result)
+    assert "error" not in parsed, parsed
+    return parsed
+
+
+def main() -> int:
+    home_value = os.environ.get("DUCKWORK_HOME")
+    assert home_value, "DUCKWORK_HOME must be set"
+    home = Path(home_value).resolve()
+    assert home != (Path.home() / ".duckwork").resolve(), "refusing to use the real ~/.duckwork"
+    plugin_dir = home / "plugins" / "boardstate"
+    assert (plugin_dir / "plugin.yaml").is_file(), f"plugin not installed at {plugin_dir}"
+    os.environ["BOARDSTATE_DUCKWORK_STATE_DIR"] = str(home / "boardstate-state")
+
+    manager = PluginManager()
+    try:
+        manager.discover_and_load()
+        boardstate_names = {
+            name for name in manager._plugin_tool_names if name.startswith("boardstate_")
+        }
+        assert len(boardstate_names) == 19, sorted(boardstate_names)
+        skill = manager._plugin_skills.get("boardstate:boardstate-report-problem")
+        assert skill, sorted(manager._plugin_skills)
+        assert Path(skill["path"]).is_file(), skill
+
+        workspace = _dispatch(manager, "boardstate_workspace_get", {})
+        assert workspace["doc"]["tabs"]
+        _dispatch(
+            manager,
+            "boardstate_tab_create",
+            {"title": "PluginManager", "slug": "plugin-manager"},
+        )
+        _dispatch(
+            manager,
+            "boardstate_widget_add",
+            {
+                "tab": "plugin-manager",
+                "id": "real-duckwork",
+                "kind": "builtin:markdown",
+                "title": "Real Duckwork",
+                "grid": {"x": 0, "y": 0, "w": 6, "h": 3},
+                "props": {"markdown": "loaded through the real PluginManager"},
+            },
+        )
+
+        on_disk = json.loads(
+            (home / "boardstate-state" / "dashboard" / "workspace.json").read_text()
+        )
+        tab = next(item for item in on_disk["tabs"] if item["slug"] == "plugin-manager")
+        assert any(widget["id"] == "real-duckwork" for widget in tab["widgets"])
+    finally:
+        manager.unload()
+
+    print("real Duckwork PluginManager: 19 tools, the report skill and dispatch-to-disk path passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

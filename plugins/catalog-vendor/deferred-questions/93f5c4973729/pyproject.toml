@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68,<84"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-deferred-questions"
+version = "0.2.4"
+description = "Durable non-blocking questions through existing Duckwork gateway transports"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [{name = "Denis Skripnik"}]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+
+[project.entry-points."duckwork_agent.plugins"]
+deferred-questions = "duckwork_deferred_questions"
+
+[tool.setuptools]
+packages = ["duckwork_deferred_questions"]
+
+[tool.setuptools.package-data]
+duckwork_deferred_questions = ["plugin.yaml"]

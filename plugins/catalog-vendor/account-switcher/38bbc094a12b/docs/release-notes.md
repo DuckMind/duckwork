@@ -1,0 +1,336 @@
+# Release notes — Duckwork Account Switcher
+
+## 1.3.2
+
+Fixes a switch refused with "Gateway activity is unknown; restart refused." while nothing was
+wrong. 1.3.1 was not published on its own; this release carries it (below).
+
+- **A dead gateway's leftover record no longer blocks switching.** A gateway that was killed
+  without cleanup leaves its profile's `gateway_state.json` saying `running`. Once Windows gave that
+  process number to an unrelated program, the switcher saw a live process with an old heartbeat
+  and refused every switch. Found on the owner's PC: a record left by a profile's standalone
+  gateway two months earlier. The switcher now compares the record's `start_time` (Duckwork's own
+  process-creation stamp) with the live process and ignores a record whose number now belongs to
+  something else. A record without that stamp still blocks, as before.
+
+## 1.3.1
+
+Fixes a switch that reported "complete" while the declared gateway service was left stopped.
+Found on the owner's PC on 1.3.0; 1.2.3 has the same gap.
+
+- **The switch now proves the declared Windows service serves afterwards.** On Duckwork 0.22, Duckwork
+  Desktop starts a gateway of its own within seconds of the service stopping. A service that does
+  not start with `--replace` then exits beside it, and 1.3.0 accepted "a new gateway answers" as
+  proof. Verification now waits up to a minute for the root gateway ledger to name a process owned
+  by that service, and fails with a message naming the service otherwise.
+- **Preflight refuses while a gateway other than the declared service is serving**, so a switch is
+  never started from that state.
+- The user guide's new "Gateway service" section says what the service needs:
+  `duckwork gateway run --replace`.
+
+## 1.3.0
+
+The plugin is renamed from `codex-account-switch` to `account-switcher`. It switches Claude
+accounts as well as Codex logins, and the old name said only Codex. The repository keeps
+its name. Nothing about how a switch works changed.
+
+- **New name everywhere it appears:** the plugin and catalog name, the install folder
+  (`plugins\account-switcher`), the settings folder (`plugin-data\account-switcher`), the receipt and
+  lock files (`logs\account-switcher-last.json`, `logs\account-switcher.lock`) and the plugin's routes.
+- **The offline installer moves a 1.2.3 install over.** It copies the settings from the old
+  folder when the new one has none (it never overwrites), and removes the old plugin folder only
+  when the installer wrote it and nothing in it changed; otherwise it keeps the folder and says so.
+  It refuses while a switch lock from the old name exists. It still never enables a plugin.
+- **One step is yours after updating:** run `duckwork plugins enable account-switcher` in every
+  profile, then `duckwork plugins disable codex-account-switch` (or remove it from the list) and
+  restart Duckwork. Installed from the catalog instead? Run `duckwork plugins install account-switcher`,
+  then `duckwork plugins remove codex-account-switch`; copy
+  `plugin-data\codex-account-switch\settings.json` to `plugin-data\account-switcher\` first.
+
+## 1.2.3
+
+Supports Duckwork 0.22, whose unified gateway runtime runs every chat in the gateway: Duckwork Desktop
+no longer starts a backend of its own. On that runtime 1.2.2 refused every switch with "No live
+Desktop backends were found."
+
+- **On Duckwork 0.22 and later a switch restarts only the gateway.** The plugin detects the runtime
+  (`duckwork_cli.gateway_runtime` present), takes Duckwork's own idle proof inside the gateway that
+  serves the dialog, holds every turn with the gateway's drain acknowledgement, stops and starts the
+  gateway, and verifies a new gateway process and every stored selection. Duckwork Desktop stays open
+  and reconnects by itself. Preflight answers and receipts carry `desktop_restarts: false`; the
+  dialog says Desktop reconnects instead of reopening. Earlier Duckwork keeps the 1.2.2 behaviour.
+- **A request merely in flight no longer reads as "already closing".** Duckwork reports its admission
+  ledger while one admitted request is still being answered (seen in the first seconds after
+  Desktop opens). The plugin asks again for about two seconds and only then refuses, with "Duckwork
+  is handling a request; retry in a moment."
+- **Windows receipt contention.** A status poll that briefly holds the receipt file no longer fails
+  a switch at its last write: the replacement is retried for up to a second. Failed switches keep
+  safe diagnostics (stage, file and line, OS codes; never text or secrets).
+
+## 1.2.2
+
+Answers the Duckwork plugin catalog review of 2026-10-01 (Fordex/duckwork-agent pull request
+129693, reviewer teknium1). Nothing about how a switch is applied changed.
+
+- **The plugin touches Duckwork only through public surfaces.** The Duckwork catalog lists no plugin
+  that replaces, wraps or rebinds Duckwork code. The plugin used to swap in its own dispatcher for
+  Duckwork Desktop's requests so that, once a switch was cleared, new requests were held back for up
+  to three minutes while Desktop closed; it also read private names of the Desktop server. All of
+  that is gone, with the `/freeze` and `/release` routes and the `guard_installed` field. The
+  refusal stays: "is this Desktop backend idle" is now Duckwork's own answer
+  (`duckwork_cli.web_server_idle_proof.idle_proof`, the probe Duckwork Desktop uses before it retires
+  a backend), asked once for the dialog and once more right before the window closes. It covers
+  conversations running, starting or waiting for input, background work a conversation owns, and
+  scheduled jobs mid-run; an answer Duckwork cannot give is a refusal. **What is lost:** the hold. A
+  conversation started in the seconds between the last idle answer and the window closing is
+  closed with the window. The user guide says so.
+- **Dashboard modules no longer land on the shared web server's `sys.path`.** Duckwork loads the
+  backend by file path into its long-lived web-server process; the siblings are now imported as
+  submodules of a package named after this plugin instead of as top-level `settings`, `compat`,
+  … modules that could shadow Duckwork or another plugin. The helper scripts and the test suite are
+  unchanged. Contributed by teknium1 (SmelterLabs/duckwork-account-switcher pull request 1).
+- **The one automatic token action is documented.** Before using a Claude login whose token has
+  expired, the plugin runs the `claude` CLI once against a closed local port so the CLI renews its
+  own token; that renewal goes to Anthropic and rotates the refresh token in that account's
+  `claude-auth` folder. The README said "no automatic rotation of any kind"; it, the catalog
+  description and this file now say what happens. The renewal itself is kept: without it every
+  switch to a Claude login that had gone unused long enough to expire would be refused.
+- **A Claude sign-in made as the wrong account is deleted, as the documents said.** The code kept
+  the mismatched `.credentials.json` in the folder and only refused to use it. It is now removed
+  from that folder (nothing else in the folder is touched) and the message says to sign in again
+  in a private browser window. A login that merely could not be verified, for example during a
+  network blip, stays.
+- **The plugin no longer reads which login a running conversation holds** (`live_pools` in
+  `/local-state`): that read went through private Desktop server state, and after a restart there
+  are no running conversations to read. The saved stores and each reopened backend's own selection
+  are still verified.
+- Duckwork authenticates every plugin route itself; the plugin's own check is now only "the caller
+  is on this PC".
+
+## 1.2.1
+
+- **The button works out which machine it is talking to.** Duckwork Desktop sends a plugin's
+  requests to the machine the chat you have open runs on. With a chat on a remote or SSH
+  connection active, the button asked that machine, which answered "not available (404)",
+  and the dialog blamed the plugin's enablement. A machine with the plugin installed would
+  have been switched instead of this PC. The button now sends nothing while a remote chat is
+  active: it reads "Account switch: this PC only" and the dialog says to open a chat on This
+  device. Desktop builds that do not report the active connection behave as before, and their
+  404 message now names this cause first.
+- **Recheck reads the account status again** as well as re-running the safety check, so the
+  dialog recovers at once after you move to a local chat.
+
+## 1.2.0
+
+The first public release: 1.2.0-rc.4, which was proven live on real machines with real
+accounts, with the version number, the wording of the documents and the one fix below. The
+catalog submission drafts are no longer part of the release archive.
+
+Changes found by installing the plugin the way a user would on a PC whose gateway runs as
+a Windows service:
+
+- **A gateway run by a Windows service is found by setup and never skipped by a switch.** Such a
+  gateway hides its command line from an ordinary program, so settings written by `setup.cmd`
+  said "no service", the plugin then saw no gateway at all, and a switch would have restarted
+  Duckwork Desktop alone and left the gateway on the previous account. `setup.cmd` now finds the
+  service from the gateway's own status record and the process tree above it, and the plugin
+  refuses to switch while a gateway is running that its settings do not account for, naming
+  the service and the command. `setup.cmd service <name>` sets the service by hand.
+- **Setup asks for a short name for each Codex account.** It used to take the name Duckwork
+  keeps for the login, which for a login added without a name is "device_code": the button
+  read "Codex: Device_Code". Enter takes the name offered, which for such a login is now the
+  first part of the email address. Only a short plain name is taken: a command typed ahead
+  while setup was waiting used to become the account's name.
+- **The dialog sets the plugin up.** Before there are settings the button reads "Account
+  switch: set up"; the dialog lists the Codex and Claude accounts already signed in, takes a
+  name for each and saves. It used to show an error that told the reader to find a folder and
+  run a command, which is the first thing a catalog install would have shown.
+- **An agent can do the setup.** `setup.cmd show` prints what setup found and changes nothing;
+  `setup.cmd auto "email=Name" ...` writes without asking. The dialog copies a brief for an
+  agent that uses them and leaves signing in and switching to the person.
+- Setup finds the Claude accounts already signed in under `claude-auth`, and asks Anthropic
+  whose each login is. `setup.cmd` and `setup_settings.py` are installed with the plugin's
+  code, so they are in the same place however the plugin was installed.
+- **A profile that stood idle no longer stops everything.** A Codex access token lapses after
+  some days and Duckwork renews it the next time its profile runs. The plugin read a lapsed one
+  in any profile as a reason to refuse, so after two idle days in one profile it showed only
+  an error. A lapsed login is now read like any other, and a switch to it goes ahead without the
+  availability check, which a lapsed token cannot make; the receipt says so, and the button warns
+  afterwards if Duckwork could not renew it.
+- **No console windows flash during a switch.** The worker that performs a switch ran with no
+  console, so every console program started under it, including the git calls Duckwork's own code
+  makes to learn its version, opened a new console, and Windows 11 showed each one in Windows
+  Terminal: six or seven flashes per switch on the author's PC, traced process by process. The
+  worker and its helper commands now run in consoles created hidden, which Windows does not show.
+- **A read-only request never blocks a switch.** Duckwork Desktop re-reads the project tree, session
+  lists and usage meters all the time; with a large project folder on OneDrive one of those was in
+  flight at every try, and every switch was refused. Only a request that can start work blocks now,
+  and the refusal names it and how long it has been running.
+- A Codex login that has reached its usage limit is said to come back by itself; the warning
+  used to say to sign in again, which would have changed nothing.
+- A failed request is shown as the backend's sentence, without the error class, status code
+  and braces Duckwork Desktop wraps around it.
+- The instructions name both switches a newer Duckwork gives a plugin: the one on its card, and
+  "Desktop" inside the opened card, which shows the button.
+
+## 1.2.0-rc.4 (release candidate — NOT RELEASED)
+
+Found by running refusals, failures and a Duckwork update on a real stock Windows install.
+
+- **A switch cut off while Duckwork was closed no longer locks the plugin for good.** After a crash
+  or a power cut the plugin said "An account switch is already in progress" forever, and the
+  installer refused as well. Reopening Duckwork Desktop now clears a switch whose worker is proved
+  gone, at any stage, removes the plugin's own gateway drain markers, and the dialog says where
+  the switch stopped and whether the gateway needs starting. Nothing is reordered by the
+  recovery.
+- **Claude switching was refused on every real install.** The check for the Claude provider
+  plugin looked for the wrong folder name and demanded an `enabled` entry the provider does not
+  need. Found while preparing the first live Claude run; Claude switching is now proven live.
+- **New: `setup.cmd`.** One command installs the plugin and sets up the accounts, using the
+  Python Duckwork brings: a new Windows has no working `python`. It finds the Duckwork folders and
+  the Codex accounts already signed in and writes the settings file after a yes.
+  `setup.cmd claude <key> <email>` adds a Claude account and signs it in;
+  `setup.cmd profile <name>` installs into one more profile.
+- The Claude identity check retries once, so a network blip does not read as a bad login.
+- `claude` is also found where Anthropic's installer puts it, which is not on PATH.
+- Duckwork installed with its official Windows installer is supported: it builds the same install
+  as the install script.
+- Failure messages name the step that failed, give the plain reason, and say when the previous
+  account order could not be written back.
+- Identity refusals name the login: "The Codex login for … has expired" and "Duckwork holds a Codex
+  login for …, which is not an account in the account-switch settings".
+- The "not enabled" refusal names the profile and gives the command.
+- The first profile is called "default" in messages, not by its folder's name.
+- The dialog shows times in the reader's own language and time zone.
+- The status-bar button is quiet text instead of a solid button, and no longer mentions a
+  provider that has no accounts set up.
+- The example settings file is valid for an ordinary install (it paired "no Windows service" with
+  a health address such an install does not serve).
+- The installer's "lock exists" message says what to do.
+
+Proven on the test machines with this build: which account pays follows the switch, for Codex
+(measured on the wire) and for Claude; a second profile follows the switch; the plugin survives a
+Duckwork update; a first-time install on a blank Windows works end to end. See
+[acceptance.md](acceptance.md).
+
+## 1.2.0-rc.3 (release candidate — NOT RELEASED)
+
+- Stock Duckwork support: `gateway_service: null` stops and starts the gateway with Duckwork's own
+  `gateway stop` / `gateway start`. A Windows service name keeps the service route. Proven on a
+  stock Windows install.
+- The freeze now covers long-running Desktop requests (`shell.exec`, `slash.exec`, `llm.oneshot`, ...),
+  which previously could start after the switch had frozen new work. A Duckwork build whose
+  dispatcher has a route the freeze does not cover is refused.
+- Profiles Duckwork has marked deleted are skipped instead of failing the switch.
+- Recovery always restarts Duckwork, even when restoring the previous selection fails.
+- The status badge warns when the preferred Codex login is dead or exhausted and names the
+  account that is really paying.
+- User-facing messages no longer name a specific Windows service.
+- Desktop-only installs (no gateway ever set up) can switch; only Duckwork Desktop restarts.
+- Gateway commands go through Duckwork's own launcher, and stock health is read from the gateway's
+  own status record instead of a web address stock Duckwork does not serve.
+- Installer: the rollback copy moved out of the folder Duckwork scans for plugins (it was loaded as
+  a duplicate plugin), and updates no longer refuse after the plugin's first run.
+- The switch worker no longer inherits the Desktop backend's interpreter settings, which ended
+  every switch on stock Duckwork before its first check; a worker that is ended by a process exit
+  now records a failure instead of staying pending.
+- Preflight no longer waits on its own backend, and a stock single-profile backend is discovered.
+
+## 1.2.0-rc.2 (release candidate — NOT RELEASED)
+
+- Fix backend loading on stock-style Duckwork environments without PyYAML by using
+  the host's `duckwork_yaml` parser through the compatibility boundary.
+- Refuse Claude switching when the external provider is absent or disabled in a
+  discovered profile. Codex-only configuration remains supported without it.
+- Add and package regression coverage for import safety, YAML parsing and provider
+  prerequisites. Mainline gates: 151 Python tests and 21 frontend tests pass.
+- A real Duckwork-host import/parser probe passed with PyYAML absent. This is not a
+  real account-switch test or Windows VM acceptance.
+
+Guided first-run setup, generic Windows gateway lifecycle support, live switching,
+upgrade survival, licensing and public catalog submission remain incomplete.
+
+## 1.2.0-rc.1 (release candidate — NOT RELEASED)
+
+Candidate packaging of the formerly internal "codex-account-switch" Desktop tool as an
+independent, stranger-usable Windows plugin. Same plugin ID (`codex-account-switch`) as the
+internal tool, so an existing installation migrates in place.
+
+### Changes from the internal 1.1.x line
+
+- **Independent packaging.** Installs from a release ZIP via
+  `python install.py install --home <path>` — code only, never changing plugin enablement in
+  either direction, preserving all settings, auth stores, and unrelated files. Upgrades refuse
+  unknown/modified plugin files; legacy installs without an ownership receipt require explicit
+  manual migration rather than an overwrite. Explicit rollback and uninstall commands with the
+  same preservation guarantees. Official enabling is `duckwork plugins enable
+  codex-account-switch` in the profile you choose. The package ships `.gitattributes`
+  (`* -text` — no newline normalization, release bytes preserved exactly; an earlier `eol=lf`
+  attempt still normalized mixed Windows source bytes on commit) and the builder uses a file
+  allowlist so the archive's bytes are exact and reproducible across Windows checkouts.
+- **External account configuration.** Personal account tables move out of the source into
+  `<duckwork-root>\plugin-data\codex-account-switch\settings.json` (see `settings.example.json`),
+  shared by the root home and named profiles, overridable via `DUCKWORK_SWITCH_SETTINGS`. Labels are
+  display-only; verified identity is checked against the configured expected email.
+- **No bundled credentials or personal data.** Example data uses reserved `example.invalid`
+  addresses and generic paths. No runtime Python path is configured; the active Duckwork-managed
+  interpreter is resolved dynamically.
+- **Generalized account keys.** Arbitrary lowercase account keys per provider instead of the
+  previous fixed personal set; Codex-only or Claude-only configurations are supported.
+- **Compatibility groundwork.** A runtime compatibility gate (in development at this candidate)
+  is intended to refuse switching on unsupported Duckwork builds before any mutation.
+  The audited private-interface map and verified source baselines are in
+  [compatibility.md](compatibility.md).
+- **Unchanged safety contract.** User-selected account changes only; preflight, idle gating,
+  concurrency lock, authenticated loopback backend, hidden one-shot worker, bounded recovery, and
+  post-restart verification with receipts. Restart scope is still exactly Duckwork Desktop plus the
+  configured gateway service.
+
+### Known limitations at this candidate (rc.1; see acceptance.md for the current state)
+
+- When work is active, the switch blocker reports it generically and does not list individual
+  running job names (the private lookup that provided them was removed to stay inside the
+  Desktop SDK surface).
+- Live account switching and Duckwork upgrade survival have **not been run** against this candidate
+  (they require separately approved test identities). See [acceptance.md](acceptance.md).
+- Not catalog-listed; no public repository exists yet. Catalog materials under
+  [../catalog/](../catalog/) are drafts and are not submittable as-is.
+- No license granted; all rights reserved by the author pending the decision recorded in
+  [license-decision.md](license-decision.md).
+- Windows only. On unmodified stock Duckwork builds, the idle preflight may read a stale busy count
+  and refuse switches (fail-safe); see compatibility.md for details.
+
+### Test and acceptance status
+
+On the release archive: 140 Python tests passing (114 core + 26 packaging), 21 frontend tests,
+official validation `ok: true` by both routes — the upstream `validate_plugin_dir` function
+against the isolated extracted tree, and the official CLI
+(`python -m duckwork_cli.main plugins validate --json`, isolated `DUCKWORK_HOME` + stock
+`PYTHONPATH`, exit 0) on the exact native fixture from the final archive; security scan safe,
+desktop surface pass, one documented skipped probe (no `__init__.py` — the Python capability
+probe is skipped, not passed). A real-archive install/reinstall/rollback/uninstall cycle passed
+in an isolated home with synthetic auth/settings preserved. The native official installer route
+(`cmd_install`, `enable=False`, `no_deps=True`) is byte-exact — frontend and backend hashes
+match the original archive, preserved by `.gitattributes` `* -text` plus a builder allowlist
+(an earlier `eol=lf` attempt normalized mixed Windows source bytes and was rejected). Core is
+at `d0129c1` with the dev-only Vitest dependency patched to 4.1.11; `npm audit` reports zero.
+Receipts dated 2026-09-26. **Real account switching, UI enablement, and Duckwork upgrade survival
+have NOT been run**; no license granted; not published.
+
+## 1.1.2 (internal, unreleased)
+
+- Accepts multiple grants for the same verified Codex account ID (for example after CLI login
+  recovery), selecting the lowest-priority row without deleting any grant; conflicting selections
+  still fail closed.
+
+## 1.1.1 (internal, unreleased)
+
+- Launcher compatibility: backend discovery accepts both `python -m duckwork_cli.main` and the
+  canonical managed launcher, including isolated mode. Preflight exceptions return safe HTTP 409
+  details; failed receipts labelled "Last switch attempt" do not block new switches.
+
+## 1.1.0 and earlier (internal, unreleased)
+
+- Internal tool evolution: per-profile writes, warm-session verification, shared-backend support,
+  recovery rules, one-shot worker with Job Object breakaway. Historical detail lives in the
+  private development history, which is not part of any public release.

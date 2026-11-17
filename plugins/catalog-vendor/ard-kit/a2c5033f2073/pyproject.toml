@@ -1,0 +1,48 @@
+# Packaging only. The runtime stays stdlib-only: no dependencies below, just
+# console entry points over the ard_kit package. selfcheck.py stays at the
+# repo root on purpose — it is the test harness, and CI imports it from the
+# checkout, not from an install.
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-ard-kit"
+version = "0.20.0"
+description = "Self-hosted Agentic Resource Discovery over local scripts, agent skills and MCP servers."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "ameobius" }]
+keywords = [
+    "ard",
+    "agentic-resource-discovery",
+    "mcp",
+    "agent-skills",
+    "registry",
+    "discovery",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://gitlab.com/ameobius-ai/ard-kit"
+Source = "https://gitlab.com/ameobius-ai/ard-kit"
+Issues = "https://gitlab.com/ameobius-ai/ard-kit/-/issues"
+
+# Same five commands as bin/, minus the PATH juggling.
+[project.scripts]
+ard-catalogize = "ard_kit.catalogize:main"
+ard-registry = "ard_kit.registry:main"
+ard-mcp = "ard_kit.mcp_server:main"
+ard-verify = "ard_kit.trust:main"
+ard-doctor = "ard_kit.doctor:main"
+
+[tool.setuptools]
+packages = ["ard_kit"]

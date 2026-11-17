@@ -1,0 +1,14 @@
+# Third-party notices
+
+## Cursor SDK
+
+This plugin depends on the separately distributed `cursor-sdk` Python package, currently declared as `cursor-sdk>=1.0.32,<2`. Cursor identifies that package and its bundled SDK bridge as proprietary software. Installation and use are governed by Cursor's SDK license and Terms of Service:
+
+- <https://cursor.com/docs/sdk/python>
+- <https://cursor.com/terms-of-service>
+
+The Cursor SDK source and bridge are not copied into this plugin directory; Hermes' plugin installer obtains the declared dependency from its package distributor.
+
+## Hermes Agent
+
+This plugin implements the public `ProviderProfile` model-provider seam from Hermes Agent. Hermes Agent is MIT licensed; no Hermes core files are modified or redistributed by this plugin.

@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Test sidecar
+        working-directory: bridge
+        run: cargo test --locked
+      - name: Build sidecar
+        working-directory: bridge
+        run: cargo build --release --locked
+
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          path: duckwork-agent
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Duckwork + pytest
+        run: python3 -m pip install -e duckwork-agent pytest
+      - name: Plugin unit tests
+        env:
+          DUCKWORK_AGENT_ROOT: ${{ github.workspace }}/duckwork-agent
+          PYTHONPATH: ${{ github.workspace }}/duckwork-agent
+        run: python3 -m pytest tests/test_plugin_unit.py -q

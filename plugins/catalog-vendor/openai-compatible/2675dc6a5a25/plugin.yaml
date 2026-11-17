@@ -1,0 +1,33 @@
+name: openai-compatible
+version: 2.0.2
+manifest_version: 2
+requires_duckwork: ">=0.20.1"
+description: GPT Image through CLIProxyAPI, New API, or any OpenAI Images-compatible gateway
+author: duu261
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags: [image-generation, cliproxyapi, new-api, gpt-image]
+kind: backend
+python_dependencies:
+  - "openai>=2.0,<3"
+config_schema:
+  base_url:
+    type: str
+    default: ""
+    label: Gateway base URL
+    description: "API root of the gateway, e.g. http://127.0.0.1:8317/v1 (CLIProxyAPI) or https://newapi.example/v1. HTTPS required unless the host resolves only to loopback, LAN, Tailscale or IPv6 ULA addresses."
+  key_env:
+    type: str
+    default: OPENAI_COMPAT_IMAGE_API_KEY
+    label: Key variable
+    description: "Name of the .env variable holding the gateway key. Point it at a key you already have instead of copying it."
+  quality:
+    type: str
+    default: medium
+    choices: [auto, low, medium, high, xhigh, max]
+    description: "Quality sent for GPT image models. Codex-backed gateways may ignore it."
+requires_env:
+  - name: OPENAI_COMPAT_IMAGE_API_KEY
+    description: "Gateway API key (default key variable; leave empty for keyless local gateways)"
+    secret: true
+    optional: true

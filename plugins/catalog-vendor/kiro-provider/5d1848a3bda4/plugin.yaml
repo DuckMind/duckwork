@@ -1,0 +1,8 @@
+name: kiro-provider
+kind: model-provider
+version: 1.0.1
+requires_duckwork: ">=0.21.3"
+description: Native Kiro provider with Duckwork auth, usage, model catalog, and capability hooks.
+author: anpicasso
+python_dependencies:
+  - botocore>=1.42,<2

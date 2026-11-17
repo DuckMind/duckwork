@@ -25,9 +25,11 @@ for name, text in [('after', source), ('before', before_path.read_text())]:
 # Only the imported public names; deliberately no ctx export.
 match = re.search(r'import\s*\{([^}]+)\}\s*from \'@duckwork/plugin-sdk\'', source)
 assert match, 'SDK import not found'
-names = match.group(1).split(',')
+before_import = re.search(r'import\s*\{([^}]+)\}\s*from \'@duckwork/plugin-sdk\'', before_path.read_text())
+assert before_import, 'negative-control SDK import not found'
+names = set(match.group(1).split(',')) | set(before_import.group(1).split(','))
 stubs = {'atom': '(v)=>({get:()=>v,set(){}})', 'profileColor': "()=>'#6ea8fe'", 'STATUSBAR_AREAS': "{right:'statusBar.right'}"}
-(out / 'sdk.mjs').write_text('\n'.join('export const ' + n.strip() + '=' + stubs.get(n.strip(), '()=>({})') + ';' for n in names if n.strip()))
+(out / 'sdk.mjs').write_text('\n'.join('export const ' + name + '=' + stubs.get(name, '()=>({})') + ';' for name in sorted({n.strip() for n in names if n.strip()})))
 (out / 'react.mjs').write_text('export const useEffect=()=>{},useRef=()=>({}),useState=()=>[],useMemo=f=>f(),useCallback=f=>f;')
 (out / 'jsx.mjs').write_text('export const jsx=()=>{},jsxs=()=>{};')
 (out / 'sofa-regression.html').write_text((repo / 'tests/sofa-regression.html').read_text())

@@ -1,0 +1,35 @@
+{
+  "name": "duckwork-context-overview",
+  "version": "1.2.5",
+  "private": true,
+  "type": "module",
+  "description": "Metadata-only native Duckwork Desktop context budget viewer",
+  "license": "MIT",
+  "author": "AsoTora",
+  "scripts": {
+    "test": "node --import ./tests/setup.mjs --test tests/*.test.mjs",
+    "check": "node --check desktop/plugin.js && node --check scripts/verify.mjs && node --check scripts/screenshots.mjs && bash -n scripts/bump-catalog.sh && python3 scripts/release.py check",
+    "test:release": "python3 -m unittest discover -s tests -p 'test_release.py' -v",
+    "release:check": "python3 scripts/release.py check",
+    "release:notes": "python3 scripts/release.py notes",
+    "release:pack": "python3 scripts/release.py pack",
+    "release:verify": "python3 scripts/release.py verify",
+    "gate": "pnpm check && pnpm test && pnpm test:release && pnpm release:pack && pnpm release:verify",
+    "screenshots": "node --import ./tests/setup.mjs --test tests/browser.test.mjs",
+    "screenshots:docs": "node scripts/screenshots.mjs",
+    "screenshots:themes": "node --import ./tests/setup.mjs --test tests/themes.test.mjs",
+    "fixtures:themes": "node scripts/theme-fixtures.mjs"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "5.101.2",
+    "esbuild": "0.28.1",
+    "playwright": "1.62.1",
+    "radix-ui": "1.6.7",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

@@ -1,0 +1,112 @@
+# secret-drop
+
+Give Duckwork a password or token without putting it in the chat or showing it to the model.
+
+This is a standalone Duckwork plugin. It is not part of the Duckwork core tree. Install the repository root into `~/.duckwork/plugins/`. That is the distribution path described in [CONTRIBUTING.md](https://github.com/DuckMind/duckwork) and [Build a Duckwork Plugin](https://duckwork-agent.fordex.com/docs/developer-guide/plugins).
+
+## What it does
+
+Duckwork Desktop shows a key button beside the composer and a command-palette entry, **Give Duckwork a secret**. The masked field sends the value once, over the gateway connection you already use (local backend, remote gateway, or SSH tunnel), to this plugin's API at `/api/plugins/secret-drop/drop`.
+
+On that gateway host the plugin:
+
+1. opens a new owner-only file under `secret-drops/`,
+2. writes the secret and reads those same bytes back,
+3. saves them in the profile `.env` (mode `0600`) under the name you chose, and checks the read-back,
+4. deletes the file.
+
+The response does not contain the value. Nothing is written into the transcript unless you leave **Tell Duckwork the variable name** checked. That message names the variable only, for example `$DEPLOY_PASSWORD`. If storing succeeds and the follow-up message fails, the dialog says the secret is stored.
+
+When the dashboard is serving more than one profile, the desktop `profile` query selects which profile receives the value. A request for another profile does not write the launch profile's `.env`.
+
+Custom names are added to the raw `terminal.env_passthrough` list, so later sandboxed commands can expand `$NAME`. That write does not save the defaults-merged config, so `${...}` templates already in `config.yaml` stay templates. Provider and platform credentials such as `OPENAI_API_KEY` or `GITHUB_TOKEN` are stored but not forwarded.
+
+If a command prints the raw value, tool output replaces it with `«redacted-vault-secret»` only when the value is specific enough to redact: at least 8 characters and containing a digit or symbol, or at least 24 characters. A short value or a plain word such as `password` is stored, and is not used as a global search-and-replace. Duckwork keeps at most 64 of these exact values in memory per profile; this plugin records the variable names in `secret-drop-names` and registers the values again on session start. A command that encodes the value first is not covered by that exact-match redaction.
+
+The same guidance is added to the session prompt when Duckwork supports plugin prompt sections. The bundled skill `secret-drop:secret-drop` is listed by `skills_list` and is not copied into `~/.duckwork/skills/`.
+
+`/secret` in a local terminal asks for the name, then reads the value from a hidden prompt. On Telegram, Discord, and the other messaging platforms, `/secret` stores nothing and does not repeat the argument. Chat is the wrong place for a password.
+
+## Security model — what this does and does not guarantee
+
+This plugin solves one specific problem: it keeps a secret out of the chat
+transcript, the model prompt, and prompt caches. It is **not** a sandbox that
+hides the value from the model.
+
+**What it guarantees:**
+
+- The value never enters the chat or the model context. The model only ever
+  sees the variable name (`$DEPLOY_PASSWORD`), never the value.
+- The value is stored in the profile `.env` with owner-only permissions
+  (mode `0600`), and the temporary drop file is deleted after storing.
+- Tool output that prints the raw value is redacted
+  (`«redacted-vault-secret»`) when the value is specific enough to match.
+
+**What it does NOT guarantee:**
+
+- The model has tools (terminal, file reads) and can read the value if it
+  wants to — for example `cat ~/.duckwork/.env` or `echo $DEPLOY_PASSWORD`.
+  Redaction is exact-match only: a command that encodes the value first
+  (base64, hex, character-by-character) is not covered.
+- This is a convenience and a default-safety layer against *accidental*
+  leaks, not a security boundary against a malicious or compromised model.
+
+**Rule of thumb:** trust this plugin to keep secrets out of prompts and
+transcripts. Do **not** trust it as a security boundary against a model that
+deliberately tries to read the value — for that you need real secret
+isolation (for example secrets held in a separate process the model cannot
+reach).
+
+## Limits
+
+The value must be non-empty ASCII, at most 8192 characters, and must not contain a line break or a NUL. Names have to be normal environment variable names. Duckwork refuses names that steer a subprocess (`PATH`, `LD_PRELOAD`, `PYTHONPATH`, and the rest of that denylist).
+
+## Layout
+
+`plugin.yaml` sits at the repository root. Duckwork then records the allow-list entry as the manifest name `secret-drop`. That is the same string as the dashboard manifest and the desktop plugin id, and it is the path segment in `POST /api/plugins/secret-drop/drop`.
+
+A `plugin.yaml` nested in a subdirectory is recorded as a path key (`duckwork-secret-drop/duckwork-secret-drop/plugin`). The dashboard gate compares the request path to `plugins.enabled` and does not accept that path key, so the call returns 404 `Plugin not found`.
+
+```
+duckwork-secret-drop/
+├── plugin.yaml                 # name: secret-drop
+├── __init__.py                 # /secret, session-start redaction reload, session prompt
+├── secret_drop.py              # file drop, .env store, wipe
+├── skills/secret-drop/SKILL.md
+├── dashboard/
+│   ├── manifest.json           # name: secret-drop
+│   └── plugin_api.py           # POST /api/plugins/secret-drop/drop
+└── desktop/
+    └── plugin.js               # id: secret-drop, locales included
+```
+
+Duckwork loads that one file as a script. A second module next to it, including `import './i18n'`, is rejected, and the key button does not register.
+
+The agent half follows `plugins.enabled` and needs a gateway restart so the route is mounted. The desktop half stays off until its own switch is on.
+
+## Install
+
+Install the repository root, not a subdirectory.
+
+```bash
+duckwork plugins install Goitonthefloor/duckwork-secret-drop
+duckwork plugins enable secret-drop
+```
+
+```text
+duckwork://plugin/install?repo=Goitonthefloor/duckwork-secret-drop
+```
+
+`plugins.enabled` must contain `secret-drop`. Remove a path key such as `duckwork-secret-drop/duckwork-secret-drop/plugin`, and delete a leftover checkout under `~/.duckwork/plugins/duckwork-secret-drop/` that still has `plugin/plugin.yaml` inside it. Restart the gateway after enabling.
+
+In Duckwork Desktop, turn on **Secret drop** under **Capabilities → Plugins**. The key sits in the composer, to the left of the model pill.
+
+A catalog entry is a separate reviewed pull request in `Fordex/duckwork-agent` `plugin-catalog/`, pinned to an exact commit of this repo. Do not add this plugin to the Duckwork core tree.
+
+## Tests
+
+From this directory, with the Duckwork checkout importable:
+
+```bash
+PYTHONPATH=/path/to/duckwork-agent python -m pytest tests/test_drop.py
+```

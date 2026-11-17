@@ -1,0 +1,172 @@
+"""`duckwork whatsapp-voice ...` subcommands: install, pair, serve, service, status, call."""
+
+from __future__ import annotations
+
+import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+from .sidecar_client import (
+    BINARY_NAME,
+    Client,
+    SidecarError,
+    binary_path,
+    data_dir,
+    download_release,
+    gemini_key,
+    settings,
+    sidecar_env,
+)
+
+PLUGIN_DIR = Path(__file__).resolve().parent
+
+
+def _build_from_source(dest: Path) -> None:
+    cargo = shutil.which("cargo")
+    if not cargo:
+        raise SystemExit(
+            "Rust is not installed (https://rustup.rs; cmake and a C compiler are also needed). "
+            "Or drop --from-source to download a release build."
+        )
+    src = PLUGIN_DIR / "sidecar"
+    print(f"Building the sidecar from {src} (takes a few minutes) ...")
+    subprocess.run([cargo, "build", "--release", "--locked"], cwd=src, check=True)
+    shutil.copy2(src / "target" / "release" / BINARY_NAME, dest)
+
+
+def _download_release(dest: Path) -> None:
+    try:
+        download_release(dest)
+    except SidecarError as e:
+        raise SystemExit(str(e)) from e
+
+
+def _install(args) -> None:
+    dest = binary_path()
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if args.from_source:
+        _build_from_source(dest)
+    else:
+        _download_release(dest)
+    print(f"Installed {dest}")
+    print("Next: duckwork whatsapp-voice pair")
+
+
+def _require_ready(ctx) -> Path:
+    if not settings(ctx)["owner_number"]:
+        raise SystemExit(
+            "Set your number first: duckwork config set plugins.entries.duckwork-whatsapp-voice.settings.owner_number +15551234567"
+        )
+    if not gemini_key():
+        raise SystemExit(
+            "No Gemini API key found. This plugin reuses the key of Duckwork's Gemini provider "
+            "(GOOGLE_API_KEY or GEMINI_API_KEY in ~/.duckwork/.env). Add one with `duckwork model` "
+            "(choose Gemini) or put it in ~/.duckwork/.env."
+        )
+    exe = binary_path()
+    if not exe.exists():
+        # First run: fetch the prebuilt sidecar so nobody needs a Rust toolchain.
+        exe.parent.mkdir(parents=True, exist_ok=True)
+        _download_release(exe)
+    return exe
+
+
+def _pair(ctx, phone: str | None) -> None:
+    exe = _require_ready(ctx)
+    env = {**os.environ, **sidecar_env(ctx)}
+    argv = [str(exe), "pair"] + (["--phone", phone] if phone else [])
+    raise SystemExit(subprocess.run(argv, env=env, check=False).returncode)
+
+
+def _serve(ctx) -> None:
+    exe = _require_ready(ctx)
+    env = {**os.environ, **sidecar_env(ctx)}
+    os.execve(str(exe), [str(exe), "serve"], env)
+
+
+def _service() -> None:
+    duckwork = shutil.which("duckwork") or "duckwork"
+    log = data_dir() / "sidecar.log"
+    if platform.system() == "Darwin":
+        print(f"""<?xml version="1.0" encoding="UTF-8"?>
+<!-- Save as ~/Library/LaunchAgents/com.duckwork.whatsapp-voice.plist, then:
+     launchctl load -w ~/Library/LaunchAgents/com.duckwork.whatsapp-voice.plist -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.duckwork.whatsapp-voice</string>
+  <key>ProgramArguments</key>
+  <array><string>{duckwork}</string><string>whatsapp-voice</string><string>serve</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>
+  <key>StandardOutPath</key><string>{log}</string>
+  <key>StandardErrorPath</key><string>{log}</string>
+</dict>
+</plist>""")
+    else:
+        print(f"""# Save as ~/.config/systemd/user/duckwork-whatsapp-voice.service, then:
+#   systemctl --user daemon-reload && systemctl --user enable --now duckwork-whatsapp-voice
+#   loginctl enable-linger $USER   # keep it running while logged out
+[Unit]
+Description=Duckwork WhatsApp voice sidecar
+After=network-online.target
+
+[Service]
+ExecStart={duckwork} whatsapp-voice serve
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target""")
+
+
+def _status(ctx) -> None:
+    try:
+        print(json.dumps(Client.from_ctx(ctx).health(), indent=2))
+    except SidecarError as e:
+        raise SystemExit(str(e)) from e
+
+
+def _call(ctx, reason: str) -> None:
+    try:
+        print(json.dumps(Client.from_ctx(ctx).start_call(reason), indent=2))
+    except SidecarError as e:
+        raise SystemExit(str(e)) from e
+
+
+def setup_parser(subparser) -> None:
+    subs = subparser.add_subparsers(dest="wv_command")
+    install = subs.add_parser("install", help="Install the sidecar binary (release download, or build with Rust)")
+    install.add_argument("--from-source", action="store_true", help="Build with the local Rust toolchain")
+    pair = subs.add_parser("pair", help="Link the sidecar to your bot's WhatsApp number (shows a QR code)")
+    pair.add_argument("--phone", help="Bot's phone number, to link with a pair code instead of a QR code")
+    subs.add_parser("serve", help="Run the sidecar in the foreground")
+    subs.add_parser("service", help="Print a systemd/launchd unit that keeps the sidecar running")
+    subs.add_parser("status", help="Show sidecar health")
+    call = subs.add_parser("call", help="Place a test call to the owner")
+    call.add_argument("reason", nargs="?", default="This is a quick test call.")
+
+
+def make_handler(ctx):
+    def handle(args) -> None:
+        cmd = getattr(args, "wv_command", None)
+        if cmd == "install":
+            _install(args)
+        elif cmd == "pair":
+            _pair(ctx, args.phone)
+        elif cmd == "serve":
+            _serve(ctx)
+        elif cmd == "service":
+            _service()
+        elif cmd == "status":
+            _status(ctx)
+        elif cmd == "call":
+            _call(ctx, args.reason)
+        else:
+            print("Usage: duckwork whatsapp-voice {install,pair,serve,service,status,call}", file=sys.stderr)
+
+    return handle

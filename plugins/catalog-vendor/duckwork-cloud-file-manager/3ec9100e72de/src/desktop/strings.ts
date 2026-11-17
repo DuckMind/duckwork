@@ -1,0 +1,250 @@
+// Every user-facing English string, in one place for later i18n.
+
+/** "<profile>'s machine", or "the agent's machine" when the profile is empty or literally "default". */
+export const machineOf = (profile: string) => (profile && profile !== 'default' ? `${profile}'s machine` : "the agent's machine")
+const agentName = (profile: string) => (profile && profile !== 'default' ? profile : 'the agent')
+
+const mb = (bytes: number) => `${Math.max(1, Math.round(bytes / (1024 * 1024)))} MB`
+
+export const S = {
+  title: 'Cloud Files',
+  navLabel: 'Cloud Files',
+  providerLabel: 'Cloud',
+  notSetUp: (agent: string) =>
+    `Cloud Files isn't set up on ${agent} yet. Install the Cloud File Manager plugin on the agent and enable it (Capabilities ▸ Plugins, or \`duckwork plugins enable duckwork-cloud-file-manager\`). On Duckwork 0.21.6 or later it appears within about a minute; on older versions, restart the agent's gateway.`,
+  unsupportedTitle: "Cloud Files can't browse this agent's machine",
+  needsUpdateTitle: 'Cloud Files needs an update on this agent',
+  needsUpdateBody:
+    "The agent's machine has an older version of the Cloud File Manager plugin, or it isn't enabled. Update or enable it there. After an update, restart the agent's gateway.",
+  noRootsTitle: 'Cloud Files has no folder to show',
+  openSettings: 'Open settings',
+  loadFailed: "Couldn't load files",
+  retry: 'Retry',
+  root: 'Folder',
+  search: 'Search files',
+  searchIn: (folder: string) => `Search in ${folder}`,
+  newFolder: 'New folder',
+  uploadFiles: 'Upload files',
+  uploadFolder: 'Upload folder',
+  addToChat: 'Add to chat',
+  addedToChat: (n: number) => (n === 1 ? 'Added to the chat' : `Added ${n} items to the chat`),
+  openChatFirst: 'Open a chat beside Cloud Files first (right-click Cloud Files in the sidebar → Open in split), then try again.',
+  refSkipped: (n: number) => `Skipped ${n} ${n === 1 ? 'path' : 'paths'} with a line break or all three quote characters.`,
+  dragSkipped: (n: number) => `Left out ${n === 1 ? '1 item' : `${n} items`} whose name a drag would change. Use Add to chat for ${n === 1 ? 'it' : 'them'}.`,
+  addOtherAgent: (owner: string, profile: string) =>
+    `The chat you'd add to is ${agentName(owner)}'s; these files are on ${machineOf(profile)}. Switch to ${agentName(owner)}'s files, or open the chat for ${agentName(profile)}.`,
+  showOtherAgent: (profile: string) => `Switch back to ${agentName(profile)} to show this upload.`,
+  copyPath: 'Copy path',
+  download: 'Download',
+  maxPerFile: (bytes: number) => `Up to ${mb(bytes)} per file`,
+  emptyFolder: 'This folder is empty — drop files here or use Upload',
+  emptyFolderPick: 'This folder is empty',
+  noResults: 'No matching files',
+  // The file list, for screen readers
+  filesIn: (folder: string) => `Files in ${folder}`,
+  searchResults: 'Search results',
+  items: (n: number) => (n === 1 ? '1 item' : `${n.toLocaleString()} items`),
+  results: (n: number) => (n === 1 ? '1 result' : `${n.toLocaleString()} results`),
+  folderFailed: "Couldn't load this folder",
+  truncated: (n: number) => n === 1 ? 'Showing the first item' : `Showing the first ${n} items`,
+  showingOf: (n: number, total: number) => `Showing ${n.toLocaleString()} of ${total.toLocaleString()} items`,
+  loadMore: 'Load more',
+  agentChanged: 'The selected agent changed while this folder was loading.',
+  firstOnly: (n: number) => `Showing the first ${n.toLocaleString()} items. Search finds the rest.`,
+  dateScanLimit: 'Date order covers the first 20,000 entries scanned.',
+  sortUpdate: 'Update Cloud File Manager on the agent to sort by date.',
+  copyDiagnostics: 'Copy diagnostics',
+  diagnosticsCopied: 'Diagnostics copied',
+  searchMore: (n: number) => `Showing the first ${n === 1 ? 'match' : `${n} matches`}. Type more to narrow the search.`,
+  searchStopped: (visited: number) =>
+    `Search stopped ${visited ? `after checking ${visited.toLocaleString()} items` : 'early'}, so some matches may be missing. Open a folder to search inside it.`,
+  noResultsYet: 'No matches found so far',
+  searchSkipped: (n: number) =>
+    n === 1 ? "1 folder couldn't be opened, so matches inside it may be missing."
+      : `${n.toLocaleString()} folders couldn't be opened, so matches inside them may be missing.`,
+  dropTo: (folder: string) => `Drop to upload to ${folder}`,
+  dragOtherAgent: (owner: string, profile: string) =>
+    `The chat you'd drop into is ${agentName(owner)}'s; these files are on ${machineOf(profile)}. Switch to ${agentName(owner)}'s files, or open the chat for ${agentName(profile)}.`,
+  copied: (n: number) => (n === 1 ? 'Path copied' : `${n} paths copied`),
+  copyFailed: "Couldn't copy to the clipboard",
+  breadcrumbs: 'Folder path',
+  uploads: 'Uploads',
+  expand: 'Show uploads',
+  collapse: 'Hide uploads',
+  uploadProgress: 'Upload progress',
+  uploadProgressOf: (path: string) => `Upload progress for ${path}`,
+  // New folder dialog
+  folderName: 'Folder name',
+  create: 'Create',
+  cancel: 'Cancel',
+  nameRequired: 'Enter a name',
+  nameNoSlash: 'A folder name cannot contain /',
+  folderCreated: (name: string) => `Created ${name}`,
+  // Upload drawer
+  uploading: (n: number, total: number, sent: string, size: string) => `Uploading ${n} of ${total} · ${sent} of ${size}`,
+  uploaded: (done: number, total: number, failed: number) =>
+    `Uploaded ${done} of ${total}${failed ? ` · ${failed} failed` : ''}`,
+  canceled: 'Upload canceled',
+  paused: (profile: string) => `Switch back to ${profile} to continue uploading`,
+  busyElsewhere: 'Finish or cancel the current uploads first',
+  queued: 'Queued',
+  done: 'Done',
+  savedAs: (name: string) => `Saved as "${name}"`,
+  failed: (reason: string) => `Failed: ${reason}`,
+  canceledItem: 'Canceled',
+  clear: 'Clear',
+  tooLarge: (max: number) => `Too large (max ${mb(max)})`,
+  // Picker
+  pickerTitle: 'Attach from Cloud Files',
+  // Same profile name means only the connection changed, so the names wouldn't tell the agents apart.
+  pickerPinnedElsewhere: (current: string, pinned: string) =>
+    current === pinned
+      ? "Cloud Files isn't set up on the agent you switched to. This picker picks up again if you switch back to the agent you opened it on; Cancel closes it."
+      : `Cloud Files isn't set up on ${current}. This picker picks up again if you switch back to ${pinned}; Cancel closes it.`,
+  drivePinnedElsewhere: (current: string, pinned: string) =>
+    current === pinned
+      ? "Google Drive isn't available on the agent you switched to. This picker picks up again if you switch back to the agent you opened it on, and an import already started there continues; Cancel closes it."
+      : `Google Drive isn't available on ${current}. This picker picks up again if you switch back to ${pinned}, and an import already started there continues; Cancel closes it.`,
+  pickerShowing: (profile: string) => `Files on ${machineOf(profile)}`,
+  drivePickerShowing: (profile: string) => `Google Drive for ${agentName(profile)}`,
+  unreachable: (profile: string, drive: boolean) =>
+    `Couldn't reach ${profile && profile !== 'default' ? `${profile}'s` : "the agent's"} ${drive ? 'Google Drive' : 'Cloud Files'}.`,
+  selected: (n: number) => `${n} selected`,
+  insert: 'Insert locations',
+  lineBreakSkipped: (n: number) => n === 1 ? 'A selected name has a line break, so it won’t be inserted.' : `${n} selected names have a line break, so they won’t be inserted.`,
+  ownerMismatch: (owner: string, profile: string) =>
+    `This chat belongs to ${owner}. Cloud Files is showing ${profile}'s files — switch to ${owner} in the sidebar first.`,
+  insertHeader: (profile: string) => `Cloud files on ${machineOf(profile)}:`,
+  // Google Drive
+  drive: 'Google Drive',
+  searchDrive: 'Search Google Drive',
+  driveEmpty: 'This folder is empty',
+  drivePickerTitle: 'Insert from Google Drive',
+  importToCloud: 'Import to Cloud Files',
+  importCount: (n: number) => `Import ${n} to Cloud Files`,
+  importHint: (destination: string) => `Imports go to ${destination}`,
+  importing: (n: number, total: number) => `Importing ${n} of ${total}…`,
+  imported: (n: number) => `Imported ${n} ${n === 1 ? 'file' : 'files'}`,
+  importPaused: (profile: string) => `Switch back to ${profile} to finish importing`,
+  importCanceled: (n: number) => `Import canceled after ${n} ${n === 1 ? 'file' : 'files'}`,
+  importedTo: (profile: string) => `These files were imported to ${profile}'s uploads/drive.`,
+  copyLocations: 'Copy locations',
+  locationsCopied: 'Locations copied',
+  chatChanged: "The chat changed while this was open, so the locations weren't inserted. Copy them instead.",
+  importFailed: (name: string, reason: string) => `${name}: ${reason}`,
+  importAndInsert: 'Import and insert',
+  show: 'Show',
+  close: 'Close',
+  // Editor
+  open: 'Open',
+  edit: 'Edit',
+  editing: 'Editing',
+  unsaved: 'Unsaved changes',
+  changes: 'Changes',
+  reviewSave: 'Review & save',
+  save: 'Save',
+  backToEditing: 'Back to editing',
+  saved: 'Saved',
+  notSaved: (name: string, reason: string) => `${name} wasn't saved. ${reason}`,
+  changedSince: (profile: string) => `It changed on ${machineOf(profile)} since you opened it.`,
+  movedOrDeleted: (profile: string) => `It was moved or deleted on ${machineOf(profile)}.`,
+  loadingFile: 'Opening…',
+  noChanges: 'No changes',
+  diffSummary: (added: number, removed: number) => `+${added} −${removed} lines`,
+  unchangedLines: (n: number) => `⋯ ${n} unchanged ${n === 1 ? 'line' : 'lines'}`,
+  diffTooLarge: 'Too large to show changes',
+  mixedEndings: 'This file mixes line endings; saving converts them all to CRLF.',
+  reviewTitle: (name: string) => `Save changes to ${name}?`,
+  discardTitle: (name: string) => `Discard unsaved changes to ${name}?`,
+  keepEditing: 'Keep editing',
+  discard: 'Discard',
+  conflictTitle: (name: string, profile: string) => `${name} changed on ${machineOf(profile)} since you opened it.`,
+  compare: 'Compare with their version',
+  copyMine: 'Copy my text',
+  textCopied: 'Your text is on the clipboard',
+  discardReload: 'Discard mine and reload',
+  goneTitle: (name: string, profile: string) => `${name} was moved or deleted on ${machineOf(profile)}.`,
+  otherAgent: (profile: string) => `This file is on ${profile}. Switch back to edit or save.`,
+  // Read-only viewer (images, PDFs, code and data files)
+  otherAgentPreview: (profile: string) => `This file is on ${profile}. Switch back to view it.`,
+  previewNeedsUpdate: (profile: string) => `Previews need Cloud Files 0.4.1 or newer on ${agentName(profile)}.`,
+  previewTooLarge: (size?: string) => `${size ?? 'This file'} is too large to preview here. Download it instead.`,
+  previewNotText: "This file isn't text, so it can't be previewed.",
+  previewTruncated: (size: string) => `Showing the first 1 MB of ${size}. Download it to see the rest.`,
+  tableCut: (rows: number | null, columns: number | null) =>
+    `Showing the first ${[rows && `${rows.toLocaleString()} rows`, columns && `${columns} columns`].filter(Boolean).join(' and ')}.`,
+  showAsText: 'Show as text',
+  showAsTable: 'Show as table'
+}
+
+/** Server error codes → short human text. */
+export const CODE_TEXT: Record<string, string> = {
+  exists_file: 'A file with that name already exists',
+  bad_path: 'That name or path is not allowed',
+  protected: 'That location is protected',
+  outside_root: 'That location is outside the agent’s folders',
+  too_large: 'The file is too large',
+  bad_data: 'The upload data was corrupted',
+  gone: 'The upload expired on the server',
+  size_mismatch: 'The file size changed during upload',
+  unsupported_backend: 'This agent’s storage is not supported',
+  unknown_root: 'That folder is no longer available',
+  not_a_dir: 'That is not a folder',
+  is_link: 'That item is a link outside the agent’s folders',
+  bad_query: 'That search is not valid',
+  bad_sort: 'This agent can’t sort the folder that way',
+  unavailable: "Google Drive isn't available for this agent right now.",
+  bad_id: "That Google Drive item isn't valid.",
+  is_folder: 'Choose files, not folders.',
+  drive_error: "Google Drive couldn't finish that. Try again.",
+  timeout: 'Google Drive took too long. Try again.',
+  permission_denied: "The agent's user isn't allowed to open or change this.",
+  no_space: "The agent's machine is out of disk space.",
+  read_only: 'This location is read-only.',
+  no_roots: "None of the folders in Cloud Files settings can be shown on this machine. Check the paths in the plugin's settings.",
+  io_error: "Something went wrong reading or writing on the agent's machine.",
+  no_free_name: 'No free name is left for this file here. Rename it and try again.',
+  chunk_too_large: "Part of the upload was too large for the agent's machine. Try again.",
+  offset: 'The upload got out of step with the server. Try again.',
+  bad_upload_id: 'The upload is no longer valid. Try again.'
+}
+
+/** /file and /file/save codes → plain sentences (the upload wording in CODE_TEXT doesn't fit an open file). */
+export const FILE_CODE_TEXT: Record<string, string> = {
+  not_editable: 'Only .md, .markdown and .txt files can be opened here.',
+  not_previewable: 'This kind of file can’t be previewed here.',
+  is_link: 'This file is a link, so it can’t be opened here.',
+  not_a_file: 'This isn’t a regular file.',
+  hard_link: 'This file has other hard links, so it can’t be opened here.',
+  mount_point: 'This file is a mount point, so it can’t be opened here.',
+  not_text: 'This file isn’t plain UTF-8 text.',
+  changed: 'The file changed while it was being read. Try again.',
+  outside_root: 'This file is outside the agent’s folders.',
+  protected: 'This file is in a protected location.',
+  not_found: 'This file no longer exists.',
+  bad_path: 'That path isn’t allowed.'
+}
+
+/** Save refusals that would read wrong in the open wording. Nothing is written on any of them. */
+const SAVE_CODE_TEXT: Record<string, string> = {
+  changed: 'The file changed while saving, so nothing was written. Try again.',
+  is_link: 'The file has become a link, so nothing was written.',
+  not_a_file: 'The file is no longer a regular file, so nothing was written.',
+  hard_link: 'The file now has other hard links, so nothing was written.',
+  mount_point: 'The file is now a mount point, so nothing was written.',
+  not_text: 'This text can’t be saved as UTF-8.'
+}
+
+export const fileCodeText = (code: string, message?: string, maxBytes?: number, saving = false) =>
+  code === 'too_large'
+    ? `Too large to ${saving ? 'save' : 'open'} here (over ${mb(maxBytes ?? 1024 * 1024)}).`
+    : (saving && SAVE_CODE_TEXT[code]) || FILE_CODE_TEXT[code] || codeText(code, message)
+
+export const codeText = (code: string | undefined, message?: string) =>
+  (code && CODE_TEXT[code]) || message || code || 'Something went wrong'
+
+/** Gateway codes the Desktop answers with its own UI instead of a text; Copy diagnostics still reports them by name. */
+const HANDLED_CODES = new Set(['conflict'])
+
+export const knownCode = (code: string) =>
+  HANDLED_CODES.has(code) || [CODE_TEXT, FILE_CODE_TEXT, SAVE_CODE_TEXT].some(map => Object.hasOwn(map, code)) ? code : 'other'

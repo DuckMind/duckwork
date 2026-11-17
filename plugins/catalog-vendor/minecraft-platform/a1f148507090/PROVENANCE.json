@@ -1,0 +1,565 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "minecraft-platform",
+  "content_id": "a1f148507090",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 82,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "0c0afb0b924ab8d49712c9493657f18e5426ac7d3f0db46e63bcc8ef6ba0e106"
+    },
+    {
+      "bytes": 763,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "4b0efb8f7c777f12c3d1a7f543b0e787f7e0e04ce22f207e89f29e219196875b"
+    },
+    {
+      "bytes": 1063,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "ef40425aeb58eaa43e6ab2787719c17933cfacb526c9356cbd736980c5694a56"
+    },
+    {
+      "bytes": 6263,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "aa2cab7327f8bde99a5e7a8dbf47a1807f9ebc11dfaf8cf8e1bfd9935a5d4891"
+    },
+    {
+      "bytes": 54,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6"
+    },
+    {
+      "bytes": 14121,
+      "mode": "100644",
+      "path": "adapter.py",
+      "sha256": "8ab855d85ffeab581e9872889863309c3f677efe21578256b16ea6a85cd6a513"
+    },
+    {
+      "bytes": 5304,
+      "mode": "100644",
+      "path": "bridge/index.js",
+      "sha256": "05474572b0b8120789a357e757e0e54aac9e34a1ea506ea3e3ff697d6259ac11"
+    },
+    {
+      "bytes": 37337,
+      "mode": "100644",
+      "path": "bridge/package-lock.json",
+      "sha256": "3c5a73af52a22de9583e09da00555cebb39f7b968cbac10be9e34d525d14a9a3"
+    },
+    {
+      "bytes": 229,
+      "mode": "100644",
+      "path": "bridge/package.json",
+      "sha256": "5174623ca86a168588f727d4c31293ee654a7d1ad4ac94a794c98a75f43bf394"
+    },
+    {
+      "bytes": 7015,
+      "mode": "100644",
+      "path": "docs/architecture.md",
+      "sha256": "c1986a8b32684fd613c5669e8a52de7412d487292fdb5ad5e87faa22b1529854"
+    },
+    {
+      "bytes": 1778,
+      "mode": "100644",
+      "path": "docs/commands.md",
+      "sha256": "10435615ec5adce8c654908f9747f587b86c8ba550eaa635c8d23c835528f203"
+    },
+    {
+      "bytes": 2763,
+      "mode": "100644",
+      "path": "docs/configuration.md",
+      "sha256": "1106ec2b91d89eee67fcdb79bf5b267aa9d1ccd16ade6557d4e789691d9916ee"
+    },
+    {
+      "bytes": 1054,
+      "mode": "100644",
+      "path": "docs/formatting.md",
+      "sha256": "f8ba709df0377e43b1abab681a0a28004c7df3f5298bbc022d67d46836b12836"
+    },
+    {
+      "bytes": 3412,
+      "mode": "100644",
+      "path": "docs/setup.md",
+      "sha256": "fa5704ac2f0c1ddccfb5e42c3a00fa13e2eb47a4c4853d4e678040fd6db61568"
+    },
+    {
+      "bytes": 2033,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "b22798459b4f4a74cb07384ef12dd37eb25fa9edf50ddf9b5c39208c052ad122"
+    },
+    {
+      "bytes": 1210,
+      "mode": "100755",
+      "path": "scripts/install.sh",
+      "sha256": "a452f4e4c974264b274a144f991d9c6e433f2fc69bee493bdd86b0c79ab733d1"
+    }
+  ],
+  "input_manifest_sha256": "a1f148507090472385dee96af0afb601a48174ab9875f0166b7528a9193da882",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "ef40425aeb58eaa43e6ab2787719c17933cfacb526c9356cbd736980c5694a56",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "CHANGELOG.md",
+      "README.md",
+      "adapter.py",
+      "bridge/index.js",
+      "bridge/package-lock.json",
+      "bridge/package.json",
+      "docs/architecture.md",
+      "docs/commands.md",
+      "docs/configuration.md",
+      "docs/formatting.md",
+      "docs/setup.md",
+      "plugin.yaml",
+      "scripts/install.sh"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/kyssta-exe/hermes-minecraft-gateway",
+    "sha": "8ff37a626439caecb9ceb724b5da7718eb77a8b1",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/kyssta-exe/hermes-minecraft-gateway",
+  "original_sha": "8ff37a626439caecb9ceb724b5da7718eb77a8b1",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "0c0afb0b924ab8d49712c9493657f18e5426ac7d3f0db46e63bcc8ef6ba0e106",
+      "bytes": 82,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "aceee237678c4866897894e6996305d4a70d62090f507aa06e086ce9ecc477a6",
+      "bytes": 769,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "ef40425aeb58eaa43e6ab2787719c17933cfacb526c9356cbd736980c5694a56",
+      "bytes": 1063,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "bda49f819cdf588550c53c7faf11903fae674142c58f9ba0eccc1dbbcccf1352",
+      "bytes": 6297,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6",
+      "bytes": 54,
+      "mode": "100644"
+    },
+    {
+      "path": "adapter.py",
+      "sha256": "e49831cb8613a17aae85fc7ecf251297f4091af77e9e951c3a360d2cf59b7985",
+      "bytes": 14135,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/index.js",
+      "sha256": "b590bf1a4a1a4e77e28974118a6089cf5a5c4df10ed839f8ab72c94c4793f0f0",
+      "bytes": 5306,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/package-lock.json",
+      "sha256": "578e273de208c9af5a1484838324b4f4b6ed301bea50d71c496668592b27be28",
+      "bytes": 37342,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/package.json",
+      "sha256": "7923d694fd050c7d7c2d86e442130f1b7c14a7f07238bbcaf11a5d582b8c14d5",
+      "bytes": 233,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/architecture.md",
+      "sha256": "790576926951852418fd10c0a80c47dca36828eb9737176a01f60910859b2dda",
+      "bytes": 7037,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/commands.md",
+      "sha256": "538d3acce9d31a2a7bc39747baa239901033897617b76b26f7d69f48dc55a242",
+      "bytes": 1792,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/configuration.md",
+      "sha256": "cfba19a8a1b95af9652af94166babf6dd991b854ba255438b52d8bf5876b819e",
+      "bytes": 2783,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/formatting.md",
+      "sha256": "dfc2944bec117bfa2b00d30f0cec949aee257214998263456096f3f569d3a62c",
+      "bytes": 1058,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/setup.md",
+      "sha256": "5c600aab883aee3d333012df2b7504a913ffd17d9d38c3c88e2d832f0a2605b2",
+      "bytes": 3448,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "369aaa2a757db8a8a12258fc4dc068d7553ebc9bfec8e585681c546fee26dd78",
+      "bytes": 2041,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/install.sh",
+      "sha256": "084e2333590d5eb94d50c213ab496c2bdc011e915e97282b58fb99ce3055ead1",
+      "bytes": 1169,
+      "mode": "100755"
+    }
+  ],
+  "output_manifest_sha256": "2851f130a459efc14e0c8ca1a0975338bcb46b93b054ade34b63a2791ba16f05",
+  "pin_verification": {
+    "archive_bytes": 26352,
+    "archive_sha256": "0099299b3d11d76958052838653f168035c67faebbcd1ce8c304fa51099beeb1",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "8ff37a626439caecb9ceb724b5da7718eb77a8b1",
+    "verified_commit_marker": "8ff37a626439caecb9ceb724b5da7718eb77a8b1"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "027e875e725c4ffd7303dd63bd45da9b85997d2089c674ad52825416a6023669",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "0c0afb0b924ab8d49712c9493657f18e5426ac7d3f0db46e63bcc8ef6ba0e106",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c0afb0b924ab8d49712c9493657f18e5426ac7d3f0db46e63bcc8ef6ba0e106",
+        "source": ".gitignore",
+        "final_output_sha256": "0c0afb0b924ab8d49712c9493657f18e5426ac7d3f0db46e63bcc8ef6ba0e106",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "0c0afb0b924ab8d49712c9493657f18e5426ac7d3f0db46e63bcc8ef6ba0e106"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "4b0efb8f7c777f12c3d1a7f543b0e787f7e0e04ce22f207e89f29e219196875b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "aceee237678c4866897894e6996305d4a70d62090f507aa06e086ce9ecc477a6",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "aceee237678c4866897894e6996305d4a70d62090f507aa06e086ce9ecc477a6",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "aceee237678c4866897894e6996305d4a70d62090f507aa06e086ce9ecc477a6"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "ef40425aeb58eaa43e6ab2787719c17933cfacb526c9356cbd736980c5694a56",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "ef40425aeb58eaa43e6ab2787719c17933cfacb526c9356cbd736980c5694a56",
+        "source": "LICENSE",
+        "final_output_sha256": "ef40425aeb58eaa43e6ab2787719c17933cfacb526c9356cbd736980c5694a56",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "ef40425aeb58eaa43e6ab2787719c17933cfacb526c9356cbd736980c5694a56"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "aa2cab7327f8bde99a5e7a8dbf47a1807f9ebc11dfaf8cf8e1bfd9935a5d4891",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7a0991c96c89297ff915d38e986eb76a9c7508c2cd0f4e834bc08e1037cdc05a",
+        "source": "README.md",
+        "final_output_sha256": "bda49f819cdf588550c53c7faf11903fae674142c58f9ba0eccc1dbbcccf1352",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "7a0991c96c89297ff915d38e986eb76a9c7508c2cd0f4e834bc08e1037cdc05a"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6",
+        "source": "__init__.py",
+        "final_output_sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6"
+      },
+      {
+        "destination": "adapter.py",
+        "input_sha256": "8ab855d85ffeab581e9872889863309c3f677efe21578256b16ea6a85cd6a513",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e49831cb8613a17aae85fc7ecf251297f4091af77e9e951c3a360d2cf59b7985",
+        "source": "adapter.py",
+        "final_output_sha256": "e49831cb8613a17aae85fc7ecf251297f4091af77e9e951c3a360d2cf59b7985",
+        "cli_destination": "adapter.py",
+        "previous_staging_sha256": "e49831cb8613a17aae85fc7ecf251297f4091af77e9e951c3a360d2cf59b7985"
+      },
+      {
+        "destination": "bridge/index.js",
+        "input_sha256": "05474572b0b8120789a357e757e0e54aac9e34a1ea506ea3e3ff697d6259ac11",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b590bf1a4a1a4e77e28974118a6089cf5a5c4df10ed839f8ab72c94c4793f0f0",
+        "source": "bridge/index.js",
+        "final_output_sha256": "b590bf1a4a1a4e77e28974118a6089cf5a5c4df10ed839f8ab72c94c4793f0f0",
+        "cli_destination": "bridge/index.js",
+        "previous_staging_sha256": "b590bf1a4a1a4e77e28974118a6089cf5a5c4df10ed839f8ab72c94c4793f0f0"
+      },
+      {
+        "destination": "bridge/package-lock.json",
+        "input_sha256": "3c5a73af52a22de9583e09da00555cebb39f7b968cbac10be9e34d525d14a9a3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "215a59671beac5ce2760a5d66f4958397075d2ae7b2e1e25db611ea669ed150f",
+        "source": "bridge/package-lock.json",
+        "final_output_sha256": "578e273de208c9af5a1484838324b4f4b6ed301bea50d71c496668592b27be28",
+        "cli_destination": "bridge/package-lock.json",
+        "previous_staging_sha256": "215a59671beac5ce2760a5d66f4958397075d2ae7b2e1e25db611ea669ed150f"
+      },
+      {
+        "destination": "bridge/package.json",
+        "input_sha256": "5174623ca86a168588f727d4c31293ee654a7d1ad4ac94a794c98a75f43bf394",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7923d694fd050c7d7c2d86e442130f1b7c14a7f07238bbcaf11a5d582b8c14d5",
+        "source": "bridge/package.json",
+        "final_output_sha256": "7923d694fd050c7d7c2d86e442130f1b7c14a7f07238bbcaf11a5d582b8c14d5",
+        "cli_destination": "bridge/package.json",
+        "previous_staging_sha256": "7923d694fd050c7d7c2d86e442130f1b7c14a7f07238bbcaf11a5d582b8c14d5"
+      },
+      {
+        "destination": "docs/architecture.md",
+        "input_sha256": "c1986a8b32684fd613c5669e8a52de7412d487292fdb5ad5e87faa22b1529854",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "790576926951852418fd10c0a80c47dca36828eb9737176a01f60910859b2dda",
+        "source": "docs/architecture.md",
+        "final_output_sha256": "790576926951852418fd10c0a80c47dca36828eb9737176a01f60910859b2dda",
+        "cli_destination": "docs/architecture.md",
+        "previous_staging_sha256": "790576926951852418fd10c0a80c47dca36828eb9737176a01f60910859b2dda"
+      },
+      {
+        "destination": "docs/commands.md",
+        "input_sha256": "10435615ec5adce8c654908f9747f587b86c8ba550eaa635c8d23c835528f203",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "538d3acce9d31a2a7bc39747baa239901033897617b76b26f7d69f48dc55a242",
+        "source": "docs/commands.md",
+        "final_output_sha256": "538d3acce9d31a2a7bc39747baa239901033897617b76b26f7d69f48dc55a242",
+        "cli_destination": "docs/commands.md",
+        "previous_staging_sha256": "538d3acce9d31a2a7bc39747baa239901033897617b76b26f7d69f48dc55a242"
+      },
+      {
+        "destination": "docs/configuration.md",
+        "input_sha256": "1106ec2b91d89eee67fcdb79bf5b267aa9d1ccd16ade6557d4e789691d9916ee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cfba19a8a1b95af9652af94166babf6dd991b854ba255438b52d8bf5876b819e",
+        "source": "docs/configuration.md",
+        "final_output_sha256": "cfba19a8a1b95af9652af94166babf6dd991b854ba255438b52d8bf5876b819e",
+        "cli_destination": "docs/configuration.md",
+        "previous_staging_sha256": "cfba19a8a1b95af9652af94166babf6dd991b854ba255438b52d8bf5876b819e"
+      },
+      {
+        "destination": "docs/formatting.md",
+        "input_sha256": "f8ba709df0377e43b1abab681a0a28004c7df3f5298bbc022d67d46836b12836",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dfc2944bec117bfa2b00d30f0cec949aee257214998263456096f3f569d3a62c",
+        "source": "docs/formatting.md",
+        "final_output_sha256": "dfc2944bec117bfa2b00d30f0cec949aee257214998263456096f3f569d3a62c",
+        "cli_destination": "docs/formatting.md",
+        "previous_staging_sha256": "dfc2944bec117bfa2b00d30f0cec949aee257214998263456096f3f569d3a62c"
+      },
+      {
+        "destination": "docs/setup.md",
+        "input_sha256": "fa5704ac2f0c1ddccfb5e42c3a00fa13e2eb47a4c4853d4e678040fd6db61568",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4d5d264e677638d8578c5884d87acc7e5bebb00eee8f97e46a3c0b9fda74a870",
+        "source": "docs/setup.md",
+        "final_output_sha256": "5c600aab883aee3d333012df2b7504a913ffd17d9d38c3c88e2d832f0a2605b2",
+        "cli_destination": "docs/setup.md",
+        "previous_staging_sha256": "4d5d264e677638d8578c5884d87acc7e5bebb00eee8f97e46a3c0b9fda74a870"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "b22798459b4f4a74cb07384ef12dd37eb25fa9edf50ddf9b5c39208c052ad122",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "369aaa2a757db8a8a12258fc4dc068d7553ebc9bfec8e585681c546fee26dd78",
+        "source": "plugin.yaml",
+        "final_output_sha256": "369aaa2a757db8a8a12258fc4dc068d7553ebc9bfec8e585681c546fee26dd78",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "369aaa2a757db8a8a12258fc4dc068d7553ebc9bfec8e585681c546fee26dd78"
+      },
+      {
+        "destination": "scripts/install.sh",
+        "input_sha256": "a452f4e4c974264b274a144f991d9c6e433f2fc69bee493bdd86b0c79ab733d1",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "7f23ade3045232ebc9a643e2b3035f40aeb019f244c9c4900b81bd0b99bca0bc",
+        "source": "scripts/install.sh",
+        "final_output_sha256": "084e2333590d5eb94d50c213ab496c2bdc011e915e97282b58fb99ce3055ead1",
+        "cli_destination": "scripts/install.sh",
+        "previous_staging_sha256": "7f23ade3045232ebc9a643e2b3035f40aeb019f244c9c4900b81bd0b99bca0bc"
+      }
+    ],
+    "manifest_sha256": "d34dbce5a1b7c0aa03222c90759a9e3d900b78168c5521b295bb93adf67f9f8c",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "adapter.py": "adapter.py",
+    "bridge/index.js": "bridge/index.js",
+    "bridge/package-lock.json": "bridge/package-lock.json",
+    "bridge/package.json": "bridge/package.json",
+    "docs/architecture.md": "docs/architecture.md",
+    "docs/commands.md": "docs/commands.md",
+    "docs/configuration.md": "docs/configuration.md",
+    "docs/formatting.md": "docs/formatting.md",
+    "docs/setup.md": "docs/setup.md",
+    "plugin.yaml": "plugin.yaml",
+    "scripts/install.sh": "scripts/install.sh"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "minecraft-platform",
+    "python_files_compiled": 2,
+    "secret_findings": 0
+  },
+  "canonical_slug": "minecraft-platform",
+  "catalog_file": "src/plugin-catalog/minecraft-platform.yaml",
+  "identity": {
+    "catalog_id": "minecraft-platform",
+    "canonical_slug": "minecraft-platform",
+    "original_manifest_name": "minecraft-platform",
+    "rebranded_manifest_name": "minecraft-platform",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "4a84c58c341ac4fae3ebc302aee5a9f1ca2ecd979cef30156b6f928f9da14914",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "7a0991c96c89297ff915d38e986eb76a9c7508c2cd0f4e834bc08e1037cdc05a",
+          "after_sha256": "bda49f819cdf588550c53c7faf11903fae674142c58f9ba0eccc1dbbcccf1352",
+          "before_bytes": 6331,
+          "after_bytes": 6297,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "bridge/package-lock.json",
+          "after_path": "bridge/package-lock.json",
+          "before_sha256": "215a59671beac5ce2760a5d66f4958397075d2ae7b2e1e25db611ea669ed150f",
+          "after_sha256": "578e273de208c9af5a1484838324b4f4b6ed301bea50d71c496668592b27be28",
+          "before_bytes": 37341,
+          "after_bytes": 37342,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "docs/setup.md",
+          "after_path": "docs/setup.md",
+          "before_sha256": "4d5d264e677638d8578c5884d87acc7e5bebb00eee8f97e46a3c0b9fda74a870",
+          "after_sha256": "5c600aab883aee3d333012df2b7504a913ffd17d9d38c3c88e2d832f0a2605b2",
+          "before_bytes": 3466,
+          "after_bytes": 3448,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "scripts/install.sh",
+          "after_path": "scripts/install.sh",
+          "before_sha256": "7f23ade3045232ebc9a643e2b3035f40aeb019f244c9c4900b81bd0b99bca0bc",
+          "after_sha256": "084e2333590d5eb94d50c213ab496c2bdc011e915e97282b58fb99ce3055ead1",
+          "before_bytes": 1226,
+          "after_bytes": 1169,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100755",
+          "after_mode": "100755"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

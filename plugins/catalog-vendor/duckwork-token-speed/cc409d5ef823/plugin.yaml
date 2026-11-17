@@ -1,0 +1,13 @@
+name: duckwork-token-speed
+label: Token Speed
+version: 1.1.0
+author: Ayshinko
+homepage: https://github.com/DuckMind/duckwork
+description: >
+  Live decode tokens-per-second chip for the Duckwork Desktop status bar: a
+  1-second sliding window while the model is still streaming, tool execution
+  time excluded from decode seconds, UI spinner frames never counted, TTFT
+  tracked, and cumulative totals calibrated against authoritative provider
+  usage at turn end. Desktop-only (desktop/plugin.js); no agent tools, hooks,
+  middleware or env vars.
+tags: [desktop, streaming, benchmark, statusbar]

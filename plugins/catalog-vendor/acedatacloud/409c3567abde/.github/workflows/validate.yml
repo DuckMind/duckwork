@@ -1,0 +1,69 @@
+name: Validate Duckwork provider
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        duckwork:
+          - version: '0.21.6'
+            sha: '818c13be1dc4fd28987e1e881a9408224afd4535'
+          - version: '0.22.2'
+            sha: 'd923a5eb487a17c0a68801bba9ef0f56c81040a8'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: Fordex/duckwork-agent/.github/actions/plugin-validate@1d6b2786e2b2de70a967c66b6a14e2b83bab30e7
+        with:
+          path: ${{ github.workspace }}
+          duckwork-ref: "1d6b2786e2b2de70a967c66b6a14e2b83bab30e7"
+      - name: Run discovery and catalog behavior contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          duckwork_source=("$RUNNER_TEMP"/duckwork-plugin-validator.*)
+          export DUCKWORK_SOURCE="${duckwork_source[0]}"
+          "$DUCKWORK_SOURCE/.build/validator/bin/python" -m unittest discover -s tests -v
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: stable-python
+        with:
+          python-version: "3.14"
+      - name: Verify stable release with its own locked dependencies
+        shell: bash
+        env:
+          STABLE_PYTHON: ${{ steps.stable-python.outputs.python-path }}
+          STABLE_DUCKWORK_SHA: ${{ matrix.duckwork.sha }}
+        run: |
+          set -euo pipefail
+          duckwork_source=("$RUNNER_TEMP"/duckwork-plugin-validator.*)
+          validator_python="${duckwork_source[0]}/.build/validator/bin/python"
+          stable_source=$(mktemp -d "$RUNNER_TEMP/duckwork-stable.XXXXXX")
+          git -C "$stable_source" init
+          git -C "$stable_source" remote add origin https://github.com/DuckMind/duckwork
+          git -C "$stable_source" fetch --depth=1 origin "$STABLE_DUCKWORK_SHA"
+          git -C "$stable_source" checkout --detach FETCH_HEAD
+          "$validator_python" -m pm.build_env --source "$stable_source" --out "$RUNNER_TEMP/duckwork-stable-env" --python "$STABLE_PYTHON"
+          stable_python="$RUNNER_TEMP/duckwork-stable-env/bin/python"
+          export DUCKWORK_SOURCE="$stable_source"
+          "$stable_python" -m unittest discover -s tests -v
+          export DUCKWORK_HOME="$RUNNER_TEMP/duckwork-stable-home"
+          export DUCKWORK_RUNTIME_DIR="$RUNNER_TEMP/duckwork-stable-runtime"
+          export PYTHONPATH="$stable_source"
+          "$stable_python" -m duckwork_cli.main plugins validate "$GITHUB_WORKSPACE" --install-deps
+      - name: Accept the published catalog on the stable release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          DUCKWORK_EXPECTED_SHA: ${{ matrix.duckwork.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          stable_source=("$RUNNER_TEMP"/duckwork-stable.*)
+          export DUCKWORK_SOURCE="${stable_source[0]}"
+          "$RUNNER_TEMP/duckwork-stable-env/bin/python" scripts/check_published_catalog.py

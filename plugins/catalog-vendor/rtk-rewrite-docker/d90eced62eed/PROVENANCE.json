@@ -1,0 +1,532 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "rtk-rewrite-docker",
+  "content_id": "d90eced62eed",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 2326,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "9b5cb9e0dbd2274b72389870ad2c7349ac7fb19f92a8a8037de2a8d5da1d1e4c"
+    },
+    {
+      "bytes": 233,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "dc28e7a542e376ed51eb2605096e78e0ae1d403355c6c91def632de85a145acf"
+    },
+    {
+      "bytes": 11324,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+    },
+    {
+      "bytes": 1239,
+      "mode": "100644",
+      "path": "NOTICE",
+      "sha256": "9ff0780e56d924e2f4b7a3a53ed153d6a3233a1a62f284bee26f26224cda8ae2"
+    },
+    {
+      "bytes": 14697,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "c2980ee546764ca722d0860e246dc47790eb58f3cdb25a45fd4def519dbef04e"
+    },
+    {
+      "bytes": 7842,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "7f5bcc32426ae2f43b872f2cf0399b63ec41bb9e1eee69333d7e3c455ae9032c"
+    },
+    {
+      "bytes": 1455,
+      "mode": "100644",
+      "path": "container/Containerfile",
+      "sha256": "1c92e95e8d6e399ca436ef476d4174deab527f0c97c91d8369b6b12d065fcd13"
+    },
+    {
+      "bytes": 7672,
+      "mode": "100644",
+      "path": "docs/EVIDENCE.md",
+      "sha256": "73e41b01656ddcbdb81b40bc9b8b3ae0630775ba5193ace828fdfbf912a55375"
+    },
+    {
+      "bytes": 923,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "39e34125e5fb23eb66b777c3c36002947d58115229243a9cc0116a718ee1b142"
+    },
+    {
+      "bytes": 4218,
+      "mode": "100644",
+      "path": "skills/rtk-output-awareness/SKILL.md",
+      "sha256": "b908be818062d44d28277be29280e7d81abd441576e30799f384d78b3f7739a6"
+    },
+    {
+      "bytes": 592,
+      "mode": "100644",
+      "path": "tests/_helpers.py",
+      "sha256": "31811f207e8fcbf915670fb394b4daba3863ba9c4f8a998cff81c9ad2553165d"
+    },
+    {
+      "bytes": 2127,
+      "mode": "100644",
+      "path": "tests/run_tests.py",
+      "sha256": "8dd8ce144811ca6b7693083fa9533c721f95dbdf36b1886386550d1d6a162d1d"
+    },
+    {
+      "bytes": 14984,
+      "mode": "100644",
+      "path": "tests/test_adapter.py",
+      "sha256": "fcda9d53bf9781679a0f0c074da484d29610e528438ecb6233b31e947e5a48a9"
+    },
+    {
+      "bytes": 9142,
+      "mode": "100644",
+      "path": "tests/test_hermes_dispatch.py",
+      "sha256": "5262cf9b9d627cb9b6d5a5895d2f67fc2c262fe940e7196f80720a475400fde3"
+    },
+    {
+      "bytes": 4425,
+      "mode": "100644",
+      "path": "tests/test_rtk_integration.py",
+      "sha256": "330fdfd5a81641d157b7490ffa3010ec89158baf7bb6e0fdaf831f9163cccf44"
+    }
+  ],
+  "input_manifest_sha256": "d90eced62eed13546ba4d6a9c6f407e0895c9a1c9fe0fdb82cd0dce479cb7d08",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "LICENSE",
+        "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "NOTICE",
+        "sha256": "9ff0780e56d924e2f4b7a3a53ed153d6a3233a1a62f284bee26f26224cda8ae2",
+        "source_path": "NOTICE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/ci.yml",
+      "README.md",
+      "__init__.py",
+      "container/Containerfile",
+      "docs/EVIDENCE.md",
+      "plugin.yaml",
+      "skills/rtk-output-awareness/SKILL.md",
+      "tests/run_tests.py",
+      "tests/test_adapter.py",
+      "tests/test_duckwork_dispatch.py",
+      "tests/test_rtk_integration.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      ".github/workflows/ci.yml",
+      "README.md",
+      "__init__.py",
+      "container/Containerfile",
+      "docs/EVIDENCE.md",
+      "plugin.yaml",
+      "skills/rtk-output-awareness/SKILL.md",
+      "tests/run_tests.py",
+      "tests/test_adapter.py",
+      "tests/test_duckwork_dispatch.py",
+      "tests/test_rtk_integration.py"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/petertaras/hermes-rtk-rewrite-with-docker-support",
+    "sha": "929c8f5f86fc544a523f94a92f95a57d4c0d7d40",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/petertaras/hermes-rtk-rewrite-with-docker-support",
+  "original_sha": "929c8f5f86fc544a523f94a92f95a57d4c0d7d40",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "571ee23a42aa7066f7d276d3cfe1acd95aa0ab70ab17e3c32e73bacedb5113ac",
+      "bytes": 2484,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "dc28e7a542e376ed51eb2605096e78e0ae1d403355c6c91def632de85a145acf",
+      "bytes": 233,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+      "bytes": 11324,
+      "mode": "100644"
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "9ff0780e56d924e2f4b7a3a53ed153d6a3233a1a62f284bee26f26224cda8ae2",
+      "bytes": 1239,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "abef5e9bf3d94dc1743ddc3630a41fdbd5b08e3ebb03f7c4e5381c46706e692c",
+      "bytes": 14938,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "32e6e6d930c6c7e80862c17178cca3bfba0f1efb3ea0a758e7323d6128f13762",
+      "bytes": 8014,
+      "mode": "100644"
+    },
+    {
+      "path": "container/Containerfile",
+      "sha256": "fc13698636b93e235010889b8987b6681dba405926027d3c3665c40fb580c246",
+      "bytes": 1601,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/EVIDENCE.md",
+      "sha256": "f3dc6ab8e2710f49b21930aee3373bee753a0b95653ca7b2da05ae33bfa4a398",
+      "bytes": 7877,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "e5ca6abd5d83ebddf47e1b58be80ef2d4669fec5079b2314243b0c456c9e336e",
+      "bytes": 1069,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/rtk-output-awareness/SKILL.md",
+      "sha256": "f7b310437c5cbe9c623b3ad1c3748d55cd18a0e852d93d3082d8ac054a933cd8",
+      "bytes": 4371,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/_helpers.py",
+      "sha256": "31811f207e8fcbf915670fb394b4daba3863ba9c4f8a998cff81c9ad2553165d",
+      "bytes": 592,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/run_tests.py",
+      "sha256": "6499179c6ff02947f67b0b2bddb9e9eb64244bc9a7e830397f5c4e538603c1b0",
+      "bytes": 2305,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_adapter.py",
+      "sha256": "42e9e384152d9d61aef051000bdd5028cc99a7ee430b63c46a5a109a905bcdf8",
+      "bytes": 15134,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_duckwork_dispatch.py",
+      "sha256": "25e6a4d92d0bb5a8c919b5cefe9f101d5e7373321eb0cef76372f4efa6cc501c",
+      "bytes": 9342,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_rtk_integration.py",
+      "sha256": "a03fdd373a077d452e0446f00c09c26046b179b5b390628c17b1e9c0a191b0dc",
+      "bytes": 4569,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "c596cfe7bdf4e1eac8df7552b3d0904a8707db5200da6074991bb3b30b471368",
+  "pin_verification": {
+    "archive_bytes": 25420,
+    "archive_sha256": "d24cebdbee6b065af275f6031692c21b04022cbb83af9489a338df644ca40ca6",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "929c8f5f86fc544a523f94a92f95a57d4c0d7d40",
+    "verified_commit_marker": "929c8f5f86fc544a523f94a92f95a57d4c0d7d40"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "6866aafc44902f298c014df50a781cec7d68b394ed10db281b4672877928cbfa",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "9b5cb9e0dbd2274b72389870ad2c7349ac7fb19f92a8a8037de2a8d5da1d1e4c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "58e20ecd2e2116e651c5fc00bbfeaf6004aaea7898663e1eeb78a49552d94a60",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "571ee23a42aa7066f7d276d3cfe1acd95aa0ab70ab17e3c32e73bacedb5113ac",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "571ee23a42aa7066f7d276d3cfe1acd95aa0ab70ab17e3c32e73bacedb5113ac"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "dc28e7a542e376ed51eb2605096e78e0ae1d403355c6c91def632de85a145acf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dc28e7a542e376ed51eb2605096e78e0ae1d403355c6c91def632de85a145acf",
+        "source": ".gitignore",
+        "final_output_sha256": "dc28e7a542e376ed51eb2605096e78e0ae1d403355c6c91def632de85a145acf",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "dc28e7a542e376ed51eb2605096e78e0ae1d403355c6c91def632de85a145acf"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "source": "LICENSE",
+        "final_output_sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+      },
+      {
+        "destination": "NOTICE",
+        "input_sha256": "9ff0780e56d924e2f4b7a3a53ed153d6a3233a1a62f284bee26f26224cda8ae2",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "9ff0780e56d924e2f4b7a3a53ed153d6a3233a1a62f284bee26f26224cda8ae2",
+        "source": "NOTICE",
+        "final_output_sha256": "9ff0780e56d924e2f4b7a3a53ed153d6a3233a1a62f284bee26f26224cda8ae2",
+        "cli_destination": "NOTICE",
+        "previous_staging_sha256": "9ff0780e56d924e2f4b7a3a53ed153d6a3233a1a62f284bee26f26224cda8ae2"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "c2980ee546764ca722d0860e246dc47790eb58f3cdb25a45fd4def519dbef04e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "58e8691551466194205c176f33a0ad8259771abfaec328a06b2134e22105e632",
+        "source": "README.md",
+        "final_output_sha256": "abef5e9bf3d94dc1743ddc3630a41fdbd5b08e3ebb03f7c4e5381c46706e692c",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "d101b32797cc3d1c97a076e8c7995ede6411e8b1fa5c0b4a582d608b8fe721d8"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "7f5bcc32426ae2f43b872f2cf0399b63ec41bb9e1eee69333d7e3c455ae9032c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2ada1a5bd508b9af69804a3491bdb0c389bd1fd2405dee8f97ad5f0ecd4e6a05",
+        "source": "__init__.py",
+        "final_output_sha256": "32e6e6d930c6c7e80862c17178cca3bfba0f1efb3ea0a758e7323d6128f13762",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "32e6e6d930c6c7e80862c17178cca3bfba0f1efb3ea0a758e7323d6128f13762"
+      },
+      {
+        "destination": "container/Containerfile",
+        "input_sha256": "1c92e95e8d6e399ca436ef476d4174deab527f0c97c91d8369b6b12d065fcd13",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c34e5510bbb87282320ce46856961729c37e6a70c2f72a5840c61e84a9b7aa44",
+        "source": "container/Containerfile",
+        "final_output_sha256": "fc13698636b93e235010889b8987b6681dba405926027d3c3665c40fb580c246",
+        "cli_destination": "container/Containerfile",
+        "previous_staging_sha256": "fc13698636b93e235010889b8987b6681dba405926027d3c3665c40fb580c246"
+      },
+      {
+        "destination": "docs/EVIDENCE.md",
+        "input_sha256": "73e41b01656ddcbdb81b40bc9b8b3ae0630775ba5193ace828fdfbf912a55375",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f10592b51ce7415530d6fd8ba5f0afa7cd36b486ad8354187a1f80380682e75a",
+        "source": "docs/EVIDENCE.md",
+        "final_output_sha256": "f3dc6ab8e2710f49b21930aee3373bee753a0b95653ca7b2da05ae33bfa4a398",
+        "cli_destination": "docs/EVIDENCE.md",
+        "previous_staging_sha256": "f3dc6ab8e2710f49b21930aee3373bee753a0b95653ca7b2da05ae33bfa4a398"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "39e34125e5fb23eb66b777c3c36002947d58115229243a9cc0116a718ee1b142",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "97073c2a4e610f3c7f08aea9e2380cb8176e3661f27c88bc8b7c492c62d6e625",
+        "source": "plugin.yaml",
+        "final_output_sha256": "e5ca6abd5d83ebddf47e1b58be80ef2d4669fec5079b2314243b0c456c9e336e",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "e5ca6abd5d83ebddf47e1b58be80ef2d4669fec5079b2314243b0c456c9e336e"
+      },
+      {
+        "destination": "skills/rtk-output-awareness/SKILL.md",
+        "input_sha256": "b908be818062d44d28277be29280e7d81abd441576e30799f384d78b3f7739a6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bc300ffc2a4d4dcca8c6c62055f602e5a889d49e0907cef5d8903858b8adf720",
+        "source": "skills/rtk-output-awareness/SKILL.md",
+        "final_output_sha256": "f7b310437c5cbe9c623b3ad1c3748d55cd18a0e852d93d3082d8ac054a933cd8",
+        "cli_destination": "skills/rtk-output-awareness/SKILL.md",
+        "previous_staging_sha256": "f7b310437c5cbe9c623b3ad1c3748d55cd18a0e852d93d3082d8ac054a933cd8"
+      },
+      {
+        "destination": "tests/_helpers.py",
+        "input_sha256": "31811f207e8fcbf915670fb394b4daba3863ba9c4f8a998cff81c9ad2553165d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "31811f207e8fcbf915670fb394b4daba3863ba9c4f8a998cff81c9ad2553165d",
+        "source": "tests/_helpers.py",
+        "final_output_sha256": "31811f207e8fcbf915670fb394b4daba3863ba9c4f8a998cff81c9ad2553165d",
+        "cli_destination": "tests/_helpers.py",
+        "previous_staging_sha256": "31811f207e8fcbf915670fb394b4daba3863ba9c4f8a998cff81c9ad2553165d"
+      },
+      {
+        "destination": "tests/run_tests.py",
+        "input_sha256": "8dd8ce144811ca6b7693083fa9533c721f95dbdf36b1886386550d1d6a162d1d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "963e7ce3ce9e2864bdd384e5cfd12e3bc01f87d2b012473c3ce7819bd5e83986",
+        "source": "tests/run_tests.py",
+        "final_output_sha256": "6499179c6ff02947f67b0b2bddb9e9eb64244bc9a7e830397f5c4e538603c1b0",
+        "cli_destination": "tests/run_tests.py",
+        "previous_staging_sha256": "6499179c6ff02947f67b0b2bddb9e9eb64244bc9a7e830397f5c4e538603c1b0"
+      },
+      {
+        "destination": "tests/test_adapter.py",
+        "input_sha256": "fcda9d53bf9781679a0f0c074da484d29610e528438ecb6233b31e947e5a48a9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3c827381576242d7ea3135c30afbdfbeaab42ecd29526fa4b03fe4e89a10d85b",
+        "source": "tests/test_adapter.py",
+        "final_output_sha256": "42e9e384152d9d61aef051000bdd5028cc99a7ee430b63c46a5a109a905bcdf8",
+        "cli_destination": "tests/test_adapter.py",
+        "previous_staging_sha256": "42e9e384152d9d61aef051000bdd5028cc99a7ee430b63c46a5a109a905bcdf8"
+      },
+      {
+        "destination": "tests/test_duckwork_dispatch.py",
+        "input_sha256": "5262cf9b9d627cb9b6d5a5895d2f67fc2c262fe940e7196f80720a475400fde3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e1e4ad593ac67b66e1edadf92ca89dc2184640f47289f56f44ed3c22289d6a15",
+        "source": "tests/test_hermes_dispatch.py",
+        "final_output_sha256": "25e6a4d92d0bb5a8c919b5cefe9f101d5e7373321eb0cef76372f4efa6cc501c",
+        "cli_destination": "tests/test_duckwork_dispatch.py",
+        "previous_staging_sha256": "25e6a4d92d0bb5a8c919b5cefe9f101d5e7373321eb0cef76372f4efa6cc501c"
+      },
+      {
+        "destination": "tests/test_rtk_integration.py",
+        "input_sha256": "330fdfd5a81641d157b7490ffa3010ec89158baf7bb6e0fdaf831f9163cccf44",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cf970e186caed2f287cef8981c9626164f847f8a4ebefd7c95ba073c580494d7",
+        "source": "tests/test_rtk_integration.py",
+        "final_output_sha256": "a03fdd373a077d452e0446f00c09c26046b179b5b390628c17b1e9c0a191b0dc",
+        "cli_destination": "tests/test_rtk_integration.py",
+        "previous_staging_sha256": "a03fdd373a077d452e0446f00c09c26046b179b5b390628c17b1e9c0a191b0dc"
+      }
+    ],
+    "manifest_sha256": "9c04d62b281fb6d02752617d6b755eb2f84f1ae4c886e78770cc6c55dbc93310",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "NOTICE": "NOTICE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "container/Containerfile": "container/Containerfile",
+    "docs/EVIDENCE.md": "docs/EVIDENCE.md",
+    "plugin.yaml": "plugin.yaml",
+    "skills/rtk-output-awareness/SKILL.md": "skills/rtk-output-awareness/SKILL.md",
+    "tests/_helpers.py": "tests/_helpers.py",
+    "tests/run_tests.py": "tests/run_tests.py",
+    "tests/test_adapter.py": "tests/test_adapter.py",
+    "tests/test_hermes_dispatch.py": "tests/test_hermes_dispatch.py",
+    "tests/test_rtk_integration.py": "tests/test_rtk_integration.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "rtk-rewrite-docker",
+    "python_files_compiled": 6,
+    "secret_findings": 0
+  },
+  "canonical_slug": "rtk-rewrite-docker",
+  "catalog_file": "src/plugin-catalog/rtk-rewrite-docker.yaml",
+  "identity": {
+    "catalog_id": "rtk-rewrite-docker",
+    "canonical_slug": "rtk-rewrite-docker",
+    "original_manifest_name": "rtk-rewrite-docker",
+    "rebranded_manifest_name": "rtk-rewrite-docker",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "d141ebd6d7dcab45baf7eb1bfeb765ba2c2199292ce0b86361f4c292fe33cefc",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "d101b32797cc3d1c97a076e8c7995ede6411e8b1fa5c0b4a582d608b8fe721d8",
+          "after_sha256": "abef5e9bf3d94dc1743ddc3630a41fdbd5b08e3ebb03f7c4e5381c46706e692c",
+          "before_bytes": 14936,
+          "after_bytes": 14938,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "skills/rtk-output-awareness/SKILL.md": [
+      {
+        "value": "author: Peter Taras (petertaras), Hermes Agent",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

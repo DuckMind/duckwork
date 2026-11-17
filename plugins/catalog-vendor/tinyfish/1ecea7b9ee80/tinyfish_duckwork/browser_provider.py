@@ -1,0 +1,148 @@
+"""Duckwork BrowserProvider implementation for TinyFish Browser sessions."""
+
+from __future__ import annotations
+
+import logging
+import uuid
+from typing import Any
+
+try:
+    from agent.browser_provider import BrowserProvider as _DuckworkBrowserProvider
+except Exception:  # pragma: no cover - lets the package import outside Duckwork
+
+    class _DuckworkBrowserProvider:  # type: ignore[no-redef]
+        pass
+
+
+from . import rest_client
+from .config import browser_cloud_provider, credit_policy, tinyfish_config
+from .credit_policy import block_message
+from .provider import API_KEY_URL, MISSING_KEY_ERROR, _api_key
+
+logger = logging.getLogger(__name__)
+
+
+class TinyFishBrowserProvider(_DuckworkBrowserProvider):  # type: ignore[misc]
+    """TinyFish cloud browser backend for Duckwork browser tools."""
+
+    @property
+    def name(self) -> str:
+        return "tinyfish"
+
+    @property
+    def display_name(self) -> str:
+        return "TinyFish"
+
+    def is_available(self) -> bool:
+        return bool(credit_policy("browser") in {"request", "allow"} and _api_key())
+
+    def create_session(self, task_id: str) -> dict[str, object]:
+        api_key = _api_key()
+        if not api_key:
+            # Duckwork falls back to a local browser on raise; the hook is the real gate.
+            logger.warning(
+                "TinyFish Browser create_session refused (missing API key); "
+                "Duckwork will fall back to a local browser"
+            )
+            raise ValueError(MISSING_KEY_ERROR)
+        if credit_policy("browser") == "deny":
+            logger.warning(
+                "TinyFish Browser create_session refused (policy deny); "
+                "Duckwork will fall back to a local browser"
+            )
+            raise ValueError(block_message("browser"))
+        browser_cfg = tinyfish_config().get("browser") or {}
+        timeout_seconds = None
+        if isinstance(browser_cfg, dict) and browser_cfg.get("timeout_seconds") not in (
+            None,
+            "",
+        ):
+            try:
+                timeout_seconds = int(browser_cfg["timeout_seconds"])
+            except (TypeError, ValueError):
+                logger.warning(
+                    "Ignoring malformed tinyfish.browser.timeout_seconds %r",
+                    browser_cfg["timeout_seconds"],
+                )
+                timeout_seconds = None
+
+        data = rest_client.create_browser_session(
+            api_key=api_key, timeout_seconds=timeout_seconds
+        )
+        session_id = str(data.get("session_id") or data.get("id") or "")
+        cdp_url = str(data.get("cdp_url") or data.get("cdpUrl") or "")
+        if not session_id or not cdp_url:
+            if session_id:
+                # A half-created session bills until the server's inactivity GC.
+                try:
+                    rest_client.close_browser_session(session_id, api_key=api_key)
+                except Exception:
+                    pass
+            raise RuntimeError(
+                "TinyFish Browser did not return session_id and cdp_url."
+            )
+        # duckwork_* lets Duckwork' orphan reaper clean up after a crash.
+        session_name = f"duckwork_tf_{uuid.uuid4().hex[:10]}"
+        logger.info("Created TinyFish browser session")
+        return {
+            "session_name": session_name,
+            "bb_session_id": session_id,
+            "cdp_url": cdp_url,
+            "features": {
+                "tinyfish": True,
+                "credit_policy": credit_policy("browser"),
+                "base_url": str(data.get("base_url") or ""),
+            },
+        }
+
+    def close_session(self, session_id: str) -> bool:
+        # Duckwork' BrowserProvider contract: close_session must never raise.
+        try:
+            api_key = _api_key()
+            if not api_key:
+                logger.warning("Cannot close TinyFish browser session: missing API key")
+                return False
+            return rest_client.close_browser_session(session_id, api_key=api_key)
+        except Exception as exc:
+            logger.debug("TinyFish browser close failed (%s)", type(exc).__name__)
+            return False
+
+    def emergency_cleanup(self, session_id: str) -> None:
+        try:
+            self.close_session(session_id)
+        except Exception as exc:
+            logger.debug(
+                "TinyFish browser emergency cleanup failed (%s)", type(exc).__name__
+            )
+
+    def get_setup_schema(self) -> dict[str, Any]:
+        return {
+            "name": "TinyFish",
+            "badge": "credit-gated",
+            "tag": (
+                "Remote browser sessions; each session consumes TinyFish credits. "
+                "Default policy 'request' asks for approval per session."
+            ),
+            "env_vars": [
+                {
+                    "key": "TINYFISH_API_KEY",
+                    "prompt": "TinyFish API key",
+                    "url": API_KEY_URL,
+                }
+            ],
+            "post_setup": "agent_browser",
+        }
+
+
+def shutdown_cleanup(**kwargs: Any) -> None:
+    """``on_session_finalize`` hook: ``-q`` runs skip Duckwork' atexit browser cleanup."""
+
+    # Other reasons (/new, idle) finalize one session while the process keeps others.
+    if kwargs.get("reason") != "shutdown" or browser_cloud_provider() != "tinyfish":
+        return
+    try:
+        from tools.browser_tool_lifecycle import cleanup_all_browsers
+
+        cleanup_all_browsers()
+    except Exception as exc:
+        logger.debug("TinyFish shutdown cleanup failed (%s)", type(exc).__name__)

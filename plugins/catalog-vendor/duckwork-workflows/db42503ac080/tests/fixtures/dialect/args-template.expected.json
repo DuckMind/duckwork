@@ -1,0 +1,28 @@
+{
+  "verdict": "importable",
+  "reason": "`args.<key>` used ONLY inside prompt template strings maps to `{run.<key>}` rendered at launch via run_context (dialect.md row 5, both sides shown); a launch without `run_context:{dir, question}` is rejected at the door, mirroring `args` being undefined",
+  "rows": [
+    5
+  ],
+  "graph_sketch": {
+    "name": "args-template",
+    "nodes": [
+      {
+        "id": "survey",
+        "type": "agent",
+        "goal": "Survey {run.dir} and answer: {run.question}. Return {findings}."
+      },
+      {
+        "id": "report",
+        "type": "agent",
+        "after": [
+          "survey"
+        ],
+        "inputs": [
+          "survey.findings"
+        ],
+        "goal": "Write a one-page report answering \"{run.question}\" from the findings injected below."
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why it works",
+      "items": [
+        "Takes an existing branch and owns only what happens between 'code exists' and 'PR opened'",
+        "Validate before submit: the second half of upstream-engagement, detached from the first",
+        "Halt gates abort before any write to the forge"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Contract",
+      "items": [
+        "{{nodes}} nodes, {{gates}} gates, {{branches}} branches: validate -> halt pair -> push -> PR -> audit",
+        "Assumes commits on head_branch came from anywhere \u2014 issue-to-pr, hand session, any builder",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,277 @@
+# Cloud File Manager for Duckwork
+
+![Cloud File Manager: browse, upload, attach and edit files on the machine your agent runs on, and import from Google Drive](docs/media/banner.png)
+
+When your Duckwork agent runs somewhere else — a VPS, a home server, a hosted agent — its files live on that
+machine, not yours. Cloud File Manager puts that machine's files one click away in Duckwork Desktop.
+
+- **Cloud Files** in the sidebar: browse the agent's folders, search by name, create folders, and upload files
+  or whole folders by drag-and-drop or from the toolbar. Folder structure is kept, large files go up in chunks
+  (a brief network drop is retried automatically; a file that still fails gets a **Retry** button), and uploads
+  never overwrite — a name clash keeps both files. **Show** on a finished upload opens its folder at the file.
+  While the page is open, files the agent writes, moves or deletes show up within about a second, for that
+  agent only (a file edited in place can show its old size for a few seconds).
+- **Download** one file to your computer: select it and choose **Download**, or use **Download** while viewing it.
+  The file list also works from the keyboard: arrow keys, Home and End, Page Up and Page Down, Enter to open,
+  Space to select, and Alt+Up for the parent folder.
+- **Open and edit** Markdown and text files: view first, edit on purpose, review the changes, then save.
+  Nothing is saved until you choose Save.
+- **Preview** images, PDFs, and code and data files (JSON, YAML, CSV as a table, logs, source code), read-only.
+- **Drag files into the chat** from the Cloud Files page, like Duckwork's own Files tree: each becomes a file
+  reference for the agent. Right-click **Cloud Files** in the sidebar and choose **Open in split** to keep it beside
+  the chat.
+- **Cloud** in the chat **+** menu: pick files already on the agent's machine and drop their locations into your
+  message. Nothing is uploaded again and nothing is copied into the chat; the agent opens the files where they
+  are with its own tools.
+- **Google Drive** (optional): if the agent is signed in to Google through its `google-workspace` skill, browse
+  and search its Drive and import files onto the agent's machine, from the page or from **+ → Google Drive**.
+
+![The Cloud Files page](docs/media/screenshot-page.png)
+
+![Uploading a folder](docs/media/screenshot-upload.png)
+
+## Requirements
+
+- Duckwork **0.21.5 or newer** with Duckwork Desktop, connected to an agent (local, remote with a token, or remote
+  with sign-in).
+- The agent's terminal runs **locally on the gateway machine** (`terminal.backend: local`, the default). Agents
+  that run their tools in Docker, over SSH or in another sandbox see a different filesystem; the tab says so
+  instead of showing the wrong files.
+
+## Install
+
+Cloud File Manager has two halves in one package: a small API that runs **on the agent's gateway** and the
+screens that run **in Duckwork Desktop**.
+
+Cloud File Manager is in the [Duckwork plugin catalog](https://duckwork-agent.fordex.com/docs/plugins/duckwork-cloud-file-manager).
+Installing from the catalog gets the reviewed release, pinned to its commit.
+
+**From Duckwork Desktop (recommended):**
+
+1. Open **Capabilities → Plugins**, choose **Browse** under **Plugin catalog**, find **Cloud File Manager**, and choose
+   **+ Add to this Agent**. Desktop installs the agent half into the connected agent and the desktop half on this
+   computer.
+2. On Duckwork 0.21.6 or later, the agent picks the plugin up by itself within about a minute. On Duckwork 0.21.5 and on
+   evaOS, **restart the agent's gateway** once.
+3. In **Capabilities → Plugins**, open **Cloud File Manager** and switch on **Desktop**. Desktop plugins stay off
+   until you turn them on.
+
+The **Cloud Files** row appears in the sidebar, and **Cloud** appears in the chat **+** menu.
+
+**From the command line on the gateway machine** (Duckwork 0.21.6 or later installs the catalog release by name):
+
+```bash
+duckwork plugins install duckwork-cloud-file-manager --no-enable
+duckwork plugins enable duckwork-cloud-file-manager
+# on Duckwork 0.21.5, restart the gateway (or your duckwork dashboard service) so the API is mounted
+```
+
+If the installer asks whether to install Node dependencies, answer **No**. The plugin ships prebuilt, and its
+`package.json` holds only build and test tools, so a yes downloads about 100 MB that the plugin never uses.
+
+Then add the desktop half on each computer that uses it: in **Capabilities → Plugins**, choose **+ Add to this Agent**
+on the catalog entry, and switch on **Desktop** on the plugin's card.
+
+**Install from Git** (**Capabilities → Plugins → Install from Git** with
+`https://github.com/DuckMind/duckwork`, or `duckwork plugins install
+electricsheephq/duckwork-cloud-file-manager`) also works. It follows the repository's `main` branch instead of the
+reviewed catalog release.
+
+**Updating:** a catalog install offers **Update to …** on the plugin's card in **Capabilities → Plugins** when a new
+release is pinned. After an update, restart the agent's gateway and reopen Duckwork.
+
+The sidebar row and the **+ → Cloud** entry only appear for agents that have the gateway half enabled, so
+installing the desktop half is harmless for your other agents.
+
+## Using it
+
+- **Upload:** drag files or folders anywhere onto the Cloud Files page, or use **Upload files** /
+  **Upload folder**. Progress, retries and failures show in the drawer at the bottom; the batch keeps going if
+  you leave the page. Switching to another agent mid-upload pauses the batch until you switch back — files never
+  land on the wrong machine.
+- **Find:** type in **Search files** (name contains, or a glob such as `*.pdf`) to search the folder you are in
+  and its subfolders. Search skips `.git`, `node_modules`, `__pycache__`, `.venv`, `venv`, `.tox`, `.mypy_cache` and
+  `.cache` folders. On a very large folder, search stops after 5 seconds and says that some matches may be missing;
+  open a subfolder to search inside it.
+- **Sort:** choose **Name** or **Date modified** in the toolbar of Cloud Files or the **+ → Cloud** picker. Date
+  modified lists the open folder's files and folders together, newest first; in a folder with more than 20,000
+  entries, the order covers the first 20,000 scanned. Search results keep their own order, so Sort is off while you
+  search. Date modified needs version 0.5.0 or later on the agent too; on an older agent it is disabled with a hint.
+- **Read and edit Markdown:** double-click a `.md`, `.markdown` or `.txt` file (or select it and choose
+  **Open**). It opens read-only, rendered like chat. Choose **Edit** to change the source, **Changes** to see
+  your edits line by line, and **Review & save** to check the diff before **Save**. Nothing is written until you
+  press Save in that review:
+  - no autosave, and ⌘S only opens the review;
+  - closing or moving away with unsaved edits asks first;
+  - if you go to another page, your unsaved draft is kept in memory until you come back. It is lost if Duckwork
+    quits.
+
+  If the file changed on the agent's machine after you opened it (for example, the agent edited it), Save is
+  refused. You can then compare with their version and save knowingly, or copy your text. An open file stays
+  tied to the agent you opened it on; switch back to that agent to save.
+
+- **Preview other files:** double-click an image (PNG, JPEG, GIF, WebP, BMP, ICO, SVG), a PDF, or a code or data
+  file (JSON, YAML, TOML, CSV/TSV, logs, XML, HTML, CSS and most source languages), or select it and choose **Open**.
+  It opens read-only, with **Copy path** and **Download**. CSV and TSV files show as a table; **Show as text** shows
+  the raw file. HTML and SVG are never run: HTML shows as text and SVG as an image.
+
+- **Drag into the chat:** drag a file or folder row (or a selection) from the Cloud Files page into a chat. It
+  becomes the same `@file:` / `@folder:` reference that Duckwork's own Files tree makes. Duckwork includes the contents
+  of a file in the agent's working folder in your message; a file elsewhere is passed by its location, with a note
+  that it is outside the working folder. Cloud Files refuses the drag when the chat in focus belongs to a
+  different agent than the files. **Add to chat** in the toolbar (or while viewing a file) does the same without
+  dragging, into the chat beside Cloud Files. The **+ → Cloud** picker still inserts locations only, exactly as before.
+
+![A report open in the rendered view](docs/media/screenshot-editor-view.png)
+
+![Reviewing the change before saving](docs/media/screenshot-editor-review.png)
+- **Share with the agent:** select files and **Copy path**, or in any chat press **+ → Cloud**, tick files in
+  any folders, and **Insert locations**. The message gets a short list of absolute paths the agent can open.
+  If you switch chats or agents while the picker is open, it offers **Copy locations** instead of inserting, so
+  locations don't land in a chat you switched to.
+
+![Picking files for a chat](docs/media/screenshot-picker.png)
+
+![The agent opens the inserted locations with its own tools](docs/media/screenshot-chat.png)
+
+## Google Drive (optional)
+
+If the agent can already use Google Drive through its `google-workspace` skill, Cloud File Manager can bring
+files from that Drive onto the agent's machine:
+
+- **On the Cloud Files page:** choose **Google Drive** in the folder menu. Browse or search the agent's Drive,
+  tick files, and choose **Import to Cloud Files**.
+- **In a chat:** choose **+ → Google Drive**, tick files, and choose **Import and insert**. The files are
+  imported, then their locations go into your message, exactly like **+ → Cloud**.
+
+![Google Drive as a source on the Cloud Files page](docs/media/screenshot-drive-page.png)
+
+![+ → Google Drive imports and inserts](docs/media/screenshot-drive-picker.png)
+
+On the Cloud Files page, imports land in the folder you were in before switching to Google Drive; from the
+**+ → Google Drive** picker they land in `uploads/drive/` in the first shown folder. One file at a time. Google Docs and Slides arrive as
+PDF, Sheets as CSV and Drawings as PNG; other files arrive as they are. A name clash keeps both files, and
+`max_file_mb` applies. The Drive list works from the keyboard like the Cloud list: arrow keys, Home and End, Page Up and Page Down, Space
+or Enter, and Backspace for the parent folder.
+
+**Setup:** sign the agent in to Google through its `google-workspace` skill, with Drive access. Follow the
+skill's own setup, or ask the agent to do it. Within about a minute, **Google Drive** appears for that agent.
+For agents without it, nothing extra is shown.
+
+**What it can and can't do:**
+- It is read-only toward Google Drive. It only lists, searches and downloads; it never uploads, edits, shares or
+  deletes anything there.
+- It works through the agent's own skill. Cloud File Manager never reads the Google token and never installs
+  anything.
+- It runs the skill's scripts from `skills/productivity/google-workspace/scripts` in the agent's Duckwork home, else
+  from the copy bundled with Duckwork. It passes them only the environment they need (paths, locale, proxy and
+  CA-bundle settings), never the agent's keys or tokens.
+- It uses the Google account the agent is signed in to, so whoever can use the agent can import from that Drive.
+
+## Settings
+
+All optional. Change them in Duckwork Desktop: **Settings → Plugins → Cloud File Manager** on Duckwork 0.21.6 or later,
+or the plugin's row in **Capabilities → Plugins** on Duckwork 0.21.5 and evaOS. Changes apply on the next request; no
+restart is needed.
+
+Without Desktop, set them under `plugins.entries.duckwork-cloud-file-manager.settings` in the agent's `config.yaml`:
+
+| Setting | Label in Desktop | Default | Meaning |
+|---|---|---|---|
+| `roots` | Folders to show | `[]` | Absolute folders to show. Empty means the agent's own working folder (`terminal.cwd`), else the gateway user's home. If none of the listed folders can be shown, Cloud Files says so and links to these settings. |
+| `folder_notes` | Folder notes | `{}` | A short note per top-level folder, e.g. `{"docs": "Imported into the agent's knowledge base"}`. |
+| `max_file_mb` | Largest upload (MiB) | `100` | Largest single file accepted, in MiB. Bigger files are refused before anything is sent. Decimals are rounded down; a value under 1 falls back to 100. |
+
+## Security model
+
+- The plugin adds **no login, tokens or permission layer** of its own. Desktop reaches it through the gateway's
+  existing authenticated plugin channel, so it is exactly as private as your gateway.
+- Every path is confined to the configured folders.
+  - Names are checked for traversal and non-portable characters.
+  - Symlinks that point outside the shown folders are not followed. An upload never writes its final file
+    through a link.
+  - A listing may show such a link as not openable, with the link's own size and date. The plugin never opens
+    its target or shows the target's size or date; it only checks where the link points (the target's path and
+    identity).
+  - **The agent's Duckwork home (its settings and API keys) can never be listed, read or written**, even when it sits
+    inside a shown folder. The exception is a folder inside it that the agent is set up to work in (`roots`,
+    `terminal.cwd`, or the Docker `workspace/` folder); see [SECURITY.md](SECURITY.md).
+  - When the shown folder is the gateway user's home, hidden top-level entries (`.ssh`, `.config`, …)
+    are hidden and refused.
+- Uploads never overwrite, rename or delete existing files. There is no delete in this version. (Stale temporary
+  files and folders with the plugin's reserved `.cfm-…part` and `.cfm-…dir` names are cleaned up once they are
+  more than 24 hours old, the next time an upload or Drive import starts in that folder; at most once an hour per folder.)
+- Only Save in the editor overwrites, only the file you opened, and only if it has not changed since you opened
+  it. See [SECURITY.md](SECURITY.md) for the accepted race with writers outside this process.
+- Everyone who can use the agent can see its files — the same access the agent itself has. That includes
+  previews: any image, PDF, or code or data file in the shown folders can be previewed, including configuration
+  files you keep there. The agent's Duckwork home stays protected, as above.
+- **Download** goes through Duckwork Desktop's own authenticated download, the same one its file tree uses. The
+  plugin only offers it for files the list shows: files inside the shown folders, never from the agent's Duckwork
+  home except a working folder inside it, as above. Duckwork's own checks still apply: for example, it refuses
+  credential files.
+
+Found a security problem? See [SECURITY.md](SECURITY.md).
+
+## Limits in this version
+
+- No rename, move or delete (coming later; use the agent or a shell for now).
+- Download saves one file at a time. Folders and Google Drive files can't be downloaded. It works in every
+  Duckwork Desktop this plugin supports (v0.21.5 or newer) and in evaOS Desktop 2026.10.6 or newer; a build without
+  it simply doesn't show it.
+- Previews show the first 1 MB of a code or data file, and images and PDFs up to 10 MB; use **Download** for
+  bigger files. Previews need 0.4.1 or newer on the agent's side too; with an older agent side, Cloud Files says so.
+  A file that is being written to while it is read (a busy log, for example) can't be previewed until it settles.
+- Uploads never overwrite. Only Save in the editor overwrites, only the file you opened, and only if it has not
+  changed since you opened it.
+- **Upload folder** cannot carry empty folders (a browser limitation); drag-and-drop keeps them.
+- The editor opens `.md`, `.markdown` and `.txt` files up to 1 MB, as UTF-8. A file that mixes line endings is
+  saved with CRLF throughout once edited; the review says so. Images in a rendered file load from their links,
+  as in Duckwork's own file preview. Unsaved drafts live in memory only and are lost when Duckwork quits.
+- A folder shows 500 items at a time; **Load more** adds the next 500. A folder with more than 20,000 items lists
+  only the first 20,000; use **Search files** to find the rest.
+- A file changed in place outside Cloud Files (same name, new size or date) can take up to 5 seconds to show its new
+  size and date. New, removed and renamed items normally show at once.
+- A name that contains a line break can be browsed but not inserted into a chat; the picker says so.
+- Agents whose tools run in Docker, over SSH or in another sandbox are not supported yet.
+- Google Drive is import-only: pick files, not folders, and nothing is ever written back to Drive.
+
+## Compatibility
+
+Requires Duckwork **0.21.5 or newer**, with its Desktop (`requires_duckwork: ">=0.21.5"`). CI checks every change
+against pinned builds of upstream [Duckwork Agent](https://github.com/DuckMind/duckwork) and one downstream
+Desktop fork (see `DUCKWORK_*_SHA` in `.github/workflows/ci.yml`). Those pins are bumped deliberately, after the
+suite passes against the new builds. A weekly run checks the same suite against both repos' newest `main`, so a
+breaking change upstream is spotted before it reaches a release.
+
+## Uninstall
+
+Open **Cloud File Manager** in **Capabilities → Plugins** and choose **Uninstall**. Or run
+`duckwork plugins remove duckwork-cloud-file-manager` on the gateway machine, then restart the gateway.
+
+On every other computer where you added the desktop half, also remove it there with **Uninstall**. Uploaded files
+stay where they are.
+
+## Development
+
+```bash
+npm ci && npm run build && npm test && npm run typecheck   # desktop half
+python -m pytest                                           # gateway half (needs fastapi, httpx, pytest)
+```
+
+`desktop/plugin.js` is generated from `src/desktop/` by `npm run build` and committed; CI fails if it is stale,
+if it imports anything but the plugin SDK and React, or if either pinned Duckwork Desktop loader would refuse it.
+
+## Troubleshooting and reporting a bug
+
+Choose **Copy diagnostics** in the Cloud Files header, even when the agent is unavailable or folders fail to load, and paste it into your bug report. It includes versions, capability states, folder count and a safe error code, without file names or paths.
+Desktop's internal `/available` probe reports the plugin ID and version only; do not call gateway or file APIs with credentials to diagnose a problem.
+For recent log excerpts, use `duckwork logs gui -n 300 | grep -i duckwork-cloud-file-manager` for the agent side (its file API runs in the dashboard server) and `duckwork logs desktop -n 300 | grep -i cloud` for the Desktop side; these best-effort filters may return nothing.
+Include the plugin version/source from `duckwork plugins list --json`, `duckwork --version`, and your Desktop version; remove secrets and private paths.
+Ask your Duckwork agent to "report a problem with Cloud File Manager" to draft a report for your review.
+Use the [bug report form](https://github.com/DuckMind/duckwork) for ordinary bugs.
+Report path escapes, files crossing isolated user/profile boundaries, or exposed secrets through a [private advisory](https://github.com/DuckMind/duckwork).
+
+## License
+
+MIT © Electric Sheep

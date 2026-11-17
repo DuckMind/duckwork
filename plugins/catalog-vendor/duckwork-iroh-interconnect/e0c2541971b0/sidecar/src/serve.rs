@@ -1,0 +1,374 @@
+//! Serve mode: long-lived sidecar process (plan §6 Phase 2).
+//!
+//! Owns the Iroh endpoint (persistent identity from `identity.rs`) and speaks
+//! newline-delimited JSON-RPC on stdio with the Python plugin:
+//!
+//! ```text
+//! -> {"jsonrpc":"2.0","id":1,"method":"status"}
+//! <- {"jsonrpc":"2.0","id":1,"result":{"ready":true,"endpointId":"...","alpn":"...","addrs":[...]}}
+//!
+//! -> {"jsonrpc":"2.0","id":2,"method":"dial","params":{"endpointId":"<z32>",
+//!        "addrs":["ip:port",...],"task":{"text":"..."}}}
+//! <- {"jsonrpc":"2.0","id":2,"result":{"status":"completed","text":"..."}}
+//! ```
+//!
+//! Malformed lines and unknown methods produce JSON-RPC errors without
+//! killing the process.
+
+use std::collections::BTreeSet;
+use std::io::{BufRead, BufReader, Write};
+use std::sync::Arc;
+use std::time::Duration;
+
+use anyhow::{bail, Context, Result};
+use iroh::{endpoint::presets, protocol::Router, Endpoint, EndpointAddr, TransportAddr};
+use serde::Deserialize;
+use serde_json::{json, Value};
+
+use duckwork_iroh_sidecar::protocol;
+use duckwork_iroh_sidecar::transport::{DuckworkHandler, PeerReply};
+
+/// Endpoint is online when every bound socket reports a confirmed direct
+/// address (plan Phase 1 step 7: endpoint.online() timeout).
+const ONLINE_TIMEOUT: Duration = Duration::from_secs(20);
+
+/// A public relay used when the endpoint is in default-relay mode. Minimal
+/// endpoints do not enable DNS address discovery, so dial addresses must carry
+/// a relay explicitly when a peer record has no direct socket addresses.
+const DEFAULT_RELAY_URL: &str = "https://use1-1.relay.n0.iroh.link";
+
+/// One stdio JSON-RPC request.
+#[derive(Debug, Deserialize)]
+struct RpcRequest {
+    #[allow(dead_code)]
+    #[serde(default)]
+    jsonrpc: String,
+    #[allow(dead_code)]
+    #[serde(default)]
+    id: Value,
+    method: String,
+    #[serde(default)]
+    params: Value,
+}
+
+fn rpc_ok(id: &Value, result: Value) -> String {
+    serde_json::to_string(&json!({"jsonrpc": "2.0", "id": id, "result": result}))
+        .expect("serialize rpc reply")
+}
+
+fn rpc_err(id: &Value, message: String) -> String {
+    serde_json::to_string(&json!({
+        "jsonrpc": "2.0",
+        "id": id,
+        "error": {"code": -32000, "message": message},
+    }))
+    .expect("serialize rpc error")
+}
+
+/// Relay policy for the endpoint (plan: relay configuration is a security
+/// decision — public relays observe connection metadata, not plaintext).
+#[derive(Debug, Clone)]
+pub enum RelayPolicy {
+    /// n0 production relays (default).
+    Default,
+    /// No relays at all: LAN-only operation; peers need direct addrs.
+    Disabled,
+    /// A single self-hosted relay URL (e.g. https://relay.example.lan).
+    CustomUrl(String),
+}
+
+impl RelayPolicy {
+    /// Parses the `--relay` CLI / config value.
+    pub fn parse(value: &str) -> Self {
+        match value {
+            "default" | "n0" | "" => Self::Default,
+            "none" | "disabled" | "off" => Self::Disabled,
+            url => Self::CustomUrl(url.to_string()),
+        }
+    }
+}
+
+/// Builds the iroh relay mode from the policy.
+fn relay_mode(policy: &RelayPolicy) -> Result<iroh::RelayMode> {
+    match policy {
+        RelayPolicy::Default => Ok(iroh::RelayMode::Default),
+        RelayPolicy::Disabled => Ok(iroh::RelayMode::Disabled),
+        RelayPolicy::CustomUrl(url) => {
+            let relay: iroh::RelayUrl = url
+                .parse()
+                .with_context(|| format!("parsing relay url {url:?}"))?;
+            Ok(iroh::RelayMode::Custom(iroh::RelayMap::from_iter([relay])))
+        }
+    }
+}
+
+/// Binds briefly to collect this endpoint's dialing information, then
+/// exits. Used by the `addr` subcommand so pairing tickets can carry
+/// direct addresses.
+pub async fn endpoint_info(
+    state_dir: &std::path::Path,
+    policy: &RelayPolicy,
+) -> Result<serde_json::Value> {
+    let (endpoint, id) = bind_endpoint(state_dir, policy).await?;
+    let addrs: Vec<String> = endpoint
+        .bound_sockets()
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+    drop(endpoint);
+    Ok(serde_json::json!({"endpointId": id, "addrs": addrs}))
+}
+
+/// Binds the endpoint with the persistent identity and spawns the router.
+pub async fn bind_endpoint(
+    state_dir: &std::path::Path,
+    policy: &RelayPolicy,
+) -> Result<(Endpoint, String)> {
+    let key = duckwork_iroh_sidecar::identity::load_or_create(state_dir.join("endpoint.key"))?;
+    let mode = relay_mode(policy)?;
+    let mut builder = Endpoint::builder(presets::Minimal)
+        .secret_key(key)
+        .relay_mode(mode)
+        .alpns(vec![duckwork_iroh_sidecar::transport::DUCKWORK_ALPN.to_vec()]);
+    if std::env::var("DUCKWORK_IROH_INSECURE_TLS")
+        .map(|v| matches!(v.trim().to_ascii_lowercase().as_str(), "1" | "true" | "yes"))
+        .unwrap_or(false)
+    {
+        builder = builder.ca_tls_config(iroh::tls::CaTlsConfig::insecure_skip_verify());
+    }
+    let endpoint = builder.bind().await.context("binding iroh endpoint")?;
+    match tokio::time::timeout(ONLINE_TIMEOUT, endpoint.online()).await {
+        Ok(()) => {}
+        Err(_) => anyhow::bail!("endpoint did not become online within {ONLINE_TIMEOUT:?}"),
+    }
+    Ok((endpoint.clone(), endpoint.id().to_z32()))
+}
+
+/// Spawns the Duckwork acceptor on the endpoint.
+///
+/// v0.2: inbound tasks are handed to the Python adapter through the
+/// file queue (``handoff::FileHandoffEngine``) instead of the echo engine.
+pub fn spawn_router(endpoint: &Endpoint, state_dir: &std::path::Path) -> Router {
+    let engine = duckwork_iroh_sidecar::handoff::FileHandoffEngine::new(
+        state_dir,
+        std::env::var("DUCKWORK_IROH_HANDOFF_TIMEOUT")
+            .ok()
+            .and_then(|v| v.parse::<f64>().ok())
+            .unwrap_or(300.0),
+    );
+    Router::builder(endpoint.clone())
+        .accept(
+            duckwork_iroh_sidecar::transport::DUCKWORK_ALPN,
+            DuckworkHandler::new(std::sync::Arc::new(engine)),
+        )
+        .spawn()
+}
+
+fn endpoint_addr(id_z32: &str, addrs: &[String], policy: &RelayPolicy) -> Result<EndpointAddr> {
+    let public = iroh::PublicKey::from_z32(id_z32).context("parsing endpoint id")?;
+    let mut set = BTreeSet::new();
+    for raw in addrs {
+        let addr: std::net::SocketAddr = raw
+            .parse()
+            .with_context(|| format!("parsing peer address {raw:?}"))?;
+        set.insert(TransportAddr::Ip(addr));
+    }
+    let mut addr = EndpointAddr {
+        id: public,
+        addrs: set,
+    };
+    let relay = match policy {
+        RelayPolicy::Default => Some(DEFAULT_RELAY_URL),
+        RelayPolicy::Disabled => None,
+        RelayPolicy::CustomUrl(url) => Some(url.as_str()),
+    };
+    if let Some(relay) = relay {
+        let parsed = relay
+            .parse::<iroh::RelayUrl>()
+            .with_context(|| format!("parsing relay url {relay:?}"))?;
+        addr = addr.with_relay_url(parsed);
+    }
+    Ok(addr)
+}
+
+async fn handle_rpc(endpoint: &Endpoint, policy: &RelayPolicy, req: RpcRequest) -> Result<Value> {
+    match req.method.as_str() {
+        "status" => Ok(json!({
+            "ready": true,
+            "endpointId": endpoint.id().to_z32(),
+            "alpn": String::from_utf8_lossy(duckwork_iroh_sidecar::transport::DUCKWORK_ALPN),
+            "addrs": endpoint
+                .bound_sockets()
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>(),
+        })),
+        "dial" => {
+            let endpoint_id = req
+                .params
+                .get("endpointId")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
+            if endpoint_id.is_empty() {
+                bail!("params.endpointId is required");
+            }
+            let addrs: Vec<String> = req
+                .params
+                .get("addrs")
+                .and_then(|v| v.as_array())
+                .map(|a| {
+                    a.iter()
+                        .filter_map(|v| v.as_str().map(String::from))
+                        .collect()
+                })
+                .unwrap_or_default();
+            let addr = endpoint_addr(&endpoint_id, &addrs, policy)?;
+
+            let task = req
+                .params
+                .get("task")
+                .ok_or_else(|| anyhow::anyhow!("params.task is required"))?;
+            let text = task
+                .get("text")
+                .and_then(|t| t.as_str())
+                .unwrap_or("")
+                .to_string();
+            let auth_secret = task
+                .get("authSecret")
+                .and_then(|secret| secret.as_str())
+                .unwrap_or("")
+                .to_string();
+            if text.is_empty() {
+                bail!("params.task.text is required");
+            }
+            if auth_secret.is_empty() {
+                bail!("params.task.authSecret is required");
+            }
+            if text.len() > protocol::MAX_FRAME_BYTES {
+                bail!("task text exceeds the frame cap");
+            }
+
+            let request = json!({
+                "protocol": "duckwork-interconnect",
+                "version": 1,
+                "type": "task.request",
+                "requestId": req
+                    .params
+                    .get("requestId")
+                    .and_then(|v| v.as_str())
+                    .filter(|id| !id.trim().is_empty() && id.len() <= 256)
+                    .map(str::to_owned)
+                    .unwrap_or_else(|| format!("dial-{:032x}", rand::random::<u128>())),
+                "payload": {"text": text, "authSecret": auth_secret},
+            });
+            let payload = serde_json::to_vec(&request)?;
+            let frame = protocol::encode_frame(&payload);
+
+            let reply: PeerReply = tokio::time::timeout(
+                Duration::from_secs(120),
+                duckwork_iroh_sidecar::transport::call_peer(endpoint, addr, frame),
+            )
+            .await
+            .map_err(|_| anyhow::anyhow!("dial timed out after 120s"))??;
+
+            Ok(json!({
+                "status": reply.status,
+                "text": reply.text,
+                "error": reply.error,
+            }))
+        }
+        "shutdown" => Err(anyhow::anyhow!("__shutdown__")),
+        other => bail!("unknown method {other:?}"),
+    }
+}
+
+/// Runs the stdio JSON-RPC loop until stdin closes or a shutdown request.
+/// With `keep_alive`, stdin EOF is ignored (operator-run daemon mode); the
+/// process stays up until killed or told to shut down over RPC.
+pub async fn run(
+    state_dir: std::path::PathBuf,
+    policy: &RelayPolicy,
+    keep_alive: bool,
+) -> Result<()> {
+    let (endpoint, _id) = bind_endpoint(&state_dir, policy).await?;
+    let _router = spawn_router(&endpoint, &state_dir);
+    let endpoint = Arc::new(endpoint);
+
+    let stdin = std::io::stdin();
+    let mut reader = BufReader::new(stdin.lock());
+    let stdout = std::io::stdout();
+    let mut out = stdout.lock();
+
+    let mut line = String::new();
+    loop {
+        line.clear();
+        let n = reader.read_line(&mut line)?;
+        if n == 0 {
+            if keep_alive {
+                // Daemon mode: stdin closed is not a shutdown signal. Park
+                // forever; the process is stopped by kill or RPC shutdown.
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_secs(3600)).await;
+                }
+            }
+            break; // stdin closed: clean shutdown
+        }
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let (id, _method) = match serde_json::from_str::<RpcRequest>(trimmed) {
+            Ok(req) => (req.id.clone(), req.method.clone()),
+            Err(e) => {
+                writeln!(
+                    out,
+                    "{}",
+                    rpc_err(&Value::Null, format!("malformed request: {e}"))
+                )?;
+                out.flush()?;
+                continue;
+            }
+        };
+
+        let rpc: RpcRequest = serde_json::from_str(trimmed).expect("re-parse validated");
+        match handle_rpc(&endpoint, policy, rpc).await {
+            Ok(result) => {
+                writeln!(out, "{}", rpc_ok(&id, result))?;
+            }
+            Err(e) if e.to_string() == "__shutdown__" => {
+                writeln!(out, "{}", rpc_ok(&id, json!({"bye": true})))?;
+                out.flush()?;
+                break;
+            }
+            Err(e) => {
+                writeln!(out, "{}", rpc_err(&id, format!("{e:#}")))?;
+            }
+        }
+        out.flush()?;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RelayPolicy;
+
+    #[test]
+    fn parses_presets() {
+        assert!(matches!(
+            RelayPolicy::parse("default"),
+            RelayPolicy::Default
+        ));
+        assert!(matches!(RelayPolicy::parse("off"), RelayPolicy::Disabled));
+        assert!(matches!(RelayPolicy::parse(""), RelayPolicy::Default));
+    }
+
+    #[test]
+    fn parses_custom_url() {
+        match RelayPolicy::parse("https://relay.home.lan") {
+            RelayPolicy::CustomUrl(u) => assert_eq!(u, "https://relay.home.lan"),
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+}

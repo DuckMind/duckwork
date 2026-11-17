@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "date": "2026-10-14",
+  "package_version": "0.1.0",
+  "platform_tested": "macOS arm64",
+  "duckwork": {
+    "checkout": "126dff924a3ef32dcba63b3db64624aa36ca56e0",
+    "upstream_base": "5575a0859d6278bfcef79c28189a24594952efd3",
+    "python": "3.14.3",
+    "mcp_sdk": "2.0.0"
+  },
+  "source": {
+    "repo": "https://github.com/render-oss/skills",
+    "commit": "8675173fe30232384d51c8763d1eea4db0350419",
+    "skills": 20,
+    "files": 127,
+    "comparison": "All included bytes compared with git show at the recorded official source commit",
+    "result": "passed"
+  },
+  "local_install": {
+    "disable_enable_list_show": "passed",
+    "parser_diagnostics": 0,
+    "portable_skills": 20
+  },
+  "live": {
+    "scope": "Real Duckwork interactive chat loaded the packaged render-mcp skill and listed workspaces through packaged mcp.json",
+    "result": "passed",
+    "workspace_count": 16,
+    "independent_verification": "Parsed saved MCP response as a nonempty list with workspace IDs and names",
+    "approval": "Allow once for list_workspaces; no approval bypass or permanent allowlist",
+    "mutations": 0,
+    "temporary_credentials_removed": true,
+    "test_gateway_stopped": true
+  },
+  "unattended": {
+    "result": "passed",
+    "expected": "The untrusted server call must be denied when nobody can approve it",
+    "observed": "list_workspaces returned is_error=true and was not run; server does not supply readOnlyHint=true"
+  },
+  "upstream_tests": {
+    "passed": 139,
+    "failed": 1,
+    "trust_gating_passed": 20,
+    "failure": "tests/duckwork_cli/test_plugin_validate.py::test_portable_validation_fails_orphan_and_reports_availability",
+    "detail": "Unmodified upstream fixture expects an exact availability state; validator appends a candidate path on this macOS host. Render package has no application-presence requirement."
+  },
+  "limitations": [
+    "Linux and Windows were not exercised.",
+    "Catalog inclusion requires Fordex maintainer review.",
+    "render-docker is omitted because a Dockerfile cleanup example triggers a critical catalog scanner rule; original source was not rewritten.",
+    "Live validation covered one Node web-service lifecycle per distribution, not every workflow in all 21 official skills.",
+    "Long interactive runs encountered a Duckwork session-turn lease refresh failure; shorter resumed turns completed. Root cause was not resolved.",
+    "The reused test app reported 3 moderate and 1 critical npm dependency findings. It was used only as a disposable fixture and both services were deleted."
+  ],
+  "earlier_attempts": [
+    "Initial isolated gateway runtime lacked the MCP extra; resolved using Duckwork package manager.",
+    "An unattended agent completed its turn but the tool was denied; completion was not counted as a successful connection.",
+    "An approval test run used an environment without MCP; rerun with declared MCP and dev/test dependencies."
+  ],
+  "package_validation": {
+    "ok": true,
+    "checks": [
+      {
+        "name": "portable manifest",
+        "ok": true,
+        "detail": "plugin.json parses (Agent Plugins v1)"
+      },
+      {
+        "name": "manifest fields",
+        "ok": true,
+        "detail": "name present"
+      },
+      {
+        "name": "server trust: render",
+        "ok": true,
+        "detail": "untrusted (Duckwork asks before every write-capable tool call)"
+      },
+      {
+        "name": "security scan",
+        "ok": true,
+        "detail": "caution"
+      }
+    ],
+    "warnings": [
+      "security scan caution: bind_all_interfaces (SKILL.md:48), bind_all_interfaces (error-patterns.md:91), bind_all_interfaces (error-patterns.md:93), bind_all_interfaces (log-analysis.md:249), bind_all_interfaces (log-analysis.md:424), python_os_environ (configuration-guide.md:247), python_os_environ (configuration-guide.md:256), python_os_environ (connection-examples.md:45), python_os_environ (connection-examples.md:57), python_os_environ (error-patterns.md:44), python_os_environ (queue-framework-setup.md:46), python_os_environ (troubleshooting.md:217), python_os_environ (troubleshooting.md:240), sudo_usage (SKILL.md:78)"
+    ],
+    "isolation": {
+      "verdict": "portable",
+      "host_ready": true,
+      "reasons": [],
+      "notes": [],
+      "ctx_methods": []
+    }
+  },
+  "github_install": {
+    "result": "passed",
+    "commit": "81b605532c8f0b2ae9d4e97dca277a52c2b5abff",
+    "installer": "duckwork plugins install ojusave/render-duckwork-plugin --ref 81b605532c8f0b2ae9d4e97dca277a52c2b5abff --no-enable",
+    "scanner": "CAUTION, 45 findings reviewed at the normal interactive installer prompt; no force flag",
+    "enabled_skills": 20,
+    "source_files_matched": 127,
+    "live_workspace_count": 16,
+    "approval": "Allow once for list_workspaces",
+    "independent_verification": "Parsed the saved tool response, not the assistant success message",
+    "temporary_credentials_removed": true,
+    "gateway_stopped": true
+  },
+  "lifecycle": {
+    "result": "passed",
+    "enabled": {
+      "skills": 20,
+      "mcp_servers": [
+        "render"
+      ]
+    },
+    "disabled": {
+      "skills": 0,
+      "mcp_servers": []
+    },
+    "removed": "Installed test package directory no longer exists"
+  },
+  "visual_review": {
+    "local": "GitHub Markdown rendering inspected at desktop and 390px content width; diagram changed to a vertical layout for readability",
+    "published": "GitHub README inspected after publication"
+  },
+  "release_note": "GitHub installation and live checks used the recorded commit. Later release changes affect only README instructions and this receipt; plugin.json, mcp.json and all skill files are unchanged.",
+  "runtime_files_sha256": {
+    "plugin.json": "136078e16f38c894688d7af4f080533cb8dc744ecfec38801980313c1e24beeb",
+    "mcp.json": "c278afc1e20bde8a20e95d976127d2d4dae6e7a3cbbb056b6b28559e61aece9a",
+    "upstream.json": "be400eef8f1d144350d5e88155700769064caef46b3367915da02b44cea7bc9d"
+  },
+  "live_deployment_validation": {
+    "date_utc": "2026-10-15",
+    "date_local": "2026-10-14",
+    "result": "passed_with_recorded_interventions",
+    "duckwork_checkout": "4e1e373c809d84180c06957cc10fc6683c233e0e",
+    "duckwork_upstream": "ca069e12239a2c8d13887ac9f983557d00bdcfd2",
+    "plugin_installed_revision": "3269568e922bed12ca42d7bbbcbbf682730e0939",
+    "render_cli": "2.28.0",
+    "model": "gpt-6.1-sol",
+    "host": "macOS arm64",
+    "fixture": {
+      "repo": "https://github.com/ojusave/atlanta-guestbook",
+      "commit": "5a9a3a97fd0f9e6752626e1fe57b1bef6c23bf69",
+      "runtime": "node",
+      "plan": "starter",
+      "region": "oregon"
+    },
+    "skills_only": {
+      "installed_skills": 21,
+      "connection": "Explicit native Render MCP configuration; no Render plugin",
+      "loaded_skills": [
+        "render-mcp",
+        "render-deploy",
+        "render-env-vars",
+        "render-debug",
+        "render-cli"
+      ],
+      "successful_service_creations": 1,
+      "live_deployments": 2
+    },
+    "plugin": {
+      "installed_skills": 20,
+      "connection": "Published portable mcp.json; no native Render override",
+      "loaded_skills": [
+        "render-mcp",
+        "render-deploy",
+        "render-env-vars",
+        "render-debug",
+        "render-cli"
+      ],
+      "successful_service_creations": 1,
+      "live_deployments": 2,
+      "installation": "Normal GitHub installer with explicit CAUTION review; no force flag"
+    },
+    "checks": {
+      "initial_health": "HTTP 200, body ok, for both services",
+      "initial_content": "Unique initial welcome message observed for each service",
+      "update": "MCP merged only WELCOME_MESSAGE and started the new deployment itself; no duplicate manual trigger",
+      "updated_health": "HTTP 200, body ok, for both services",
+      "updated_content": "Updated welcome message present and initial message absent for both services",
+      "logs": "Real build and runtime logs retrieved through Duckwork MCP for both initial and updated deployments",
+      "deletion": "Duckwork executed Render CLI deletion for each exact test service ID; independent MCP get_service returned 404 for both",
+      "cli_workspace": "Original selection restored and independently verified"
+    },
+    "approvals": "Normal Allow once approvals for each write-capable MCP call and gated shell command. No permanent allowlist, force installation, or core changes.",
+    "independent_verification": "Separate HTTP requests checked both versions of both services; separate connector requests confirmed both deletions. Actual saved Duckwork tool responses were inspected.",
+    "interventions": [
+      "Duckwork withdrew pending approvals after its session-turn lease could not be refreshed. Failed attempts were retained; explicit follow-up turns completed with fresh approvals.",
+      "CLI deletion initially refused because CLI and MCP workspace selections differed. Temporarily selected the authorized test workspace and restored the prior CLI selection in finally blocks. README now explains separate selections."
+    ],
+    "cloud_resources_remaining": 0,
+    "scope_limit": "Representative deployment and management tasks only; not a production-readiness certification.",
+    "temporary_credentials_removed": true,
+    "test_gateways_stopped": true
+  }
+}

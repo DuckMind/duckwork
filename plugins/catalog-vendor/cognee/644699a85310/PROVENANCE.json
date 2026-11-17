@@ -1,0 +1,1831 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "cognee",
+  "content_id": "644699a85310",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1453,
+      "mode": "100644",
+      "path": ".env.example",
+      "sha256": "9282dee68a9ded366eb3857e0faffd6172c17b2afe4f39fe0b8423aa910030d8"
+    },
+    {
+      "bytes": 13,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "9445b8071d0fa8f072c0a2d99a3e797de03ebb820facc421100bdcabc4628950"
+    },
+    {
+      "bytes": 5,
+      "mode": "100644",
+      "path": ".python-version",
+      "sha256": "7a41a41354ab8049091ef1a00253ca00567f5a1d3f9aef5502c0b4b5ce9ae707"
+    },
+    {
+      "bytes": 46108,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "adb0f1c86c97f434df94772557dd3c2494d77f04c4c7032ce3dd31171d7956ad"
+    },
+    {
+      "bytes": 34217,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "9d80113272828e169517a039bba91bab24315156c3481edccec1e2e7e525c780"
+    },
+    {
+      "bytes": 3205,
+      "mode": "100644",
+      "path": "RUNBOOK.md",
+      "sha256": "625a5c65505d22dc3cbbf9484143b191a82efa1a8905d8f59df876588cebf5e6"
+    },
+    {
+      "bytes": 593,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "2ae6c3ca808e1f348ba093fb66fb026c37a54f7d57a9c03212bdbfd8764ed4a7"
+    },
+    {
+      "bytes": 11344,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "bc744b625121d92dea594052b797959b5c787cd1a347c7f6aa2801943ef6bf13"
+    },
+    {
+      "bytes": 1191,
+      "mode": "100644",
+      "path": "after-install.md",
+      "sha256": "bd7f1bfe0ec30746cf700ef172d9639b8bc4d12d91c16bc11d63e68f4584df2a"
+    },
+    {
+      "bytes": 503,
+      "mode": "100644",
+      "path": "cli.py",
+      "sha256": "247f1d5e73b6d48e0bbf6834c1a752466139d6e279f1ac03e4def852fd1d5ddc"
+    },
+    {
+      "bytes": 294,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/__init__.py",
+      "sha256": "1dbefbbf104390cc3401a8b24a858460de8889acee25e93c9d54615f8d4b0a09"
+    },
+    {
+      "bytes": 1191,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/_plugin_root/after-install.md",
+      "sha256": "bd7f1bfe0ec30746cf700ef172d9639b8bc4d12d91c16bc11d63e68f4584df2a"
+    },
+    {
+      "bytes": 503,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/_plugin_root/cli.py",
+      "sha256": "247f1d5e73b6d48e0bbf6834c1a752466139d6e279f1ac03e4def852fd1d5ddc"
+    },
+    {
+      "bytes": 716,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/_plugin_root/plugin.yaml",
+      "sha256": "54f55dc755991b3284945547c7ae38803217aaf11a3386b1fde628eb5d81e448"
+    },
+    {
+      "bytes": 593,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/_plugin_root/plugin_init.py",
+      "sha256": "2ae6c3ca808e1f348ba093fb66fb026c37a54f7d57a9c03212bdbfd8764ed4a7"
+    },
+    {
+      "bytes": 26339,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/backend.py",
+      "sha256": "180756eac2966fa9fa8497f743fd985192abd4402ed065462a3c2b1e2a07c250"
+    },
+    {
+      "bytes": 12962,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/capture_policy.py",
+      "sha256": "ec332cb31a92d8c4e6ab8246270a49ebb8d219a0db15dfe8ac1d9810a001e04e"
+    },
+    {
+      "bytes": 981,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/catalog.py",
+      "sha256": "c9cd24bb94fbc2f26b4ceca3cd052cdbf9be26a4c70b672a50ab8e26efa7155c"
+    },
+    {
+      "bytes": 14743,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/cli.py",
+      "sha256": "2e45253c73c605b3d45762b21b6d45999b1bda6142c4bd6b757ebbe15865cf83"
+    },
+    {
+      "bytes": 11718,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/code_graph.py",
+      "sha256": "5053ac9313627ad66b96e78dd3be49d0cc0e6807390974a8cd192469e6fd34e3"
+    },
+    {
+      "bytes": 19043,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/config.py",
+      "sha256": "469f07c4f08e8439b3b803dab1aa6c5e0c9343ed12f4887045698a7381b40196"
+    },
+    {
+      "bytes": 2827,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/dataset_overrides.py",
+      "sha256": "06fc43047f0d531c4994e1aea41960aa7afa5137d474d4e6cb5e42f3003e2c98"
+    },
+    {
+      "bytes": 16952,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/exit_watcher.py",
+      "sha256": "b0050ad4d8219df9157fdb7b3ca0ee4e6ce98c0d0c8d29856900d5d1f2c982f8"
+    },
+    {
+      "bytes": 43286,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/http_backend.py",
+      "sha256": "aa5f05a40ece3e8e42dd4798fde41eefcca2f1849b8fe0c46ce35c529a847c50"
+    },
+    {
+      "bytes": 4263,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/installer.py",
+      "sha256": "1e9eb31b8bea4eed501cad7fe79fceb7181b1469b596b06631e4a6115e4dfeef"
+    },
+    {
+      "bytes": 102484,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/provider.py",
+      "sha256": "da8a26c1cc7e61edb6a9912fa41bfbae434c9a10c2b03062407078334bba0d42"
+    },
+    {
+      "bytes": 14267,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/recall_text.py",
+      "sha256": "21249905bfbebe0e4ed1233f404a85de23548501cae87101362fba9e3537d510"
+    },
+    {
+      "bytes": 36582,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/recap.py",
+      "sha256": "8b57e2d11792b6e4264c9c472ef2f34f96003616e7e74f88a501f36db835e8e3"
+    },
+    {
+      "bytes": 9701,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/schemas.py",
+      "sha256": "9d646fc3e18aa2d4b72a5fda99a8af8f59c254014f526661d90df3fb2cdbda40"
+    },
+    {
+      "bytes": 12755,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/server_bootstrap.py",
+      "sha256": "d9ffcd9e84b68aaecea7943e2fc7ec51b3d0e5ffe287c7e0e9d281e34a42692e"
+    },
+    {
+      "bytes": 3672,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/update_check.py",
+      "sha256": "8acd59a7a9b95ad98f5b2d4277c2ae4fe061fc16d465a9885b11c13d673daa2a"
+    },
+    {
+      "bytes": 9601,
+      "mode": "100644",
+      "path": "cognee_integration_hermes/write_buffer.py",
+      "sha256": "6a7210b7f4ac7556b464f86dd9220cbc9888f63d5419af0c35ec78e1648b1eef"
+    },
+    {
+      "bytes": 716,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "54f55dc755991b3284945547c7ae38803217aaf11a3386b1fde628eb5d81e448"
+    },
+    {
+      "bytes": 2966,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "7bf28a636e266ccc27a483ac645a147a2e82f5204eb1705e685c02eb15c01c78"
+    },
+    {
+      "bytes": 14719,
+      "mode": "100644",
+      "path": "tests/_char_helpers.py",
+      "sha256": "9034cc90cffd8dd66ab6690b8b32223c86375cf3427530e629aee0b798951933"
+    },
+    {
+      "bytes": 4680,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "a72b0b203336044414d2e01b47b3a33ec8a3b151212ab05fadec9791e0a9d235"
+    },
+    {
+      "bytes": 23196,
+      "mode": "100644",
+      "path": "tests/test_capture_and_buffer.py",
+      "sha256": "3da9d55e5fb64fed9d290a9531942c4d60bcf068ee009fdaffd5449db9b174a1"
+    },
+    {
+      "bytes": 3283,
+      "mode": "100644",
+      "path": "tests/test_capture_policy_conformance.py",
+      "sha256": "44ecfc983ba762d79dee414178e1331a34d3e135a967e75666a1ec54358dcb91"
+    },
+    {
+      "bytes": 3981,
+      "mode": "100644",
+      "path": "tests/test_catalog_install.py",
+      "sha256": "dca8fed43296bb9d2867a30b0854e590e1a6cc5be905b527d490b53cd1970ac1"
+    },
+    {
+      "bytes": 6527,
+      "mode": "100644",
+      "path": "tests/test_code_graph.py",
+      "sha256": "3480ec3dc94e46c97c34837a75b4b9917952b4d93ad1d6aeb1ff7a873ae18708"
+    },
+    {
+      "bytes": 18739,
+      "mode": "100644",
+      "path": "tests/test_config_contract.py",
+      "sha256": "c6157dcff2bf33c185fad85d6619f4ec6fa20d394313b1e0686df392762dc921"
+    },
+    {
+      "bytes": 1958,
+      "mode": "100644",
+      "path": "tests/test_dataset_name_conformance.py",
+      "sha256": "0ad4f942edd104aea5f50688311e1028dc0fe925fd740cba78cd631daf418715"
+    },
+    {
+      "bytes": 4786,
+      "mode": "100644",
+      "path": "tests/test_dim_mismatch.py",
+      "sha256": "0e5334f24262162f2fcf648bd9a448259aa2aaa1e079be017599be4839055cfd"
+    },
+    {
+      "bytes": 19560,
+      "mode": "100644",
+      "path": "tests/test_exit_watcher.py",
+      "sha256": "87ab6ea9a0a4b9aa270bca1cd9b0300f792692e97ced3f2ae7c277f3fd476e26"
+    },
+    {
+      "bytes": 43616,
+      "mode": "100644",
+      "path": "tests/test_http_backend.py",
+      "sha256": "ba767d7b38b3d20ca8a76ceb98de26886a51714ca0b9938af92c3b9738eb86a4"
+    },
+    {
+      "bytes": 6492,
+      "mode": "100644",
+      "path": "tests/test_installer.py",
+      "sha256": "4bf6c0a8a433e237c638ccea3abaa5c5bdb6565e411e3dac229f250377b5b7da"
+    },
+    {
+      "bytes": 5102,
+      "mode": "100644",
+      "path": "tests/test_integration_concurrency.py",
+      "sha256": "b3632ee905453925cbbf3297ee21103173fca2335a811eede32bdc88f3c806df"
+    },
+    {
+      "bytes": 13307,
+      "mode": "100644",
+      "path": "tests/test_integration_roundtrip.py",
+      "sha256": "b299d153748dbbc70f2d592daa0b319c2669ff9398079db6fa90651fc39b4e12"
+    },
+    {
+      "bytes": 30301,
+      "mode": "100644",
+      "path": "tests/test_layered_recall.py",
+      "sha256": "dc46d59a98ba6da56fdc0b81ba44e2c32f9b90ded32b85db65e9ff6a93427139"
+    },
+    {
+      "bytes": 30011,
+      "mode": "100644",
+      "path": "tests/test_lifecycle_contract.py",
+      "sha256": "928b1d8a9a9e29373757687e516162b786b9766a490b82336b62fce2f4d8130e"
+    },
+    {
+      "bytes": 10582,
+      "mode": "100644",
+      "path": "tests/test_openclaw_parity.py",
+      "sha256": "28f41978bdb9c3a3f98ed838faffd8479f4b8b9eeb0009197941ef4db690b5e1"
+    },
+    {
+      "bytes": 5003,
+      "mode": "100644",
+      "path": "tests/test_overflow_hint.py",
+      "sha256": "ed091aaa8baf484c6da8a5c66b3ddc4279ab6458a59ac777956da8601838af3f"
+    },
+    {
+      "bytes": 8967,
+      "mode": "100644",
+      "path": "tests/test_pre_compress.py",
+      "sha256": "8f5b932d36e64d6df2f2345170656e72ba41cf883a54fec3559b5d08c407a1a2"
+    },
+    {
+      "bytes": 3523,
+      "mode": "100644",
+      "path": "tests/test_recall_result_text.py",
+      "sha256": "878c564ef1c0a1b1564e76ac8d3b72d9ff83a7bbd688b8585f6d9ae8eb807c85"
+    },
+    {
+      "bytes": 3010,
+      "mode": "100644",
+      "path": "tests/test_recall_text_conformance.py",
+      "sha256": "5dad86202e159f40bacaef81259912ea288b55fb70170f2ead44f1f06008962c"
+    },
+    {
+      "bytes": 7123,
+      "mode": "100644",
+      "path": "tests/test_recall_wire_contract.py",
+      "sha256": "8b65c938789f6403da98d9e0033a8b8ab72a882c0604f3fcab794bdc4fe259f5"
+    },
+    {
+      "bytes": 14967,
+      "mode": "100644",
+      "path": "tests/test_recap.py",
+      "sha256": "d03bcd14b1a7083335c99d258e6fffe720dd7dca34f7cb85611ffeb58489589e"
+    },
+    {
+      "bytes": 10346,
+      "mode": "100644",
+      "path": "tests/test_sdk_backend.py",
+      "sha256": "bc24be181aa30c0be4277f70df27b2ba17bc221c169c047fc0dddef8f04c99d9"
+    },
+    {
+      "bytes": 35628,
+      "mode": "100644",
+      "path": "tests/test_server_mode.py",
+      "sha256": "3c3e885c59682cd139fb1deae36af3464bf8e183c100971294d0c39ef437e813"
+    },
+    {
+      "bytes": 1163,
+      "mode": "100644",
+      "path": "tests/test_session_id_conformance.py",
+      "sha256": "3426d4e90e27e75360d60be0a8faecc8c367bdc4c2c697395b479b500735cbfc"
+    },
+    {
+      "bytes": 2192,
+      "mode": "100644",
+      "path": "tests/test_smoke.py",
+      "sha256": "f5891573d4fbdf9e360fcf6a86c0a2ebaa43a68adbd7f21e4411f13dbb72881a"
+    },
+    {
+      "bytes": 10510,
+      "mode": "100644",
+      "path": "tests/test_switch_and_code_tools.py",
+      "sha256": "46c7fe908ca25e719aea2501dbec3d57abbad8af030f6f0027b443f1b7c9f0b7"
+    },
+    {
+      "bytes": 26149,
+      "mode": "100644",
+      "path": "tests/test_tool_contract.py",
+      "sha256": "56f7780959a29273089b342189a7889af39796e069931f46f18b2d93553a54de"
+    },
+    {
+      "bytes": 4117,
+      "mode": "100644",
+      "path": "tests/test_update_check.py",
+      "sha256": "280e41248414e0171eebc1162ba804e64a44e7adcce43160ae5ee38f8425855b"
+    },
+    {
+      "bytes": 1170913,
+      "mode": "100644",
+      "path": "uv.lock",
+      "sha256": "0a4de490fa277211f6af1e389e3a38f52e64777b5b96e2b37822c952d65be072"
+    }
+  ],
+  "input_manifest_sha256": "644699a85310f58771e79005bff567b462d428d91cea729cdfd75e03cc2f70c2",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "bc744b625121d92dea594052b797959b5c787cd1a347c7f6aa2801943ef6bf13",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".env.example",
+      "CHANGELOG.md",
+      "README.md",
+      "RUNBOOK.md",
+      "__init__.py",
+      "after-install.md",
+      "cli.py",
+      "cognee_integration_duckwork/__init__.py",
+      "cognee_integration_duckwork/_plugin_root/after-install.md",
+      "cognee_integration_duckwork/_plugin_root/cli.py",
+      "cognee_integration_duckwork/_plugin_root/plugin.yaml",
+      "cognee_integration_duckwork/_plugin_root/plugin_init.py",
+      "cognee_integration_duckwork/backend.py",
+      "cognee_integration_duckwork/capture_policy.py",
+      "cognee_integration_duckwork/catalog.py",
+      "cognee_integration_duckwork/cli.py",
+      "cognee_integration_duckwork/code_graph.py",
+      "cognee_integration_duckwork/config.py",
+      "cognee_integration_duckwork/dataset_overrides.py",
+      "cognee_integration_duckwork/exit_watcher.py",
+      "cognee_integration_duckwork/http_backend.py",
+      "cognee_integration_duckwork/installer.py",
+      "cognee_integration_duckwork/provider.py",
+      "cognee_integration_duckwork/recall_text.py",
+      "cognee_integration_duckwork/recap.py",
+      "cognee_integration_duckwork/schemas.py",
+      "cognee_integration_duckwork/server_bootstrap.py",
+      "cognee_integration_duckwork/update_check.py",
+      "cognee_integration_duckwork/write_buffer.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/_char_helpers.py",
+      "tests/conftest.py",
+      "tests/test_capture_and_buffer.py",
+      "tests/test_capture_policy_conformance.py",
+      "tests/test_catalog_install.py",
+      "tests/test_code_graph.py",
+      "tests/test_config_contract.py",
+      "tests/test_dataset_name_conformance.py",
+      "tests/test_dim_mismatch.py",
+      "tests/test_exit_watcher.py",
+      "tests/test_http_backend.py",
+      "tests/test_installer.py",
+      "tests/test_integration_concurrency.py",
+      "tests/test_integration_roundtrip.py",
+      "tests/test_layered_recall.py",
+      "tests/test_lifecycle_contract.py",
+      "tests/test_openclaw_parity.py",
+      "tests/test_overflow_hint.py",
+      "tests/test_pre_compress.py",
+      "tests/test_recall_result_text.py",
+      "tests/test_recall_text_conformance.py",
+      "tests/test_recall_wire_contract.py",
+      "tests/test_recap.py",
+      "tests/test_sdk_backend.py",
+      "tests/test_server_mode.py",
+      "tests/test_session_id_conformance.py",
+      "tests/test_smoke.py",
+      "tests/test_switch_and_code_tools.py",
+      "tests/test_tool_contract.py",
+      "tests/test_update_check.py",
+      "uv.lock"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      ".env.example",
+      "CHANGELOG.md",
+      "README.md",
+      "RUNBOOK.md",
+      "__init__.py",
+      "after-install.md",
+      "cli.py",
+      "cognee_integration_duckwork/__init__.py",
+      "cognee_integration_duckwork/_plugin_root/after-install.md",
+      "cognee_integration_duckwork/_plugin_root/cli.py",
+      "cognee_integration_duckwork/_plugin_root/plugin.yaml",
+      "cognee_integration_duckwork/_plugin_root/plugin_init.py",
+      "cognee_integration_duckwork/backend.py",
+      "cognee_integration_duckwork/capture_policy.py",
+      "cognee_integration_duckwork/catalog.py",
+      "cognee_integration_duckwork/cli.py",
+      "cognee_integration_duckwork/code_graph.py",
+      "cognee_integration_duckwork/config.py",
+      "cognee_integration_duckwork/dataset_overrides.py",
+      "cognee_integration_duckwork/exit_watcher.py",
+      "cognee_integration_duckwork/http_backend.py",
+      "cognee_integration_duckwork/installer.py",
+      "cognee_integration_duckwork/provider.py",
+      "cognee_integration_duckwork/recall_text.py",
+      "cognee_integration_duckwork/recap.py",
+      "cognee_integration_duckwork/schemas.py",
+      "cognee_integration_duckwork/server_bootstrap.py",
+      "cognee_integration_duckwork/update_check.py",
+      "cognee_integration_duckwork/write_buffer.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/_char_helpers.py",
+      "tests/conftest.py",
+      "tests/test_capture_and_buffer.py",
+      "tests/test_capture_policy_conformance.py",
+      "tests/test_catalog_install.py",
+      "tests/test_code_graph.py",
+      "tests/test_config_contract.py",
+      "tests/test_dataset_name_conformance.py",
+      "tests/test_dim_mismatch.py",
+      "tests/test_exit_watcher.py",
+      "tests/test_http_backend.py",
+      "tests/test_installer.py",
+      "tests/test_integration_concurrency.py",
+      "tests/test_integration_roundtrip.py",
+      "tests/test_layered_recall.py",
+      "tests/test_lifecycle_contract.py",
+      "tests/test_openclaw_parity.py",
+      "tests/test_overflow_hint.py",
+      "tests/test_pre_compress.py",
+      "tests/test_recall_result_text.py",
+      "tests/test_recall_text_conformance.py",
+      "tests/test_recall_wire_contract.py",
+      "tests/test_recap.py",
+      "tests/test_sdk_backend.py",
+      "tests/test_server_mode.py",
+      "tests/test_session_id_conformance.py",
+      "tests/test_smoke.py",
+      "tests/test_switch_and_code_tools.py",
+      "tests/test_tool_contract.py",
+      "tests/test_update_check.py",
+      "uv.lock"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/topoteretes/cognee-integrations",
+    "sha": "ccfb0e4e3fa8f3ce09c023d258c205ca972e48a8",
+    "subdir": "integrations/hermes-agent"
+  },
+  "original_repo": "https://github.com/topoteretes/cognee-integrations",
+  "original_sha": "ccfb0e4e3fa8f3ce09c023d258c205ca972e48a8",
+  "original_subdir": "integrations/hermes-agent",
+  "output_files": [
+    {
+      "path": ".env.example",
+      "sha256": "8a09ddbd98a0e97857fa60f3cc21603d1165264d4f17c9a481bcc28c30811121",
+      "bytes": 1601,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "9445b8071d0fa8f072c0a2d99a3e797de03ebb820facc421100bdcabc4628950",
+      "bytes": 13,
+      "mode": "100644"
+    },
+    {
+      "path": ".python-version",
+      "sha256": "7a41a41354ab8049091ef1a00253ca00567f5a1d3f9aef5502c0b4b5ce9ae707",
+      "bytes": 5,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "52244e6726a6ee2ac665d5a22c587d6e22c9b9900570f63ddd82fe26eaba1b1d",
+      "bytes": 46451,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "14ecb6eb3eda2516cd36704a1248bdf2baed20c49d057a43eda5a92d751e6edf",
+      "bytes": 34612,
+      "mode": "100644"
+    },
+    {
+      "path": "RUNBOOK.md",
+      "sha256": "4080388ef2c38072e89c58819f3327f696deec5ff46e775f0bd6c821543df14f",
+      "bytes": 3360,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "2382d8f28709e4981067808ace6711c2a3cdc910b7e7e15c5f5f84383594fedf",
+      "bytes": 743,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "bc744b625121d92dea594052b797959b5c787cd1a347c7f6aa2801943ef6bf13",
+      "bytes": 11344,
+      "mode": "100644"
+    },
+    {
+      "path": "after-install.md",
+      "sha256": "e2a71056f8193136eb9ae45799767cb662b2105f04f69752d90b8f15b1090372",
+      "bytes": 1358,
+      "mode": "100644"
+    },
+    {
+      "path": "cli.py",
+      "sha256": "9b83f45854a5dfd03b05efcceb6abfd018b83b61bc6cb379fdd0a2284343712c",
+      "bytes": 651,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/__init__.py",
+      "sha256": "866da9b792a2500fafd123a60b1191999422cdc313dc7e997cad9a4ec36c0406",
+      "bytes": 440,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/_plugin_root/after-install.md",
+      "sha256": "e2a71056f8193136eb9ae45799767cb662b2105f04f69752d90b8f15b1090372",
+      "bytes": 1358,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/_plugin_root/cli.py",
+      "sha256": "9b83f45854a5dfd03b05efcceb6abfd018b83b61bc6cb379fdd0a2284343712c",
+      "bytes": 651,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/_plugin_root/plugin.yaml",
+      "sha256": "4715efdbf3a1f606e2c5f3c79cbb123957816d71a0c3f3f5dadc908fa1b2a7b4",
+      "bytes": 860,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/_plugin_root/plugin_init.py",
+      "sha256": "2382d8f28709e4981067808ace6711c2a3cdc910b7e7e15c5f5f84383594fedf",
+      "bytes": 743,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/backend.py",
+      "sha256": "4f8737943f7f16ad740ee19ebaa4934078bc63887c2d4b71cec268db584776ba",
+      "bytes": 26489,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/capture_policy.py",
+      "sha256": "e859b6701408d6c584be7fd4dadb551096cfebd6e41e1463dd62c2050d7a4c20",
+      "bytes": 13108,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/catalog.py",
+      "sha256": "422a9a02b61687180155593d27d1b499c5b391a237eecaa624286ad87f948452",
+      "bytes": 1127,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/cli.py",
+      "sha256": "53a862236b4abe116e15e0fbaf8cf368129dc4aa45114a64b2e6b5a9a6cdce18",
+      "bytes": 14971,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/code_graph.py",
+      "sha256": "d5557731f9be7b8cf0664a77189045e035a7b62e25031f19ebda6460a2d0fc79",
+      "bytes": 11872,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/config.py",
+      "sha256": "2964b8cfa1712f46fb4c60f09edb94ce1cf83f6d087c3338c57797cb3757db49",
+      "bytes": 19289,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/dataset_overrides.py",
+      "sha256": "76db2ef7dcaa42c630bc71ac0fe3aff5c451b2847b437224ad12f5fe8787a1ef",
+      "bytes": 2985,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/exit_watcher.py",
+      "sha256": "af2546a03dc3a5f3c17b9d360abea54ce1dee996524a3a30f37b9dc357f6e409",
+      "bytes": 17134,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/http_backend.py",
+      "sha256": "6a8d94ae789de7c1bba2086fe7ff385333eb92415defe7d3eb68c5eb46f17386",
+      "bytes": 43440,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/installer.py",
+      "sha256": "423eefd0a6d7fc7c590997a4cdde7ee1a6c45e63c9213aae30b99eff062365a4",
+      "bytes": 4457,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/provider.py",
+      "sha256": "349fbdb91a71f084f6b38dd3bde629b71259209a9d9f01203e064ed868bb35c1",
+      "bytes": 102738,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/recall_text.py",
+      "sha256": "56a459dce172eb9f55ac0cee2185dd6a6348d316c0b12b3bdd39d9c3eaf7c612",
+      "bytes": 14411,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/recap.py",
+      "sha256": "29f08c4ffcf952a05915cd722504238af91022645daf23da6a36e8ae87fb3954",
+      "bytes": 36732,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/schemas.py",
+      "sha256": "f2cd12fe2f50f9edb26c646b05fba2ce165a501fb4e2725d1d70028fa5b1f3d3",
+      "bytes": 9847,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/server_bootstrap.py",
+      "sha256": "515be4fe2a79971b29b1253e48e85b0275c82695924d35ea8c73849523424db3",
+      "bytes": 12919,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/update_check.py",
+      "sha256": "787bc7bc7e425170ca39de0c4dec7c118d72c3659d66f9d92d1beeb4ac9bcb93",
+      "bytes": 3822,
+      "mode": "100644"
+    },
+    {
+      "path": "cognee_integration_duckwork/write_buffer.py",
+      "sha256": "35ff5240657b6cf07a3706cab902b0bcbc024bdabd8b343164dec472827bd742",
+      "bytes": 9751,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "4715efdbf3a1f606e2c5f3c79cbb123957816d71a0c3f3f5dadc908fa1b2a7b4",
+      "bytes": 860,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "8ab1b7f6b874b4fe577e1866bf9f267b4bf648c1d0c75901c263ccf93a85276f",
+      "bytes": 3140,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/_char_helpers.py",
+      "sha256": "9d4f845796acc7cff63560df2fe3145e86f0e71a22b1080be67051da4cfac5f3",
+      "bytes": 14873,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "175c3274d7e302f9ed4821f1127f0ea10c980a1eac18d08774c5ffd36710f5ad",
+      "bytes": 4834,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_capture_and_buffer.py",
+      "sha256": "7970a41d6370671bb7b22b55cc50eb70e6e3bdb16cd8d32afbd14d8585fa1e41",
+      "bytes": 23358,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_capture_policy_conformance.py",
+      "sha256": "c41e0673cabfe32a09d13ffc8e6daa6314a79b0767d4edce2b07a9297f6591e0",
+      "bytes": 3433,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_catalog_install.py",
+      "sha256": "46f87bb7dfec1910769d6183792a3af4b67b3736927847a2f9d63a7fcedf228b",
+      "bytes": 4145,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_code_graph.py",
+      "sha256": "a8c16cc572568c8acad6fbe6626446ccebbb0b5369f891f4801b53a11f9442ff",
+      "bytes": 6673,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_config_contract.py",
+      "sha256": "1e7d8d99ea587d0c2ffb784bb548eb87ba447b051b1323f860c91159d9cc2b0c",
+      "bytes": 18963,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_dataset_name_conformance.py",
+      "sha256": "6d6425b0e37351428544b1db7df65fdf61200e81a981e010a43102a7dc98d1a3",
+      "bytes": 2110,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_dim_mismatch.py",
+      "sha256": "ddbb9523e037c3ba8cefa6f61936ffe74ef105eefe56621509487b8b601e014d",
+      "bytes": 4930,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_exit_watcher.py",
+      "sha256": "4ba34d28f139d5b864f5e14f87027bfa604192afa24923030499c2ec9397dd14",
+      "bytes": 19754,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_http_backend.py",
+      "sha256": "a982e390e38bda4bf55030c0441aa34b676d6612490a41fad3657d1c2a183a52",
+      "bytes": 43844,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_installer.py",
+      "sha256": "5ded25aad268f4cb841ae12d6de1a9464d930f946b573337c64d8a0e83cdbaf7",
+      "bytes": 6670,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_integration_concurrency.py",
+      "sha256": "810884f099fedf80320307816d3e5ead074cc726b24286bcd0385254b4b671f6",
+      "bytes": 5250,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_integration_roundtrip.py",
+      "sha256": "8c851e6fa78c5cca17e4c4c1b7c05fb79b5b8e1a955ea0ca2eabb692ce3a80bc",
+      "bytes": 13473,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_layered_recall.py",
+      "sha256": "3367c3cc4110bcbfb1314a46a657763ea6a9178e1c179dcee6df2d7d6f12f3cd",
+      "bytes": 30471,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_lifecycle_contract.py",
+      "sha256": "6356147147480d36200f136506d42cd10faa98efb2be898daaef3c15ba2fbbab",
+      "bytes": 30209,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_openclaw_parity.py",
+      "sha256": "da79896dff7b3fb95f633f8af25bf0ae137cf9aff2cf3d55e65858019a6ecaa0",
+      "bytes": 10746,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_overflow_hint.py",
+      "sha256": "761637a362f29d3d81bd1d71efd78149a1c346fbd019f7a2c669fa0ea211350e",
+      "bytes": 5149,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_pre_compress.py",
+      "sha256": "e2ad21613a1d4189d005934213c2d645d1317bdc4130b2bddffd8d1d75246f0d",
+      "bytes": 9131,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_recall_result_text.py",
+      "sha256": "1748bf1fc708c5b8f5ba73528c68fc720f5e000b0730a8400da1457419e4e381",
+      "bytes": 3667,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_recall_text_conformance.py",
+      "sha256": "c5f77f4133b4db792f1166c3a2b38d182a838b7bd3184308048990da999c7032",
+      "bytes": 3158,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_recall_wire_contract.py",
+      "sha256": "867545d8ecb5426cb049fff0e513a7a2a7c0a0da0ed1f8fb1fc5f729f23e5ade",
+      "bytes": 7271,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_recap.py",
+      "sha256": "ee4e877a6508c41a7c25a04c10c7d6f8d5e3969f4f710641abf6ea08374d309b",
+      "bytes": 15181,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_sdk_backend.py",
+      "sha256": "a21740cabd8dbfe694f8c561d5837df8fa75dd6b13aeb2fd7c92e194715db7bf",
+      "bytes": 10530,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_server_mode.py",
+      "sha256": "6f4164895c1555bb0d31ae409d56518bc4a26d6d53707cc81cdb9cdcfdf6037e",
+      "bytes": 35798,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_session_id_conformance.py",
+      "sha256": "11d3fce347f7aac2cbcb2a2fdbfc56a1d8eab31c0effdeda4ef1050840daa937",
+      "bytes": 1311,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_smoke.py",
+      "sha256": "04ad2e534d013180cdabcec2ba072edb9b0b9ce7c7d8a30a824c7a7f6ec0c5e5",
+      "bytes": 2344,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_switch_and_code_tools.py",
+      "sha256": "e567eff2e57fc8cfd4775a856b8d06c98e7c409d2e3d48e7aef7a98682f607f9",
+      "bytes": 10694,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tool_contract.py",
+      "sha256": "961c933043546b88c5cf9f2b8f837390719da14800056a3f10f611cfbc05a2e2",
+      "bytes": 26319,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_update_check.py",
+      "sha256": "35878c6a660dcc6e24f849574a6a73341c31159c2b0e2c5bd29d638e4e498c37",
+      "bytes": 4261,
+      "mode": "100644"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "873a88d3ea3983682c73bd95137faa89251358e1a0faefbd4d471a2168966ccc",
+      "bytes": 1171057,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "246bc2c683bd5563672431c019383572242ea50fead95cd8fb722ccb2c5fa4a0",
+  "pin_verification": {
+    "archive_bytes": 6589633,
+    "archive_sha256": "1ba99c3f37c17791dc8eaea3a234b617a0709c1ce82d0d61f255c68056377cb2",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "ccfb0e4e3fa8f3ce09c023d258c205ca972e48a8",
+    "verified_commit_marker": "ccfb0e4e3fa8f3ce09c023d258c205ca972e48a8"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "c1b61fdbb3e827e47be871881a1532d2c39f57fd1be22ec8e6caa832c4a53575",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".env.example",
+        "input_sha256": "9282dee68a9ded366eb3857e0faffd6172c17b2afe4f39fe0b8423aa910030d8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d69c99b20b75b58ee92876e43cdf406a0c25c04db5dbbe3882b4d6cd7d138056",
+        "source": ".env.example",
+        "final_output_sha256": "8a09ddbd98a0e97857fa60f3cc21603d1165264d4f17c9a481bcc28c30811121",
+        "cli_destination": ".env.example",
+        "previous_staging_sha256": "8a09ddbd98a0e97857fa60f3cc21603d1165264d4f17c9a481bcc28c30811121"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "9445b8071d0fa8f072c0a2d99a3e797de03ebb820facc421100bdcabc4628950",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9445b8071d0fa8f072c0a2d99a3e797de03ebb820facc421100bdcabc4628950",
+        "source": ".gitignore",
+        "final_output_sha256": "9445b8071d0fa8f072c0a2d99a3e797de03ebb820facc421100bdcabc4628950",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "9445b8071d0fa8f072c0a2d99a3e797de03ebb820facc421100bdcabc4628950"
+      },
+      {
+        "destination": ".python-version",
+        "input_sha256": "7a41a41354ab8049091ef1a00253ca00567f5a1d3f9aef5502c0b4b5ce9ae707",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7a41a41354ab8049091ef1a00253ca00567f5a1d3f9aef5502c0b4b5ce9ae707",
+        "source": ".python-version",
+        "final_output_sha256": "7a41a41354ab8049091ef1a00253ca00567f5a1d3f9aef5502c0b4b5ce9ae707",
+        "cli_destination": ".python-version",
+        "previous_staging_sha256": "7a41a41354ab8049091ef1a00253ca00567f5a1d3f9aef5502c0b4b5ce9ae707"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "adb0f1c86c97f434df94772557dd3c2494d77f04c4c7032ce3dd31171d7956ad",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "45c1e9d6f265d756d8ec7e834998708c784bf738202960c1df13b3413b062b23",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "52244e6726a6ee2ac665d5a22c587d6e22c9b9900570f63ddd82fe26eaba1b1d",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "52244e6726a6ee2ac665d5a22c587d6e22c9b9900570f63ddd82fe26eaba1b1d"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "9d80113272828e169517a039bba91bab24315156c3481edccec1e2e7e525c780",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "af9519f5d595ee980c38fcb886aead2b009ca392d43f67a15d77394376b82834",
+        "source": "README.md",
+        "final_output_sha256": "14ecb6eb3eda2516cd36704a1248bdf2baed20c49d057a43eda5a92d751e6edf",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "61c6eae028f3ab6511344fe597e5f32e1bfadfce7547875579c188028a4a5e4c"
+      },
+      {
+        "destination": "RUNBOOK.md",
+        "input_sha256": "625a5c65505d22dc3cbbf9484143b191a82efa1a8905d8f59df876588cebf5e6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a94cc78b1a883aab867865298a3b6dc217ee90c1da75462820fc0a2b21886ae8",
+        "source": "RUNBOOK.md",
+        "final_output_sha256": "4080388ef2c38072e89c58819f3327f696deec5ff46e775f0bd6c821543df14f",
+        "cli_destination": "RUNBOOK.md",
+        "previous_staging_sha256": "4080388ef2c38072e89c58819f3327f696deec5ff46e775f0bd6c821543df14f"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "2ae6c3ca808e1f348ba093fb66fb026c37a54f7d57a9c03212bdbfd8764ed4a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e5d51b6412df98758d41bcf046152af8f9c98f10561907a78c12c37d95231f3a",
+        "source": "__init__.py",
+        "final_output_sha256": "2382d8f28709e4981067808ace6711c2a3cdc910b7e7e15c5f5f84383594fedf",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "2382d8f28709e4981067808ace6711c2a3cdc910b7e7e15c5f5f84383594fedf"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "bc744b625121d92dea594052b797959b5c787cd1a347c7f6aa2801943ef6bf13",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "bc744b625121d92dea594052b797959b5c787cd1a347c7f6aa2801943ef6bf13",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "bc744b625121d92dea594052b797959b5c787cd1a347c7f6aa2801943ef6bf13",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "bc744b625121d92dea594052b797959b5c787cd1a347c7f6aa2801943ef6bf13"
+      },
+      {
+        "destination": "after-install.md",
+        "input_sha256": "bd7f1bfe0ec30746cf700ef172d9639b8bc4d12d91c16bc11d63e68f4584df2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "df9529dbbe6ce93346c41d2d0c69bf3944a76f0c27ae42dd5e84a3901415ceaa",
+        "source": "after-install.md",
+        "final_output_sha256": "e2a71056f8193136eb9ae45799767cb662b2105f04f69752d90b8f15b1090372",
+        "cli_destination": "after-install.md",
+        "previous_staging_sha256": "e2a71056f8193136eb9ae45799767cb662b2105f04f69752d90b8f15b1090372"
+      },
+      {
+        "destination": "cli.py",
+        "input_sha256": "247f1d5e73b6d48e0bbf6834c1a752466139d6e279f1ac03e4def852fd1d5ddc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a600c857182b6458b7ed5aa2102a3657b86280de4587b08bd1a9056e9ab49a7b",
+        "source": "cli.py",
+        "final_output_sha256": "9b83f45854a5dfd03b05efcceb6abfd018b83b61bc6cb379fdd0a2284343712c",
+        "cli_destination": "cli.py",
+        "previous_staging_sha256": "9b83f45854a5dfd03b05efcceb6abfd018b83b61bc6cb379fdd0a2284343712c"
+      },
+      {
+        "destination": "cognee_integration_duckwork/__init__.py",
+        "input_sha256": "1dbefbbf104390cc3401a8b24a858460de8889acee25e93c9d54615f8d4b0a09",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "27e3f96802eebc1e7295fab2ab3b9a0b0d77f8080f271799d6c3425e9105630b",
+        "source": "cognee_integration_hermes/__init__.py",
+        "final_output_sha256": "866da9b792a2500fafd123a60b1191999422cdc313dc7e997cad9a4ec36c0406",
+        "cli_destination": "cognee_integration_duckwork/__init__.py",
+        "previous_staging_sha256": "866da9b792a2500fafd123a60b1191999422cdc313dc7e997cad9a4ec36c0406"
+      },
+      {
+        "destination": "cognee_integration_duckwork/_plugin_root/after-install.md",
+        "input_sha256": "bd7f1bfe0ec30746cf700ef172d9639b8bc4d12d91c16bc11d63e68f4584df2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "df9529dbbe6ce93346c41d2d0c69bf3944a76f0c27ae42dd5e84a3901415ceaa",
+        "source": "cognee_integration_hermes/_plugin_root/after-install.md",
+        "final_output_sha256": "e2a71056f8193136eb9ae45799767cb662b2105f04f69752d90b8f15b1090372",
+        "cli_destination": "cognee_integration_duckwork/_plugin_root/after-install.md",
+        "previous_staging_sha256": "e2a71056f8193136eb9ae45799767cb662b2105f04f69752d90b8f15b1090372"
+      },
+      {
+        "destination": "cognee_integration_duckwork/_plugin_root/cli.py",
+        "input_sha256": "247f1d5e73b6d48e0bbf6834c1a752466139d6e279f1ac03e4def852fd1d5ddc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a600c857182b6458b7ed5aa2102a3657b86280de4587b08bd1a9056e9ab49a7b",
+        "source": "cognee_integration_hermes/_plugin_root/cli.py",
+        "final_output_sha256": "9b83f45854a5dfd03b05efcceb6abfd018b83b61bc6cb379fdd0a2284343712c",
+        "cli_destination": "cognee_integration_duckwork/_plugin_root/cli.py",
+        "previous_staging_sha256": "9b83f45854a5dfd03b05efcceb6abfd018b83b61bc6cb379fdd0a2284343712c"
+      },
+      {
+        "destination": "cognee_integration_duckwork/_plugin_root/plugin.yaml",
+        "input_sha256": "54f55dc755991b3284945547c7ae38803217aaf11a3386b1fde628eb5d81e448",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3ff86f61c2b28225e9839d494c65f6d7410337f7f815b6cdc52ac7637880072",
+        "source": "cognee_integration_hermes/_plugin_root/plugin.yaml",
+        "final_output_sha256": "4715efdbf3a1f606e2c5f3c79cbb123957816d71a0c3f3f5dadc908fa1b2a7b4",
+        "cli_destination": "cognee_integration_duckwork/_plugin_root/plugin.yaml",
+        "previous_staging_sha256": "4715efdbf3a1f606e2c5f3c79cbb123957816d71a0c3f3f5dadc908fa1b2a7b4"
+      },
+      {
+        "destination": "cognee_integration_duckwork/_plugin_root/plugin_init.py",
+        "input_sha256": "2ae6c3ca808e1f348ba093fb66fb026c37a54f7d57a9c03212bdbfd8764ed4a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e5d51b6412df98758d41bcf046152af8f9c98f10561907a78c12c37d95231f3a",
+        "source": "cognee_integration_hermes/_plugin_root/plugin_init.py",
+        "final_output_sha256": "2382d8f28709e4981067808ace6711c2a3cdc910b7e7e15c5f5f84383594fedf",
+        "cli_destination": "cognee_integration_duckwork/_plugin_root/plugin_init.py",
+        "previous_staging_sha256": "2382d8f28709e4981067808ace6711c2a3cdc910b7e7e15c5f5f84383594fedf"
+      },
+      {
+        "destination": "cognee_integration_duckwork/backend.py",
+        "input_sha256": "180756eac2966fa9fa8497f743fd985192abd4402ed065462a3c2b1e2a07c250",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6cbc2bea07d68dcbf55bc9638248885f837f230508d0dee01cb20d6fd7178198",
+        "source": "cognee_integration_hermes/backend.py",
+        "final_output_sha256": "4f8737943f7f16ad740ee19ebaa4934078bc63887c2d4b71cec268db584776ba",
+        "cli_destination": "cognee_integration_duckwork/backend.py",
+        "previous_staging_sha256": "4f8737943f7f16ad740ee19ebaa4934078bc63887c2d4b71cec268db584776ba"
+      },
+      {
+        "destination": "cognee_integration_duckwork/capture_policy.py",
+        "input_sha256": "ec332cb31a92d8c4e6ab8246270a49ebb8d219a0db15dfe8ac1d9810a001e04e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b87492f808eab191f5fbf6637b6c2001ce28880bd774dcba987ff1b02bd6d24d",
+        "source": "cognee_integration_hermes/capture_policy.py",
+        "final_output_sha256": "e859b6701408d6c584be7fd4dadb551096cfebd6e41e1463dd62c2050d7a4c20",
+        "cli_destination": "cognee_integration_duckwork/capture_policy.py",
+        "previous_staging_sha256": "e859b6701408d6c584be7fd4dadb551096cfebd6e41e1463dd62c2050d7a4c20"
+      },
+      {
+        "destination": "cognee_integration_duckwork/catalog.py",
+        "input_sha256": "c9cd24bb94fbc2f26b4ceca3cd052cdbf9be26a4c70b672a50ab8e26efa7155c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "070f921774f0d031b45af87ee2b69878c979dadda23113bccfa605343f0c1526",
+        "source": "cognee_integration_hermes/catalog.py",
+        "final_output_sha256": "422a9a02b61687180155593d27d1b499c5b391a237eecaa624286ad87f948452",
+        "cli_destination": "cognee_integration_duckwork/catalog.py",
+        "previous_staging_sha256": "422a9a02b61687180155593d27d1b499c5b391a237eecaa624286ad87f948452"
+      },
+      {
+        "destination": "cognee_integration_duckwork/cli.py",
+        "input_sha256": "2e45253c73c605b3d45762b21b6d45999b1bda6142c4bd6b757ebbe15865cf83",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "564eeae6ef9dabfa22c3956a2eb92265cc0b7eb9dadb3bfc93452a21bcdeccc6",
+        "source": "cognee_integration_hermes/cli.py",
+        "final_output_sha256": "53a862236b4abe116e15e0fbaf8cf368129dc4aa45114a64b2e6b5a9a6cdce18",
+        "cli_destination": "cognee_integration_duckwork/cli.py",
+        "previous_staging_sha256": "53a862236b4abe116e15e0fbaf8cf368129dc4aa45114a64b2e6b5a9a6cdce18"
+      },
+      {
+        "destination": "cognee_integration_duckwork/code_graph.py",
+        "input_sha256": "5053ac9313627ad66b96e78dd3be49d0cc0e6807390974a8cd192469e6fd34e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9d7f2fb41d44bbfd2f2bac68062865fd04c1a2860ddeccd14f62e00697b34f39",
+        "source": "cognee_integration_hermes/code_graph.py",
+        "final_output_sha256": "d5557731f9be7b8cf0664a77189045e035a7b62e25031f19ebda6460a2d0fc79",
+        "cli_destination": "cognee_integration_duckwork/code_graph.py",
+        "previous_staging_sha256": "d5557731f9be7b8cf0664a77189045e035a7b62e25031f19ebda6460a2d0fc79"
+      },
+      {
+        "destination": "cognee_integration_duckwork/config.py",
+        "input_sha256": "469f07c4f08e8439b3b803dab1aa6c5e0c9343ed12f4887045698a7381b40196",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5d6af12cb85094cc3ae620de798a7d25eaad92a8c7ed07ff81868de28e7c2c22",
+        "source": "cognee_integration_hermes/config.py",
+        "final_output_sha256": "2964b8cfa1712f46fb4c60f09edb94ce1cf83f6d087c3338c57797cb3757db49",
+        "cli_destination": "cognee_integration_duckwork/config.py",
+        "previous_staging_sha256": "2964b8cfa1712f46fb4c60f09edb94ce1cf83f6d087c3338c57797cb3757db49"
+      },
+      {
+        "destination": "cognee_integration_duckwork/dataset_overrides.py",
+        "input_sha256": "06fc43047f0d531c4994e1aea41960aa7afa5137d474d4e6cb5e42f3003e2c98",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "123732bd5d4cb098670f2721d0f465d0898b7df362fd2bda170c8da5e54191e5",
+        "source": "cognee_integration_hermes/dataset_overrides.py",
+        "final_output_sha256": "76db2ef7dcaa42c630bc71ac0fe3aff5c451b2847b437224ad12f5fe8787a1ef",
+        "cli_destination": "cognee_integration_duckwork/dataset_overrides.py",
+        "previous_staging_sha256": "76db2ef7dcaa42c630bc71ac0fe3aff5c451b2847b437224ad12f5fe8787a1ef"
+      },
+      {
+        "destination": "cognee_integration_duckwork/exit_watcher.py",
+        "input_sha256": "b0050ad4d8219df9157fdb7b3ca0ee4e6ce98c0d0c8d29856900d5d1f2c982f8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "32d3c00241eabd0d9973b2cca658bfbb290fe71bf6d968a2ab714e96ff2a1e99",
+        "source": "cognee_integration_hermes/exit_watcher.py",
+        "final_output_sha256": "af2546a03dc3a5f3c17b9d360abea54ce1dee996524a3a30f37b9dc357f6e409",
+        "cli_destination": "cognee_integration_duckwork/exit_watcher.py",
+        "previous_staging_sha256": "af2546a03dc3a5f3c17b9d360abea54ce1dee996524a3a30f37b9dc357f6e409"
+      },
+      {
+        "destination": "cognee_integration_duckwork/http_backend.py",
+        "input_sha256": "aa5f05a40ece3e8e42dd4798fde41eefcca2f1849b8fe0c46ce35c529a847c50",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a0be0724e2dabd584519841ac50fb4b0b99a43fc940889110fda2a291b550061",
+        "source": "cognee_integration_hermes/http_backend.py",
+        "final_output_sha256": "6a8d94ae789de7c1bba2086fe7ff385333eb92415defe7d3eb68c5eb46f17386",
+        "cli_destination": "cognee_integration_duckwork/http_backend.py",
+        "previous_staging_sha256": "6a8d94ae789de7c1bba2086fe7ff385333eb92415defe7d3eb68c5eb46f17386"
+      },
+      {
+        "destination": "cognee_integration_duckwork/installer.py",
+        "input_sha256": "1e9eb31b8bea4eed501cad7fe79fceb7181b1469b596b06631e4a6115e4dfeef",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fae4cbd321f68cc3030b0cdb22a7605fd6c1f6fc52ad9b1b34676db9d892e80a",
+        "source": "cognee_integration_hermes/installer.py",
+        "final_output_sha256": "423eefd0a6d7fc7c590997a4cdde7ee1a6c45e63c9213aae30b99eff062365a4",
+        "cli_destination": "cognee_integration_duckwork/installer.py",
+        "previous_staging_sha256": "423eefd0a6d7fc7c590997a4cdde7ee1a6c45e63c9213aae30b99eff062365a4"
+      },
+      {
+        "destination": "cognee_integration_duckwork/provider.py",
+        "input_sha256": "da8a26c1cc7e61edb6a9912fa41bfbae434c9a10c2b03062407078334bba0d42",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5585f05268238af0ffce83197780f5467b282d748a661942410bd4ef08b83f96",
+        "source": "cognee_integration_hermes/provider.py",
+        "final_output_sha256": "349fbdb91a71f084f6b38dd3bde629b71259209a9d9f01203e064ed868bb35c1",
+        "cli_destination": "cognee_integration_duckwork/provider.py",
+        "previous_staging_sha256": "349fbdb91a71f084f6b38dd3bde629b71259209a9d9f01203e064ed868bb35c1"
+      },
+      {
+        "destination": "cognee_integration_duckwork/recall_text.py",
+        "input_sha256": "21249905bfbebe0e4ed1233f404a85de23548501cae87101362fba9e3537d510",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cf1d8f02b85287a5c37e4f090a37e36704afae75db529cd4e4bcc304b21a990c",
+        "source": "cognee_integration_hermes/recall_text.py",
+        "final_output_sha256": "56a459dce172eb9f55ac0cee2185dd6a6348d316c0b12b3bdd39d9c3eaf7c612",
+        "cli_destination": "cognee_integration_duckwork/recall_text.py",
+        "previous_staging_sha256": "56a459dce172eb9f55ac0cee2185dd6a6348d316c0b12b3bdd39d9c3eaf7c612"
+      },
+      {
+        "destination": "cognee_integration_duckwork/recap.py",
+        "input_sha256": "8b57e2d11792b6e4264c9c472ef2f34f96003616e7e74f88a501f36db835e8e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "46aa6146ad5e6d4732c27f8ea3930cd757f6567bd3842c4c25197223257b4e74",
+        "source": "cognee_integration_hermes/recap.py",
+        "final_output_sha256": "29f08c4ffcf952a05915cd722504238af91022645daf23da6a36e8ae87fb3954",
+        "cli_destination": "cognee_integration_duckwork/recap.py",
+        "previous_staging_sha256": "29f08c4ffcf952a05915cd722504238af91022645daf23da6a36e8ae87fb3954"
+      },
+      {
+        "destination": "cognee_integration_duckwork/schemas.py",
+        "input_sha256": "9d646fc3e18aa2d4b72a5fda99a8af8f59c254014f526661d90df3fb2cdbda40",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "243da812bd2aa5800a65bcaf0494fdd82f08a225ae42f247e39b217aa54190fd",
+        "source": "cognee_integration_hermes/schemas.py",
+        "final_output_sha256": "f2cd12fe2f50f9edb26c646b05fba2ce165a501fb4e2725d1d70028fa5b1f3d3",
+        "cli_destination": "cognee_integration_duckwork/schemas.py",
+        "previous_staging_sha256": "f2cd12fe2f50f9edb26c646b05fba2ce165a501fb4e2725d1d70028fa5b1f3d3"
+      },
+      {
+        "destination": "cognee_integration_duckwork/server_bootstrap.py",
+        "input_sha256": "d9ffcd9e84b68aaecea7943e2fc7ec51b3d0e5ffe287c7e0e9d281e34a42692e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ad61c52b1bf0c62ae2ecee363cd8b9a267421531939e677fcdac583b8875e4f0",
+        "source": "cognee_integration_hermes/server_bootstrap.py",
+        "final_output_sha256": "515be4fe2a79971b29b1253e48e85b0275c82695924d35ea8c73849523424db3",
+        "cli_destination": "cognee_integration_duckwork/server_bootstrap.py",
+        "previous_staging_sha256": "515be4fe2a79971b29b1253e48e85b0275c82695924d35ea8c73849523424db3"
+      },
+      {
+        "destination": "cognee_integration_duckwork/update_check.py",
+        "input_sha256": "8acd59a7a9b95ad98f5b2d4277c2ae4fe061fc16d465a9885b11c13d673daa2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1ce534635096fe104533c121e7cd8c8038c61eb4a61378eb4dc43bbcdfb58e8f",
+        "source": "cognee_integration_hermes/update_check.py",
+        "final_output_sha256": "787bc7bc7e425170ca39de0c4dec7c118d72c3659d66f9d92d1beeb4ac9bcb93",
+        "cli_destination": "cognee_integration_duckwork/update_check.py",
+        "previous_staging_sha256": "787bc7bc7e425170ca39de0c4dec7c118d72c3659d66f9d92d1beeb4ac9bcb93"
+      },
+      {
+        "destination": "cognee_integration_duckwork/write_buffer.py",
+        "input_sha256": "6a7210b7f4ac7556b464f86dd9220cbc9888f63d5419af0c35ec78e1648b1eef",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fd95bca338960490837bd25f1306242e5efa4c6c8148155768bc101a769403d3",
+        "source": "cognee_integration_hermes/write_buffer.py",
+        "final_output_sha256": "35ff5240657b6cf07a3706cab902b0bcbc024bdabd8b343164dec472827bd742",
+        "cli_destination": "cognee_integration_duckwork/write_buffer.py",
+        "previous_staging_sha256": "35ff5240657b6cf07a3706cab902b0bcbc024bdabd8b343164dec472827bd742"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "54f55dc755991b3284945547c7ae38803217aaf11a3386b1fde628eb5d81e448",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3ff86f61c2b28225e9839d494c65f6d7410337f7f815b6cdc52ac7637880072",
+        "source": "plugin.yaml",
+        "final_output_sha256": "4715efdbf3a1f606e2c5f3c79cbb123957816d71a0c3f3f5dadc908fa1b2a7b4",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "4715efdbf3a1f606e2c5f3c79cbb123957816d71a0c3f3f5dadc908fa1b2a7b4"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "7bf28a636e266ccc27a483ac645a147a2e82f5204eb1705e685c02eb15c01c78",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "26ee4d8b27d1bad0b7ed87f7cdeb7049d865d509853aeec714f55a77cf32fd1e",
+        "source": "pyproject.toml",
+        "final_output_sha256": "8ab1b7f6b874b4fe577e1866bf9f267b4bf648c1d0c75901c263ccf93a85276f",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "8ab1b7f6b874b4fe577e1866bf9f267b4bf648c1d0c75901c263ccf93a85276f"
+      },
+      {
+        "destination": "tests/_char_helpers.py",
+        "input_sha256": "9034cc90cffd8dd66ab6690b8b32223c86375cf3427530e629aee0b798951933",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e58b78a84d086bb6c8ae1fe2ea48db88c458fad06df30a28a4daefa75bd8c450",
+        "source": "tests/_char_helpers.py",
+        "final_output_sha256": "9d4f845796acc7cff63560df2fe3145e86f0e71a22b1080be67051da4cfac5f3",
+        "cli_destination": "tests/_char_helpers.py",
+        "previous_staging_sha256": "9d4f845796acc7cff63560df2fe3145e86f0e71a22b1080be67051da4cfac5f3"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "a72b0b203336044414d2e01b47b3a33ec8a3b151212ab05fadec9791e0a9d235",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cfa3bb31da90f21ddc668d3407e35cc41fd9ae6e9316bfb3f71d0dcd6f3abb7d",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "175c3274d7e302f9ed4821f1127f0ea10c980a1eac18d08774c5ffd36710f5ad",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "175c3274d7e302f9ed4821f1127f0ea10c980a1eac18d08774c5ffd36710f5ad"
+      },
+      {
+        "destination": "tests/test_capture_and_buffer.py",
+        "input_sha256": "3da9d55e5fb64fed9d290a9531942c4d60bcf068ee009fdaffd5449db9b174a1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "925086275da3ccf2c5968365cce47e0d13ed0c790298e06ef498b569d950ee56",
+        "source": "tests/test_capture_and_buffer.py",
+        "final_output_sha256": "7970a41d6370671bb7b22b55cc50eb70e6e3bdb16cd8d32afbd14d8585fa1e41",
+        "cli_destination": "tests/test_capture_and_buffer.py",
+        "previous_staging_sha256": "7970a41d6370671bb7b22b55cc50eb70e6e3bdb16cd8d32afbd14d8585fa1e41"
+      },
+      {
+        "destination": "tests/test_capture_policy_conformance.py",
+        "input_sha256": "44ecfc983ba762d79dee414178e1331a34d3e135a967e75666a1ec54358dcb91",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "81722e1d8cc5722b99e3b7149862d90b664a2a5447bd078cedea344a0de46643",
+        "source": "tests/test_capture_policy_conformance.py",
+        "final_output_sha256": "c41e0673cabfe32a09d13ffc8e6daa6314a79b0767d4edce2b07a9297f6591e0",
+        "cli_destination": "tests/test_capture_policy_conformance.py",
+        "previous_staging_sha256": "c41e0673cabfe32a09d13ffc8e6daa6314a79b0767d4edce2b07a9297f6591e0"
+      },
+      {
+        "destination": "tests/test_catalog_install.py",
+        "input_sha256": "dca8fed43296bb9d2867a30b0854e590e1a6cc5be905b527d490b53cd1970ac1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fe1a07da78aa28ef85d51b8d57eca8f3ab347a423e997155a38b7a0abf27e625",
+        "source": "tests/test_catalog_install.py",
+        "final_output_sha256": "46f87bb7dfec1910769d6183792a3af4b67b3736927847a2f9d63a7fcedf228b",
+        "cli_destination": "tests/test_catalog_install.py",
+        "previous_staging_sha256": "46f87bb7dfec1910769d6183792a3af4b67b3736927847a2f9d63a7fcedf228b"
+      },
+      {
+        "destination": "tests/test_code_graph.py",
+        "input_sha256": "3480ec3dc94e46c97c34837a75b4b9917952b4d93ad1d6aeb1ff7a873ae18708",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4bde1e43f1440db8ece151ede2145d992f6ac3b70c6df1f54f627b9a6239a03a",
+        "source": "tests/test_code_graph.py",
+        "final_output_sha256": "a8c16cc572568c8acad6fbe6626446ccebbb0b5369f891f4801b53a11f9442ff",
+        "cli_destination": "tests/test_code_graph.py",
+        "previous_staging_sha256": "a8c16cc572568c8acad6fbe6626446ccebbb0b5369f891f4801b53a11f9442ff"
+      },
+      {
+        "destination": "tests/test_config_contract.py",
+        "input_sha256": "c6157dcff2bf33c185fad85d6619f4ec6fa20d394313b1e0686df392762dc921",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e1c2785e0f57b4b5cefb32072c396ea6a2d4a60b7c230dfee222fe7c393972f5",
+        "source": "tests/test_config_contract.py",
+        "final_output_sha256": "1e7d8d99ea587d0c2ffb784bb548eb87ba447b051b1323f860c91159d9cc2b0c",
+        "cli_destination": "tests/test_config_contract.py",
+        "previous_staging_sha256": "1e7d8d99ea587d0c2ffb784bb548eb87ba447b051b1323f860c91159d9cc2b0c"
+      },
+      {
+        "destination": "tests/test_dataset_name_conformance.py",
+        "input_sha256": "0ad4f942edd104aea5f50688311e1028dc0fe925fd740cba78cd631daf418715",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "52e1cf9312edf3048865fef315f48f9989a2c23e18667a0bf9ac42e7ed09e49b",
+        "source": "tests/test_dataset_name_conformance.py",
+        "final_output_sha256": "6d6425b0e37351428544b1db7df65fdf61200e81a981e010a43102a7dc98d1a3",
+        "cli_destination": "tests/test_dataset_name_conformance.py",
+        "previous_staging_sha256": "6d6425b0e37351428544b1db7df65fdf61200e81a981e010a43102a7dc98d1a3"
+      },
+      {
+        "destination": "tests/test_dim_mismatch.py",
+        "input_sha256": "0e5334f24262162f2fcf648bd9a448259aa2aaa1e079be017599be4839055cfd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bba5fc2b569b0a01ae38cb031484f36c6e0dfd26fc86b1f1e671da98e0606a59",
+        "source": "tests/test_dim_mismatch.py",
+        "final_output_sha256": "ddbb9523e037c3ba8cefa6f61936ffe74ef105eefe56621509487b8b601e014d",
+        "cli_destination": "tests/test_dim_mismatch.py",
+        "previous_staging_sha256": "ddbb9523e037c3ba8cefa6f61936ffe74ef105eefe56621509487b8b601e014d"
+      },
+      {
+        "destination": "tests/test_exit_watcher.py",
+        "input_sha256": "87ab6ea9a0a4b9aa270bca1cd9b0300f792692e97ced3f2ae7c277f3fd476e26",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "def67c6237400615f841dce1bccf3e7617a710a718f953dc3d47ecf836c5e421",
+        "source": "tests/test_exit_watcher.py",
+        "final_output_sha256": "4ba34d28f139d5b864f5e14f87027bfa604192afa24923030499c2ec9397dd14",
+        "cli_destination": "tests/test_exit_watcher.py",
+        "previous_staging_sha256": "4ba34d28f139d5b864f5e14f87027bfa604192afa24923030499c2ec9397dd14"
+      },
+      {
+        "destination": "tests/test_http_backend.py",
+        "input_sha256": "ba767d7b38b3d20ca8a76ceb98de26886a51714ca0b9938af92c3b9738eb86a4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "90c3a5b6d2f3e288e2bb0b4768a0d7dd089a75d8f75a357f52a46a04e73df054",
+        "source": "tests/test_http_backend.py",
+        "final_output_sha256": "a982e390e38bda4bf55030c0441aa34b676d6612490a41fad3657d1c2a183a52",
+        "cli_destination": "tests/test_http_backend.py",
+        "previous_staging_sha256": "a982e390e38bda4bf55030c0441aa34b676d6612490a41fad3657d1c2a183a52"
+      },
+      {
+        "destination": "tests/test_installer.py",
+        "input_sha256": "4bf6c0a8a433e237c638ccea3abaa5c5bdb6565e411e3dac229f250377b5b7da",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f81cdbeb43deb4fa2cc1b3b07fe450922a6c7608b34d5d7b700399e7da1aab2f",
+        "source": "tests/test_installer.py",
+        "final_output_sha256": "5ded25aad268f4cb841ae12d6de1a9464d930f946b573337c64d8a0e83cdbaf7",
+        "cli_destination": "tests/test_installer.py",
+        "previous_staging_sha256": "5ded25aad268f4cb841ae12d6de1a9464d930f946b573337c64d8a0e83cdbaf7"
+      },
+      {
+        "destination": "tests/test_integration_concurrency.py",
+        "input_sha256": "b3632ee905453925cbbf3297ee21103173fca2335a811eede32bdc88f3c806df",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "31c781e20e70e30ff27effc0b95345219995f5c879f05a3980ffa5b70a1b3fe5",
+        "source": "tests/test_integration_concurrency.py",
+        "final_output_sha256": "810884f099fedf80320307816d3e5ead074cc726b24286bcd0385254b4b671f6",
+        "cli_destination": "tests/test_integration_concurrency.py",
+        "previous_staging_sha256": "810884f099fedf80320307816d3e5ead074cc726b24286bcd0385254b4b671f6"
+      },
+      {
+        "destination": "tests/test_integration_roundtrip.py",
+        "input_sha256": "b299d153748dbbc70f2d592daa0b319c2669ff9398079db6fa90651fc39b4e12",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a8fc24022135c0c9a1f2a19f6e50fd10f28f2d817062b5d3edb2b0f5998e95b2",
+        "source": "tests/test_integration_roundtrip.py",
+        "final_output_sha256": "8c851e6fa78c5cca17e4c4c1b7c05fb79b5b8e1a955ea0ca2eabb692ce3a80bc",
+        "cli_destination": "tests/test_integration_roundtrip.py",
+        "previous_staging_sha256": "8c851e6fa78c5cca17e4c4c1b7c05fb79b5b8e1a955ea0ca2eabb692ce3a80bc"
+      },
+      {
+        "destination": "tests/test_layered_recall.py",
+        "input_sha256": "dc46d59a98ba6da56fdc0b81ba44e2c32f9b90ded32b85db65e9ff6a93427139",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "09de96e84d34cae7781b593d011b5dbff93029eeaa767cd616e759755409dd8c",
+        "source": "tests/test_layered_recall.py",
+        "final_output_sha256": "3367c3cc4110bcbfb1314a46a657763ea6a9178e1c179dcee6df2d7d6f12f3cd",
+        "cli_destination": "tests/test_layered_recall.py",
+        "previous_staging_sha256": "3367c3cc4110bcbfb1314a46a657763ea6a9178e1c179dcee6df2d7d6f12f3cd"
+      },
+      {
+        "destination": "tests/test_lifecycle_contract.py",
+        "input_sha256": "928b1d8a9a9e29373757687e516162b786b9766a490b82336b62fce2f4d8130e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d71a155392b7122d443053a39827311c0f6346f814c93044b478c57cbed54ceb",
+        "source": "tests/test_lifecycle_contract.py",
+        "final_output_sha256": "6356147147480d36200f136506d42cd10faa98efb2be898daaef3c15ba2fbbab",
+        "cli_destination": "tests/test_lifecycle_contract.py",
+        "previous_staging_sha256": "6356147147480d36200f136506d42cd10faa98efb2be898daaef3c15ba2fbbab"
+      },
+      {
+        "destination": "tests/test_openclaw_parity.py",
+        "input_sha256": "28f41978bdb9c3a3f98ed838faffd8479f4b8b9eeb0009197941ef4db690b5e1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fb0606a70d993287d7ceb2f8b88f087131b7ebe58ae8cb35045ef8fbfd38db1a",
+        "source": "tests/test_openclaw_parity.py",
+        "final_output_sha256": "da79896dff7b3fb95f633f8af25bf0ae137cf9aff2cf3d55e65858019a6ecaa0",
+        "cli_destination": "tests/test_openclaw_parity.py",
+        "previous_staging_sha256": "da79896dff7b3fb95f633f8af25bf0ae137cf9aff2cf3d55e65858019a6ecaa0"
+      },
+      {
+        "destination": "tests/test_overflow_hint.py",
+        "input_sha256": "ed091aaa8baf484c6da8a5c66b3ddc4279ab6458a59ac777956da8601838af3f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8fbac9f4e7e309c039f08b144a621ef52ded156486fe9554171cac7143a67b12",
+        "source": "tests/test_overflow_hint.py",
+        "final_output_sha256": "761637a362f29d3d81bd1d71efd78149a1c346fbd019f7a2c669fa0ea211350e",
+        "cli_destination": "tests/test_overflow_hint.py",
+        "previous_staging_sha256": "761637a362f29d3d81bd1d71efd78149a1c346fbd019f7a2c669fa0ea211350e"
+      },
+      {
+        "destination": "tests/test_pre_compress.py",
+        "input_sha256": "8f5b932d36e64d6df2f2345170656e72ba41cf883a54fec3559b5d08c407a1a2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "37bc3b0826754b4c399e8f62924b8fa47312a75684b9f0eb32817a8f4d773d5c",
+        "source": "tests/test_pre_compress.py",
+        "final_output_sha256": "e2ad21613a1d4189d005934213c2d645d1317bdc4130b2bddffd8d1d75246f0d",
+        "cli_destination": "tests/test_pre_compress.py",
+        "previous_staging_sha256": "e2ad21613a1d4189d005934213c2d645d1317bdc4130b2bddffd8d1d75246f0d"
+      },
+      {
+        "destination": "tests/test_recall_result_text.py",
+        "input_sha256": "878c564ef1c0a1b1564e76ac8d3b72d9ff83a7bbd688b8585f6d9ae8eb807c85",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "48f2d5eb4ec67295870017a3b28f0506b284604dc1cdb22f0e2de0d576d699a4",
+        "source": "tests/test_recall_result_text.py",
+        "final_output_sha256": "1748bf1fc708c5b8f5ba73528c68fc720f5e000b0730a8400da1457419e4e381",
+        "cli_destination": "tests/test_recall_result_text.py",
+        "previous_staging_sha256": "1748bf1fc708c5b8f5ba73528c68fc720f5e000b0730a8400da1457419e4e381"
+      },
+      {
+        "destination": "tests/test_recall_text_conformance.py",
+        "input_sha256": "5dad86202e159f40bacaef81259912ea288b55fb70170f2ead44f1f06008962c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ef45cc5ba154b8fce302e8e93b5cb8abc74458084552a612a718fb465e720ef0",
+        "source": "tests/test_recall_text_conformance.py",
+        "final_output_sha256": "c5f77f4133b4db792f1166c3a2b38d182a838b7bd3184308048990da999c7032",
+        "cli_destination": "tests/test_recall_text_conformance.py",
+        "previous_staging_sha256": "c5f77f4133b4db792f1166c3a2b38d182a838b7bd3184308048990da999c7032"
+      },
+      {
+        "destination": "tests/test_recall_wire_contract.py",
+        "input_sha256": "8b65c938789f6403da98d9e0033a8b8ab72a882c0604f3fcab794bdc4fe259f5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ba799401f8e830f7580e8e7aa3180f036b0167fe0c1a584239065e765d43c8b9",
+        "source": "tests/test_recall_wire_contract.py",
+        "final_output_sha256": "867545d8ecb5426cb049fff0e513a7a2a7c0a0da0ed1f8fb1fc5f729f23e5ade",
+        "cli_destination": "tests/test_recall_wire_contract.py",
+        "previous_staging_sha256": "867545d8ecb5426cb049fff0e513a7a2a7c0a0da0ed1f8fb1fc5f729f23e5ade"
+      },
+      {
+        "destination": "tests/test_recap.py",
+        "input_sha256": "d03bcd14b1a7083335c99d258e6fffe720dd7dca34f7cb85611ffeb58489589e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0d3c1958e717a69f03c3b13f11b31fd939115e7f2049f3b99c26ce883ff25331",
+        "source": "tests/test_recap.py",
+        "final_output_sha256": "ee4e877a6508c41a7c25a04c10c7d6f8d5e3969f4f710641abf6ea08374d309b",
+        "cli_destination": "tests/test_recap.py",
+        "previous_staging_sha256": "ee4e877a6508c41a7c25a04c10c7d6f8d5e3969f4f710641abf6ea08374d309b"
+      },
+      {
+        "destination": "tests/test_sdk_backend.py",
+        "input_sha256": "bc24be181aa30c0be4277f70df27b2ba17bc221c169c047fc0dddef8f04c99d9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "17fdb664dc661cbbb814a4f229d1fb27caac2c57cb48b619333ab4dd81242140",
+        "source": "tests/test_sdk_backend.py",
+        "final_output_sha256": "a21740cabd8dbfe694f8c561d5837df8fa75dd6b13aeb2fd7c92e194715db7bf",
+        "cli_destination": "tests/test_sdk_backend.py",
+        "previous_staging_sha256": "a21740cabd8dbfe694f8c561d5837df8fa75dd6b13aeb2fd7c92e194715db7bf"
+      },
+      {
+        "destination": "tests/test_server_mode.py",
+        "input_sha256": "3c3e885c59682cd139fb1deae36af3464bf8e183c100971294d0c39ef437e813",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca7b7d3a0646c3e49b22cccae75765e5bdc413922f5f6d4455e4e305da5d7bd0",
+        "source": "tests/test_server_mode.py",
+        "final_output_sha256": "6f4164895c1555bb0d31ae409d56518bc4a26d6d53707cc81cdb9cdcfdf6037e",
+        "cli_destination": "tests/test_server_mode.py",
+        "previous_staging_sha256": "6f4164895c1555bb0d31ae409d56518bc4a26d6d53707cc81cdb9cdcfdf6037e"
+      },
+      {
+        "destination": "tests/test_session_id_conformance.py",
+        "input_sha256": "3426d4e90e27e75360d60be0a8faecc8c367bdc4c2c697395b479b500735cbfc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f3b7c57034f839d1b1c29d6953faa8bdff8b23c5c663c7bcf6814d6eeefd4393",
+        "source": "tests/test_session_id_conformance.py",
+        "final_output_sha256": "11d3fce347f7aac2cbcb2a2fdbfc56a1d8eab31c0effdeda4ef1050840daa937",
+        "cli_destination": "tests/test_session_id_conformance.py",
+        "previous_staging_sha256": "11d3fce347f7aac2cbcb2a2fdbfc56a1d8eab31c0effdeda4ef1050840daa937"
+      },
+      {
+        "destination": "tests/test_smoke.py",
+        "input_sha256": "f5891573d4fbdf9e360fcf6a86c0a2ebaa43a68adbd7f21e4411f13dbb72881a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6aba16dffba351430994d57176a66c227e0bec6739f846a12f0f27b3a94df127",
+        "source": "tests/test_smoke.py",
+        "final_output_sha256": "04ad2e534d013180cdabcec2ba072edb9b0b9ce7c7d8a30a824c7a7f6ec0c5e5",
+        "cli_destination": "tests/test_smoke.py",
+        "previous_staging_sha256": "04ad2e534d013180cdabcec2ba072edb9b0b9ce7c7d8a30a824c7a7f6ec0c5e5"
+      },
+      {
+        "destination": "tests/test_switch_and_code_tools.py",
+        "input_sha256": "46c7fe908ca25e719aea2501dbec3d57abbad8af030f6f0027b443f1b7c9f0b7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1c184418112719ba0f648496eb3259fbe6211ceac471e56c7112331db4292ebb",
+        "source": "tests/test_switch_and_code_tools.py",
+        "final_output_sha256": "e567eff2e57fc8cfd4775a856b8d06c98e7c409d2e3d48e7aef7a98682f607f9",
+        "cli_destination": "tests/test_switch_and_code_tools.py",
+        "previous_staging_sha256": "e567eff2e57fc8cfd4775a856b8d06c98e7c409d2e3d48e7aef7a98682f607f9"
+      },
+      {
+        "destination": "tests/test_tool_contract.py",
+        "input_sha256": "56f7780959a29273089b342189a7889af39796e069931f46f18b2d93553a54de",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8bbe0c4a21ae8751c38bc2c4eabca99f896ffdc683648976c26f64157a809da8",
+        "source": "tests/test_tool_contract.py",
+        "final_output_sha256": "961c933043546b88c5cf9f2b8f837390719da14800056a3f10f611cfbc05a2e2",
+        "cli_destination": "tests/test_tool_contract.py",
+        "previous_staging_sha256": "961c933043546b88c5cf9f2b8f837390719da14800056a3f10f611cfbc05a2e2"
+      },
+      {
+        "destination": "tests/test_update_check.py",
+        "input_sha256": "280e41248414e0171eebc1162ba804e64a44e7adcce43160ae5ee38f8425855b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c251af198f1f1423fb55e82833d41e59efb6d8a0a4941ff9904a6c8f5821f387",
+        "source": "tests/test_update_check.py",
+        "final_output_sha256": "35878c6a660dcc6e24f849574a6a73341c31159c2b0e2c5bd29d638e4e498c37",
+        "cli_destination": "tests/test_update_check.py",
+        "previous_staging_sha256": "35878c6a660dcc6e24f849574a6a73341c31159c2b0e2c5bd29d638e4e498c37"
+      },
+      {
+        "destination": "uv.lock",
+        "input_sha256": "0a4de490fa277211f6af1e389e3a38f52e64777b5b96e2b37822c952d65be072",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "efdba17533001862b8382ed1371259eb35893aa3442f0af351188a21c72a5acb",
+        "source": "uv.lock",
+        "final_output_sha256": "873a88d3ea3983682c73bd95137faa89251358e1a0faefbd4d471a2168966ccc",
+        "cli_destination": "uv.lock",
+        "previous_staging_sha256": "873a88d3ea3983682c73bd95137faa89251358e1a0faefbd4d471a2168966ccc"
+      }
+    ],
+    "manifest_sha256": "34b0f0e431491e9e0a06ccda8c21a4c20d954fecba3c320c1ba5b58aa123f705",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".env.example": "integrations/hermes-agent/.env.example",
+    ".gitignore": "integrations/hermes-agent/.gitignore",
+    ".python-version": "integrations/hermes-agent/.python-version",
+    "CHANGELOG.md": "integrations/hermes-agent/CHANGELOG.md",
+    "README.md": "integrations/hermes-agent/README.md",
+    "RUNBOOK.md": "integrations/hermes-agent/RUNBOOK.md",
+    "__init__.py": "integrations/hermes-agent/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "after-install.md": "integrations/hermes-agent/after-install.md",
+    "cli.py": "integrations/hermes-agent/cli.py",
+    "cognee_integration_hermes/__init__.py": "integrations/hermes-agent/cognee_integration_hermes/__init__.py",
+    "cognee_integration_hermes/_plugin_root/after-install.md": "integrations/hermes-agent/cognee_integration_hermes/_plugin_root/after-install.md",
+    "cognee_integration_hermes/_plugin_root/cli.py": "integrations/hermes-agent/cognee_integration_hermes/_plugin_root/cli.py",
+    "cognee_integration_hermes/_plugin_root/plugin.yaml": "integrations/hermes-agent/cognee_integration_hermes/_plugin_root/plugin.yaml",
+    "cognee_integration_hermes/_plugin_root/plugin_init.py": "integrations/hermes-agent/cognee_integration_hermes/_plugin_root/plugin_init.py",
+    "cognee_integration_hermes/backend.py": "integrations/hermes-agent/cognee_integration_hermes/backend.py",
+    "cognee_integration_hermes/capture_policy.py": "integrations/hermes-agent/cognee_integration_hermes/capture_policy.py",
+    "cognee_integration_hermes/catalog.py": "integrations/hermes-agent/cognee_integration_hermes/catalog.py",
+    "cognee_integration_hermes/cli.py": "integrations/hermes-agent/cognee_integration_hermes/cli.py",
+    "cognee_integration_hermes/code_graph.py": "integrations/hermes-agent/cognee_integration_hermes/code_graph.py",
+    "cognee_integration_hermes/config.py": "integrations/hermes-agent/cognee_integration_hermes/config.py",
+    "cognee_integration_hermes/dataset_overrides.py": "integrations/hermes-agent/cognee_integration_hermes/dataset_overrides.py",
+    "cognee_integration_hermes/exit_watcher.py": "integrations/hermes-agent/cognee_integration_hermes/exit_watcher.py",
+    "cognee_integration_hermes/http_backend.py": "integrations/hermes-agent/cognee_integration_hermes/http_backend.py",
+    "cognee_integration_hermes/installer.py": "integrations/hermes-agent/cognee_integration_hermes/installer.py",
+    "cognee_integration_hermes/provider.py": "integrations/hermes-agent/cognee_integration_hermes/provider.py",
+    "cognee_integration_hermes/recall_text.py": "integrations/hermes-agent/cognee_integration_hermes/recall_text.py",
+    "cognee_integration_hermes/recap.py": "integrations/hermes-agent/cognee_integration_hermes/recap.py",
+    "cognee_integration_hermes/schemas.py": "integrations/hermes-agent/cognee_integration_hermes/schemas.py",
+    "cognee_integration_hermes/server_bootstrap.py": "integrations/hermes-agent/cognee_integration_hermes/server_bootstrap.py",
+    "cognee_integration_hermes/update_check.py": "integrations/hermes-agent/cognee_integration_hermes/update_check.py",
+    "cognee_integration_hermes/write_buffer.py": "integrations/hermes-agent/cognee_integration_hermes/write_buffer.py",
+    "plugin.yaml": "integrations/hermes-agent/plugin.yaml",
+    "pyproject.toml": "integrations/hermes-agent/pyproject.toml",
+    "tests/_char_helpers.py": "integrations/hermes-agent/tests/_char_helpers.py",
+    "tests/conftest.py": "integrations/hermes-agent/tests/conftest.py",
+    "tests/test_capture_and_buffer.py": "integrations/hermes-agent/tests/test_capture_and_buffer.py",
+    "tests/test_capture_policy_conformance.py": "integrations/hermes-agent/tests/test_capture_policy_conformance.py",
+    "tests/test_catalog_install.py": "integrations/hermes-agent/tests/test_catalog_install.py",
+    "tests/test_code_graph.py": "integrations/hermes-agent/tests/test_code_graph.py",
+    "tests/test_config_contract.py": "integrations/hermes-agent/tests/test_config_contract.py",
+    "tests/test_dataset_name_conformance.py": "integrations/hermes-agent/tests/test_dataset_name_conformance.py",
+    "tests/test_dim_mismatch.py": "integrations/hermes-agent/tests/test_dim_mismatch.py",
+    "tests/test_exit_watcher.py": "integrations/hermes-agent/tests/test_exit_watcher.py",
+    "tests/test_http_backend.py": "integrations/hermes-agent/tests/test_http_backend.py",
+    "tests/test_installer.py": "integrations/hermes-agent/tests/test_installer.py",
+    "tests/test_integration_concurrency.py": "integrations/hermes-agent/tests/test_integration_concurrency.py",
+    "tests/test_integration_roundtrip.py": "integrations/hermes-agent/tests/test_integration_roundtrip.py",
+    "tests/test_layered_recall.py": "integrations/hermes-agent/tests/test_layered_recall.py",
+    "tests/test_lifecycle_contract.py": "integrations/hermes-agent/tests/test_lifecycle_contract.py",
+    "tests/test_openclaw_parity.py": "integrations/hermes-agent/tests/test_openclaw_parity.py",
+    "tests/test_overflow_hint.py": "integrations/hermes-agent/tests/test_overflow_hint.py",
+    "tests/test_pre_compress.py": "integrations/hermes-agent/tests/test_pre_compress.py",
+    "tests/test_recall_result_text.py": "integrations/hermes-agent/tests/test_recall_result_text.py",
+    "tests/test_recall_text_conformance.py": "integrations/hermes-agent/tests/test_recall_text_conformance.py",
+    "tests/test_recall_wire_contract.py": "integrations/hermes-agent/tests/test_recall_wire_contract.py",
+    "tests/test_recap.py": "integrations/hermes-agent/tests/test_recap.py",
+    "tests/test_sdk_backend.py": "integrations/hermes-agent/tests/test_sdk_backend.py",
+    "tests/test_server_mode.py": "integrations/hermes-agent/tests/test_server_mode.py",
+    "tests/test_session_id_conformance.py": "integrations/hermes-agent/tests/test_session_id_conformance.py",
+    "tests/test_smoke.py": "integrations/hermes-agent/tests/test_smoke.py",
+    "tests/test_switch_and_code_tools.py": "integrations/hermes-agent/tests/test_switch_and_code_tools.py",
+    "tests/test_tool_contract.py": "integrations/hermes-agent/tests/test_tool_contract.py",
+    "tests/test_update_check.py": "integrations/hermes-agent/tests/test_update_check.py",
+    "uv.lock": "integrations/hermes-agent/uv.lock"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "cognee",
+    "python_files_compiled": 52,
+    "secret_findings": 0
+  },
+  "canonical_slug": "cognee",
+  "catalog_file": "src/plugin-catalog/cognee.yaml",
+  "identity": {
+    "catalog_id": "cognee",
+    "canonical_slug": "cognee",
+    "original_manifest_name": "cognee",
+    "rebranded_manifest_name": "cognee",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "5425187608cb8590995833ac64e30d707d6fcbc366cf4d1cdc12189091cd22fa",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "61c6eae028f3ab6511344fe597e5f32e1bfadfce7547875579c188028a4a5e4c",
+          "after_sha256": "14ecb6eb3eda2516cd36704a1248bdf2baed20c49d057a43eda5a92d751e6edf",
+          "before_bytes": 34616,
+          "after_bytes": 34612,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "README.md": [
+      {
+        "value": "https://pypi.org/project/cognee-integration-hermes-agent/",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      },
+      {
+        "value": "https://pypi.org/project/cognee-integration-hermes-agent/",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      }
+    ]
+  }
+}

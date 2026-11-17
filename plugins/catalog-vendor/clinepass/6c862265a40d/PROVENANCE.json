@@ -1,0 +1,222 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/Adolanium/hermes-clinepass/3853e895482d3171ff3a8144344b74cfa3a7dd67/assets/catalog-banner.png": "_catalog_assets/assets/catalog-banner.png"
+    },
+    "image": "_catalog_assets/assets/catalog-banner.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "clinepass",
+  "content_id": "6c862265a40d",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "plugin.yaml",
+  "input_files": [
+    {
+      "bytes": 4628,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "714abb5da17c36f4d05d26a98ccec92bb4d6b3566a8a1adc258c45d9e9a9260e"
+    },
+    {
+      "bytes": 438686,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/catalog-banner.png",
+      "sha256": "eaf2ee6cff21038d1c84cfaa7d1cc5083da2eaeb8966c832c370bb077c1093ac"
+    },
+    {
+      "bytes": 1066,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "b1454deeba0ab8504f28cf040cc74a362b4555d3bfbcc4740448dedd1e695914"
+    },
+    {
+      "bytes": 151,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "fb0cdcce8ceb9f56d5a1671ba6ed37b30211c7408b823966969da31ccc456304"
+    }
+  ],
+  "input_manifest_sha256": "6c862265a40d9be3178365408dee8f804ff74f5ce5086cfcf6e425ad6ac8ddc7",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "b1454deeba0ab8504f28cf040cc74a362b4555d3bfbcc4740448dedd1e695914",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "__init__.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Adolanium/hermes-clinepass",
+    "sha": "3853e895482d3171ff3a8144344b74cfa3a7dd67",
+    "subdir": "clinepass"
+  },
+  "original_repo": "https://github.com/Adolanium/hermes-clinepass",
+  "original_sha": "3853e895482d3171ff3a8144344b74cfa3a7dd67",
+  "original_subdir": "clinepass",
+  "output_files": [
+    {
+      "path": "__init__.py",
+      "sha256": "7bfd792021a561ffee2c7f260c4e43c83a10e669a0b67f8193a7a54e1429fdb4",
+      "bytes": 4632,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/assets/catalog-banner.png",
+      "sha256": "eaf2ee6cff21038d1c84cfaa7d1cc5083da2eaeb8966c832c370bb077c1093ac",
+      "bytes": 438686,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "b1454deeba0ab8504f28cf040cc74a362b4555d3bfbcc4740448dedd1e695914",
+      "bytes": 1066,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "fb0cdcce8ceb9f56d5a1671ba6ed37b30211c7408b823966969da31ccc456304",
+      "bytes": 151,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "3876c4f61326a827fd1495fb414f9dee28e947a2b3cf087529d5e44b67e25f34",
+  "pin_verification": {
+    "archive_bytes": 531716,
+    "archive_sha256": "2a3feaf59988b329b4cd20112c55b12c8433603c4495822ccb209bcb0201dee8",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "3853e895482d3171ff3a8144344b74cfa3a7dd67",
+    "verified_commit_marker": "3853e895482d3171ff3a8144344b74cfa3a7dd67"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "cc9fb7da6d4d6119eb98f6d5695ac134d90ae99e1796e899e716bd11f04d645c",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "__init__.py",
+        "input_sha256": "714abb5da17c36f4d05d26a98ccec92bb4d6b3566a8a1adc258c45d9e9a9260e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7bfd792021a561ffee2c7f260c4e43c83a10e669a0b67f8193a7a54e1429fdb4",
+        "source": "__init__.py",
+        "final_output_sha256": "7bfd792021a561ffee2c7f260c4e43c83a10e669a0b67f8193a7a54e1429fdb4",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "7bfd792021a561ffee2c7f260c4e43c83a10e669a0b67f8193a7a54e1429fdb4"
+      },
+      {
+        "destination": "_catalog_assets/assets/catalog-banner.png",
+        "input_sha256": "eaf2ee6cff21038d1c84cfaa7d1cc5083da2eaeb8966c832c370bb077c1093ac",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "eaf2ee6cff21038d1c84cfaa7d1cc5083da2eaeb8966c832c370bb077c1093ac",
+        "source": "_catalog_assets/assets/catalog-banner.png",
+        "final_output_sha256": "eaf2ee6cff21038d1c84cfaa7d1cc5083da2eaeb8966c832c370bb077c1093ac",
+        "cli_destination": "_catalog_assets/assets/catalog-banner.png",
+        "previous_staging_sha256": "eaf2ee6cff21038d1c84cfaa7d1cc5083da2eaeb8966c832c370bb077c1093ac"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "b1454deeba0ab8504f28cf040cc74a362b4555d3bfbcc4740448dedd1e695914",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "b1454deeba0ab8504f28cf040cc74a362b4555d3bfbcc4740448dedd1e695914",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "b1454deeba0ab8504f28cf040cc74a362b4555d3bfbcc4740448dedd1e695914",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "b1454deeba0ab8504f28cf040cc74a362b4555d3bfbcc4740448dedd1e695914"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "fb0cdcce8ceb9f56d5a1671ba6ed37b30211c7408b823966969da31ccc456304",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fb0cdcce8ceb9f56d5a1671ba6ed37b30211c7408b823966969da31ccc456304",
+        "source": "plugin.yaml",
+        "final_output_sha256": "fb0cdcce8ceb9f56d5a1671ba6ed37b30211c7408b823966969da31ccc456304",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "fb0cdcce8ceb9f56d5a1671ba6ed37b30211c7408b823966969da31ccc456304"
+      }
+    ],
+    "manifest_sha256": "5e81a00bbc9523c654eaf432ed51beca34586fe96ce1d664c1803f6a7e866ed3",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "__init__.py": "clinepass/__init__.py",
+    "_catalog_assets/assets/catalog-banner.png": "assets/catalog-banner.png",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "clinepass/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "clinepass",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "clinepass",
+  "catalog_file": "src/plugin-catalog/clinepass.yaml",
+  "identity": {
+    "catalog_id": "clinepass",
+    "canonical_slug": "clinepass",
+    "original_manifest_name": "clinepass",
+    "rebranded_manifest_name": "clinepass",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "f2dccb9a3f4857bd23a629273ef6b4ac3db167f7cc161c8802cdfeaba9141673",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

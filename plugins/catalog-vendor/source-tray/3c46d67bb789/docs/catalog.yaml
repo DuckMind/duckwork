@@ -1,0 +1,23 @@
+# Draft pin for Fordex/duckwork-agent plugin-catalog/source-tray.yaml
+# Fill sha after the standalone GitHub repo exists and is tagged.
+
+name: source-tray
+repo: https://github.com/DuckMind/duckwork
+sha: REPLACE_WITH_40_CHAR_COMMIT
+description: Session source tray — URLs the Duckwork agent opened via web_search,
+  web_extract, or browser_navigate. Desktop pane and /sources.
+maintainer: aydnOktay
+tier: community
+category: web
+requires_duckwork: ">=0.21"
+docs_url: https://github.com/DuckMind/duckwork
+version: "0.1.1"
+platforms: []
+capabilities:
+  provides_tools:
+  - source_tray_list
+  - source_tray_clear
+  provides_hooks:
+  - post_tool_call
+  provides_middleware: []
+  requires_env: []

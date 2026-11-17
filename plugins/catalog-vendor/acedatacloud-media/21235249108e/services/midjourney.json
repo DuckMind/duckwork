@@ -1,0 +1,68 @@
+{
+  "service": "midjourney",
+  "title": "Ace Data Cloud Midjourney",
+  "kind": "image",
+  "description": "Midjourney text-to-image generation through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_midjourney",
+  "generate_path": "/midjourney/imagine",
+  "task_path": "/midjourney/tasks",
+  "defaults": {
+    "action": "generate",
+    "version": "8.2",
+    "mode": "fast"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "prompt"
+    ],
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "version": {
+        "type": "string",
+        "enum": [
+          "8.2"
+        ],
+        "maxLength": 4000
+      },
+      "mode": {
+        "type": "string",
+        "enum": [
+          "fast",
+          "relax",
+          "turbo"
+        ],
+        "maxLength": 4000
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_midjourney_generate",
+  "tools": [
+    "acedatacloud_midjourney_generate",
+    "acedatacloud_midjourney_task"
+  ],
+  "toolset": "acedatacloud-midjourney"
+}

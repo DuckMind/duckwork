@@ -1,0 +1,25 @@
+# Local environments and generated packaging
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Private execution evidence and local settings
+.private/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+playwright-report/
+test-results/

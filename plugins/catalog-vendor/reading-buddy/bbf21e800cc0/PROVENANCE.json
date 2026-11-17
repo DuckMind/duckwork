@@ -1,0 +1,305 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "reading-buddy",
+  "content_id": "bbf21e800cc0",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 23,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "9addeec56619685bab330ff2184db9f205a1b4628f551ededcb97800b269ca3e"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "4bf9af04ff990f05c6663fc2acc9e57b10fcb41ad1c6824ef70d3b5dc162b8e3"
+    },
+    {
+      "bytes": 1558,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "6f2f36622998b093b06b694305d826cf9161bdfad8843611ffa22a7072652630"
+    },
+    {
+      "bytes": 544,
+      "mode": "100644",
+      "path": "mcp.json",
+      "sha256": "9fbbf0708ff4fe59c2c7c7139653b66748db360f4bb48cac17aef26d0a472505"
+    },
+    {
+      "bytes": 871,
+      "mode": "100644",
+      "path": "plugin.json",
+      "sha256": "fc6b1483b51bb86af73386743c0939a4cb215b24d25741c383999659fb2ebf1a"
+    },
+    {
+      "bytes": 2623,
+      "mode": "100644",
+      "path": "skills/reading-buddy/SKILL.md",
+      "sha256": "d2cc49a981f485f3ebb30d313d36bfc09e93c84a17212f8375fd60f83f999afb"
+    },
+    {
+      "bytes": 2200,
+      "mode": "100644",
+      "path": "skills/reading-buddy/SKILL.zh-CN.md",
+      "sha256": "521c97d32c3c81a730b0bfc292601512a5224aa78fe46891bb461c084bd11f7e"
+    }
+  ],
+  "input_manifest_sha256": "bbf21e800cc0830b6eafec1e69bc4b126941886fcc7a489838155b8824ad63bf",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "4bf9af04ff990f05c6663fc2acc9e57b10fcb41ad1c6824ef70d3b5dc162b8e3",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "plugin.json"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/harrylabsj/hermes-plugin-reading-buddy",
+    "sha": "486034846dc82916460faaa7ab1b4baedea08f5b",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/harrylabsj/hermes-plugin-reading-buddy",
+  "original_sha": "486034846dc82916460faaa7ab1b4baedea08f5b",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "9addeec56619685bab330ff2184db9f205a1b4628f551ededcb97800b269ca3e",
+      "bytes": 23,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "4bf9af04ff990f05c6663fc2acc9e57b10fcb41ad1c6824ef70d3b5dc162b8e3",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "c7a2238bc1fe2a67aaafb03c14d65f995beef144ec47f12da65e72ed49188cac",
+      "bytes": 1560,
+      "mode": "100644"
+    },
+    {
+      "path": "mcp.json",
+      "sha256": "9fbbf0708ff4fe59c2c7c7139653b66748db360f4bb48cac17aef26d0a472505",
+      "bytes": 544,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.json",
+      "sha256": "88ede3fb27cb9f0a41798b752e48a0e23dcaa1acada7bbe783393845135f5754",
+      "bytes": 850,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/reading-buddy/SKILL.md",
+      "sha256": "d2cc49a981f485f3ebb30d313d36bfc09e93c84a17212f8375fd60f83f999afb",
+      "bytes": 2623,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/reading-buddy/SKILL.zh-CN.md",
+      "sha256": "521c97d32c3c81a730b0bfc292601512a5224aa78fe46891bb461c084bd11f7e",
+      "bytes": 2200,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "421ed2a31fd1d4275d50d15e98cd68822826c36b906246f78765fdf36f76a000",
+  "pin_verification": {
+    "archive_bytes": 4907,
+    "archive_sha256": "aeb1272fdc3dd9b43e015bfdc54ed9e93bc3cbf6105654b5685f4d1900a31ab9",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "486034846dc82916460faaa7ab1b4baedea08f5b",
+    "verified_commit_marker": "486034846dc82916460faaa7ab1b4baedea08f5b"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "a02580c34287f981ba03de7c98c5467867a68c8f356f64adfbcaf44ecc423ba9",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "9addeec56619685bab330ff2184db9f205a1b4628f551ededcb97800b269ca3e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9addeec56619685bab330ff2184db9f205a1b4628f551ededcb97800b269ca3e",
+        "source": ".gitignore",
+        "final_output_sha256": "9addeec56619685bab330ff2184db9f205a1b4628f551ededcb97800b269ca3e",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "9addeec56619685bab330ff2184db9f205a1b4628f551ededcb97800b269ca3e"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "4bf9af04ff990f05c6663fc2acc9e57b10fcb41ad1c6824ef70d3b5dc162b8e3",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "4bf9af04ff990f05c6663fc2acc9e57b10fcb41ad1c6824ef70d3b5dc162b8e3",
+        "source": "LICENSE",
+        "final_output_sha256": "4bf9af04ff990f05c6663fc2acc9e57b10fcb41ad1c6824ef70d3b5dc162b8e3",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "4bf9af04ff990f05c6663fc2acc9e57b10fcb41ad1c6824ef70d3b5dc162b8e3"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "6f2f36622998b093b06b694305d826cf9161bdfad8843611ffa22a7072652630",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c7a2238bc1fe2a67aaafb03c14d65f995beef144ec47f12da65e72ed49188cac",
+        "source": "README.md",
+        "final_output_sha256": "c7a2238bc1fe2a67aaafb03c14d65f995beef144ec47f12da65e72ed49188cac",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "c7a2238bc1fe2a67aaafb03c14d65f995beef144ec47f12da65e72ed49188cac"
+      },
+      {
+        "destination": "mcp.json",
+        "input_sha256": "9fbbf0708ff4fe59c2c7c7139653b66748db360f4bb48cac17aef26d0a472505",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9fbbf0708ff4fe59c2c7c7139653b66748db360f4bb48cac17aef26d0a472505",
+        "source": "mcp.json",
+        "final_output_sha256": "9fbbf0708ff4fe59c2c7c7139653b66748db360f4bb48cac17aef26d0a472505",
+        "cli_destination": "mcp.json",
+        "previous_staging_sha256": "9fbbf0708ff4fe59c2c7c7139653b66748db360f4bb48cac17aef26d0a472505"
+      },
+      {
+        "destination": "plugin.json",
+        "input_sha256": "fc6b1483b51bb86af73386743c0939a4cb215b24d25741c383999659fb2ebf1a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc6b1483b51bb86af73386743c0939a4cb215b24d25741c383999659fb2ebf1a",
+        "source": "plugin.json",
+        "final_output_sha256": "88ede3fb27cb9f0a41798b752e48a0e23dcaa1acada7bbe783393845135f5754",
+        "cli_destination": "plugin.json",
+        "previous_staging_sha256": "fc6b1483b51bb86af73386743c0939a4cb215b24d25741c383999659fb2ebf1a"
+      },
+      {
+        "destination": "skills/reading-buddy/SKILL.md",
+        "input_sha256": "d2cc49a981f485f3ebb30d313d36bfc09e93c84a17212f8375fd60f83f999afb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d2cc49a981f485f3ebb30d313d36bfc09e93c84a17212f8375fd60f83f999afb",
+        "source": "skills/reading-buddy/SKILL.md",
+        "final_output_sha256": "d2cc49a981f485f3ebb30d313d36bfc09e93c84a17212f8375fd60f83f999afb",
+        "cli_destination": "skills/reading-buddy/SKILL.md",
+        "previous_staging_sha256": "d2cc49a981f485f3ebb30d313d36bfc09e93c84a17212f8375fd60f83f999afb"
+      },
+      {
+        "destination": "skills/reading-buddy/SKILL.zh-CN.md",
+        "input_sha256": "521c97d32c3c81a730b0bfc292601512a5224aa78fe46891bb461c084bd11f7e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "521c97d32c3c81a730b0bfc292601512a5224aa78fe46891bb461c084bd11f7e",
+        "source": "skills/reading-buddy/SKILL.zh-CN.md",
+        "final_output_sha256": "521c97d32c3c81a730b0bfc292601512a5224aa78fe46891bb461c084bd11f7e",
+        "cli_destination": "skills/reading-buddy/SKILL.zh-CN.md",
+        "previous_staging_sha256": "521c97d32c3c81a730b0bfc292601512a5224aa78fe46891bb461c084bd11f7e"
+      }
+    ],
+    "manifest_sha256": "59b94ea35762d4859d8dd3e9e7ef1aa0468401f76aee15fcec24e0c12dff0f43",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "mcp.json": "mcp.json",
+    "plugin.json": "plugin.json",
+    "skills/reading-buddy/SKILL.md": "skills/reading-buddy/SKILL.md",
+    "skills/reading-buddy/SKILL.zh-CN.md": "skills/reading-buddy/SKILL.zh-CN.md"
+  },
+  "verification": {
+    "manifest": "plugin.json",
+    "manifest_name": "reading-buddy",
+    "python_files_compiled": 0,
+    "secret_findings": 0
+  },
+  "canonical_slug": "reading-buddy",
+  "catalog_file": "src/plugin-catalog/reading-buddy.yaml",
+  "identity": {
+    "catalog_id": "reading-buddy",
+    "canonical_slug": "reading-buddy",
+    "original_manifest_name": "reading-buddy",
+    "rebranded_manifest_name": "reading-buddy",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "99f18efdc491819d6312d27e7d8f24aabce126164a7e6a35255bf6018f44dff2",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "plugin.json",
+          "after_path": "plugin.json",
+          "before_sha256": "fc6b1483b51bb86af73386743c0939a4cb215b24d25741c383999659fb2ebf1a",
+          "after_sha256": "88ede3fb27cb9f0a41798b752e48a0e23dcaa1acada7bbe783393845135f5754",
+          "before_bytes": 871,
+          "after_bytes": 850,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

@@ -1,0 +1,10 @@
+name: chutes-provider
+kind: model-provider
+version: 0.1.5
+description: Chutes model provider for Duckwork Agent
+author: Michael Gasperini (Mikesoft)
+requires_env:
+  - name: CHUTES_API_KEY
+    description: Chutes API key
+    url: https://chutes.ai/app/api
+    secret: true

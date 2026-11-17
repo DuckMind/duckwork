@@ -1,0 +1,14 @@
+name: web-octen
+version: 0.1.0
+description: Octen web search and page extraction for Duckwork.
+author: Octen-Team
+kind: backend
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+provides_web_providers:
+  - octen
+requires_env:
+  - name: OCTEN_API_KEY
+    description: Octen API key for web search and extraction.
+    url: https://octen.ai
+    secret: true

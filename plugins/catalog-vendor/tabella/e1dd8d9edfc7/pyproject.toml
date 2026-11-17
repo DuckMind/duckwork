@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tabella-docs"
+version = "2.0.2"
+description = "Portable document lifecycle suite — create (.docx/.xlsx/.pptx/.pdf/.odt/.ods/.odp), convert (pandoc), and read (anydoc + LiteParse OCR) documents. Agent Plugins v1 compatible."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "D Yiapanis", email = "d@yiapanis.co" },
+]
+keywords = ["documents", "docx", "xlsx", "pptx", "pdf", "odt", "pandoc", "anydoc", "document-generation", "markdown", "ocr", "agent-plugins", "mcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Office Suites",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+create = [
+    "python-docx>=1.0,<2.0",
+    "openpyxl>=3.1,<4.0",
+    "python-pptx>=0.6,<2.0",
+    "weasyprint>=60.0,<70.0",
+    "odfpy>=1.4,<2.0",
+    "Pillow>=10.0,<13.0",
+    "lxml>=5.0,<7.0",
+]
+read = [
+    "firecrawl-anydoc>=0.1.1,<0.3.0",
+    "liteparse>=2.0.0,<3.0.0",
+    "PyMuPDF>=1.24,<2.0",
+]
+convert = []  # requires system pandoc + LaTeX (texlive-xetex); no python wrapper needed
+all = [
+    "python-docx>=1.0,<2.0",
+    "openpyxl>=3.1,<4.0",
+    "python-pptx>=0.6,<2.0",
+    "weasyprint>=60.0,<70.0",
+    "odfpy>=1.4,<2.0",
+    "Pillow>=10.0,<13.0",
+    "lxml>=5.0,<7.0",
+    "firecrawl-anydoc>=0.1.1,<0.3.0",
+    "liteparse>=2.0.0,<3.0.0",
+    "PyMuPDF>=1.24,<2.0",
+]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/dyiapanis/tabella"
+"Source" = "https://github.com/dyiapanis/tabella"
+"Issues" = "https://github.com/dyiapanis/tabella/issues"
+
+[tool.setuptools.packages.find]
+include = ["tabella*"]

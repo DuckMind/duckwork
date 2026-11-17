@@ -1,0 +1,14 @@
+{
+  "name": "duckwork-telemetry-dashboard",
+  "label": "Telemetry",
+  "description": "Visualize the shared metrics Duckwork collects locally (telemetry.shared_metrics) — metric families, milestone timeline, install snapshot, and a preview of exactly what would be sent to Fordex. Read-only; send stays OFF.",
+  "icon": "Activity",
+  "version": "0.1.1",
+  "tab": {
+    "path": "/telemetry",
+    "position": "after:system"
+  },
+  "entry": "dist/index.js",
+  "css": "dist/style.css",
+  "api": "plugin_api.py"
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "parrotnotes",
+  "version": "1.2.2",
+  "description": "Find, read, summarize and save insights for your ParrotNotes in-person meeting notes through the hosted ParrotNotes MCP server, with the parrotnotes workflow skill bundled.",
+  "author": {
+    "name": "ParrotNotes",
+    "email": "support@parrotnotes.app",
+    "url": "https://parrotnotes.app"
+  },
+  "homepage": "https://parrotnotes.app/docs/mcp",
+  "repository": "https://github.com/DuckMind/duckwork",
+  "license": "MIT",
+  "keywords": [
+    "parrotnotes",
+    "notes",
+    "meetings",
+    "in-person-meetings",
+    "transcripts",
+    "action-items",
+    "productivity",
+    "mcp"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "ParrotNotes",
+        "shortDescription": "Search and summarize your in-person meeting notes",
+        "longDescription": "Find, search, summarize and save insights on your ParrotNotes in-person meeting notes. Ask for your latest meeting, pull out action items, or save a summary back to the note.",
+        "developerName": "ParrotNotes",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://parrotnotes.app",
+        "privacyPolicyURL": "https://parrotnotes.app/privacy",
+        "termsOfServiceURL": "https://parrotnotes.app/terms",
+        "defaultPrompt": [
+          "Summarize my most recent ParrotNotes meeting notes and list the action items."
+        ],
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      }
+    }
+  }
+}

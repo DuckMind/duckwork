@@ -1,0 +1,15 @@
+[Unit]
+Description=ARD Registry — local resource catalog for agent discovery
+After=network.target
+
+[Service]
+Type=simple
+# Adjust WorkingDirectory to where ai-catalog.json lives (ard-catalogize
+# output). It is also what puts ard_kit on sys.path for -m.
+WorkingDirectory=%h/ard-kit
+ExecStart=/usr/bin/python3 -m ard_kit.registry --catalog ai-catalog.json --host 127.0.0.1 --port 8390
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

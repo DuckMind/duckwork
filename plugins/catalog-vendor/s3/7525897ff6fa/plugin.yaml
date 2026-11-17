@@ -1,0 +1,11 @@
+name: s3
+version: '0.1.1'
+description: Generic S3-compatible backup and restore operations for Duckwork
+provides_tools:
+  - s3-push
+  - s3-pull
+  - s3-ls
+  - s3-rm
+provides_hooks: []
+author: Tane Piper
+requires_env: []

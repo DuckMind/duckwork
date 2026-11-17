@@ -1,0 +1,58 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uvx --exclude-newer 14d ruff check --isolated --select E,F,W,I,UP,B --line-length 120 --target-version py311 .
+
+  plugin:
+    # Host revisions are pinned on purpose; bump them by hand after reviewing a Duckwork release.
+    # Only repository-controlled values are interpolated below (no event payload fields).
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Lower bound: requires_duckwork is >=0.21.5, which never got a final tag; rc.38 is its last build.
+          - duckwork: rc.38-v0.21.5
+            ref: 08165d58931841cee713468ae89032af7c57060a
+          - duckwork: v0.21.6
+            ref: 818c13be1dc4fd28987e1e881a9408224afd4535
+    name: plugin (duckwork ${{ matrix.duckwork }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.ref }}
+          path: duckwork
+      - uses: astral-sh/setup-uv@v6
+      - name: Prepare host
+        working-directory: duckwork
+        run: uv sync --frozen
+      - name: Tests
+        working-directory: duckwork
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+          PYTHONPATH: ${{ github.workspace }}/duckwork
+        run: uv run --with 'pytest>=8,<10' --exclude-newer 14d python -m pytest ../plugin/tests -q
+      - name: plugins doctor
+        working-directory: duckwork
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: uv run python -m duckwork_cli.main plugins doctor ../plugin --ci
+      - name: plugins validate (catalog admission check)
+        working-directory: duckwork
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: uv run python -m duckwork_cli.main plugins validate ../plugin --install-deps

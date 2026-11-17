@@ -1,0 +1,131 @@
+name: CI
+
+# Thin caller. All CI logic lives in .github/workflows/reusable-ci.yml, which is
+# also dispatchable by hand. Keeping the trigger surface separate from the test
+# body means a future second caller (e.g. a merge_group queue leg) reuses the
+# same body instead of copying 200 lines of `run:` steps.
+on:
+  push:
+    branches: [master]
+  # No base-branch filter on pull_request. `branches: [master]` silently skipped CI
+  # for stacked PRs (one branch based on another), and a retarget to master fires
+  # only `edited`, which is not a default trigger type -- so the workflow never ran.
+  # A branch filter only ever *excluded* bases, so dropping it is purely additive.
+  # `edited` is explicit: changing a PR's base emits `edited`, which is not a
+  # default activity type, so a retarget after the parent merges would otherwise
+  # run no checks against its new target. Title/body edits also emit `edited`,
+  # which costs one CI run each.
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  # A merge queue builds a temporary merge_group ref; without this trigger the
+  # queued head would be merged with zero checks against the real merge result.
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plugin:
+    # Called workflow, not `run:` steps. `uses` takes no `runs-on`/`steps` here.
+    uses: ./.github/workflows/reusable-ci.yml
+    with:
+      event-name: ${{ github.event_name }}
+      # Built with the documented `cond && value || fallback` idiom, where BOTH
+      # operands are strings, so `||` returns the fallback verbatim rather than a
+      # boolean. On a pull_request the base is master unless the PR targets a
+      # release branch; on push/merge_group there is no pull_request object, so
+      # this must fall back to origin/master. A bare
+      # `github.event.pull_request.base.ref` would interpolate to the empty
+      # string on push and produce the invalid ref `origin/`, failing the
+      # version-bump guard on every direct push to master.
+      base-ref: ${{ github.event.pull_request.base.ref && format('origin/{0}', github.event.pull_request.base.ref) || 'origin/master' }}
+      # On a direct push to master the branch is already merged, so the tap can
+      # only serve what is already on master: the PR-tolerance branch and the
+      # network legs are not useful there. Every PR and every merge_group run
+      # gets the full gate.
+      run-full-gate: ${{ github.event_name != 'push' }}
+      # A called workflow cannot escalate permissions beyond the caller's, so the
+      # caller's `contents: read` is the ceiling. Nothing here needs more.
+      #
+      # `secrets: inherit` is deliberately NOT used. The called workflow reads no
+      # secret: the tap step's `GH_TOKEN: ${{ github.token }}` is supplied by the
+      # runner and is unaffected. Inheriting would hand every repository and
+      # organization secret to a workflow whose source a same-repository PR can
+      # change, so dropping the line costs nothing and removes that path.
+
+  # The single stable context branch protection requires. The matrix legs report
+  # under names that encode the matrix ("plugin / plugin (ubuntu-24.04, 3.11)"),
+  # so a required-status-check list naming them is brittle in both directions:
+  # adding a Python version to the matrix leaves the new leg unguarded, and
+  # dropping one leaves a required context that never reports and blocks every
+  # merge until a maintainer edits the rules. This job collapses the whole CI
+  # workflow -- matrix legs plus the legacy-mac hermetic tier, which the reusable
+  # workflow owns -- into one context, so protection names one thing and the
+  # matrix stays free to change.
+  gate:
+    name: gate
+    needs: [plugin]
+    # always(): a required check must report even when an upstream leg failed.
+    # Without it a red matrix would SKIP this job, and branch protection would see
+    # a missing check instead of a failing one -- which reads as satisfied.
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Job-level permissions REPLACE the workflow-level `contents: read`, so this
+    # job holds only what it needs. It checks out nothing, so `contents` is not
+    # granted at all -- least privilege, and it cannot be widened later by
+    # accident.
+    permissions:
+      statuses: write
+    steps:
+      - name: Every CI leg succeeded
+        env:
+          PLUGIN_RESULT: ${{ needs.plugin.result }}
+        run: |
+          echo "plugin (matrix + legacy-mac): $PLUGIN_RESULT"
+          if [ "$PLUGIN_RESULT" != "success" ]; then
+            echo "::error::CI leg did not succeed: $PLUGIN_RESULT"
+            exit 1
+          fi
+          echo "OK: all CI legs passed"
+
+      # The check run above is necessary but NOT sufficient: this repo's ruleset
+      # does not accept a required_status_checks entry satisfied by a GitHub
+      # Actions CHECK RUN under that name. Verified on PR #291 by bisecting the
+      # live ruleset -- with only `gate` required the PR stayed BLOCKED with the
+      # check run green, and the same context published as a COMMIT STATUS made
+      # it CLEAN. CodeQL, which reports from the github-advanced-security app,
+      # satisfies its entry as a check run, so the difference is workflow check
+      # runs specifically. #290 added this publisher, then removed it as "dead
+      # weight" after re-diagnosing the blockage as a review thread; that
+      # re-diagnosis was wrong, and removing the publisher reintroduced the
+      # block. Both must exist: the check run is what a human reads, this status
+      # is what the ruleset evaluates.
+      #
+      # always(): publish failure too. A required context that stays missing when
+      # the legs are red reads to branch protection as never-reported, not failed.
+      - name: Publish the gate verdict as a commit status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLUGIN_RESULT: ${{ needs.plugin.result }}
+          # On pull_request, github.sha is the temporary MERGE commit, but the
+          # ruleset evaluates the PR HEAD commit -- a status on the merge preview
+          # would never satisfy the requirement. Fall back to github.sha for push
+          # and merge_group, where there is no pull_request object.
+          TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          state=success
+          if [ "$PLUGIN_RESULT" != "success" ]; then
+            state=failure
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$TARGET_SHA" -X POST \
+            -f state="$state" \
+            -f context=gate \
+            -f description="plugin (matrix + legacy-mac): $PLUGIN_RESULT"
+          echo "published gate=$state on $TARGET_SHA"

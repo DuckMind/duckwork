@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68,<85"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-orcaslicer"
+version = "0.5.1"
+description = "OrcaSlicer workflows for Duckwork Agent; independent of OrcaSlicer and Fordex"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "mazzanfar"}]
+dependencies = ["paho-mqtt>=2.1,<3"]
+readme = "README.md"
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+
+[project.scripts]
+duckwork-orca = "orca_plugin.cli:main"
+
+[project.entry-points."duckwork_agent.plugins"]
+orcaslicer = "orca_plugin:register"
+
+[tool.setuptools.packages.find]
+include = ["orca_plugin*"]
+
+[tool.setuptools.package-data]
+orca_plugin = ["SKILL.md"]
+
+[project.optional-dependencies]
+bambu = [] # Compatibility alias; Bambu support is included in the base install.

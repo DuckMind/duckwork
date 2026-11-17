@@ -1,0 +1,32 @@
+{
+  "template": "issue-to-pr",
+  "receipt_kind": "author-run",
+  "author_provenance": "the author's own machine, run 2026-10-03",
+  "graph_file": "examples/release/issue-to-pr.workflow.json",
+  "graph_sha256": "2f26f6ebabf6a6ec10283db3c85d37671149f0929e2931fb9525d422d455d320",
+  "source_digest": "4dbbac0b47ba86d8b3ecd89a4f595c3ba7c487ac3653a38ba159dee92a973385",
+  "engine": "plugin tree at 7c7f0d9 (1.2.0 line); door invoked from the worktree so enum/after_partial grammar and its runner pair share a version",
+  "fixture": "a toy python project: app.add() subtracts (the bug); one unittest file with two add tests (red from the bug) plus one DELIBERATELY broken unrelated test standing in for a pre-existing failure; issue stated in a file; git clone into a scratch lane, sibling bare remote as origin; test gate = python3 -m unittest discover.",
+  "laps": {
+    "happy_publish": {
+      "run_id": "20261003-023129-ip-final",
+      "path": "intake classified bug/trivial/actionable from ISSUE.md + tree reads -> route-work live, route-halt pruned -> baseline cloned to lanes/t-9, created fix/t-9, ran the gate on UNTOUCHED code and recorded all 3 failures as pre_existing -> fix one-lined add(), committed 3a5ed7d, did NOT push -> verify re-ran the gate ITSELF: 3->1 failures, the surviving failure named in the baseline set, acceptance observed by EXECUTING add(2,3)==5 (not by reading the diff) -> verdict clean -> review cited the correct fresh commit 3a5ed7d in ITS OWN lane (inputs fix+verify wired at these bytes), scope +1/-1 app.py only, staleness re-read clean -> approve HELD, released 'publish' -> publish pushed refs/heads/fix-t-9 once -> cleanup escape-law-checked the path, rm -rf'd the lane, verified the source repo had no lane remnants -> report arm=published. runner_exit done.",
+      "ground_truth": "the pushed branch really exists in the remote and its app.py reads 'return a + b' (verified out-of-band, not from the run's prose)."
+    },
+    "halt_at_intake": {
+      "run_id": "20261003-020823-ip-halt",
+      "fixture_twist": "issue file is a FEATURE REQUEST",
+      "path": "intake: kind=feature, actionable=false (it even noted the unrelated add bug it saw but correctly kept out of classification: 'the issue does not name it') -> route-work PRUNED: baseline/fix/verify/review/publish NEVER SPAWNED (10 skipped) -> halt-notice echo -> cleanup ran anyway via its halt-edge and proved no lane exists -> report arm=halted-at-intake with the 'answer owed to the requester' in owed[]. runner_exit done.",
+      "what_it_proves": "abort-before-investment: the expensive half of the lifecycle (clone, gate run, edit, verify, review) cost ZERO tokens on an inactionable item; the halt is a CLOSED arm, not a failure."
+    },
+    "hold_at_gate": {
+      "run_id": "20261003-022424-ip-hold2",
+      "path": "full working path to approve, then the human answered 'hold': publish executed nothing and reported 'not approved: hold' -> cleanup KEPT the lane (fix commit 1620929 preserved, verified present) -> report arm=held. runner_exit done.",
+      "what_it_proves": "the human gate is a real fork: hold is not failure either, and lane-state honesty (kept vs removed) rides the gate answer through cleanup into the record."
+    }
+  },
+  "baseline_delta_proof": "the fixture's one DELIBERATELY unrelated failing test is the lap's core evidence: baseline NAMED it pre_existing, verify CONFIRMED it still failing yet returned clean (it appears in the baseline set), and zero new failures were tolerated. Without the baseline node this shape is either a false red (blamed on the fix) or a false green (fix declared done while breaking something else). Both directions are structural here: verify declares inputs:[baseline,intake] and its verdict enum names regressed.",
+  "grammar_floors": "requires the 1.2.0 door+runner pair (string enums, after_partial on cleanup/report joins). Lesson learned mid-work: launch AND every release/wait must ride the SAME version door - a 1.1.2 door that answers a held gate respawns a 1.1.2 runner, which refuses 1.2.0 grammar at respawn (lap ip-hold burned this: the answer was consumed, the runner crashed graph-invalid; the lap was re-walked cleanly as ip-hold2 rather than laundered).",
+  "hygiene": "six plain-text seeds; no model pins; issue text handled as data everywhere (children restate, never interpolate); zero scrub hits on shipped bytes; test_example_issue_to_pr.py 29 structural checks PASS cold.",
+  "notes": "Forge hardening the distilled source earned but this template keeps OUT of scope (port them at the edge): duplicate-PR search before claiming, self-assign to signal intent, abort comments posted to the tracker via body-file, contributor-work priority, transplant-vs-checkout for untrusted patches. They are forge-coupled; the DAG shape (halt gates, baseline, delta-verify, human gate, honest cleanup) is the portable core."
+}

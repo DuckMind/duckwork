@@ -1,0 +1,57 @@
+# Web Search Plus 3.0 Compatibility
+
+## Public tools
+
+The Duckwork tool surface remains:
+
+- `web_search_plus`
+- `web_extract_plus`
+
+Existing tool calls are projected into native `RequestV3` execution and returned through the legacy-compatible response projection. Callers do not need to construct v3 DTOs.
+
+## Provider surface
+
+WSP 3.0 registers 12 source-only search providers and 8 extraction providers. The generated [Provider Reference](PROVIDERS.md) is authoritative.
+
+Perplexity and Kilo-Perplexity are removed provider IDs. Config migration silently ignores them in legacy routing lists and settings; other unknown provider IDs remain errors.
+
+## Routing
+
+Classic Routing v2 remains authoritative.
+
+- Config default: `routing.policy_mode = "classic"`
+- `routing.policy_mode: "shadow"` is still accepted and is treated as `"classic"`. It does not quarantine the config file.
+- `WSP_ROUTING_CLASSIC_ONLY` is still accepted and is a no-op. Routing is always Classic.
+- Unknown policy values are rejected.
+- Shadow routing was removed in 5.0. `routing_receipt.shadow_observation` stays on every response and is always `null`. Readers still accept an older shadow object in cached responses.
+
+## Cache
+
+- v3 response entries are marker-owned and use the frozen 3.0 contract.
+- Since 5.0 a v3 search does not read the pre-v3 JSON search cache (`<cache dir>/<key>.json`, written by 2.x and by `python search.py`), so 5.0 never reports `source_contract_version="2.x"`; the schema still allows the value. Those files are not deleted: `python search.py` still reads and writes them, and `--cache-stats` and `--clear-cache` still count and remove them.
+- Cache clear and retention operations target only marker-owned entries; foreign or shared state files are preserved.
+- Long extracted text remains page-on-demand under marker-owned `web/v3` storage.
+
+## Operational state
+
+WSP 3.0 uses SQLite for v3 circuit, budget, credential-slot, imported provider-health, and adaptive-sample state. Legacy `provider_health.json` and `provider_stats.json` can be imported together with the dry-run-first migration command.
+
+SQLite failure degrades the operational state path; it must not silently bypass known auth, quota, config, or provider-contract blocks. Migration never deletes or rewrites the legacy JSON sources.
+
+## Source-only response rules
+
+Provider adapters must return capability-specific source envelopes:
+
+- search: provider, query, and a list of source result objects;
+- extract: provider and a list of URL result objects;
+- non-empty synthesized `answer` values are rejected;
+- provider identity and adapter signatures are checked against the registry.
+
+Malformed provider envelopes become typed provider-contract failures and cannot enter the evidence spine.
+
+## Python and deployment
+
+- Python 3.10+ is required by the native v3 modules.
+- Runtime code remains standard-library only.
+- Plugin configuration and provider environment variables keep their existing locations.
+- The Operator Console is local-only and read-only; it is not a hosted or remote management surface.

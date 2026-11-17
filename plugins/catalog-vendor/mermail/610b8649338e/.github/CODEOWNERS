@@ -1,0 +1,16 @@
+# Mermail maintainers — require review on security-sensitive paths.
+# Replace with GitHub usernames or a team once org CODEOWNERS is configured.
+# Example: * @Nudgen-Marketing/mermail-skills-maintainers
+
+/tool-coverage.json @Nudgen-Marketing/mermail-skills-maintainers
+/tests/validate.mjs @Nudgen-Marketing/mermail-skills-maintainers
+/tests/scenarios.json @Nudgen-Marketing/mermail-skills-maintainers
+
+/skills/mermail-agent-inbox/ @Nudgen-Marketing/mermail-skills-maintainers
+/skills/mermail-agent-wallet/ @Nudgen-Marketing/mermail-skills-maintainers
+/skills/**/references/security.md @Nudgen-Marketing/mermail-skills-maintainers
+
+/.codex-plugin/ @Nudgen-Marketing/mermail-skills-maintainers
+/.claude-plugin/ @Nudgen-Marketing/mermail-skills-maintainers
+/.cursor-plugin/ @Nudgen-Marketing/mermail-skills-maintainers
+/.plugin/ @Nudgen-Marketing/mermail-skills-maintainers

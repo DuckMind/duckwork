@@ -60,7 +60,7 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
     return {"ok": True, "action": action, "message": message, "synced": synced}
 
 
-_OWN_REPO_PREFIXES = ("\x6eousresearch/\x68ermes-agent/skills/", "skills-sh/\x6eousresearch/\x68ermes-agent/")
+_OWN_REPO_PREFIXES = ("duckmind/duckwork/skills/", "skills-sh/duckmind/duckwork/", "\x6eousresearch/\x68ermes-agent/skills/", "skills-sh/\x6eousresearch/\x68ermes-agent/")
 
 
 def bundled_skill_for_install(identifier: str) -> Optional[str]:

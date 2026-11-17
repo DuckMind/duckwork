@@ -1,0 +1,29 @@
+name: nexus
+version: 0.22.32
+description: "Nexus Memory — self-hosted long-term memory for AI agents on Qdrant. Runs fully local: sentence-transformers (Hugging Face) is the automatic embedding path, Ollama is used only when it is chosen explicitly; cloud embedders (OpenAI/Google/Jina) are opt-in via NEXUS_EMBEDDING_PROVIDER together with their API keys. MCP-compatible."
+pip_dependencies:
+  - "qdrant-client>=1.12.0,<2.0.0"
+  # Same bound as the package manifest. The provider uses
+  # `SentenceTransformer(name)`/`.encode(text)` and, through the reranker,
+  # `CrossEncoder(model)`/`.predict(pairs)` — all stable across 3.x to 6.x, so
+  # both manifests declare the same range instead of drifting.
+  - "sentence-transformers>=3.0.0,<7.0.0"
+requires_env: []
+# Optional env vars (provider-dependent): OPENAI_API_KEY | OPENAI_API_KEY |
+# GOOGLE_API_KEY | JINA_API_KEY | NEXUS_QDRANT_HOST | NEXUS_QDRANT_PORT |
+# NEXUS_COLLECTION. Cloud provider SDKs (openaiai, openai, google-generativeai)
+# are optional extras — pip install nexus-memory[openai|openai|google].
+#
+# A fresh install sends nothing off the machine: embeddings use a local model
+# and the two network features (query rewriting, paid fuel stations) are
+# opt-in. Adding a cloud key is what enables cloud embedding — see the README's
+# egress table for the complete list of paths.
+#
+# provides_hooks lists only PLUGIN hooks (validated against Duckwork' VALID_HOOKS).
+# `on_session_end` and `on_memory_write` are NOT plugin hooks: this provider
+# implements them as MemoryProvider METHODS (agent/memory_provider.py), so
+# declaring them here made `duckwork plugins validate` report an unknown hook.
+# Only `transform_llm_output` is a real plugin hook — it surfaces a broken
+# memory backend in the chat answer itself.
+provides_hooks:
+  - transform_llm_output

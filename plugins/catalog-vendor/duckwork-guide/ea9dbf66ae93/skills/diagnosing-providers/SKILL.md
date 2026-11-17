@@ -1,0 +1,195 @@
+---
+name: diagnosing-providers
+description: Diagnose model provider issues — custom endpoints flooding the picker with hundreds of models, discover_models misbehaving, persisted catalogs bloating config, provider/auth failures, and credential pool exhaustion.
+version: 1.3.1
+metadata:
+  duckwork:
+    tags: [duckwork, configuration, troubleshooting]
+    related_skills: [duckwork-configuration-guide, diagnosing-auth]
+---
+
+# Diagnosing Model Providers
+
+Goal: reduce any model-provider problem to one concrete fix — a `providers:` / `custom_providers:` entry in `$DUCKWORK_HOME/config.yaml` (resolve with `duckwork config path`) or a `duckwork model` subcommand.
+
+> **Disambiguation**: if an MCP server connects but exposes no tools, see `diagnosing-mcp`. If an external memory provider is configured but silently unavailable, see `diagnosing-memory`.
+
+## Step 0 — Resolve the config first
+
+Never edit a path you have not verified. Run `duckwork config path` — it prints the active config file. `duckwork config show` dumps the merged view; `duckwork config set providers.<name>.<key> <value>` edits safely.
+
+## Step 1 — The two discovery modes
+
+Every provider entry accepts `discover_models`, which **defaults to `true`**:
+
+```yaml
+providers:
+  my-gateway:
+    api: https://llm.internal.example.com/v1
+    discover_models: true        # default — probes /v1/models, full catalog in picker
+    models:
+      - my-finetune-v2
+```
+
+| `discover_models` | `models:` shape | Picker shows |
+|---|---|---|
+| `true` (default) | absent or dict | Full endpoint catalog, live probe |
+| `false` | list | Only the listed IDs |
+| `false` | absent | Only the saved `model:` |
+
+There is no "top N", no "most-used", no auto-narrowing. The switch is binary.
+
+> [!NOTE]
+> `discover_models` accepts string values too: `"false"`, `"no"`, `"0"` all mean False.
+
+## Step 2 — The catalog-bloat trap
+
+Duckwork persists a discovered catalog under `models:` as a **dict** with `models_discovered: true`. This is **metadata, not a pin** — `model_switch.py:_models_config_is_allowlist` treats a discovered catalog as never-a-pin. It does nothing but bloat `config.yaml`.
+
+A persisted catalog is a copy of the last `/v1/models` response. It is not consulted at runtime; the endpoint is re-probed at every picker build. It drifts from the endpoint and must be hand-maintained if treated as authoritative.
+
+**Fix:** remove the `models:` dict and `models_discovered:` flag. Keep `discover_models: true` for a live probe, or `false` to pin.
+
+**Verify the fix:** `duckwork config get providers` shows the entry with no `models:` block, and `wc -l "$(duckwork config path)"` drops by roughly one line per persisted model.
+
+## Step 2.5 — Distinguish config bloat from endpoint reality
+
+Before editing anything, confirm the endpoint actually returns that many models. A persisted catalog is a snapshot; the live endpoint may differ. Probe the endpoint's `/models` route with your API key in the `Authorization: Bearer …` header (same request any OpenAI-compatible client sends) and count the entries in the `data` array — print only the count, never the key or the full response.
+
+If the live count matches the persisted count, the catalog is current and the bloat is real. If it is much smaller, the persisted catalog is stale — removing it loses nothing.
+
+> [!CAUTION]
+> Never paste a real API key into a command line — neither as a `-H` argument (visible in `ps` output to other local users) nor inline in a script. Keep it in an environment variable and read it in-process inside whatever HTTP client you use.
+
+## Step 3 — Allowlist vs metadata
+
+`models:` shaped as a **list** is an allowlist that narrows a public endpoint. Shaped as a **dict**, it is per-model metadata and the probe still runs — so a dict never restricts the picker.
+
+To pin a dict catalog, set `discover_models: false` **and** convert `models:` to a list:
+
+```yaml
+discover_models: false
+models:
+  - my-finetune-v2
+  - my-finetune-v1
+```
+
+## Step 4 — API key resolution
+
+A provider's key is resolved in this order, highest first:
+
+1. **`key_cmd:`** — a command-run token provider. When present it is resolved first and **returns early** (`duckwork_cli/model_switch_providers.py::_entry_credentials`: the `key_cmd` branch returns before `api_key` or `key_env` are read), so anything below it in the same entry is ignored. If a provider keeps using an old credential, check for `key_cmd:` before editing anything else.
+2. **Inline `api_key:`** — a literal value or `${VAR}` reference in the entry. Outranks the env form.
+3. **`key_env:`** — the name of an environment variable (the alias `api_key_env:` is accepted too — `_entry_credentials` reads whichever is set). Resolved at runtime from `$DUCKWORK_HOME/.env` and the process environment.
+
+```yaml
+providers:
+  my-gateway:
+    api: https://llm.internal.example.com/v1
+    key_env: MY_GATEWAY_API_KEY      # read from .env / environment
+    api_key: ${MY_GATEWAY_API_KEY}    # equivalent inline form
+```
+
+If none of the three are set, the provider runs unauthenticated.
+
+### The auto-generated key env var
+
+When you add a provider through the CLI setup wizard (`duckwork model`), Duckwork derives the env var name from the endpoint's host:port so two servers on one host keep separate credentials. `duckwork_cli/config.py::custom_endpoint_key_env`:
+
+```python
+def custom_endpoint_key_env(identity: str) -> str:
+    slug = re.sub(r"[^A-Z0-9]+", "_", str(identity or "").upper()).strip("_")
+    return f"DUCKWORK_CUSTOM_{slug}_API_KEY" if slug else "DUCKWORK_CUSTOM_API_KEY"
+```
+
+| Endpoint identity | Generated var |
+|---|---|
+| `api.example.com` | `DUCKWORK_CUSTOM_API_EXAMPLE_COM_API_KEY` |
+| `localhost:8088` | `DUCKWORK_CUSTOM_LOCALHOST_8088_API_KEY` |
+
+The fixed `DUCKWORK_CUSTOM_` prefix is required — it keeps the name POSIX-valid when the slug starts with a digit, since `save_env_value()` (`duckwork_cli/config.py`) rejects those.
+
+**You do not need to adopt this convention.** `key_env` accepts any valid env var name; hand-named vars like `MY_GATEWAY_API_KEY` work identically. The generated form is only used by wizard-provisioned endpoints. Mixing the two is fine — what matters is that the var exists in `.env` and matches the `key_env` string.
+
+> [!NOTE]
+> Entries relying on `key_env` must not get a synthesized `api_key` written into config — the runtime resolves `key_env` directly, and persisting the value would downgrade credential hygiene.
+
+## Step 5 — Provider/auth failures
+
+- `Could not fetch models from endpoint` at picker time → the endpoint rejected the request. Check `key_env` / inline `api_key`, and whether the endpoint serves `/v1/models` at all (some gateways route only `/chat/completions`).
+- `gh` / hub 401 on install → see `diagnosing-auth`.
+- A model listed in `models:` but absent from the endpoint stays listed and **fails at request time** — there is no validation against the endpoint.
+
+### Pool credential failures
+
+When a provider is configured with a credential pool (`duckwork auth list` shows multiple entries for the provider), the pool rotates through credentials on failure. Symptoms differ from single-key auth:
+
+| Symptom | Likely cause | Action |
+|---|---|---|
+| 401/403 after working earlier | The active key expired or was revoked; pool should rotate to the next credential | `duckwork auth list <provider>` — check if the failed key is still listed and whether the next key is present |
+| 429 rate limit on every request | Genuine quota exhaustion (all pool keys capped) | Wait for the provider's reset window or add a key with `duckwork auth add <provider>`; use `duckwork auth reset <provider>` only to clear stale local cooldown/exhaustion state once capacity is back |
+| Pool stops rotating | Only one credential in the pool, or all others are in cooldown | `duckwork auth list <provider>` — verify multiple entries exist and check cooldown status |
+| Wrong credential used | Priority order is wrong — an exhausted key sits at priority 0 | `duckwork auth priority <provider> <index> 0` to reorder (positional: provider, target, priority — `--priority` is an `auth add` flag, not valid here) |
+| `duckwork auth list` shows no entries for a provider | Env vars not set, or provider ID mismatch | Check `.env` for the provider's declared env var (e.g. `OPENAI_API_KEY` for `openai-api`); verify with `duckwork auth status <provider>` |
+
+**Env var rotation:** setting `OPENAI_API_KEY`, `OPENAI_API_KEY_2`, `OPENAI_API_KEY_3` creates a three-key pool — visible to the Duckwork process via `.env` or exported environment (`.env` wins). The env scanner (`agent/credential_pool.py` numbered-sibling discovery) auto-discovers numbered siblings. If a new key isn't picked up, verify the variable name matches the expected pattern and that it is visible to the Duckwork process (not just an interactive shell).
+
+**Custom provider pools:** a custom endpoint in `providers:` gets its own pool key. Use `duckwork auth list` to find the custom provider's pool ID, then `duckwork auth add <custom-pool-id>` to add credentials. If the list shows no entry yet (first credential), pass the `providers:` key from `config.yaml` — it resolves to the pool automatically.
+
+**Cooldown behavior:** when a key fails with a rate limit or auth error, Duckwork marks it cooldown and tries the next key. Cooldowns clear on `duckwork auth reset` or after the cooldown period expires. A provider with all keys in cooldown appears "logged out" until one clears. A transient 429 is retried once on the same key before rotation (cap-shaped 429s rotate immediately); OAuth 401s refresh the token before rotating. `duckwork auth reset` clears local cooldown/exhaustion state only — it does not restore provider quota.
+
+For hub-install auth (GitHub tokens, `Could not fetch from any source`), see `diagnosing-auth`.
+
+### Provider catalog floods the picker
+
+A picker showing hundreds of models from providers never configured usually comes from the **provider catalog layer**, not `discover_models` (which covers custom endpoints only):
+
+- The remote curated catalog (`model_catalog.enabled: true`, `model_catalog.url`, `ttl_minutes: 20` in `config.yaml`; `duckwork_cli/config_defaults.py`) refreshes picker lists in the background; on network failure it silently keeps the stale cache.
+- Per-provider live `/v1/models` probes cache to disk (`provider_models_cache.json`, 1h TTL; curated OpenRouter cache under `cache/`; `models_dev_cache.json`), so a flood persists until the TTL lapses.
+
+Fix path, narrowest first:
+
+1. `duckwork model --refresh` — clears per-provider `/v1/models` probe caches and re-fetches. It does not clear the remote curated-manifest cache: delete `$DUCKWORK_HOME/cache/model_catalog.json` to force that refetch (stale copies keep serving until a refresh succeeds, so waiting out `ttl_minutes` alone does not guarantee clearing), then `duckwork gateway restart` to apply.
+2. `model_catalog.excluded_providers: [<slug>, ...]` in `config.yaml` — drops whole providers from the catalog (slug or alias, case-insensitive), then `duckwork gateway restart` to apply.
+3. `model_catalog.enabled: false` in `config.yaml` — disables remote fetching and falls back to the in-repo snapshot (use `excluded_providers` above to hide providers instead of disabling everything), then `duckwork gateway restart` to apply.
+
+## Step 6 — Legacy format
+
+Older configs use a top-level `custom_providers:` list with `base_url` instead of `api`. Still supported and auto-migrated to the `providers:` dict on `duckwork update` (config v12).
+
+> [!CAUTION]
+> **Keep this skill host-agnostic.** Do not reintroduce a real third-party provider
+> hostname, base URL, or `key_env` name as a worked example — `api.example.com` and
+> `MY_GATEWAY_API_KEY` are the placeholders. A skill whose subject is *model
+> providers in general* must not carry the flavor of whatever provider the last
+> debugging session happened to touch. The credential-pool section above
+> is the deliberate exception: pool mechanics require the real provider IDs
+> and their declared env var names (`OPENAI_API_KEY` and numbered siblings).
+> Hostnames, base URLs, and key values stay forbidden everywhere.
+
+Every diagnosis ends in a concrete action: a `providers:` field edit or a `duckwork model` command, then `duckwork gateway restart` to apply.
+
+## Report
+
+This skill diagnoses model provider issues — custom endpoints flooding the picker with hundreds of models, discover_models misbehaving, persisted catalogs bloating config, and provider/auth failures. When you run the diagnostic workflow, present findings in the standard format below.
+
+### Summary
+Your model picker is flooded with hundreds of models because a persisted catalog from a previous `/v1/models` response is bloating `config.yaml`. The catalog is metadata (not a pin) and is not consulted at runtime — the endpoint is re-probed every time.
+
+### Findings
+| Severity | What | Evidence |
+|---|---|---|
+| MEDIUM | Persisted catalog bloating config.yaml | `wc -l "$(duckwork config path)"` shows 500+ lines; `duckwork config get providers` shows a `models:` dict with `models_discovered: true` |
+| LOW | Catalog is stale — live endpoint returns fewer models | Live probe of `/v1/models` returns 12 models; persisted catalog has 340 |
+
+### Recommended Fix
+Remove the `models:` dict and `models_discovered:` flag from the provider entry in `config.yaml`. Keep `discover_models: true` for a live probe. Verify with `duckwork config get providers` — the entry should have no `models:` block.
+
+### References
+- `$DUCKWORK_HOME/config.yaml` — `providers:` entry with persisted catalog
+- `duckwork_cli/model_switch.py` — `_models_config_is_allowlist` (discovered catalog is never a pin)
+- `duckwork_cli/model_switch_providers.py` — `_discover_flag`, `_entry_credentials`
+
+---
+
+*Facts re-verified 2026-10-14 against upstream source at commit `cedf4a3d78675283fa93e4e6ea2d6212bf414667`: `duckwork_cli/model_switch_providers.py::_entry_credentials` (key_cmd resolved first and returned early; `key_env` read for the identity tuple but not used as the credential when key_cmd wins; inline `api_key` next) and `::_discover_flag` (`discover_models` defaults True; `"false"`/`"no"`/`"0"` strings coerce to False); `duckwork_cli/model_switch.py::_models_config_is_allowlist` (a `discovered` catalog is never a pin; dict shape is per-model metadata, list shape is an allowlist); `duckwork_cli/config.py::custom_endpoint_key_env` (`DUCKWORK_CUSTOM_<SLUG>_API_KEY` derivation). The Step 2.5 probe was rewritten 2026-09-21 (prose form) after the skills scanner rated the scripted curl|python and urllib forms as supply-chain/exfiltration shapes. **Re-pointed 2026-09-29 (drift #123):** `config.py` citations updated to `2739` at `5000e2993`. **Credential pool** (re-verified 2026-10-13 against the pinned baseline `f97608f`): `agent/credential_pool.py` — numbered-sibling discovery plus `_seed_from_env` ingesting API-key providers from env vars into the pool; pool entries persist in `auth.json` as `env:`-sourced references re-hydrated on load. Provider registry (`duckwork_cli/auth.py`, `openai-api` entry): API-key provider keyed on `OPENAI_API_KEY` with optional `OPENAI_BASE_URL` override. `duckwork auth` subcommands (`list`/`add`/`status`/`reset`/`priority`/`remove`, all positional — `--priority` is an `add` flag only) verified against the installed CLI. **Provider catalog** (verified 2026-10-14 against installed source): `model_catalog` block (`enabled`, `url`, `ttl_minutes: 20`; `duckwork_cli/config_defaults.py`); curated picker caches (`duckwork_cli/models.py`, per-provider `/v1/models` probes, disk TTLs); `model_catalog.excluded_providers` honored by slug or alias, case-insensitive (`agent/inventory.py`, `duckwork_cli/main_provider_setup.py`); `duckwork model --refresh` wipes the picker disk cache. Re-anchored 2026-10-17 against upstream `d97007c32` (baseline re-pin): the endpoint derivation is now `def custom_endpoint_key_env` in `duckwork_cli/config.py` — cite converted to symbol form; credential-pool sibling discovery, `custom:` prefix, and the rest of the provider catalog re-asserted unchanged (drift-fact table 10/10). Re-verify before reuse.*

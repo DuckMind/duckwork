@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+dist/
+build/
+
+# Plugin runtime state
+*.db
+*.db-shm
+*.db-wal
+host_secret
+session_gen
+
+# Debug litter (operator + worker scratch scripts)
+debug*.py
+verify*.py
+check_*.py
+inspect_*.py

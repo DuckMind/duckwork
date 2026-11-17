@@ -1,0 +1,80 @@
+# Duckwork Session Lens
+
+<!-- impeccable:product-schema 1 -->
+
+## Platform
+
+adaptive
+
+## Stack
+
+Duckwork unified plugin package: a plain JavaScript ESM desktop plugin using `@duckwork/plugin-sdk`, plus a Python/FastAPI backend using Duckwork-bundled dependencies for read-only session inspection and direct provider usage checks.
+
+## Users
+
+Duckwork Desktop users who need to understand provider allowances plus the activity, token consumption, cost, tools, skills, failures, files, and delegated work behind each agent session without leaving the desktop app.
+
+## Product Purpose
+
+Make Duckwork activity and account capacity explainable at a glance and inspectable in depth. Success means a user can check what remains on configured AI accounts, find a session, understand what it consumed and did, trace the recorded evidence, and inspect surrounding runtime and orchestration health from one native Duckwork page.
+
+## Positioning
+
+Session Lens combines broad token and cost telemetry with failure-first, session-level operational inspection in a native Duckwork sidebar page. It uses Duckwork' own accounting and provenance fields, and labels unavailable pricing as unpriced instead of presenting a false zero.
+
+## Operating Context
+
+The plugin appears in Duckwork Desktop's left sidebar as **Session Lens** and opens a full native route. It reads local Duckwork state, runtime logs, gateway status, and schedule metadata in read-only mode; it supports dark and light Duckwork themes and must remain usable across routine Duckwork application updates.
+
+## Capabilities and Constraints
+
+- Native route `/session-lens` and `SIDEBAR_NAV_AREA` contribution; no iframe or standalone web server.
+- Session list and detail views for tokens, cost, model, provider, tools, skills, failures, files, and delegations.
+- Overview, Operations, Tools, Skills, System, AI Usage, and AI Models views.
+- An all-time model inventory discovered dynamically from distinct session accounting records, with selected-period requests, token mix, cost, quota burn, reliability, retry/switch, latency, and seven-day trend evidence plus expandable task-type diagnostics. Ten columns are sortable and default to reliability rank, unranked models last.
+- Current Codex, Anthropic Claude, Fordex Portal, OpenRouter, DeepSeek, Grok, Kimi Code Plan, and Z.AI GLM Coding Plan account allowances or balances through Duckwork-resolved credentials. Anthropic renders one card per product: the Claude subscription (5-hour and 7-day windows) and the Console API key (per-minute rate limits), read from message response headers when no usage endpoint accepts the credential.
+- Chronological, paginated session trace for active user, assistant, reasoning, tool-call, and tool-result rows; system prompts excluded.
+- Conservative session outcomes that preserve Duckwork' recorded end reason.
+- Cached local-log telemetry for latency, cache efficiency, request-failure observations, and tool duration; time-to-first-token remains explicitly unavailable because Duckwork does not record it.
+- Cross-profile accounting, gateway/platform health, and prompt-safe schedules.
+- Failure-first sorting, a dedicated failed-call inspector, Duckwork FTS search with snippets, and cursor-style pagination up to 500 rows.
+- An Ask Duckwork workflow: a bounded, secret-redacted, session-grounded failure-analysis prompt (failures grouped by tool and error signature, no user or assistant message text, under 12,000 characters) copied to the clipboard with a fresh Duckwork chat opened for it. Session Lens never submits the prompt or creates a session itself.
+- Instruction rules: user-composed WHEN/THEN checks from a fixed catalog of conditions and expectations (tool calls, tool order and budgets, reply text, language, paths, argument values, timing), with presets for the common sentences, graded per recorded turn and scored per model with sample-size-aware ranking; deterministic verdicts only, no LLM judge, no reading of SOUL.md.
+- Export menus on every data view (CSV, JSON, Markdown digest) built in the desktop from read-only data, offered as a Save File download or a clipboard copy.
+- Read-only database access. The plugin must not mutate, archive, delete, or rewrite sessions.
+- Cost precedence: recorded actual cost, then recorded estimate, then a clearly labelled included or unpriced state.
+- AI Models treats OAuth quota as a shared provider-account limit, delays pace judgments until 10% of the billing period has elapsed, requires ten ledger-completed tasks before showing per-task efficiency (recorded cost divided by the completions shown on the same card), distinguishes unavailable cache reporting from a recorded zero, separates bounded-log API-attempt failures from recorded tool-call failures, and does not estimate unavailable TTFT. Expanded work reliability measures main-role finished tasks — completed, or closed by a Desktop reset or reap with no failure end reason — as clean, recovered, or terminally failed model/API outcomes; ambiguous or uncovered evidence never becomes success, and every excluded task carries its reason. Comparable models require the configurable sample floor and rank by the lowest 95% Wilson upper failure bound. Acceptance is task-specific, and retry/switch excludes cross-role model routing. Rate metrics expose sample sizes, neutralize and demote samples below a configurable confidence floor, and suppress bounded-log failure/latency values on zero-request rows. Unknown routes resolve through explicit model-id globs and distinct historical model/family routes before becoming actionable unmapped states.
+- Skills must distinguish recorded invocation from merely available capabilities.
+- Local-first operation with no third-party telemetry upload. AI Usage makes direct authenticated quota requests only to the configured providers and never returns credentials to JavaScript. The single inference request (the Anthropic one-token probe) is declared on its adapter, cached per credential, listed on the System tab, and switchable off in settings.
+- Every vendor is one self-registering adapter module (`dashboard/_providers/`, `dashboard/_services/`) declaring its credential probe, collector, discovery keys, and the hosts it contacts; `GET /adapters` publishes the registry and the README Trust section lists every host, both checked by the test suite. An adapter is added only after its endpoint was verified against the live API.
+- Failure text signatures are English-only and documented as such; recorded Duckwork error states count in any language, so non-English failure rates are a floor.
+- Operational readers load only when their view is opened and never poll faster than every 30 seconds.
+
+## Brand Commitments
+
+- Product name: **Duckwork Session Lens**.
+- Sidebar label: **Session Lens**.
+- Repository name: `duckwork-session-lens`.
+- Plugin id: `session-lens`.
+- Current documented release: `0.53.2`.
+- The interface inherits Duckwork Desktop's native components, typography, spacing, and theme variables.
+- Upstream inspiration is credited transparently; no upstream logo or endorsement is implied.
+
+## Evidence on Hand
+
+- Duckwork Agent v0.21.0 (Desktop v0.21.0) database schema v28, verified on Windows on 2026-09-03; first verified on v0.20.5 / schema v26 on 2026-08-23.
+- Installed Duckwork Desktop Plugin SDK and bundled `duckwork-desktop-plugins` instructions.
+- Duckwork `sessions`, `messages`, `session_model_usage`, FTS, and `async_delegations` tables.
+- TokenTelemetry and Duckwork Session Analyzer are product-behavior references; Duckwork LLM Quota Monitor informs the Grok OAuth adapter. Compatibility claims remain bounded to verified Duckwork versions and provider responses.
+
+## Product Principles
+
+- Evidence before estimates.
+- Failures should be easier to find than successes are to admire.
+- Dense information remains scan-friendly through progressive disclosure.
+- Privacy is the default: local reads, bounded snippets, no third-party telemetry, and direct provider quota checks that never expose credentials to the Desktop UI.
+- The plugin should feel maintained by Duckwork, while remaining independently installable.
+
+## Accessibility & Inclusion
+
+Keyboard-reachable controls, visible focus states, semantic buttons and tables, text alternatives for status color, reduced-motion-safe transitions, and layouts that remain usable in narrow Duckwork windows.

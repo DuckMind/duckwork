@@ -1,0 +1,34 @@
+{
+  "name": "@tiny-fish/duckwork",
+  "version": "0.2.3",
+  "description": "TinyFish web provider plugin for Duckwork Agent, delivered via npm for the TinyFish CLI. Installed by `tinyfish connect duckwork`; not a JavaScript library.",
+  "license": "MIT",
+  "homepage": "https://docs.tinyfish.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tinyfish-io/tinyfish-web-agent-integrations.git",
+    "directory": "duckwork"
+  },
+  "author": {
+    "name": "TinyFish",
+    "email": "support@tinyfish.io",
+    "url": "https://tinyfish.ai"
+  },
+  "keywords": [
+    "duckwork",
+    "tinyfish",
+    "web-search",
+    "web-fetch",
+    "ai-agent"
+  ],
+  "files": [
+    "tinyfish_duckwork/*.py",
+    "plugin.yaml",
+    "after-install.md",
+    "pyproject.toml",
+    "__init__.py"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

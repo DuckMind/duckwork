@@ -1,0 +1,25 @@
+name: nextdns
+version: 1.0.0
+description: >-
+  Read-only NextDNS tools - DNS query logs, blocked queries with the blocklist
+  that matched, and aggregate analytics by domain, device, blocklist or
+  protocol. For triaging DNS problems and answering "was this blocked, and by
+  what". Uses the official NextDNS API; makes no configuration changes.
+author: Shane Lord
+provides_tools:
+  - nextdns_logs
+  - nextdns_blocked
+  - nextdns_analytics
+  - nextdns_profile
+requires_env:
+  - name: NEXTDNS_API_KEY
+    description: "NextDNS API key, from the bottom of your account page at my.nextdns.io"
+    prompt: "NextDNS API key"
+    url: "https://my.nextdns.io/account"
+    secret: true
+    note: "Can also be set from the NextDNS dashboard tab."
+optional_env:
+  - name: NEXTDNS_PROFILE_ID
+    description: "Default profile id, the path segment of your DNS-over-HTTPS URL (https://dns.nextdns.io/<id>). Without it, nextdns_profile lists the profiles the key can see and every other tool needs a profile argument."
+    prompt: "Default NextDNS profile id"
+    secret: false

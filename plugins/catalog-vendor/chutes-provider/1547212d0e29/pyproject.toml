@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-chutes-provider"
+version = "0.1.5"
+description = "Chutes model-provider plugin for Duckwork Agent"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE"]
+authors = [
+  { name = "Michael Gasperini (Mikesoft)" },
+]
+keywords = ["chutes", "duckwork-agent", "llm", "model-provider"]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Repository = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+Chutes = "https://chutes.ai"
+
+[project.entry-points."duckwork_agent.model_providers"]
+chutes = "duckwork_chutes_provider:register"
+
+[tool.setuptools]
+packages = ["duckwork_chutes_provider"]

@@ -1,0 +1,17 @@
+{
+  "name": "next-steps-plugin",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "Deniz Yilmaz (AGANTILA) <hallo@agantila.com> (https://agantila.com)",
+  "homepage": "https://agantila.com",
+  "keywords": ["duckwork", "duckwork-desktop", "plugin", "ollama", "next-steps"],
+  "description": "Session-prediction plugin for Duckwork Desktop — local Ollama, per-session state, target routing (session/bot/kanban), tiny-model support, EN/DE.",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/run_test_v11.mjs && node tests/run_test_v10.mjs && node tests/run_test_v9.mjs && node tests/run_test_v9b.mjs && node tests/run_test_v7.mjs",
+    "test:full": "node tests/run_test_v11.mjs && node tests/run_test_v10.mjs && node tests/run_test_v6.mjs && node tests/run_test_v7.mjs && node tests/run_test_v9.mjs && node tests/run_test_v9b.mjs",
+    "check": "node --check desktop/plugin.js && echo 'desktop/plugin.js: SYNTAX OK'",
+    "deploy": "mkdir -p ~/.duckwork/desktop-plugins/next-steps && cp desktop/plugin.js ~/.duckwork/desktop-plugins/next-steps/plugin.js && echo 'Deployed. Restart Duckwork Desktop or ⌘K → Reload desktop plugins.'"
+  }
+}

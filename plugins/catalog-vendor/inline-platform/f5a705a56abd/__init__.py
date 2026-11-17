@@ -1,0 +1,5 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+"""Inline platform plugin for Duckwork Agent."""
+from .adapter import register
+
+__all__ = ["register"]

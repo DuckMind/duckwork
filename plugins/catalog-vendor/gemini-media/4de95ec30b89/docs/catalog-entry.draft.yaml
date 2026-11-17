@@ -1,0 +1,24 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+# Draft for a PR to Fordex/duckwork-agent: plugin-catalog/gemini-media.yaml
+# Fill `sha` with the full 40-character release commit before submitting.
+name: gemini-media
+repo: https://github.com/DuckMind/duckwork
+sha: "<40-hex release commit>"
+description: >-
+  Google Gemini image (Nano Banana) and video (Gemini Omni) generation backends for
+  image_generate and video_generate, built on the google-genai SDK with an API key.
+  Disclosure: prompts, reference images and the API key are sent to
+  generativelanguage.googleapis.com; reference-image URLs are downloaded by the plugin
+  (public hosts only); generation is billed to the API key's Google project.
+maintainer: bytecakelake
+tier: community
+category: media
+docs_url: https://github.com/DuckMind/duckwork
+version: "0.1.2"
+platforms: []
+capabilities:
+  provides_tools: []
+  provides_hooks: []
+  provides_middleware: []
+  requires_env:
+    - GEMINI_API_KEY

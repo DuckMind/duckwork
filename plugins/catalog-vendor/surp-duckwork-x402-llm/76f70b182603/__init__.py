@@ -1,0 +1,65 @@
+"""Surp Duckwork plugin registration entry point."""
+
+try:
+    from .handlers import (
+        surp_cache_status_handler, surp_chat_handler, surp_models_handler,
+        surp_quote_handler, surp_usage_handler, surp_combo_create_handler,
+        surp_combo_list_handler, surp_combo_get_handler, surp_jev_stats_handler,
+        surp_markets_handler, surp_providers_handler, surp_route_prefs_handler,
+        surp_spend_approval_hook,
+        set_context,
+    )
+    from .schemas import (
+        SURP_CACHE_STATUS, SURP_CHAT, SURP_MODELS, SURP_QUOTE, SURP_USAGE,
+        SURP_COMBO_CREATE, SURP_COMBO_LIST, SURP_COMBO_GET, SURP_JEV_STATS,
+        SURP_MARKETS, SURP_PROVIDERS, SURP_ROUTE_PREFS,
+    )
+except ImportError:
+    from handlers import (
+        surp_cache_status_handler, surp_chat_handler, surp_models_handler,
+        surp_quote_handler, surp_usage_handler, surp_combo_create_handler,
+        surp_combo_list_handler, surp_combo_get_handler, surp_jev_stats_handler,
+        surp_markets_handler, surp_providers_handler, surp_route_prefs_handler,
+        surp_spend_approval_hook,
+        set_context,
+    )
+    from schemas import (
+        SURP_CACHE_STATUS, SURP_CHAT, SURP_MODELS, SURP_QUOTE, SURP_USAGE,
+        SURP_COMBO_CREATE, SURP_COMBO_LIST, SURP_COMBO_GET, SURP_JEV_STATS,
+        SURP_MARKETS, SURP_PROVIDERS, SURP_ROUTE_PREFS,
+    )
+
+
+_TOOLS = [
+    ("surp_models", SURP_MODELS, surp_models_handler, "🔎"),
+    ("surp_markets", SURP_MARKETS, surp_markets_handler, "📈"),
+    ("surp_providers", SURP_PROVIDERS, surp_providers_handler, "⚡"),
+    ("surp_route_prefs", SURP_ROUTE_PREFS, surp_route_prefs_handler, "🎚️"),
+    ("surp_quote", SURP_QUOTE, surp_quote_handler, "💵"),
+    ("surp_cache_status", SURP_CACHE_STATUS, surp_cache_status_handler, "♻️"),
+    ("surp_chat", SURP_CHAT, surp_chat_handler, "➕"),
+    ("surp_usage", SURP_USAGE, surp_usage_handler, "📊"),
+    ("surp_jev_stats", SURP_JEV_STATS, surp_jev_stats_handler, "🧠"),
+    ("surp_combo_create", SURP_COMBO_CREATE, surp_combo_create_handler, "🧩"),
+    ("surp_combo_list", SURP_COMBO_LIST, surp_combo_list_handler, "📚"),
+    ("surp_combo_get", SURP_COMBO_GET, surp_combo_get_handler, "🔬"),
+]
+
+
+def register(ctx) -> None:
+    """Register Surp tools. Called once by Duckwork' plugin loader."""
+    set_context(ctx)
+    for name, schema, handler, emoji in _TOOLS:
+        ctx.register_tool(
+            name=name,
+            toolset="surp",
+            # Duckwork wraps the schema in {"type": "function", "function": ...} itself.
+            schema=schema["function"],
+            handler=handler,
+            description=schema["function"]["description"],
+            emoji=emoji,
+        )
+    # Every paid surp_chat call (confirm_spend: true) is escalated to Duckwork'
+    # human-approval gate before the tool runs — the user, not the model,
+    # authorizes the spend. Unattended contexts fail closed.
+    ctx.register_hook("pre_tool_call", surp_spend_approval_hook)

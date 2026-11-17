@@ -1,0 +1,1064 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [
+      {
+        "kind": "image",
+        "reason": "asset absent from exact pinned archive",
+        "url": "https://raw.githubusercontent.com/BonesGit/hermes-vector-platform/refs/heads/master/vector-hermes-agent-plugin.png"
+      }
+    ],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "vector-platform",
+  "content_id": "16328f1cab81",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 989,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "eed4606ee14ea5a0bb19306edc0b0e4393821321902d84d1d14d63e19367f334"
+    },
+    {
+      "bytes": 3348,
+      "mode": "100644",
+      "path": ".github/workflows/release-sidecar.yml",
+      "sha256": "dbb6cbac3406798ecd39dc3c1c1cc9740a02d93412ab468141adfcb22c9dacea"
+    },
+    {
+      "bytes": 188,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "69c7b686fda0021d75c59394ad8a1c9c2e3f88ed68f9dc3d76fc9249759ac09e"
+    },
+    {
+      "bytes": 20950,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "483cd13177c2e465ca9dabec8c960e9b62736c3016df16e4098f48ba806c8c7a"
+    },
+    {
+      "bytes": 1065,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "a0fabef986c0914f2bb5d241bb9143715d10cd52a9826952f069e60cbaa3c3b5"
+    },
+    {
+      "bytes": 438,
+      "mode": "100644",
+      "path": "MANIFEST.in",
+      "sha256": "0a1357f41a293114d7216ef598039bbe0a2a2b93c54e57086c7f0179193dddd6"
+    },
+    {
+      "bytes": 30175,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "6a7b367ec7ac17aab384733dc339ce25462777bc5dbf9d72b6cb8281c0ed7a4e"
+    },
+    {
+      "bytes": 181,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "9db8a7002429f53942d9d83f2d521ea42a011bef8f9d60fc54c951359beb969d"
+    },
+    {
+      "bytes": 84981,
+      "mode": "100644",
+      "path": "adapter.py",
+      "sha256": "d4d1b3b6606d4ab0e78eb84ad895ddf5dfaeaaa5d521f3fe094ffe6424bc296c"
+    },
+    {
+      "bytes": 778,
+      "mode": "100644",
+      "path": "after-install.md",
+      "sha256": "4ba6aade9064906f8b70ec967ca4e8bc40655163fa00e5632aee25aaa084ecfd"
+    },
+    {
+      "bytes": 19,
+      "mode": "100644",
+      "path": "bridge/.gitignore",
+      "sha256": "4f0944189d5358b284a34108aa30a63556e6f5b60ad36482b740159b5399a662"
+    },
+    {
+      "bytes": 70654,
+      "mode": "100644",
+      "path": "bridge/Cargo.lock",
+      "sha256": "e8c68bedd687b389e6bb5c80dafdda669ae053627169d0a1f2b7243a358db112"
+    },
+    {
+      "bytes": 1173,
+      "mode": "100644",
+      "path": "bridge/Cargo.toml",
+      "sha256": "568b306057c88e725ebe4cd4ad4ca19cfa1fde0b7ceea202f5092f9e5bbfe2dd"
+    },
+    {
+      "bytes": 44297,
+      "mode": "100644",
+      "path": "bridge/src/api.rs",
+      "sha256": "589b15060d8bbba8a1650ff3fbf64e8e866c7cfca3402f6a224198da08c919ad"
+    },
+    {
+      "bytes": 9626,
+      "mode": "100644",
+      "path": "bridge/src/commands.rs",
+      "sha256": "4fbeaad7e25b23190dfa4e19c8be004eb19bba94f9100387a964b834c9ea3820"
+    },
+    {
+      "bytes": 40950,
+      "mode": "100644",
+      "path": "bridge/src/events.rs",
+      "sha256": "1cde1fffcb4991c29dfc2987b387a93538c6d476917ebc6955726c1163695fed"
+    },
+    {
+      "bytes": 25334,
+      "mode": "100644",
+      "path": "bridge/src/main.rs",
+      "sha256": "0e5f104c38aca7124f8e9941d0de874bf5de1a54adba967e4f853e9a36d9e70a"
+    },
+    {
+      "bytes": 8528,
+      "mode": "100644",
+      "path": "bridge/src/missed.rs",
+      "sha256": "e4ae7e13e6ad6239f8cc7037f2a2731311a8d819b4963e05faa3b137899025a6"
+    },
+    {
+      "bytes": 11319,
+      "mode": "100644",
+      "path": "bridge/src/profile.rs",
+      "sha256": "493a8262aaed5f202e739ad8af56c765bf3a5c3904b9c0ffdb580ad325ee5840"
+    },
+    {
+      "bytes": 45780,
+      "mode": "100644",
+      "path": "bridge/tests/http_stub.rs",
+      "sha256": "6ba4ec5e2342216720e16e4780cdc43d50489746ad88a552b42b01cd740ebd57"
+    },
+    {
+      "bytes": 10129,
+      "mode": "100644",
+      "path": "bridge/tests/identity_cli.rs",
+      "sha256": "1231abde46921140cc0832dc00d34d08d74d052e133761e963cd6d1677cd97f6"
+    },
+    {
+      "bytes": 74,
+      "mode": "100644",
+      "path": "internal/__init__.py",
+      "sha256": "48b2053b1f9a10126e2f9528ada41726ea1225a60003111da10be6d30f9c6484"
+    },
+    {
+      "bytes": 3306,
+      "mode": "100644",
+      "path": "internal/bech32.py",
+      "sha256": "ca169940ec2536f34d4d80a4bed086eba8fea45c78c12d8ae89e441b9f68fd33"
+    },
+    {
+      "bytes": 9798,
+      "mode": "100644",
+      "path": "internal/bridge_bin.py",
+      "sha256": "df28708c4a4e0b5076ad355bdb6b76f78d85f09742cbe7fcce483dc97ea0e81c"
+    },
+    {
+      "bytes": 1552,
+      "mode": "100644",
+      "path": "internal/constants.py",
+      "sha256": "b75e0753c56af7dd011e9817ccd219ff2fa95a90d3530a09ad83b22b932f8fee"
+    },
+    {
+      "bytes": 2939,
+      "mode": "100644",
+      "path": "internal/env.py",
+      "sha256": "0a10d9f2e76da0de35a919e784f817f1f716552fec57ae9a4fc0065ad6879784"
+    },
+    {
+      "bytes": 18976,
+      "mode": "100644",
+      "path": "internal/groups.py",
+      "sha256": "ce08a7399e1584cf331a640854b350138261566b4b40a4cc9d958a563da064ee"
+    },
+    {
+      "bytes": 38174,
+      "mode": "100644",
+      "path": "internal/inbound.py",
+      "sha256": "95f3e2b149506d96d153ec1060a5cf2574a07e549a64f8d6dfdb41f1edfcfb49"
+    },
+    {
+      "bytes": 11493,
+      "mode": "100644",
+      "path": "internal/paths.py",
+      "sha256": "addf6987a152be0a02fed839251e2b4e80bb5904c662fd2feca10f0e3e246987"
+    },
+    {
+      "bytes": 26937,
+      "mode": "100644",
+      "path": "internal/setup.py",
+      "sha256": "0dd48725558e4648555a9a2d637fafe1bed3ccf473e043c84aba2884824433c6"
+    },
+    {
+      "bytes": 10295,
+      "mode": "100644",
+      "path": "internal/sidecar.py",
+      "sha256": "0e731b97cf40fa7d0c3583b15a2a2b9809d7cc2be015e6c3b7f998137cf344e3"
+    },
+    {
+      "bytes": 18846,
+      "mode": "100644",
+      "path": "internal/yaml_config.py",
+      "sha256": "cd7734e8ceda190f383b20f4f99a9c4eae23064f2cbc2402200cabc236039f18"
+    },
+    {
+      "bytes": 1174,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "ddebfe33e269e62a60fc928c70f30c0bc946b6ec41804911e73310d88266181c"
+    },
+    {
+      "bytes": 1649,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "c2391ad0d95f8a11eb37458e9429649f50cabaab0305134bb2003b807b65ec56"
+    },
+    {
+      "bytes": 248905,
+      "mode": "100644",
+      "path": "tests/test_plugin_unit.py",
+      "sha256": "e9cce249b6ca37d9780a3584bf0737025f6ac22ca3c31cd29387b987bb8303b0"
+    },
+    {
+      "bytes": 514734,
+      "mode": "100644",
+      "path": "vector-hermes-agent-plugin.png",
+      "sha256": "5807d293549e6eb4a46437bcd94e435c21391587d3076c330c55d15f660f76b8"
+    }
+  ],
+  "input_manifest_sha256": "16328f1cab81cc9dc93d4d7f640465d6195866865d08fd1faceef5c9cc60fa46",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "a0fabef986c0914f2bb5d241bb9143715d10cd52a9826952f069e60cbaa3c3b5",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/ci.yml",
+      "CHANGELOG.md",
+      "README.md",
+      "adapter.py",
+      "after-install.md",
+      "bridge/Cargo.toml",
+      "bridge/src/api.rs",
+      "bridge/src/commands.rs",
+      "bridge/src/events.rs",
+      "bridge/src/main.rs",
+      "bridge/src/missed.rs",
+      "bridge/src/profile.rs",
+      "bridge/tests/http_stub.rs",
+      "internal/__init__.py",
+      "internal/bridge_bin.py",
+      "internal/constants.py",
+      "internal/env.py",
+      "internal/groups.py",
+      "internal/inbound.py",
+      "internal/paths.py",
+      "internal/setup.py",
+      "internal/sidecar.py",
+      "internal/yaml_config.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/test_plugin_unit.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/BonesGit/hermes-vector-platform",
+    "sha": "94e1af49a2dcbce4952cb3d17b8591b8e3e10bed",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/BonesGit/hermes-vector-platform",
+  "original_sha": "94e1af49a2dcbce4952cb3d17b8591b8e3e10bed",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "5922817fa823508635276cb3769076a87278963775a28bfdc0ee396d638b3e9c",
+      "bytes": 997,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/release-sidecar.yml",
+      "sha256": "dbb6cbac3406798ecd39dc3c1c1cc9740a02d93412ab468141adfcb22c9dacea",
+      "bytes": 3348,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "69c7b686fda0021d75c59394ad8a1c9c2e3f88ed68f9dc3d76fc9249759ac09e",
+      "bytes": 188,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "acaba099396e69f820ad3f333e75733570d9a05310a6d254a0ec2378421a2f2e",
+      "bytes": 21030,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "a0fabef986c0914f2bb5d241bb9143715d10cd52a9826952f069e60cbaa3c3b5",
+      "bytes": 1065,
+      "mode": "100644"
+    },
+    {
+      "path": "MANIFEST.in",
+      "sha256": "0a1357f41a293114d7216ef598039bbe0a2a2b93c54e57086c7f0179193dddd6",
+      "bytes": 438,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "e4ce2fb1429270133c8fd6875af16f85b4eab740b5605b393b31935cc6d4de3b",
+      "bytes": 30233,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "9db8a7002429f53942d9d83f2d521ea42a011bef8f9d60fc54c951359beb969d",
+      "bytes": 181,
+      "mode": "100644"
+    },
+    {
+      "path": "adapter.py",
+      "sha256": "c1e56e9773218111aac2886603e98729a72b0b54bc1e1f2f2dd63c0da22b8ce8",
+      "bytes": 85075,
+      "mode": "100644"
+    },
+    {
+      "path": "after-install.md",
+      "sha256": "3d6a78a4b03b0413a77afdfdde0bbe199a01a4786576c6900288c4d989612e88",
+      "bytes": 768,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/.gitignore",
+      "sha256": "4f0944189d5358b284a34108aa30a63556e6f5b60ad36482b740159b5399a662",
+      "bytes": 19,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/Cargo.lock",
+      "sha256": "e8c68bedd687b389e6bb5c80dafdda669ae053627169d0a1f2b7243a358db112",
+      "bytes": 70654,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/Cargo.toml",
+      "sha256": "15f5d59a969ced108b3f5c725dae0b0a86f040ca62f62694aad19e0814c41f99",
+      "bytes": 1175,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/src/api.rs",
+      "sha256": "12e3ebae48aa10a5a9525c242a80342e64919afe29a8ffcbb48a74f97ba6b900",
+      "bytes": 44305,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/src/commands.rs",
+      "sha256": "e56b5e75cb3d5bd0b7c99a21fcffea5c04af2ecff4f20f65e1c608e51c88e6f2",
+      "bytes": 9646,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/src/events.rs",
+      "sha256": "204d4f91757981953819d5bb390fb1925887bf2684d81c85870b107495fc9354",
+      "bytes": 40958,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/src/main.rs",
+      "sha256": "2df5204acf094826ac28eea430fcb7b086d1e621192e6b70a9443377c232ed09",
+      "bytes": 25338,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/src/missed.rs",
+      "sha256": "9143fe81ffa4e24d5ec0f0625c1a5784a16f103e90e33f5482878ced25fe258d",
+      "bytes": 8532,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/src/profile.rs",
+      "sha256": "af053169a3d58a27a3c6fbd9f6789a4ac1ef4a51e042044402a1ec8a74342ac5",
+      "bytes": 11325,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/tests/http_stub.rs",
+      "sha256": "94b9370d661da0bedb03a477eeda053b9f111e9739b7390d6ae208e04dedfb91",
+      "bytes": 45792,
+      "mode": "100644"
+    },
+    {
+      "path": "bridge/tests/identity_cli.rs",
+      "sha256": "1231abde46921140cc0832dc00d34d08d74d052e133761e963cd6d1677cd97f6",
+      "bytes": 10129,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/__init__.py",
+      "sha256": "e1483bbb9d59e451ac4d11efbb4e2728609ea52ea8918e2c80d09273338f17d4",
+      "bytes": 76,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bech32.py",
+      "sha256": "ca169940ec2536f34d4d80a4bed086eba8fea45c78c12d8ae89e441b9f68fd33",
+      "bytes": 3306,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/bridge_bin.py",
+      "sha256": "abc8b37627d1bfb395945b6b314da0b8e61a391cf175f270ca93df774beed159",
+      "bytes": 9808,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/constants.py",
+      "sha256": "b735275780f406551ece0eaa487f7e7b96be4f3f357e3dbb87d0ece4b1520717",
+      "bytes": 1562,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/env.py",
+      "sha256": "caee79aee02bb33e1a39d968176a53e930d23e4739404c6f000b8b1d0e5120a9",
+      "bytes": 2943,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/groups.py",
+      "sha256": "a8de626fb86170ee2337614f0e68fd3bf7415f228abcba0ed2612462b8810383",
+      "bytes": 18986,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/inbound.py",
+      "sha256": "e2dbb0189c44ab46d10b9ef79c0042f958d2b90ab6524c2064c43388e41d0db3",
+      "bytes": 38182,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/paths.py",
+      "sha256": "d3e7d7e6cd9942d1e5c496cc3ab1c02c8c476f61076be63db8c4c7ab943f1740",
+      "bytes": 11531,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/setup.py",
+      "sha256": "e51f8fc37a20c152ed5ec73419a6add87cd5fbbf0f2eba014fda47f06a7d4fe9",
+      "bytes": 26955,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/sidecar.py",
+      "sha256": "1da4d6d008e79c130ef17599b6fe25fe463662b0c7a1da4d0aec8ce58a6a002d",
+      "bytes": 10301,
+      "mode": "100644"
+    },
+    {
+      "path": "internal/yaml_config.py",
+      "sha256": "267c81a5dee871bdc87d65fd5eb7a0ce67702c12e47b3ab1f0c2eff8980e2024",
+      "bytes": 18854,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "2706265f65cd86283fe82ad965b4f8d3dd011cdb337d5393eaf0005a01f47790",
+      "bytes": 1180,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "e620b6cfc1ac6918961184272062bc46d2dd24ac8b2b60235e92672ab366735b",
+      "bytes": 1606,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_unit.py",
+      "sha256": "cd0b0207259aa31a6192e291e804703312a12be20a6b77e386aae8731b9e9654",
+      "bytes": 249155,
+      "mode": "100644"
+    },
+    {
+      "path": "vector-duckwork-agent-plugin.png",
+      "sha256": "5807d293549e6eb4a46437bcd94e435c21391587d3076c330c55d15f660f76b8",
+      "bytes": 514734,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "406c98883c0f5eb434b8c98f32e18465ef1d16bcd6da48c9f407257825b950a7",
+  "pin_verification": {
+    "archive_bytes": 683379,
+    "archive_sha256": "c4f79585153ab7f829dd41a7995bb4a5a8a7b5152e7b2047d227d79d23e7938b",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "94e1af49a2dcbce4952cb3d17b8591b8e3e10bed",
+    "verified_commit_marker": "94e1af49a2dcbce4952cb3d17b8591b8e3e10bed"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "09f12325cfd7e449a89e44ae6071d8323b581a498ca26eeb8b5028e09cf673e3",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "eed4606ee14ea5a0bb19306edc0b0e4393821321902d84d1d14d63e19367f334",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5922817fa823508635276cb3769076a87278963775a28bfdc0ee396d638b3e9c",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "5922817fa823508635276cb3769076a87278963775a28bfdc0ee396d638b3e9c",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "5922817fa823508635276cb3769076a87278963775a28bfdc0ee396d638b3e9c"
+      },
+      {
+        "destination": ".github/workflows/release-sidecar.yml",
+        "input_sha256": "dbb6cbac3406798ecd39dc3c1c1cc9740a02d93412ab468141adfcb22c9dacea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dbb6cbac3406798ecd39dc3c1c1cc9740a02d93412ab468141adfcb22c9dacea",
+        "source": ".github/workflows/release-sidecar.yml",
+        "final_output_sha256": "dbb6cbac3406798ecd39dc3c1c1cc9740a02d93412ab468141adfcb22c9dacea",
+        "cli_destination": ".github/workflows/release-sidecar.yml",
+        "previous_staging_sha256": "dbb6cbac3406798ecd39dc3c1c1cc9740a02d93412ab468141adfcb22c9dacea"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "69c7b686fda0021d75c59394ad8a1c9c2e3f88ed68f9dc3d76fc9249759ac09e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "69c7b686fda0021d75c59394ad8a1c9c2e3f88ed68f9dc3d76fc9249759ac09e",
+        "source": ".gitignore",
+        "final_output_sha256": "69c7b686fda0021d75c59394ad8a1c9c2e3f88ed68f9dc3d76fc9249759ac09e",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "69c7b686fda0021d75c59394ad8a1c9c2e3f88ed68f9dc3d76fc9249759ac09e"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "483cd13177c2e465ca9dabec8c960e9b62736c3016df16e4098f48ba806c8c7a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "597e5f5ed5b8ee0cc7140b4eaeb12d8a9c0a335b9306735b43a8463800e68bea",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "acaba099396e69f820ad3f333e75733570d9a05310a6d254a0ec2378421a2f2e",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "597e5f5ed5b8ee0cc7140b4eaeb12d8a9c0a335b9306735b43a8463800e68bea"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "a0fabef986c0914f2bb5d241bb9143715d10cd52a9826952f069e60cbaa3c3b5",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "a0fabef986c0914f2bb5d241bb9143715d10cd52a9826952f069e60cbaa3c3b5",
+        "source": "LICENSE",
+        "final_output_sha256": "a0fabef986c0914f2bb5d241bb9143715d10cd52a9826952f069e60cbaa3c3b5",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "a0fabef986c0914f2bb5d241bb9143715d10cd52a9826952f069e60cbaa3c3b5"
+      },
+      {
+        "destination": "MANIFEST.in",
+        "input_sha256": "0a1357f41a293114d7216ef598039bbe0a2a2b93c54e57086c7f0179193dddd6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0a1357f41a293114d7216ef598039bbe0a2a2b93c54e57086c7f0179193dddd6",
+        "source": "MANIFEST.in",
+        "final_output_sha256": "0a1357f41a293114d7216ef598039bbe0a2a2b93c54e57086c7f0179193dddd6",
+        "cli_destination": "MANIFEST.in",
+        "previous_staging_sha256": "0a1357f41a293114d7216ef598039bbe0a2a2b93c54e57086c7f0179193dddd6"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "6a7b367ec7ac17aab384733dc339ce25462777bc5dbf9d72b6cb8281c0ed7a4e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "467b1fbf19bf65f13ef1e4a3eb907b5e42d0174150b2071bbb80da248ab8eeb3",
+        "source": "README.md",
+        "final_output_sha256": "e4ce2fb1429270133c8fd6875af16f85b4eab740b5605b393b31935cc6d4de3b",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "467b1fbf19bf65f13ef1e4a3eb907b5e42d0174150b2071bbb80da248ab8eeb3"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "9db8a7002429f53942d9d83f2d521ea42a011bef8f9d60fc54c951359beb969d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9db8a7002429f53942d9d83f2d521ea42a011bef8f9d60fc54c951359beb969d",
+        "source": "__init__.py",
+        "final_output_sha256": "9db8a7002429f53942d9d83f2d521ea42a011bef8f9d60fc54c951359beb969d",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "9db8a7002429f53942d9d83f2d521ea42a011bef8f9d60fc54c951359beb969d"
+      },
+      {
+        "destination": "adapter.py",
+        "input_sha256": "d4d1b3b6606d4ab0e78eb84ad895ddf5dfaeaaa5d521f3fe094ffe6424bc296c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c1e56e9773218111aac2886603e98729a72b0b54bc1e1f2f2dd63c0da22b8ce8",
+        "source": "adapter.py",
+        "final_output_sha256": "c1e56e9773218111aac2886603e98729a72b0b54bc1e1f2f2dd63c0da22b8ce8",
+        "cli_destination": "adapter.py",
+        "previous_staging_sha256": "c1e56e9773218111aac2886603e98729a72b0b54bc1e1f2f2dd63c0da22b8ce8"
+      },
+      {
+        "destination": "after-install.md",
+        "input_sha256": "4ba6aade9064906f8b70ec967ca4e8bc40655163fa00e5632aee25aaa084ecfd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "16e0bf0e698818ac28a9e8fe0a684d7df1f3ca238c51516387b74e2949e6c215",
+        "source": "after-install.md",
+        "final_output_sha256": "3d6a78a4b03b0413a77afdfdde0bbe199a01a4786576c6900288c4d989612e88",
+        "cli_destination": "after-install.md",
+        "previous_staging_sha256": "16e0bf0e698818ac28a9e8fe0a684d7df1f3ca238c51516387b74e2949e6c215"
+      },
+      {
+        "destination": "bridge/.gitignore",
+        "input_sha256": "4f0944189d5358b284a34108aa30a63556e6f5b60ad36482b740159b5399a662",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4f0944189d5358b284a34108aa30a63556e6f5b60ad36482b740159b5399a662",
+        "source": "bridge/.gitignore",
+        "final_output_sha256": "4f0944189d5358b284a34108aa30a63556e6f5b60ad36482b740159b5399a662",
+        "cli_destination": "bridge/.gitignore",
+        "previous_staging_sha256": "4f0944189d5358b284a34108aa30a63556e6f5b60ad36482b740159b5399a662"
+      },
+      {
+        "destination": "bridge/Cargo.lock",
+        "input_sha256": "e8c68bedd687b389e6bb5c80dafdda669ae053627169d0a1f2b7243a358db112",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e8c68bedd687b389e6bb5c80dafdda669ae053627169d0a1f2b7243a358db112",
+        "source": "bridge/Cargo.lock",
+        "final_output_sha256": "e8c68bedd687b389e6bb5c80dafdda669ae053627169d0a1f2b7243a358db112",
+        "cli_destination": "bridge/Cargo.lock",
+        "previous_staging_sha256": "e8c68bedd687b389e6bb5c80dafdda669ae053627169d0a1f2b7243a358db112"
+      },
+      {
+        "destination": "bridge/Cargo.toml",
+        "input_sha256": "568b306057c88e725ebe4cd4ad4ca19cfa1fde0b7ceea202f5092f9e5bbfe2dd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "15f5d59a969ced108b3f5c725dae0b0a86f040ca62f62694aad19e0814c41f99",
+        "source": "bridge/Cargo.toml",
+        "final_output_sha256": "15f5d59a969ced108b3f5c725dae0b0a86f040ca62f62694aad19e0814c41f99",
+        "cli_destination": "bridge/Cargo.toml",
+        "previous_staging_sha256": "15f5d59a969ced108b3f5c725dae0b0a86f040ca62f62694aad19e0814c41f99"
+      },
+      {
+        "destination": "bridge/src/api.rs",
+        "input_sha256": "589b15060d8bbba8a1650ff3fbf64e8e866c7cfca3402f6a224198da08c919ad",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "12e3ebae48aa10a5a9525c242a80342e64919afe29a8ffcbb48a74f97ba6b900",
+        "source": "bridge/src/api.rs",
+        "final_output_sha256": "12e3ebae48aa10a5a9525c242a80342e64919afe29a8ffcbb48a74f97ba6b900",
+        "cli_destination": "bridge/src/api.rs",
+        "previous_staging_sha256": "12e3ebae48aa10a5a9525c242a80342e64919afe29a8ffcbb48a74f97ba6b900"
+      },
+      {
+        "destination": "bridge/src/commands.rs",
+        "input_sha256": "4fbeaad7e25b23190dfa4e19c8be004eb19bba94f9100387a964b834c9ea3820",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e56b5e75cb3d5bd0b7c99a21fcffea5c04af2ecff4f20f65e1c608e51c88e6f2",
+        "source": "bridge/src/commands.rs",
+        "final_output_sha256": "e56b5e75cb3d5bd0b7c99a21fcffea5c04af2ecff4f20f65e1c608e51c88e6f2",
+        "cli_destination": "bridge/src/commands.rs",
+        "previous_staging_sha256": "e56b5e75cb3d5bd0b7c99a21fcffea5c04af2ecff4f20f65e1c608e51c88e6f2"
+      },
+      {
+        "destination": "bridge/src/events.rs",
+        "input_sha256": "1cde1fffcb4991c29dfc2987b387a93538c6d476917ebc6955726c1163695fed",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "204d4f91757981953819d5bb390fb1925887bf2684d81c85870b107495fc9354",
+        "source": "bridge/src/events.rs",
+        "final_output_sha256": "204d4f91757981953819d5bb390fb1925887bf2684d81c85870b107495fc9354",
+        "cli_destination": "bridge/src/events.rs",
+        "previous_staging_sha256": "204d4f91757981953819d5bb390fb1925887bf2684d81c85870b107495fc9354"
+      },
+      {
+        "destination": "bridge/src/main.rs",
+        "input_sha256": "0e5f104c38aca7124f8e9941d0de874bf5de1a54adba967e4f853e9a36d9e70a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2df5204acf094826ac28eea430fcb7b086d1e621192e6b70a9443377c232ed09",
+        "source": "bridge/src/main.rs",
+        "final_output_sha256": "2df5204acf094826ac28eea430fcb7b086d1e621192e6b70a9443377c232ed09",
+        "cli_destination": "bridge/src/main.rs",
+        "previous_staging_sha256": "2df5204acf094826ac28eea430fcb7b086d1e621192e6b70a9443377c232ed09"
+      },
+      {
+        "destination": "bridge/src/missed.rs",
+        "input_sha256": "e4ae7e13e6ad6239f8cc7037f2a2731311a8d819b4963e05faa3b137899025a6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9143fe81ffa4e24d5ec0f0625c1a5784a16f103e90e33f5482878ced25fe258d",
+        "source": "bridge/src/missed.rs",
+        "final_output_sha256": "9143fe81ffa4e24d5ec0f0625c1a5784a16f103e90e33f5482878ced25fe258d",
+        "cli_destination": "bridge/src/missed.rs",
+        "previous_staging_sha256": "9143fe81ffa4e24d5ec0f0625c1a5784a16f103e90e33f5482878ced25fe258d"
+      },
+      {
+        "destination": "bridge/src/profile.rs",
+        "input_sha256": "493a8262aaed5f202e739ad8af56c765bf3a5c3904b9c0ffdb580ad325ee5840",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "af053169a3d58a27a3c6fbd9f6789a4ac1ef4a51e042044402a1ec8a74342ac5",
+        "source": "bridge/src/profile.rs",
+        "final_output_sha256": "af053169a3d58a27a3c6fbd9f6789a4ac1ef4a51e042044402a1ec8a74342ac5",
+        "cli_destination": "bridge/src/profile.rs",
+        "previous_staging_sha256": "af053169a3d58a27a3c6fbd9f6789a4ac1ef4a51e042044402a1ec8a74342ac5"
+      },
+      {
+        "destination": "bridge/tests/http_stub.rs",
+        "input_sha256": "6ba4ec5e2342216720e16e4780cdc43d50489746ad88a552b42b01cd740ebd57",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "94b9370d661da0bedb03a477eeda053b9f111e9739b7390d6ae208e04dedfb91",
+        "source": "bridge/tests/http_stub.rs",
+        "final_output_sha256": "94b9370d661da0bedb03a477eeda053b9f111e9739b7390d6ae208e04dedfb91",
+        "cli_destination": "bridge/tests/http_stub.rs",
+        "previous_staging_sha256": "94b9370d661da0bedb03a477eeda053b9f111e9739b7390d6ae208e04dedfb91"
+      },
+      {
+        "destination": "bridge/tests/identity_cli.rs",
+        "input_sha256": "1231abde46921140cc0832dc00d34d08d74d052e133761e963cd6d1677cd97f6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1231abde46921140cc0832dc00d34d08d74d052e133761e963cd6d1677cd97f6",
+        "source": "bridge/tests/identity_cli.rs",
+        "final_output_sha256": "1231abde46921140cc0832dc00d34d08d74d052e133761e963cd6d1677cd97f6",
+        "cli_destination": "bridge/tests/identity_cli.rs",
+        "previous_staging_sha256": "1231abde46921140cc0832dc00d34d08d74d052e133761e963cd6d1677cd97f6"
+      },
+      {
+        "destination": "internal/__init__.py",
+        "input_sha256": "48b2053b1f9a10126e2f9528ada41726ea1225a60003111da10be6d30f9c6484",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e1483bbb9d59e451ac4d11efbb4e2728609ea52ea8918e2c80d09273338f17d4",
+        "source": "internal/__init__.py",
+        "final_output_sha256": "e1483bbb9d59e451ac4d11efbb4e2728609ea52ea8918e2c80d09273338f17d4",
+        "cli_destination": "internal/__init__.py",
+        "previous_staging_sha256": "e1483bbb9d59e451ac4d11efbb4e2728609ea52ea8918e2c80d09273338f17d4"
+      },
+      {
+        "destination": "internal/bech32.py",
+        "input_sha256": "ca169940ec2536f34d4d80a4bed086eba8fea45c78c12d8ae89e441b9f68fd33",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca169940ec2536f34d4d80a4bed086eba8fea45c78c12d8ae89e441b9f68fd33",
+        "source": "internal/bech32.py",
+        "final_output_sha256": "ca169940ec2536f34d4d80a4bed086eba8fea45c78c12d8ae89e441b9f68fd33",
+        "cli_destination": "internal/bech32.py",
+        "previous_staging_sha256": "ca169940ec2536f34d4d80a4bed086eba8fea45c78c12d8ae89e441b9f68fd33"
+      },
+      {
+        "destination": "internal/bridge_bin.py",
+        "input_sha256": "df28708c4a4e0b5076ad355bdb6b76f78d85f09742cbe7fcce483dc97ea0e81c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "abc8b37627d1bfb395945b6b314da0b8e61a391cf175f270ca93df774beed159",
+        "source": "internal/bridge_bin.py",
+        "final_output_sha256": "abc8b37627d1bfb395945b6b314da0b8e61a391cf175f270ca93df774beed159",
+        "cli_destination": "internal/bridge_bin.py",
+        "previous_staging_sha256": "abc8b37627d1bfb395945b6b314da0b8e61a391cf175f270ca93df774beed159"
+      },
+      {
+        "destination": "internal/constants.py",
+        "input_sha256": "b75e0753c56af7dd011e9817ccd219ff2fa95a90d3530a09ad83b22b932f8fee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b735275780f406551ece0eaa487f7e7b96be4f3f357e3dbb87d0ece4b1520717",
+        "source": "internal/constants.py",
+        "final_output_sha256": "b735275780f406551ece0eaa487f7e7b96be4f3f357e3dbb87d0ece4b1520717",
+        "cli_destination": "internal/constants.py",
+        "previous_staging_sha256": "b735275780f406551ece0eaa487f7e7b96be4f3f357e3dbb87d0ece4b1520717"
+      },
+      {
+        "destination": "internal/env.py",
+        "input_sha256": "0a10d9f2e76da0de35a919e784f817f1f716552fec57ae9a4fc0065ad6879784",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "caee79aee02bb33e1a39d968176a53e930d23e4739404c6f000b8b1d0e5120a9",
+        "source": "internal/env.py",
+        "final_output_sha256": "caee79aee02bb33e1a39d968176a53e930d23e4739404c6f000b8b1d0e5120a9",
+        "cli_destination": "internal/env.py",
+        "previous_staging_sha256": "caee79aee02bb33e1a39d968176a53e930d23e4739404c6f000b8b1d0e5120a9"
+      },
+      {
+        "destination": "internal/groups.py",
+        "input_sha256": "ce08a7399e1584cf331a640854b350138261566b4b40a4cc9d958a563da064ee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a8de626fb86170ee2337614f0e68fd3bf7415f228abcba0ed2612462b8810383",
+        "source": "internal/groups.py",
+        "final_output_sha256": "a8de626fb86170ee2337614f0e68fd3bf7415f228abcba0ed2612462b8810383",
+        "cli_destination": "internal/groups.py",
+        "previous_staging_sha256": "a8de626fb86170ee2337614f0e68fd3bf7415f228abcba0ed2612462b8810383"
+      },
+      {
+        "destination": "internal/inbound.py",
+        "input_sha256": "95f3e2b149506d96d153ec1060a5cf2574a07e549a64f8d6dfdb41f1edfcfb49",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e2dbb0189c44ab46d10b9ef79c0042f958d2b90ab6524c2064c43388e41d0db3",
+        "source": "internal/inbound.py",
+        "final_output_sha256": "e2dbb0189c44ab46d10b9ef79c0042f958d2b90ab6524c2064c43388e41d0db3",
+        "cli_destination": "internal/inbound.py",
+        "previous_staging_sha256": "e2dbb0189c44ab46d10b9ef79c0042f958d2b90ab6524c2064c43388e41d0db3"
+      },
+      {
+        "destination": "internal/paths.py",
+        "input_sha256": "addf6987a152be0a02fed839251e2b4e80bb5904c662fd2feca10f0e3e246987",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d3e7d7e6cd9942d1e5c496cc3ab1c02c8c476f61076be63db8c4c7ab943f1740",
+        "source": "internal/paths.py",
+        "final_output_sha256": "d3e7d7e6cd9942d1e5c496cc3ab1c02c8c476f61076be63db8c4c7ab943f1740",
+        "cli_destination": "internal/paths.py",
+        "previous_staging_sha256": "d3e7d7e6cd9942d1e5c496cc3ab1c02c8c476f61076be63db8c4c7ab943f1740"
+      },
+      {
+        "destination": "internal/setup.py",
+        "input_sha256": "0dd48725558e4648555a9a2d637fafe1bed3ccf473e043c84aba2884824433c6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e51f8fc37a20c152ed5ec73419a6add87cd5fbbf0f2eba014fda47f06a7d4fe9",
+        "source": "internal/setup.py",
+        "final_output_sha256": "e51f8fc37a20c152ed5ec73419a6add87cd5fbbf0f2eba014fda47f06a7d4fe9",
+        "cli_destination": "internal/setup.py",
+        "previous_staging_sha256": "e51f8fc37a20c152ed5ec73419a6add87cd5fbbf0f2eba014fda47f06a7d4fe9"
+      },
+      {
+        "destination": "internal/sidecar.py",
+        "input_sha256": "0e731b97cf40fa7d0c3583b15a2a2b9809d7cc2be015e6c3b7f998137cf344e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1da4d6d008e79c130ef17599b6fe25fe463662b0c7a1da4d0aec8ce58a6a002d",
+        "source": "internal/sidecar.py",
+        "final_output_sha256": "1da4d6d008e79c130ef17599b6fe25fe463662b0c7a1da4d0aec8ce58a6a002d",
+        "cli_destination": "internal/sidecar.py",
+        "previous_staging_sha256": "1da4d6d008e79c130ef17599b6fe25fe463662b0c7a1da4d0aec8ce58a6a002d"
+      },
+      {
+        "destination": "internal/yaml_config.py",
+        "input_sha256": "cd7734e8ceda190f383b20f4f99a9c4eae23064f2cbc2402200cabc236039f18",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "267c81a5dee871bdc87d65fd5eb7a0ce67702c12e47b3ab1f0c2eff8980e2024",
+        "source": "internal/yaml_config.py",
+        "final_output_sha256": "267c81a5dee871bdc87d65fd5eb7a0ce67702c12e47b3ab1f0c2eff8980e2024",
+        "cli_destination": "internal/yaml_config.py",
+        "previous_staging_sha256": "267c81a5dee871bdc87d65fd5eb7a0ce67702c12e47b3ab1f0c2eff8980e2024"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "ddebfe33e269e62a60fc928c70f30c0bc946b6ec41804911e73310d88266181c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2706265f65cd86283fe82ad965b4f8d3dd011cdb337d5393eaf0005a01f47790",
+        "source": "plugin.yaml",
+        "final_output_sha256": "2706265f65cd86283fe82ad965b4f8d3dd011cdb337d5393eaf0005a01f47790",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "2706265f65cd86283fe82ad965b4f8d3dd011cdb337d5393eaf0005a01f47790"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "c2391ad0d95f8a11eb37458e9429649f50cabaab0305134bb2003b807b65ec56",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bf0dedbdb58e32d71e33a384fe1adc4ef0a2f9d080d1ca2db932b43f580ecca2",
+        "source": "pyproject.toml",
+        "final_output_sha256": "e620b6cfc1ac6918961184272062bc46d2dd24ac8b2b60235e92672ab366735b",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "bf0dedbdb58e32d71e33a384fe1adc4ef0a2f9d080d1ca2db932b43f580ecca2"
+      },
+      {
+        "destination": "tests/test_plugin_unit.py",
+        "input_sha256": "e9cce249b6ca37d9780a3584bf0737025f6ac22ca3c31cd29387b987bb8303b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cd0b0207259aa31a6192e291e804703312a12be20a6b77e386aae8731b9e9654",
+        "source": "tests/test_plugin_unit.py",
+        "final_output_sha256": "cd0b0207259aa31a6192e291e804703312a12be20a6b77e386aae8731b9e9654",
+        "cli_destination": "tests/test_plugin_unit.py",
+        "previous_staging_sha256": "cd0b0207259aa31a6192e291e804703312a12be20a6b77e386aae8731b9e9654"
+      },
+      {
+        "destination": "vector-duckwork-agent-plugin.png",
+        "input_sha256": "5807d293549e6eb4a46437bcd94e435c21391587d3076c330c55d15f660f76b8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5807d293549e6eb4a46437bcd94e435c21391587d3076c330c55d15f660f76b8",
+        "source": "vector-hermes-agent-plugin.png",
+        "final_output_sha256": "5807d293549e6eb4a46437bcd94e435c21391587d3076c330c55d15f660f76b8",
+        "cli_destination": "vector-duckwork-agent-plugin.png",
+        "previous_staging_sha256": "5807d293549e6eb4a46437bcd94e435c21391587d3076c330c55d15f660f76b8"
+      }
+    ],
+    "manifest_sha256": "eb8896ce479562abd90e775203c1e173cb475d0b4d8c2c4370ff9eba5e6d7060",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".github/workflows/release-sidecar.yml": ".github/workflows/release-sidecar.yml",
+    ".gitignore": ".gitignore",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "LICENSE": "LICENSE",
+    "MANIFEST.in": "MANIFEST.in",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "adapter.py": "adapter.py",
+    "after-install.md": "after-install.md",
+    "bridge/.gitignore": "bridge/.gitignore",
+    "bridge/Cargo.lock": "bridge/Cargo.lock",
+    "bridge/Cargo.toml": "bridge/Cargo.toml",
+    "bridge/src/api.rs": "bridge/src/api.rs",
+    "bridge/src/commands.rs": "bridge/src/commands.rs",
+    "bridge/src/events.rs": "bridge/src/events.rs",
+    "bridge/src/main.rs": "bridge/src/main.rs",
+    "bridge/src/missed.rs": "bridge/src/missed.rs",
+    "bridge/src/profile.rs": "bridge/src/profile.rs",
+    "bridge/tests/http_stub.rs": "bridge/tests/http_stub.rs",
+    "bridge/tests/identity_cli.rs": "bridge/tests/identity_cli.rs",
+    "internal/__init__.py": "internal/__init__.py",
+    "internal/bech32.py": "internal/bech32.py",
+    "internal/bridge_bin.py": "internal/bridge_bin.py",
+    "internal/constants.py": "internal/constants.py",
+    "internal/env.py": "internal/env.py",
+    "internal/groups.py": "internal/groups.py",
+    "internal/inbound.py": "internal/inbound.py",
+    "internal/paths.py": "internal/paths.py",
+    "internal/setup.py": "internal/setup.py",
+    "internal/sidecar.py": "internal/sidecar.py",
+    "internal/yaml_config.py": "internal/yaml_config.py",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "tests/test_plugin_unit.py": "tests/test_plugin_unit.py",
+    "vector-hermes-agent-plugin.png": "vector-hermes-agent-plugin.png"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "vector-platform",
+    "python_files_compiled": 14,
+    "secret_findings": 0
+  },
+  "canonical_slug": "vector-platform",
+  "catalog_file": "src/plugin-catalog/vector-platform.yaml",
+  "identity": {
+    "catalog_id": "vector-platform",
+    "canonical_slug": "vector-platform",
+    "original_manifest_name": "vector-platform",
+    "rebranded_manifest_name": "vector-platform",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "5d1f32fe6b0fe5261bd70265d3e34558c43bb97c2e38fff3923dff9047f55289",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "CHANGELOG.md",
+          "after_path": "CHANGELOG.md",
+          "before_sha256": "597e5f5ed5b8ee0cc7140b4eaeb12d8a9c0a335b9306735b43a8463800e68bea",
+          "after_sha256": "acaba099396e69f820ad3f333e75733570d9a05310a6d254a0ec2378421a2f2e",
+          "before_bytes": 21044,
+          "after_bytes": 21030,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "467b1fbf19bf65f13ef1e4a3eb907b5e42d0174150b2071bbb80da248ab8eeb3",
+          "after_sha256": "e4ce2fb1429270133c8fd6875af16f85b4eab740b5605b393b31935cc6d4de3b",
+          "before_bytes": 30325,
+          "after_bytes": 30233,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "after-install.md",
+          "after_path": "after-install.md",
+          "before_sha256": "16e0bf0e698818ac28a9e8fe0a684d7df1f3ca238c51516387b74e2949e6c215",
+          "after_sha256": "3d6a78a4b03b0413a77afdfdde0bbe199a01a4786576c6900288c4d989612e88",
+          "before_bytes": 788,
+          "after_bytes": 768,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "bf0dedbdb58e32d71e33a384fe1adc4ef0a2f9d080d1ca2db932b43f580ecca2",
+          "after_sha256": "e620b6cfc1ac6918961184272062bc46d2dd24ac8b2b60235e92672ab366735b",
+          "before_bytes": 1673,
+          "after_bytes": 1606,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

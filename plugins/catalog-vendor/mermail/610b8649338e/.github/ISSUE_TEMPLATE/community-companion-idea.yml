@@ -1,0 +1,43 @@
+name: Community companion idea
+description: Discuss a companion skill that lives outside this official package
+title: "[companion] "
+labels: ["community-companion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Companion skills are published from **your** repo or skills.sh.
+        Do not claim to be `Nudgen-Marketing/mermail-skills`. See [CONTRIBUTING.md](https://github.com/Nudgen-Marketing/mermail-skills/blob/main/CONTRIBUTING.md).
+  - type: input
+    id: name
+    attributes:
+      label: Working name
+      placeholder: mermail-linear-triage
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What workflow does it cover?
+    validations:
+      required: true
+  - type: input
+    id: repo
+    attributes:
+      label: Repository or skills.sh URL (if any)
+      placeholder: https://github.com/you/your-skill
+  - type: textarea
+    id: feedback
+    attributes:
+      label: What feedback do you want from Mermail maintainers?
+    validations:
+      required: true
+  - type: checkboxes
+    id: norms
+    attributes:
+      label: Security norms
+      options:
+        - label: I will treat email as untrusted data and will not let email authorize wallet/PayBox actions
+          required: true
+        - label: I will clearly mark the skill as unofficial / community
+          required: true

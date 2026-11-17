@@ -1,0 +1,94 @@
+from wsp_core import extract
+from pathlib import Path
+
+from wsp_core import provider_registry as registry
+from wsp_core import config
+from wsp_core import search
+from plugin_loader import load_plugin
+
+plugin = load_plugin("wsp_plugin_test_provider_registry")
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_provider_registry_is_the_complete_capability_source():
+    assert registry.SEARCH_PROVIDER_IDS[:12] == (
+        "serper",
+        "serpbase",
+        "brave",
+        "tavily",
+        "querit",
+        "linkup",
+        "exa",
+        "firecrawl",
+        "parallel",
+
+        "you",
+        "searxng",
+        "keenable",
+    )
+    assert registry.SEARCH_PROVIDER_IDS[-3:] == ("donsetch", "octen", "tinyfish")
+    assert registry.EXTRACT_PROVIDER_IDS == (
+        "tavily", "exa", "linkup", "parallel", "firecrawl", "you", "keenable", "serper", "donsetch"
+    )
+    assert registry.PROVIDER_SPECS["donsetch"].auto_allowed_by_default is False
+    assert registry.PROVIDER_SPECS["serper"].supports_extract is True
+    assert registry.PROVIDER_SPECS["keenable"].supports_extract is True
+    assert registry.PROVIDER_SPECS["keenable"].supports_search is True
+    assert registry.PROVIDER_SPECS["keenable"].keyless is True
+    assert registry.KEYLESS_EXTRACT_PROVIDER_IDS == ("keenable",)
+    assert registry.KEYLESS_PROVIDER_IDS == ("keenable",)
+    assert registry.PROVIDER_SPECS["serper"].env_var == "SERPER_API_KEY"
+    assert registry.PROVIDER_SPECS["tavily"].supports_extract is True
+    assert registry.PROVIDER_SPECS["brave"].auto_allowed_by_default is True
+    # The first four follow the measured result quality.
+    assert registry.DEFAULT_PROVIDER_PRIORITY[:4] == ("brave", "serper", "exa", "tavily")
+    assert registry.DEFAULT_PROVIDER_PRIORITY == (
+        "brave", "serper", "exa", "tavily", "you", "firecrawl", "linkup", "parallel",
+        "serpbase", "querit", "searxng", "keenable",
+    )
+    assert registry.PRE_5_DEFAULT_PROVIDER_PRIORITY == (
+        "you", "serper", "exa", "firecrawl", "tavily", "linkup", "brave", "parallel",
+        "serpbase", "querit", "searxng", "keenable",
+    )
+    assert registry.DEFAULT_AUTO_ALLOW == {
+        "serpbase": False,
+        "querit": False,
+        "donsetch": False,
+        "octen": False,
+        "tinyfish": False,
+    }
+    assert "research" in registry.PROVIDER_SPECS["tavily"].capability_labels
+
+
+def test_provider_registry_drives_config_extract_doctor_and_plugin_catalogs():
+    registered = set(registry.PROVIDER_SPECS)
+
+    assert set(config._ROUTING_PROVIDER_NAMES) == registered
+    assert tuple(config.DEFAULT_CONFIG["auto_routing"]["provider_priority"]) == registry.DEFAULT_PROVIDER_PRIORITY
+    assert config.DEFAULT_CONFIG["auto_routing"]["auto_allow"] == registry.DEFAULT_AUTO_ALLOW
+
+    assert tuple(extract.EXTRACT_PROVIDER_PRIORITY) == registry.EXTRACT_PROVIDER_IDS
+    assert search.PROVIDER_DOCTOR_CATALOG == registry.doctor_catalog()
+
+    plugin_catalog = {item["provider"]: item for item in plugin._get_provider_catalog()}
+    assert set(plugin_catalog) == registered
+    for provider, spec in registry.PROVIDER_SPECS.items():
+        item = plugin_catalog[provider]
+        assert item["env"] == spec.env_var
+        assert item["display_name"] == spec.display_name
+        assert item["capabilities"] == list(spec.capability_labels)
+        assert item["recommended"] == spec.recommended
+
+
+def test_provider_argparse_choices_stay_in_registry_sync():
+    parser = search.build_parser_for_tests()
+    provider_action = next(action for action in parser._actions if "--provider" in action.option_strings)
+    assert tuple(choice for choice in provider_action.choices if choice != "auto") == registry.SEARCH_PROVIDER_IDS
+
+
+def test_architecture_auto_allow_examples_match_registry_defaults():
+    text = (ROOT / "docs" / "ARCHITECTURE.md").read_text()
+    assert '"brave": false' not in text
+    assert '"parallel": false' not in text
+    for name in registry.DEFAULT_AUTO_ALLOW:
+        assert f'"{name}": false' in text

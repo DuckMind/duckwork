@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+uv.lock
+.env
+*.log
+.vscode/
+.ruff_cache/
+.plans
+.rtk
+CLAUDE.md
+# wiki/ is its own git repository (github.com/scross01/duckwork-custom-dangerous-patterns-plugin.wiki).
+# It stays out of THIS repository's history; content is pushed from that repo directly.
+wiki/
+# plans/ is deliberately NOT ignored: the plan files are reviewable working documents, not
+# throwaway scratch. They must never be staged or committed -- see plans/README.md. Because they
+# are untracked rather than ignored, `git add -A` WILL pick them up. Stage explicit paths only.
+.coverage/
+.coverage
+package-lock.json
+skills-lock.json

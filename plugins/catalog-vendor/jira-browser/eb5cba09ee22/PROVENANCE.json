@@ -1,0 +1,767 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "jira-browser",
+  "content_id": "eb5cba09ee22",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 797,
+      "mode": "100644",
+      "path": ".github/workflows/quality-gates.yml",
+      "sha256": "737ebba82dc2032e3025a2211f1bfa286a238f36c8d966c3bd731259cc3a442f"
+    },
+    {
+      "bytes": 332,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "90009e0aa4e6935b8b94d19f15201e96a4effaa702e7de21523c52dec8cfc412"
+    },
+    {
+      "bytes": 1089,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "28c5ce807de3c7111a284ec2ee4d1b6f54d3bcb087894165083eb0f5164c1b05"
+    },
+    {
+      "bytes": 23080,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "5dfdf97826fec6c64813ce25afff83a29037f683e1cd8c71db37774b5ed3d1d2"
+    },
+    {
+      "bytes": 1015,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "22f3c1fc866a967b2fe50a55d7fb9017db05d7ba1cabed0395a5131838524d50"
+    },
+    {
+      "bytes": 8147,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "b3933ddde4f33697926d149f7251371495179232d44748ca81f4b73e99622a15"
+    },
+    {
+      "bytes": 97790,
+      "mode": "100644",
+      "path": "dashboard/jira_service.py",
+      "sha256": "08170c0a5b555147faf0052ee79732febdc0bc2f880e4d06a2e63d1e4a5b14f0"
+    },
+    {
+      "bytes": 55,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "f34812d2ae5c7c5cf409e0ffea814c49e6bce59a0932f7df6acccd02e87effea"
+    },
+    {
+      "bytes": 28355,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "59e2904476307e160741bfbf9da32f3521320b7dcab9e890b2b4d53275e487f4"
+    },
+    {
+      "bytes": 18450,
+      "mode": "100644",
+      "path": "dashboard/repository_context.py",
+      "sha256": "7eca9de7dd9ad90d07be87f7ca3e54e621cf6b53be6a160583eaf35042a85326"
+    },
+    {
+      "bytes": 4948,
+      "mode": "100644",
+      "path": "desktop/data.js",
+      "sha256": "c9ecd8f503d81a6af796dce4b84787e88e8a201f0578ed2e718d0efbad7517f7"
+    },
+    {
+      "bytes": 332319,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "a8cd8795d2f4ddceeae2ad6523762463519e6393e674f890842fca22e4221406"
+    },
+    {
+      "bytes": 17483,
+      "mode": "100644",
+      "path": "index.html",
+      "sha256": "6716979668caac68a98ddcf7810a752e47766444ca8bbb7406790c0fb3ecbb21"
+    },
+    {
+      "bytes": 288,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "59be42febe419f5f59418bb0b924d5dbfdc2be47e2f1810a5f784aca7f108afb"
+    },
+    {
+      "bytes": 1122,
+      "mode": "100644",
+      "path": "scripts/requirements-ci.txt",
+      "sha256": "71f94d7809117cb1e787f48948645c271a74d88bfadb267613bb8e12a6fd4be9"
+    },
+    {
+      "bytes": 4856,
+      "mode": "100755",
+      "path": "scripts/scan-repository.py",
+      "sha256": "66a9aa0bba7f83965f38dada0656da4ffe91360f8aa4b292f5a88f27cd266519"
+    },
+    {
+      "bytes": 2988,
+      "mode": "100755",
+      "path": "scripts/test.sh",
+      "sha256": "a9507828c8b30a3f2f5ddd66d3c5d37b67e4332583138e21fdc4610d661cbefe"
+    },
+    {
+      "bytes": 1948,
+      "mode": "100644",
+      "path": "tests/test_data_layer.py",
+      "sha256": "657a7a3bf6b4595f3837f0c1f5d8b8ea223f7ff16d24a212e1e4bf30d445587e"
+    },
+    {
+      "bytes": 122613,
+      "mode": "100644",
+      "path": "tests/test_desktop_plugin.py",
+      "sha256": "37fdb1682dbc96915d6556c5877142ba5cb04d0ddb9d0b3fd827bcc77c0d3115"
+    },
+    {
+      "bytes": 81870,
+      "mode": "100644",
+      "path": "tests/test_jira_service.py",
+      "sha256": "4f8987be1a16189087f771040674d64223901c6bfb6995f6c83ed3b8bd89068e"
+    },
+    {
+      "bytes": 3846,
+      "mode": "100644",
+      "path": "tests/test_live_status.py",
+      "sha256": "fb3112dc79c1529ffece892f0b7a2361ca31568c92c4558f0cc03e01d2ed4967"
+    },
+    {
+      "bytes": 28543,
+      "mode": "100644",
+      "path": "tests/test_plugin_api.py",
+      "sha256": "6ff53c471d04cef380dc7927243d25edc85fd9d1cafa0fbdac09e1bafacc55a8"
+    },
+    {
+      "bytes": 6136,
+      "mode": "100644",
+      "path": "tests/test_plugin_registration.py",
+      "sha256": "135678004aea4c4b07f44afc7e324ad91b7814834731915b051ed1c2e4b3c862"
+    },
+    {
+      "bytes": 16616,
+      "mode": "100644",
+      "path": "tests/test_repository_context.py",
+      "sha256": "9dc83b1da9ae68508e3a672a301754dd1888e51df3d3225453e1f55c4baf4586"
+    },
+    {
+      "bytes": 3369,
+      "mode": "100644",
+      "path": "tests/test_repository_scan.py",
+      "sha256": "ffa581aec4e4140f1f2a6d9f8d66f2541b33df9b312f386d8e8e64c511fdc30d"
+    }
+  ],
+  "input_manifest_sha256": "eb5cba09ee223308c23446126d0fc5ab4af4d02551e9588ccc58777c5765cd4a",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "28c5ce807de3c7111a284ec2ee4d1b6f54d3bcb087894165083eb0f5164c1b05",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "SECURITY.md",
+      "__init__.py",
+      "dashboard/jira_service.py",
+      "dashboard/plugin_api.py",
+      "desktop/data.js",
+      "desktop/plugin.js",
+      "index.html",
+      "plugin.yaml",
+      "scripts/test.sh",
+      "tests/test_desktop_plugin.py",
+      "tests/test_jira_service.py",
+      "tests/test_plugin_api.py",
+      "tests/test_plugin_registration.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/LikelyLucid/hermes-jira-browser",
+    "sha": "03ba860d7241af620860968fa747b109d4664cc2",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/LikelyLucid/hermes-jira-browser",
+  "original_sha": "03ba860d7241af620860968fa747b109d4664cc2",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/quality-gates.yml",
+      "sha256": "737ebba82dc2032e3025a2211f1bfa286a238f36c8d966c3bd731259cc3a442f",
+      "bytes": 797,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "90009e0aa4e6935b8b94d19f15201e96a4effaa702e7de21523c52dec8cfc412",
+      "bytes": 332,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "28c5ce807de3c7111a284ec2ee4d1b6f54d3bcb087894165083eb0f5164c1b05",
+      "bytes": 1089,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4a079a2604f7245a521099e44359a0630d50abb6b245bd4ab514bfb71c6401e5",
+      "bytes": 23106,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "0b8b650fe33ec6892eaff3988603ccdf1541c661e14cf03ece252ae31b90fdaa",
+      "bytes": 1017,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "a1fd109b8d07c5170732a968fce9b3dabcf063a754bcf5c346403b02a19ba17b",
+      "bytes": 8149,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/jira_service.py",
+      "sha256": "ac55fb497ddfd272723892c353493b5c55497d8c24b6d1932cf3e60c8efad945",
+      "bytes": 97854,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "f34812d2ae5c7c5cf409e0ffea814c49e6bce59a0932f7df6acccd02e87effea",
+      "bytes": 55,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "d8b3c0440b692d572c44a3ef46379a27fd6c5160f7368fd0e946399aeecb0200",
+      "bytes": 28379,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/repository_context.py",
+      "sha256": "7eca9de7dd9ad90d07be87f7ca3e54e621cf6b53be6a160583eaf35042a85326",
+      "bytes": 18450,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/data.js",
+      "sha256": "20882eccbc427d080e254eda15e54db5d46330d3a7ef715f8d0d06060cce4b39",
+      "bytes": 4950,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "5f3d56708d53578401eac953065e6004475fa2e024fb9360997580895ccb6550",
+      "bytes": 332385,
+      "mode": "100644"
+    },
+    {
+      "path": "index.html",
+      "sha256": "28897be62e05154bff5a6d79140814cb7c6c0debc10c3849726efc05512152a7",
+      "bytes": 17334,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "6a4a934dd875c3b5aba356236bd4e2452f8473328b550a7814ada6bdc32364e2",
+      "bytes": 290,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/requirements-ci.txt",
+      "sha256": "71f94d7809117cb1e787f48948645c271a74d88bfadb267613bb8e12a6fd4be9",
+      "bytes": 1122,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/scan-repository.py",
+      "sha256": "66a9aa0bba7f83965f38dada0656da4ffe91360f8aa4b292f5a88f27cd266519",
+      "bytes": 4856,
+      "mode": "100755"
+    },
+    {
+      "path": "scripts/test.sh",
+      "sha256": "04f5ed8b496bd5ae0e4c1e6ebbb9fd19e46d2288c61b6d7eede97e46c8b9bab9",
+      "bytes": 3020,
+      "mode": "100755"
+    },
+    {
+      "path": "tests/test_data_layer.py",
+      "sha256": "657a7a3bf6b4595f3837f0c1f5d8b8ea223f7ff16d24a212e1e4bf30d445587e",
+      "bytes": 1948,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_desktop_plugin.py",
+      "sha256": "3af99b220028b80257c02abf29cf60ceb544a59209937089a0f2ff76263b1bc5",
+      "bytes": 122619,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_jira_service.py",
+      "sha256": "63fcb45b23b5c84e856a66caf146d4b78ee603747522493bbf4499f42e3f2c82",
+      "bytes": 81888,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_live_status.py",
+      "sha256": "fb3112dc79c1529ffece892f0b7a2361ca31568c92c4558f0cc03e01d2ed4967",
+      "bytes": 3846,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_api.py",
+      "sha256": "67d2900e6c0d691a10be77189da2d6b725bb7e88796b4abc341bec4fd9d9fe9e",
+      "bytes": 28555,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_registration.py",
+      "sha256": "0c15ac2b0a6d3a7f3f189998e9d556c111f4daef30fe5e915508864b0d8c7212",
+      "bytes": 6138,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_repository_context.py",
+      "sha256": "9dc83b1da9ae68508e3a672a301754dd1888e51df3d3225453e1f55c4baf4586",
+      "bytes": 16616,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_repository_scan.py",
+      "sha256": "ffa581aec4e4140f1f2a6d9f8d66f2541b33df9b312f386d8e8e64c511fdc30d",
+      "bytes": 3369,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "f943e2fd5b17ce3f74d7ebf9119b56a8c13bccb1be1fabc8f3e577d1e38ba797",
+  "pin_verification": {
+    "archive_bytes": 171413,
+    "archive_sha256": "669d57a55d807a51ae24ce106954936148381814d42e6b932a5cdde89c4f7d43",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "03ba860d7241af620860968fa747b109d4664cc2",
+    "verified_commit_marker": "03ba860d7241af620860968fa747b109d4664cc2"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "a883171816333a510b3b258f2b11118b0449ad3925ca91e89389abe1fe9abcbe",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/quality-gates.yml",
+        "input_sha256": "737ebba82dc2032e3025a2211f1bfa286a238f36c8d966c3bd731259cc3a442f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "737ebba82dc2032e3025a2211f1bfa286a238f36c8d966c3bd731259cc3a442f",
+        "source": ".github/workflows/quality-gates.yml",
+        "final_output_sha256": "737ebba82dc2032e3025a2211f1bfa286a238f36c8d966c3bd731259cc3a442f",
+        "cli_destination": ".github/workflows/quality-gates.yml",
+        "previous_staging_sha256": "737ebba82dc2032e3025a2211f1bfa286a238f36c8d966c3bd731259cc3a442f"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "90009e0aa4e6935b8b94d19f15201e96a4effaa702e7de21523c52dec8cfc412",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "90009e0aa4e6935b8b94d19f15201e96a4effaa702e7de21523c52dec8cfc412",
+        "source": ".gitignore",
+        "final_output_sha256": "90009e0aa4e6935b8b94d19f15201e96a4effaa702e7de21523c52dec8cfc412",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "90009e0aa4e6935b8b94d19f15201e96a4effaa702e7de21523c52dec8cfc412"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "28c5ce807de3c7111a284ec2ee4d1b6f54d3bcb087894165083eb0f5164c1b05",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "28c5ce807de3c7111a284ec2ee4d1b6f54d3bcb087894165083eb0f5164c1b05",
+        "source": "LICENSE",
+        "final_output_sha256": "28c5ce807de3c7111a284ec2ee4d1b6f54d3bcb087894165083eb0f5164c1b05",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "28c5ce807de3c7111a284ec2ee4d1b6f54d3bcb087894165083eb0f5164c1b05"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "5dfdf97826fec6c64813ce25afff83a29037f683e1cd8c71db37774b5ed3d1d2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "37790efbc3589f902c25722fb6551066af8277fcf2d26be28965af0670d09d48",
+        "source": "README.md",
+        "final_output_sha256": "4a079a2604f7245a521099e44359a0630d50abb6b245bd4ab514bfb71c6401e5",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "37790efbc3589f902c25722fb6551066af8277fcf2d26be28965af0670d09d48"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "22f3c1fc866a967b2fe50a55d7fb9017db05d7ba1cabed0395a5131838524d50",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0b8b650fe33ec6892eaff3988603ccdf1541c661e14cf03ece252ae31b90fdaa",
+        "source": "SECURITY.md",
+        "final_output_sha256": "0b8b650fe33ec6892eaff3988603ccdf1541c661e14cf03ece252ae31b90fdaa",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "0b8b650fe33ec6892eaff3988603ccdf1541c661e14cf03ece252ae31b90fdaa"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "b3933ddde4f33697926d149f7251371495179232d44748ca81f4b73e99622a15",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a1fd109b8d07c5170732a968fce9b3dabcf063a754bcf5c346403b02a19ba17b",
+        "source": "__init__.py",
+        "final_output_sha256": "a1fd109b8d07c5170732a968fce9b3dabcf063a754bcf5c346403b02a19ba17b",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "a1fd109b8d07c5170732a968fce9b3dabcf063a754bcf5c346403b02a19ba17b"
+      },
+      {
+        "destination": "dashboard/jira_service.py",
+        "input_sha256": "08170c0a5b555147faf0052ee79732febdc0bc2f880e4d06a2e63d1e4a5b14f0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ac55fb497ddfd272723892c353493b5c55497d8c24b6d1932cf3e60c8efad945",
+        "source": "dashboard/jira_service.py",
+        "final_output_sha256": "ac55fb497ddfd272723892c353493b5c55497d8c24b6d1932cf3e60c8efad945",
+        "cli_destination": "dashboard/jira_service.py",
+        "previous_staging_sha256": "ac55fb497ddfd272723892c353493b5c55497d8c24b6d1932cf3e60c8efad945"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "f34812d2ae5c7c5cf409e0ffea814c49e6bce59a0932f7df6acccd02e87effea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f34812d2ae5c7c5cf409e0ffea814c49e6bce59a0932f7df6acccd02e87effea",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "f34812d2ae5c7c5cf409e0ffea814c49e6bce59a0932f7df6acccd02e87effea",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "f34812d2ae5c7c5cf409e0ffea814c49e6bce59a0932f7df6acccd02e87effea"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "59e2904476307e160741bfbf9da32f3521320b7dcab9e890b2b4d53275e487f4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d8b3c0440b692d572c44a3ef46379a27fd6c5160f7368fd0e946399aeecb0200",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "d8b3c0440b692d572c44a3ef46379a27fd6c5160f7368fd0e946399aeecb0200",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "d8b3c0440b692d572c44a3ef46379a27fd6c5160f7368fd0e946399aeecb0200"
+      },
+      {
+        "destination": "dashboard/repository_context.py",
+        "input_sha256": "7eca9de7dd9ad90d07be87f7ca3e54e621cf6b53be6a160583eaf35042a85326",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7eca9de7dd9ad90d07be87f7ca3e54e621cf6b53be6a160583eaf35042a85326",
+        "source": "dashboard/repository_context.py",
+        "final_output_sha256": "7eca9de7dd9ad90d07be87f7ca3e54e621cf6b53be6a160583eaf35042a85326",
+        "cli_destination": "dashboard/repository_context.py",
+        "previous_staging_sha256": "7eca9de7dd9ad90d07be87f7ca3e54e621cf6b53be6a160583eaf35042a85326"
+      },
+      {
+        "destination": "desktop/data.js",
+        "input_sha256": "c9ecd8f503d81a6af796dce4b84787e88e8a201f0578ed2e718d0efbad7517f7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "20882eccbc427d080e254eda15e54db5d46330d3a7ef715f8d0d06060cce4b39",
+        "source": "desktop/data.js",
+        "final_output_sha256": "20882eccbc427d080e254eda15e54db5d46330d3a7ef715f8d0d06060cce4b39",
+        "cli_destination": "desktop/data.js",
+        "previous_staging_sha256": "20882eccbc427d080e254eda15e54db5d46330d3a7ef715f8d0d06060cce4b39"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "a8cd8795d2f4ddceeae2ad6523762463519e6393e674f890842fca22e4221406",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5f3d56708d53578401eac953065e6004475fa2e024fb9360997580895ccb6550",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "5f3d56708d53578401eac953065e6004475fa2e024fb9360997580895ccb6550",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "5f3d56708d53578401eac953065e6004475fa2e024fb9360997580895ccb6550"
+      },
+      {
+        "destination": "index.html",
+        "input_sha256": "6716979668caac68a98ddcf7810a752e47766444ca8bbb7406790c0fb3ecbb21",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2f644a48dba5cd2a758f56b80910359505df0e608e8b67cdcb3bcb8169c34e3b",
+        "source": "index.html",
+        "final_output_sha256": "28897be62e05154bff5a6d79140814cb7c6c0debc10c3849726efc05512152a7",
+        "cli_destination": "index.html",
+        "previous_staging_sha256": "2f644a48dba5cd2a758f56b80910359505df0e608e8b67cdcb3bcb8169c34e3b"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "59be42febe419f5f59418bb0b924d5dbfdc2be47e2f1810a5f784aca7f108afb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6a4a934dd875c3b5aba356236bd4e2452f8473328b550a7814ada6bdc32364e2",
+        "source": "plugin.yaml",
+        "final_output_sha256": "6a4a934dd875c3b5aba356236bd4e2452f8473328b550a7814ada6bdc32364e2",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "6a4a934dd875c3b5aba356236bd4e2452f8473328b550a7814ada6bdc32364e2"
+      },
+      {
+        "destination": "scripts/requirements-ci.txt",
+        "input_sha256": "71f94d7809117cb1e787f48948645c271a74d88bfadb267613bb8e12a6fd4be9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "71f94d7809117cb1e787f48948645c271a74d88bfadb267613bb8e12a6fd4be9",
+        "source": "scripts/requirements-ci.txt",
+        "final_output_sha256": "71f94d7809117cb1e787f48948645c271a74d88bfadb267613bb8e12a6fd4be9",
+        "cli_destination": "scripts/requirements-ci.txt",
+        "previous_staging_sha256": "71f94d7809117cb1e787f48948645c271a74d88bfadb267613bb8e12a6fd4be9"
+      },
+      {
+        "destination": "scripts/scan-repository.py",
+        "input_sha256": "66a9aa0bba7f83965f38dada0656da4ffe91360f8aa4b292f5a88f27cd266519",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "66a9aa0bba7f83965f38dada0656da4ffe91360f8aa4b292f5a88f27cd266519",
+        "source": "scripts/scan-repository.py",
+        "final_output_sha256": "66a9aa0bba7f83965f38dada0656da4ffe91360f8aa4b292f5a88f27cd266519",
+        "cli_destination": "scripts/scan-repository.py",
+        "previous_staging_sha256": "66a9aa0bba7f83965f38dada0656da4ffe91360f8aa4b292f5a88f27cd266519"
+      },
+      {
+        "destination": "scripts/test.sh",
+        "input_sha256": "a9507828c8b30a3f2f5ddd66d3c5d37b67e4332583138e21fdc4610d661cbefe",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "04f5ed8b496bd5ae0e4c1e6ebbb9fd19e46d2288c61b6d7eede97e46c8b9bab9",
+        "source": "scripts/test.sh",
+        "final_output_sha256": "04f5ed8b496bd5ae0e4c1e6ebbb9fd19e46d2288c61b6d7eede97e46c8b9bab9",
+        "cli_destination": "scripts/test.sh",
+        "previous_staging_sha256": "04f5ed8b496bd5ae0e4c1e6ebbb9fd19e46d2288c61b6d7eede97e46c8b9bab9"
+      },
+      {
+        "destination": "tests/test_data_layer.py",
+        "input_sha256": "657a7a3bf6b4595f3837f0c1f5d8b8ea223f7ff16d24a212e1e4bf30d445587e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "657a7a3bf6b4595f3837f0c1f5d8b8ea223f7ff16d24a212e1e4bf30d445587e",
+        "source": "tests/test_data_layer.py",
+        "final_output_sha256": "657a7a3bf6b4595f3837f0c1f5d8b8ea223f7ff16d24a212e1e4bf30d445587e",
+        "cli_destination": "tests/test_data_layer.py",
+        "previous_staging_sha256": "657a7a3bf6b4595f3837f0c1f5d8b8ea223f7ff16d24a212e1e4bf30d445587e"
+      },
+      {
+        "destination": "tests/test_desktop_plugin.py",
+        "input_sha256": "37fdb1682dbc96915d6556c5877142ba5cb04d0ddb9d0b3fd827bcc77c0d3115",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3af99b220028b80257c02abf29cf60ceb544a59209937089a0f2ff76263b1bc5",
+        "source": "tests/test_desktop_plugin.py",
+        "final_output_sha256": "3af99b220028b80257c02abf29cf60ceb544a59209937089a0f2ff76263b1bc5",
+        "cli_destination": "tests/test_desktop_plugin.py",
+        "previous_staging_sha256": "3af99b220028b80257c02abf29cf60ceb544a59209937089a0f2ff76263b1bc5"
+      },
+      {
+        "destination": "tests/test_jira_service.py",
+        "input_sha256": "4f8987be1a16189087f771040674d64223901c6bfb6995f6c83ed3b8bd89068e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "63fcb45b23b5c84e856a66caf146d4b78ee603747522493bbf4499f42e3f2c82",
+        "source": "tests/test_jira_service.py",
+        "final_output_sha256": "63fcb45b23b5c84e856a66caf146d4b78ee603747522493bbf4499f42e3f2c82",
+        "cli_destination": "tests/test_jira_service.py",
+        "previous_staging_sha256": "63fcb45b23b5c84e856a66caf146d4b78ee603747522493bbf4499f42e3f2c82"
+      },
+      {
+        "destination": "tests/test_live_status.py",
+        "input_sha256": "fb3112dc79c1529ffece892f0b7a2361ca31568c92c4558f0cc03e01d2ed4967",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fb3112dc79c1529ffece892f0b7a2361ca31568c92c4558f0cc03e01d2ed4967",
+        "source": "tests/test_live_status.py",
+        "final_output_sha256": "fb3112dc79c1529ffece892f0b7a2361ca31568c92c4558f0cc03e01d2ed4967",
+        "cli_destination": "tests/test_live_status.py",
+        "previous_staging_sha256": "fb3112dc79c1529ffece892f0b7a2361ca31568c92c4558f0cc03e01d2ed4967"
+      },
+      {
+        "destination": "tests/test_plugin_api.py",
+        "input_sha256": "6ff53c471d04cef380dc7927243d25edc85fd9d1cafa0fbdac09e1bafacc55a8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "67d2900e6c0d691a10be77189da2d6b725bb7e88796b4abc341bec4fd9d9fe9e",
+        "source": "tests/test_plugin_api.py",
+        "final_output_sha256": "67d2900e6c0d691a10be77189da2d6b725bb7e88796b4abc341bec4fd9d9fe9e",
+        "cli_destination": "tests/test_plugin_api.py",
+        "previous_staging_sha256": "67d2900e6c0d691a10be77189da2d6b725bb7e88796b4abc341bec4fd9d9fe9e"
+      },
+      {
+        "destination": "tests/test_plugin_registration.py",
+        "input_sha256": "135678004aea4c4b07f44afc7e324ad91b7814834731915b051ed1c2e4b3c862",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c15ac2b0a6d3a7f3f189998e9d556c111f4daef30fe5e915508864b0d8c7212",
+        "source": "tests/test_plugin_registration.py",
+        "final_output_sha256": "0c15ac2b0a6d3a7f3f189998e9d556c111f4daef30fe5e915508864b0d8c7212",
+        "cli_destination": "tests/test_plugin_registration.py",
+        "previous_staging_sha256": "0c15ac2b0a6d3a7f3f189998e9d556c111f4daef30fe5e915508864b0d8c7212"
+      },
+      {
+        "destination": "tests/test_repository_context.py",
+        "input_sha256": "9dc83b1da9ae68508e3a672a301754dd1888e51df3d3225453e1f55c4baf4586",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9dc83b1da9ae68508e3a672a301754dd1888e51df3d3225453e1f55c4baf4586",
+        "source": "tests/test_repository_context.py",
+        "final_output_sha256": "9dc83b1da9ae68508e3a672a301754dd1888e51df3d3225453e1f55c4baf4586",
+        "cli_destination": "tests/test_repository_context.py",
+        "previous_staging_sha256": "9dc83b1da9ae68508e3a672a301754dd1888e51df3d3225453e1f55c4baf4586"
+      },
+      {
+        "destination": "tests/test_repository_scan.py",
+        "input_sha256": "ffa581aec4e4140f1f2a6d9f8d66f2541b33df9b312f386d8e8e64c511fdc30d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ffa581aec4e4140f1f2a6d9f8d66f2541b33df9b312f386d8e8e64c511fdc30d",
+        "source": "tests/test_repository_scan.py",
+        "final_output_sha256": "ffa581aec4e4140f1f2a6d9f8d66f2541b33df9b312f386d8e8e64c511fdc30d",
+        "cli_destination": "tests/test_repository_scan.py",
+        "previous_staging_sha256": "ffa581aec4e4140f1f2a6d9f8d66f2541b33df9b312f386d8e8e64c511fdc30d"
+      }
+    ],
+    "manifest_sha256": "362d6e497b6b31798d400b03e01b21e5cd3272adebffbce6d7af1359c9f16e1a",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/quality-gates.yml": ".github/workflows/quality-gates.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "__init__.py": "__init__.py",
+    "dashboard/jira_service.py": "dashboard/jira_service.py",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "dashboard/repository_context.py": "dashboard/repository_context.py",
+    "desktop/data.js": "desktop/data.js",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "index.html": "index.html",
+    "plugin.yaml": "plugin.yaml",
+    "scripts/requirements-ci.txt": "scripts/requirements-ci.txt",
+    "scripts/scan-repository.py": "scripts/scan-repository.py",
+    "scripts/test.sh": "scripts/test.sh",
+    "tests/test_data_layer.py": "tests/test_data_layer.py",
+    "tests/test_desktop_plugin.py": "tests/test_desktop_plugin.py",
+    "tests/test_jira_service.py": "tests/test_jira_service.py",
+    "tests/test_live_status.py": "tests/test_live_status.py",
+    "tests/test_plugin_api.py": "tests/test_plugin_api.py",
+    "tests/test_plugin_registration.py": "tests/test_plugin_registration.py",
+    "tests/test_repository_context.py": "tests/test_repository_context.py",
+    "tests/test_repository_scan.py": "tests/test_repository_scan.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "jira-browser",
+    "python_files_compiled": 13,
+    "secret_findings": 0
+  },
+  "canonical_slug": "jira-browser",
+  "catalog_file": "src/plugin-catalog/jira-browser.yaml",
+  "identity": {
+    "catalog_id": "jira-browser",
+    "canonical_slug": "jira-browser",
+    "original_manifest_name": "jira-browser",
+    "rebranded_manifest_name": "jira-browser",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "7f9d8c9426128274868394544ab31b8ece658de7252b4ef795397b8e4066f8e8",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "37790efbc3589f902c25722fb6551066af8277fcf2d26be28965af0670d09d48",
+          "after_sha256": "4a079a2604f7245a521099e44359a0630d50abb6b245bd4ab514bfb71c6401e5",
+          "before_bytes": 23138,
+          "after_bytes": 23106,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "index.html",
+          "after_path": "index.html",
+          "before_sha256": "2f644a48dba5cd2a758f56b80910359505df0e608e8b67cdcb3bcb8169c34e3b",
+          "after_sha256": "28897be62e05154bff5a6d79140814cb7c6c0debc10c3849726efc05512152a7",
+          "before_bytes": 17523,
+          "after_bytes": 17334,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "plugin.yaml": [
+      {
+        "value": "author: Hermes Jira Browser contributors",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

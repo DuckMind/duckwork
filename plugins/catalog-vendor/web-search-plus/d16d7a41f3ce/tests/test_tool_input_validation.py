@@ -1,0 +1,31 @@
+"""Search tool input is cleaned before any provider is called."""
+import pytest
+
+from plugin_loader import load_plugin
+
+
+@pytest.fixture(scope="module")
+def plugin():
+    return load_plugin("wsp_plugin_test_tool_input_validation")
+
+
+@pytest.mark.parametrize("value,expected", [
+    (0, 1), (-3, 1), (1, 1), (7, 7), ("7", 7), (100, None), ("abc", 5), (None, 5), (True, 5), (2.9, 2),
+    (float("inf"), 5), (float("-inf"), 5), (float("nan"), 5), (10**400, None), ("1e999", 5),
+])
+def test_count_is_clamped(plugin, value, expected):
+    result = plugin._clean_tool_count(value)
+    assert result == (plugin._MAX_TOOL_COUNT if expected is None else expected)
+
+
+@pytest.mark.parametrize("value,expected", [
+    ("BRAVE", "brave"), (" Serper ", "serper"), ("auto", "auto"), ("AUTO", "auto"), (None, "auto"), ("", "auto"),
+])
+def test_provider_name_is_case_insensitive(plugin, value, expected):
+    assert plugin._clean_tool_provider(value) == (expected, None)
+
+
+def test_unknown_provider_names_valid_ones(plugin):
+    provider, error = plugin._clean_tool_provider("google")
+    assert error.startswith("Search error: unknown provider 'google'")
+    assert "brave" in error and "auto" in error

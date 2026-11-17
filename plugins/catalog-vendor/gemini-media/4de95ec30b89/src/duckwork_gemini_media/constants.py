@@ -1,0 +1,29 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+# Copyright 2026 bytecakelake
+# SPDX-License-Identifier: Apache-2.0
+"""Shared constants. Model ids here are defaults only; the live ``models.list`` result decides
+what is actually offered (see ``models.py``)."""
+
+PROVIDER_NAME = "gemini"
+
+# Checked in order. GEMINI_API_KEY is the documented name; GOOGLE_API_KEY is what Duckwork's native
+# Gemini chat provider reads, so accept it too.
+API_KEY_ENV_VARS = ("GEMINI_API_KEY", "GOOGLE_API_KEY")
+API_KEY_URL = "https://aistudio.google.com/apikey"
+
+DEFAULT_IMAGE_MODEL = "gemini-nano-banana-2.1"
+DEFAULT_VIDEO_MODEL = "gemini-omni-1.1-flash"
+
+IMAGE_MODEL_ENV = "GEMINI_IMAGE_MODEL"
+VIDEO_MODEL_ENV = "GEMINI_VIDEO_MODEL"
+
+# models.list is cached on disk so the `duckwork tools` picker never blocks on the network.
+MODELS_CACHE_TTL_S = 24 * 3600
+MODELS_LIST_TIMEOUT_S = 10.0
+MODELS_CACHE_DIRNAME = "gemini_media"
+MODELS_CACHE_FILENAME = "models.json"
+
+# Wall-clock deadlines (see client.call_with_deadline). Measured typical times: image 7-16 s,
+# video 15-25 s at 360p-720p. Override with image_gen.gemini.timeout_s / video_gen.gemini.timeout_s.
+IMAGE_REQUEST_TIMEOUT_S = 150.0
+VIDEO_REQUEST_TIMEOUT_S = 300.0

@@ -1,0 +1,10 @@
+name: ngrok-ai-gateway
+kind: model-provider
+version: 1.0.0
+description: Use the ngrok AI Gateway as a Duckwork model provider
+author: ngrok
+requires_duckwork: ">=0.21.6"
+requires_env:
+  - name: NGROK_AI_GATEWAY_KEY
+    url: https://app.ngrok.ai/keys
+    secret: true

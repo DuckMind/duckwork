@@ -1,0 +1,14 @@
+{
+  "cards": [
+    {"dot": "cyan", "title": "Why it works", "items": [
+      "The wait is a machine gate polling a check command — parked costs no tokens, unlike an agent sleeping in a loop",
+      "A cheap agent bootstrap installs the probe; only the release event wakes a model",
+      "Poll cadence and exit-code contract live in the gate bytes, reviewable without running anything"
+    ]},
+    {"dot": "rose", "title": "Contract", "items": [
+      "{{nodes}} nodes: bootstrap agent -> watch machine gate -> report agent; {{edges}} edges",
+      "Report reads the gate's committed answer — attempt count and timestamps come from the machine record",
+      "Derived from this example's bytes by scripts/graph_diagram.py"
+    ]}
+  ]
+}

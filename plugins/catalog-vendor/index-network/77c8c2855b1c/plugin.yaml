@@ -1,0 +1,26 @@
+name: index-network
+version: 0.48.5
+description: >-
+  Give Duckwork someone to talk to. Index turns what you're after into
+  intents, sends your agent to negotiate with other people's agents in
+  your networks, and brings back only the matches both sides agreed to.
+provides_tools:
+  - index_read_intents
+  - index_research_profile
+  - index_create_intent
+  - index_update_intent
+  - index_add_intent_to_network
+  - index_list_intent_networks
+  - index_read_networks
+  - index_read_network_memberships
+  - index_update_network
+  - index_create_network
+  - index_join_network
+  - index_list_opportunities
+  - index_update_opportunity
+  - index_read_docs
+  - index_agent_me
+  - index_open_app
+# The plugin authenticates with INDEX_SESSION_TOKEN (this device's session,
+# from `duckwork index login` or "log in with browser"), or with INDEX_API_KEY
+# when no session is set.

@@ -1,0 +1,665 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "custodian",
+  "content_id": "878c2e3f4b0d",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 90,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "cfc3b72e382870c88e39b8262acc0cd2d8b565d19a331b2f709fd58ad9204c13"
+    },
+    {
+      "bytes": 1687,
+      "mode": "100644",
+      "path": ".intent/main.json",
+      "sha256": "1446ef1c658c3c7898283241ccd1e9b5be40830fbd10cab6b153bde1299881a1"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "68902f7b8970d03018c11b6c011f71717ea92af5d635f2b8e7a8775b4b08985d"
+    },
+    {
+      "bytes": 824,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "49ba55e5c0e8d6d83c7e051d0a07ae692813a1adaf1a89cf1df332146a56b410"
+    },
+    {
+      "bytes": 815,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "b88ed69d8ca3c16bf5bd791c502cd6c163726592f537bc39b4f37a0afff39ff2"
+    },
+    {
+      "bytes": 167623,
+      "mode": "100644",
+      "path": "assets/readme/hero.jpg",
+      "sha256": "9c12f5a2229532bd593e82716ec0996e507858aaf20c148a2aea465f22e9066e"
+    },
+    {
+      "bytes": 14486,
+      "mode": "100644",
+      "path": "dashboard/dist/index.js",
+      "sha256": "70562a92183544d7740607bb7864d482011ecaf8d7aeffe7be5a51a3ed9d7b07"
+    },
+    {
+      "bytes": 2216,
+      "mode": "100644",
+      "path": "dashboard/dist/style.css",
+      "sha256": "91729b5a9ac947aa800b30adc1322582adfa21317d401cb6585b9921297f15ed"
+    },
+    {
+      "bytes": 369,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "5038619a3a25d33e0384f4a27b544c1c442d4b9dda67b08d1865e4f652174fdb"
+    },
+    {
+      "bytes": 15572,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "3ecc9436d74e34b35ab04842c801b12fcc29b0c8bbe58848e626ea9e48fdd07d"
+    },
+    {
+      "bytes": 18267,
+      "mode": "100644",
+      "path": "hermes_custodian_plugin/__init__.py",
+      "sha256": "46846b86b99118076f7aa970bfe9eb2acf1409c34d50c1881282a14ade84e62a"
+    },
+    {
+      "bytes": 8613,
+      "mode": "100644",
+      "path": "hermes_custodian_plugin/classifier.py",
+      "sha256": "53482844de01fdb0989a6ba2685b4f761acf48167c6c3b3774c84f6450674a79"
+    },
+    {
+      "bytes": 22976,
+      "mode": "100644",
+      "path": "hermes_custodian_plugin/cron_health.py",
+      "sha256": "36f047885bbbe6c90bb388db67cda4a711ce4d3fd8c2a8ed93d7d28c5ae62643"
+    },
+    {
+      "bytes": 5243,
+      "mode": "100644",
+      "path": "hermes_custodian_plugin/cron_registrar.py",
+      "sha256": "a651b84a2c45c6e9e611e07b83384a5e3d0936f28bb29d267c840053fbd246cc"
+    },
+    {
+      "bytes": 16129,
+      "mode": "100644",
+      "path": "hermes_custodian_plugin/fix_engine.py",
+      "sha256": "ae66108d8a440898c4908400517a5ecbbd3204802dc7af6a1f4f898de0eedb03"
+    },
+    {
+      "bytes": 4330,
+      "mode": "100644",
+      "path": "hermes_custodian_plugin/journal.py",
+      "sha256": "007cbb353bb84645b8e53228b6565165d4f77c2f6d78e3cea126db66126851ea"
+    },
+    {
+      "bytes": 25582,
+      "mode": "100644",
+      "path": "hermes_custodian_plugin/scanner.py",
+      "sha256": "5a37f7e84bf3d99e94f6e28a790860b5c0f3c411ca052c36c56698ac7a5e0471"
+    },
+    {
+      "bytes": 2691,
+      "mode": "100644",
+      "path": "hermes_custodian_plugin/schemas.py",
+      "sha256": "6c10415661b664c8e6a191f1506b057d9bc3e511d25d05f0832e3fc1c9c77910"
+    },
+    {
+      "bytes": 444,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "c275f36716bc9fd1a81b3a261ed3d418f3d251be45ae3cca5b233a4b9273d05f"
+    },
+    {
+      "bytes": 559,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "bc79bd12fa9ee6749999e84e0b65ffaf0e9300786b5b9988621a003fae6e4b04"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 45285,
+      "mode": "100644",
+      "path": "tests/test_custodian_plugin.py",
+      "sha256": "77316726da0bbaa360bb5290012d84a429027c2201926c9d5fff25202a5c2e39"
+    }
+  ],
+  "input_manifest_sha256": "878c2e3f4b0d538fe70bd383de3aa829363c3d06551fcfcf2548b8e61434ffd8",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "68902f7b8970d03018c11b6c011f71717ea92af5d635f2b8e7a8775b4b08985d",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".intent/main.json",
+      "README.md",
+      "__init__.py",
+      "dashboard/dist/index.js",
+      "dashboard/plugin_api.py",
+      "duckwork_custodian_plugin/__init__.py",
+      "duckwork_custodian_plugin/classifier.py",
+      "duckwork_custodian_plugin/cron_health.py",
+      "duckwork_custodian_plugin/fix_engine.py",
+      "duckwork_custodian_plugin/journal.py",
+      "duckwork_custodian_plugin/scanner.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/test_custodian_plugin.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/indigokarasu/hermes-custodian-plugin",
+    "sha": "d5b4ebfd2353a29380a51c8bcba84d4682cf4c91",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/indigokarasu/hermes-custodian-plugin",
+  "original_sha": "d5b4ebfd2353a29380a51c8bcba84d4682cf4c91",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "cfc3b72e382870c88e39b8262acc0cd2d8b565d19a331b2f709fd58ad9204c13",
+      "bytes": 90,
+      "mode": "100644"
+    },
+    {
+      "path": ".intent/main.json",
+      "sha256": "9dfd41ca6394cc033d341fda13d1c18d17235059d3869055ed7aa6e67f7e7375",
+      "bytes": 1711,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "68902f7b8970d03018c11b6c011f71717ea92af5d635f2b8e7a8775b4b08985d",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "d2d1a97709c3ffc8d3951ead3ec87cfdcd7e4b0169b59faef143d3116642689e",
+      "bytes": 830,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "16a5628febbf6206b22409995d839e33ac1d8433c59f1047deb33ca95464959e",
+      "bytes": 823,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/readme/hero.jpg",
+      "sha256": "9c12f5a2229532bd593e82716ec0996e507858aaf20c148a2aea465f22e9066e",
+      "bytes": 167623,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/index.js",
+      "sha256": "547959bf859780dcf73c065c68ea569e9b290bbe9dce4df684b42661827a2001",
+      "bytes": 14496,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/style.css",
+      "sha256": "91729b5a9ac947aa800b30adc1322582adfa21317d401cb6585b9921297f15ed",
+      "bytes": 2216,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "5038619a3a25d33e0384f4a27b544c1c442d4b9dda67b08d1865e4f652174fdb",
+      "bytes": 369,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "c94e4cb8ffcbd457c3406bd84909e58af107697728dfa02b9abe37eea32361a4",
+      "bytes": 15604,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_custodian_plugin/__init__.py",
+      "sha256": "81f986d502fbda82aae9b6de158ead5b15c973fa107141ef53e60d42774f11bd",
+      "bytes": 18291,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_custodian_plugin/classifier.py",
+      "sha256": "7b951a340f0c0ada1483ca052543ae4eebe6163c08cda3024f6ea97b39eecd2b",
+      "bytes": 8621,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_custodian_plugin/cron_health.py",
+      "sha256": "a776874c3efd1bb97002718fd74eb6e3ae0ca133c616bb1b98be48e8e565ecc3",
+      "bytes": 23006,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_custodian_plugin/cron_registrar.py",
+      "sha256": "a651b84a2c45c6e9e611e07b83384a5e3d0936f28bb29d267c840053fbd246cc",
+      "bytes": 5243,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_custodian_plugin/fix_engine.py",
+      "sha256": "e0ff9dabae93fc1b47802c0e15e606b0dfbd97c450ac528eb0dbd02b8f3bb040",
+      "bytes": 16159,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_custodian_plugin/journal.py",
+      "sha256": "1177cfd4f9e64cd469d0255a2c5fd3afc84d3e96a15382864622adcdfdce3d6b",
+      "bytes": 4340,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_custodian_plugin/scanner.py",
+      "sha256": "91085dcc65c967b547eaea042d9549ddf5d39feff4f19feeb8048f90ee8e29ce",
+      "bytes": 25608,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_custodian_plugin/schemas.py",
+      "sha256": "6c10415661b664c8e6a191f1506b057d9bc3e511d25d05f0832e3fc1c9c77910",
+      "bytes": 2691,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "a89ab4284aac582447bd12f27d73d4d09c68575c73d14d08096fa3070c7c2473",
+      "bytes": 446,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "911813207b1e968bb88c4565bf7a12f93199e0dd561f58e21bfab1128f1acb2b",
+      "bytes": 569,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_custodian_plugin.py",
+      "sha256": "72f290dad27ae3cf193bc0a5b407925f43d13f4a99a098f4e3a6858ba995667e",
+      "bytes": 45345,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "385f39ec6990a477699d01800a987f3d4a2fb78b991d0d610844db69fd4aedba",
+  "pin_verification": {
+    "archive_bytes": 210609,
+    "archive_sha256": "3c21b822dc08024eea007a7d5a581a6bfb5b540b4db23666c0d608f99f1d9a3e",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "d5b4ebfd2353a29380a51c8bcba84d4682cf4c91",
+    "verified_commit_marker": "d5b4ebfd2353a29380a51c8bcba84d4682cf4c91"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "5423a907214051577b3c04ae97c98d771e6a24645f3a8beb50147a20c3a9eb11",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "cfc3b72e382870c88e39b8262acc0cd2d8b565d19a331b2f709fd58ad9204c13",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cfc3b72e382870c88e39b8262acc0cd2d8b565d19a331b2f709fd58ad9204c13",
+        "source": ".gitignore",
+        "final_output_sha256": "cfc3b72e382870c88e39b8262acc0cd2d8b565d19a331b2f709fd58ad9204c13",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "cfc3b72e382870c88e39b8262acc0cd2d8b565d19a331b2f709fd58ad9204c13"
+      },
+      {
+        "destination": ".intent/main.json",
+        "input_sha256": "1446ef1c658c3c7898283241ccd1e9b5be40830fbd10cab6b153bde1299881a1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9dfd41ca6394cc033d341fda13d1c18d17235059d3869055ed7aa6e67f7e7375",
+        "source": ".intent/main.json",
+        "final_output_sha256": "9dfd41ca6394cc033d341fda13d1c18d17235059d3869055ed7aa6e67f7e7375",
+        "cli_destination": ".intent/main.json",
+        "previous_staging_sha256": "9dfd41ca6394cc033d341fda13d1c18d17235059d3869055ed7aa6e67f7e7375"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "68902f7b8970d03018c11b6c011f71717ea92af5d635f2b8e7a8775b4b08985d",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "68902f7b8970d03018c11b6c011f71717ea92af5d635f2b8e7a8775b4b08985d",
+        "source": "LICENSE",
+        "final_output_sha256": "68902f7b8970d03018c11b6c011f71717ea92af5d635f2b8e7a8775b4b08985d",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "68902f7b8970d03018c11b6c011f71717ea92af5d635f2b8e7a8775b4b08985d"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "49ba55e5c0e8d6d83c7e051d0a07ae692813a1adaf1a89cf1df332146a56b410",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d2d1a97709c3ffc8d3951ead3ec87cfdcd7e4b0169b59faef143d3116642689e",
+        "source": "README.md",
+        "final_output_sha256": "d2d1a97709c3ffc8d3951ead3ec87cfdcd7e4b0169b59faef143d3116642689e",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "d2d1a97709c3ffc8d3951ead3ec87cfdcd7e4b0169b59faef143d3116642689e"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "b88ed69d8ca3c16bf5bd791c502cd6c163726592f537bc39b4f37a0afff39ff2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "16a5628febbf6206b22409995d839e33ac1d8433c59f1047deb33ca95464959e",
+        "source": "__init__.py",
+        "final_output_sha256": "16a5628febbf6206b22409995d839e33ac1d8433c59f1047deb33ca95464959e",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "16a5628febbf6206b22409995d839e33ac1d8433c59f1047deb33ca95464959e"
+      },
+      {
+        "destination": "assets/readme/hero.jpg",
+        "input_sha256": "9c12f5a2229532bd593e82716ec0996e507858aaf20c148a2aea465f22e9066e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9c12f5a2229532bd593e82716ec0996e507858aaf20c148a2aea465f22e9066e",
+        "source": "assets/readme/hero.jpg",
+        "final_output_sha256": "9c12f5a2229532bd593e82716ec0996e507858aaf20c148a2aea465f22e9066e",
+        "cli_destination": "assets/readme/hero.jpg",
+        "previous_staging_sha256": "9c12f5a2229532bd593e82716ec0996e507858aaf20c148a2aea465f22e9066e"
+      },
+      {
+        "destination": "dashboard/dist/index.js",
+        "input_sha256": "70562a92183544d7740607bb7864d482011ecaf8d7aeffe7be5a51a3ed9d7b07",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "547959bf859780dcf73c065c68ea569e9b290bbe9dce4df684b42661827a2001",
+        "source": "dashboard/dist/index.js",
+        "final_output_sha256": "547959bf859780dcf73c065c68ea569e9b290bbe9dce4df684b42661827a2001",
+        "cli_destination": "dashboard/dist/index.js",
+        "previous_staging_sha256": "547959bf859780dcf73c065c68ea569e9b290bbe9dce4df684b42661827a2001"
+      },
+      {
+        "destination": "dashboard/dist/style.css",
+        "input_sha256": "91729b5a9ac947aa800b30adc1322582adfa21317d401cb6585b9921297f15ed",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "91729b5a9ac947aa800b30adc1322582adfa21317d401cb6585b9921297f15ed",
+        "source": "dashboard/dist/style.css",
+        "final_output_sha256": "91729b5a9ac947aa800b30adc1322582adfa21317d401cb6585b9921297f15ed",
+        "cli_destination": "dashboard/dist/style.css",
+        "previous_staging_sha256": "91729b5a9ac947aa800b30adc1322582adfa21317d401cb6585b9921297f15ed"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "5038619a3a25d33e0384f4a27b544c1c442d4b9dda67b08d1865e4f652174fdb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5038619a3a25d33e0384f4a27b544c1c442d4b9dda67b08d1865e4f652174fdb",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "5038619a3a25d33e0384f4a27b544c1c442d4b9dda67b08d1865e4f652174fdb",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "5038619a3a25d33e0384f4a27b544c1c442d4b9dda67b08d1865e4f652174fdb"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "3ecc9436d74e34b35ab04842c801b12fcc29b0c8bbe58848e626ea9e48fdd07d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c94e4cb8ffcbd457c3406bd84909e58af107697728dfa02b9abe37eea32361a4",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "c94e4cb8ffcbd457c3406bd84909e58af107697728dfa02b9abe37eea32361a4",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "c94e4cb8ffcbd457c3406bd84909e58af107697728dfa02b9abe37eea32361a4"
+      },
+      {
+        "destination": "duckwork_custodian_plugin/__init__.py",
+        "input_sha256": "46846b86b99118076f7aa970bfe9eb2acf1409c34d50c1881282a14ade84e62a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "81f986d502fbda82aae9b6de158ead5b15c973fa107141ef53e60d42774f11bd",
+        "source": "hermes_custodian_plugin/__init__.py",
+        "final_output_sha256": "81f986d502fbda82aae9b6de158ead5b15c973fa107141ef53e60d42774f11bd",
+        "cli_destination": "duckwork_custodian_plugin/__init__.py",
+        "previous_staging_sha256": "81f986d502fbda82aae9b6de158ead5b15c973fa107141ef53e60d42774f11bd"
+      },
+      {
+        "destination": "duckwork_custodian_plugin/classifier.py",
+        "input_sha256": "53482844de01fdb0989a6ba2685b4f761acf48167c6c3b3774c84f6450674a79",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7b951a340f0c0ada1483ca052543ae4eebe6163c08cda3024f6ea97b39eecd2b",
+        "source": "hermes_custodian_plugin/classifier.py",
+        "final_output_sha256": "7b951a340f0c0ada1483ca052543ae4eebe6163c08cda3024f6ea97b39eecd2b",
+        "cli_destination": "duckwork_custodian_plugin/classifier.py",
+        "previous_staging_sha256": "7b951a340f0c0ada1483ca052543ae4eebe6163c08cda3024f6ea97b39eecd2b"
+      },
+      {
+        "destination": "duckwork_custodian_plugin/cron_health.py",
+        "input_sha256": "36f047885bbbe6c90bb388db67cda4a711ce4d3fd8c2a8ed93d7d28c5ae62643",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a776874c3efd1bb97002718fd74eb6e3ae0ca133c616bb1b98be48e8e565ecc3",
+        "source": "hermes_custodian_plugin/cron_health.py",
+        "final_output_sha256": "a776874c3efd1bb97002718fd74eb6e3ae0ca133c616bb1b98be48e8e565ecc3",
+        "cli_destination": "duckwork_custodian_plugin/cron_health.py",
+        "previous_staging_sha256": "a776874c3efd1bb97002718fd74eb6e3ae0ca133c616bb1b98be48e8e565ecc3"
+      },
+      {
+        "destination": "duckwork_custodian_plugin/cron_registrar.py",
+        "input_sha256": "a651b84a2c45c6e9e611e07b83384a5e3d0936f28bb29d267c840053fbd246cc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a651b84a2c45c6e9e611e07b83384a5e3d0936f28bb29d267c840053fbd246cc",
+        "source": "hermes_custodian_plugin/cron_registrar.py",
+        "final_output_sha256": "a651b84a2c45c6e9e611e07b83384a5e3d0936f28bb29d267c840053fbd246cc",
+        "cli_destination": "duckwork_custodian_plugin/cron_registrar.py",
+        "previous_staging_sha256": "a651b84a2c45c6e9e611e07b83384a5e3d0936f28bb29d267c840053fbd246cc"
+      },
+      {
+        "destination": "duckwork_custodian_plugin/fix_engine.py",
+        "input_sha256": "ae66108d8a440898c4908400517a5ecbbd3204802dc7af6a1f4f898de0eedb03",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e0ff9dabae93fc1b47802c0e15e606b0dfbd97c450ac528eb0dbd02b8f3bb040",
+        "source": "hermes_custodian_plugin/fix_engine.py",
+        "final_output_sha256": "e0ff9dabae93fc1b47802c0e15e606b0dfbd97c450ac528eb0dbd02b8f3bb040",
+        "cli_destination": "duckwork_custodian_plugin/fix_engine.py",
+        "previous_staging_sha256": "e0ff9dabae93fc1b47802c0e15e606b0dfbd97c450ac528eb0dbd02b8f3bb040"
+      },
+      {
+        "destination": "duckwork_custodian_plugin/journal.py",
+        "input_sha256": "007cbb353bb84645b8e53228b6565165d4f77c2f6d78e3cea126db66126851ea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1177cfd4f9e64cd469d0255a2c5fd3afc84d3e96a15382864622adcdfdce3d6b",
+        "source": "hermes_custodian_plugin/journal.py",
+        "final_output_sha256": "1177cfd4f9e64cd469d0255a2c5fd3afc84d3e96a15382864622adcdfdce3d6b",
+        "cli_destination": "duckwork_custodian_plugin/journal.py",
+        "previous_staging_sha256": "1177cfd4f9e64cd469d0255a2c5fd3afc84d3e96a15382864622adcdfdce3d6b"
+      },
+      {
+        "destination": "duckwork_custodian_plugin/scanner.py",
+        "input_sha256": "5a37f7e84bf3d99e94f6e28a790860b5c0f3c411ca052c36c56698ac7a5e0471",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "91085dcc65c967b547eaea042d9549ddf5d39feff4f19feeb8048f90ee8e29ce",
+        "source": "hermes_custodian_plugin/scanner.py",
+        "final_output_sha256": "91085dcc65c967b547eaea042d9549ddf5d39feff4f19feeb8048f90ee8e29ce",
+        "cli_destination": "duckwork_custodian_plugin/scanner.py",
+        "previous_staging_sha256": "91085dcc65c967b547eaea042d9549ddf5d39feff4f19feeb8048f90ee8e29ce"
+      },
+      {
+        "destination": "duckwork_custodian_plugin/schemas.py",
+        "input_sha256": "6c10415661b664c8e6a191f1506b057d9bc3e511d25d05f0832e3fc1c9c77910",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6c10415661b664c8e6a191f1506b057d9bc3e511d25d05f0832e3fc1c9c77910",
+        "source": "hermes_custodian_plugin/schemas.py",
+        "final_output_sha256": "6c10415661b664c8e6a191f1506b057d9bc3e511d25d05f0832e3fc1c9c77910",
+        "cli_destination": "duckwork_custodian_plugin/schemas.py",
+        "previous_staging_sha256": "6c10415661b664c8e6a191f1506b057d9bc3e511d25d05f0832e3fc1c9c77910"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "c275f36716bc9fd1a81b3a261ed3d418f3d251be45ae3cca5b233a4b9273d05f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a89ab4284aac582447bd12f27d73d4d09c68575c73d14d08096fa3070c7c2473",
+        "source": "plugin.yaml",
+        "final_output_sha256": "a89ab4284aac582447bd12f27d73d4d09c68575c73d14d08096fa3070c7c2473",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "a89ab4284aac582447bd12f27d73d4d09c68575c73d14d08096fa3070c7c2473"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "bc79bd12fa9ee6749999e84e0b65ffaf0e9300786b5b9988621a003fae6e4b04",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "911813207b1e968bb88c4565bf7a12f93199e0dd561f58e21bfab1128f1acb2b",
+        "source": "pyproject.toml",
+        "final_output_sha256": "911813207b1e968bb88c4565bf7a12f93199e0dd561f58e21bfab1128f1acb2b",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "911813207b1e968bb88c4565bf7a12f93199e0dd561f58e21bfab1128f1acb2b"
+      },
+      {
+        "destination": "tests/__init__.py",
+        "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "tests/__init__.py",
+        "final_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cli_destination": "tests/__init__.py",
+        "previous_staging_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "destination": "tests/test_custodian_plugin.py",
+        "input_sha256": "77316726da0bbaa360bb5290012d84a429027c2201926c9d5fff25202a5c2e39",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "72f290dad27ae3cf193bc0a5b407925f43d13f4a99a098f4e3a6858ba995667e",
+        "source": "tests/test_custodian_plugin.py",
+        "final_output_sha256": "72f290dad27ae3cf193bc0a5b407925f43d13f4a99a098f4e3a6858ba995667e",
+        "cli_destination": "tests/test_custodian_plugin.py",
+        "previous_staging_sha256": "72f290dad27ae3cf193bc0a5b407925f43d13f4a99a098f4e3a6858ba995667e"
+      }
+    ],
+    "manifest_sha256": "dc1782bfad0c4be8cc09dfc41ae1593158a4efbe9051e1f6d45de394a3d990a2",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    ".intent/main.json": ".intent/main.json",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "assets/readme/hero.jpg": "assets/readme/hero.jpg",
+    "dashboard/dist/index.js": "dashboard/dist/index.js",
+    "dashboard/dist/style.css": "dashboard/dist/style.css",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "hermes_custodian_plugin/__init__.py": "hermes_custodian_plugin/__init__.py",
+    "hermes_custodian_plugin/classifier.py": "hermes_custodian_plugin/classifier.py",
+    "hermes_custodian_plugin/cron_health.py": "hermes_custodian_plugin/cron_health.py",
+    "hermes_custodian_plugin/cron_registrar.py": "hermes_custodian_plugin/cron_registrar.py",
+    "hermes_custodian_plugin/fix_engine.py": "hermes_custodian_plugin/fix_engine.py",
+    "hermes_custodian_plugin/journal.py": "hermes_custodian_plugin/journal.py",
+    "hermes_custodian_plugin/scanner.py": "hermes_custodian_plugin/scanner.py",
+    "hermes_custodian_plugin/schemas.py": "hermes_custodian_plugin/schemas.py",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "tests/__init__.py": "tests/__init__.py",
+    "tests/test_custodian_plugin.py": "tests/test_custodian_plugin.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "custodian",
+    "python_files_compiled": 12,
+    "secret_findings": 0
+  },
+  "canonical_slug": "custodian",
+  "catalog_file": "src/plugin-catalog/custodian.yaml",
+  "identity": {
+    "catalog_id": "custodian",
+    "canonical_slug": "custodian",
+    "original_manifest_name": "custodian",
+    "rebranded_manifest_name": "custodian",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "f89e33b535bb9cb003826034b83f264bc3d678012a449fe6afc92365fcec7670",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

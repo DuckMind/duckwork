@@ -1,0 +1,104 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "The roster is declared by an echo before any lane runs \u2014 the master list is data, not model memory",
+        "Every lane transforms a single roster item; the auditor reconciles results against the roster, so silent loss fails loud",
+        "Teaches the fan-out surfaces: declared items, per-item payload, and roster-vs-result coverage"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "3 nodes: roster echo -> transform fan-out -> audit; 2 edges, strictly serial chain",
+        "Audit output is a coverage claim: roster count against landed count, from ## Inputs only",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "roster",
+      "id": "roster-transform",
+      "to": "transform",
+      "variant": "default"
+    },
+    {
+      "from": "transform",
+      "id": "transform-audit",
+      "to": "audit",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "room",
+      "label": "Deterministic",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/bulk-transform.html",
+    "quality_profile": "standard",
+    "subtitle": "Same mechanical transformation over a DECLARED roster, applied lane-by-lane and audited against the roster. TE",
+    "title": "bulk-transform"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "roster",
+      "label": "Roster",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "transform",
+      "label": "Transform",
+      "lane": "work",
+      "tag": "fan-out 3",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "audit",
+      "label": "Audit",
+      "lane": "work",
+      "sublabel": "reconcile the",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 1
+    },
+    {
+      "fromCol": 2,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 2
+    }
+  ],
+  "schema_version": 2
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "mixar",
+  "version": "0.2.0",
+  "description": "Connect Duckwork to the Mixar desktop app's MCP server and load a Mixar workflow skill: build and edit 3D scenes, generate models, textures, rigs and animation with AI, render and export. Mixar 4.2.1+ must be installed on macOS, Windows or Linux (the install is refused without it) and signed in with MCP turned on.",
+  "author": {
+    "name": "Mixar",
+    "url": "https://www.mixar.app"
+  },
+  "homepage": "https://www.mixar.app",
+  "repository": "https://github.com/DuckMind/duckwork",
+  "license": "MIT",
+  "keywords": [
+    "mixar",
+    "mcp",
+    "3d",
+    "game-dev",
+    "blender",
+    "local"
+  ],
+  "extensions": {
+    "com.fordex.duckwork": {
+      "servers": {
+        "mixar": {
+          "app": {
+            "darwin": {
+              "presence": "bundle",
+              "location": [
+                {
+                  "kind": "app_bundle",
+                  "name": "Mixar.app"
+                }
+              ],
+              "version": {
+                "kind": "plist"
+              }
+            },
+            "win32": {
+              "presence": "executable",
+              "location": [
+                {
+                  "kind": "uninstall_registry",
+                  "display_name_prefix": "Mixar",
+                  "file": "mixar.exe"
+                },
+                "%ProgramFiles%/Mixar/mixar.exe"
+              ],
+              "version": {
+                "kind": "uninstall_registry",
+                "display_name_prefix": "Mixar"
+              }
+            },
+            "linux": {
+              "presence": "executable",
+              "location": [
+                {
+                  "kind": "command",
+                  "name": "mixar"
+                },
+                "~/.mixar/connector/mixar-mcp"
+              ]
+            }
+          },
+          "requires": {
+            "app": true,
+            "min_version": "4.2.1"
+          },
+          "timeout": 610,
+          "costs": {
+            "enqueue_generation": {
+              "credits": [
+                6,
+                250
+              ],
+              "note": "per job: images about 6, 3D models 30-120, splat worlds about 150, videos up to about 240"
+            },
+            "create_layered_material": [
+              1,
+              2
+            ]
+          },
+          "spend_limit": 500,
+          "cost_unit": "Mixar credits"
+        }
+      }
+    }
+  }
+}

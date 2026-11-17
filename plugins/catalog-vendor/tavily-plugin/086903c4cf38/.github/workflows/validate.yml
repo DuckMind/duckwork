@@ -1,0 +1,51 @@
+name: Validate plugin
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package (${{ matrix.os }}, ${{ matrix.duckwork.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        duckwork:
+          - name: stable-0.22.2
+            sha: d923a5eb487a17c0a68801bba9ef0f56c81040a8
+          - name: development-2026-10-20
+            sha: baf24532a1b95a07fd5505aadbe1faf169b4586b
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          path: plugin
+          persist-credentials: false
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.duckwork.sha }}
+          path: duckwork
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*.py
+            /agent/
+            /gateway/
+            /duckwork_cli/
+            /duckwork_platform/
+            /tools/
+            /pm/
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14'
+      - name: Install locked test dependencies
+        run: python -m pip install --require-hashes -r plugin/requirements-dev.txt
+      - name: Run Duckwork admission and package integration checks
+        run: python plugin/scripts/test.py --duckwork-source duckwork

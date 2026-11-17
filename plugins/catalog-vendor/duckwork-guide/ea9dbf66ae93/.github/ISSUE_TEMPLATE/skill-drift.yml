@@ -1,0 +1,54 @@
+name: "Skill drift (fact no longer matches Duckwork)"
+description: A claim in a skill or in checks.py/constants.py no longer matches the installed or upstream Duckwork source.
+labels: ["drift", "skills"]
+body:
+  - type: dropdown
+    id: skill
+    attributes:
+      label: Which skill or fact file
+      options:
+        - duckwork-configuration-guide
+        - duckwork-post-update
+        - installing-duckwork
+        - diagnosing-mcp
+        - diagnosing-skills
+        - diagnosing-commands
+        - diagnosing-hooks
+        - diagnosing-plugins
+        - diagnosing-path
+        - diagnosing-auth
+        - diagnosing-memory
+        - diagnosing-cli-tui
+        - diagnosing-triage
+        - diagnosing-desktop
+        - diagnosing-providers
+        - diagnosing-bot-mode
+        - diagnosing-voice
+        - diagnosing-browser
+        - diagnosing-cron
+        - diagnosing-gateway
+        - diagnosing-host-pressure
+        - diagnosing-runtime
+        - checks.py / constants.py
+        - Other / multiple skills
+    validations:
+      required: true
+  - type: input
+    id: duckwork_version
+    attributes:
+      label: Duckwork version / commit
+      description: "`duckwork --version`, or the git SHA you verified against"
+      placeholder: "v2026.9.24"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence from source
+      description: The upstream/installed source lines that contradict the guide (file + line numbers).
+    validations:
+      required: true
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested correction

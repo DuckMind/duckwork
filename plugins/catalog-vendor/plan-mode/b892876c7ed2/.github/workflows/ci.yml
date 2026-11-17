@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.11"
+      - run: python -m pip install pytest pyyaml
+      - run: pytest -q
+
+  duckwork-compat:
+    name: duckwork-compat (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # v2026.9.14 (0.21.3) is the requires_duckwork floor.
+          - name: v2026.9.14
+            ref: v2026.9.14
+            python: "3.11"
+          - name: v2026.9.21
+            ref: v2026.9.21
+            python: "3.11"
+          # v2026.9.24 (0.21.5) is the floor for gateway, TUI and Desktop enforcement.
+          - name: v2026.9.24
+            ref: v2026.9.24
+            python: "3.11"
+          # From 0.21.6, Duckwork declares its runtime dependencies for Python >= 3.14 only (older
+          # interpreters get them from Duckwork' lazy installer), so 0.21.6 and main are tested on 3.14.
+          - name: v0.21.6
+            ref: v0.21.6
+            python: "3.14"
+          - name: main-d4d2ab7b5d
+            ref: d4d2ab7b5d104166e7e22a02cafd12f1fe456a31
+            python: "3.14"
+    env:
+      DUCKWORK_DISABLE_LAZY_INSTALLS: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install Duckwork ${{ matrix.name }} and tests
+        env:
+          DUCKWORK_REF: ${{ matrix.ref }}
+        run: |
+          python -m pip install pytest
+          git clone --filter=blob:none https://github.com/DuckMind/duckwork "$RUNNER_TEMP/duckwork-agent"
+          git -C "$RUNNER_TEMP/duckwork-agent" checkout --detach "$DUCKWORK_REF"
+          python -m pip install -e "$RUNNER_TEMP/duckwork-agent"
+      - name: Real Duckwork modules import (the real-host tests must not skip silently)
+        run: python -c "import duckwork_cli.plugins, model_tools, gateway.run, tools.approval; print('duckwork importable')"
+      - run: pytest -q -rs
+      - run: duckwork plugins validate .
+      - run: duckwork plugins doctor . --ci
+      - name: duckwork plugins compat (when the host has it)
+        run: |
+          if duckwork plugins --help | grep -qw compat; then duckwork plugins compat .; else echo "compat not available on this host"; fi

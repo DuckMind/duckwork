@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=69,<82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-antidote"
+version = "3.2.4"
+description = "Runtime guardrails, behavioral evaluation, and signed fleet admission for Duckwork Agent"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "Grove Minting Company"}]
+keywords = ["duckwork-agent", "llm", "security", "model-provenance", "guardrails", "fleet"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+]
+dependencies = ["cryptography>=42,<51"]
+
+# Development tooling is intentionally NOT a [project.optional-dependencies] extra.
+# Duckwork installs directory plugins into a uv workspace and resolves it with
+# `--all-extras`, which would fold a `dev` extra into the host environment and
+# conflict with Duckwork' own pinned test tooling. Use requirements-dev.txt.
+
+[project.urls]
+Homepage = "https://github.com/GroveMinting/llmAntidote"
+Issues = "https://github.com/GroveMinting/llmAntidote/issues"
+
+[project.scripts]
+llm-antidote = "llm_antidote.standalone:main"
+
+[tool.setuptools.packages.find]
+include = ["llm_antidote*"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["llm_antidote"]
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["agent.*"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+branch = true
+source = ["llm_antidote"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = ["if TYPE_CHECKING:", "pragma: no cover", "raise NotImplementedError"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["build", "dist", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S108"]

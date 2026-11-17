@@ -1,0 +1,591 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-xai",
+  "content_id": "a74182dd3fea",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 34,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "6f4ff2992c4e2558837e2e09c39ed2bba140658755b22d046aab810ea2c90ca0"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8"
+    },
+    {
+      "bytes": 6820,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "ae9ac5e574e31f0a18c44065fe831ee8a79738589b5d4df47094c2bee8aff9d6"
+    },
+    {
+      "bytes": 4814,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "09e34eb58ab407a75b2f95a0fa37cff096a8ef927f443668029cc7606c9aea89"
+    },
+    {
+      "bytes": 286,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "3a3bdfc7b9d184a1b92a423dac18e97512f9227d846625d70ea3de99d918cfb5"
+    },
+    {
+      "bytes": 2593,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "062f8df4aa20348820cb3905bdf3ba266e2c3be25da4a9b7b6a0d55de5935296"
+    },
+    {
+      "bytes": 10965,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "673fd6369ba65f8b0a8d9ae068c156c11fcdc59e1a277bd56b4c05dfed485b41"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "hermes_xai/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 5503,
+      "mode": "100644",
+      "path": "hermes_xai/collections_search.py",
+      "sha256": "12b051c1944de723a873e43acfefa3e0d4a36efec76e1d62b3bf42e5e5ca5edb"
+    },
+    {
+      "bytes": 7813,
+      "mode": "100644",
+      "path": "hermes_xai/voice.py",
+      "sha256": "0d66510ba53631f4d729cecef97f375816a601be5e426a7dd3f23f3c70c09382"
+    },
+    {
+      "bytes": 1901,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "0bf6c213f12325ad968b9379f80072cedd3a0a8736997d27233b6191a56cda68"
+    },
+    {
+      "bytes": 27,
+      "mode": "100644",
+      "path": "pytest.ini",
+      "sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead"
+    },
+    {
+      "bytes": 144,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "0cb67ba91674c07e557440292720aa3c3c111f4c41b7db1f4d219a7c68dc6f52"
+    },
+    {
+      "bytes": 4721,
+      "mode": "100644",
+      "path": "tests/test_collections.py",
+      "sha256": "a1e1d5f933e42160f77520455b03c87e474a792998e81a00b9c38c60a74b8462"
+    },
+    {
+      "bytes": 983,
+      "mode": "100644",
+      "path": "tests/test_desktop_static.py",
+      "sha256": "d07d29e8e537de3b2003e23578ae753fed2e21b5a832aa865eddae95016aad54"
+    },
+    {
+      "bytes": 1502,
+      "mode": "100644",
+      "path": "tests/test_key_scope.py",
+      "sha256": "2bd79554d5230e374b16f88f12c8c76d0634fe8a4d5b0b0995d650d42f41bc0e"
+    },
+    {
+      "bytes": 2214,
+      "mode": "100644",
+      "path": "tests/test_routes.py",
+      "sha256": "dcdeadeffff4ee26d554a8523afb0e7fe838b07fcd4f534364a54935ad18a558"
+    },
+    {
+      "bytes": 3356,
+      "mode": "100644",
+      "path": "tests/test_voice.py",
+      "sha256": "a684413eb134b765778193e8e6944aa8849513b68a2b6d5ddff91f2aab7ef09e"
+    }
+  ],
+  "input_manifest_sha256": "a74182dd3feab07dd7655d4d426b047fd2382f8167b3851f85e2e6ea2b4edfa9",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "dashboard/manifest.json",
+      "dashboard/plugin_api.py",
+      "desktop/plugin.js",
+      "duckwork_xai/collections_search.py",
+      "duckwork_xai/voice.py",
+      "plugin.yaml",
+      "tests/test_collections.py",
+      "tests/test_desktop_static.py",
+      "tests/test_key_scope.py",
+      "tests/test_routes.py",
+      "tests/test_voice.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Julientalbot/hermes-xai",
+    "sha": "8fd9bf8ecef1f8e9cb2cb7921fc86527acd9ede3",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/Julientalbot/hermes-xai",
+  "original_sha": "8fd9bf8ecef1f8e9cb2cb7921fc86527acd9ede3",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "6f4ff2992c4e2558837e2e09c39ed2bba140658755b22d046aab810ea2c90ca0",
+      "bytes": 34,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "abcd657df0e3a92227e10ec1fb168f6d17e797925c65f9ddeb33909166cb08ac",
+      "bytes": 6863,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "6258a76a47e0dc24adb6d7aab0bbb045a09e3bd64eb7aeb63fb06ba182412143",
+      "bytes": 4834,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "5cc7fb99b7539071a768f4fc557f726569a968c0e58fc4896312b6a71dbc7d68",
+      "bytes": 290,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "ad26cecccdcf9acdffd3bb140c282ed418a49a565ca9f142dab3f1ae97061956",
+      "bytes": 2617,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "73f99cc8155b5dd6845f9a2e7e108fbfbcd234241e0d805bd5a6b4d2c1da782c",
+      "bytes": 10995,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_xai/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_xai/collections_search.py",
+      "sha256": "b03b26430aaf9f1fbc2569039410229ae932970ab4bcaf80714d532ac498f4f9",
+      "bytes": 5509,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_xai/voice.py",
+      "sha256": "57936ed0194f6462e68ef963ae8cb06dcdd3fe02f7e934baafbc1a2282448974",
+      "bytes": 7835,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "dc0de87e3a28d0c0ffbfabe36c44449995fcf58ece99ef5bdb8d7cfd404fcd50",
+      "bytes": 1909,
+      "mode": "100644"
+    },
+    {
+      "path": "pytest.ini",
+      "sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead",
+      "bytes": 27,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "0cb67ba91674c07e557440292720aa3c3c111f4c41b7db1f4d219a7c68dc6f52",
+      "bytes": 144,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_collections.py",
+      "sha256": "a19f0192b236a9294d2cf7b7b7352348b6c8dd94d2e3a2d0c698d31449f65356",
+      "bytes": 4727,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_desktop_static.py",
+      "sha256": "458e6ef6b8679010f91ce6e94f3b03afa17ee2d10ab942dcec42c166a96e6d97",
+      "bytes": 987,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_key_scope.py",
+      "sha256": "3d8084530de722a8ad5376fcbb3f58f09ea3ba1a871e4d3a26413c8d798026ee",
+      "bytes": 1504,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_routes.py",
+      "sha256": "d75d70a2c73d0288c79cc6361d8a7d2742a3b6a9a64e4ea569d7cc614e47a2d4",
+      "bytes": 2224,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_voice.py",
+      "sha256": "55617d95a8a21bc75d4cad981ff7917e49d0c7254f8b547dca85ead1fc335ac5",
+      "bytes": 3360,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "73391ae380362f8439fe4d969acafb31d94644b8373731d04d01795e1813a649",
+  "pin_verification": {
+    "archive_bytes": 19042,
+    "archive_sha256": "da15d389783a9eb04ddf908dc5ae6d98b6fbe52bbaacac07d8b7654a579dd686",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "8fd9bf8ecef1f8e9cb2cb7921fc86527acd9ede3",
+    "verified_commit_marker": "8fd9bf8ecef1f8e9cb2cb7921fc86527acd9ede3"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "74bc67e6ae49f41666a723740218141fa3a0379016f52a38e6b6b256c0460d6d",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "6f4ff2992c4e2558837e2e09c39ed2bba140658755b22d046aab810ea2c90ca0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6f4ff2992c4e2558837e2e09c39ed2bba140658755b22d046aab810ea2c90ca0",
+        "source": ".gitignore",
+        "final_output_sha256": "6f4ff2992c4e2558837e2e09c39ed2bba140658755b22d046aab810ea2c90ca0",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "6f4ff2992c4e2558837e2e09c39ed2bba140658755b22d046aab810ea2c90ca0"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+        "source": "LICENSE",
+        "final_output_sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "ae9ac5e574e31f0a18c44065fe831ee8a79738589b5d4df47094c2bee8aff9d6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8848b477773ac73aa908be70e29bdbb202482bfb8615e8052c6170c6138d57a1",
+        "source": "README.md",
+        "final_output_sha256": "abcd657df0e3a92227e10ec1fb168f6d17e797925c65f9ddeb33909166cb08ac",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "8848b477773ac73aa908be70e29bdbb202482bfb8615e8052c6170c6138d57a1"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "09e34eb58ab407a75b2f95a0fa37cff096a8ef927f443668029cc7606c9aea89",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6258a76a47e0dc24adb6d7aab0bbb045a09e3bd64eb7aeb63fb06ba182412143",
+        "source": "__init__.py",
+        "final_output_sha256": "6258a76a47e0dc24adb6d7aab0bbb045a09e3bd64eb7aeb63fb06ba182412143",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "6258a76a47e0dc24adb6d7aab0bbb045a09e3bd64eb7aeb63fb06ba182412143"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "3a3bdfc7b9d184a1b92a423dac18e97512f9227d846625d70ea3de99d918cfb5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5cc7fb99b7539071a768f4fc557f726569a968c0e58fc4896312b6a71dbc7d68",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "5cc7fb99b7539071a768f4fc557f726569a968c0e58fc4896312b6a71dbc7d68",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "5cc7fb99b7539071a768f4fc557f726569a968c0e58fc4896312b6a71dbc7d68"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "062f8df4aa20348820cb3905bdf3ba266e2c3be25da4a9b7b6a0d55de5935296",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ad26cecccdcf9acdffd3bb140c282ed418a49a565ca9f142dab3f1ae97061956",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "ad26cecccdcf9acdffd3bb140c282ed418a49a565ca9f142dab3f1ae97061956",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "ad26cecccdcf9acdffd3bb140c282ed418a49a565ca9f142dab3f1ae97061956"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "673fd6369ba65f8b0a8d9ae068c156c11fcdc59e1a277bd56b4c05dfed485b41",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "73f99cc8155b5dd6845f9a2e7e108fbfbcd234241e0d805bd5a6b4d2c1da782c",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "73f99cc8155b5dd6845f9a2e7e108fbfbcd234241e0d805bd5a6b4d2c1da782c",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "73f99cc8155b5dd6845f9a2e7e108fbfbcd234241e0d805bd5a6b4d2c1da782c"
+      },
+      {
+        "destination": "duckwork_xai/__init__.py",
+        "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "hermes_xai/__init__.py",
+        "final_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cli_destination": "duckwork_xai/__init__.py",
+        "previous_staging_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "destination": "duckwork_xai/collections_search.py",
+        "input_sha256": "12b051c1944de723a873e43acfefa3e0d4a36efec76e1d62b3bf42e5e5ca5edb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b03b26430aaf9f1fbc2569039410229ae932970ab4bcaf80714d532ac498f4f9",
+        "source": "hermes_xai/collections_search.py",
+        "final_output_sha256": "b03b26430aaf9f1fbc2569039410229ae932970ab4bcaf80714d532ac498f4f9",
+        "cli_destination": "duckwork_xai/collections_search.py",
+        "previous_staging_sha256": "b03b26430aaf9f1fbc2569039410229ae932970ab4bcaf80714d532ac498f4f9"
+      },
+      {
+        "destination": "duckwork_xai/voice.py",
+        "input_sha256": "0d66510ba53631f4d729cecef97f375816a601be5e426a7dd3f23f3c70c09382",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "57936ed0194f6462e68ef963ae8cb06dcdd3fe02f7e934baafbc1a2282448974",
+        "source": "hermes_xai/voice.py",
+        "final_output_sha256": "57936ed0194f6462e68ef963ae8cb06dcdd3fe02f7e934baafbc1a2282448974",
+        "cli_destination": "duckwork_xai/voice.py",
+        "previous_staging_sha256": "57936ed0194f6462e68ef963ae8cb06dcdd3fe02f7e934baafbc1a2282448974"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "0bf6c213f12325ad968b9379f80072cedd3a0a8736997d27233b6191a56cda68",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23e43e11579b7672037c9f9525f34e5db458fba5f17fe4fda726a8b516004ec0",
+        "source": "plugin.yaml",
+        "final_output_sha256": "dc0de87e3a28d0c0ffbfabe36c44449995fcf58ece99ef5bdb8d7cfd404fcd50",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "23e43e11579b7672037c9f9525f34e5db458fba5f17fe4fda726a8b516004ec0"
+      },
+      {
+        "destination": "pytest.ini",
+        "input_sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead",
+        "source": "pytest.ini",
+        "final_output_sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead",
+        "cli_destination": "pytest.ini",
+        "previous_staging_sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "0cb67ba91674c07e557440292720aa3c3c111f4c41b7db1f4d219a7c68dc6f52",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0cb67ba91674c07e557440292720aa3c3c111f4c41b7db1f4d219a7c68dc6f52",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "0cb67ba91674c07e557440292720aa3c3c111f4c41b7db1f4d219a7c68dc6f52",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "0cb67ba91674c07e557440292720aa3c3c111f4c41b7db1f4d219a7c68dc6f52"
+      },
+      {
+        "destination": "tests/test_collections.py",
+        "input_sha256": "a1e1d5f933e42160f77520455b03c87e474a792998e81a00b9c38c60a74b8462",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a19f0192b236a9294d2cf7b7b7352348b6c8dd94d2e3a2d0c698d31449f65356",
+        "source": "tests/test_collections.py",
+        "final_output_sha256": "a19f0192b236a9294d2cf7b7b7352348b6c8dd94d2e3a2d0c698d31449f65356",
+        "cli_destination": "tests/test_collections.py",
+        "previous_staging_sha256": "a19f0192b236a9294d2cf7b7b7352348b6c8dd94d2e3a2d0c698d31449f65356"
+      },
+      {
+        "destination": "tests/test_desktop_static.py",
+        "input_sha256": "d07d29e8e537de3b2003e23578ae753fed2e21b5a832aa865eddae95016aad54",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "458e6ef6b8679010f91ce6e94f3b03afa17ee2d10ab942dcec42c166a96e6d97",
+        "source": "tests/test_desktop_static.py",
+        "final_output_sha256": "458e6ef6b8679010f91ce6e94f3b03afa17ee2d10ab942dcec42c166a96e6d97",
+        "cli_destination": "tests/test_desktop_static.py",
+        "previous_staging_sha256": "458e6ef6b8679010f91ce6e94f3b03afa17ee2d10ab942dcec42c166a96e6d97"
+      },
+      {
+        "destination": "tests/test_key_scope.py",
+        "input_sha256": "2bd79554d5230e374b16f88f12c8c76d0634fe8a4d5b0b0995d650d42f41bc0e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3d8084530de722a8ad5376fcbb3f58f09ea3ba1a871e4d3a26413c8d798026ee",
+        "source": "tests/test_key_scope.py",
+        "final_output_sha256": "3d8084530de722a8ad5376fcbb3f58f09ea3ba1a871e4d3a26413c8d798026ee",
+        "cli_destination": "tests/test_key_scope.py",
+        "previous_staging_sha256": "3d8084530de722a8ad5376fcbb3f58f09ea3ba1a871e4d3a26413c8d798026ee"
+      },
+      {
+        "destination": "tests/test_routes.py",
+        "input_sha256": "dcdeadeffff4ee26d554a8523afb0e7fe838b07fcd4f534364a54935ad18a558",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d75d70a2c73d0288c79cc6361d8a7d2742a3b6a9a64e4ea569d7cc614e47a2d4",
+        "source": "tests/test_routes.py",
+        "final_output_sha256": "d75d70a2c73d0288c79cc6361d8a7d2742a3b6a9a64e4ea569d7cc614e47a2d4",
+        "cli_destination": "tests/test_routes.py",
+        "previous_staging_sha256": "d75d70a2c73d0288c79cc6361d8a7d2742a3b6a9a64e4ea569d7cc614e47a2d4"
+      },
+      {
+        "destination": "tests/test_voice.py",
+        "input_sha256": "a684413eb134b765778193e8e6944aa8849513b68a2b6d5ddff91f2aab7ef09e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "55617d95a8a21bc75d4cad981ff7917e49d0c7254f8b547dca85ead1fc335ac5",
+        "source": "tests/test_voice.py",
+        "final_output_sha256": "55617d95a8a21bc75d4cad981ff7917e49d0c7254f8b547dca85ead1fc335ac5",
+        "cli_destination": "tests/test_voice.py",
+        "previous_staging_sha256": "55617d95a8a21bc75d4cad981ff7917e49d0c7254f8b547dca85ead1fc335ac5"
+      }
+    ],
+    "manifest_sha256": "dd1074d13514d5e45582f90f49aa807adbb89a686c1a1e60f2ab4e178460e4cd",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "hermes_xai/__init__.py": "hermes_xai/__init__.py",
+    "hermes_xai/collections_search.py": "hermes_xai/collections_search.py",
+    "hermes_xai/voice.py": "hermes_xai/voice.py",
+    "plugin.yaml": "plugin.yaml",
+    "pytest.ini": "pytest.ini",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/test_collections.py": "tests/test_collections.py",
+    "tests/test_desktop_static.py": "tests/test_desktop_static.py",
+    "tests/test_key_scope.py": "tests/test_key_scope.py",
+    "tests/test_routes.py": "tests/test_routes.py",
+    "tests/test_voice.py": "tests/test_voice.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-xai",
+    "python_files_compiled": 11,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-xai",
+  "catalog_file": "src/plugin-catalog/duckwork-xai.yaml",
+  "identity": {
+    "catalog_id": "hermes-xai",
+    "canonical_slug": "duckwork-xai",
+    "original_manifest_name": "hermes-xai",
+    "rebranded_manifest_name": "duckwork-xai",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "dbe221e81f1a11fdbe6219ee4f0666ca10643bd073a9a43e9d3e305205e25498",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "8848b477773ac73aa908be70e29bdbb202482bfb8615e8052c6170c6138d57a1",
+          "after_sha256": "abcd657df0e3a92227e10ec1fb168f6d17e797925c65f9ddeb33909166cb08ac",
+          "before_bytes": 6869,
+          "after_bytes": 6863,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "23e43e11579b7672037c9f9525f34e5db458fba5f17fe4fda726a8b516004ec0",
+          "after_sha256": "dc0de87e3a28d0c0ffbfabe36c44449995fcf58ece99ef5bdb8d7cfd404fcd50",
+          "before_bytes": 1915,
+          "after_bytes": 1909,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

@@ -1,0 +1,23 @@
+name: source-tray
+version: 0.1.1
+manifest_version: 1
+api_version: 1
+description: >
+  Session source tray: URLs the Duckwork agent actually opened via web_search,
+  web_extract, or browser_navigate. Desktop pane and /sources; no search backend
+  of its own and no API keys.
+author: aydnOktay
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21"
+tags: [web, desktop, sources, citations, tools]
+provides_tools:
+  - source_tray_list
+  - source_tray_clear
+provides_hooks:
+  - post_tool_call
+config_schema:
+  max_items:
+    type: int
+    default: 40
+    description: Maximum unique URLs kept for the current session tray.

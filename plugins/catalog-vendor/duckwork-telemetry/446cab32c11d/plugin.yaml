@@ -1,0 +1,30 @@
+name: duckwork-telemetry
+version: "0.9.1"
+manifest_version: 2
+description: >-
+  Observability + budget guardrails for Duckwork Agent — tokens, cost, latency,
+  tool calls per session and cron job. Persists to local SQLite. Exposes /stats
+  and /budget slash commands.
+author: nujovich
+kind: standalone
+config_schema:
+  mode:
+    type: str
+    choices: [observe, enforce]
+    default: enforce
+    description: >-
+      enforce (default) enables budget blocking, alerts, and cron pauses;
+      observe records telemetry and reports limits without enforcing them.
+provides_hooks:
+  - on_session_start
+  - pre_api_request
+  - post_api_request
+  - api_request_error
+  - post_tool_call
+  - post_llm_call
+  - on_session_end
+  - on_session_finalize
+  - subagent_stop
+  - pre_llm_call
+  - pre_tool_call
+  - subagent_start

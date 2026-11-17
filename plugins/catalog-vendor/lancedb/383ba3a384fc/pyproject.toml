@@ -1,0 +1,40 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+[project]
+name = "duckwork-agent-memory"
+version = "0.1.0"
+description = "LanceDB-backed memory provider plugin for Duckwork Agent."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [
+    { name = "LanceDB" },
+]
+dependencies = [
+    "lancedb>=0.33.0",
+    "pyyaml",
+    "openai>=2.38.0",
+    "requests>=2.34.2",
+    "botocore>=1.43.16",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.6",
+]
+
+[tool.uv]
+# This isn't a pip-installable package — it's a directory loaded by Duckwork's
+# plugin discovery system. `uv sync` should just manage the venv, not try to
+# build us.
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = ["../duckwork-agent"]

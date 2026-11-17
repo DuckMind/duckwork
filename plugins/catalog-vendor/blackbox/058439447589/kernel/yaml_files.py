@@ -1,0 +1,61 @@
+"""YAML config files (Duckwork ``config.yaml`` and friends), read and written safely.
+
+:func:`load_yaml` never raises (unreadable -> ``{}``); :func:`dump_yaml` writes
+through :func:`atomic_write` (temp file + rename) so a concurrent reader never
+sees a torn file. ``yaml`` is None only if PyYAML is somehow absent.
+"""
+
+from __future__ import annotations
+
+import logging
+import os
+from pathlib import Path
+from typing import Any, Dict
+
+logger = logging.getLogger(__name__)
+
+# Duckwork 0.21.7 removed PyYAML and reads YAML through its own ruamel-backed ``duckwork_yaml``
+# (same safe_load / safe_dump calls); older Duckwork ships PyYAML. Without either, every config
+# read would come back empty and Blackbox would silently run on defaults — so say so loudly.
+try:
+    import duckwork_yaml as yaml  # type: ignore[import-not-found]
+except ImportError:
+    try:
+        import yaml  # type: ignore[no-redef]
+    except ImportError:  # pragma: no cover - no YAML library at all
+        yaml = None  # type: ignore[assignment]
+        logger.warning("blackbox: no YAML library (duckwork_yaml or PyYAML) — config.yaml cannot be read; "
+                       "Blackbox is running on its defaults")
+
+
+# ---------------------------------------------------------------------------
+# YAML helpers (idempotent, preserve unrelated keys)
+# ---------------------------------------------------------------------------
+
+
+def load_yaml(path: Path) -> dict[str, Any]:
+    if yaml is None or not path.exists():
+        return {}
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8-sig"))
+    except Exception as exc:
+        logger.debug("blackbox.attach: could not parse %s (%s)", path, exc)
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def atomic_write(path: Path, text: str) -> None:
+    """Write *text* via a temp file + rename so a reader never sees a torn file.
+
+    A concurrent auto-attach sweep (or the dashboard reading a config) can race a
+    write; ``os.replace`` is atomic on the same filesystem, so readers always see
+    either the old or the new complete file, never a half-written one.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f"{path.name}.tmp.{os.getpid()}")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
+def dump_yaml(path: Path, data: dict[str, Any]) -> None:
+    atomic_write(path, yaml.safe_dump(data, default_flow_style=False, sort_keys=False))

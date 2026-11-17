@@ -1,0 +1,56 @@
+name: Validate plugin
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Duckwork ${{ matrix.duckwork.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        duckwork:
+          # Floor: from 0.21.5 portable MCP servers keep their mcp.json name (mcp__keenable__*).
+          - name: v0.21.5
+            sha: f97608f178d1ffeca59860195ab7da295f7c8e5f
+            python: "3.13"
+          - name: v0.22.5
+            sha: bf0203a794a07aac3ff764972ab9087baa4e4f4e
+            python: "3.14"
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          path: plugin
+          persist-credentials: false
+
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.duckwork.sha }}
+          path: duckwork
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.duckwork.python }}
+
+      - name: Install Duckwork from its lockfile
+        run: |
+          python -m pip install uv==0.11.18
+          UV_PROJECT_ENVIRONMENT="$RUNNER_TEMP/duckwork-venv" uv sync --frozen --extra mcp --project duckwork
+          echo "$RUNNER_TEMP/duckwork-venv/bin" >> "$GITHUB_PATH"
+
+      - name: duckwork plugins validate
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: duckwork plugins validate plugin --install-deps
+
+      - name: Package tests
+        run: python -m unittest discover -s plugin/tests -v

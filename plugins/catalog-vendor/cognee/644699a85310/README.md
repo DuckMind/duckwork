@@ -1,0 +1,640 @@
+<!-- Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained. -->
+<div align="center">
+  <a href="https://www.cognee.ai">
+    <img src="https://raw.githubusercontent.com/topoteretes/cognee-integrations/main/assets/cognee-logo.svg" alt="Cognee" width="260">
+  </a>
+  <p><strong>Cognee memory for Duckwork Agent</strong> — persistent, graph-backed memory with session recall, durable remember/forget, and automatic capture for your Duckwork agents.</p>
+  <p>
+    <a href="https://docs.cognee.ai">Docs</a> ·
+    <a href="https://discord.gg/NQPKmU5CCg">Discord</a> ·
+    <a href="https://github.com/topoteretes/cognee">Cognee core</a>
+  </p>
+  <p>
+    <a href="https://pypi.org/project/cognee-integration-hermes-agent/"><img src="https://img.shields.io/pypi/v/cognee-integration-duckwork-agent" alt="PyPI version"></a>
+    <a href="https://pypi.org/project/cognee-integration-hermes-agent/"><img src="https://img.shields.io/pypi/dm/cognee-integration-duckwork-agent" alt="PyPI downloads"></a>
+  </p>
+</div>
+
+# Cognee Memory Plugin for Duckwork Agent
+
+Standalone Duckwork memory provider backed by Cognee.
+
+This replaces the closed in-tree Duckwork PR path. Duckwork no longer accepts new
+providers under `plugins/memory/`; this integration is shaped as a standalone
+plugin that can be installed into `~/.duckwork/plugins/cognee` or distributed as a
+Python package with the `duckwork_agent.plugins` entry point.
+
+## Features
+
+- Stores each completed Duckwork turn in Cognee session memory, and the turn's
+  tool calls as traces, under a capture policy that never stores calls touching
+  secret files and redacts secrets from what it stores (see
+  [Capture policy and redaction](#capture-policy-and-redaction)).
+- Queues turns the server never received (it was booting, or down) and replays
+  them once it answers again, so a cold start loses nothing.
+- Recalls memory per prompt: the retrieved graph context, trimmed to what
+  Duckwork does not already have, plus the session's distilled guidance (see
+  [Per-prompt memory block](#per-prompt-memory-block)), with a plain-words hit
+  counter on top.
+- Uses `cognee_recall` for explicit search, `cognee_remember` for durable
+  graph memory.
+- Exposes `cognee_forget` for user-directed, per-document deletion ("forget
+  what we said about tennis"): find candidates with previews, then delete only
+  what the user confirms.
+- Exposes `cognee_switch_dataset` to move a conversation to another dataset
+  mid-session, bridging the session it leaves behind.
+- Indexes repositories into a deterministic code graph (`duckwork cognee
+  index-repo`) and answers structural code questions exactly via
+  `cognee_code_search`, plus an identifier-gated code recall lane.
+- Recaps recorded sessions with `cognee_recap` and `duckwork cognee
+  standup|digest|timeline`: what was worked on and left open, the lessons
+  distilled into memory, or a dated timeline of one topic.
+- Runs `cognee.improve()` at Duckwork session end to bridge session memory into
+  the graph, and before Duckwork compresses a long conversation, so turns
+  compressed away still reach the graph.
+- `cognee_remember` returns as soon as the server has the text; the graph is
+  built in the background, so a slow LLM never turns a stored fact into a
+  reported timeout.
+- Mirrors explicit Duckwork memory writes through `on_memory_write`, and steers
+  the agent to prefer Cognee over Duckwork' built-in memory files.
+- Supports local embedded Cognee and remote Cognee service mode.
+- Closes every session out of process, the way the other cognee plugins do: a
+  detached worker bridges the session into the graph and only then unregisters
+  from the server. Exiting Duckwork never waits on a graph build, and the promotion
+  is never cut short by the server retiring. The same worker covers an uncleanly
+  died Duckwork, so no session is lost and no server lingers either way.
+
+## Quick start
+
+### Prerequisites
+
+- **Python 3.10 or newer.** This integration imports cognee in-process
+  (`requires-python = ">=3.10"` in `pyproject.toml`), so it inherits cognee's
+  own floor; `pip` refuses to install it on 3.9. Note that macOS's Xcode
+  Command Line Tools ship Python 3.9.6 — use a Homebrew, python.org or
+  [uv](https://docs.astral.sh/uv/)-managed 3.10+ interpreter instead.
+- [Duckwork Agent](https://github.com/DuckMind/duckwork) installed — see
+  the [Duckwork installation guide](https://duckwork-agent.fordex.com/docs/getting-started/installation).
+  (The install one-liner is quoted there rather than here: the catalog's install
+  scanner flags a piped shell script even inside a README, and a clean scan is
+  one less thing for a catalog reviewer to read past.)
+- **Local mode:** an LLM API key (e.g. OpenAI) — cognee uses it to build the
+  knowledge graph on your machine.
+- **Cloud mode:** a Cognee Cloud tenant URL and API key from your
+  [Cognee Cloud dashboard](https://platform.cognee.ai/). No LLM key needed —
+  the tenant runs the models.
+
+### 1. Install the plugin
+
+**Duckwork catalog — available after catalog acceptance:**
+
+```bash
+duckwork plugins install cognee
+duckwork plugins enable cognee
+duckwork memory setup
+```
+
+Catalog installs use the commit reviewed by Duckwork. Update them with
+`duckwork plugins update cognee`; a newer PyPI release does not change the
+reviewed catalog version. The pip installer refuses to overwrite a catalog copy.
+
+**Via pip (available now):**
+
+```bash
+pip install cognee-integration-duckwork-agent
+cognee-duckwork-install
+```
+
+The pip package registers the memory provider through Duckwork' entry-point
+discovery. The second command copies it into `~/.duckwork/plugins/cognee/` to
+also provide the CLI and dashboard integration. For this installation method,
+update with `pip install -U cognee-integration-duckwork-agent` followed by
+`cognee-duckwork-install` (`duckwork cognee status` reminds you when the two drift).
+
+Or, for development, copy a checkout into a Duckwork home with no existing
+Cognee installation (do not copy over a catalog-managed plugin):
+
+```bash
+git clone https://github.com/topoteretes/cognee-integrations.git
+mkdir -p ~/.duckwork/plugins/cognee
+cp -R cognee-integrations/integrations/duckwork-agent/. ~/.duckwork/plugins/cognee/
+```
+
+### 2a. Connect locally (default)
+
+```bash
+duckwork memory setup
+```
+
+Select `cognee` in the provider picker, choose **Mode: local**, and paste your
+LLM API key when asked. That's the whole setup — the wizard writes non-secrets
+to `~/.duckwork/cognee.json` and secrets to `~/.duckwork/.env`.
+
+On your next `duckwork` session the plugin starts a cognee server on
+`127.0.0.1:8011` — or attaches to one that a sibling cognee plugin (Claude
+Code, Codex, OpenClaw) already runs — with storage in `~/.cognee`. The very
+first boot runs database migrations and can take a couple of minutes; after
+that it's instant.
+
+Verify it's connected:
+
+```bash
+duckwork cognee status                    # shows mode, dataset, service URL
+curl -s http://127.0.0.1:8011/health    # the server answers
+```
+
+Then, in a `duckwork` chat: *"Remember that my favorite editor is Helix"* — the
+agent should call `cognee_remember`. Start a fresh conversation (`/new`) and
+ask *"What's my favorite editor?"* — it should recall it via `cognee_recall`.
+
+### 2b. Connect to Cognee Cloud
+
+Grab your tenant URL (`https://tenant-xxx.aws.cognee.ai`) and an API key from
+the [Cognee Cloud dashboard](https://platform.cognee.ai/), then run the same
+wizard and choose **Mode: remote**:
+
+```bash
+duckwork memory setup     # cognee -> Mode: remote -> tenant URL + API key
+```
+
+Verify: `duckwork cognee status` shows your tenant URL, and the same
+remember-`/new`-recall chat round trip works. Nothing runs locally in this
+mode — no server is spawned and no LLM key is used; every request goes to the
+tenant, authenticated with your API key via `X-Api-Key`.
+
+> **Switching modes? Re-run the wizard.** Values in `~/.duckwork/cognee.json`
+> take precedence over environment variables, and a local setup records
+> `"service_url": ""` there — so *only* exporting `COGNEE_BASE_URL` will not
+> move an existing local install to the cloud. `duckwork memory setup` (or
+> `duckwork cognee setup`) rewrites both files consistently.
+
+## How the pip install works
+
+Duckwork discovers memory providers two ways, and the package serves both:
+
+- **Pip entry point** — the wheel declares
+  `[project.entry-points."duckwork_agent.memory_providers"]`, the group Duckwork'
+  memory loader scans, so the provider activates from a plain `pip install`.
+- **Directory install** — `cognee-duckwork-install` copies the plugin into
+  `$DUCKWORK_HOME/plugins/cognee/` in the exact shape the directory scanner
+  expects; the load-bearing file is the root `__init__.py` (Duckwork silently
+  skips a plugin directory without one). The directory install is the
+  recommended path: it carries the `duckwork cognee` subcommands and the
+  dashboard config panel at full fidelity.
+
+For a pip-managed directory *copy*, upgrading takes two steps:
+`pip install -U cognee-integration-duckwork-agent`, then `cognee-duckwork-install`
+again (`duckwork cognee status` reminds you when the copy is stale). Catalog
+installations instead use `duckwork plugins update cognee`.
+
+Releases are published from CI on `duckwork-agent-v*` tags
+(`.github/workflows/duckwork-agent-publish.yml`).
+
+## Configuration
+
+The quick start above covers the common cases; this section is the full
+reference. Configuration comes from two places: `$DUCKWORK_HOME/.env` (secrets
+and environment variables — Duckwork loads it for every session) and
+`$DUCKWORK_HOME/cognee.json` (non-secret settings). The setup wizard writes both.
+When a key appears in both places, **the JSON file wins** — which is why mode
+switches should go through the wizard rather than editing the environment
+alone.
+
+### Modes
+
+The provider connects to cognee in one of three modes. It picks the mode
+automatically from your config:
+
+| Mode | When it's used | How it talks to cognee |
+| --- | --- | --- |
+| **local-server** (default) | no `COGNEE_BASE_URL`, `COGNEE_EMBEDDED` unset | ensures a local cognee server is running and connects as a thin client |
+| **remote** | `COGNEE_BASE_URL` is set | thin client to your managed / cloud cognee |
+| **embedded** | `COGNEE_EMBEDDED=true` | runs cognee in-process |
+
+**Why local-server is the default.** cognee's local stores (SQLite, Kuzu/Ladybug,
+LanceDB) are single-writer. Driving them in-process from the agent's background
+threads — or from a second Duckwork process sharing the same `data_root` — risks
+`database is locked` errors and corruption. A local cognee server is the single
+owner that serializes all access, so the agent just makes HTTP calls. This is the
+same design the Claude Code and Codex plugins use. **`embedded` is opt-in and is
+safe for single-process / offline use only.**
+
+**No silent fallbacks.** The provider never downgrades modes behind your back. If
+`COGNEE_BASE_URL` is set but unreachable, or the local server fails to start,
+initialization raises rather than quietly switching to a different mode — silent
+fallback would either mask a config error (remote → local data divergence) or
+reintroduce the very DB-lock risk this design removes (local-server → embedded).
+To accept the single-process trade-off, set `COGNEE_EMBEDDED=true` explicitly.
+And if initialization does fail, memory stays *off*: Duckwork logs the error and
+starts anyway, so the provider refuses every call rather than operating a
+half-connected backend.
+
+### Transports
+
+Mode decides *where* cognee is; the transport decides *how* the plugin talks to it.
+
+| Transport | Selected by | What it does |
+| --- | --- | --- |
+| **http** (default) | nothing to set | builds requests against cognee's REST API directly, using only the standard library |
+| **sdk** | `COGNEE_TRANSPORT=sdk`, or any `COGNEE_EMBEDDED=true` | drives the `cognee` Python package, via `cognee.serve()` when a server is involved |
+
+Direct HTTP is the default because it is what the Claude Code, Codex and OpenClaw
+plugins do, and because the SDK's `CloudClient` drops fields the server accepts —
+most importantly `session_ids` on `improve()`, which is what promotes a session's
+turns into the permanent graph. Two consequences worth knowing:
+
+- The `cognee` package is still required. It is what the local server runs, and it
+  is the only way to run without a server at all (`COGNEE_EMBEDDED=true`).
+- Over HTTP, a `cognee_remember` write cannot be linked to the session it came
+  from — `/api/v1/remember` has no field for it. Session-to-graph bridging is
+  unaffected. The plugin logs this once rather than dropping it silently.
+
+> **Upgrading from 0.1.x — three defaults moved to match the other cognee
+> plugins.** The local port changed from 8000 to 8011 (leaving cognee's own
+> default of 8000 to servers you start yourself); the default dataset changed
+> from `duckwork` to the shared `agent_sessions`; and local storage now defaults to
+> the shared `~/.cognee/{data,system}` instead of cognee's global default. Your
+> old memory is not deleted, but a recall against the new dataset/roots will not
+> see it — set `COGNEE_DATASET=duckwork` (or migrate the data) and, if an old
+> plugin-started server is still listening on 8000, **stop it**: two servers
+> sharing one data directory is exactly the single-writer contention this mode
+> exists to avoid. `COGNEE_LOCAL_PORT=8000` restores the old port.
+
+### One brain across agents
+
+By default this plugin joins the same memory the Claude Code, Codex and OpenClaw
+cognee plugins share: the same dataset (`agent_sessions`), the same local storage
+(`~/.cognee/{data,system}`), the same server port (8011) and the same API key —
+which this plugin looks up on the local server at each session start rather than
+reading the others' key file. Whichever plugin boots the server first,
+the rest attach to it — and a fact remembered in Claude Code is recallable in
+Duckwork, and vice versa. To keep Duckwork (or one Duckwork profile) apart instead, give
+it its own `COGNEE_PLUGIN_DATASET`, or for full isolation its own
+`COGNEE_DATA_ROOT` / `COGNEE_SYSTEM_ROOT` *and* `COGNEE_LOCAL_PORT` — a server
+belongs to whoever reaches its port first, so a private store needs a private
+port. The same goes for its LLM key: a server shared by several profiles keeps
+the key of the profile that started it, so profiles that must not share an LLM
+bill need their own `COGNEE_LOCAL_PORT` too.
+
+The per-mode settings below live in `~/.duckwork/.env` (the wizard puts them
+there; you can also edit the file by hand).
+
+local-server mode (default — just set your LLM creds):
+
+```bash
+LLM_API_KEY=sk-...
+LLM_MODEL=gpt-4o-mini
+# COGNEE_PLUGIN_DATASET=agent_sessions   # optional; the default is shared with the other plugins
+# COGNEE_LOCAL_PORT=8011                 # optional; the other plugins' server port
+```
+
+Remote / cloud mode (tenant URL and API key from the
+[Cognee Cloud dashboard](https://platform.cognee.ai/)):
+
+```bash
+COGNEE_BASE_URL=https://tenant-xxx.aws.cognee.ai   # canonical name
+COGNEE_API_KEY=...
+```
+
+> **`COGNEE_API_KEY` is mandatory for any remote server.** On a local server the
+> plugin mints a key on first use (a one-time login as the default user); remote
+> servers — Cognee Cloud included — expose no login route, so there is nothing to
+> mint with. A remote `COGNEE_BASE_URL` without a key fails at startup with a
+> clear error rather than a 401 on every call.
+
+> **Where the default user's password comes from.** cognee >= 1.6.0 ships no
+> built-in default-user password: the API server creates the default user at
+> startup only when `DEFAULT_USER_PASSWORD` is set in *its* environment. The
+> local server this plugin spawns always gets `DEFAULT_USER_EMAIL=default_user@example.com`
+> / `DEFAULT_USER_PASSWORD=default_password` — the same literals the Claude Code,
+> Codex and Antigravity plugins pass, since they all share this server — unless
+> you export `DEFAULT_USER_EMAIL` / `DEFAULT_USER_PASSWORD` yourself, in which
+> case your values win. `COGNEE_USER_EMAIL` / `COGNEE_USER_PASSWORD` do *not*
+> change the server's default user: they only select which user the plugin logs
+> in as to mint its key, and a non-default user must already exist on the server.
+> If you point the plugin at a local server you start yourself, start it with
+> `DEFAULT_USER_PASSWORD` set (matching `COGNEE_USER_PASSWORD` if you changed
+> that), or set `COGNEE_API_KEY` to a key that server issued. The server sets
+> the password once and never rewrites an existing user's, so a later change has
+> to be made on the server as well. A login the server refuses
+> (`This user does not have a password` / `LOGIN_BAD_CREDENTIALS`) is logged as
+> a warning at startup and repeated on the first `401`, naming the fix.
+
+Embedded (in-process) mode — single-process / offline only:
+
+```bash
+COGNEE_EMBEDDED=true
+LLM_API_KEY=sk-...
+```
+
+> **Embedded mode and the shared store do not mix.** Embedded drives the local
+> single-writer databases from inside the Duckwork process; if another plugin's
+> server (or another process) is using `~/.cognee` at the same time, that is
+> exactly the contention embedded mode is warned about. For embedded use, point
+> `COGNEE_DATA_ROOT` / `COGNEE_SYSTEM_ROOT` at a private location.
+
+### Optional settings
+
+| Setting | Env var | Default |
+| --- | --- | --- |
+| `dataset` | `COGNEE_PLUGIN_DATASET` (canonical) | `agent_sessions` |
+| `top_k` | `COGNEE_TOP_K` | `5` |
+| `auto_route` | `COGNEE_AUTO_ROUTE` | `true` |
+| `improve_on_end` | `COGNEE_IMPROVE_ON_END` | `true` |
+| `improve_background` | `COGNEE_IMPROVE_BACKGROUND` | auto |
+| `session_prefix` | `COGNEE_SESSION_PREFIX` | `duckwork` |
+| `service_url` | `COGNEE_BASE_URL` (canonical) | empty |
+| `embedded` | `COGNEE_EMBEDDED` | `false` |
+| `local_port` | `COGNEE_LOCAL_PORT` | `8011` |
+| `server_boot_timeout` | `COGNEE_SERVER_BOOT_TIMEOUT` | `600` |
+| `data_root` | `COGNEE_DATA_ROOT` | `~/.cognee/data` |
+| `system_root` | `COGNEE_SYSTEM_ROOT` | `~/.cognee/system` |
+| `recall_timeout` | `COGNEE_RECALL_TIMEOUT` | `120` (seconds) |
+| `write_timeout` | `COGNEE_WRITE_TIMEOUT` | `120` (seconds) |
+| `improve_timeout` | `COGNEE_IMPROVE_TIMEOUT` | `300` (seconds) |
+| `recall_budget` | `COGNEE_RECALL_BUDGET` | `20` (seconds, bounds the per-prompt recall) |
+| `recall_passage_chars` | `COGNEE_RECALL_PASSAGE_CHARS` | `2000` (per recalled passage; `0` = no cap) |
+| `recall_context_chars` | `COGNEE_RECALL_CONTEXT_CHARS` | `12000` (the whole injection; `0` = no cap) |
+| `capture` | `COGNEE_CAPTURE` | `true` (automatic capture of turns and tool calls) |
+| `capture_tools` | `COGNEE_CAPTURE_TOOLS` | `*` (tool allow list) |
+| `capture_deny_tools` | `COGNEE_CAPTURE_DENY_TOOLS` | empty (tool deny list) |
+| `capture_deny_paths` | `COGNEE_CAPTURE_DENY_PATHS` | empty (extra secret-file globs) |
+| `capture_redact` | `COGNEE_CAPTURE_REDACT` | `true` |
+| `capture_redact_patterns` | `COGNEE_CAPTURE_REDACT_PATTERNS` | empty (extra regexes, one per line) |
+| `chunk_size` | `COGNEE_CHUNK_SIZE` | unset (server default; tokens per chunk for `cognee_remember`) |
+| `memory_steer` | `COGNEE_MEMORY_STEER` | `true` |
+| `memory_steer_text` | `COGNEE_MEMORY_STEER_TEXT` | built-in wording |
+| `memory_hits` | `COGNEE_MEMORY_HITS` | `true` |
+| `dataset_switch_tool` | `COGNEE_DATASET_SWITCH_TOOL` | `true` |
+| `code_search_tool` | `COGNEE_CODE_SEARCH_TOOL` | `true` |
+| `code_graph_recall` | `COGNEE_CODE_GRAPH_RECALL` | `true` |
+| `code_datasets` | `COGNEE_CODE_DATASETS` | empty (comma-separated extra code datasets) |
+| `recap_tool` | `COGNEE_RECAP_TOOL` | `true` |
+| `update_check` | `COGNEE_UPDATE_CHECK` | `true` (CLI-only PyPI check) |
+| `update_check_interval` | `COGNEE_UPDATE_CHECK_INTERVAL` | `3600` (seconds) |
+
+> **Storage is shared, and a server is per port.** The roots above are the ones
+> every cognee agent plugin pins, so the store is the same no matter which plugin
+> booted the server on 8011. Because the default roots live outside
+> `DUCKWORK_HOME`, `backup_paths()` reports them to `duckwork backup` — a profile
+> backup deliberately includes the machine's shared memory store. Roots you point
+> elsewhere with `COGNEE_DATA_ROOT` / `COGNEE_SYSTEM_ROOT` are reported the same
+> way (unless they sit inside `DUCKWORK_HOME`, which `duckwork backup` walks anyway).
+
+> `COGNEE_SERVICE_URL` is a deprecated alias for `COGNEE_BASE_URL`, and
+> `COGNEE_DATASET` (the 0.1.x name) a lower-precedence alias for
+> `COGNEE_PLUGIN_DATASET`. Both still work; new setups should use the canonical
+> names.
+
+> **`improve_background`** decides where the session-end graph build
+> (`improve()`) runs. Default `auto`: whenever a server is involved, the close is
+> handed to a **detached worker** — the same process that already covers crashes —
+> which runs `improve()` to completion and only then unregisters the agent
+> connection. Duckwork exits immediately; nothing waits on the graph build. That
+> ordering is required, not stylistic: the local server runs with
+> `COGNEE_AGENT_MODE=true` and retires itself within 60s of the last agent
+> unregistering, so unregistering first would kill the promotion halfway. In
+> `embedded` mode there is no server and no worker, so the build runs in-process
+> and synchronously — it dies with the process otherwise.
+>
+> Setting `COGNEE_IMPROVE_BACKGROUND=true|false` opts out of the handoff and does
+> the work in-process: `true` submits the build and returns (right for a
+> cloud/remote server nothing here can shut down; on a local server it
+> reintroduces the race above), `false` blocks Duckwork' exit until the build
+> finishes.
+
+## Local models via Ollama: embedding settings
+
+Ollama embeddings need cognee's `ollama` extra — `pip install "cognee[ollama]"`
+— which brings the `transformers` package the token counting depends on; with
+plain `cognee` the embedding engine fails to construct at all.
+
+cognee reads these standard variables (put them in `$DUCKWORK_HOME/.env` — Duckwork
+loads it every session, so the spawned server inherits them; see
+[.env.example](./.env.example)):
+
+| Env var | Meaning |
+| --- | --- |
+| `EMBEDDING_PROVIDER` | `ollama` for a local embedder |
+| `EMBEDDING_MODEL` | e.g. `all-minilm`, `nomic-embed-text` |
+| `EMBEDDING_ENDPOINT` | usually `http://localhost:11434/api/embed` |
+| `EMBEDDING_DIMENSIONS` | the model's vector size (e.g. `384` for all-minilm) |
+| `EMBEDDING_MAX_COMPLETION_TOKENS` | **must be ≤ the model's context length** |
+| `HUGGINGFACE_TOKENIZER` | the HF tokenizer matching the model, used to count tokens |
+
+**Why the token ceiling matters.** cognee sizes its text chunks from
+`EMBEDDING_MAX_COMPLETION_TOKENS`, and its default (8191) is far above any local
+embedding model's real context. Every substantial document then overflows the
+model; cognee splits the text and **mean-pools the vectors while still reporting
+success**, so the pipeline completes but the search index quietly fills with
+lossy embeddings and retrieval degrades — the only trace is an
+`Ollama embedding error` line in `~/.cognee-plugin/duckwork/server.log`. Worse,
+recent Ollama versions default to *silently truncating* oversized inputs, so
+depending on the Ollama version the index degrades with no log line at all —
+which is why a correct token ceiling matters even when the log is clean.
+
+The plugin therefore pins safe defaults at server spawn when
+`EMBEDDING_PROVIDER=ollama`: a context-matched
+`EMBEDDING_MAX_COMPLETION_TOKENS` (a conservative 512 for models it does not
+recognize) and, for recognized models, the matching `HUGGINGFACE_TOKENIZER`.
+Explicit values always win over the pins. When the plugin detects an overflow in
+the server log anyway, recall/remember results carry a `warning`/`error` naming
+these levers.
+
+> **Pins apply at server spawn.** A cognee server already running on the port
+> keeps the environment it was started with — after changing embedding settings,
+> stop that server (it is shared with the other cognee plugins) so the next
+> session respawns it. An index written with wrong settings stays wrong until
+> the dataset is rebuilt: follow [RUNBOOK.md](./RUNBOOK.md).
+
+**If recall is slow or times out**: the default `GRAPH_COMPLETION` search runs
+an LLM per query, which local models make slow. `search_type=CHUNKS` returns
+matching stored text directly with no LLM in the loop; `COGNEE_RECALL_TIMEOUT`
+raises the deadline.
+
+### Per-prompt memory block
+
+Every prompt makes up to three requests, dispatched together under one deadline
+(`recall_budget`); none of them calls an LLM on the server:
+
+- **Memory**: `scope=["graph"]`, `search_type=HYBRID_COMPLETION`,
+  `only_context=true`, and **no session id**. On cognee >= 1.6.0 the server
+  answers with the full input its completion would have received; with a session
+  id that input would also carry this conversation's recent turns, which Duckwork
+  already has. The plugin keeps only the retrieved context: the question
+  template and history go, passages recorded in this very session go, each
+  passage is capped at `recall_passage_chars` (cut at a paragraph break), and
+  entity lines that say nothing are pruned. Text it cannot parse (an older
+  server's bare context) is injected whole. Injected as `<cognee_memory>`.
+- **Guidance**: `scope=["session_context"]` with the session id, against the
+  active dataset: the lessons the server distilled from this session, injected as
+  `<cognee_guidance>`. None yet is normal and costs nothing.
+- **Code**: the deterministic code-graph lane, when the
+  [code recall lane](#code-graph-index-a-repository) is armed.
+
+`recall_context_chars` then caps the whole injection: guidance first, then
+memory, then code facts; the block that crosses it is cut at a line and marked.
+A lane that fails or misses the deadline is dropped without costing the others.
+The trimming rules are shared with the Claude Code, Codex and OpenClaw plugins
+(`integrations/conformance/recall_text_cases.json`).
+
+After three prompts in a row whose recall only timed out, each prompt first
+spends a 3-second `/health` probe and skips recall while the server does not
+answer, instead of waiting out the whole budget. Any answered recall ends it.
+
+The explicit `cognee_recall` tool reads the graph the same way, without the
+session id. It takes `query`, an optional `search_type` and `top_k`. The raw
+session-cache scopes (`session`, `trace`) and the `auto` scope are never
+requested: turns and traces are written to the session cache, which `improve()`
+promotes into the graph at session end, but they are not searched as raw entries.
+
+### Capture policy and redaction
+
+Each completed turn is stored as a `qa` entry and each of its tool calls as a
+`trace` entry (tool name, arguments, result, status), read from the
+conversation Duckwork hands the provider. The rules are the ones the Claude Code,
+Codex and OpenClaw plugins use (`integrations/conformance/capture_policy_cases.json`):
+
+- `capture_tools` / `capture_deny_tools` choose which tool calls are captured:
+  a name, an fnmatch glob, or `tool(prefix:*)` matched against the first word of
+  a shell command (`terminal(git:*)`), case-insensitively. Separate entries with
+  `|`, or give a JSON array.
+- A call whose path arguments or shell command name `.env*`, `*.pem`, `*.key`,
+  ssh or cloud credentials, `secrets.*` or `credentials.*` (plus
+  `capture_deny_paths`) is never captured. Neither is a call to the cognee tools
+  themselves, or a shell command that mentions cognee.
+- `capture_redact` (on by default) scrubs private keys, bearer and basic tokens,
+  database URLs, credential assignments, vendor keys, AWS key ids, bcrypt hashes
+  and secret-named fields from captured turns, tool calls and mirrored Duckwork
+  memory writes, plus `capture_redact_patterns`. Redaction runs before
+  truncation (arguments at 4,000 characters, results and turns at 8,000).
+- A pattern the plugin cannot parse fails closed: nothing is captured until it is
+  fixed, and the Duckwork log says why.
+- `capture=false` turns automatic capture off. What you store with
+  `cognee_remember` is never filtered or redacted.
+
+Tool traces need the HTTP transport (the default); the in-process SDK transport
+stores the turns only.
+
+### Writes the server never received
+
+A turn or trace that cannot reach the server because the connection could not
+be opened (refused while it boots, host unreachable, DNS failure) or because it
+answered 503 is queued in `~/.cognee-plugin/duckwork/pending-entries.json` (newest
+500, kept a week). The queue is replayed after the next successful write, when a
+session starts, and, for the ending session, before its session-end `improve()`.
+A write that timed out or was cut off mid-request is not replayed, since the
+server may already have stored it. While the circuit breaker is open, writes go
+straight to the queue.
+
+### What this plugin runs, stores and sends
+
+- **Runs**: in local mode, a cognee server (`uvicorn cognee.api.client:app`) on
+  `127.0.0.1:8011` from the installed `cognee` package, in
+  `~/.cognee-plugin/duckwork/`, with its output in
+  `~/.cognee-plugin/duckwork/server.log`; a detached exit watcher per Duckwork
+  process that closes the session if Duckwork cannot. The server gets its
+  settings from Duckwork (the active profile's secrets and environment), not from a
+  `.env` in the directory you start Duckwork from; the watcher gets the API key
+  from the plugin when it starts and reads no key file.
+- **Stores locally**: `~/.cognee/` (the shared cognee data, unless you move it),
+  and under `~/.cognee-plugin/duckwork/`: the write queue, dataset
+  switches, indexed code graphs, exit-watcher state and the update-check cache.
+  Plugin settings are in `$DUCKWORK_HOME/cognee.json`.
+- **Sends** to the cognee server it is configured for (local, or
+  `COGNEE_BASE_URL`): each turn and its tool calls (after the capture policy and
+  redaction), your prompt as the recall query, mirrored Duckwork memory writes,
+  what you ask it to remember, forget or index, and `improve()` at session end
+  and before each context compression. The server, not the plugin, calls your LLM and embedding
+  providers; what else the cognee server sends is governed by its own settings.
+  The plugin's only other request is the CLI's update check, which asks PyPI
+  for the latest release version at most once an hour.
+
+### Server settings and `.env` files
+
+cognee >= 1.6.2 loads the first `.env` it finds walking up from its working
+directory and lets it override the environment. The server this plugin starts
+therefore runs in `~/.cognee-plugin/duckwork/`, so a `.env` in the directory you
+start Duckwork from never reaches it.
+
+Keys and settings come through Duckwork only: `duckwork memory setup` stores
+`COGNEE_API_KEY`, `LLM_API_KEY` and `COGNEE_BASE_URL` in the profile's `.env`
+through Duckwork' own writer, and the plugin reads them back with Duckwork'
+`get_secret`, which picks the right profile when one gateway serves several.
+The plugin never opens a `.env` file itself. **`~/.cognee/.env`, the file the
+Claude Code, Codex and OpenClaw plugins share, is not read by this plugin:** if
+your keys live only there, run `duckwork memory setup` once, or put them in
+Duckwork' `.env`.
+
+## Code graph: index a repository
+
+Repositories are indexed explicitly (Duckwork is rarely launched inside a
+checkout, so there is no auto-indexing):
+
+```bash
+duckwork cognee index-repo ~/work/my-service            # local path
+duckwork cognee index-repo https://github.com/o/repo    # URL (the server clones it)
+duckwork cognee index-repo ~/work/my-service --wait 120 # block until queryable
+```
+
+Each repository gets its own `codebase-<repo>-<digest>` dataset. Indexing is
+deterministic — no LLM or embedding calls on either side (add semantic search
+over code entities with `--index-vectors`). Requires a cognee server >= 1.5.4.
+
+Once indexed, two things light up in a Duckwork session:
+
+- the **`cognee_code_search` tool** — exact structural answers: `query_facts`,
+  `explore`, `traverse`, `find_path`, `impact_analysis`, `delta`;
+- the **code recall lane** — a prompt naming an identifier-shaped token
+  (`process_payment`, `UserService`, `billing/api.py`) while Duckwork runs inside
+  an indexed repo gets code-graph facts injected alongside the memory block.
+  For repos indexed elsewhere, list their datasets in `COGNEE_CODE_DATASETS`.
+
+A locally indexed path reflects the working tree at index time; a URL-indexed
+repo reflects the last pushed commit. Re-run `index-repo` after significant
+changes — the server's content hashes make re-runs cheap.
+
+## Duckwork Commands
+
+When Cognee is the active memory provider:
+
+```bash
+duckwork cognee status [--check-updates]
+duckwork cognee version [--check-updates]
+duckwork cognee setup
+duckwork cognee config
+duckwork cognee install
+duckwork cognee index-repo <path-or-url> [--dataset D] [--index-vectors] [--wait SECONDS]
+duckwork cognee standup  [--since 24h] [--projects P,…] [--all-sessions] [--json]
+duckwork cognee digest   [--since 7d] [--max-learnings N] [--json]
+duckwork cognee timeline <topic> [--since 30d] [--json]
+```
+
+`standup`, `digest` and `timeline` print a recap of the sessions recorded into
+the configured dataset (`--dataset` picks another): what was worked on and left
+open, the lessons the server distilled into memory, or a dated timeline of one
+topic. Only sessions recorded into that dataset are listed, so on a shared server
+a recap never shows other users' conversations; `--all-sessions` adds other
+clients' sessions in it (Claude Code, Codex). The server cannot filter sessions
+by dataset, so a recap reads up to 2,500 of the newest sessions and says so when
+it had more. The same recaps are available to the agent as the `cognee_recap`
+tool.
+
+For pip installations, `status` and `version` include an update hint when PyPI has a newer release
+(checked at most once per `COGNEE_UPDATE_CHECK_INTERVAL`, never from a live
+session): update with `pip install -U cognee-integration-duckwork-agent` and then
+`cognee-duckwork-install`, since Duckwork runs the installed copy.
+
+For catalog installations, these commands show the running plugin version and
+direct you to `duckwork plugins update cognee`. They never query PyPI, even with
+`--check-updates`; that flag prints catalog update guidance rather than checking
+for a new catalog release. `duckwork plugins update cognee` checks the catalog.
+
+## Development
+
+```bash
+cd integrations/duckwork-agent
+uv sync --dev
+uv run pytest -q
+uv run ruff check .
+```

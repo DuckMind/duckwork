@@ -1,0 +1,100 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Portable file walk-in: recon -> review fan-out -> short summary",
+        "run_context seeds (ALL required): target_dir = absolute path to a readable directory (empty target starves the fan-out)",
+        "Missing seeds fail at spawn, not mid-run"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "3 nodes, 1 fan-out: recon -> review lanes -> summary",
+        "No model pins: runs wherever the seat defaults route",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "recon",
+      "id": "recon-review",
+      "to": "review",
+      "variant": "default"
+    },
+    {
+      "from": "review",
+      "id": "review-summary",
+      "to": "summary",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/portable-review.html",
+    "quality_profile": "standard",
+    "subtitle": "Portable file walk-in: recon -> two-way fan-out review -> three-line summary. run_context seeds (ALL required)",
+    "title": "portable-review"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "recon",
+      "label": "Recon",
+      "lane": "work",
+      "sublabel": "list the two most",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "review",
+      "label": "Review",
+      "lane": "work",
+      "tag": "fan-out N",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "summary",
+      "label": "Summary",
+      "lane": "work",
+      "sublabel": "merge the review",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 1
+    },
+    {
+      "fromCol": 2,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 2
+    }
+  ],
+  "schema_version": 2
+}

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"pushover_duckwork_plugin" = ["plugin.yaml"]
+
+[tool.setuptools.packages.find]
+include = ["pushover_duckwork_plugin*"]
+
+[project]
+name = "pushover-duckwork-plugin"
+version = "1.2.0"
+description = "Pushover platform plugin for Duckwork Agent — outbound push notifications"
+authors = [{name = "Benoit Beauchamp"}]
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = ["aiohttp>=3.9,<4"]
+
+# Optional: used by sync notification hooks (fire-and-forget).
+# Falls back to urllib if not available, so not strictly required.
+[project.optional-dependencies]
+notify = ["requests>=2.28,<3"]
+setup = ["prompt_toolkit>=3.0.0,<4", "wcwidth>=0.2.13,<1"]
+test = ["pytest>=7,<10", "pytest-asyncio>=0.23,<2", "flake8<8"]
+
+[project.entry-points."duckwork_agent.plugins"]
+pushover-duckwork-plugin = "pushover_duckwork_plugin"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

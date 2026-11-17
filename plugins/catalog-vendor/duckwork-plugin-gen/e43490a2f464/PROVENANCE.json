@@ -1,0 +1,425 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-plugin-gen",
+  "content_id": "e43490a2f464",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 815,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "07a130e2819bc77fb48c0a653180d569ee510de140d0ca4610d5741750902d96"
+    },
+    {
+      "bytes": 81,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "d2f5a3f927ea69b73823a6068c540d5030b63c902105a8530d5b9b5ebd242af5"
+    },
+    {
+      "bytes": 1063,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "1107358d78cc0fd30fff57debb6e67bcb56dce4651a1ac5cd612f5cb5d7ce4f5"
+    },
+    {
+      "bytes": 2992,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "e227bd8190ab2971a56ff2d64dce89249233ec8aed6be75f9e3f6f48faacd605"
+    },
+    {
+      "bytes": 717,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "de512132c1b5ab0b8663906be10e3d68d8d86e7178ff72ecb63938c2cfca02f9"
+    },
+    {
+      "bytes": 237,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "49d2a1c6af61d7ee6f0033f73e487b830a15398f74caa5a44527dabbcd3caf65"
+    },
+    {
+      "bytes": 48,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "0f792d73d83e29f0fb703a46db10647879b1415b0de84941d5c746117996609f"
+    },
+    {
+      "bytes": 5617,
+      "mode": "100644",
+      "path": "schemas.py",
+      "sha256": "757380caad17a925cd57e409d0eb4c0cb23a2d76742a0f73a4ef1f0ee262af61"
+    },
+    {
+      "bytes": 3944,
+      "mode": "100644",
+      "path": "skills/hermes-plugin-gen/SKILL.md",
+      "sha256": "fc300a9f357d0e7303f42cb6b3b7b853845279275d187275e2dee9c8d590af29"
+    },
+    {
+      "bytes": 1365,
+      "mode": "100644",
+      "path": "tests/test_plugin_gen.py",
+      "sha256": "5cf046088dfa406e288fb36ebb3a0182081f0899ec0802773083eb81f605a7b2"
+    },
+    {
+      "bytes": 22899,
+      "mode": "100644",
+      "path": "tools.py",
+      "sha256": "1671305f7002bf67317ac18168991741cc917ad0af778767411bcb2dc0aba6a3"
+    }
+  ],
+  "input_manifest_sha256": "e43490a2f464eea5c407c0ccb16ab9443a544a9b67e830f13610c77ceebcfcc2",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "1107358d78cc0fd30fff57debb6e67bcb56dce4651a1ac5cd612f5cb5d7ce4f5",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "schemas.py",
+      "skills/duckwork-plugin-gen/SKILL.md",
+      "tests/test_plugin_gen.py",
+      "tools.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/iruzen-dono/hermes-plugin-gen",
+    "sha": "75899f960d8358731255172add8232344c9084b8",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/iruzen-dono/hermes-plugin-gen",
+  "original_sha": "75899f960d8358731255172add8232344c9084b8",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "07a130e2819bc77fb48c0a653180d569ee510de140d0ca4610d5741750902d96",
+      "bytes": 815,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "d2f5a3f927ea69b73823a6068c540d5030b63c902105a8530d5b9b5ebd242af5",
+      "bytes": 81,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "1107358d78cc0fd30fff57debb6e67bcb56dce4651a1ac5cd612f5cb5d7ce4f5",
+      "bytes": 1063,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "67ea8217cae717c6731e91eb699d81de6388b39b9a055861a6f8288e27d1fa50",
+      "bytes": 3018,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "df69b0b782a2424302922bbfda7780790ebc155cfd381149009c6b2f51d60ecc",
+      "bytes": 725,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "04b797d64bd31f1fc3d092515afe44c8e4f39dcfcf23f49cc132ad054417b61d",
+      "bytes": 241,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "0f792d73d83e29f0fb703a46db10647879b1415b0de84941d5c746117996609f",
+      "bytes": 48,
+      "mode": "100644"
+    },
+    {
+      "path": "schemas.py",
+      "sha256": "1a3b7c0ad9f4a731c1461040b8555388b74f9cf96cc2953a8bcf4c62e75523fe",
+      "bytes": 5627,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/duckwork-plugin-gen/SKILL.md",
+      "sha256": "925bde9db1fbc7c49f0972888f4cfd2e40a96c751b02f80e8851ff73d695decb",
+      "bytes": 3966,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_gen.py",
+      "sha256": "2174db7fb9b55961f1f043b82e7dd69ebc4910d9c33d334f95586e9596b2948f",
+      "bytes": 1367,
+      "mode": "100644"
+    },
+    {
+      "path": "tools.py",
+      "sha256": "b353cd715274e601aaf1b426cf4a90684d31a80ed8d93f92c88063cd08ec0aa3",
+      "bytes": 22919,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "51e6ba6f7c148325474166adac00c8234131c8fab92fbf6f859545d4546b98ee",
+  "pin_verification": {
+    "archive_bytes": 11409,
+    "archive_sha256": "3b7c377a63f5b95ddbca9ab94439e0edafe939cd626fcae4d01f4158b8fdb4ce",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "75899f960d8358731255172add8232344c9084b8",
+    "verified_commit_marker": "75899f960d8358731255172add8232344c9084b8"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "9a4b9f6a86e100b1b463150639061179b245449f60db2fbe69cb505c15471515",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "07a130e2819bc77fb48c0a653180d569ee510de140d0ca4610d5741750902d96",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "07a130e2819bc77fb48c0a653180d569ee510de140d0ca4610d5741750902d96",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "07a130e2819bc77fb48c0a653180d569ee510de140d0ca4610d5741750902d96",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "07a130e2819bc77fb48c0a653180d569ee510de140d0ca4610d5741750902d96"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "d2f5a3f927ea69b73823a6068c540d5030b63c902105a8530d5b9b5ebd242af5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d2f5a3f927ea69b73823a6068c540d5030b63c902105a8530d5b9b5ebd242af5",
+        "source": ".gitignore",
+        "final_output_sha256": "d2f5a3f927ea69b73823a6068c540d5030b63c902105a8530d5b9b5ebd242af5",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "d2f5a3f927ea69b73823a6068c540d5030b63c902105a8530d5b9b5ebd242af5"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "1107358d78cc0fd30fff57debb6e67bcb56dce4651a1ac5cd612f5cb5d7ce4f5",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "1107358d78cc0fd30fff57debb6e67bcb56dce4651a1ac5cd612f5cb5d7ce4f5",
+        "source": "LICENSE",
+        "final_output_sha256": "1107358d78cc0fd30fff57debb6e67bcb56dce4651a1ac5cd612f5cb5d7ce4f5",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "1107358d78cc0fd30fff57debb6e67bcb56dce4651a1ac5cd612f5cb5d7ce4f5"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "e227bd8190ab2971a56ff2d64dce89249233ec8aed6be75f9e3f6f48faacd605",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a7c129fd4c47830bc90a58cac6ea1a3ebacfd9648152d88ca143b9aeb1b37c2f",
+        "source": "README.md",
+        "final_output_sha256": "67ea8217cae717c6731e91eb699d81de6388b39b9a055861a6f8288e27d1fa50",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "a7c129fd4c47830bc90a58cac6ea1a3ebacfd9648152d88ca143b9aeb1b37c2f"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "de512132c1b5ab0b8663906be10e3d68d8d86e7178ff72ecb63938c2cfca02f9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "df69b0b782a2424302922bbfda7780790ebc155cfd381149009c6b2f51d60ecc",
+        "source": "__init__.py",
+        "final_output_sha256": "df69b0b782a2424302922bbfda7780790ebc155cfd381149009c6b2f51d60ecc",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "df69b0b782a2424302922bbfda7780790ebc155cfd381149009c6b2f51d60ecc"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "49d2a1c6af61d7ee6f0033f73e487b830a15398f74caa5a44527dabbcd3caf65",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "04b797d64bd31f1fc3d092515afe44c8e4f39dcfcf23f49cc132ad054417b61d",
+        "source": "plugin.yaml",
+        "final_output_sha256": "04b797d64bd31f1fc3d092515afe44c8e4f39dcfcf23f49cc132ad054417b61d",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "04b797d64bd31f1fc3d092515afe44c8e4f39dcfcf23f49cc132ad054417b61d"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "0f792d73d83e29f0fb703a46db10647879b1415b0de84941d5c746117996609f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0f792d73d83e29f0fb703a46db10647879b1415b0de84941d5c746117996609f",
+        "source": "pyproject.toml",
+        "final_output_sha256": "0f792d73d83e29f0fb703a46db10647879b1415b0de84941d5c746117996609f",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "0f792d73d83e29f0fb703a46db10647879b1415b0de84941d5c746117996609f"
+      },
+      {
+        "destination": "schemas.py",
+        "input_sha256": "757380caad17a925cd57e409d0eb4c0cb23a2d76742a0f73a4ef1f0ee262af61",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1a3b7c0ad9f4a731c1461040b8555388b74f9cf96cc2953a8bcf4c62e75523fe",
+        "source": "schemas.py",
+        "final_output_sha256": "1a3b7c0ad9f4a731c1461040b8555388b74f9cf96cc2953a8bcf4c62e75523fe",
+        "cli_destination": "schemas.py",
+        "previous_staging_sha256": "1a3b7c0ad9f4a731c1461040b8555388b74f9cf96cc2953a8bcf4c62e75523fe"
+      },
+      {
+        "destination": "skills/duckwork-plugin-gen/SKILL.md",
+        "input_sha256": "fc300a9f357d0e7303f42cb6b3b7b853845279275d187275e2dee9c8d590af29",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "925bde9db1fbc7c49f0972888f4cfd2e40a96c751b02f80e8851ff73d695decb",
+        "source": "skills/hermes-plugin-gen/SKILL.md",
+        "final_output_sha256": "925bde9db1fbc7c49f0972888f4cfd2e40a96c751b02f80e8851ff73d695decb",
+        "cli_destination": "skills/duckwork-plugin-gen/SKILL.md",
+        "previous_staging_sha256": "925bde9db1fbc7c49f0972888f4cfd2e40a96c751b02f80e8851ff73d695decb"
+      },
+      {
+        "destination": "tests/test_plugin_gen.py",
+        "input_sha256": "5cf046088dfa406e288fb36ebb3a0182081f0899ec0802773083eb81f605a7b2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2174db7fb9b55961f1f043b82e7dd69ebc4910d9c33d334f95586e9596b2948f",
+        "source": "tests/test_plugin_gen.py",
+        "final_output_sha256": "2174db7fb9b55961f1f043b82e7dd69ebc4910d9c33d334f95586e9596b2948f",
+        "cli_destination": "tests/test_plugin_gen.py",
+        "previous_staging_sha256": "2174db7fb9b55961f1f043b82e7dd69ebc4910d9c33d334f95586e9596b2948f"
+      },
+      {
+        "destination": "tools.py",
+        "input_sha256": "1671305f7002bf67317ac18168991741cc917ad0af778767411bcb2dc0aba6a3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b353cd715274e601aaf1b426cf4a90684d31a80ed8d93f92c88063cd08ec0aa3",
+        "source": "tools.py",
+        "final_output_sha256": "b353cd715274e601aaf1b426cf4a90684d31a80ed8d93f92c88063cd08ec0aa3",
+        "cli_destination": "tools.py",
+        "previous_staging_sha256": "b353cd715274e601aaf1b426cf4a90684d31a80ed8d93f92c88063cd08ec0aa3"
+      }
+    ],
+    "manifest_sha256": "2fc4b43b41249d2919697d09e3716a66875c9d72f9055b0d0963965c06118125",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "schemas.py": "schemas.py",
+    "skills/hermes-plugin-gen/SKILL.md": "skills/hermes-plugin-gen/SKILL.md",
+    "tests/test_plugin_gen.py": "tests/test_plugin_gen.py",
+    "tools.py": "tools.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-plugin-gen",
+    "python_files_compiled": 4,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-plugin-gen",
+  "catalog_file": "src/plugin-catalog/duckwork-plugin-gen.yaml",
+  "identity": {
+    "catalog_id": "hermes-plugin-gen",
+    "canonical_slug": "duckwork-plugin-gen",
+    "original_manifest_name": "hermes-plugin-gen",
+    "rebranded_manifest_name": "duckwork-plugin-gen",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "0131055f5f19084780f303f5f404f09f8dbb3ee4e547c72edfbe65178751f398",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "a7c129fd4c47830bc90a58cac6ea1a3ebacfd9648152d88ca143b9aeb1b37c2f",
+          "after_sha256": "67ea8217cae717c6731e91eb699d81de6388b39b9a055861a6f8288e27d1fa50",
+          "before_bytes": 3034,
+          "after_bytes": 3018,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "plugin.yaml": [
+      {
+        "value": "author: Iruzen & Hermes Agent",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ],
+    "skills/duckwork-plugin-gen/SKILL.md": [
+      {
+        "value": "author: Iruzen & Hermes Agent",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ],
+    "tools.py": [
+      {
+        "value": "        author = args.get(\"author\", \"Hermes Agent\")",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

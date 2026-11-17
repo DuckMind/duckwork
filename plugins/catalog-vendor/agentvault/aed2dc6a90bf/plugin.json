@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agentvault",
+  "version": "0.1.1",
+  "description": "Find prior coding conversations and retrieve exact session revisions from Agent Vault.",
+  "author": {
+    "name": "Synnada"
+  },
+  "homepage": "https://agentvault.run",
+  "repository": "https://github.com/synnada-ai/agentvault-plugins",
+  "license": "MIT",
+  "extensions": {
+    "com.fordex.duckwork": {
+      "config_schema": {
+        "vault_token": {
+          "type": "secret",
+          "env": "VAULT_MCP_TOKEN",
+          "label": "Vault binding token",
+          "description": "The private token issued by Agent Vault for this client."
+        }
+      }
+    }
+  }
+}

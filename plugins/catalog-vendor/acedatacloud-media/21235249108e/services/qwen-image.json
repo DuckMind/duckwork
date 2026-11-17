@@ -1,0 +1,81 @@
+{
+  "service": "qwen-image",
+  "title": "Ace Data Cloud Qwen Image",
+  "kind": "image",
+  "description": "Qwen Image 3.0 text-to-image generation through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_qwen_image",
+  "generate_path": "/qwen-image/images",
+  "task_path": "/qwen-image/tasks",
+  "defaults": {
+    "model": "qwen-image-3.0",
+    "n": 1,
+    "size": "1024*1024"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "prompt"
+    ],
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 18000
+      },
+      "n": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 4
+      },
+      "watermark": {
+        "type": "boolean"
+      },
+      "prompt_extend": {
+        "type": "boolean"
+      },
+      "model": {
+        "type": "string",
+        "enum": [
+          "qwen-image-3.0",
+          "qwen-image-3.0-pro"
+        ],
+        "maxLength": 4000
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "1024*1024",
+          "1280*720",
+          "720*1280"
+        ],
+        "maxLength": 4000
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_qwen_image_generate",
+  "tools": [
+    "acedatacloud_qwen_image_generate",
+    "acedatacloud_qwen_image_task"
+  ],
+  "toolset": "acedatacloud-qwen-image"
+}

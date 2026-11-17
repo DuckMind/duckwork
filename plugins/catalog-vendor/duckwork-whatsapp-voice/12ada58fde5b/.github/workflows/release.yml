@@ -1,0 +1,71 @@
+# Builds the sidecar from source for each platform on a version tag, attaches the binaries to the
+# GitHub release with SHA256SUMS, and records a GitHub build attestation for each binary, so
+# `duckwork whatsapp-voice install` (and anyone else) can verify where a binary came from:
+#   gh attestation verify <binary> --repo ashwanthbalakrishnan5/duckwork-whatsapp-voice
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: gh release view "$GITHUB_REF_NAME" || gh release create "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  build:
+    needs: create
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            asset: duckwork-wa-voice_linux_amd64
+          - runner: ubuntu-24.04-arm
+            asset: duckwork-wa-voice_linux_arm64
+          - runner: macos-latest
+            asset: duckwork-wa-voice_darwin_arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        working-directory: sidecar
+        run: |
+          cargo build --release --locked
+          cp target/release/duckwork-wa-voice "../${{ matrix.asset }}"
+      # Attestation talks to Sigstore's public log, which times out now and then: retry once.
+      - id: attest
+        uses: actions/attest-build-provenance@v2
+        continue-on-error: true
+        with:
+          subject-path: ${{ matrix.asset }}
+      - if: steps.attest.outcome == 'failure'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ matrix.asset }}
+      - run: gh release upload "$GITHUB_REF_NAME" "${{ matrix.asset }}" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  checksums:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir dist && cd dist
+          gh release download "$GITHUB_REF_NAME" --pattern 'duckwork-wa-voice_*'
+          sha256sum duckwork-wa-voice_* > SHA256SUMS
+          gh release upload "$GITHUB_REF_NAME" SHA256SUMS --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,3133 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "health-data",
+  "content_id": "fa8330da56f1",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 607,
+      "mode": "100644",
+      "path": ".githooks/pre-commit",
+      "sha256": "46b1aa564d1b2aabb22067f2539e0eae0791b7bb8db7744209961eef35ca3db3"
+    },
+    {
+      "bytes": 755,
+      "mode": "100755",
+      "path": ".githooks/pre-push",
+      "sha256": "f20048f0403c1affb315eec1afbea7f8273b7fa7798b7c4c62952aac2f43ce45"
+    },
+    {
+      "bytes": 3493,
+      "mode": "100644",
+      "path": ".github/workflows/eval.yml",
+      "sha256": "9f3fd0fe25bcad3c698f7a1bffe1cc16b0ca374a4989ec01b59c44fa6ec0108d"
+    },
+    {
+      "bytes": 530,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "8f1ca8dcf2021e0c53716f98e9cb9f038f3b0ef881f928f756fa68645fdcd3c4"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": ".gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2374,
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "947ef4149e9412889b018506abd988fb73dc987f3ab765acc009c35ce52558ab"
+    },
+    {
+      "bytes": 1072,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "4a94d8d5c6867404f46e85266cd78e97ad4a5aeb0c3fc9b7247a383c9cf0b86d"
+    },
+    {
+      "bytes": 971,
+      "mode": "100644",
+      "path": "Makefile",
+      "sha256": "93100f0afcc1d2b91c47e5892a4f983bfa3ca1064bc96bbfcca910db567c98b0"
+    },
+    {
+      "bytes": 23305,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "805ac6b11891087546558de4c09805a77969b127985ea38c31ea866e9d6cf4b2"
+    },
+    {
+      "bytes": 2048,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "05542bde7af09a076db1bca342a9cd9f3b63098dbfc247291c94750764106ad9"
+    },
+    {
+      "bytes": 14694,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "290d460b6b42e517fb4f45026de10d124f251218c9004956ca65697260b46eb2"
+    },
+    {
+      "bytes": 3515,
+      "mode": "100644",
+      "path": "analysis_registry.py",
+      "sha256": "a6e352cb6bc76fca369a342354fca9bef43ef440f0bf1d38db0378de9884df7c"
+    },
+    {
+      "bytes": 25357,
+      "mode": "100644",
+      "path": "analysis_tools.py",
+      "sha256": "baa80e9b3837107290d4b03743c0fd59f4bacda4cfe967711dbab7aa62969ab0"
+    },
+    {
+      "bytes": 46268,
+      "mode": "100644",
+      "path": "commands.py",
+      "sha256": "63f377b83dba1605d84e8a56d01d74fb64f03bfaa67cab0b99f261455061f96a"
+    },
+    {
+      "bytes": 32205,
+      "mode": "100644",
+      "path": "context.py",
+      "sha256": "407a906f0d28fef16da42556b57f9ca4fa8dba0ea416737d25bd607ecf9794ee"
+    },
+    {
+      "bytes": 10891,
+      "mode": "100644",
+      "path": "feature_engineering.py",
+      "sha256": "8fb215931bdc948173a5693995807fc98af66d8f72331d3875266669032e23cf"
+    },
+    {
+      "bytes": 2741,
+      "mode": "100644",
+      "path": "feature_registry.py",
+      "sha256": "8cbede3d19e9ec7b04b30b8a73ebd7022f1634ab723a2592d0c0cfb0c7863262"
+    },
+    {
+      "bytes": 2269,
+      "mode": "100644",
+      "path": "food.py",
+      "sha256": "62eb23be554406dc4a99c02ea74627098991d2e27c057868b66e955d37240863"
+    },
+    {
+      "bytes": 33865,
+      "mode": "100644",
+      "path": "google_health.py",
+      "sha256": "8bd0d3e4c677cfe280be659c44ce5b7a34b9c9dbcca865ba0f0e953b7c8a75d8"
+    },
+    {
+      "bytes": 15433,
+      "mode": "100644",
+      "path": "google_health_auth.py",
+      "sha256": "0d287114493cb15bb761bf7900e8ebcd7af150fb5974318f9a75308140b73b65"
+    },
+    {
+      "bytes": 63,
+      "mode": "100644",
+      "path": "health_data_assets/__init__.py",
+      "sha256": "75e335cd40e642cb7f748ecc3cff59ae13a5460c392a05f3c9bc4857631bf132"
+    },
+    {
+      "bytes": 379,
+      "mode": "100644",
+      "path": "health_data_assets/plugin.yaml",
+      "sha256": "f0be2a8d5acde6b797b160694ece92a3c0ad51868a1aec0c6628d74e8fe41d25"
+    },
+    {
+      "bytes": 5529,
+      "mode": "100644",
+      "path": "health_data_assets/skills/health-coach/SKILL.md",
+      "sha256": "040f94b5d57c6e37c069634d19156d3ebe09bccc65fcf92e3dc8830415da380e"
+    },
+    {
+      "bytes": 4570,
+      "mode": "100644",
+      "path": "health_data_assets/skills/health-visuals/SKILL.md",
+      "sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7"
+    },
+    {
+      "bytes": 7286,
+      "mode": "100644",
+      "path": "health_data_assets/skills/health-visuals/references/ansi_color_implementation_plan.md",
+      "sha256": "6b38aa91c7d27089d66be803c0a1d19db414f238b8b6e7279c462ff7f626c070"
+    },
+    {
+      "bytes": 1973,
+      "mode": "100644",
+      "path": "health_data_assets/skills/health-visuals/references/ansi_visual_patterns.md",
+      "sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e"
+    },
+    {
+      "bytes": 2379,
+      "mode": "100644",
+      "path": "health_data_assets/skills/health-visuals/references/cli_visual_patterns.md",
+      "sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4"
+    },
+    {
+      "bytes": 2858,
+      "mode": "100644",
+      "path": "health_data_assets/skills/health-visuals/references/terminal_ascii_patterns.md",
+      "sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083"
+    },
+    {
+      "bytes": 3788,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/README.md",
+      "sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f"
+    },
+    {
+      "bytes": 11292,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/ansi_preview_gallery.txt",
+      "sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0"
+    },
+    {
+      "bytes": 452,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/attendee_effect_board.txt",
+      "sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30"
+    },
+    {
+      "bytes": 541,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/baseline_drift_board.txt",
+      "sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468"
+    },
+    {
+      "bytes": 672,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/calendar_load_skyline.txt",
+      "sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873"
+    },
+    {
+      "bytes": 391,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/chronotype_planner.txt",
+      "sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca"
+    },
+    {
+      "bytes": 335,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/coverage_trust_ledger.txt",
+      "sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108"
+    },
+    {
+      "bytes": 224,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/day_shape_barcode.txt",
+      "sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161"
+    },
+    {
+      "bytes": 705,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/meeting_stress_leaderboard.txt",
+      "sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119"
+    },
+    {
+      "bytes": 304,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/recovery_gate.txt",
+      "sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd"
+    },
+    {
+      "bytes": 576,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/sleep_debt_heatstrip.txt",
+      "sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467"
+    },
+    {
+      "bytes": 702,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/strain_readiness_ribbon.txt",
+      "sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06"
+    },
+    {
+      "bytes": 434,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/stress_waterfall.txt",
+      "sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19"
+    },
+    {
+      "bytes": 644,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/training_mix_board.txt",
+      "sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34"
+    },
+    {
+      "bytes": 300,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/workload_outcome_matrix.txt",
+      "sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9"
+    },
+    {
+      "bytes": 535,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/workout_recovery_lane.txt",
+      "sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924"
+    },
+    {
+      "bytes": 586,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/mockups/workout_streak_ladder.txt",
+      "sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7"
+    },
+    {
+      "bytes": 1187,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/prompts/health_visual_brief.md",
+      "sha256": "7b92712faeb979b7d4b02d3ef3d88a7b759ffdb6585e15bc0bb8e92181dfc000"
+    },
+    {
+      "bytes": 919,
+      "mode": "100644",
+      "path": "health_data_assets/visuals/cli/prompts/interpretation_guardrails.md",
+      "sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21"
+    },
+    {
+      "bytes": 16208,
+      "mode": "100644",
+      "path": "health_data_entry.py",
+      "sha256": "eb2923ad4aee1a0e7ef03876671a2190e2e8068b32209a4430a04c01907d87ec"
+    },
+    {
+      "bytes": 307,
+      "mode": "100644",
+      "path": "health_eval/__init__.py",
+      "sha256": "f15f9fc811b0e9e2185c2af9bb0a35191b2e6c9f936c40f79e708d2ae8c37044"
+    },
+    {
+      "bytes": 8175,
+      "mode": "100644",
+      "path": "health_eval/build_analytics_fixture.py",
+      "sha256": "bc14dd3b3585c9d24592e1f6db0d66506adebaa1343367786fe3730b000be1fb"
+    },
+    {
+      "bytes": 12419,
+      "mode": "100644",
+      "path": "health_eval/build_fixture.py",
+      "sha256": "a960f0d29b485424e63bfcbe34db82c338ab66599bf9bca131bc9bcf27475abb"
+    },
+    {
+      "bytes": 2058,
+      "mode": "100644",
+      "path": "health_eval/checker.py",
+      "sha256": "0feb42002d6fa02b339ce1491dcb47f3be41292bcee16968b3bac0f143323777"
+    },
+    {
+      "bytes": 4375,
+      "mode": "100644",
+      "path": "health_eval/export_ground_truth.py",
+      "sha256": "3a775dc0fd0295a81f1f0ec753d59e54a0ae47ac6469fab97e61ef37700db242"
+    },
+    {
+      "bytes": 532,
+      "mode": "100644",
+      "path": "health_eval/fake_google_api.py",
+      "sha256": "94edb64e19b03c2e2b5a97c86f2e146880eb84e746b61f75a68d8cae666445a2"
+    },
+    {
+      "bytes": 670,
+      "mode": "100644",
+      "path": "health_eval/fake_oura_server.py",
+      "sha256": "2ed40433094fb8fc03ea168f72c27f37e8e0f6ef3d5c88ebc6a0f0d75a5f53c5"
+    },
+    {
+      "bytes": 3715,
+      "mode": "100644",
+      "path": "health_eval/judge.py",
+      "sha256": "603494e77be9836641e8f833053460cb0587790da3852b353fab6d410d837336"
+    },
+    {
+      "bytes": 436,
+      "mode": "100644",
+      "path": "health_eval/judge_prompt.txt",
+      "sha256": "ab3c7fab66202f76e4ecab285db2355d89e662934031b92ee726b04c2e42d3d7"
+    },
+    {
+      "bytes": 1996,
+      "mode": "100644",
+      "path": "health_eval/plan_c_cases.py",
+      "sha256": "1bfa43ae0416ddb5f7fa036f0b373f4e9d83c753b96b4c2cbda250bf3cfc8a01"
+    },
+    {
+      "bytes": 4396,
+      "mode": "100644",
+      "path": "health_eval/reference_templates.py",
+      "sha256": "d39ad50f48f4a3ba970ea9dcb489685521ea7664660301c60d786d82c858ee18"
+    },
+    {
+      "bytes": 1212,
+      "mode": "100644",
+      "path": "health_eval/render_references.py",
+      "sha256": "543c56dbde65ee39551b57f27802c7a62a649f4e4f41144f7b81227222c8ab95"
+    },
+    {
+      "bytes": 26601,
+      "mode": "100644",
+      "path": "health_eval/run.py",
+      "sha256": "cc538dadc3dfee3706de39c2dfe0ff01c9327db95fe3f86d8f408979bdcafafe"
+    },
+    {
+      "bytes": 9039,
+      "mode": "100644",
+      "path": "health_eval/test_analytics_platform_lane1.py",
+      "sha256": "242252eef8c03d62cd2da5920b2ddf493186d25735f561524c3a342fa1c0fcbd"
+    },
+    {
+      "bytes": 8066,
+      "mode": "100644",
+      "path": "health_eval/test_lane1.py",
+      "sha256": "01a6c3b72721da02f702e7fdc2ada614854588d178bfadc80c7248159298b7d2"
+    },
+    {
+      "bytes": 1275,
+      "mode": "100644",
+      "path": "health_eval/test_plan_c.py",
+      "sha256": "119db6eac2951380b2171bb582049b432feead57ceb415bce8abcf9c008f1dae"
+    },
+    {
+      "bytes": 25620,
+      "mode": "100644",
+      "path": "normalize.py",
+      "sha256": "bd171f764164fb1e1a3304694ab63156d387748491d59494be81ceffab51c282"
+    },
+    {
+      "bytes": 16409,
+      "mode": "100644",
+      "path": "oauth_token.py",
+      "sha256": "a595830dbb1f7e90602fe3c8dac873689b22142bd9b9c951be23b4713075c823"
+    },
+    {
+      "bytes": 15694,
+      "mode": "100644",
+      "path": "onboarding.py",
+      "sha256": "28708645b5c755b832a4d9361f5510ba792e1a2f78017858ee7e57e06e2e5ee6"
+    },
+    {
+      "bytes": 46908,
+      "mode": "100644",
+      "path": "oura.py",
+      "sha256": "8b29fe949f34382adad1ee73b61765864cd9f0e7ddb2a808246fc0e4bf1f3ab8"
+    },
+    {
+      "bytes": 379,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "f0be2a8d5acde6b797b160694ece92a3c0ad51868a1aec0c6628d74e8fe41d25"
+    },
+    {
+      "bytes": 1904,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "31b512a0b0735c72134af29c3fa1c26ba0153512cf268009e84ea28fcd9c1fd1"
+    },
+    {
+      "bytes": 14418,
+      "mode": "100644",
+      "path": "query.py",
+      "sha256": "7a0a14cbda9fb2840a2c29a7e1b4d6f62488ba8154599960145a933485fcce28"
+    },
+    {
+      "bytes": 832,
+      "mode": "100755",
+      "path": "scripts/create_public_snapshot.sh",
+      "sha256": "6f24c1b16d1db603db5292fcf8eacb6d2710a5517f594e5e96d17a0699295c56"
+    },
+    {
+      "bytes": 1145,
+      "mode": "100755",
+      "path": "scripts/install_git_hooks.sh",
+      "sha256": "504e72d6d41cfe651ca0f8f9fcc3d9fc1c82ed1d3727605e25d77767a38986d2"
+    },
+    {
+      "bytes": 1507,
+      "mode": "100644",
+      "path": "scripts/install_local.py",
+      "sha256": "54a60c3e1d9e8fb4fc33eba1ec923b4ed070cc6936052e9e237c82bd5930d50f"
+    },
+    {
+      "bytes": 5625,
+      "mode": "100644",
+      "path": "scripts/release_safety.py",
+      "sha256": "0ac21cc55c0b6fb94a765b89b7fb25724da116c90aef490b43d9d7476aa32025"
+    },
+    {
+      "bytes": 8235,
+      "mode": "100644",
+      "path": "scripts/secret_scan.py",
+      "sha256": "20227823468392dd3e4356144100962d6d3d5eda15e7a99ce484e7a047b3b224"
+    },
+    {
+      "bytes": 3531,
+      "mode": "100644",
+      "path": "scripts/verify_local_install.py",
+      "sha256": "29664f22a18265423bb7e4068f54d9a24006e7f9948b941fb269791edcad327e"
+    },
+    {
+      "bytes": 15264,
+      "mode": "100644",
+      "path": "semantic_layer.py",
+      "sha256": "6db93a327ca702a2500854b52a83677a89fd6c2c416bb1778ffd2d3beb6b5f47"
+    },
+    {
+      "bytes": 5883,
+      "mode": "100644",
+      "path": "skills/health-coach/SKILL.md",
+      "sha256": "aee2c102f16636b2cb6981fef6858a3c94179ab933805b007079c5c33f6b7dcc"
+    },
+    {
+      "bytes": 4570,
+      "mode": "100644",
+      "path": "skills/health-visuals/SKILL.md",
+      "sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7"
+    },
+    {
+      "bytes": 7286,
+      "mode": "100644",
+      "path": "skills/health-visuals/references/ansi_color_implementation_plan.md",
+      "sha256": "6b38aa91c7d27089d66be803c0a1d19db414f238b8b6e7279c462ff7f626c070"
+    },
+    {
+      "bytes": 1973,
+      "mode": "100644",
+      "path": "skills/health-visuals/references/ansi_visual_patterns.md",
+      "sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e"
+    },
+    {
+      "bytes": 2379,
+      "mode": "100644",
+      "path": "skills/health-visuals/references/cli_visual_patterns.md",
+      "sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4"
+    },
+    {
+      "bytes": 2858,
+      "mode": "100644",
+      "path": "skills/health-visuals/references/terminal_ascii_patterns.md",
+      "sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083"
+    },
+    {
+      "bytes": 29225,
+      "mode": "100644",
+      "path": "store.py",
+      "sha256": "91887898a9e8f2a609c985fe3c8c5b2d1b3a3be5f122f2826b0a918eb8a50e91"
+    },
+    {
+      "bytes": 19137,
+      "mode": "100644",
+      "path": "sync_control.py",
+      "sha256": "c8611707ee6ad962968effae46563f4fae9e20e16cd89d4a9a4dfb3dbe2a7b32"
+    },
+    {
+      "bytes": 5759,
+      "mode": "100644",
+      "path": "tests/health_fixtures.py",
+      "sha256": "a9773fa8138b8742228315a94b469d05e99eadc35cc20c75b39d173b50684081"
+    },
+    {
+      "bytes": 9500,
+      "mode": "100644",
+      "path": "tests/test_analysis_tools.py",
+      "sha256": "066b1609cfb7bd8a52a01787615321240a22c76ef746b503512fd5ea5997f564"
+    },
+    {
+      "bytes": 3929,
+      "mode": "100644",
+      "path": "tests/test_canonical_model.py",
+      "sha256": "59027507bd2b0210cf764b8325a7e5327f66301314169d7771ed9e240cf19dca"
+    },
+    {
+      "bytes": 35850,
+      "mode": "100644",
+      "path": "tests/test_commands.py",
+      "sha256": "6343218a6b90b7acd326426521d30b690fbd3bf255a3f84ec1259847df823c5c"
+    },
+    {
+      "bytes": 20922,
+      "mode": "100644",
+      "path": "tests/test_context_commands.py",
+      "sha256": "e5eccec9c3335506860a329cb9d33cffa151e465277b6350042b8fe5721b5ef0"
+    },
+    {
+      "bytes": 3427,
+      "mode": "100644",
+      "path": "tests/test_feature_queries.py",
+      "sha256": "af6b119404862b88b5cda72164bea54da111d6fc4d791a28c983e98d22efd385"
+    },
+    {
+      "bytes": 3230,
+      "mode": "100644",
+      "path": "tests/test_git_hooks.py",
+      "sha256": "549e4e1cb840fe7a94979e240b4e1dce9e44556e2849539875745ad83a7fba61"
+    },
+    {
+      "bytes": 7803,
+      "mode": "100644",
+      "path": "tests/test_google_health_auth.py",
+      "sha256": "70966a270929d63ce172b649be45f97e2ebe0c1114093744e43ce4d855ac8ee9"
+    },
+    {
+      "bytes": 32946,
+      "mode": "100644",
+      "path": "tests/test_google_health_connector.py",
+      "sha256": "87d32de5eec4d2352f5443ce684494adbeaf853672316eb6e9e1a72fe6615ac3"
+    },
+    {
+      "bytes": 26860,
+      "mode": "100644",
+      "path": "tests/test_health_observation_schema.py",
+      "sha256": "c8e1b80cbe4d64e3d2ff80e4ecabf44c23b6b09914c0ace7fdbcad098e6c4774"
+    },
+    {
+      "bytes": 7902,
+      "mode": "100644",
+      "path": "tests/test_oauth_token.py",
+      "sha256": "9b398ed19225d3cb80e6fe47424fc723cf234b706e060756b3271ee6ef14056d"
+    },
+    {
+      "bytes": 36557,
+      "mode": "100644",
+      "path": "tests/test_oura.py",
+      "sha256": "76a06d7599b03b2dbfea255625aea09ceb6355aeb082386e5523cd2f58ed9118"
+    },
+    {
+      "bytes": 11094,
+      "mode": "100644",
+      "path": "tests/test_query_eval.py",
+      "sha256": "85101ab019a463e5fc51265500d4f18ab343cd86a6d9f11132d933ec33c2a8e3"
+    },
+    {
+      "bytes": 9319,
+      "mode": "100644",
+      "path": "tests/test_register_contract.py",
+      "sha256": "e6979cacf8bedc1390dd45ebaff84baef0fba7f19fba64190e29918769d8eb75"
+    },
+    {
+      "bytes": 2096,
+      "mode": "100644",
+      "path": "tests/test_release_safety.py",
+      "sha256": "bcf04843aef73fa06b0f3d05d872ba73e5aa8f2772a25bdd23dca94c683ccc17"
+    },
+    {
+      "bytes": 3527,
+      "mode": "100644",
+      "path": "tests/test_secret_scan.py",
+      "sha256": "2f1d91e72ecd9c7a45a5f3204818b4fae60029163696cf4cdafc2ddd38085c49"
+    },
+    {
+      "bytes": 4806,
+      "mode": "100644",
+      "path": "tests/test_store_query_food.py",
+      "sha256": "6944463b41a54ea10a6e9e2cdec1efa0db5fb26c210efac064ae0b9d36e44c7a"
+    },
+    {
+      "bytes": 4615,
+      "mode": "100644",
+      "path": "tests/test_visual_catalog.py",
+      "sha256": "d9a1ed467750dfd06da00807fbcc7bc3e452c5bd25c9401d22f9f81b40a64f15"
+    },
+    {
+      "bytes": 3788,
+      "mode": "100644",
+      "path": "visuals/cli/README.md",
+      "sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f"
+    },
+    {
+      "bytes": 11292,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/ansi_preview_gallery.txt",
+      "sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0"
+    },
+    {
+      "bytes": 452,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/attendee_effect_board.txt",
+      "sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30"
+    },
+    {
+      "bytes": 541,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/baseline_drift_board.txt",
+      "sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468"
+    },
+    {
+      "bytes": 672,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/calendar_load_skyline.txt",
+      "sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873"
+    },
+    {
+      "bytes": 391,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/chronotype_planner.txt",
+      "sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca"
+    },
+    {
+      "bytes": 335,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/coverage_trust_ledger.txt",
+      "sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108"
+    },
+    {
+      "bytes": 224,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/day_shape_barcode.txt",
+      "sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161"
+    },
+    {
+      "bytes": 705,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/meeting_stress_leaderboard.txt",
+      "sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119"
+    },
+    {
+      "bytes": 304,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/recovery_gate.txt",
+      "sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd"
+    },
+    {
+      "bytes": 576,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/sleep_debt_heatstrip.txt",
+      "sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467"
+    },
+    {
+      "bytes": 702,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/strain_readiness_ribbon.txt",
+      "sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06"
+    },
+    {
+      "bytes": 434,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/stress_waterfall.txt",
+      "sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19"
+    },
+    {
+      "bytes": 644,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/training_mix_board.txt",
+      "sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34"
+    },
+    {
+      "bytes": 300,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/workload_outcome_matrix.txt",
+      "sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9"
+    },
+    {
+      "bytes": 535,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/workout_recovery_lane.txt",
+      "sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924"
+    },
+    {
+      "bytes": 586,
+      "mode": "100644",
+      "path": "visuals/cli/mockups/workout_streak_ladder.txt",
+      "sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7"
+    },
+    {
+      "bytes": 1187,
+      "mode": "100644",
+      "path": "visuals/cli/prompts/health_visual_brief.md",
+      "sha256": "7b92712faeb979b7d4b02d3ef3d88a7b759ffdb6585e15bc0bb8e92181dfc000"
+    },
+    {
+      "bytes": 919,
+      "mode": "100644",
+      "path": "visuals/cli/prompts/interpretation_guardrails.md",
+      "sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21"
+    }
+  ],
+  "input_manifest_sha256": "fa8330da56f1b1d650dd8c4c57aa27eb3fe7a3634c66246ab9af4872b17289bd",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "4a94d8d5c6867404f46e85266cd78e97ad4a5aeb0c3fc9b7247a383c9cf0b86d",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".githooks/pre-commit",
+      ".githooks/pre-push",
+      "CONTRIBUTING.md",
+      "README.md",
+      "SECURITY.md",
+      "__init__.py",
+      "commands.py",
+      "context.py",
+      "google_health.py",
+      "google_health_auth.py",
+      "health_data_assets/plugin.yaml",
+      "health_data_assets/skills/health-coach/SKILL.md",
+      "health_data_assets/skills/health-visuals/references/ansi_color_implementation_plan.md",
+      "health_data_assets/visuals/cli/prompts/health_visual_brief.md",
+      "health_data_entry.py",
+      "health_eval/run.py",
+      "health_eval/test_analytics_platform_lane1.py",
+      "health_eval/test_lane1.py",
+      "onboarding.py",
+      "oura.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "scripts/create_public_snapshot.sh",
+      "scripts/install_git_hooks.sh",
+      "scripts/install_local.py",
+      "scripts/release_safety.py",
+      "scripts/verify_local_install.py",
+      "skills/health-coach/SKILL.md",
+      "skills/health-visuals/references/ansi_color_implementation_plan.md",
+      "store.py",
+      "tests/test_analysis_tools.py",
+      "tests/test_canonical_model.py",
+      "tests/test_commands.py",
+      "tests/test_context_commands.py",
+      "tests/test_feature_queries.py",
+      "tests/test_git_hooks.py",
+      "tests/test_google_health_auth.py",
+      "tests/test_google_health_connector.py",
+      "tests/test_health_observation_schema.py",
+      "tests/test_oauth_token.py",
+      "tests/test_oura.py",
+      "tests/test_query_eval.py",
+      "tests/test_register_contract.py",
+      "tests/test_release_safety.py",
+      "tests/test_store_query_food.py",
+      "visuals/cli/prompts/health_visual_brief.md"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Infinite-Labs-AI/hermes-health-apollo",
+    "sha": "9f2db670a2669c9f3401fecb3b547ed52bcb2c3b",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/Infinite-Labs-AI/hermes-health-apollo",
+  "original_sha": "9f2db670a2669c9f3401fecb3b547ed52bcb2c3b",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".githooks/pre-commit",
+      "sha256": "aa900e141da6212c2c4bd4c88034c6926729a15cfd96dce83db52049afd0e2f4",
+      "bytes": 609,
+      "mode": "100644"
+    },
+    {
+      "path": ".githooks/pre-push",
+      "sha256": "b5febb7ce26fb9f698612048d62617064fd56d11155ee5e831cfc649b12284e6",
+      "bytes": 757,
+      "mode": "100755"
+    },
+    {
+      "path": ".github/workflows/eval.yml",
+      "sha256": "9f3fd0fe25bcad3c698f7a1bffe1cc16b0ca374a4989ec01b59c44fa6ec0108d",
+      "bytes": 3493,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "8f1ca8dcf2021e0c53716f98e9cb9f038f3b0ef881f928f756fa68645fdcd3c4",
+      "bytes": 530,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "9c64c622352c5b3602e680304dda0c5f1067c50f74f5274470db4dc7d03bdde7",
+      "bytes": 2382,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "4a94d8d5c6867404f46e85266cd78e97ad4a5aeb0c3fc9b7247a383c9cf0b86d",
+      "bytes": 1072,
+      "mode": "100644"
+    },
+    {
+      "path": "Makefile",
+      "sha256": "93100f0afcc1d2b91c47e5892a4f983bfa3ca1064bc96bbfcca910db567c98b0",
+      "bytes": 971,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "3fa03e2b2f31297bc0c0a9951304f402dec9d9dac99465599838da493ad19357",
+      "bytes": 23515,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "5996a5444bfa7c47abcf19ed414f3ba57d7ca2e34d787910857f88e1927f360d",
+      "bytes": 2054,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "44ba11e5845c25fc5e398550232600ff59a34c9d9d26709396ea4be049c7c5d2",
+      "bytes": 14698,
+      "mode": "100644"
+    },
+    {
+      "path": "analysis_registry.py",
+      "sha256": "a6e352cb6bc76fca369a342354fca9bef43ef440f0bf1d38db0378de9884df7c",
+      "bytes": 3515,
+      "mode": "100644"
+    },
+    {
+      "path": "analysis_tools.py",
+      "sha256": "baa80e9b3837107290d4b03743c0fd59f4bacda4cfe967711dbab7aa62969ab0",
+      "bytes": 25357,
+      "mode": "100644"
+    },
+    {
+      "path": "commands.py",
+      "sha256": "a6217749fd8a7e514e5118d4657f2f41fc776c463e6dc17b7cdadb54e1c4d8af",
+      "bytes": 46342,
+      "mode": "100644"
+    },
+    {
+      "path": "context.py",
+      "sha256": "61adc1ceb6b330d493e99540d797e75344719ef3fa66daee4a80a93963a073d9",
+      "bytes": 32225,
+      "mode": "100644"
+    },
+    {
+      "path": "feature_engineering.py",
+      "sha256": "8fb215931bdc948173a5693995807fc98af66d8f72331d3875266669032e23cf",
+      "bytes": 10891,
+      "mode": "100644"
+    },
+    {
+      "path": "feature_registry.py",
+      "sha256": "8cbede3d19e9ec7b04b30b8a73ebd7022f1634ab723a2592d0c0cfb0c7863262",
+      "bytes": 2741,
+      "mode": "100644"
+    },
+    {
+      "path": "food.py",
+      "sha256": "62eb23be554406dc4a99c02ea74627098991d2e27c057868b66e955d37240863",
+      "bytes": 2269,
+      "mode": "100644"
+    },
+    {
+      "path": "google_health.py",
+      "sha256": "6316d66f879421b2ec8e5df7bbbf55d4be2b672630516e2015431475ab01d82d",
+      "bytes": 33867,
+      "mode": "100644"
+    },
+    {
+      "path": "google_health_auth.py",
+      "sha256": "5c8301417d04e834cedeac0015182f81ff6ccf04655e8508f4b40856eb9958c0",
+      "bytes": 15465,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/__init__.py",
+      "sha256": "75e335cd40e642cb7f748ecc3cff59ae13a5460c392a05f3c9bc4857631bf132",
+      "bytes": 63,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/plugin.yaml",
+      "sha256": "181b85a33724c837106563ab9923837c149a62ed6bff0edf7eac00180b6d876a",
+      "bytes": 381,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/skills/health-coach/SKILL.md",
+      "sha256": "a609ef031df62f20372d90ec9720d1567cd5c9e89c47867a4dfed1e1826dcdcb",
+      "bytes": 5539,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/skills/health-visuals/SKILL.md",
+      "sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7",
+      "bytes": 4570,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/skills/health-visuals/references/ansi_color_implementation_plan.md",
+      "sha256": "433753c6fe9bfe9bad8eded82d9f3f0d87766305cdc5c8b085892cc6dfbe9c2c",
+      "bytes": 7288,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/skills/health-visuals/references/ansi_visual_patterns.md",
+      "sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e",
+      "bytes": 1973,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/skills/health-visuals/references/cli_visual_patterns.md",
+      "sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4",
+      "bytes": 2379,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/skills/health-visuals/references/terminal_ascii_patterns.md",
+      "sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083",
+      "bytes": 2858,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/README.md",
+      "sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f",
+      "bytes": 3788,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/ansi_preview_gallery.txt",
+      "sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0",
+      "bytes": 11292,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/attendee_effect_board.txt",
+      "sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30",
+      "bytes": 452,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/baseline_drift_board.txt",
+      "sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468",
+      "bytes": 541,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/calendar_load_skyline.txt",
+      "sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873",
+      "bytes": 672,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/chronotype_planner.txt",
+      "sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca",
+      "bytes": 391,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/coverage_trust_ledger.txt",
+      "sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108",
+      "bytes": 335,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/day_shape_barcode.txt",
+      "sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161",
+      "bytes": 224,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/meeting_stress_leaderboard.txt",
+      "sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119",
+      "bytes": 705,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/recovery_gate.txt",
+      "sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd",
+      "bytes": 304,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/sleep_debt_heatstrip.txt",
+      "sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467",
+      "bytes": 576,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/strain_readiness_ribbon.txt",
+      "sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06",
+      "bytes": 702,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/stress_waterfall.txt",
+      "sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19",
+      "bytes": 434,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/training_mix_board.txt",
+      "sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34",
+      "bytes": 644,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/workload_outcome_matrix.txt",
+      "sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9",
+      "bytes": 300,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/workout_recovery_lane.txt",
+      "sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924",
+      "bytes": 535,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/mockups/workout_streak_ladder.txt",
+      "sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7",
+      "bytes": 586,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/prompts/health_visual_brief.md",
+      "sha256": "805e8311d47ce90c031a3381edaa33532b9775be41cc51e81eeb4a8fea730499",
+      "bytes": 1189,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_assets/visuals/cli/prompts/interpretation_guardrails.md",
+      "sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21",
+      "bytes": 919,
+      "mode": "100644"
+    },
+    {
+      "path": "health_data_entry.py",
+      "sha256": "54ad5e44b7b0ccf35058f29b56a55321cf2a7128c877f4e0f7a771ebd13beab8",
+      "bytes": 16226,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/__init__.py",
+      "sha256": "f15f9fc811b0e9e2185c2af9bb0a35191b2e6c9f936c40f79e708d2ae8c37044",
+      "bytes": 307,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/build_analytics_fixture.py",
+      "sha256": "bc14dd3b3585c9d24592e1f6db0d66506adebaa1343367786fe3730b000be1fb",
+      "bytes": 8175,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/build_fixture.py",
+      "sha256": "a960f0d29b485424e63bfcbe34db82c338ab66599bf9bca131bc9bcf27475abb",
+      "bytes": 12419,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/checker.py",
+      "sha256": "0feb42002d6fa02b339ce1491dcb47f3be41292bcee16968b3bac0f143323777",
+      "bytes": 2058,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/export_ground_truth.py",
+      "sha256": "3a775dc0fd0295a81f1f0ec753d59e54a0ae47ac6469fab97e61ef37700db242",
+      "bytes": 4375,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/fake_google_api.py",
+      "sha256": "94edb64e19b03c2e2b5a97c86f2e146880eb84e746b61f75a68d8cae666445a2",
+      "bytes": 532,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/fake_oura_server.py",
+      "sha256": "2ed40433094fb8fc03ea168f72c27f37e8e0f6ef3d5c88ebc6a0f0d75a5f53c5",
+      "bytes": 670,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/judge.py",
+      "sha256": "603494e77be9836641e8f833053460cb0587790da3852b353fab6d410d837336",
+      "bytes": 3715,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/judge_prompt.txt",
+      "sha256": "ab3c7fab66202f76e4ecab285db2355d89e662934031b92ee726b04c2e42d3d7",
+      "bytes": 436,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/plan_c_cases.py",
+      "sha256": "1bfa43ae0416ddb5f7fa036f0b373f4e9d83c753b96b4c2cbda250bf3cfc8a01",
+      "bytes": 1996,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/reference_templates.py",
+      "sha256": "d39ad50f48f4a3ba970ea9dcb489685521ea7664660301c60d786d82c858ee18",
+      "bytes": 4396,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/render_references.py",
+      "sha256": "543c56dbde65ee39551b57f27802c7a62a649f4e4f41144f7b81227222c8ab95",
+      "bytes": 1212,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/run.py",
+      "sha256": "1567550352c931d226851f85f7d98ce5ab887078bfe76b66f416af549093c229",
+      "bytes": 26627,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/test_analytics_platform_lane1.py",
+      "sha256": "892b8bac45af63a19779183f8ee4e32e4b0addc876d0ef4defb51425c00d9481",
+      "bytes": 9047,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/test_lane1.py",
+      "sha256": "13c9d9e667af9b904508773b3c3e4739a4554a3563757cd6ef1a7afc9ee110e4",
+      "bytes": 8078,
+      "mode": "100644"
+    },
+    {
+      "path": "health_eval/test_plan_c.py",
+      "sha256": "119db6eac2951380b2171bb582049b432feead57ceb415bce8abcf9c008f1dae",
+      "bytes": 1275,
+      "mode": "100644"
+    },
+    {
+      "path": "normalize.py",
+      "sha256": "bd171f764164fb1e1a3304694ab63156d387748491d59494be81ceffab51c282",
+      "bytes": 25620,
+      "mode": "100644"
+    },
+    {
+      "path": "oauth_token.py",
+      "sha256": "a595830dbb1f7e90602fe3c8dac873689b22142bd9b9c951be23b4713075c823",
+      "bytes": 16409,
+      "mode": "100644"
+    },
+    {
+      "path": "onboarding.py",
+      "sha256": "8c1d64186b990d20b2a2f701704e8bb233bba317a0ed71937bc90e9382ab44dc",
+      "bytes": 15704,
+      "mode": "100644"
+    },
+    {
+      "path": "oura.py",
+      "sha256": "7b44f713b94188258e608d67e7d1326ff560b4ab732cd1f1d18934fdc9705de9",
+      "bytes": 46950,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "181b85a33724c837106563ab9923837c149a62ed6bff0edf7eac00180b6d876a",
+      "bytes": 381,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "21d88af7c2e9dc0f9179dd80716fa20bf91cedc4522a709109cb18028f3a7a2b",
+      "bytes": 1914,
+      "mode": "100644"
+    },
+    {
+      "path": "query.py",
+      "sha256": "7a0a14cbda9fb2840a2c29a7e1b4d6f62488ba8154599960145a933485fcce28",
+      "bytes": 14418,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/create_public_snapshot.sh",
+      "sha256": "9351bf49315df1115dd58e679a2daad6b84a9c29835281cabb583e623fae6516",
+      "bytes": 834,
+      "mode": "100755"
+    },
+    {
+      "path": "scripts/install_git_hooks.sh",
+      "sha256": "123883be0e63ed3928f2dfd25f6187e024b52211d516360736a2500270089252",
+      "bytes": 1147,
+      "mode": "100755"
+    },
+    {
+      "path": "scripts/install_local.py",
+      "sha256": "07217788efaa43bd948f7b472966e1c259b84c8821495e590042ea9c40f1ed0c",
+      "bytes": 1517,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/release_safety.py",
+      "sha256": "0d9f1ae1b4e39e85b37e54c5948c6e18ae6bbf78a2378ace99d05af4f7c90a96",
+      "bytes": 5629,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/secret_scan.py",
+      "sha256": "20227823468392dd3e4356144100962d6d3d5eda15e7a99ce484e7a047b3b224",
+      "bytes": 8235,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/verify_local_install.py",
+      "sha256": "8332e18cb1fc9f33b9e86f2394373384ad3833fe438abb78c85754b5c0a73cb2",
+      "bytes": 3539,
+      "mode": "100644"
+    },
+    {
+      "path": "semantic_layer.py",
+      "sha256": "6db93a327ca702a2500854b52a83677a89fd6c2c416bb1778ffd2d3beb6b5f47",
+      "bytes": 15264,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-coach/SKILL.md",
+      "sha256": "b063da8de1b9b911b184d3c2b5f427d770d8bfb1d766fe5e05efb582efba7136",
+      "bytes": 5893,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-visuals/SKILL.md",
+      "sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7",
+      "bytes": 4570,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-visuals/references/ansi_color_implementation_plan.md",
+      "sha256": "433753c6fe9bfe9bad8eded82d9f3f0d87766305cdc5c8b085892cc6dfbe9c2c",
+      "bytes": 7288,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-visuals/references/ansi_visual_patterns.md",
+      "sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e",
+      "bytes": 1973,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-visuals/references/cli_visual_patterns.md",
+      "sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4",
+      "bytes": 2379,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-visuals/references/terminal_ascii_patterns.md",
+      "sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083",
+      "bytes": 2858,
+      "mode": "100644"
+    },
+    {
+      "path": "store.py",
+      "sha256": "d5edfd66f4f7b56f5f58bcc6a66f33be8ff2795c45d6132dc069fd54c70da155",
+      "bytes": 29239,
+      "mode": "100644"
+    },
+    {
+      "path": "sync_control.py",
+      "sha256": "c8611707ee6ad962968effae46563f4fae9e20e16cd89d4a9a4dfb3dbe2a7b32",
+      "bytes": 19137,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/health_fixtures.py",
+      "sha256": "a9773fa8138b8742228315a94b469d05e99eadc35cc20c75b39d173b50684081",
+      "bytes": 5759,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_analysis_tools.py",
+      "sha256": "ef112f6c3217df1adbb7e2c7949d558cbbae43e5cb907264891618410b9f6fcf",
+      "bytes": 9508,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_canonical_model.py",
+      "sha256": "23e9daba9c05caaf6833a17e2c42ed710bc303979a18e10e50c74123d97d15db",
+      "bytes": 3937,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_commands.py",
+      "sha256": "7da6b8fc055d3ea0207dbd53015de02f5dd19fa9f64514edbb638406be553900",
+      "bytes": 36004,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_context_commands.py",
+      "sha256": "8f604176ab5cd9216faa8c153a8667aa7661fdc86b985c6a3f971f985ce03074",
+      "bytes": 20950,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_feature_queries.py",
+      "sha256": "7aa5ca22c897a03323d478931536ce42e9bd6ba654f57a1e29f7266c9619c95b",
+      "bytes": 3435,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_git_hooks.py",
+      "sha256": "7696af6eb3e00c58f59a44ab1c658449337a06352165b6e48dc7e8b308382edd",
+      "bytes": 3232,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_google_health_auth.py",
+      "sha256": "fa434265fc0052159b665e0656c70e0d7b7f711af68af73f640eb9b734b41fae",
+      "bytes": 7819,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_google_health_connector.py",
+      "sha256": "92001c844064b814aaa320c2edf6c681918e105631509470103730a89bfd238a",
+      "bytes": 32954,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_health_observation_schema.py",
+      "sha256": "03473b87551ba8b2bf0505e138db42d1a70818c8d8496934e896eabe9e86a1ad",
+      "bytes": 26868,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_oauth_token.py",
+      "sha256": "029d62c825d294167c34d250ab31abab1e69a4616573a07fc9ef478eec8ab2c6",
+      "bytes": 7922,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_oura.py",
+      "sha256": "2b8f4879e17549eabf81fb957e9bced8d9446fde7a67077f1c8babd0a21c1adf",
+      "bytes": 36571,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_query_eval.py",
+      "sha256": "5da2e86911bf3e85d25f7ed07d55835fa2b07718f50def24eba62f05d7503dad",
+      "bytes": 11102,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_register_contract.py",
+      "sha256": "f5d58ca26ca516573a57a7e071df746850846f0e26c33160be410c94cf51fcc4",
+      "bytes": 9347,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_release_safety.py",
+      "sha256": "6724f2ef00c6b5f07f5ff25fea34f46eb7099f362c2409d99f240ca8b6e6a210",
+      "bytes": 2098,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_secret_scan.py",
+      "sha256": "2f1d91e72ecd9c7a45a5f3204818b4fae60029163696cf4cdafc2ddd38085c49",
+      "bytes": 3527,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_store_query_food.py",
+      "sha256": "b78084689255f892d519a3be0c0685580c9e8b553f157e18084d3715f8f91ed8",
+      "bytes": 4814,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_visual_catalog.py",
+      "sha256": "d9a1ed467750dfd06da00807fbcc7bc3e452c5bd25c9401d22f9f81b40a64f15",
+      "bytes": 4615,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/README.md",
+      "sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f",
+      "bytes": 3788,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/ansi_preview_gallery.txt",
+      "sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0",
+      "bytes": 11292,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/attendee_effect_board.txt",
+      "sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30",
+      "bytes": 452,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/baseline_drift_board.txt",
+      "sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468",
+      "bytes": 541,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/calendar_load_skyline.txt",
+      "sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873",
+      "bytes": 672,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/chronotype_planner.txt",
+      "sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca",
+      "bytes": 391,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/coverage_trust_ledger.txt",
+      "sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108",
+      "bytes": 335,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/day_shape_barcode.txt",
+      "sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161",
+      "bytes": 224,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/meeting_stress_leaderboard.txt",
+      "sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119",
+      "bytes": 705,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/recovery_gate.txt",
+      "sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd",
+      "bytes": 304,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/sleep_debt_heatstrip.txt",
+      "sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467",
+      "bytes": 576,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/strain_readiness_ribbon.txt",
+      "sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06",
+      "bytes": 702,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/stress_waterfall.txt",
+      "sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19",
+      "bytes": 434,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/training_mix_board.txt",
+      "sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34",
+      "bytes": 644,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/workload_outcome_matrix.txt",
+      "sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9",
+      "bytes": 300,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/workout_recovery_lane.txt",
+      "sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924",
+      "bytes": 535,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/mockups/workout_streak_ladder.txt",
+      "sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7",
+      "bytes": 586,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/prompts/health_visual_brief.md",
+      "sha256": "805e8311d47ce90c031a3381edaa33532b9775be41cc51e81eeb4a8fea730499",
+      "bytes": 1189,
+      "mode": "100644"
+    },
+    {
+      "path": "visuals/cli/prompts/interpretation_guardrails.md",
+      "sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21",
+      "bytes": 919,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "3dc3feb7528a4740e3ec2e4d3fb64313389d6187559179a068fc8b43defeb00c",
+  "pin_verification": {
+    "archive_bytes": 196265,
+    "archive_sha256": "c6d35e1fe02f4fb391d9e5a52818dba9d2df6f352b6fd3d6150c21cef69aad04",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "9f2db670a2669c9f3401fecb3b547ed52bcb2c3b",
+    "verified_commit_marker": "9f2db670a2669c9f3401fecb3b547ed52bcb2c3b"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "f9168dc97a9d25022a4d27d09d66dad2ef950a6f68a2c42c82330d21bc887fdd",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".githooks/pre-commit",
+        "input_sha256": "46b1aa564d1b2aabb22067f2539e0eae0791b7bb8db7744209961eef35ca3db3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "aa900e141da6212c2c4bd4c88034c6926729a15cfd96dce83db52049afd0e2f4",
+        "source": ".githooks/pre-commit",
+        "final_output_sha256": "aa900e141da6212c2c4bd4c88034c6926729a15cfd96dce83db52049afd0e2f4",
+        "cli_destination": ".githooks/pre-commit",
+        "previous_staging_sha256": "aa900e141da6212c2c4bd4c88034c6926729a15cfd96dce83db52049afd0e2f4"
+      },
+      {
+        "destination": ".githooks/pre-push",
+        "input_sha256": "f20048f0403c1affb315eec1afbea7f8273b7fa7798b7c4c62952aac2f43ce45",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "b5febb7ce26fb9f698612048d62617064fd56d11155ee5e831cfc649b12284e6",
+        "source": ".githooks/pre-push",
+        "final_output_sha256": "b5febb7ce26fb9f698612048d62617064fd56d11155ee5e831cfc649b12284e6",
+        "cli_destination": ".githooks/pre-push",
+        "previous_staging_sha256": "b5febb7ce26fb9f698612048d62617064fd56d11155ee5e831cfc649b12284e6"
+      },
+      {
+        "destination": ".github/workflows/eval.yml",
+        "input_sha256": "9f3fd0fe25bcad3c698f7a1bffe1cc16b0ca374a4989ec01b59c44fa6ec0108d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9f3fd0fe25bcad3c698f7a1bffe1cc16b0ca374a4989ec01b59c44fa6ec0108d",
+        "source": ".github/workflows/eval.yml",
+        "final_output_sha256": "9f3fd0fe25bcad3c698f7a1bffe1cc16b0ca374a4989ec01b59c44fa6ec0108d",
+        "cli_destination": ".github/workflows/eval.yml",
+        "previous_staging_sha256": "9f3fd0fe25bcad3c698f7a1bffe1cc16b0ca374a4989ec01b59c44fa6ec0108d"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "8f1ca8dcf2021e0c53716f98e9cb9f038f3b0ef881f928f756fa68645fdcd3c4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8f1ca8dcf2021e0c53716f98e9cb9f038f3b0ef881f928f756fa68645fdcd3c4",
+        "source": ".gitignore",
+        "final_output_sha256": "8f1ca8dcf2021e0c53716f98e9cb9f038f3b0ef881f928f756fa68645fdcd3c4",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "8f1ca8dcf2021e0c53716f98e9cb9f038f3b0ef881f928f756fa68645fdcd3c4"
+      },
+      {
+        "destination": ".gitkeep",
+        "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": ".gitkeep",
+        "final_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cli_destination": ".gitkeep",
+        "previous_staging_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "destination": "CONTRIBUTING.md",
+        "input_sha256": "947ef4149e9412889b018506abd988fb73dc987f3ab765acc009c35ce52558ab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9c64c622352c5b3602e680304dda0c5f1067c50f74f5274470db4dc7d03bdde7",
+        "source": "CONTRIBUTING.md",
+        "final_output_sha256": "9c64c622352c5b3602e680304dda0c5f1067c50f74f5274470db4dc7d03bdde7",
+        "cli_destination": "CONTRIBUTING.md",
+        "previous_staging_sha256": "9c64c622352c5b3602e680304dda0c5f1067c50f74f5274470db4dc7d03bdde7"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "4a94d8d5c6867404f46e85266cd78e97ad4a5aeb0c3fc9b7247a383c9cf0b86d",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "4a94d8d5c6867404f46e85266cd78e97ad4a5aeb0c3fc9b7247a383c9cf0b86d",
+        "source": "LICENSE",
+        "final_output_sha256": "4a94d8d5c6867404f46e85266cd78e97ad4a5aeb0c3fc9b7247a383c9cf0b86d",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "4a94d8d5c6867404f46e85266cd78e97ad4a5aeb0c3fc9b7247a383c9cf0b86d"
+      },
+      {
+        "destination": "Makefile",
+        "input_sha256": "93100f0afcc1d2b91c47e5892a4f983bfa3ca1064bc96bbfcca910db567c98b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "93100f0afcc1d2b91c47e5892a4f983bfa3ca1064bc96bbfcca910db567c98b0",
+        "source": "Makefile",
+        "final_output_sha256": "93100f0afcc1d2b91c47e5892a4f983bfa3ca1064bc96bbfcca910db567c98b0",
+        "cli_destination": "Makefile",
+        "previous_staging_sha256": "93100f0afcc1d2b91c47e5892a4f983bfa3ca1064bc96bbfcca910db567c98b0"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "805ac6b11891087546558de4c09805a77969b127985ea38c31ea866e9d6cf4b2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8e97ec5ec25e3f991fcbba76f778d21668d3a3219c39d69e6ee362a1cbe7ea6b",
+        "source": "README.md",
+        "final_output_sha256": "3fa03e2b2f31297bc0c0a9951304f402dec9d9dac99465599838da493ad19357",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "8e97ec5ec25e3f991fcbba76f778d21668d3a3219c39d69e6ee362a1cbe7ea6b"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "05542bde7af09a076db1bca342a9cd9f3b63098dbfc247291c94750764106ad9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5996a5444bfa7c47abcf19ed414f3ba57d7ca2e34d787910857f88e1927f360d",
+        "source": "SECURITY.md",
+        "final_output_sha256": "5996a5444bfa7c47abcf19ed414f3ba57d7ca2e34d787910857f88e1927f360d",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "5996a5444bfa7c47abcf19ed414f3ba57d7ca2e34d787910857f88e1927f360d"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "290d460b6b42e517fb4f45026de10d124f251218c9004956ca65697260b46eb2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "44ba11e5845c25fc5e398550232600ff59a34c9d9d26709396ea4be049c7c5d2",
+        "source": "__init__.py",
+        "final_output_sha256": "44ba11e5845c25fc5e398550232600ff59a34c9d9d26709396ea4be049c7c5d2",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "44ba11e5845c25fc5e398550232600ff59a34c9d9d26709396ea4be049c7c5d2"
+      },
+      {
+        "destination": "analysis_registry.py",
+        "input_sha256": "a6e352cb6bc76fca369a342354fca9bef43ef440f0bf1d38db0378de9884df7c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a6e352cb6bc76fca369a342354fca9bef43ef440f0bf1d38db0378de9884df7c",
+        "source": "analysis_registry.py",
+        "final_output_sha256": "a6e352cb6bc76fca369a342354fca9bef43ef440f0bf1d38db0378de9884df7c",
+        "cli_destination": "analysis_registry.py",
+        "previous_staging_sha256": "a6e352cb6bc76fca369a342354fca9bef43ef440f0bf1d38db0378de9884df7c"
+      },
+      {
+        "destination": "analysis_tools.py",
+        "input_sha256": "baa80e9b3837107290d4b03743c0fd59f4bacda4cfe967711dbab7aa62969ab0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "baa80e9b3837107290d4b03743c0fd59f4bacda4cfe967711dbab7aa62969ab0",
+        "source": "analysis_tools.py",
+        "final_output_sha256": "baa80e9b3837107290d4b03743c0fd59f4bacda4cfe967711dbab7aa62969ab0",
+        "cli_destination": "analysis_tools.py",
+        "previous_staging_sha256": "baa80e9b3837107290d4b03743c0fd59f4bacda4cfe967711dbab7aa62969ab0"
+      },
+      {
+        "destination": "commands.py",
+        "input_sha256": "63f377b83dba1605d84e8a56d01d74fb64f03bfaa67cab0b99f261455061f96a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a6217749fd8a7e514e5118d4657f2f41fc776c463e6dc17b7cdadb54e1c4d8af",
+        "source": "commands.py",
+        "final_output_sha256": "a6217749fd8a7e514e5118d4657f2f41fc776c463e6dc17b7cdadb54e1c4d8af",
+        "cli_destination": "commands.py",
+        "previous_staging_sha256": "a6217749fd8a7e514e5118d4657f2f41fc776c463e6dc17b7cdadb54e1c4d8af"
+      },
+      {
+        "destination": "context.py",
+        "input_sha256": "407a906f0d28fef16da42556b57f9ca4fa8dba0ea416737d25bd607ecf9794ee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "61adc1ceb6b330d493e99540d797e75344719ef3fa66daee4a80a93963a073d9",
+        "source": "context.py",
+        "final_output_sha256": "61adc1ceb6b330d493e99540d797e75344719ef3fa66daee4a80a93963a073d9",
+        "cli_destination": "context.py",
+        "previous_staging_sha256": "61adc1ceb6b330d493e99540d797e75344719ef3fa66daee4a80a93963a073d9"
+      },
+      {
+        "destination": "feature_engineering.py",
+        "input_sha256": "8fb215931bdc948173a5693995807fc98af66d8f72331d3875266669032e23cf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8fb215931bdc948173a5693995807fc98af66d8f72331d3875266669032e23cf",
+        "source": "feature_engineering.py",
+        "final_output_sha256": "8fb215931bdc948173a5693995807fc98af66d8f72331d3875266669032e23cf",
+        "cli_destination": "feature_engineering.py",
+        "previous_staging_sha256": "8fb215931bdc948173a5693995807fc98af66d8f72331d3875266669032e23cf"
+      },
+      {
+        "destination": "feature_registry.py",
+        "input_sha256": "8cbede3d19e9ec7b04b30b8a73ebd7022f1634ab723a2592d0c0cfb0c7863262",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8cbede3d19e9ec7b04b30b8a73ebd7022f1634ab723a2592d0c0cfb0c7863262",
+        "source": "feature_registry.py",
+        "final_output_sha256": "8cbede3d19e9ec7b04b30b8a73ebd7022f1634ab723a2592d0c0cfb0c7863262",
+        "cli_destination": "feature_registry.py",
+        "previous_staging_sha256": "8cbede3d19e9ec7b04b30b8a73ebd7022f1634ab723a2592d0c0cfb0c7863262"
+      },
+      {
+        "destination": "food.py",
+        "input_sha256": "62eb23be554406dc4a99c02ea74627098991d2e27c057868b66e955d37240863",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "62eb23be554406dc4a99c02ea74627098991d2e27c057868b66e955d37240863",
+        "source": "food.py",
+        "final_output_sha256": "62eb23be554406dc4a99c02ea74627098991d2e27c057868b66e955d37240863",
+        "cli_destination": "food.py",
+        "previous_staging_sha256": "62eb23be554406dc4a99c02ea74627098991d2e27c057868b66e955d37240863"
+      },
+      {
+        "destination": "google_health.py",
+        "input_sha256": "8bd0d3e4c677cfe280be659c44ce5b7a34b9c9dbcca865ba0f0e953b7c8a75d8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6316d66f879421b2ec8e5df7bbbf55d4be2b672630516e2015431475ab01d82d",
+        "source": "google_health.py",
+        "final_output_sha256": "6316d66f879421b2ec8e5df7bbbf55d4be2b672630516e2015431475ab01d82d",
+        "cli_destination": "google_health.py",
+        "previous_staging_sha256": "6316d66f879421b2ec8e5df7bbbf55d4be2b672630516e2015431475ab01d82d"
+      },
+      {
+        "destination": "google_health_auth.py",
+        "input_sha256": "0d287114493cb15bb761bf7900e8ebcd7af150fb5974318f9a75308140b73b65",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5c8301417d04e834cedeac0015182f81ff6ccf04655e8508f4b40856eb9958c0",
+        "source": "google_health_auth.py",
+        "final_output_sha256": "5c8301417d04e834cedeac0015182f81ff6ccf04655e8508f4b40856eb9958c0",
+        "cli_destination": "google_health_auth.py",
+        "previous_staging_sha256": "5c8301417d04e834cedeac0015182f81ff6ccf04655e8508f4b40856eb9958c0"
+      },
+      {
+        "destination": "health_data_assets/__init__.py",
+        "input_sha256": "75e335cd40e642cb7f748ecc3cff59ae13a5460c392a05f3c9bc4857631bf132",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "75e335cd40e642cb7f748ecc3cff59ae13a5460c392a05f3c9bc4857631bf132",
+        "source": "health_data_assets/__init__.py",
+        "final_output_sha256": "75e335cd40e642cb7f748ecc3cff59ae13a5460c392a05f3c9bc4857631bf132",
+        "cli_destination": "health_data_assets/__init__.py",
+        "previous_staging_sha256": "75e335cd40e642cb7f748ecc3cff59ae13a5460c392a05f3c9bc4857631bf132"
+      },
+      {
+        "destination": "health_data_assets/plugin.yaml",
+        "input_sha256": "f0be2a8d5acde6b797b160694ece92a3c0ad51868a1aec0c6628d74e8fe41d25",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "181b85a33724c837106563ab9923837c149a62ed6bff0edf7eac00180b6d876a",
+        "source": "health_data_assets/plugin.yaml",
+        "final_output_sha256": "181b85a33724c837106563ab9923837c149a62ed6bff0edf7eac00180b6d876a",
+        "cli_destination": "health_data_assets/plugin.yaml",
+        "previous_staging_sha256": "181b85a33724c837106563ab9923837c149a62ed6bff0edf7eac00180b6d876a"
+      },
+      {
+        "destination": "health_data_assets/skills/health-coach/SKILL.md",
+        "input_sha256": "040f94b5d57c6e37c069634d19156d3ebe09bccc65fcf92e3dc8830415da380e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a609ef031df62f20372d90ec9720d1567cd5c9e89c47867a4dfed1e1826dcdcb",
+        "source": "health_data_assets/skills/health-coach/SKILL.md",
+        "final_output_sha256": "a609ef031df62f20372d90ec9720d1567cd5c9e89c47867a4dfed1e1826dcdcb",
+        "cli_destination": "health_data_assets/skills/health-coach/SKILL.md",
+        "previous_staging_sha256": "a609ef031df62f20372d90ec9720d1567cd5c9e89c47867a4dfed1e1826dcdcb"
+      },
+      {
+        "destination": "health_data_assets/skills/health-visuals/SKILL.md",
+        "input_sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7",
+        "source": "health_data_assets/skills/health-visuals/SKILL.md",
+        "final_output_sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7",
+        "cli_destination": "health_data_assets/skills/health-visuals/SKILL.md",
+        "previous_staging_sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7"
+      },
+      {
+        "destination": "health_data_assets/skills/health-visuals/references/ansi_color_implementation_plan.md",
+        "input_sha256": "6b38aa91c7d27089d66be803c0a1d19db414f238b8b6e7279c462ff7f626c070",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "433753c6fe9bfe9bad8eded82d9f3f0d87766305cdc5c8b085892cc6dfbe9c2c",
+        "source": "health_data_assets/skills/health-visuals/references/ansi_color_implementation_plan.md",
+        "final_output_sha256": "433753c6fe9bfe9bad8eded82d9f3f0d87766305cdc5c8b085892cc6dfbe9c2c",
+        "cli_destination": "health_data_assets/skills/health-visuals/references/ansi_color_implementation_plan.md",
+        "previous_staging_sha256": "433753c6fe9bfe9bad8eded82d9f3f0d87766305cdc5c8b085892cc6dfbe9c2c"
+      },
+      {
+        "destination": "health_data_assets/skills/health-visuals/references/ansi_visual_patterns.md",
+        "input_sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e",
+        "source": "health_data_assets/skills/health-visuals/references/ansi_visual_patterns.md",
+        "final_output_sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e",
+        "cli_destination": "health_data_assets/skills/health-visuals/references/ansi_visual_patterns.md",
+        "previous_staging_sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e"
+      },
+      {
+        "destination": "health_data_assets/skills/health-visuals/references/cli_visual_patterns.md",
+        "input_sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4",
+        "source": "health_data_assets/skills/health-visuals/references/cli_visual_patterns.md",
+        "final_output_sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4",
+        "cli_destination": "health_data_assets/skills/health-visuals/references/cli_visual_patterns.md",
+        "previous_staging_sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4"
+      },
+      {
+        "destination": "health_data_assets/skills/health-visuals/references/terminal_ascii_patterns.md",
+        "input_sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083",
+        "source": "health_data_assets/skills/health-visuals/references/terminal_ascii_patterns.md",
+        "final_output_sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083",
+        "cli_destination": "health_data_assets/skills/health-visuals/references/terminal_ascii_patterns.md",
+        "previous_staging_sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/README.md",
+        "input_sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f",
+        "source": "health_data_assets/visuals/cli/README.md",
+        "final_output_sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f",
+        "cli_destination": "health_data_assets/visuals/cli/README.md",
+        "previous_staging_sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/ansi_preview_gallery.txt",
+        "input_sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0",
+        "source": "health_data_assets/visuals/cli/mockups/ansi_preview_gallery.txt",
+        "final_output_sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/ansi_preview_gallery.txt",
+        "previous_staging_sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/attendee_effect_board.txt",
+        "input_sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30",
+        "source": "health_data_assets/visuals/cli/mockups/attendee_effect_board.txt",
+        "final_output_sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/attendee_effect_board.txt",
+        "previous_staging_sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/baseline_drift_board.txt",
+        "input_sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468",
+        "source": "health_data_assets/visuals/cli/mockups/baseline_drift_board.txt",
+        "final_output_sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/baseline_drift_board.txt",
+        "previous_staging_sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/calendar_load_skyline.txt",
+        "input_sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873",
+        "source": "health_data_assets/visuals/cli/mockups/calendar_load_skyline.txt",
+        "final_output_sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/calendar_load_skyline.txt",
+        "previous_staging_sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/chronotype_planner.txt",
+        "input_sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca",
+        "source": "health_data_assets/visuals/cli/mockups/chronotype_planner.txt",
+        "final_output_sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/chronotype_planner.txt",
+        "previous_staging_sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/coverage_trust_ledger.txt",
+        "input_sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108",
+        "source": "health_data_assets/visuals/cli/mockups/coverage_trust_ledger.txt",
+        "final_output_sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/coverage_trust_ledger.txt",
+        "previous_staging_sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/day_shape_barcode.txt",
+        "input_sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161",
+        "source": "health_data_assets/visuals/cli/mockups/day_shape_barcode.txt",
+        "final_output_sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/day_shape_barcode.txt",
+        "previous_staging_sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/meeting_stress_leaderboard.txt",
+        "input_sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119",
+        "source": "health_data_assets/visuals/cli/mockups/meeting_stress_leaderboard.txt",
+        "final_output_sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/meeting_stress_leaderboard.txt",
+        "previous_staging_sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/recovery_gate.txt",
+        "input_sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd",
+        "source": "health_data_assets/visuals/cli/mockups/recovery_gate.txt",
+        "final_output_sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/recovery_gate.txt",
+        "previous_staging_sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/sleep_debt_heatstrip.txt",
+        "input_sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467",
+        "source": "health_data_assets/visuals/cli/mockups/sleep_debt_heatstrip.txt",
+        "final_output_sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/sleep_debt_heatstrip.txt",
+        "previous_staging_sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/strain_readiness_ribbon.txt",
+        "input_sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06",
+        "source": "health_data_assets/visuals/cli/mockups/strain_readiness_ribbon.txt",
+        "final_output_sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/strain_readiness_ribbon.txt",
+        "previous_staging_sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/stress_waterfall.txt",
+        "input_sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19",
+        "source": "health_data_assets/visuals/cli/mockups/stress_waterfall.txt",
+        "final_output_sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/stress_waterfall.txt",
+        "previous_staging_sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/training_mix_board.txt",
+        "input_sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34",
+        "source": "health_data_assets/visuals/cli/mockups/training_mix_board.txt",
+        "final_output_sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/training_mix_board.txt",
+        "previous_staging_sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/workload_outcome_matrix.txt",
+        "input_sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9",
+        "source": "health_data_assets/visuals/cli/mockups/workload_outcome_matrix.txt",
+        "final_output_sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/workload_outcome_matrix.txt",
+        "previous_staging_sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/workout_recovery_lane.txt",
+        "input_sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924",
+        "source": "health_data_assets/visuals/cli/mockups/workout_recovery_lane.txt",
+        "final_output_sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/workout_recovery_lane.txt",
+        "previous_staging_sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/mockups/workout_streak_ladder.txt",
+        "input_sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7",
+        "source": "health_data_assets/visuals/cli/mockups/workout_streak_ladder.txt",
+        "final_output_sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7",
+        "cli_destination": "health_data_assets/visuals/cli/mockups/workout_streak_ladder.txt",
+        "previous_staging_sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/prompts/health_visual_brief.md",
+        "input_sha256": "7b92712faeb979b7d4b02d3ef3d88a7b759ffdb6585e15bc0bb8e92181dfc000",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "805e8311d47ce90c031a3381edaa33532b9775be41cc51e81eeb4a8fea730499",
+        "source": "health_data_assets/visuals/cli/prompts/health_visual_brief.md",
+        "final_output_sha256": "805e8311d47ce90c031a3381edaa33532b9775be41cc51e81eeb4a8fea730499",
+        "cli_destination": "health_data_assets/visuals/cli/prompts/health_visual_brief.md",
+        "previous_staging_sha256": "805e8311d47ce90c031a3381edaa33532b9775be41cc51e81eeb4a8fea730499"
+      },
+      {
+        "destination": "health_data_assets/visuals/cli/prompts/interpretation_guardrails.md",
+        "input_sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21",
+        "source": "health_data_assets/visuals/cli/prompts/interpretation_guardrails.md",
+        "final_output_sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21",
+        "cli_destination": "health_data_assets/visuals/cli/prompts/interpretation_guardrails.md",
+        "previous_staging_sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21"
+      },
+      {
+        "destination": "health_data_entry.py",
+        "input_sha256": "eb2923ad4aee1a0e7ef03876671a2190e2e8068b32209a4430a04c01907d87ec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "54ad5e44b7b0ccf35058f29b56a55321cf2a7128c877f4e0f7a771ebd13beab8",
+        "source": "health_data_entry.py",
+        "final_output_sha256": "54ad5e44b7b0ccf35058f29b56a55321cf2a7128c877f4e0f7a771ebd13beab8",
+        "cli_destination": "health_data_entry.py",
+        "previous_staging_sha256": "54ad5e44b7b0ccf35058f29b56a55321cf2a7128c877f4e0f7a771ebd13beab8"
+      },
+      {
+        "destination": "health_eval/__init__.py",
+        "input_sha256": "f15f9fc811b0e9e2185c2af9bb0a35191b2e6c9f936c40f79e708d2ae8c37044",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f15f9fc811b0e9e2185c2af9bb0a35191b2e6c9f936c40f79e708d2ae8c37044",
+        "source": "health_eval/__init__.py",
+        "final_output_sha256": "f15f9fc811b0e9e2185c2af9bb0a35191b2e6c9f936c40f79e708d2ae8c37044",
+        "cli_destination": "health_eval/__init__.py",
+        "previous_staging_sha256": "f15f9fc811b0e9e2185c2af9bb0a35191b2e6c9f936c40f79e708d2ae8c37044"
+      },
+      {
+        "destination": "health_eval/build_analytics_fixture.py",
+        "input_sha256": "bc14dd3b3585c9d24592e1f6db0d66506adebaa1343367786fe3730b000be1fb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bc14dd3b3585c9d24592e1f6db0d66506adebaa1343367786fe3730b000be1fb",
+        "source": "health_eval/build_analytics_fixture.py",
+        "final_output_sha256": "bc14dd3b3585c9d24592e1f6db0d66506adebaa1343367786fe3730b000be1fb",
+        "cli_destination": "health_eval/build_analytics_fixture.py",
+        "previous_staging_sha256": "bc14dd3b3585c9d24592e1f6db0d66506adebaa1343367786fe3730b000be1fb"
+      },
+      {
+        "destination": "health_eval/build_fixture.py",
+        "input_sha256": "a960f0d29b485424e63bfcbe34db82c338ab66599bf9bca131bc9bcf27475abb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a960f0d29b485424e63bfcbe34db82c338ab66599bf9bca131bc9bcf27475abb",
+        "source": "health_eval/build_fixture.py",
+        "final_output_sha256": "a960f0d29b485424e63bfcbe34db82c338ab66599bf9bca131bc9bcf27475abb",
+        "cli_destination": "health_eval/build_fixture.py",
+        "previous_staging_sha256": "a960f0d29b485424e63bfcbe34db82c338ab66599bf9bca131bc9bcf27475abb"
+      },
+      {
+        "destination": "health_eval/checker.py",
+        "input_sha256": "0feb42002d6fa02b339ce1491dcb47f3be41292bcee16968b3bac0f143323777",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0feb42002d6fa02b339ce1491dcb47f3be41292bcee16968b3bac0f143323777",
+        "source": "health_eval/checker.py",
+        "final_output_sha256": "0feb42002d6fa02b339ce1491dcb47f3be41292bcee16968b3bac0f143323777",
+        "cli_destination": "health_eval/checker.py",
+        "previous_staging_sha256": "0feb42002d6fa02b339ce1491dcb47f3be41292bcee16968b3bac0f143323777"
+      },
+      {
+        "destination": "health_eval/export_ground_truth.py",
+        "input_sha256": "3a775dc0fd0295a81f1f0ec753d59e54a0ae47ac6469fab97e61ef37700db242",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3a775dc0fd0295a81f1f0ec753d59e54a0ae47ac6469fab97e61ef37700db242",
+        "source": "health_eval/export_ground_truth.py",
+        "final_output_sha256": "3a775dc0fd0295a81f1f0ec753d59e54a0ae47ac6469fab97e61ef37700db242",
+        "cli_destination": "health_eval/export_ground_truth.py",
+        "previous_staging_sha256": "3a775dc0fd0295a81f1f0ec753d59e54a0ae47ac6469fab97e61ef37700db242"
+      },
+      {
+        "destination": "health_eval/fake_google_api.py",
+        "input_sha256": "94edb64e19b03c2e2b5a97c86f2e146880eb84e746b61f75a68d8cae666445a2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "94edb64e19b03c2e2b5a97c86f2e146880eb84e746b61f75a68d8cae666445a2",
+        "source": "health_eval/fake_google_api.py",
+        "final_output_sha256": "94edb64e19b03c2e2b5a97c86f2e146880eb84e746b61f75a68d8cae666445a2",
+        "cli_destination": "health_eval/fake_google_api.py",
+        "previous_staging_sha256": "94edb64e19b03c2e2b5a97c86f2e146880eb84e746b61f75a68d8cae666445a2"
+      },
+      {
+        "destination": "health_eval/fake_oura_server.py",
+        "input_sha256": "2ed40433094fb8fc03ea168f72c27f37e8e0f6ef3d5c88ebc6a0f0d75a5f53c5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2ed40433094fb8fc03ea168f72c27f37e8e0f6ef3d5c88ebc6a0f0d75a5f53c5",
+        "source": "health_eval/fake_oura_server.py",
+        "final_output_sha256": "2ed40433094fb8fc03ea168f72c27f37e8e0f6ef3d5c88ebc6a0f0d75a5f53c5",
+        "cli_destination": "health_eval/fake_oura_server.py",
+        "previous_staging_sha256": "2ed40433094fb8fc03ea168f72c27f37e8e0f6ef3d5c88ebc6a0f0d75a5f53c5"
+      },
+      {
+        "destination": "health_eval/judge.py",
+        "input_sha256": "603494e77be9836641e8f833053460cb0587790da3852b353fab6d410d837336",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "603494e77be9836641e8f833053460cb0587790da3852b353fab6d410d837336",
+        "source": "health_eval/judge.py",
+        "final_output_sha256": "603494e77be9836641e8f833053460cb0587790da3852b353fab6d410d837336",
+        "cli_destination": "health_eval/judge.py",
+        "previous_staging_sha256": "603494e77be9836641e8f833053460cb0587790da3852b353fab6d410d837336"
+      },
+      {
+        "destination": "health_eval/judge_prompt.txt",
+        "input_sha256": "ab3c7fab66202f76e4ecab285db2355d89e662934031b92ee726b04c2e42d3d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ab3c7fab66202f76e4ecab285db2355d89e662934031b92ee726b04c2e42d3d7",
+        "source": "health_eval/judge_prompt.txt",
+        "final_output_sha256": "ab3c7fab66202f76e4ecab285db2355d89e662934031b92ee726b04c2e42d3d7",
+        "cli_destination": "health_eval/judge_prompt.txt",
+        "previous_staging_sha256": "ab3c7fab66202f76e4ecab285db2355d89e662934031b92ee726b04c2e42d3d7"
+      },
+      {
+        "destination": "health_eval/plan_c_cases.py",
+        "input_sha256": "1bfa43ae0416ddb5f7fa036f0b373f4e9d83c753b96b4c2cbda250bf3cfc8a01",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1bfa43ae0416ddb5f7fa036f0b373f4e9d83c753b96b4c2cbda250bf3cfc8a01",
+        "source": "health_eval/plan_c_cases.py",
+        "final_output_sha256": "1bfa43ae0416ddb5f7fa036f0b373f4e9d83c753b96b4c2cbda250bf3cfc8a01",
+        "cli_destination": "health_eval/plan_c_cases.py",
+        "previous_staging_sha256": "1bfa43ae0416ddb5f7fa036f0b373f4e9d83c753b96b4c2cbda250bf3cfc8a01"
+      },
+      {
+        "destination": "health_eval/reference_templates.py",
+        "input_sha256": "d39ad50f48f4a3ba970ea9dcb489685521ea7664660301c60d786d82c858ee18",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d39ad50f48f4a3ba970ea9dcb489685521ea7664660301c60d786d82c858ee18",
+        "source": "health_eval/reference_templates.py",
+        "final_output_sha256": "d39ad50f48f4a3ba970ea9dcb489685521ea7664660301c60d786d82c858ee18",
+        "cli_destination": "health_eval/reference_templates.py",
+        "previous_staging_sha256": "d39ad50f48f4a3ba970ea9dcb489685521ea7664660301c60d786d82c858ee18"
+      },
+      {
+        "destination": "health_eval/render_references.py",
+        "input_sha256": "543c56dbde65ee39551b57f27802c7a62a649f4e4f41144f7b81227222c8ab95",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "543c56dbde65ee39551b57f27802c7a62a649f4e4f41144f7b81227222c8ab95",
+        "source": "health_eval/render_references.py",
+        "final_output_sha256": "543c56dbde65ee39551b57f27802c7a62a649f4e4f41144f7b81227222c8ab95",
+        "cli_destination": "health_eval/render_references.py",
+        "previous_staging_sha256": "543c56dbde65ee39551b57f27802c7a62a649f4e4f41144f7b81227222c8ab95"
+      },
+      {
+        "destination": "health_eval/run.py",
+        "input_sha256": "cc538dadc3dfee3706de39c2dfe0ff01c9327db95fe3f86d8f408979bdcafafe",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1567550352c931d226851f85f7d98ce5ab887078bfe76b66f416af549093c229",
+        "source": "health_eval/run.py",
+        "final_output_sha256": "1567550352c931d226851f85f7d98ce5ab887078bfe76b66f416af549093c229",
+        "cli_destination": "health_eval/run.py",
+        "previous_staging_sha256": "1567550352c931d226851f85f7d98ce5ab887078bfe76b66f416af549093c229"
+      },
+      {
+        "destination": "health_eval/test_analytics_platform_lane1.py",
+        "input_sha256": "242252eef8c03d62cd2da5920b2ddf493186d25735f561524c3a342fa1c0fcbd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "892b8bac45af63a19779183f8ee4e32e4b0addc876d0ef4defb51425c00d9481",
+        "source": "health_eval/test_analytics_platform_lane1.py",
+        "final_output_sha256": "892b8bac45af63a19779183f8ee4e32e4b0addc876d0ef4defb51425c00d9481",
+        "cli_destination": "health_eval/test_analytics_platform_lane1.py",
+        "previous_staging_sha256": "892b8bac45af63a19779183f8ee4e32e4b0addc876d0ef4defb51425c00d9481"
+      },
+      {
+        "destination": "health_eval/test_lane1.py",
+        "input_sha256": "01a6c3b72721da02f702e7fdc2ada614854588d178bfadc80c7248159298b7d2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "13c9d9e667af9b904508773b3c3e4739a4554a3563757cd6ef1a7afc9ee110e4",
+        "source": "health_eval/test_lane1.py",
+        "final_output_sha256": "13c9d9e667af9b904508773b3c3e4739a4554a3563757cd6ef1a7afc9ee110e4",
+        "cli_destination": "health_eval/test_lane1.py",
+        "previous_staging_sha256": "13c9d9e667af9b904508773b3c3e4739a4554a3563757cd6ef1a7afc9ee110e4"
+      },
+      {
+        "destination": "health_eval/test_plan_c.py",
+        "input_sha256": "119db6eac2951380b2171bb582049b432feead57ceb415bce8abcf9c008f1dae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "119db6eac2951380b2171bb582049b432feead57ceb415bce8abcf9c008f1dae",
+        "source": "health_eval/test_plan_c.py",
+        "final_output_sha256": "119db6eac2951380b2171bb582049b432feead57ceb415bce8abcf9c008f1dae",
+        "cli_destination": "health_eval/test_plan_c.py",
+        "previous_staging_sha256": "119db6eac2951380b2171bb582049b432feead57ceb415bce8abcf9c008f1dae"
+      },
+      {
+        "destination": "normalize.py",
+        "input_sha256": "bd171f764164fb1e1a3304694ab63156d387748491d59494be81ceffab51c282",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bd171f764164fb1e1a3304694ab63156d387748491d59494be81ceffab51c282",
+        "source": "normalize.py",
+        "final_output_sha256": "bd171f764164fb1e1a3304694ab63156d387748491d59494be81ceffab51c282",
+        "cli_destination": "normalize.py",
+        "previous_staging_sha256": "bd171f764164fb1e1a3304694ab63156d387748491d59494be81ceffab51c282"
+      },
+      {
+        "destination": "oauth_token.py",
+        "input_sha256": "a595830dbb1f7e90602fe3c8dac873689b22142bd9b9c951be23b4713075c823",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a595830dbb1f7e90602fe3c8dac873689b22142bd9b9c951be23b4713075c823",
+        "source": "oauth_token.py",
+        "final_output_sha256": "a595830dbb1f7e90602fe3c8dac873689b22142bd9b9c951be23b4713075c823",
+        "cli_destination": "oauth_token.py",
+        "previous_staging_sha256": "a595830dbb1f7e90602fe3c8dac873689b22142bd9b9c951be23b4713075c823"
+      },
+      {
+        "destination": "onboarding.py",
+        "input_sha256": "28708645b5c755b832a4d9361f5510ba792e1a2f78017858ee7e57e06e2e5ee6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8c1d64186b990d20b2a2f701704e8bb233bba317a0ed71937bc90e9382ab44dc",
+        "source": "onboarding.py",
+        "final_output_sha256": "8c1d64186b990d20b2a2f701704e8bb233bba317a0ed71937bc90e9382ab44dc",
+        "cli_destination": "onboarding.py",
+        "previous_staging_sha256": "8c1d64186b990d20b2a2f701704e8bb233bba317a0ed71937bc90e9382ab44dc"
+      },
+      {
+        "destination": "oura.py",
+        "input_sha256": "8b29fe949f34382adad1ee73b61765864cd9f0e7ddb2a808246fc0e4bf1f3ab8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7b44f713b94188258e608d67e7d1326ff560b4ab732cd1f1d18934fdc9705de9",
+        "source": "oura.py",
+        "final_output_sha256": "7b44f713b94188258e608d67e7d1326ff560b4ab732cd1f1d18934fdc9705de9",
+        "cli_destination": "oura.py",
+        "previous_staging_sha256": "7b44f713b94188258e608d67e7d1326ff560b4ab732cd1f1d18934fdc9705de9"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "f0be2a8d5acde6b797b160694ece92a3c0ad51868a1aec0c6628d74e8fe41d25",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "181b85a33724c837106563ab9923837c149a62ed6bff0edf7eac00180b6d876a",
+        "source": "plugin.yaml",
+        "final_output_sha256": "181b85a33724c837106563ab9923837c149a62ed6bff0edf7eac00180b6d876a",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "181b85a33724c837106563ab9923837c149a62ed6bff0edf7eac00180b6d876a"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "31b512a0b0735c72134af29c3fa1c26ba0153512cf268009e84ea28fcd9c1fd1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "21d88af7c2e9dc0f9179dd80716fa20bf91cedc4522a709109cb18028f3a7a2b",
+        "source": "pyproject.toml",
+        "final_output_sha256": "21d88af7c2e9dc0f9179dd80716fa20bf91cedc4522a709109cb18028f3a7a2b",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "21d88af7c2e9dc0f9179dd80716fa20bf91cedc4522a709109cb18028f3a7a2b"
+      },
+      {
+        "destination": "query.py",
+        "input_sha256": "7a0a14cbda9fb2840a2c29a7e1b4d6f62488ba8154599960145a933485fcce28",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7a0a14cbda9fb2840a2c29a7e1b4d6f62488ba8154599960145a933485fcce28",
+        "source": "query.py",
+        "final_output_sha256": "7a0a14cbda9fb2840a2c29a7e1b4d6f62488ba8154599960145a933485fcce28",
+        "cli_destination": "query.py",
+        "previous_staging_sha256": "7a0a14cbda9fb2840a2c29a7e1b4d6f62488ba8154599960145a933485fcce28"
+      },
+      {
+        "destination": "scripts/create_public_snapshot.sh",
+        "input_sha256": "6f24c1b16d1db603db5292fcf8eacb6d2710a5517f594e5e96d17a0699295c56",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "9351bf49315df1115dd58e679a2daad6b84a9c29835281cabb583e623fae6516",
+        "source": "scripts/create_public_snapshot.sh",
+        "final_output_sha256": "9351bf49315df1115dd58e679a2daad6b84a9c29835281cabb583e623fae6516",
+        "cli_destination": "scripts/create_public_snapshot.sh",
+        "previous_staging_sha256": "9351bf49315df1115dd58e679a2daad6b84a9c29835281cabb583e623fae6516"
+      },
+      {
+        "destination": "scripts/install_git_hooks.sh",
+        "input_sha256": "504e72d6d41cfe651ca0f8f9fcc3d9fc1c82ed1d3727605e25d77767a38986d2",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "123883be0e63ed3928f2dfd25f6187e024b52211d516360736a2500270089252",
+        "source": "scripts/install_git_hooks.sh",
+        "final_output_sha256": "123883be0e63ed3928f2dfd25f6187e024b52211d516360736a2500270089252",
+        "cli_destination": "scripts/install_git_hooks.sh",
+        "previous_staging_sha256": "123883be0e63ed3928f2dfd25f6187e024b52211d516360736a2500270089252"
+      },
+      {
+        "destination": "scripts/install_local.py",
+        "input_sha256": "54a60c3e1d9e8fb4fc33eba1ec923b4ed070cc6936052e9e237c82bd5930d50f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "07217788efaa43bd948f7b472966e1c259b84c8821495e590042ea9c40f1ed0c",
+        "source": "scripts/install_local.py",
+        "final_output_sha256": "07217788efaa43bd948f7b472966e1c259b84c8821495e590042ea9c40f1ed0c",
+        "cli_destination": "scripts/install_local.py",
+        "previous_staging_sha256": "07217788efaa43bd948f7b472966e1c259b84c8821495e590042ea9c40f1ed0c"
+      },
+      {
+        "destination": "scripts/release_safety.py",
+        "input_sha256": "0ac21cc55c0b6fb94a765b89b7fb25724da116c90aef490b43d9d7476aa32025",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0d9f1ae1b4e39e85b37e54c5948c6e18ae6bbf78a2378ace99d05af4f7c90a96",
+        "source": "scripts/release_safety.py",
+        "final_output_sha256": "0d9f1ae1b4e39e85b37e54c5948c6e18ae6bbf78a2378ace99d05af4f7c90a96",
+        "cli_destination": "scripts/release_safety.py",
+        "previous_staging_sha256": "0d9f1ae1b4e39e85b37e54c5948c6e18ae6bbf78a2378ace99d05af4f7c90a96"
+      },
+      {
+        "destination": "scripts/secret_scan.py",
+        "input_sha256": "20227823468392dd3e4356144100962d6d3d5eda15e7a99ce484e7a047b3b224",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "20227823468392dd3e4356144100962d6d3d5eda15e7a99ce484e7a047b3b224",
+        "source": "scripts/secret_scan.py",
+        "final_output_sha256": "20227823468392dd3e4356144100962d6d3d5eda15e7a99ce484e7a047b3b224",
+        "cli_destination": "scripts/secret_scan.py",
+        "previous_staging_sha256": "20227823468392dd3e4356144100962d6d3d5eda15e7a99ce484e7a047b3b224"
+      },
+      {
+        "destination": "scripts/verify_local_install.py",
+        "input_sha256": "29664f22a18265423bb7e4068f54d9a24006e7f9948b941fb269791edcad327e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8332e18cb1fc9f33b9e86f2394373384ad3833fe438abb78c85754b5c0a73cb2",
+        "source": "scripts/verify_local_install.py",
+        "final_output_sha256": "8332e18cb1fc9f33b9e86f2394373384ad3833fe438abb78c85754b5c0a73cb2",
+        "cli_destination": "scripts/verify_local_install.py",
+        "previous_staging_sha256": "8332e18cb1fc9f33b9e86f2394373384ad3833fe438abb78c85754b5c0a73cb2"
+      },
+      {
+        "destination": "semantic_layer.py",
+        "input_sha256": "6db93a327ca702a2500854b52a83677a89fd6c2c416bb1778ffd2d3beb6b5f47",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6db93a327ca702a2500854b52a83677a89fd6c2c416bb1778ffd2d3beb6b5f47",
+        "source": "semantic_layer.py",
+        "final_output_sha256": "6db93a327ca702a2500854b52a83677a89fd6c2c416bb1778ffd2d3beb6b5f47",
+        "cli_destination": "semantic_layer.py",
+        "previous_staging_sha256": "6db93a327ca702a2500854b52a83677a89fd6c2c416bb1778ffd2d3beb6b5f47"
+      },
+      {
+        "destination": "skills/health-coach/SKILL.md",
+        "input_sha256": "aee2c102f16636b2cb6981fef6858a3c94179ab933805b007079c5c33f6b7dcc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b063da8de1b9b911b184d3c2b5f427d770d8bfb1d766fe5e05efb582efba7136",
+        "source": "skills/health-coach/SKILL.md",
+        "final_output_sha256": "b063da8de1b9b911b184d3c2b5f427d770d8bfb1d766fe5e05efb582efba7136",
+        "cli_destination": "skills/health-coach/SKILL.md",
+        "previous_staging_sha256": "b063da8de1b9b911b184d3c2b5f427d770d8bfb1d766fe5e05efb582efba7136"
+      },
+      {
+        "destination": "skills/health-visuals/SKILL.md",
+        "input_sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7",
+        "source": "skills/health-visuals/SKILL.md",
+        "final_output_sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7",
+        "cli_destination": "skills/health-visuals/SKILL.md",
+        "previous_staging_sha256": "ba68d359c379abb061008be4fdcaac9936665574a2f0b1f99ccc55cf8799f8a7"
+      },
+      {
+        "destination": "skills/health-visuals/references/ansi_color_implementation_plan.md",
+        "input_sha256": "6b38aa91c7d27089d66be803c0a1d19db414f238b8b6e7279c462ff7f626c070",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "433753c6fe9bfe9bad8eded82d9f3f0d87766305cdc5c8b085892cc6dfbe9c2c",
+        "source": "skills/health-visuals/references/ansi_color_implementation_plan.md",
+        "final_output_sha256": "433753c6fe9bfe9bad8eded82d9f3f0d87766305cdc5c8b085892cc6dfbe9c2c",
+        "cli_destination": "skills/health-visuals/references/ansi_color_implementation_plan.md",
+        "previous_staging_sha256": "433753c6fe9bfe9bad8eded82d9f3f0d87766305cdc5c8b085892cc6dfbe9c2c"
+      },
+      {
+        "destination": "skills/health-visuals/references/ansi_visual_patterns.md",
+        "input_sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e",
+        "source": "skills/health-visuals/references/ansi_visual_patterns.md",
+        "final_output_sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e",
+        "cli_destination": "skills/health-visuals/references/ansi_visual_patterns.md",
+        "previous_staging_sha256": "d326b8a36f7cd5bf6c2ccf3d4ff219bc919ebedf0970e39699449ef6c0bead4e"
+      },
+      {
+        "destination": "skills/health-visuals/references/cli_visual_patterns.md",
+        "input_sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4",
+        "source": "skills/health-visuals/references/cli_visual_patterns.md",
+        "final_output_sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4",
+        "cli_destination": "skills/health-visuals/references/cli_visual_patterns.md",
+        "previous_staging_sha256": "07f55d88b5feb3fdfa2a4482d23d5ba50a35f8618e2182545f29f85f8b7bc1f4"
+      },
+      {
+        "destination": "skills/health-visuals/references/terminal_ascii_patterns.md",
+        "input_sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083",
+        "source": "skills/health-visuals/references/terminal_ascii_patterns.md",
+        "final_output_sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083",
+        "cli_destination": "skills/health-visuals/references/terminal_ascii_patterns.md",
+        "previous_staging_sha256": "5ae896dcaab2c0844a6a5aecac3083f8a688b2ce65a556fa1ccb33af80f1a083"
+      },
+      {
+        "destination": "store.py",
+        "input_sha256": "91887898a9e8f2a609c985fe3c8c5b2d1b3a3be5f122f2826b0a918eb8a50e91",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d5edfd66f4f7b56f5f58bcc6a66f33be8ff2795c45d6132dc069fd54c70da155",
+        "source": "store.py",
+        "final_output_sha256": "d5edfd66f4f7b56f5f58bcc6a66f33be8ff2795c45d6132dc069fd54c70da155",
+        "cli_destination": "store.py",
+        "previous_staging_sha256": "d5edfd66f4f7b56f5f58bcc6a66f33be8ff2795c45d6132dc069fd54c70da155"
+      },
+      {
+        "destination": "sync_control.py",
+        "input_sha256": "c8611707ee6ad962968effae46563f4fae9e20e16cd89d4a9a4dfb3dbe2a7b32",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c8611707ee6ad962968effae46563f4fae9e20e16cd89d4a9a4dfb3dbe2a7b32",
+        "source": "sync_control.py",
+        "final_output_sha256": "c8611707ee6ad962968effae46563f4fae9e20e16cd89d4a9a4dfb3dbe2a7b32",
+        "cli_destination": "sync_control.py",
+        "previous_staging_sha256": "c8611707ee6ad962968effae46563f4fae9e20e16cd89d4a9a4dfb3dbe2a7b32"
+      },
+      {
+        "destination": "tests/health_fixtures.py",
+        "input_sha256": "a9773fa8138b8742228315a94b469d05e99eadc35cc20c75b39d173b50684081",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a9773fa8138b8742228315a94b469d05e99eadc35cc20c75b39d173b50684081",
+        "source": "tests/health_fixtures.py",
+        "final_output_sha256": "a9773fa8138b8742228315a94b469d05e99eadc35cc20c75b39d173b50684081",
+        "cli_destination": "tests/health_fixtures.py",
+        "previous_staging_sha256": "a9773fa8138b8742228315a94b469d05e99eadc35cc20c75b39d173b50684081"
+      },
+      {
+        "destination": "tests/test_analysis_tools.py",
+        "input_sha256": "066b1609cfb7bd8a52a01787615321240a22c76ef746b503512fd5ea5997f564",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ef112f6c3217df1adbb7e2c7949d558cbbae43e5cb907264891618410b9f6fcf",
+        "source": "tests/test_analysis_tools.py",
+        "final_output_sha256": "ef112f6c3217df1adbb7e2c7949d558cbbae43e5cb907264891618410b9f6fcf",
+        "cli_destination": "tests/test_analysis_tools.py",
+        "previous_staging_sha256": "ef112f6c3217df1adbb7e2c7949d558cbbae43e5cb907264891618410b9f6fcf"
+      },
+      {
+        "destination": "tests/test_canonical_model.py",
+        "input_sha256": "59027507bd2b0210cf764b8325a7e5327f66301314169d7771ed9e240cf19dca",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23e9daba9c05caaf6833a17e2c42ed710bc303979a18e10e50c74123d97d15db",
+        "source": "tests/test_canonical_model.py",
+        "final_output_sha256": "23e9daba9c05caaf6833a17e2c42ed710bc303979a18e10e50c74123d97d15db",
+        "cli_destination": "tests/test_canonical_model.py",
+        "previous_staging_sha256": "23e9daba9c05caaf6833a17e2c42ed710bc303979a18e10e50c74123d97d15db"
+      },
+      {
+        "destination": "tests/test_commands.py",
+        "input_sha256": "6343218a6b90b7acd326426521d30b690fbd3bf255a3f84ec1259847df823c5c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7da6b8fc055d3ea0207dbd53015de02f5dd19fa9f64514edbb638406be553900",
+        "source": "tests/test_commands.py",
+        "final_output_sha256": "7da6b8fc055d3ea0207dbd53015de02f5dd19fa9f64514edbb638406be553900",
+        "cli_destination": "tests/test_commands.py",
+        "previous_staging_sha256": "7da6b8fc055d3ea0207dbd53015de02f5dd19fa9f64514edbb638406be553900"
+      },
+      {
+        "destination": "tests/test_context_commands.py",
+        "input_sha256": "e5eccec9c3335506860a329cb9d33cffa151e465277b6350042b8fe5721b5ef0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8f604176ab5cd9216faa8c153a8667aa7661fdc86b985c6a3f971f985ce03074",
+        "source": "tests/test_context_commands.py",
+        "final_output_sha256": "8f604176ab5cd9216faa8c153a8667aa7661fdc86b985c6a3f971f985ce03074",
+        "cli_destination": "tests/test_context_commands.py",
+        "previous_staging_sha256": "8f604176ab5cd9216faa8c153a8667aa7661fdc86b985c6a3f971f985ce03074"
+      },
+      {
+        "destination": "tests/test_feature_queries.py",
+        "input_sha256": "af6b119404862b88b5cda72164bea54da111d6fc4d791a28c983e98d22efd385",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7aa5ca22c897a03323d478931536ce42e9bd6ba654f57a1e29f7266c9619c95b",
+        "source": "tests/test_feature_queries.py",
+        "final_output_sha256": "7aa5ca22c897a03323d478931536ce42e9bd6ba654f57a1e29f7266c9619c95b",
+        "cli_destination": "tests/test_feature_queries.py",
+        "previous_staging_sha256": "7aa5ca22c897a03323d478931536ce42e9bd6ba654f57a1e29f7266c9619c95b"
+      },
+      {
+        "destination": "tests/test_git_hooks.py",
+        "input_sha256": "549e4e1cb840fe7a94979e240b4e1dce9e44556e2849539875745ad83a7fba61",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7696af6eb3e00c58f59a44ab1c658449337a06352165b6e48dc7e8b308382edd",
+        "source": "tests/test_git_hooks.py",
+        "final_output_sha256": "7696af6eb3e00c58f59a44ab1c658449337a06352165b6e48dc7e8b308382edd",
+        "cli_destination": "tests/test_git_hooks.py",
+        "previous_staging_sha256": "7696af6eb3e00c58f59a44ab1c658449337a06352165b6e48dc7e8b308382edd"
+      },
+      {
+        "destination": "tests/test_google_health_auth.py",
+        "input_sha256": "70966a270929d63ce172b649be45f97e2ebe0c1114093744e43ce4d855ac8ee9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fa434265fc0052159b665e0656c70e0d7b7f711af68af73f640eb9b734b41fae",
+        "source": "tests/test_google_health_auth.py",
+        "final_output_sha256": "fa434265fc0052159b665e0656c70e0d7b7f711af68af73f640eb9b734b41fae",
+        "cli_destination": "tests/test_google_health_auth.py",
+        "previous_staging_sha256": "fa434265fc0052159b665e0656c70e0d7b7f711af68af73f640eb9b734b41fae"
+      },
+      {
+        "destination": "tests/test_google_health_connector.py",
+        "input_sha256": "87d32de5eec4d2352f5443ce684494adbeaf853672316eb6e9e1a72fe6615ac3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "92001c844064b814aaa320c2edf6c681918e105631509470103730a89bfd238a",
+        "source": "tests/test_google_health_connector.py",
+        "final_output_sha256": "92001c844064b814aaa320c2edf6c681918e105631509470103730a89bfd238a",
+        "cli_destination": "tests/test_google_health_connector.py",
+        "previous_staging_sha256": "92001c844064b814aaa320c2edf6c681918e105631509470103730a89bfd238a"
+      },
+      {
+        "destination": "tests/test_health_observation_schema.py",
+        "input_sha256": "c8e1b80cbe4d64e3d2ff80e4ecabf44c23b6b09914c0ace7fdbcad098e6c4774",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "03473b87551ba8b2bf0505e138db42d1a70818c8d8496934e896eabe9e86a1ad",
+        "source": "tests/test_health_observation_schema.py",
+        "final_output_sha256": "03473b87551ba8b2bf0505e138db42d1a70818c8d8496934e896eabe9e86a1ad",
+        "cli_destination": "tests/test_health_observation_schema.py",
+        "previous_staging_sha256": "03473b87551ba8b2bf0505e138db42d1a70818c8d8496934e896eabe9e86a1ad"
+      },
+      {
+        "destination": "tests/test_oauth_token.py",
+        "input_sha256": "9b398ed19225d3cb80e6fe47424fc723cf234b706e060756b3271ee6ef14056d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "029d62c825d294167c34d250ab31abab1e69a4616573a07fc9ef478eec8ab2c6",
+        "source": "tests/test_oauth_token.py",
+        "final_output_sha256": "029d62c825d294167c34d250ab31abab1e69a4616573a07fc9ef478eec8ab2c6",
+        "cli_destination": "tests/test_oauth_token.py",
+        "previous_staging_sha256": "029d62c825d294167c34d250ab31abab1e69a4616573a07fc9ef478eec8ab2c6"
+      },
+      {
+        "destination": "tests/test_oura.py",
+        "input_sha256": "76a06d7599b03b2dbfea255625aea09ceb6355aeb082386e5523cd2f58ed9118",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2b8f4879e17549eabf81fb957e9bced8d9446fde7a67077f1c8babd0a21c1adf",
+        "source": "tests/test_oura.py",
+        "final_output_sha256": "2b8f4879e17549eabf81fb957e9bced8d9446fde7a67077f1c8babd0a21c1adf",
+        "cli_destination": "tests/test_oura.py",
+        "previous_staging_sha256": "2b8f4879e17549eabf81fb957e9bced8d9446fde7a67077f1c8babd0a21c1adf"
+      },
+      {
+        "destination": "tests/test_query_eval.py",
+        "input_sha256": "85101ab019a463e5fc51265500d4f18ab343cd86a6d9f11132d933ec33c2a8e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5da2e86911bf3e85d25f7ed07d55835fa2b07718f50def24eba62f05d7503dad",
+        "source": "tests/test_query_eval.py",
+        "final_output_sha256": "5da2e86911bf3e85d25f7ed07d55835fa2b07718f50def24eba62f05d7503dad",
+        "cli_destination": "tests/test_query_eval.py",
+        "previous_staging_sha256": "5da2e86911bf3e85d25f7ed07d55835fa2b07718f50def24eba62f05d7503dad"
+      },
+      {
+        "destination": "tests/test_register_contract.py",
+        "input_sha256": "e6979cacf8bedc1390dd45ebaff84baef0fba7f19fba64190e29918769d8eb75",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f5d58ca26ca516573a57a7e071df746850846f0e26c33160be410c94cf51fcc4",
+        "source": "tests/test_register_contract.py",
+        "final_output_sha256": "f5d58ca26ca516573a57a7e071df746850846f0e26c33160be410c94cf51fcc4",
+        "cli_destination": "tests/test_register_contract.py",
+        "previous_staging_sha256": "f5d58ca26ca516573a57a7e071df746850846f0e26c33160be410c94cf51fcc4"
+      },
+      {
+        "destination": "tests/test_release_safety.py",
+        "input_sha256": "bcf04843aef73fa06b0f3d05d872ba73e5aa8f2772a25bdd23dca94c683ccc17",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6724f2ef00c6b5f07f5ff25fea34f46eb7099f362c2409d99f240ca8b6e6a210",
+        "source": "tests/test_release_safety.py",
+        "final_output_sha256": "6724f2ef00c6b5f07f5ff25fea34f46eb7099f362c2409d99f240ca8b6e6a210",
+        "cli_destination": "tests/test_release_safety.py",
+        "previous_staging_sha256": "6724f2ef00c6b5f07f5ff25fea34f46eb7099f362c2409d99f240ca8b6e6a210"
+      },
+      {
+        "destination": "tests/test_secret_scan.py",
+        "input_sha256": "2f1d91e72ecd9c7a45a5f3204818b4fae60029163696cf4cdafc2ddd38085c49",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2f1d91e72ecd9c7a45a5f3204818b4fae60029163696cf4cdafc2ddd38085c49",
+        "source": "tests/test_secret_scan.py",
+        "final_output_sha256": "2f1d91e72ecd9c7a45a5f3204818b4fae60029163696cf4cdafc2ddd38085c49",
+        "cli_destination": "tests/test_secret_scan.py",
+        "previous_staging_sha256": "2f1d91e72ecd9c7a45a5f3204818b4fae60029163696cf4cdafc2ddd38085c49"
+      },
+      {
+        "destination": "tests/test_store_query_food.py",
+        "input_sha256": "6944463b41a54ea10a6e9e2cdec1efa0db5fb26c210efac064ae0b9d36e44c7a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b78084689255f892d519a3be0c0685580c9e8b553f157e18084d3715f8f91ed8",
+        "source": "tests/test_store_query_food.py",
+        "final_output_sha256": "b78084689255f892d519a3be0c0685580c9e8b553f157e18084d3715f8f91ed8",
+        "cli_destination": "tests/test_store_query_food.py",
+        "previous_staging_sha256": "b78084689255f892d519a3be0c0685580c9e8b553f157e18084d3715f8f91ed8"
+      },
+      {
+        "destination": "tests/test_visual_catalog.py",
+        "input_sha256": "d9a1ed467750dfd06da00807fbcc7bc3e452c5bd25c9401d22f9f81b40a64f15",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d9a1ed467750dfd06da00807fbcc7bc3e452c5bd25c9401d22f9f81b40a64f15",
+        "source": "tests/test_visual_catalog.py",
+        "final_output_sha256": "d9a1ed467750dfd06da00807fbcc7bc3e452c5bd25c9401d22f9f81b40a64f15",
+        "cli_destination": "tests/test_visual_catalog.py",
+        "previous_staging_sha256": "d9a1ed467750dfd06da00807fbcc7bc3e452c5bd25c9401d22f9f81b40a64f15"
+      },
+      {
+        "destination": "visuals/cli/README.md",
+        "input_sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f",
+        "source": "visuals/cli/README.md",
+        "final_output_sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f",
+        "cli_destination": "visuals/cli/README.md",
+        "previous_staging_sha256": "66731234ed9b2f895ea2202bfc4f59639f62dcaffd8968a9d72369deafdb102f"
+      },
+      {
+        "destination": "visuals/cli/mockups/ansi_preview_gallery.txt",
+        "input_sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0",
+        "source": "visuals/cli/mockups/ansi_preview_gallery.txt",
+        "final_output_sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0",
+        "cli_destination": "visuals/cli/mockups/ansi_preview_gallery.txt",
+        "previous_staging_sha256": "3780e513452908e139a7293e04d954d597f01d5177f01183ac35a6389df286b0"
+      },
+      {
+        "destination": "visuals/cli/mockups/attendee_effect_board.txt",
+        "input_sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30",
+        "source": "visuals/cli/mockups/attendee_effect_board.txt",
+        "final_output_sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30",
+        "cli_destination": "visuals/cli/mockups/attendee_effect_board.txt",
+        "previous_staging_sha256": "fc0ffc5ac18442629a7ce562a5f9767edda58188a0e2dd7ac7565b9988ee2d30"
+      },
+      {
+        "destination": "visuals/cli/mockups/baseline_drift_board.txt",
+        "input_sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468",
+        "source": "visuals/cli/mockups/baseline_drift_board.txt",
+        "final_output_sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468",
+        "cli_destination": "visuals/cli/mockups/baseline_drift_board.txt",
+        "previous_staging_sha256": "cdcf25b89dfb79fa2ce67451b52a5ab52e74281e6137d39785fb6f19edfa3468"
+      },
+      {
+        "destination": "visuals/cli/mockups/calendar_load_skyline.txt",
+        "input_sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873",
+        "source": "visuals/cli/mockups/calendar_load_skyline.txt",
+        "final_output_sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873",
+        "cli_destination": "visuals/cli/mockups/calendar_load_skyline.txt",
+        "previous_staging_sha256": "839fdbe2e46561f9ef6410d917b79366250e8b5f7f6e5cb2f8751577bd91b873"
+      },
+      {
+        "destination": "visuals/cli/mockups/chronotype_planner.txt",
+        "input_sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca",
+        "source": "visuals/cli/mockups/chronotype_planner.txt",
+        "final_output_sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca",
+        "cli_destination": "visuals/cli/mockups/chronotype_planner.txt",
+        "previous_staging_sha256": "fe145a826c7a10e9081a2d64772e7157882bcf11034e0b0336e753857d8f50ca"
+      },
+      {
+        "destination": "visuals/cli/mockups/coverage_trust_ledger.txt",
+        "input_sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108",
+        "source": "visuals/cli/mockups/coverage_trust_ledger.txt",
+        "final_output_sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108",
+        "cli_destination": "visuals/cli/mockups/coverage_trust_ledger.txt",
+        "previous_staging_sha256": "a275b7455caa8d93b00d74c008f737e17f8db7c914f22484a5f61b520d35d108"
+      },
+      {
+        "destination": "visuals/cli/mockups/day_shape_barcode.txt",
+        "input_sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161",
+        "source": "visuals/cli/mockups/day_shape_barcode.txt",
+        "final_output_sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161",
+        "cli_destination": "visuals/cli/mockups/day_shape_barcode.txt",
+        "previous_staging_sha256": "23c3b9a9fa170ccac83bcc19bd1562b86b551e823fb14ee5f3288286abde9161"
+      },
+      {
+        "destination": "visuals/cli/mockups/meeting_stress_leaderboard.txt",
+        "input_sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119",
+        "source": "visuals/cli/mockups/meeting_stress_leaderboard.txt",
+        "final_output_sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119",
+        "cli_destination": "visuals/cli/mockups/meeting_stress_leaderboard.txt",
+        "previous_staging_sha256": "2b0836566f9135a71d8758fb4b4c7f461325d6b1f7e12825a8e1ff5380a38119"
+      },
+      {
+        "destination": "visuals/cli/mockups/recovery_gate.txt",
+        "input_sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd",
+        "source": "visuals/cli/mockups/recovery_gate.txt",
+        "final_output_sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd",
+        "cli_destination": "visuals/cli/mockups/recovery_gate.txt",
+        "previous_staging_sha256": "81772b2d116c75f1a78397ebabdd2e28fd2709558a62d678e0c383e0b2c1e9fd"
+      },
+      {
+        "destination": "visuals/cli/mockups/sleep_debt_heatstrip.txt",
+        "input_sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467",
+        "source": "visuals/cli/mockups/sleep_debt_heatstrip.txt",
+        "final_output_sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467",
+        "cli_destination": "visuals/cli/mockups/sleep_debt_heatstrip.txt",
+        "previous_staging_sha256": "a114fdc51db77c88846dbf8b9b9ac825137469129bb626bfd7ac1cd293725467"
+      },
+      {
+        "destination": "visuals/cli/mockups/strain_readiness_ribbon.txt",
+        "input_sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06",
+        "source": "visuals/cli/mockups/strain_readiness_ribbon.txt",
+        "final_output_sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06",
+        "cli_destination": "visuals/cli/mockups/strain_readiness_ribbon.txt",
+        "previous_staging_sha256": "c04a8803217e111ee1c995c3e396f428cbbad1f4c4930b9f2b005daf2ab52b06"
+      },
+      {
+        "destination": "visuals/cli/mockups/stress_waterfall.txt",
+        "input_sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19",
+        "source": "visuals/cli/mockups/stress_waterfall.txt",
+        "final_output_sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19",
+        "cli_destination": "visuals/cli/mockups/stress_waterfall.txt",
+        "previous_staging_sha256": "2a97a609d250da2f118503dbc3ff0954fe0e7e8972fd75429d711be728768e19"
+      },
+      {
+        "destination": "visuals/cli/mockups/training_mix_board.txt",
+        "input_sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34",
+        "source": "visuals/cli/mockups/training_mix_board.txt",
+        "final_output_sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34",
+        "cli_destination": "visuals/cli/mockups/training_mix_board.txt",
+        "previous_staging_sha256": "05d5d01a60c119ae218016ab6be66a38c0d149e46fef83292135909235121e34"
+      },
+      {
+        "destination": "visuals/cli/mockups/workload_outcome_matrix.txt",
+        "input_sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9",
+        "source": "visuals/cli/mockups/workload_outcome_matrix.txt",
+        "final_output_sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9",
+        "cli_destination": "visuals/cli/mockups/workload_outcome_matrix.txt",
+        "previous_staging_sha256": "480c31f006e46fef546fdbc50aa40498dc0291f36051b527752b9219d318f4c9"
+      },
+      {
+        "destination": "visuals/cli/mockups/workout_recovery_lane.txt",
+        "input_sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924",
+        "source": "visuals/cli/mockups/workout_recovery_lane.txt",
+        "final_output_sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924",
+        "cli_destination": "visuals/cli/mockups/workout_recovery_lane.txt",
+        "previous_staging_sha256": "ec919d5584ea0f8087b414460486836b9c28ded7991d7993c7607c3eb8edf924"
+      },
+      {
+        "destination": "visuals/cli/mockups/workout_streak_ladder.txt",
+        "input_sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7",
+        "source": "visuals/cli/mockups/workout_streak_ladder.txt",
+        "final_output_sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7",
+        "cli_destination": "visuals/cli/mockups/workout_streak_ladder.txt",
+        "previous_staging_sha256": "e69e5bf5d206832103c213dc5742d7c11b1de19e81567de6294a0d2bfe899be7"
+      },
+      {
+        "destination": "visuals/cli/prompts/health_visual_brief.md",
+        "input_sha256": "7b92712faeb979b7d4b02d3ef3d88a7b759ffdb6585e15bc0bb8e92181dfc000",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "805e8311d47ce90c031a3381edaa33532b9775be41cc51e81eeb4a8fea730499",
+        "source": "visuals/cli/prompts/health_visual_brief.md",
+        "final_output_sha256": "805e8311d47ce90c031a3381edaa33532b9775be41cc51e81eeb4a8fea730499",
+        "cli_destination": "visuals/cli/prompts/health_visual_brief.md",
+        "previous_staging_sha256": "805e8311d47ce90c031a3381edaa33532b9775be41cc51e81eeb4a8fea730499"
+      },
+      {
+        "destination": "visuals/cli/prompts/interpretation_guardrails.md",
+        "input_sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21",
+        "source": "visuals/cli/prompts/interpretation_guardrails.md",
+        "final_output_sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21",
+        "cli_destination": "visuals/cli/prompts/interpretation_guardrails.md",
+        "previous_staging_sha256": "8cdf659b6bb56f075d99b2267c587fd03a5e1af56d332ba1fe482b2a456c6a21"
+      }
+    ],
+    "manifest_sha256": "21071570a02fd2801802e621f6be2a80d0b9e7ca3196fea1a625ad8402490ad5",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".githooks/pre-commit": ".githooks/pre-commit",
+    ".githooks/pre-push": ".githooks/pre-push",
+    ".github/workflows/eval.yml": ".github/workflows/eval.yml",
+    ".gitignore": ".gitignore",
+    ".gitkeep": ".gitkeep",
+    "CONTRIBUTING.md": "CONTRIBUTING.md",
+    "LICENSE": "LICENSE",
+    "Makefile": "Makefile",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "__init__.py": "__init__.py",
+    "analysis_registry.py": "analysis_registry.py",
+    "analysis_tools.py": "analysis_tools.py",
+    "commands.py": "commands.py",
+    "context.py": "context.py",
+    "feature_engineering.py": "feature_engineering.py",
+    "feature_registry.py": "feature_registry.py",
+    "food.py": "food.py",
+    "google_health.py": "google_health.py",
+    "google_health_auth.py": "google_health_auth.py",
+    "health_data_assets/__init__.py": "health_data_assets/__init__.py",
+    "health_data_assets/plugin.yaml": "health_data_assets/plugin.yaml",
+    "health_data_assets/skills/health-coach/SKILL.md": "health_data_assets/skills/health-coach/SKILL.md",
+    "health_data_assets/skills/health-visuals/SKILL.md": "health_data_assets/skills/health-visuals/SKILL.md",
+    "health_data_assets/skills/health-visuals/references/ansi_color_implementation_plan.md": "health_data_assets/skills/health-visuals/references/ansi_color_implementation_plan.md",
+    "health_data_assets/skills/health-visuals/references/ansi_visual_patterns.md": "health_data_assets/skills/health-visuals/references/ansi_visual_patterns.md",
+    "health_data_assets/skills/health-visuals/references/cli_visual_patterns.md": "health_data_assets/skills/health-visuals/references/cli_visual_patterns.md",
+    "health_data_assets/skills/health-visuals/references/terminal_ascii_patterns.md": "health_data_assets/skills/health-visuals/references/terminal_ascii_patterns.md",
+    "health_data_assets/visuals/cli/README.md": "health_data_assets/visuals/cli/README.md",
+    "health_data_assets/visuals/cli/mockups/ansi_preview_gallery.txt": "health_data_assets/visuals/cli/mockups/ansi_preview_gallery.txt",
+    "health_data_assets/visuals/cli/mockups/attendee_effect_board.txt": "health_data_assets/visuals/cli/mockups/attendee_effect_board.txt",
+    "health_data_assets/visuals/cli/mockups/baseline_drift_board.txt": "health_data_assets/visuals/cli/mockups/baseline_drift_board.txt",
+    "health_data_assets/visuals/cli/mockups/calendar_load_skyline.txt": "health_data_assets/visuals/cli/mockups/calendar_load_skyline.txt",
+    "health_data_assets/visuals/cli/mockups/chronotype_planner.txt": "health_data_assets/visuals/cli/mockups/chronotype_planner.txt",
+    "health_data_assets/visuals/cli/mockups/coverage_trust_ledger.txt": "health_data_assets/visuals/cli/mockups/coverage_trust_ledger.txt",
+    "health_data_assets/visuals/cli/mockups/day_shape_barcode.txt": "health_data_assets/visuals/cli/mockups/day_shape_barcode.txt",
+    "health_data_assets/visuals/cli/mockups/meeting_stress_leaderboard.txt": "health_data_assets/visuals/cli/mockups/meeting_stress_leaderboard.txt",
+    "health_data_assets/visuals/cli/mockups/recovery_gate.txt": "health_data_assets/visuals/cli/mockups/recovery_gate.txt",
+    "health_data_assets/visuals/cli/mockups/sleep_debt_heatstrip.txt": "health_data_assets/visuals/cli/mockups/sleep_debt_heatstrip.txt",
+    "health_data_assets/visuals/cli/mockups/strain_readiness_ribbon.txt": "health_data_assets/visuals/cli/mockups/strain_readiness_ribbon.txt",
+    "health_data_assets/visuals/cli/mockups/stress_waterfall.txt": "health_data_assets/visuals/cli/mockups/stress_waterfall.txt",
+    "health_data_assets/visuals/cli/mockups/training_mix_board.txt": "health_data_assets/visuals/cli/mockups/training_mix_board.txt",
+    "health_data_assets/visuals/cli/mockups/workload_outcome_matrix.txt": "health_data_assets/visuals/cli/mockups/workload_outcome_matrix.txt",
+    "health_data_assets/visuals/cli/mockups/workout_recovery_lane.txt": "health_data_assets/visuals/cli/mockups/workout_recovery_lane.txt",
+    "health_data_assets/visuals/cli/mockups/workout_streak_ladder.txt": "health_data_assets/visuals/cli/mockups/workout_streak_ladder.txt",
+    "health_data_assets/visuals/cli/prompts/health_visual_brief.md": "health_data_assets/visuals/cli/prompts/health_visual_brief.md",
+    "health_data_assets/visuals/cli/prompts/interpretation_guardrails.md": "health_data_assets/visuals/cli/prompts/interpretation_guardrails.md",
+    "health_data_entry.py": "health_data_entry.py",
+    "health_eval/__init__.py": "health_eval/__init__.py",
+    "health_eval/build_analytics_fixture.py": "health_eval/build_analytics_fixture.py",
+    "health_eval/build_fixture.py": "health_eval/build_fixture.py",
+    "health_eval/checker.py": "health_eval/checker.py",
+    "health_eval/export_ground_truth.py": "health_eval/export_ground_truth.py",
+    "health_eval/fake_google_api.py": "health_eval/fake_google_api.py",
+    "health_eval/fake_oura_server.py": "health_eval/fake_oura_server.py",
+    "health_eval/judge.py": "health_eval/judge.py",
+    "health_eval/judge_prompt.txt": "health_eval/judge_prompt.txt",
+    "health_eval/plan_c_cases.py": "health_eval/plan_c_cases.py",
+    "health_eval/reference_templates.py": "health_eval/reference_templates.py",
+    "health_eval/render_references.py": "health_eval/render_references.py",
+    "health_eval/run.py": "health_eval/run.py",
+    "health_eval/test_analytics_platform_lane1.py": "health_eval/test_analytics_platform_lane1.py",
+    "health_eval/test_lane1.py": "health_eval/test_lane1.py",
+    "health_eval/test_plan_c.py": "health_eval/test_plan_c.py",
+    "normalize.py": "normalize.py",
+    "oauth_token.py": "oauth_token.py",
+    "onboarding.py": "onboarding.py",
+    "oura.py": "oura.py",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "query.py": "query.py",
+    "scripts/create_public_snapshot.sh": "scripts/create_public_snapshot.sh",
+    "scripts/install_git_hooks.sh": "scripts/install_git_hooks.sh",
+    "scripts/install_local.py": "scripts/install_local.py",
+    "scripts/release_safety.py": "scripts/release_safety.py",
+    "scripts/secret_scan.py": "scripts/secret_scan.py",
+    "scripts/verify_local_install.py": "scripts/verify_local_install.py",
+    "semantic_layer.py": "semantic_layer.py",
+    "skills/health-coach/SKILL.md": "skills/health-coach/SKILL.md",
+    "skills/health-visuals/SKILL.md": "skills/health-visuals/SKILL.md",
+    "skills/health-visuals/references/ansi_color_implementation_plan.md": "skills/health-visuals/references/ansi_color_implementation_plan.md",
+    "skills/health-visuals/references/ansi_visual_patterns.md": "skills/health-visuals/references/ansi_visual_patterns.md",
+    "skills/health-visuals/references/cli_visual_patterns.md": "skills/health-visuals/references/cli_visual_patterns.md",
+    "skills/health-visuals/references/terminal_ascii_patterns.md": "skills/health-visuals/references/terminal_ascii_patterns.md",
+    "store.py": "store.py",
+    "sync_control.py": "sync_control.py",
+    "tests/health_fixtures.py": "tests/health_fixtures.py",
+    "tests/test_analysis_tools.py": "tests/test_analysis_tools.py",
+    "tests/test_canonical_model.py": "tests/test_canonical_model.py",
+    "tests/test_commands.py": "tests/test_commands.py",
+    "tests/test_context_commands.py": "tests/test_context_commands.py",
+    "tests/test_feature_queries.py": "tests/test_feature_queries.py",
+    "tests/test_git_hooks.py": "tests/test_git_hooks.py",
+    "tests/test_google_health_auth.py": "tests/test_google_health_auth.py",
+    "tests/test_google_health_connector.py": "tests/test_google_health_connector.py",
+    "tests/test_health_observation_schema.py": "tests/test_health_observation_schema.py",
+    "tests/test_oauth_token.py": "tests/test_oauth_token.py",
+    "tests/test_oura.py": "tests/test_oura.py",
+    "tests/test_query_eval.py": "tests/test_query_eval.py",
+    "tests/test_register_contract.py": "tests/test_register_contract.py",
+    "tests/test_release_safety.py": "tests/test_release_safety.py",
+    "tests/test_secret_scan.py": "tests/test_secret_scan.py",
+    "tests/test_store_query_food.py": "tests/test_store_query_food.py",
+    "tests/test_visual_catalog.py": "tests/test_visual_catalog.py",
+    "visuals/cli/README.md": "visuals/cli/README.md",
+    "visuals/cli/mockups/ansi_preview_gallery.txt": "visuals/cli/mockups/ansi_preview_gallery.txt",
+    "visuals/cli/mockups/attendee_effect_board.txt": "visuals/cli/mockups/attendee_effect_board.txt",
+    "visuals/cli/mockups/baseline_drift_board.txt": "visuals/cli/mockups/baseline_drift_board.txt",
+    "visuals/cli/mockups/calendar_load_skyline.txt": "visuals/cli/mockups/calendar_load_skyline.txt",
+    "visuals/cli/mockups/chronotype_planner.txt": "visuals/cli/mockups/chronotype_planner.txt",
+    "visuals/cli/mockups/coverage_trust_ledger.txt": "visuals/cli/mockups/coverage_trust_ledger.txt",
+    "visuals/cli/mockups/day_shape_barcode.txt": "visuals/cli/mockups/day_shape_barcode.txt",
+    "visuals/cli/mockups/meeting_stress_leaderboard.txt": "visuals/cli/mockups/meeting_stress_leaderboard.txt",
+    "visuals/cli/mockups/recovery_gate.txt": "visuals/cli/mockups/recovery_gate.txt",
+    "visuals/cli/mockups/sleep_debt_heatstrip.txt": "visuals/cli/mockups/sleep_debt_heatstrip.txt",
+    "visuals/cli/mockups/strain_readiness_ribbon.txt": "visuals/cli/mockups/strain_readiness_ribbon.txt",
+    "visuals/cli/mockups/stress_waterfall.txt": "visuals/cli/mockups/stress_waterfall.txt",
+    "visuals/cli/mockups/training_mix_board.txt": "visuals/cli/mockups/training_mix_board.txt",
+    "visuals/cli/mockups/workload_outcome_matrix.txt": "visuals/cli/mockups/workload_outcome_matrix.txt",
+    "visuals/cli/mockups/workout_recovery_lane.txt": "visuals/cli/mockups/workout_recovery_lane.txt",
+    "visuals/cli/mockups/workout_streak_ladder.txt": "visuals/cli/mockups/workout_streak_ladder.txt",
+    "visuals/cli/prompts/health_visual_brief.md": "visuals/cli/prompts/health_visual_brief.md",
+    "visuals/cli/prompts/interpretation_guardrails.md": "visuals/cli/prompts/interpretation_guardrails.md"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "health-data",
+    "python_files_compiled": 57,
+    "secret_findings": 0
+  },
+  "canonical_slug": "health-data",
+  "catalog_file": "src/plugin-catalog/health-data.yaml",
+  "identity": {
+    "catalog_id": "health-data",
+    "canonical_slug": "health-data",
+    "original_manifest_name": "health-data",
+    "rebranded_manifest_name": "health-data",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "9779a6b8c92dc22637ef674b78a5416a87e3c4b9bbd56be72219655ba19738d4",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "8e97ec5ec25e3f991fcbba76f778d21668d3a3219c39d69e6ee362a1cbe7ea6b",
+          "after_sha256": "3fa03e2b2f31297bc0c0a9951304f402dec9d9dac99465599838da493ad19357",
+          "before_bytes": 23523,
+          "after_bytes": 23515,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

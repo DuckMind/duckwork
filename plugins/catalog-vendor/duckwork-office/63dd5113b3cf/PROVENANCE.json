@@ -1,0 +1,271 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/Adolanium/hermes-office/ae956aa756e4b75768dc850ff999dae94520e78e/assets/catalog-banner.png": "_catalog_assets/assets/catalog-banner.png"
+    },
+    "image": "_catalog_assets/assets/catalog-banner.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-office",
+  "content_id": "63dd5113b3cf",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "plugin.yaml",
+  "input_files": [
+    {
+      "bytes": 13,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b"
+    },
+    {
+      "bytes": 159,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "28d8f0ca208f63d681a879d854a4002bbc8c43330b15d057e7b9a9d790ecc930"
+    },
+    {
+      "bytes": 474311,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/catalog-banner.png",
+      "sha256": "395c89395c10539f706a36134d6f29ab9a6c049b4ca590ec036e420b347581c4"
+    },
+    {
+      "bytes": 1056,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685"
+    },
+    {
+      "bytes": 213624,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "d978efc307dd4314a5a03e18e02829a5667956fb2d07443f433446a99d5fa172"
+    },
+    {
+      "bytes": 321,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "893f728278b423b72b7124bc2c4d629d66f2cdf7dd9231dd4e322bbf53db1d2a"
+    }
+  ],
+  "input_manifest_sha256": "63dd5113b3cf8bae9bbcb0f98ab5eb9deb6bcbb016db31c7081f84c20f87d4b1",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "desktop/plugin.js",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Adolanium/hermes-office",
+    "sha": "ae956aa756e4b75768dc850ff999dae94520e78e",
+    "subdir": "catalog"
+  },
+  "original_repo": "https://github.com/Adolanium/hermes-office",
+  "original_sha": "ae956aa756e4b75768dc850ff999dae94520e78e",
+  "original_subdir": "catalog",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b",
+      "bytes": 13,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "28d8f0ca208f63d681a879d854a4002bbc8c43330b15d057e7b9a9d790ecc930",
+      "bytes": 159,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/assets/catalog-banner.png",
+      "sha256": "395c89395c10539f706a36134d6f29ab9a6c049b4ca590ec036e420b347581c4",
+      "bytes": 474311,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+      "bytes": 1056,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "f12bb67e588b04f436696ca56544eb5808273be8bbcdb4e4c65c307133c9a75f",
+      "bytes": 213650,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "178f19f1c3603444ae426959106145d4a3a6480e1f8e6536a806f33c3abf8f30",
+      "bytes": 325,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "d2aa9379b5b0912f0538035a1c8386fe4f68d53c7b504b06c6efa0ab2381c755",
+  "pin_verification": {
+    "archive_bytes": 612309,
+    "archive_sha256": "3a9763c3a42938986c2e2bcb6c78086433852c8a996dfb6333ca9e9cb42d1668",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "ae956aa756e4b75768dc850ff999dae94520e78e",
+    "verified_commit_marker": "ae956aa756e4b75768dc850ff999dae94520e78e"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "f07bb3004d370388bc73abc1d1e2aafe891c0aeba0dc8ab87ddfdfe025848452",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b",
+        "source": ".gitignore",
+        "final_output_sha256": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "32dae3052f331ee34d628ef535709b301259a45df7c7522c4d35dcf49873f00b"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "28d8f0ca208f63d681a879d854a4002bbc8c43330b15d057e7b9a9d790ecc930",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "28d8f0ca208f63d681a879d854a4002bbc8c43330b15d057e7b9a9d790ecc930",
+        "source": "__init__.py",
+        "final_output_sha256": "28d8f0ca208f63d681a879d854a4002bbc8c43330b15d057e7b9a9d790ecc930",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "28d8f0ca208f63d681a879d854a4002bbc8c43330b15d057e7b9a9d790ecc930"
+      },
+      {
+        "destination": "_catalog_assets/assets/catalog-banner.png",
+        "input_sha256": "395c89395c10539f706a36134d6f29ab9a6c049b4ca590ec036e420b347581c4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "395c89395c10539f706a36134d6f29ab9a6c049b4ca590ec036e420b347581c4",
+        "source": "_catalog_assets/assets/catalog-banner.png",
+        "final_output_sha256": "395c89395c10539f706a36134d6f29ab9a6c049b4ca590ec036e420b347581c4",
+        "cli_destination": "_catalog_assets/assets/catalog-banner.png",
+        "previous_staging_sha256": "395c89395c10539f706a36134d6f29ab9a6c049b4ca590ec036e420b347581c4"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "d978efc307dd4314a5a03e18e02829a5667956fb2d07443f433446a99d5fa172",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f12bb67e588b04f436696ca56544eb5808273be8bbcdb4e4c65c307133c9a75f",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "f12bb67e588b04f436696ca56544eb5808273be8bbcdb4e4c65c307133c9a75f",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "f12bb67e588b04f436696ca56544eb5808273be8bbcdb4e4c65c307133c9a75f"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "893f728278b423b72b7124bc2c4d629d66f2cdf7dd9231dd4e322bbf53db1d2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "178f19f1c3603444ae426959106145d4a3a6480e1f8e6536a806f33c3abf8f30",
+        "source": "plugin.yaml",
+        "final_output_sha256": "178f19f1c3603444ae426959106145d4a3a6480e1f8e6536a806f33c3abf8f30",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "178f19f1c3603444ae426959106145d4a3a6480e1f8e6536a806f33c3abf8f30"
+      }
+    ],
+    "manifest_sha256": "0ddda8947aa816b1f81cfb34a26b3977a292623b044d11ea855080b595f81034",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": "catalog/.gitignore",
+    "__init__.py": "catalog/__init__.py",
+    "_catalog_assets/assets/catalog-banner.png": "assets/catalog-banner.png",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "desktop/plugin.js": "catalog/desktop/plugin.js",
+    "plugin.yaml": "catalog/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-office",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-office",
+  "catalog_file": "src/plugin-catalog/duckwork-office.yaml",
+  "identity": {
+    "catalog_id": "hermes-office",
+    "canonical_slug": "duckwork-office",
+    "original_manifest_name": "hermes-office",
+    "rebranded_manifest_name": "duckwork-office",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "bdbe0a7544288b5b60c81acac3991e7d1bd34efb50d5d42f6188cfbd9de65ff0",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

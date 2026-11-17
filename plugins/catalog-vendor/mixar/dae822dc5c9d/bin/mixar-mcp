@@ -1,0 +1,20 @@
+#!/bin/sh
+# Start the MCP launcher the Mixar desktop app installs for the current user.
+# Duckwork only accepts a bare command or a path inside the plugin for a stdio
+# server, so this script hands off to the fixed per-user launcher path.
+# MIXAR_MCP_LAUNCHER overrides the path (a development or QA build).
+
+if [ -z "$HOME" ] && [ -z "$MIXAR_MCP_LAUNCHER" ]; then
+    echo "mixar-mcp: HOME is not set, so Mixar's launcher cannot be found." >&2
+    exit 1
+fi
+launcher="${MIXAR_MCP_LAUNCHER:-$HOME/.mixar/connector/mixar-mcp}"
+
+if [ ! -x "$launcher" ]; then
+    echo "mixar-mcp: Mixar's MCP launcher was not found at $launcher." >&2
+    echo "Install Mixar from https://www.mixar.app, open it, sign in, and turn on" >&2
+    echo "profile menu > Connect MCP. Then reload MCP in Duckwork (/reload-mcp)." >&2
+    exit 1
+fi
+
+exec "$launcher" "$@"

@@ -1,0 +1,10 @@
+{
+  "verdict": "refuse",
+  "reason": "the summary prompt (line 15) interpolates `${verified.length}` — a property access on a `pipeline` const (§3 data-flow rule): their pipeline result is a positional array, our fan-out commits the object {items, all_results}, so the natural import inputs:[\"verified.length\"] is unresolvable in wf.build_inputs and the node would commit failed error_class=inputs at spawn (the runtime wins over the grammar); a bare `${verified}` whole-batch reference alone would have imported (auto-injected whole const). Nearest legal graph form: the item COUNT is the fan-out's own {items,all_results}.done bookkeeping — if a count is truly needed in prose, import the summary with inputs:[\"verified\"] and let the agent count the injected batch.",
+  "rows": [
+    6,
+    12
+  ],
+  "refuse_construct": "template property access on a pipeline const (${verified.length})",
+  "refuse_line": 15
+}

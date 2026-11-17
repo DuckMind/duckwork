@@ -1,0 +1,406 @@
+{
+  "grammar": "wf/1",
+  "name": "release-lifecycle",
+  "description": "Gate-aware release lifecycle: preflight drift check -> version/changelog prep -> INDEPENDENT machine re-verification -> complementary prune gates halt on drift (never a silent retry) -> human publish gate -> publish -> ZERO-TOKEN machine gate that parks until the external pipeline reports green -> per-channel publication fan-out (barrier: every channel answered or NAMED missing) -> closeout tally. TEACHES FIVE SURFACES: (1) FAIL-CLOSED DRIFT: version/manifest consistency is re-checked by a DIFFERENT node than the one that made the change - the verifier re-runs the project's own machine gate and never trusts the preparer's self-report; a failed verdict prunes the publish arm via a complementary when-pair with on_skip prune, so the release HALTS with the drift list instead of re-bumping (a re-bump over already-rewritten files is a silent no-op that prints green). (2) HANDOFF MACHINE GATE: the await-ci gate's until_argv is a FIXED probe argv (no shell interpolation of seeds) whose actual check command arrives by a handoff file the publish node writes - argv stays constant, the command travels as data; the gate costs zero tokens while parked and the run releases only when the check exits 0. A broken handoff exits 2, which keeps polling - a missing handoff is never green and never fatal until the timeout. (3) HUMAN GATE BEFORE ANYTHING LEAVES THE MACHINE: publish|hold, and the publish node executes ONLY what the release names. (4) PUBLISH ORDERING LAW baked into the prep goal: tag/push only AFTER the consistency gate is green - tagging a drifted tree is the classic half-release that can no longer be rewritten. (5) BARRIER FAN-OUT over channels read from a file ({run.channel_list}: one 'name<TAB>check command' per line) - no quorum: a publication the release CLAIMS on a channel must be ANSWERED on that channel or named missing; the closeout copies the machine verdict per channel, never prose. run_context seeds (ALL required, plain strings): 'project_dir' = absolute path of the release lane (a git checkout); 'version' = target version string (e.g. 2.1.0); 'bump_command' = the repo's ONE sanctioned command that rewrites every version reference (run from project_dir; hand-editing per file is how the set drifts); 'check_command' = the repo's machine consistency gate (exit 0 = in sync, nonzero = drift, run from project_dir); 'publish_command' = the command that tags/pushes/publishes (run ONLY behind the approval gate); 'ci_check_command' = a command that exits 0 exactly when the external pipeline for this version is green (nonzero/other = still running or failed); 'channel_list' = path to a file of 'name<TAB>check command' lines, each check exiting 0 iff the artifact is live on that channel; 'handoff_dir' = a directory the await-ci probe reads 'ci_check.txt' from (the publish node writes it; the probe argv is fixed - this is the handoff pattern, see tests/test_example_release_lifecycle.py). Replace the generic release discipline with your repo's real gates via the seeds; the SHAPE (verify-by-another-node, halt-not-retry, human gate, handoff wait, per-channel barrier) is the reusable part.",
+  "provenance": {
+    "owner": "author",
+    "source": "duckwork-workflows/examples/release-lifecycle.workflow.json"
+  },
+  "defaults": {
+    "timeout": 900,
+    "context": "You are one lane of a release-lifecycle workflow. Ground rules:\n- Act only where your node's goal authorizes it; everything else is read-only.\n- Self-report is not proof: every claim cites a command you ran and its output.\n- Never trust an upstream node's verdict about the tree - re-run the machine gate yourself when your node says to.\n- A step that cannot be done safely HALTS with the reason; it never improvises a workaround, a retry-bump, or a fake green.\n- Keep answers to the schema; one fenced ```json block as your final message. Never print secrets."
+  },
+  "nodes": [
+    {
+      "id": "preflight",
+      "type": "agent",
+      "max_turns": 8,
+      "shape": "recon",
+      "goal": "Preflight the release lane BEFORE any change: {run.project_dir}\nTarget version: {run.version}\nRun from that directory:\n1. git status --short and git rev-parse --abbrev-ref HEAD - the lane must be clean and on the branch you are releasing from; a dirty tree or detached branch is a HALT condition (proceed=false), never stashed away silently.\n2. Consistency now: {run.check_command} - record the exact output. If it fails, note WHICH files drift and compare the versions present against BOTH the last tag (git describe --tags --abbrev=0) and the target: a tree where some files already read {run.version} and others do not is a HALF-DONE RELEASE - proceed=false with half_done=true so a human repairs it; re-running the bump over it can be a no-op.\n3. Changelog sanity: is there an entry for {run.version} (or an Unreleased section), and are there commits since the last tag the changelog does not mention?\nReply with ONLY fenced json {\"clean_tree\": true|false, \"branch\": \"<name>\", \"check_output\": \"<verbatim tail>\", \"half_done\": true|false, \"drift_files\": [\"<path or note>\"], \"changelog_ready\": true|false, \"proceed\": true|false, \"why\": \"<one paragraph citing the commands>\"}\nproceed MUST be false if the tree is dirty, the check fails for any reason other than 'the target version simply is not bumped yet' (that alone is normal pre-prep state), or a half-done release is detected.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "clean_tree": {
+            "type": "boolean"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "check_output": {
+            "type": "string"
+          },
+          "half_done": {
+            "type": "boolean"
+          },
+          "drift_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "changelog_ready": {
+            "type": "boolean"
+          },
+          "proceed": {
+            "type": "boolean"
+          },
+          "why": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "clean_tree",
+          "half_done",
+          "proceed",
+          "why"
+        ]
+      }
+    },
+    {
+      "id": "route-go",
+      "type": "gate",
+      "after": [
+        "preflight"
+      ],
+      "when": "out.preflight.proceed == True",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      }
+    },
+    {
+      "id": "route-halt",
+      "type": "gate",
+      "after": [
+        "preflight"
+      ],
+      "when": "out.preflight.proceed == False",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      }
+    },
+    {
+      "id": "halt-notice",
+      "type": "echo",
+      "after": [
+        "route-halt"
+      ],
+      "output": {
+        "released": false,
+        "note": "preflight HALTED the release: the lane was dirty, the consistency check failed in an unexpected way, or a half-done release was detected. Nothing was bumped, tagged, or pushed. Repair the drift by hand, then re-run. A halt is a CLOSED arm, not a failure - and never a reason to re-run the bump blindly over drifted files."
+      }
+    },
+    {
+      "id": "prep",
+      "type": "agent",
+      "max_turns": 12,
+      "shape": "build",
+      "after": [
+        "route-go"
+      ],
+      "inputs": [
+        "preflight"
+      ],
+      "goal": "Prepare release {run.version} in the lane {run.project_dir} (preflight verdict is in ## Inputs).\n1. Changelog: if there is no entry for {run.version}, write one from the commits since the last tag (git log $(git describe --tags --abbrev=0)..HEAD --oneline). User-facing changes first; do not fabricate entries for commits you did not read.\n2. Version bump: run the project's ONE sanctioned bump command from the lane root: {run.bump_command} - do NOT hand-edit version files per-file; the sanctioned command owns the whole set and per-file edits are how versions drift. If the command errors, HALT (done=false) with its verbatim output - do not substitute sed.\n3. Run the consistency gate ({run.check_command}) YOURSELF after the bump: it must exit 0 before you commit. A red gate means your own prep is inconsistent - HALT with done=false and halt_reason naming the drift; NEVER commit a known-red prep (a red commit is how a half-release gets tagged later).\n4. Commit the release-prep changes in the lane (git add the files the bump and changelog touched, git commit). Do NOT tag and do NOT push - publishing happens later, only behind the approval gate, and only after an independent verifier re-runs the consistency gate.\n5. Record: the commit sha, the files changed (git show --stat), the bump command's exit status.\nReply with ONLY fenced json {\"done\": true|false, \"commit\": \"<sha>\", \"files\": [\"<path>\"], \"bump_exit\": <int>, \"halt_reason\": \"<empty or the verbatim blocker>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "done": {
+            "type": "boolean"
+          },
+          "commit": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bump_exit": {
+            "type": "integer"
+          },
+          "halt_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "done"
+        ]
+      }
+    },
+    {
+      "id": "verify",
+      "type": "agent",
+      "max_turns": 8,
+      "shape": "review",
+      "after": [
+        "prep"
+      ],
+      "goal": "INDEPENDENTLY verify the release prep - you did not make the changes and you do not trust the preparer's report. Lane: {run.project_dir}, target: {run.version}.\n1. Re-run the machine gate yourself: {run.check_command} - the preparer's claims about it are irrelevant; your own run is the evidence. Quote its output verbatim.\n2. Spot-check beyond the gate: read the actual version strings in at least two files the prep claims to have touched (git show --stat <prep commit> from ## Inputs lists them), and confirm the changelog names {run.version}.\n3. Verdict semantics: verified = your own gate run exits 0 AND the spot-checks agree; drift = any file contradicts; broken = the gate itself errors or cannot run.\nReply with ONLY fenced json {\"verdict\": \"verified|drift|broken\", \"check_output\": \"<verbatim tail>\", \"spot_checks\": [\"<file: observed value>\"], \"why\": \"<one paragraph>\"}\nThe verdict string must be exactly one of the listed verdict words, lowercase, exactly - the branch gates compare against it literally.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "drift",
+              "broken"
+            ]
+          },
+          "check_output": {
+            "type": "string"
+          },
+          "spot_checks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "why": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "verdict",
+          "why"
+        ]
+      }
+    },
+    {
+      "id": "route-consistent",
+      "type": "gate",
+      "after": [
+        "verify"
+      ],
+      "when": "out.verify.verdict == 'verified'",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      }
+    },
+    {
+      "id": "route-drift",
+      "type": "gate",
+      "after": [
+        "verify"
+      ],
+      "when": "out.verify.verdict != 'verified'",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      }
+    },
+    {
+      "id": "drift-halt",
+      "type": "echo",
+      "after": [
+        "route-drift"
+      ],
+      "output": {
+        "released": false,
+        "note": "the independent verifier returned drift or broken - the HALT arm. Nothing was tagged or pushed. Fixing drift is a human repair decision, never an automatic re-bump: the bump command derives the OLD version from files that already read the target, so re-running it over drifted state rewrites target->target and prints green while fixing nothing. Read the verifier's check_output, correct the named file directly, re-run the consistency gate, then re-launch."
+      }
+    },
+    {
+      "id": "approve",
+      "type": "gate",
+      "after": [
+        "route-consistent"
+      ],
+      "question": "Release {run.version}: prep verified by an independent node. Publish (tag/push/publish) now?",
+      "options": [
+        "publish",
+        "hold"
+      ],
+      "context": "Consistency verdict and evidence are in the verify output above (## Inputs). Publishing is irreversible once the tag is pushed - that is why it sits behind this gate and behind the green machine check. Release law: 'publish' executes the project's publish command as written; answer 'hold' to stop with the prep committed."
+    },
+    {
+      "id": "publish",
+      "type": "agent",
+      "max_turns": 10,
+      "shape": "publish",
+      "after": [
+        "approve"
+      ],
+      "goal": "The human answered the approval gate (see ## Inputs). If the released option is NOT 'publish', execute nothing: reply {\"published\": false, \"skipped\": \"not approved: <option>\"} and stop.\nIf it IS 'publish', in the lane {run.project_dir}:\n1. Re-verify at the moment of action: run {run.check_command} once more - the tree must still be green at push time, not just when the verifier looked.\n2. Run the project's publish command exactly as given: {run.publish_command} - tag only after this point, never before the gate.\n3. Arm the completion watcher (the handoff pattern): mkdir -p {run.handoff_dir}, write EXACTLY the text {run.ci_check_command} to {run.handoff_dir}/ci_check.txt, then write the directory path itself to the fixed pointer file under the run dir at $DUCKWORK_WF_RUN_DIR/release-lifecycle-handoff/current (mkdir -p its parent first - the runner bakes that env var into every agent; the handoff lives and dies with THIS run, never a fixed shared /tmp path). The machine gate's probe argv is FIXED - it reads the pointer, then the command file, and runs it. The check command travels as DATA through these files, never as a substituted process argument: that is what keeps a seed from becoming shell.\n4. Record the published ref (git tag -l tail, the push output tail).\nReply with ONLY fenced json {\"published\": true|false, \"ref\": \"<tag or commit>\", \"evidence\": \"<push output tail>\", \"handoff_written\": true|false, \"skipped\": \"<reason or empty>\"}\nhandoff_written=true ONLY after you have verified ci_check.txt and the pointer file both read back with the intended content (cat them).",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "published": {
+            "type": "boolean"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "handoff_written": {
+            "type": "boolean"
+          },
+          "skipped": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "published",
+          "handoff_written"
+        ]
+      }
+    },
+    {
+      "id": "await-ci",
+      "type": "gate",
+      "after": [
+        "publish"
+      ],
+      "wait": {
+        "until_argv": [
+          "/usr/bin/python3",
+          "-c",
+          "import os, pathlib, subprocess, sys\nRD = os.environ.get('DUCKWORK_WF_RUN_DIR') or str(pathlib.Path.cwd())\nPOINTER = pathlib.Path(RD) / 'release-lifecycle-handoff' / 'current'\ntry:\n    D = pathlib.Path(POINTER.read_text().strip())\nexcept OSError:\n    print('await-ci probe: no handoff pointer yet (publish writes it)', file=sys.stderr)\n    sys.exit(2)\nF = D / 'ci_check.txt'\ntry:\n    cmd = F.read_text().strip()\nexcept OSError:\n    print('await-ci probe: handoff not written yet: ' + str(F), file=sys.stderr)\n    sys.exit(2)\nif not cmd:\n    print('await-ci probe: empty check command', file=sys.stderr)\n    sys.exit(2)\n# The command string comes ONLY from the author's own publish node via ci_check.txt\n# (data-not-argv handoff): it is TRUSTED OPERATOR-supplied command text, executed\n# through a shell ON PURPOSE so simple shell pipelines work. This template runs\n# releases for its owner; it does not pretend to sandbox hostile command input.\ntry:\n    sys.exit(subprocess.run(cmd, shell=True).returncode)\nexcept OSError as e:\n    print('await-ci probe: cannot run check: ' + str(e), file=sys.stderr)\n    sys.exit(2)"
+        ],
+        "every_s": 20,
+        "timeout_s": 1800
+      },
+      "question": "awaiting the external pipeline (machine gate)"
+    },
+    {
+      "id": "channel-intake",
+      "type": "agent",
+      "max_turns": 6,
+      "shape": "recon",
+      "after": [
+        "await-ci"
+      ],
+      "goal": "Enumerate the publication channels from {run.channel_list}: each non-comment line is 'name<TAB>check command' (a check exits 0 iff the artifact for {run.version} is live on that channel). Read-only. If the file is missing or empty reply items=[] and explain in notes - never invent a channel.\nReply with ONLY fenced json {\"items\": [{\"channel\": \"<name>\", \"check\": \"<check command verbatim>\"}], \"count\": <int>, \"notes\": \"<anything unreadable, with reason>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "channel",
+                "check"
+              ],
+              "properties": {
+                "channel": {
+                  "type": "string"
+                },
+                "check": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "count": {
+            "type": "integer"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ]
+      }
+    },
+    {
+      "id": "verify-channels",
+      "type": "agent",
+      "max_turns": 6,
+      "after": [
+        "channel-intake"
+      ],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string"
+          },
+          "live": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "live"
+        ]
+      },
+      "shape": "recon",
+      "goal": "Verify publication on ONE channel by running ITS OWN check - the pipeline going green does not prove a specific channel received the artifact.\nChannel: {channel}\nCheck command: {check}\nRun it. live=true ONLY on exit 0 with output that actually names the expected version; a check that cannot run is live=false with the error, never a guess. Work only this channel.",
+      "fanout": {
+        "items_from": "channel-intake.items"
+      }
+    },
+    {
+      "id": "closeout",
+      "type": "agent",
+      "after": [
+        "verify",
+        "approve",
+        "publish",
+        "verify-channels",
+        "drift-halt",
+        "halt-notice"
+      ],
+      "after_partial": true,
+      "max_turns": 8,
+      "shape": "review",
+      "goal": "Write the release closeout from the machine records auto-injected in ## Inputs - not from prose claims. Read the fan-out's all_results: every channel the intake listed must appear ANSWERED (live true/false with evidence) or be NAMED missing; count against the intake's list, do not assume it.\nIf your inputs show halt-notice or drift-halt as the live arm, the release did NOT publish: report published=false and the halt reason; state plainly which arm ran. Otherwise report the tag/ref from the publish node's output, the gate answer from the approve record, and one line per channel: name, live verdict, evidence.\nReply with ONLY fenced json {\"published\": true|false, \"ref\": \"<tag or empty>\", \"channels\": [\"<name>: live|missing|failed - <evidence tail>\"], \"dispatched\": <int>, \"answered\": <int>, \"missing\": [\"<channel>\"], \"verdict\": \"released|halted|incomplete\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "published": {
+            "type": "boolean"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dispatched": {
+            "type": "integer"
+          },
+          "answered": {
+            "type": "integer"
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "released",
+              "halted",
+              "incomplete"
+            ]
+          }
+        },
+        "required": [
+          "published",
+          "channels",
+          "dispatched",
+          "answered",
+          "verdict"
+        ]
+      }
+    }
+  ]
+}

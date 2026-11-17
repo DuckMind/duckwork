@@ -1,0 +1,140 @@
+# Troubleshooting
+
+## Quick status checks
+
+```bash
+duckwork plugins list --enabled
+duckwork gateway status
+grep -i 'VK:' ~/.duckwork/logs/gateway.log | tail -80
+```
+
+## Required settings
+
+`~/.duckwork/.env` must contain:
+
+```dotenv
+VK_GROUP_TOKEN=vk1.a.your-community-token
+VK_GROUP_ID=123456789
+```
+
+And at least one safe access control setting:
+
+```dotenv
+VK_ALLOWED_USERS=123456
+# or
+VK_ALLOWED_PEERS=2000000001
+```
+
+## Common problems
+
+### PyPI Duckwork 0.19.0 / missing intake APIs
+
+VK plugin 0.2.2 requires Duckwork **>=0.21.3**. The tested released baseline is
+GitHub tag `v2026.9.14` (package version `0.21.3`), not unreleased main. PyPI
+0.19.0 lacks `MessageEvent.allow_gateway_control` and
+`BasePlatformAdapter._event_session_key`, as well as the optional target parser.
+Skipping the parser alone does not make that host compatible.
+
+The manifest declares the minimum; registration also checks the required
+intake APIs and fails clearly before registering VK if they are absent. Keep
+your working channel until you can safely upgrade Duckwork through the appropriate
+installation channel. Do not patch away the intake/control safeguards.
+
+### Plugin registration mentions `parse_target_ref_fn`
+
+Upgrade the VK plugin to version 0.2.1 or newer. Version 0.2.1 checks the actual
+host `PlatformEntry` signature and omits only this optional callback when the
+field is absent. It does not discard other unknown fields or retry after a
+registration `TypeError`, so genuine host/plugin API mismatches remain visible.
+
+Duckwork Agent v2026.9.14 includes this callback. A warning that the callback is
+missing therefore indicates a different, forked, development, or otherwise
+API-mismatched Duckwork build; it is not expected on that release. Base VK
+registration, ACL/config callbacks, and direct numeric-peer sends remain
+available when only this field is missing.
+
+Project-lane outbound targets such as `2000000042:lane:alpha` are not supported
+without the callback. Update Duckwork before using them; target-resolution
+behavior depends on the host build and is not covered by this registration
+fallback. Never remove the lane suffix and silently send to a guessed recipient.
+
+Load/connection smoke check (not a full VK end-to-end test):
+
+```bash
+duckwork plugins list --enabled
+duckwork gateway status
+grep -iE 'VK:|vk-platform|parse_target_ref_fn' ~/.duckwork/logs/gateway.log | tail -80
+```
+
+Expect the plugin to be enabled, VK to be configured/connected, and no plugin
+load exception. A live authorized VK request/reply is still required to prove
+end-to-end delivery.
+
+### `VK_GROUP_TOKEN and VK_GROUP_ID must be configured`
+
+Set both env vars in `~/.duckwork/.env`, then restart the gateway.
+
+### `VK: ignoring unauthorized sender=... peer=...`
+
+The plugin is working and intentionally dropped the message.
+
+Add the exact sender to `VK_ALLOWED_USERS` or the exact peer to `VK_ALLOWED_PEERS`.
+
+### Direct messages work, group chat does not
+
+Check that:
+
+- the VK community bot is actually added to the conversation;
+- community settings allow adding the bot to chats;
+- the group conversation peer id is allowlisted;
+- you used `2000000000 + chat_id`, not just the visible chat id.
+
+### Gateway started before `.env` changes
+
+Restart:
+
+```bash
+duckwork gateway restart
+```
+
+### Long Poll does not receive events
+
+In VK community settings, check:
+
+- Long Poll API is enabled;
+- API version is supported;
+- `message_new` is enabled for incoming messages;
+- `message_edit` is enabled for edits;
+- **`message_event` is enabled for callback buttons**;
+- community messages are enabled.
+
+### Callback buttons keep loading; Allow Once / Deny does nothing
+
+VK renders keyboards even when their Long Poll event subscription is disabled.
+Open community settings → API usage → Long Poll API → Event types and enable
+**`message_event`**. Receiving ordinary messages (`message_new`) is not enough.
+The message-history fallback only recovers text messages, not callback clicks.
+
+For an API-based diagnosis, inspect `groups.getLongPollSettings` with the community
+token without printing it. Expect `is_enabled=true` and `events.message_event=1`.
+An authorized operator can enable only `message_event=1` through
+`groups.setLongPollSettings`; preserve all other settings and read them back.
+The plugin diagnoses missing subscriptions but never changes community settings
+silently at startup.
+
+Check fresh gateway log entries for `types=message_event` after a click. If the
+event arrives but the prompt is expired, use a new request; do not reuse an old
+button after a gateway restart. If a callback is unavailable, reply to the
+original approval prompt with `/approve` or `/deny` in its original project.
+For slash confirmations use `/approve`, `/always`, or `/cancel`. Text approvals
+resolve the oldest pending operation in that project; review it before approving.
+
+Access policies still apply to buttons. An allowlisted peer permits its allowed
+participants, not just the person who started a shared lane. Use `user_only`,
+`peer_and_user`, or per-peer user allowlists when approvals must be owner-only.
+
+### Media does not arrive as expected
+
+Some VK attachments expose only player/watch-page metadata. The plugin does not pretend those pages are direct files.
+
+For video metadata fallback, optionally configure `VK_USER_TOKEN`, but normal text/chat use does not need it.

@@ -1,0 +1,500 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/keenableai/keenable-hermes-plugin/ffa97c924415f7b6e3517d900694272efac8af41/assets/keenable-catalog-card.svg": "assets/keenable-catalog-card.svg"
+    },
+    "image": "assets/keenable-catalog-card.svg",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": [
+      {
+        "before_path": "_catalog_assets/assets/keenable-catalog-card.svg",
+        "after_path": "assets/keenable-catalog-card.svg",
+        "before_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "after_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "before_bytes": 7409,
+        "after_bytes": 7409,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      }
+    ]
+  },
+  "catalog_id": "keenable-plugin",
+  "content_id": "4dd05c5bea6b",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1697,
+      "mode": "100644",
+      "path": ".github/workflows/validate.yml",
+      "sha256": "bfc010622561fd7065f67fbeb88a4c628cffea5cf82ec101893dbad1eda5f83c"
+    },
+    {
+      "bytes": 51,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "a2aea00f25f612e174910aa9f484bba7635f411c567f965191b162fcadb866c8"
+    },
+    {
+      "bytes": 253,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "2342fc4b1786ec52f542ae43b2ba29de6dc6fa01db909d125585246e743a12bf"
+    },
+    {
+      "bytes": 1065,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "119b60c4eb6e05f4b02d69779bdfc8b854d15a71c60e3ff47c271f49b47884ce"
+    },
+    {
+      "bytes": 6846,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "c56ddbc3f3618c801be67bd864d395dc23d0d510267b2a5386dbbcd20affbd9d"
+    },
+    {
+      "bytes": 7409,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/keenable-catalog-card.svg",
+      "sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df"
+    },
+    {
+      "bytes": 7409,
+      "mode": "100644",
+      "path": "assets/keenable-catalog-card.svg",
+      "sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df"
+    },
+    {
+      "bytes": 2802,
+      "mode": "100644",
+      "path": "assets/keenable-icon.svg",
+      "sha256": "30e694688d505cce69fa5c3456049be6ad68209f21271c81be07ac0f07c30297"
+    },
+    {
+      "bytes": 863,
+      "mode": "100644",
+      "path": "examples/api-key.yaml",
+      "sha256": "6d36baa2f22032c0511d3d9ccb48efc994af25e618d5594736c55cb07ab9e1b8"
+    },
+    {
+      "bytes": 270,
+      "mode": "100644",
+      "path": "mcp.json",
+      "sha256": "55f050411bee2c7f343694da6753e2ba59049be9c15898c606f816bceb03727b"
+    },
+    {
+      "bytes": 569,
+      "mode": "100644",
+      "path": "plugin.json",
+      "sha256": "33fa447501c8f452efd1cb56cf31a6f6d31dd6f618d1e10777fce593375be499"
+    },
+    {
+      "bytes": 3605,
+      "mode": "100644",
+      "path": "skills/keenable-research/SKILL.md",
+      "sha256": "3169a23e86ed0c167814dff0b8f850a092e5dde9eb7af7bf93dea5ec6d5dbc9e"
+    },
+    {
+      "bytes": 4957,
+      "mode": "100644",
+      "path": "skills/keenable-search/SKILL.md",
+      "sha256": "8dd37283380f7335d03017385f5d8eb9aa43be06c580d32e02f5681b8cb4c363"
+    },
+    {
+      "bytes": 3317,
+      "mode": "100644",
+      "path": "tests/test_package.py",
+      "sha256": "9dc6c9e8d85866c6da6a79be0c4331af441e4c448a5f64d61757b9b7d8a69229"
+    }
+  ],
+  "input_manifest_sha256": "4dd05c5bea6bb406cbb6c5c38ef1c9fd2a04c32b7d44c8c3ebc6fdc47c3fb92d",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "119b60c4eb6e05f4b02d69779bdfc8b854d15a71c60e3ff47c271f49b47884ce",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/validate.yml",
+      ".gitignore",
+      "README.md",
+      "examples/api-key.yaml",
+      "mcp.json",
+      "plugin.json",
+      "skills/keenable-research/SKILL.md",
+      "skills/keenable-search/SKILL.md",
+      "tests/test_package.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/keenableai/keenable-hermes-plugin",
+    "sha": "ffa97c924415f7b6e3517d900694272efac8af41",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/keenableai/keenable-hermes-plugin",
+  "original_sha": "ffa97c924415f7b6e3517d900694272efac8af41",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/validate.yml",
+      "sha256": "a50593bce22965247298e2e727fdd8f43c0caa334fc12a8b8a46459520bb17d1",
+      "bytes": 1721,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "8bd2c621fd6fa1dd5618412888c342143e22040860cd4fa7ae05efef4b143dce",
+      "bytes": 53,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "2342fc4b1786ec52f542ae43b2ba29de6dc6fa01db909d125585246e743a12bf",
+      "bytes": 253,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "119b60c4eb6e05f4b02d69779bdfc8b854d15a71c60e3ff47c271f49b47884ce",
+      "bytes": 1065,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "f5e5e66e36d496e1d77ffb417f2d03e20b1be0743b2b7f0cea5fe1291d6c575f",
+      "bytes": 6910,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/keenable-catalog-card.svg",
+      "sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+      "bytes": 7409,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/keenable-icon.svg",
+      "sha256": "30e694688d505cce69fa5c3456049be6ad68209f21271c81be07ac0f07c30297",
+      "bytes": 2802,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/api-key.yaml",
+      "sha256": "c7b511e22b0ee6e31c4b7a58f12e0391391762645e24d5f9b398c759800a8de9",
+      "bytes": 873,
+      "mode": "100644"
+    },
+    {
+      "path": "mcp.json",
+      "sha256": "e1cd206a78cc8f57d3ec08ebcbdc88b84bd05534ac574eadd8e2688552da301f",
+      "bytes": 272,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.json",
+      "sha256": "2105b923410953b15d8b86900e8cd0a35acc61c00058de3b016765591da60d75",
+      "bytes": 553,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/keenable-research/SKILL.md",
+      "sha256": "6dc29a7e88b98452d4ada79e75e3c5dbde0c52b6d6f92fdff24f6a100266dd14",
+      "bytes": 3607,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/keenable-search/SKILL.md",
+      "sha256": "ec8592680423b5b8631aea1352fc80b1af81abae38054d91e273039694e1bede",
+      "bytes": 4965,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_package.py",
+      "sha256": "2c794847fbda3f5f4442fe9e643ffb34a68cd59c80d043843cc59dc5af6f1544",
+      "bytes": 3335,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "16b01e824ff2cb234d80c343f6ff12402e03e14ed7e1d0cd1ac9048829ff6d2b",
+  "pin_verification": {
+    "archive_bytes": 14537,
+    "archive_sha256": "6019e0118ec8ca8937bd00b0d32ada3af8523a52f5e70eb233897933a482fef6",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "ffa97c924415f7b6e3517d900694272efac8af41",
+    "verified_commit_marker": "ffa97c924415f7b6e3517d900694272efac8af41"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "af1ed769cb726d83cf9afdfd102a69cabff9ea6a6f8cc09fff5e16e377deb853",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/validate.yml",
+        "input_sha256": "bfc010622561fd7065f67fbeb88a4c628cffea5cf82ec101893dbad1eda5f83c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a50593bce22965247298e2e727fdd8f43c0caa334fc12a8b8a46459520bb17d1",
+        "source": ".github/workflows/validate.yml",
+        "final_output_sha256": "a50593bce22965247298e2e727fdd8f43c0caa334fc12a8b8a46459520bb17d1",
+        "cli_destination": ".github/workflows/validate.yml",
+        "previous_staging_sha256": "a50593bce22965247298e2e727fdd8f43c0caa334fc12a8b8a46459520bb17d1"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "a2aea00f25f612e174910aa9f484bba7635f411c567f965191b162fcadb866c8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8bd2c621fd6fa1dd5618412888c342143e22040860cd4fa7ae05efef4b143dce",
+        "source": ".gitignore",
+        "final_output_sha256": "8bd2c621fd6fa1dd5618412888c342143e22040860cd4fa7ae05efef4b143dce",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "8bd2c621fd6fa1dd5618412888c342143e22040860cd4fa7ae05efef4b143dce"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "2342fc4b1786ec52f542ae43b2ba29de6dc6fa01db909d125585246e743a12bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2342fc4b1786ec52f542ae43b2ba29de6dc6fa01db909d125585246e743a12bf",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "2342fc4b1786ec52f542ae43b2ba29de6dc6fa01db909d125585246e743a12bf",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "2342fc4b1786ec52f542ae43b2ba29de6dc6fa01db909d125585246e743a12bf"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "119b60c4eb6e05f4b02d69779bdfc8b854d15a71c60e3ff47c271f49b47884ce",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "119b60c4eb6e05f4b02d69779bdfc8b854d15a71c60e3ff47c271f49b47884ce",
+        "source": "LICENSE",
+        "final_output_sha256": "119b60c4eb6e05f4b02d69779bdfc8b854d15a71c60e3ff47c271f49b47884ce",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "119b60c4eb6e05f4b02d69779bdfc8b854d15a71c60e3ff47c271f49b47884ce"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "c56ddbc3f3618c801be67bd864d395dc23d0d510267b2a5386dbbcd20affbd9d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f5e5e66e36d496e1d77ffb417f2d03e20b1be0743b2b7f0cea5fe1291d6c575f",
+        "source": "README.md",
+        "final_output_sha256": "f5e5e66e36d496e1d77ffb417f2d03e20b1be0743b2b7f0cea5fe1291d6c575f",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "f5e5e66e36d496e1d77ffb417f2d03e20b1be0743b2b7f0cea5fe1291d6c575f"
+      },
+      {
+        "destination": "assets/keenable-catalog-card.svg",
+        "input_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "source": "_catalog_assets/assets/keenable-catalog-card.svg",
+        "final_output_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "cli_destination": "_catalog_assets/assets/keenable-catalog-card.svg",
+        "previous_staging_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "assets/keenable-catalog-card.svg",
+        "input_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "source": "assets/keenable-catalog-card.svg",
+        "final_output_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+        "cli_destination": "assets/keenable-catalog-card.svg",
+        "previous_staging_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df"
+      },
+      {
+        "destination": "assets/keenable-icon.svg",
+        "input_sha256": "30e694688d505cce69fa5c3456049be6ad68209f21271c81be07ac0f07c30297",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "30e694688d505cce69fa5c3456049be6ad68209f21271c81be07ac0f07c30297",
+        "source": "assets/keenable-icon.svg",
+        "final_output_sha256": "30e694688d505cce69fa5c3456049be6ad68209f21271c81be07ac0f07c30297",
+        "cli_destination": "assets/keenable-icon.svg",
+        "previous_staging_sha256": "30e694688d505cce69fa5c3456049be6ad68209f21271c81be07ac0f07c30297"
+      },
+      {
+        "destination": "examples/api-key.yaml",
+        "input_sha256": "6d36baa2f22032c0511d3d9ccb48efc994af25e618d5594736c55cb07ab9e1b8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c7b511e22b0ee6e31c4b7a58f12e0391391762645e24d5f9b398c759800a8de9",
+        "source": "examples/api-key.yaml",
+        "final_output_sha256": "c7b511e22b0ee6e31c4b7a58f12e0391391762645e24d5f9b398c759800a8de9",
+        "cli_destination": "examples/api-key.yaml",
+        "previous_staging_sha256": "c7b511e22b0ee6e31c4b7a58f12e0391391762645e24d5f9b398c759800a8de9"
+      },
+      {
+        "destination": "mcp.json",
+        "input_sha256": "55f050411bee2c7f343694da6753e2ba59049be9c15898c606f816bceb03727b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e1cd206a78cc8f57d3ec08ebcbdc88b84bd05534ac574eadd8e2688552da301f",
+        "source": "mcp.json",
+        "final_output_sha256": "e1cd206a78cc8f57d3ec08ebcbdc88b84bd05534ac574eadd8e2688552da301f",
+        "cli_destination": "mcp.json",
+        "previous_staging_sha256": "e1cd206a78cc8f57d3ec08ebcbdc88b84bd05534ac574eadd8e2688552da301f"
+      },
+      {
+        "destination": "plugin.json",
+        "input_sha256": "33fa447501c8f452efd1cb56cf31a6f6d31dd6f618d1e10777fce593375be499",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "33fa447501c8f452efd1cb56cf31a6f6d31dd6f618d1e10777fce593375be499",
+        "source": "plugin.json",
+        "final_output_sha256": "2105b923410953b15d8b86900e8cd0a35acc61c00058de3b016765591da60d75",
+        "cli_destination": "plugin.json",
+        "previous_staging_sha256": "33fa447501c8f452efd1cb56cf31a6f6d31dd6f618d1e10777fce593375be499"
+      },
+      {
+        "destination": "skills/keenable-research/SKILL.md",
+        "input_sha256": "3169a23e86ed0c167814dff0b8f850a092e5dde9eb7af7bf93dea5ec6d5dbc9e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6dc29a7e88b98452d4ada79e75e3c5dbde0c52b6d6f92fdff24f6a100266dd14",
+        "source": "skills/keenable-research/SKILL.md",
+        "final_output_sha256": "6dc29a7e88b98452d4ada79e75e3c5dbde0c52b6d6f92fdff24f6a100266dd14",
+        "cli_destination": "skills/keenable-research/SKILL.md",
+        "previous_staging_sha256": "6dc29a7e88b98452d4ada79e75e3c5dbde0c52b6d6f92fdff24f6a100266dd14"
+      },
+      {
+        "destination": "skills/keenable-search/SKILL.md",
+        "input_sha256": "8dd37283380f7335d03017385f5d8eb9aa43be06c580d32e02f5681b8cb4c363",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec8592680423b5b8631aea1352fc80b1af81abae38054d91e273039694e1bede",
+        "source": "skills/keenable-search/SKILL.md",
+        "final_output_sha256": "ec8592680423b5b8631aea1352fc80b1af81abae38054d91e273039694e1bede",
+        "cli_destination": "skills/keenable-search/SKILL.md",
+        "previous_staging_sha256": "ec8592680423b5b8631aea1352fc80b1af81abae38054d91e273039694e1bede"
+      },
+      {
+        "destination": "tests/test_package.py",
+        "input_sha256": "9dc6c9e8d85866c6da6a79be0c4331af441e4c448a5f64d61757b9b7d8a69229",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2c794847fbda3f5f4442fe9e643ffb34a68cd59c80d043843cc59dc5af6f1544",
+        "source": "tests/test_package.py",
+        "final_output_sha256": "2c794847fbda3f5f4442fe9e643ffb34a68cd59c80d043843cc59dc5af6f1544",
+        "cli_destination": "tests/test_package.py",
+        "previous_staging_sha256": "2c794847fbda3f5f4442fe9e643ffb34a68cd59c80d043843cc59dc5af6f1544"
+      }
+    ],
+    "manifest_sha256": "0f99a53c5c6a76ad3a87a2a9d8e1160ab6a8e4a137b585420f8befd161ee3891",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/validate.yml": ".github/workflows/validate.yml",
+    ".gitignore": ".gitignore",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "_catalog_assets/assets/keenable-catalog-card.svg": "assets/keenable-catalog-card.svg",
+    "assets/keenable-catalog-card.svg": "assets/keenable-catalog-card.svg",
+    "assets/keenable-icon.svg": "assets/keenable-icon.svg",
+    "examples/api-key.yaml": "examples/api-key.yaml",
+    "mcp.json": "mcp.json",
+    "plugin.json": "plugin.json",
+    "skills/keenable-research/SKILL.md": "skills/keenable-research/SKILL.md",
+    "skills/keenable-search/SKILL.md": "skills/keenable-search/SKILL.md",
+    "tests/test_package.py": "tests/test_package.py"
+  },
+  "verification": {
+    "manifest": "plugin.json",
+    "manifest_name": "keenable-plugin",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "keenable-plugin",
+  "catalog_file": "src/plugin-catalog/keenable-plugin.yaml",
+  "identity": {
+    "catalog_id": "keenable-plugin",
+    "canonical_slug": "keenable-plugin",
+    "original_manifest_name": "keenable-plugin",
+    "rebranded_manifest_name": "keenable-plugin",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "1950fe33c1e5d212ef6f0c481baee54750c0e30efc999a107511f2da49351776",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "_catalog_assets/assets/keenable-catalog-card.svg",
+          "after_path": "assets/keenable-catalog-card.svg",
+          "before_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+          "after_sha256": "12668daa2d7b5d9ed536e9797d55501d7fbd1b96f0491c8f0d5f88f752bd98df",
+          "before_bytes": 7409,
+          "after_bytes": 7409,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.json",
+          "after_path": "plugin.json",
+          "before_sha256": "33fa447501c8f452efd1cb56cf31a6f6d31dd6f618d1e10777fce593375be499",
+          "after_sha256": "2105b923410953b15d8b86900e8cd0a35acc61c00058de3b016765591da60d75",
+          "before_bytes": 569,
+          "after_bytes": 553,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

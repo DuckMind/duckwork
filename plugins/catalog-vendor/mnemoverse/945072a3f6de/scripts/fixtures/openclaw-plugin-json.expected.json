@@ -1,0 +1,38 @@
+{
+  "file": "openclaw.plugin.json",
+  "host": "OpenClaw plugin manifest (published to ClawHub as a bundle plugin)",
+  "verifiedAgainst": "https://docs.openclaw.ai/plugins/manifest",
+  "verifiedOn": "2026-10-07",
+  "checks": [
+    {
+      "name": "id present (the only required field)",
+      "kind": "present",
+      "path": [
+        "id"
+      ]
+    },
+    {
+      "name": "configSchema present (empty strict object, as in the minimal example)",
+      "kind": "present",
+      "path": [
+        "configSchema"
+      ]
+    },
+    {
+      "name": "category is memory (ClawHub catalog metadata)",
+      "kind": "equals",
+      "path": [
+        "categories",
+        0
+      ],
+      "expect": "memory"
+    },
+    {
+      "name": "no mcpServers key (the bundle's .mcp.json carries the server)",
+      "kind": "absent",
+      "path": [
+        "mcpServers"
+      ]
+    }
+  ]
+}

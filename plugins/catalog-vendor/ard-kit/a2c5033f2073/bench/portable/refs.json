@@ -1,0 +1,60 @@
+{
+  "corpusVersion": "1",
+  "domain": "bench.local",
+  "pageSize": 20,
+  "about": [
+    "Frozen gold labels for the portable ard-kit retrieval benchmark.",
+    "Each query lists the tools that are a CORRECT answer; several may be",
+    "correct (multi-gold), so a tie between two fitting tools is a pass, not",
+    "an arbitrary pick. Gold keys are the identifier tail after",
+    "'urn:air:<domain>:' so they stay valid whatever domain the corpus is",
+    "catalogized under.",
+    "Labels were authored against the REAL production scorer output",
+    "(ard_kit.registry.search_catalog) over the fixture corpus, not predicted.",
+    "The ru group documents a measured cross-lingual limitation of the",
+    "stem-folded token-overlap scorer; it is reported honestly, NOT fixed here."
+  ],
+  "groups": [
+    {
+      "name": "en",
+      "about": "English capability queries. One per fixture tool plus two deliberately ambiguous multi-gold queries.",
+      "queries": [
+        {"q": "count the words and lines in a text file", "gold": ["script:scripts:word_count"], "note": "word_count: docstring names words/lines/text file."},
+        {"q": "convert a csv file into json records", "gold": ["script:scripts:csv_to_json"], "note": "csv_to_json: near-verbatim docstring match."},
+        {"q": "validate that a file is well formed json", "gold": ["script:scripts:json_validate"], "note": "json_validate: validation intent; csv_to_json also mentions json but does not validate."},
+        {"q": "send an http request and print the status code", "gold": ["script:scripts:http_probe"], "note": "http_probe: only HTTP tool in the corpus."},
+        {"q": "show the current git branch and latest commit", "gold": ["script:scripts:git_summary.sh"], "note": "git_summary: identifier keeps the .sh suffix."},
+        {"q": "extract plain text and tables from a pdf", "gold": ["skill:skills:pdf-extract"], "note": "pdf-extract skill."},
+        {"q": "summarize a long document into key points", "gold": ["skill:skills:summarize-text"], "note": "summarize-text skill."},
+        {"q": "translate text between two languages", "gold": ["skill:skills:translate-text"], "note": "translate-text skill."},
+        {"q": "pack files into an archive", "gold": ["cli:archive-pack"], "note": "archive-pack bin command; description is shared with markdown-lint so tags/name decide."},
+        {"q": "lint a markdown document", "gold": ["cli:markdown-lint"], "note": "markdown-lint bin command; shares the package.json description with archive-pack."},
+        {"q": "weather forecast for a city", "gold": ["mcp:weather-lookup"], "note": "weather-lookup MCP card; unique match."},
+        {"q": "convert a value between measurement units", "gold": ["mcp:unit-converter"], "note": "unit-converter MCP card."},
+        {"q": "list and create calendar events", "gold": ["mcp:calendar-events"], "note": "calendar-events MCP card."},
+        {"q": "work with json data", "gold": ["script:scripts:csv_to_json", "script:scripts:json_validate"], "note": "MULTI-GOLD: deliberately vague; both json tools are correct and tie on score."},
+        {"q": "summarize or translate a long document", "gold": ["skill:skills:summarize-text", "skill:skills:translate-text"], "note": "MULTI-GOLD: query names both capabilities; both skills are correct answers."}
+      ]
+    },
+    {
+      "name": "ru",
+      "about": "Russian queries, reported as their own group. kind=cyrillic-blind queries are pure Cyrillic, which the [a-z0-9]+ tokenizer reduces to an empty token set: the scorer then returns the WHOLE catalog at score 0 and the intended tool is NOT ranked (matched=0). kind=latin-rescue queries carry a latin/acronym token (csv, json, pdf) that survives tokenization and rescues the correct tool. This contrast is the honest headline finding, measured not fixed.",
+      "queries": [
+        {"q": "подсчитать слова и строки в файле", "gold": ["script:scripts:word_count"], "kind": "cyrillic-blind", "note": "Pure Cyrillic -> empty token set -> all 13 rows at score 0; intended tool not ranked."},
+        {"q": "погода и прогноз в городе", "gold": ["mcp:weather-lookup"], "kind": "cyrillic-blind", "note": "Pure Cyrillic -> tokenizer-blind; whole catalog returned at score 0."},
+        {"q": "конвертировать csv в json", "gold": ["script:scripts:csv_to_json"], "kind": "latin-rescue", "note": "Latin tokens {csv,json} survive; csv_to_json ranks first."},
+        {"q": "валидировать json файл", "gold": ["script:scripts:json_validate"], "kind": "latin-rescue", "note": "Only latin token is {json}; json_validate and csv_to_json TIE at max score, identifier tie-break puts json_validate first. Single-token reduction is a scorer artifact, reported honestly."},
+        {"q": "извлечь текст из pdf", "gold": ["skill:skills:pdf-extract"], "kind": "latin-rescue", "note": "Latin token {pdf} survives; pdf-extract is the unique match."}
+      ]
+    },
+    {
+      "name": "negative",
+      "about": "Absent-capability queries: the corpus has no tool for these. A correct scorer returns an empty result (totalResults=0), i.e. it can say 'no such capability'. Every content token is outside the corpus vocabulary and none is a stopword, so the query tokenizes non-empty and the score<=0 filter fires.",
+      "queries": [
+        {"q": "play a synthwave audio track", "gold": [], "note": "No audio/playback tool in the corpus."},
+        {"q": "deploy a kubernetes helm chart", "gold": [], "note": "No deployment/kubernetes tool in the corpus."},
+        {"q": "mix a multitrack drum recording", "gold": [], "note": "No audio-mixing tool in the corpus."}
+      ]
+    }
+  ]
+}

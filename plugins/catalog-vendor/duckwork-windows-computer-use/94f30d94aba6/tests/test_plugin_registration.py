@@ -1,0 +1,297 @@
+import importlib.util
+import subprocess
+import sys
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+
+class FakeCtx:
+    def __init__(self):
+        self.tools = []
+        self.skills = []
+    def register_tool(self, **kwargs):
+        self.tools.append(kwargs)
+    def register_skill(self, name, path):
+        self.skills.append((name, Path(path)))
+
+def load_plugin_module(name="duckwork_windows_computer_use_plugin"):
+    spec = importlib.util.spec_from_file_location(
+        name,
+        ROOT / "__init__.py",
+        submodule_search_locations=[str(ROOT)],
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+def test_tool_module_registers_expected_tools():
+    import windows_computer_use
+    ctx = FakeCtx()
+    windows_computer_use.register_tools(ctx)
+    names = {t["name"] for t in ctx.tools}
+    assert "computer_use_capture_screen" in names
+    assert "computer_use_locate" in names
+    assert "computer_use_find_click" in names
+    assert "computer_use_batch" in names
+    assert "computer_use_execute_code" in names
+    assert "computer_use_release_all" in names
+    assert len(names) >= 20
+    assert all(t["toolset"] == "windows_computer_use" for t in ctx.tools)
+    assert any(t["name"] == "computer_use_warm" and "auto-bootstraps" in t["description"] for t in ctx.tools)
+
+
+def test_manifest_advertises_cross_platform_pyautogui_support():
+    manifest = yaml.safe_load((ROOT / "plugin.yaml").read_text(encoding="utf-8"))
+
+    assert {"windows", "macos", "linux"}.issubset(set(manifest["platforms"]))
+    assert "pyautogui>=0.9.54" in manifest["pip_dependencies"]
+    assert "python3-xlib>=0.15; platform_system == 'Linux'" in manifest["pip_dependencies"]
+    assert "pywin32>=306; platform_system == 'Windows'" in manifest["pip_dependencies"]
+
+def test_top_level_requirements_for_older_plugin_installers():
+    requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
+    basic = (ROOT / "requirements-basic.txt").read_text(encoding="utf-8")
+
+    assert "-r requirements-basic.txt" in requirements
+    assert "pyautogui>=0.9.54" in basic
+    assert "python3-xlib" in basic
+
+def test_manifest_declares_official_plugin_surfaces():
+    manifest = yaml.safe_load((ROOT / "plugin.yaml").read_text(encoding="utf-8"))
+
+    assert manifest["kind"] == "standalone"
+    assert "computer_use_locate" in manifest["provides_tools"]
+    assert "computer_use_find_click" in manifest["provides_tools"]
+    assert "computer_use_batch" in manifest["provides_tools"]
+    assert "computer_use_execute_code" in manifest["provides_tools"]
+    assert (ROOT / "skills" / "theia-ui-computer-use" / "SKILL.md").exists()
+
+def test_requirement_check_allows_pyautogui_desktop_platforms(monkeypatch):
+    import windows_computer_use
+
+    for platform_name in ("win32", "darwin", "linux"):
+        monkeypatch.setattr(windows_computer_use.sys, "platform", platform_name)
+        assert windows_computer_use.check_windows_computer_use_requirements() is True
+
+    monkeypatch.setattr(windows_computer_use.sys, "platform", "freebsd")
+    assert windows_computer_use.check_windows_computer_use_requirements() is False
+
+def test_plugin_entrypoint_registers_tools_and_bundled_skill(monkeypatch, tmp_path):
+    # Avoid mutating the real Duckwork profile during plugin import smoke tests.
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path / "duckwork-home"))
+    monkeypatch.setenv("THEIA_AUTO_INSTALL_LOCATE_WORKER", "false")
+    module = load_plugin_module()
+
+    ctx = FakeCtx()
+    module.register(ctx)
+
+    names = {t["name"] for t in ctx.tools}
+    assert "computer_use_capture_screen" in names
+    assert "computer_use_get_active_window" in names
+    assert len(names) >= 20
+    assert ctx.skills
+    skill_name, skill_path = ctx.skills[0]
+    assert skill_name == "theia-ui-computer-use"
+    assert skill_path.name == "SKILL.md"
+    assert skill_path.exists()
+
+def test_locate_worker_bootstrap_starts_outside_duckwork_venv(monkeypatch):
+    module = load_plugin_module("duckwork_windows_computer_use_plugin_locate_bootstrap")
+    calls = []
+    monkeypatch.setenv("THEIA_AUTO_INSTALL_LOCATE_WORKER", "true")
+    monkeypatch.setenv("THEIA_LOCATE_TORCH", "cpu")
+
+    class FakePopen:
+        def __init__(self, command, **kwargs):
+            calls.append((command, kwargs))
+
+    monkeypatch.setattr(module.subprocess, "Popen", FakePopen)
+    module._start_locate_worker_bootstrap()
+
+    import time
+    deadline = time.time() + 1
+    while not calls and time.time() < deadline:
+        time.sleep(0.01)
+    assert calls
+    command, kwargs = calls[0]
+
+    assert command[0] == sys.executable
+    assert command[1].endswith("setup_locate_worker.py")
+    assert "--torch" in command
+    assert "cpu" in command
+    assert kwargs["stdout"] == subprocess.DEVNULL
+
+def test_locate_tool_auto_bootstraps_when_worker_missing(monkeypatch):
+    import windows_computer_use
+
+    monkeypatch.setenv("COMPUTER_USE_LOCATE_BACKEND", "auto")
+    monkeypatch.setattr(windows_computer_use, "_external_python_path", lambda explicit=None: None)
+    monkeypatch.setattr(windows_computer_use, "_start_locate_worker_bootstrap", lambda: {"status": "installing", "python": "worker-python"})
+
+    result = windows_computer_use._warm()
+
+    assert result["status"] == "installing"
+    assert result["backend"] == "external"
+    assert "basic desktop controls" in result["fallback"]
+
+def test_basic_dependency_auto_install_uses_uv_when_missing(monkeypatch):
+    module = load_plugin_module("duckwork_windows_computer_use_plugin_auto_install")
+    calls = []
+
+    monkeypatch.setattr(module, "_missing_basic_dependencies", lambda: ["pyautogui"])
+    monkeypatch.setattr(module.shutil, "which", lambda name: "uv" if name == "uv" else None)
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="ok", stderr="")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    module._install_basic_dependencies_if_missing()
+
+    assert calls
+    assert calls[0][:3] == ["uv", "pip", "install"]
+    assert "--python" in calls[0]
+    assert "requirements-basic.txt" in calls[0][-1]
+
+def test_basic_dependency_auto_install_uses_user_site_for_system_python(monkeypatch):
+    module = load_plugin_module("duckwork_windows_computer_use_plugin_user_site_fallback")
+    calls = []
+
+    monkeypatch.setattr(module, "_missing_basic_dependencies", lambda: ["pyautogui"])
+    monkeypatch.setattr(module.shutil, "which", lambda name: None)
+    monkeypatch.setattr(module.sys, "prefix", "same-prefix", raising=False)
+    monkeypatch.setattr(module.sys, "base_prefix", "same-prefix", raising=False)
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 1 if "--user" not in command else 0, stdout="", stderr="denied")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    module._install_basic_dependencies_if_missing()
+
+    assert any("--user" in command for command in calls)
+
+def test_basic_dependency_auto_install_respects_opt_out(monkeypatch):
+    module = load_plugin_module("duckwork_windows_computer_use_plugin_auto_install_opt_out")
+    calls = []
+    monkeypatch.setenv("THEIA_AUTO_INSTALL_BASIC_DEPS", "false")
+    monkeypatch.setattr(module, "_missing_basic_dependencies", lambda: ["pyautogui"])
+    monkeypatch.setattr(module.subprocess, "run", lambda *a, **k: calls.append(a))
+
+    module._install_basic_dependencies_if_missing()
+
+    assert calls == []
+
+
+def test_safe_batch_preflights_all_steps_before_running_any(monkeypatch):
+    import windows_computer_use
+
+    calls = []
+    monkeypatch.setattr(windows_computer_use, "_result", lambda status="ok", **extra: {"status": status, **extra})
+    monkeypatch.setattr(windows_computer_use, "_click", lambda **kwargs: calls.append(("click", kwargs)) or {"status": "ok"})
+
+    result = windows_computer_use._computer_use_batch([
+        {"action": "click", "risk": "non_destructive", "x": 100, "y": 200, "target_hint": "search field", "safe_purpose": "focus_input"},
+        {"action": "click", "risk": "non_destructive", "x": 100, "y": 250, "target_hint": "Submit response", "safe_purpose": "focus_input"},
+    ])
+
+    assert result["status"] == "blocked"
+    assert result["blocked_step"] == 1
+    assert calls == []
+
+
+def test_safe_batch_runs_valid_steps_in_order_without_echoing_typed_text(monkeypatch):
+    import windows_computer_use
+
+    calls = []
+    monkeypatch.setattr(windows_computer_use, "_result", lambda status="ok", **extra: {"status": status, **extra})
+    for name in ("_move", "_type"):
+        monkeypatch.setattr(
+            windows_computer_use,
+            name,
+            lambda _name=name, **kwargs: calls.append((_name, kwargs)) or {"status": "ok"},
+        )
+
+    result = windows_computer_use._computer_use_batch([
+        {"action": "move", "risk": "non_destructive", "x": 100, "y": 200},
+        {"action": "type", "risk": "non_destructive", "text": "project notes", "field_hint": "local search field"},
+    ])
+
+    assert result["status"] == "ok"
+    assert result["executed_steps"] == 2
+    assert [name for name, _kwargs in calls] == ["_move", "_type"]
+    assert all("project notes" not in str(step) for step in result["steps"])
+
+
+def test_safe_batch_stops_after_a_failed_step(monkeypatch):
+    import windows_computer_use
+
+    calls = []
+    monkeypatch.setattr(windows_computer_use, "_result", lambda status="ok", **extra: {"status": status, **extra})
+    monkeypatch.setattr(windows_computer_use, "_move", lambda **kwargs: calls.append("move") or {"status": "error", "error": "target changed"})
+    monkeypatch.setattr(windows_computer_use, "_click", lambda **kwargs: calls.append("click") or {"status": "ok"})
+
+    result = windows_computer_use._computer_use_batch([
+        {"action": "move", "risk": "non_destructive", "x": 100, "y": 200},
+        {"action": "click", "risk": "non_destructive", "x": 100, "y": 200, "target_hint": "search field", "safe_purpose": "focus_input"},
+    ])
+
+    assert result["status"] == "stopped"
+    assert result["stopped_at"] == 0
+    assert calls == ["move"]
+
+
+def test_execute_code_compiles_safe_loops_and_batches_without_running_python(monkeypatch):
+    import windows_computer_use
+
+    chunks = []
+    monkeypatch.setattr(windows_computer_use, "_result", lambda status="ok", **extra: {"status": status, **extra})
+    monkeypatch.setattr(
+        windows_computer_use,
+        "_computer_use_batch",
+        lambda steps, **kwargs: chunks.append((steps, kwargs)) or {"status": "ok", "executed_steps": len(steps)},
+    )
+
+    result = windows_computer_use._computer_use_execute_code(
+        "for _ in range(3):\n    move(x=10, y=10)\nwait(duration_ms=100)",
+        static_screen=True,
+    )
+
+    assert result["status"] == "ok"
+    assert result["planned_steps"] == 4
+    assert result["executed_steps"] == 4
+    assert len(chunks) == 1
+    assert [step["action"] for step in chunks[0][0]] == ["move", "move", "move", "wait"]
+
+
+def test_execute_code_preflights_the_complete_program_before_any_chunk(monkeypatch):
+    import windows_computer_use
+
+    calls = []
+    monkeypatch.setattr(windows_computer_use, "_result", lambda status="ok", **extra: {"status": status, **extra})
+    monkeypatch.setattr(windows_computer_use, "_computer_use_batch", lambda *args, **kwargs: calls.append(args))
+
+    result = windows_computer_use._computer_use_execute_code(
+        "click(x=100, y=200, target_hint='search field', safe_purpose='focus_input')\nclick(x=100, y=240, target_hint='Submit response', safe_purpose='focus_input')",
+        static_screen=True,
+    )
+
+    assert result["status"] == "blocked"
+    assert result["blocked_step"] == 1
+    assert calls == []
+
+
+def test_execute_code_rejects_arbitrary_python(monkeypatch):
+    import windows_computer_use
+
+    monkeypatch.setattr(windows_computer_use, "_result", lambda status="ok", **extra: {"status": status, **extra})
+    result = windows_computer_use._computer_use_execute_code("__import__('os').system('whoami')", static_screen=True)
+
+    assert result["status"] == "blocked"
+    assert "unsupported action" in result["error"]

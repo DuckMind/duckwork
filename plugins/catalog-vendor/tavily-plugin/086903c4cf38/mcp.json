@@ -1,0 +1,13 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "tavily": {
+      "type": "streamable-http",
+      "url": "https://mcp.tavily.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${TAVILY_API_KEY}",
+        "X-Client-Name": "duckwork plugin"
+      }
+    }
+  }
+}

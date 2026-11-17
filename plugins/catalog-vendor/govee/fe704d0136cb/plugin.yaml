@@ -1,0 +1,18 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: govee
+version: 0.1.0
+description: Discover and control Govee lights with capability validation and state read-back.
+author: PromptClickRun
+license: Apache-2.0
+homepage: https://github.com/DuckMind/duckwork
+manifest_version: 2
+requires_duckwork: ">=0.21.2"
+tags: [govee, lights, smart-home, lighting]
+provides_tools:
+  - govee_lights
+provides_hooks: []
+requires_env:
+  - name: GOVEE_API_KEY
+    description: "Govee developer API key. Request one in the Govee Home app under Profile > Settings > Apply for API Key."
+    url: "https://developer.govee.com/reference/apply-you-govee-api-key"
+    secret: true

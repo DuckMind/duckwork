@@ -1,0 +1,450 @@
+"""Direct Kiro native transport, shaped like OpenAI's chat client."""
+from __future__ import annotations
+
+import asyncio
+import json
+import time
+from datetime import datetime, timezone
+import urllib.parse
+import uuid
+from types import SimpleNamespace
+from typing import Any, Iterator
+
+from capabilities import (
+    additional_model_request_fields_supported,
+    mark_additional_model_request_fields_unsupported,
+)
+from credentials import KiroAuthError, get_credentials, remember_profile_arn
+from transport import KiroHTTPError, request, request_json
+from translate import build_request
+
+_FALLBACK = ("claude-sonnet-4.5", "claude-haiku-4.5", "gpt-5.6-terra")
+_END = object()
+_UNSUPPORTED_ADDITIONAL_FIELDS = "additionalModelRequestFields is not supported for this model"
+
+
+def _model_id(body: dict) -> str:
+    try:
+        model = body["conversationState"]["currentMessage"]["userInputMessage"]["modelId"]
+    except (KeyError, TypeError):
+        return ""
+    return model if isinstance(model, str) else ""
+
+
+def _rejects_additional_model_request_fields(exc: KiroHTTPError) -> bool:
+    if exc.status != 400:
+        return False
+    try:
+        payload = json.loads(exc.body)
+    except (TypeError, ValueError):
+        return False
+
+    def strings(value: Any) -> Iterator[str]:
+        if isinstance(value, str):
+            yield value
+        elif isinstance(value, dict):
+            for item in value.values():
+                yield from strings(item)
+        elif isinstance(value, list):
+            for item in value:
+                yield from strings(item)
+
+    values = list(strings(payload))
+    return "REQUEST_BODY_INVALID" in values and any(
+        _UNSUPPORTED_ADDITIONAL_FIELDS.casefold() in value.casefold() for value in values
+    )
+
+
+def _headers(creds, *, accept: str = "application/json", target: str = "") -> dict[str, str]:
+    ua = "aws-sdk-python/1.0 KiroIDE-duckwork"
+    headers = {
+        "Accept": accept,
+        "Authorization": f"Bearer {creds.access_token}",
+        "TokenType": "SSO_OIDC",
+        "User-Agent": ua,
+        "x-amz-user-agent": ua,
+        "x-amzn-codewhisperer-optout": "true",
+        "amz-sdk-invocation-id": str(uuid.uuid4()),
+        "amz-sdk-request": "attempt=1; max=3",
+    }
+    if target:
+        headers["Content-Type"] = "application/x-amz-json-1.0"
+        headers["x-amz-target"] = target
+    return headers
+
+
+def _management(creds, target: str, payload: dict) -> dict:
+    """Kiro's target-dispatched control plane."""
+    return request_json(
+        "POST",
+        f"https://management.{creds.api_region}.kiro.dev/",
+        body=json.dumps(payload).encode(),
+        headers=_headers(creds, target=target),
+    )
+
+
+def _rest(creds, path: str, query: dict[str, str]) -> dict:
+    return request_json(
+        "GET",
+        f"https://codewhisperer.us-east-1.amazonaws.com/{path}?{urllib.parse.urlencode(query)}",
+        headers=_headers(creds),
+    )
+
+
+def list_model_ids() -> list[str]:
+    try:
+        creds = get_credentials()
+        profile_arn = _ensure_profile_arn(creds)
+        query = {"origin": "AI_EDITOR", "maxResults": "50"}
+        if profile_arn:
+            query["profileArn"] = profile_arn
+        data = _rest(creds, "ListAvailableModels", query)
+        models = [str(m["modelId"]) for m in data.get("models") or [] if isinstance(m, dict) and isinstance(m.get("modelId"), str)]
+        return models or list(_FALLBACK)
+    except Exception:
+        return list(_FALLBACK)
+
+
+def get_usage_limits() -> dict:
+    creds = get_credentials()
+    profile_arn = _ensure_profile_arn(creds)
+    query = {"isEmailRequired": "true", "origin": "AI_EDITOR", "resourceType": "AGENTIC_REQUEST"}
+    if profile_arn:
+        query["profileArn"] = profile_arn
+    return _rest(creds, "getUsageLimits", query)
+
+
+def format_usage(data: dict) -> str:
+    buckets = data.get("usageBreakdownList") or []
+    if not isinstance(buckets, list) or not buckets:
+        return "Kiro returned no usage buckets."
+
+    def display(value: object) -> str:
+        try:
+            return f"{float(str(value)):,.2f}".rstrip("0").rstrip(".")
+        except (TypeError, ValueError):
+            return str(value)
+
+    lines = ["Kiro usage:"]
+    for index, bucket in enumerate(buckets, 1):
+        if not isinstance(bucket, dict):
+            continue
+        current, limit = bucket.get("currentUsage"), bucket.get("usageLimit")
+        name = bucket.get("displayName") or bucket.get("usageType") or bucket.get("resourceType") or f"Allowance {index}"
+        try:
+            current_number, limit_number = float(str(current)), float(str(limit))
+            included = min(current_number, limit_number)
+            percent = f" ({included / limit_number * 100:.0f}%)" if limit_number > 0 else ""
+        except (TypeError, ValueError):
+            included, percent = current, ""
+        reset = bucket.get("nextDateReset")
+        if reset:
+            try:
+                reset = datetime.fromtimestamp(float(str(reset)), tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+            except (TypeError, ValueError, OSError):
+                pass
+        lines.append(f"- {name}: {display(included)}/{display(limit)}{percent}" + (f"; resets {reset}" if reset else ""))
+
+        if any(key in bucket for key in ("currentOverages", "currentOveragesWithPrecision", "overageCap", "overageCharges")):
+            overage = bucket.get("currentOveragesWithPrecision", bucket.get("currentOverages", 0))
+            cap = bucket.get("overageCapWithPrecision", bucket.get("overageCap", 0))
+            try:
+                overage_number, cap_number = float(str(overage)), float(str(cap))
+                cap_percent = f" ({overage_number / cap_number * 100:.0f}% of cap)" if cap_number > 0 else ""
+            except (TypeError, ValueError):
+                cap_percent = ""
+            plural = str(bucket.get("displayNamePlural") or f"{name}s").lower()
+            extra = f"  Extra usage: {display(overage)}/{display(cap)} {plural}{cap_percent}"
+            rate, charges, currency = bucket.get("overageRate"), bucket.get("overageCharges"), bucket.get("currency")
+            try:
+                extra += f"; ${float(str(charges)):.2f} {currency or 'USD'} at ${display(rate)}/{str(name).lower()}"
+            except (TypeError, ValueError):
+                pass
+            lines.append(extra)
+    return "\n".join(lines)
+
+
+def build_usage_snapshot(data: dict):
+    """Normalize Kiro allowances for Duckwork' native ``/usage`` renderer."""
+    from agent.account_usage import AccountUsageSnapshot, AccountUsageWindow
+
+    buckets = data.get("usageBreakdownList") or []
+    if not isinstance(buckets, list):
+        return None
+    windows = []
+    details = []
+    for index, bucket in enumerate(buckets, 1):
+        if not isinstance(bucket, dict):
+            continue
+        try:
+            current = float(str(bucket.get("currentUsage")))
+            limit = float(str(bucket.get("usageLimit")))
+        except (TypeError, ValueError):
+            continue
+        included = min(max(current, 0.0), max(limit, 0.0))
+        used_percent = included / limit * 100 if limit > 0 else None
+        reset_at = None
+        try:
+            reset = float(str(bucket.get("nextDateReset")))
+            reset_at = datetime.fromtimestamp(reset / 1000 if reset > 10_000_000_000 else reset, tz=timezone.utc)
+        except (TypeError, ValueError, OSError):
+            pass
+        name = str(
+            bucket.get("displayName")
+            or bucket.get("usageType")
+            or bucket.get("resourceType")
+            or f"Allowance {index}"
+        )
+        windows.append(AccountUsageWindow(
+            label=name,
+            used_percent=used_percent,
+            reset_at=reset_at,
+            detail=f"{included:g}/{limit:g}",
+        ))
+        overage = bucket.get("currentOveragesWithPrecision", bucket.get("currentOverages"))
+        if overage is not None:
+            cap = bucket.get("overageCapWithPrecision", bucket.get("overageCap"))
+            charge = bucket.get("overageCharges")
+            currency = str(bucket.get("currency") or "USD")
+            text = f"{name} extra usage: {overage}"
+            if cap is not None:
+                text += f"/{cap}"
+            if charge is not None:
+                text += f"; {charge} {currency}"
+            details.append(text)
+    if not windows:
+        return None
+    return AccountUsageSnapshot(
+        provider="kiro",
+        source="kiro_usage_api",
+        fetched_at=datetime.now(timezone.utc),
+        title="Kiro usage",
+        windows=tuple(windows),
+        details=tuple(details),
+        raw=data,
+    )
+
+
+def _ensure_profile_arn(creds) -> str:
+    """Discover the IdC profile once; Builder ID must not make this denied call."""
+    if creds.profile_arn:
+        return creds.profile_arn
+    if getattr(creds, "is_builder_id", False):
+        return ""
+    data = _management(creds, "KiroControlPlaneBearerService.ListAvailableProfiles", {})
+    for profile in data.get("profiles") or []:
+        if isinstance(profile, dict) and (arn := str(profile.get("profileArn") or profile.get("arn") or "").strip()):
+            creds.profile_arn = arn
+            remember_profile_arn(creds)
+            return arn
+    raise KiroAuthError("Kiro IAM Identity Center returned no profile ARN")
+
+
+def _chunk(model: str, delta: dict, finish: str | None = None) -> SimpleNamespace:
+    return SimpleNamespace(id=f"chatcmpl-{uuid.uuid4().hex}", object="chat.completion.chunk", created=int(time.time()), model=model, choices=[SimpleNamespace(index=0, delta=SimpleNamespace(**delta), finish_reason=finish)])
+
+
+def _next_or_end(iterator):
+    try:
+        return next(iterator)
+    except StopIteration:
+        return _END
+
+
+class _AwaitableResponse(SimpleNamespace):
+    def __await__(self):
+        async def done():
+            return self
+        return done().__await__()
+
+
+class _HybridStream:
+    """One native stream for Duckwork' synchronous and auxiliary async callers."""
+    def __init__(self, iterator: Iterator[SimpleNamespace]) -> None:
+        self._iterator = iterator
+
+    def __iter__(self):
+        return self._iterator
+
+    def __await__(self):
+        async def done():
+            return self
+        return done().__await__()
+
+    def __aiter__(self):
+        async def iterate():
+            while (item := await asyncio.to_thread(_next_or_end, self._iterator)) is not _END:
+                yield item
+        return iterate()
+
+
+class KiroClient:
+    DUCKWORK_SKIP_TRANSPORT_WRAP = True
+    DUCKWORK_SKIP_ASYNC_WRAP = True
+
+    def __init__(self, **_: Any) -> None:
+        self.api_key = "kiro-oauth-local"
+        self.base_url = "https://runtime.us-east-1.kiro.dev"
+        self.is_closed = False
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
+
+    def close(self) -> None:
+        self.is_closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
+    def _open(self, body: dict, force_refresh: bool = False, stale_access_token: str = ""):
+        creds = get_credentials(force_refresh=force_refresh, stale_access_token=stale_access_token)
+        # ponytail: Builder ID rejects profile discovery; corporate IdC requires the discovered ARN.
+        if profile_arn := _ensure_profile_arn(creds):
+            body["profileArn"] = profile_arn
+        headers = _headers(
+            creds,
+            accept="application/vnd.amazon.eventstream",
+            target="AmazonCodeWhispererStreamingService.GenerateAssistantResponse",
+        )
+        headers["x-amzn-kiro-agent-mode"] = "vibe"
+        used_access_token = creds.access_token
+        try:
+            response = request(
+                "POST",
+                f"https://runtime.{creds.api_region}.kiro.dev/generateAssistantResponse",
+                body=json.dumps(body).encode(),
+                headers=headers,
+                timeout=600,
+                stream=True,
+            )
+        except KiroHTTPError as exc:
+            exc.access_token = used_access_token
+            raise
+        return response, creds.access_token
+
+    def _events(self, body: dict) -> Iterator[tuple[str, dict]]:
+        response = None
+        stale_access_token = ""
+        retried_auth = False
+        retried_without_additional_fields = False
+        while True:
+            try:
+                opened = self._open(body, force_refresh=retried_auth, stale_access_token=stale_access_token)
+                response, stale_access_token = opened if isinstance(opened, tuple) else (opened, "")
+                break
+            except KiroHTTPError as exc:
+                if (
+                    not retried_without_additional_fields
+                    and "additionalModelRequestFields" in body
+                    and _rejects_additional_model_request_fields(exc)
+                ):
+                    model = _model_id(body)
+                    if model:
+                        mark_additional_model_request_fields_unsupported(model)
+                    body = dict(body)
+                    body.pop("additionalModelRequestFields", None)
+                    retried_without_additional_fields = True
+                    continue
+                if exc.status not in (401, 403) or retried_auth:
+                    raise KiroAuthError(f"Kiro runtime failed ({exc.status}): {exc.body.decode('utf-8', 'replace')[:500]}") from exc
+                stale_access_token = exc.access_token
+                retried_auth = True
+        if response is None:
+            raise KiroAuthError("Kiro runtime could not be reached")
+        from botocore.eventstream import EventStreamBuffer
+
+        buffer = EventStreamBuffer()
+        try:
+            while raw := response.read(8192):
+                buffer.add_data(raw)
+                while True:
+                    try:
+                        event = buffer.next()
+                    except StopIteration:
+                        break
+                    if event is None:
+                        break
+                    try:
+                        payload = json.loads(event.payload)
+                    except (TypeError, ValueError):
+                        payload = {}
+                    if isinstance(payload, dict):
+                        yield str(event.headers.get(":event-type") or ""), payload
+        finally:
+            release = getattr(response, "release_conn", None)
+            if release:
+                release()
+
+    def _create(self, *, model: str, messages: list[dict], stream: bool = False, tools: Any = None, extra_body: dict | None = None, **_: Any):
+        effort = (extra_body or {}).get("reasoning")
+        if effort and not additional_model_request_fields_supported(model):
+            effort = None
+        body = build_request(messages, tools, model, effort)
+        if stream:
+            return self._stream(model, body)
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return self._complete(model, body)
+        return asyncio.to_thread(self._complete, model, body)
+
+    @staticmethod
+    def _add_tool_event(calls: dict[str, dict[str, str]], data: dict) -> None:
+        call_id = str(data.get("toolUseId") or uuid.uuid4().hex)
+        call = calls.setdefault(call_id, {"name": "", "arguments": ""})
+        if data.get("name"):
+            call["name"] = str(data["name"])
+        if "input" not in data:
+            return
+        value = data["input"]
+        fragment = json.dumps(value, separators=(",", ":")) if isinstance(value, (dict, list)) else str(value or "")
+        call["arguments"] += fragment
+
+    @staticmethod
+    def _tool_calls(calls: dict[str, dict[str, str]]) -> list[SimpleNamespace]:
+        return [SimpleNamespace(index=index, id=call_id, type="function", function=SimpleNamespace(name=value["name"], arguments=value["arguments"] or "{}")) for index, (call_id, value) in enumerate(calls.items())]
+
+    def _stream(self, model: str, body: dict) -> _HybridStream:
+        return _HybridStream(self._stream_impl(model, body))
+
+    def _stream_impl(self, model: str, body: dict) -> Iterator[SimpleNamespace]:
+        sent = False
+        calls: dict[str, dict[str, str]] = {}
+        tools_sent = False
+        for event, data in self._events(body):
+            if event == "assistantResponseEvent" and isinstance(data.get("content"), str) and data["content"]:
+                yield _chunk(model, {"role": "assistant" if not sent else None, "content": data["content"]})
+                sent = True
+            elif event == "toolUseEvent":
+                self._add_tool_event(calls, data)
+            elif event == "metadataEvent" and data.get("stopReason") == "TOOL_USE":
+                if calls:
+                    yield _chunk(model, {"role": "assistant" if not sent else None, "tool_calls": self._tool_calls(calls)})
+                    tools_sent = sent = True
+                yield _chunk(model, {}, "tool_calls")
+                return
+            elif event in {"error", "exception"} or data.get("error"):
+                raise KiroAuthError(f"Kiro stream error: {data.get('message') or data.get('error')}")
+        if calls:
+            yield _chunk(model, {"role": "assistant" if not sent else None, "tool_calls": self._tool_calls(calls)})
+            tools_sent = sent = True
+            yield _chunk(model, {}, "tool_calls")
+            return
+        if not sent and not tools_sent:
+            raise KiroAuthError("Kiro closed a successful stream without an event")
+        yield _chunk(model, {}, "stop")
+
+    def _complete(self, model: str, body: dict) -> _AwaitableResponse:
+        text: list[str] = []
+        tool_calls: list[SimpleNamespace] = []
+        finish = "stop"
+        for chunk in self._stream(model, body):
+            delta = chunk.choices[0].delta
+            if content := getattr(delta, "content", None):
+                text.append(content)
+            tool_calls.extend(getattr(delta, "tool_calls", None) or [])
+            finish = chunk.choices[0].finish_reason or finish
+        message = SimpleNamespace(role="assistant", content="".join(text) or None, tool_calls=tool_calls or None, reasoning=None, reasoning_content=None, reasoning_details=None)
+        usage = SimpleNamespace(prompt_tokens=0, completion_tokens=0, total_tokens=0, prompt_tokens_details=SimpleNamespace(cached_tokens=0))
+        return _AwaitableResponse(model=model, choices=[SimpleNamespace(index=0, message=message, finish_reason=finish)], usage=usage)

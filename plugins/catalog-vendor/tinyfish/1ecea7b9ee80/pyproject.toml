@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tinyfish-duckwork"
+version = "0.2.3"
+description = "TinyFish plugin for Duckwork Agent - Search, Fetch, Browser, and the tinyfish_agent web agent"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "TinyFish", email = "support@tinyfish.io" }]
+keywords = ["duckwork", "tinyfish", "web-search", "web-fetch", "ai-agent"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "httpx>=0.24,<1.0",
+]
+
+[project.urls]
+Homepage = "https://tinyfish.ai"
+Documentation = "https://docs.tinyfish.ai"
+Repository = "https://github.com/tinyfish-io/tinyfish-web-agent-integrations"
+
+[project.entry-points."duckwork_agent.plugins"]
+tinyfish = "tinyfish_duckwork"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tinyfish_duckwork"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "T201", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+# ROUTING_GUIDANCE is injected verbatim into LLM context, one bullet per line.
+"tinyfish_duckwork/routing_context.py" = ["E501"]
+# The CLI's output medium is stdout.
+"tinyfish_duckwork/setup_cli.py" = ["T201"]
+
+[tool.mypy]
+python_version = "3.10"
+# The directory-install shim (./__init__.py) would otherwise make mypy see the package twice.
+explicit_package_bases = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers --strict-config --durations=5"

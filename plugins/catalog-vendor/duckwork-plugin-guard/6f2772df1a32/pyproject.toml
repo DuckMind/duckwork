@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=77,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-plugin-guard"
+version = "0.2.1"
+description = "Static, no-execution security checks for Duckwork Agent plugins"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+  { name = "Maurice Mohr" },
+]
+keywords = [
+  "duckwork-agent",
+  "plugins",
+  "security",
+  "static-analysis",
+  "sarif",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+  "PyYAML>=6.0.2,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2,<2",
+  "pytest>=8.3,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.11,<1",
+]
+
+[project.scripts]
+duckwork-plugin-guard = "duckwork_plugin_guard.cli:main"
+hpg = "duckwork_plugin_guard.cli:main"
+
+[project.entry-points."duckwork_agent.plugins"]
+duckwork-plugin-guard = "duckwork_plugin_guard.duckwork_plugin"
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+Repository = "https://github.com/DuckMind/duckwork"
+Security = "https://github.com/DuckMind/duckwork"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers"
+testpaths = ["tests"]
+norecursedirs = ["tests/fixtures"]
+
+[tool.coverage.run]
+branch = true
+source = ["duckwork_plugin_guard"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+exclude = ["tests/fixtures"]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

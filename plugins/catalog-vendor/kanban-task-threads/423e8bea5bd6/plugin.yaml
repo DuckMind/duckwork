@@ -1,0 +1,104 @@
+name: kanban-task-threads
+version: 0.4.1
+description: >-
+  Every kanban task gets a forum thread of its own: the first post is a live
+  status card rewritten in place, the replies are the append-only log. Discord
+  is the first transport.
+author: diego
+license: MIT
+homepage: https://github.com/diegomarino/kanban-task-threads
+kind: standalone
+manifest_version: 1
+requires_duckwork: '>=0.20'
+tags:
+  - discord
+  - kanban
+  - notifications
+  - visibility
+requires_env:
+  - name: KANBAN_TASK_THREADS_WEBHOOK_URL
+    description: Discord webhook bound to the forum channel the cards publish to
+    secret: true
+optional_env:
+  - name: KANBAN_TASK_THREADS_BOT_TOKEN
+    description: >-
+      Optional existing publisher bot token; role needs forum-scoped
+      MANAGE_THREADS, READ_MESSAGE_HISTORY, and MANAGE_CHANNELS for automatic
+      tag and emoji setup
+    secret: true
+provides_hooks:
+  - kanban_task_claimed
+  - kanban_task_completed
+  - kanban_task_blocked
+  - on_kanban_task_updated
+  - on_kanban_worker_spawned
+  - on_kanban_worker_exited
+  - on_kanban_worker_stale_claim
+  - on_kanban_dispatch_tick
+config_schema:
+  board:
+    type: str
+    default: ''
+    description: Board this instance serves. Empty means the current board.
+  publisher_profile:
+    type: str
+    default: ''
+    description: >-
+      Exact profile allowed to publish. Empty keeps every loaded profile as a
+      lease candidate.
+  reply_on:
+    type: list
+    description: Event kinds that earn a reply in the thread.
+  include_workspace_path:
+    type: bool
+    default: false
+    description: >-
+      Publish the absolute workspace path on the card. Off by default
+      (ADR-0011).
+  discord_applied_tag_ids:
+    type: list
+    description: Forum tag ids applied to new posts. Required if the forum enforces tags.
+  avatars_enabled:
+    type: bool
+    default: true
+    description: Add message-state avatars. Disable to preserve plain webhook identities.
+  avatar_base_url:
+    type: str
+    default: ''
+    description: >-
+      HTTPS directory containing custom message-type PNGs. Empty uses the
+      official versioned avatar catalog.
+  avatar_theme:
+    type: str
+    default: duotone
+    description: Official-catalog Phosphor weight; duotone, fill, or bold.
+  avatar_palette:
+    type: str
+    default: colored
+    description: Official-catalog palette; colored, black, or white.
+  poll_seconds:
+    type: int
+    default: 20
+    description: Seconds between consumer passes when no hook kicks arrive.
+  stale_after_seconds:
+    type: int
+    default: 600
+    description: Heartbeat age after which a running task renders as stale.
+  dashboard_url:
+    type: str
+    default: ''
+    description: >-
+      Task page URL; {task_id} and {board} placeholders. Use a stable name,
+      never an IP — published links are frozen forever.
+  comment_excerpt_chars:
+    type: int
+    default: 180
+    description: >-
+      Maximum comment characters published in replies. Set to 0 for author-only
+      replies.
+  card_template:
+    type: str
+    description: Card body template. Falls back to the built-in on any error.
+  reply_templates:
+    type: dict
+    description: Per-event-kind reply templates. Same fallback rule.

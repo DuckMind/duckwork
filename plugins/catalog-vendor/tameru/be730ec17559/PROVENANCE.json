@@ -1,0 +1,868 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/0xWhiteMage/hermes-tameru-plugin/5a19df4af88b848adc29d7170182e226c0700dec/docs/assets/hero.png": "_catalog_assets/docs/assets/hero.png"
+    },
+    "image": "_catalog_assets/docs/assets/hero.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "tameru",
+  "content_id": "be730ec17559",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 6335,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "ba0f239c48a591d925c355dcff2310dbb7a7c970afdbcb7cbccb06d2264b285b"
+    },
+    {
+      "bytes": 2589,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "9d83444e79a8ba9703eb20392697f43239bbbf6547273bcb2b49a6dc03b14b11"
+    },
+    {
+      "bytes": 589295,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/assets/hero.png",
+      "sha256": "3da3e35486168d4b1d1fe72db158f85107d9bf3bdabb9623d59f7ca810ebafec"
+    },
+    {
+      "bytes": 1069,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "7067562600472a15757899fc950a92e3e85f9ffad1c782a72e3af41e1e6bd2eb"
+    },
+    {
+      "bytes": 3120,
+      "mode": "100644",
+      "path": "_upstream_legal/THIRD_PARTY_NOTICES.md",
+      "sha256": "d2ad19c59cdd41e3e9154e3293a0ec4f1cf178c5f6a47e80a226320e63aef9e6"
+    },
+    {
+      "bytes": 26841,
+      "mode": "100644",
+      "path": "config.py",
+      "sha256": "c245d9075e75b66a58423df778043f46e09c21a6cd6dac15fa1acd56fa24ac2f"
+    },
+    {
+      "bytes": 55605,
+      "mode": "100644",
+      "path": "engine.py",
+      "sha256": "6450c5d5cfa6e74a2c59fb5b58b71c8666060ac6d4e6a2ba8ce18170b79acbf1"
+    },
+    {
+      "bytes": 24167,
+      "mode": "100644",
+      "path": "hermes_compat.py",
+      "sha256": "80c7d2aa1d3a8d2064b431c63d4b1e3e762423cef7e0e75231de16e6be373cc3"
+    },
+    {
+      "bytes": 17913,
+      "mode": "100644",
+      "path": "ledger.py",
+      "sha256": "21a61fc3351878a836c7334ddde5c877d649f1237df1e050f6d1de87ea22b325"
+    },
+    {
+      "bytes": 9158,
+      "mode": "100644",
+      "path": "payload.py",
+      "sha256": "510f69b83e35f1f68e313ef13809bd2b26c91d6c4df1770aaf0ce4b6ee1f70a7"
+    },
+    {
+      "bytes": 377,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "683f889afb64f02121c9946350e69925602da30af0d69d90fed4ab22323787f9"
+    },
+    {
+      "bytes": 6035,
+      "mode": "100644",
+      "path": "query.py",
+      "sha256": "1d95dc872e77a2d715afbe45680b445b2d821201dab00d6bf6579cdee6d78302"
+    },
+    {
+      "bytes": 23780,
+      "mode": "100644",
+      "path": "recovery.py",
+      "sha256": "8812f9dafde79269938f146422731cda51528e94dbf21df652a3327d0169cf18"
+    },
+    {
+      "bytes": 14301,
+      "mode": "100644",
+      "path": "render.py",
+      "sha256": "8cbb8b03a7c44484ab352ea1193f03d9a6dea693fd8064e4cbcfe3a2dc37f61a"
+    },
+    {
+      "bytes": 20458,
+      "mode": "100644",
+      "path": "supersede.py",
+      "sha256": "9a90f287b049b420fbd2ace0cc06dfc1bffaa08a31066a57d19d3f2411996b07"
+    },
+    {
+      "bytes": 660,
+      "mode": "100644",
+      "path": "tameru/__init__.py",
+      "sha256": "e6d5313f7e38a5a2d7de4199311cbea8eefb1b5e08dd2e7a459c5447cdb18603"
+    },
+    {
+      "bytes": 306,
+      "mode": "100644",
+      "path": "tameru/agent_extractive_engine.py",
+      "sha256": "d50c717d195bc3bcbe213a5044c46007821214a40fdc16e8da0abb6409c1140c"
+    },
+    {
+      "bytes": 48095,
+      "mode": "100644",
+      "path": "tameru/agent_formats.py",
+      "sha256": "8f27feda28e22f7943b63cb077c9a9e28a8d67ca8f5119031e47978630bac8b8"
+    },
+    {
+      "bytes": 239639,
+      "mode": "100644",
+      "path": "tameru/compress_context.py",
+      "sha256": "3bccd2fc3a6f37fa929b410ddfd60b07765b532e60aad89f9b55e16af1879c92"
+    },
+    {
+      "bytes": 5230,
+      "mode": "100644",
+      "path": "tameru/contract_gates.py",
+      "sha256": "b91ede122504422ecddee9ab3a0ed153591d5bca75e7dd8d35c7c9ee3dc1e2d6"
+    },
+    {
+      "bytes": 19359,
+      "mode": "100644",
+      "path": "tameru/folding.py",
+      "sha256": "08d6a41f9bd7732de2c5e4434fd37a27fc1e7b57fdfd894dcb695c394279e59b"
+    },
+    {
+      "bytes": 30433,
+      "mode": "100644",
+      "path": "tameru/format_adapters.py",
+      "sha256": "9ed7c517ed611b0b68cbb619050d7cd19850e33210daea53c36d6256c84acae6"
+    },
+    {
+      "bytes": 761,
+      "mode": "100644",
+      "path": "tameru/hermes_extractive_engine.py",
+      "sha256": "bbbbda53413a4b09856b1a1713a3eaca8487337ec9102d1a220138539aea499e"
+    },
+    {
+      "bytes": 8270,
+      "mode": "100644",
+      "path": "tameru/industrial.py",
+      "sha256": "00b8e159bc0a87962b0b8ca91570c89f15e45951bf90530de0b3c6766ea9cdce"
+    },
+    {
+      "bytes": 3290,
+      "mode": "100644",
+      "path": "tameru/semantic.py",
+      "sha256": "bb7021db0910166d27352aacbb35268f70677f7ca39db2a9129ae32ce1002e2a"
+    },
+    {
+      "bytes": 6336,
+      "mode": "100644",
+      "path": "tameru/supersession.py",
+      "sha256": "393a5067cd51ef490484b392b3e3e4c615d2043e3c8444ef7ccc4bae0414ad16"
+    },
+    {
+      "bytes": 26437,
+      "mode": "100644",
+      "path": "tameru/transcript.py",
+      "sha256": "310d733c4019b1c7abafaa2f7a8fff0564be7bd5f9292ae14a2b5c8946c65b10"
+    },
+    {
+      "bytes": 14050,
+      "mode": "100644",
+      "path": "tameru/unicode_profile.py",
+      "sha256": "f5dfb21d8f9e107c43ca0a237e6cb18dfb6dfa7c7cffaeadc8e00259d146cd75"
+    },
+    {
+      "bytes": 6218,
+      "mode": "100644",
+      "path": "telemetry.py",
+      "sha256": "81e89925e6266fd3ece98d06a84a7eee9af0a7cb7d37f8ae277734d3a16aa28d"
+    }
+  ],
+  "input_manifest_sha256": "be730ec17559a99fe208a4439a0e59ad08d6eeeeec623b97f6684b56158a6d59",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "7067562600472a15757899fc950a92e3e85f9ffad1c782a72e3af41e1e6bd2eb",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/THIRD_PARTY_NOTICES.md",
+        "sha256": "d2ad19c59cdd41e3e9154e3293a0ec4f1cf178c5f6a47e80a226320e63aef9e6",
+        "source_path": "THIRD_PARTY_NOTICES.md"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "config.py",
+      "duckwork_compat.py",
+      "engine.py",
+      "ledger.py",
+      "payload.py",
+      "plugin.yaml",
+      "query.py",
+      "recovery.py",
+      "render.py",
+      "supersede.py",
+      "tameru/agent_formats.py",
+      "tameru/compress_context.py",
+      "tameru/duckwork_extractive_engine.py",
+      "tameru/transcript.py",
+      "telemetry.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/0xWhiteMage/hermes-tameru-plugin",
+    "sha": "5a19df4af88b848adc29d7170182e226c0700dec",
+    "subdir": "hermes_tameru_plugin"
+  },
+  "original_repo": "https://github.com/0xWhiteMage/hermes-tameru-plugin",
+  "original_sha": "5a19df4af88b848adc29d7170182e226c0700dec",
+  "original_subdir": "hermes_tameru_plugin",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "282892748cfbe15b328db036495d4e60e0396e8506c0c9fabeaae4d3483b8ce8",
+      "bytes": 6235,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "8768c77a2cbf1b22a27725aece6a22549730c83801fd7c887927eaa1027d00d5",
+      "bytes": 2603,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/docs/assets/hero.png",
+      "sha256": "3da3e35486168d4b1d1fe72db158f85107d9bf3bdabb9623d59f7ca810ebafec",
+      "bytes": 589295,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "7067562600472a15757899fc950a92e3e85f9ffad1c782a72e3af41e1e6bd2eb",
+      "bytes": 1069,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/THIRD_PARTY_NOTICES.md",
+      "sha256": "d2ad19c59cdd41e3e9154e3293a0ec4f1cf178c5f6a47e80a226320e63aef9e6",
+      "bytes": 3120,
+      "mode": "100644"
+    },
+    {
+      "path": "config.py",
+      "sha256": "e45686ef0cb66ab7a711ae5246ae070ecfbc36503260a754c4b21427e5ca7640",
+      "bytes": 26917,
+      "mode": "100644"
+    },
+    {
+      "path": "duckwork_compat.py",
+      "sha256": "0745bf54d71927548ea07eec28980264a0ebfb477e330c9ba3e62c5a33316c99",
+      "bytes": 24265,
+      "mode": "100644"
+    },
+    {
+      "path": "engine.py",
+      "sha256": "5a2beb0fb83951f529ae77a97bada1670d1d5b9d15236c9adbddb31aa7db86a5",
+      "bytes": 55737,
+      "mode": "100644"
+    },
+    {
+      "path": "ledger.py",
+      "sha256": "9dedc2ec284fc934dcd62393cea27046c4c4f971d10aad3d89546f371575978f",
+      "bytes": 17925,
+      "mode": "100644"
+    },
+    {
+      "path": "payload.py",
+      "sha256": "cf24ce56d94992f995d74b945cf10f757f71bf70ca814a947bea127b87d3e765",
+      "bytes": 9172,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "00d53f9d6e69d77aea8bb709d9195947d278f2fd4b6bfc5f149551a4151a65e3",
+      "bytes": 362,
+      "mode": "100644"
+    },
+    {
+      "path": "query.py",
+      "sha256": "106b37980ee1dbf3629048d572a325a3b98026aa5afc30cd2c2ebb6a6eb42a33",
+      "bytes": 6043,
+      "mode": "100644"
+    },
+    {
+      "path": "recovery.py",
+      "sha256": "5054740b7d2a0eb05b5030f478895349d905486513ff50269069e5d6a8a40424",
+      "bytes": 23792,
+      "mode": "100644"
+    },
+    {
+      "path": "render.py",
+      "sha256": "f7ff42ac23bc7771b5e828a20e9eec589f0a0664c987f053f760758f8484ec71",
+      "bytes": 14347,
+      "mode": "100644"
+    },
+    {
+      "path": "supersede.py",
+      "sha256": "0cc935d05bc7827f0adcaf813c4ab57d18b60404b955c268caa2c60d43b8c079",
+      "bytes": 20484,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/__init__.py",
+      "sha256": "e6d5313f7e38a5a2d7de4199311cbea8eefb1b5e08dd2e7a459c5447cdb18603",
+      "bytes": 660,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/agent_extractive_engine.py",
+      "sha256": "d50c717d195bc3bcbe213a5044c46007821214a40fdc16e8da0abb6409c1140c",
+      "bytes": 306,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/agent_formats.py",
+      "sha256": "fffea311a8dfce467fe79f941d85c7461178d6e6389883c2e24d5d14d0d0d309",
+      "bytes": 48099,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/compress_context.py",
+      "sha256": "a1245ffd004ca8e6a9f0113997424d6b1a8e9aae7aeb715cbf00458a543c9606",
+      "bytes": 239663,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/contract_gates.py",
+      "sha256": "b91ede122504422ecddee9ab3a0ed153591d5bca75e7dd8d35c7c9ee3dc1e2d6",
+      "bytes": 5230,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/duckwork_extractive_engine.py",
+      "sha256": "a906d977c290037e2c47bbcf89c7c36083e53c3c63471a4faca2d8cb11f501d1",
+      "bytes": 763,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/folding.py",
+      "sha256": "08d6a41f9bd7732de2c5e4434fd37a27fc1e7b57fdfd894dcb695c394279e59b",
+      "bytes": 19359,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/format_adapters.py",
+      "sha256": "9ed7c517ed611b0b68cbb619050d7cd19850e33210daea53c36d6256c84acae6",
+      "bytes": 30433,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/industrial.py",
+      "sha256": "00b8e159bc0a87962b0b8ca91570c89f15e45951bf90530de0b3c6766ea9cdce",
+      "bytes": 8270,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/semantic.py",
+      "sha256": "bb7021db0910166d27352aacbb35268f70677f7ca39db2a9129ae32ce1002e2a",
+      "bytes": 3290,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/supersession.py",
+      "sha256": "393a5067cd51ef490484b392b3e3e4c615d2043e3c8444ef7ccc4bae0414ad16",
+      "bytes": 6336,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/transcript.py",
+      "sha256": "2c7674e7e8bc7e672a0906ec3ee8a217e434c26fb8f0fdc4595fd9cabff1dea7",
+      "bytes": 26445,
+      "mode": "100644"
+    },
+    {
+      "path": "tameru/unicode_profile.py",
+      "sha256": "f5dfb21d8f9e107c43ca0a237e6cb18dfb6dfa7c7cffaeadc8e00259d146cd75",
+      "bytes": 14050,
+      "mode": "100644"
+    },
+    {
+      "path": "telemetry.py",
+      "sha256": "ae59d1954faabbc80fd3698d5f982a3ad81cf1c58ad2c735081991a0441cb6f6",
+      "bytes": 6220,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "6dbb53696ff6a0913eeeed1d671db4e1f11028cb2e0ebe9a328e48244c08526f",
+  "pin_verification": {
+    "archive_bytes": 1308470,
+    "archive_sha256": "8d26da030d50b01bf70d6231e97a9a72ce1ab3be2cf3bd5d753690c08fbcff5d",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "5a19df4af88b848adc29d7170182e226c0700dec",
+    "verified_commit_marker": "5a19df4af88b848adc29d7170182e226c0700dec"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "29954f6711421c314734b0a22f0e1f59cc0ff877f03512d6e0a60e61e4011da0",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "ba0f239c48a591d925c355dcff2310dbb7a7c970afdbcb7cbccb06d2264b285b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f72525688b28a64ef1f3586044698179871d23a140a85df46812894cca92fe94",
+        "source": "README.md",
+        "final_output_sha256": "282892748cfbe15b328db036495d4e60e0396e8506c0c9fabeaae4d3483b8ce8",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "f72525688b28a64ef1f3586044698179871d23a140a85df46812894cca92fe94"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "9d83444e79a8ba9703eb20392697f43239bbbf6547273bcb2b49a6dc03b14b11",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8768c77a2cbf1b22a27725aece6a22549730c83801fd7c887927eaa1027d00d5",
+        "source": "__init__.py",
+        "final_output_sha256": "8768c77a2cbf1b22a27725aece6a22549730c83801fd7c887927eaa1027d00d5",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "8768c77a2cbf1b22a27725aece6a22549730c83801fd7c887927eaa1027d00d5"
+      },
+      {
+        "destination": "_catalog_assets/docs/assets/hero.png",
+        "input_sha256": "3da3e35486168d4b1d1fe72db158f85107d9bf3bdabb9623d59f7ca810ebafec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3da3e35486168d4b1d1fe72db158f85107d9bf3bdabb9623d59f7ca810ebafec",
+        "source": "_catalog_assets/docs/assets/hero.png",
+        "final_output_sha256": "3da3e35486168d4b1d1fe72db158f85107d9bf3bdabb9623d59f7ca810ebafec",
+        "cli_destination": "_catalog_assets/docs/assets/hero.png",
+        "previous_staging_sha256": "3da3e35486168d4b1d1fe72db158f85107d9bf3bdabb9623d59f7ca810ebafec"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "7067562600472a15757899fc950a92e3e85f9ffad1c782a72e3af41e1e6bd2eb",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "7067562600472a15757899fc950a92e3e85f9ffad1c782a72e3af41e1e6bd2eb",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "7067562600472a15757899fc950a92e3e85f9ffad1c782a72e3af41e1e6bd2eb",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "7067562600472a15757899fc950a92e3e85f9ffad1c782a72e3af41e1e6bd2eb"
+      },
+      {
+        "destination": "_upstream_legal/THIRD_PARTY_NOTICES.md",
+        "input_sha256": "d2ad19c59cdd41e3e9154e3293a0ec4f1cf178c5f6a47e80a226320e63aef9e6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d2ad19c59cdd41e3e9154e3293a0ec4f1cf178c5f6a47e80a226320e63aef9e6",
+        "source": "_upstream_legal/THIRD_PARTY_NOTICES.md",
+        "final_output_sha256": "d2ad19c59cdd41e3e9154e3293a0ec4f1cf178c5f6a47e80a226320e63aef9e6",
+        "cli_destination": "_upstream_legal/THIRD_PARTY_NOTICES.md",
+        "previous_staging_sha256": "d2ad19c59cdd41e3e9154e3293a0ec4f1cf178c5f6a47e80a226320e63aef9e6"
+      },
+      {
+        "destination": "config.py",
+        "input_sha256": "c245d9075e75b66a58423df778043f46e09c21a6cd6dac15fa1acd56fa24ac2f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e45686ef0cb66ab7a711ae5246ae070ecfbc36503260a754c4b21427e5ca7640",
+        "source": "config.py",
+        "final_output_sha256": "e45686ef0cb66ab7a711ae5246ae070ecfbc36503260a754c4b21427e5ca7640",
+        "cli_destination": "config.py",
+        "previous_staging_sha256": "e45686ef0cb66ab7a711ae5246ae070ecfbc36503260a754c4b21427e5ca7640"
+      },
+      {
+        "destination": "engine.py",
+        "input_sha256": "6450c5d5cfa6e74a2c59fb5b58b71c8666060ac6d4e6a2ba8ce18170b79acbf1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5a2beb0fb83951f529ae77a97bada1670d1d5b9d15236c9adbddb31aa7db86a5",
+        "source": "engine.py",
+        "final_output_sha256": "5a2beb0fb83951f529ae77a97bada1670d1d5b9d15236c9adbddb31aa7db86a5",
+        "cli_destination": "engine.py",
+        "previous_staging_sha256": "5a2beb0fb83951f529ae77a97bada1670d1d5b9d15236c9adbddb31aa7db86a5"
+      },
+      {
+        "destination": "duckwork_compat.py",
+        "input_sha256": "80c7d2aa1d3a8d2064b431c63d4b1e3e762423cef7e0e75231de16e6be373cc3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0745bf54d71927548ea07eec28980264a0ebfb477e330c9ba3e62c5a33316c99",
+        "source": "hermes_compat.py",
+        "final_output_sha256": "0745bf54d71927548ea07eec28980264a0ebfb477e330c9ba3e62c5a33316c99",
+        "cli_destination": "duckwork_compat.py",
+        "previous_staging_sha256": "0745bf54d71927548ea07eec28980264a0ebfb477e330c9ba3e62c5a33316c99"
+      },
+      {
+        "destination": "ledger.py",
+        "input_sha256": "21a61fc3351878a836c7334ddde5c877d649f1237df1e050f6d1de87ea22b325",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9dedc2ec284fc934dcd62393cea27046c4c4f971d10aad3d89546f371575978f",
+        "source": "ledger.py",
+        "final_output_sha256": "9dedc2ec284fc934dcd62393cea27046c4c4f971d10aad3d89546f371575978f",
+        "cli_destination": "ledger.py",
+        "previous_staging_sha256": "9dedc2ec284fc934dcd62393cea27046c4c4f971d10aad3d89546f371575978f"
+      },
+      {
+        "destination": "payload.py",
+        "input_sha256": "510f69b83e35f1f68e313ef13809bd2b26c91d6c4df1770aaf0ce4b6ee1f70a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cf24ce56d94992f995d74b945cf10f757f71bf70ca814a947bea127b87d3e765",
+        "source": "payload.py",
+        "final_output_sha256": "cf24ce56d94992f995d74b945cf10f757f71bf70ca814a947bea127b87d3e765",
+        "cli_destination": "payload.py",
+        "previous_staging_sha256": "cf24ce56d94992f995d74b945cf10f757f71bf70ca814a947bea127b87d3e765"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "683f889afb64f02121c9946350e69925602da30af0d69d90fed4ab22323787f9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "683f889afb64f02121c9946350e69925602da30af0d69d90fed4ab22323787f9",
+        "source": "plugin.yaml",
+        "final_output_sha256": "00d53f9d6e69d77aea8bb709d9195947d278f2fd4b6bfc5f149551a4151a65e3",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "683f889afb64f02121c9946350e69925602da30af0d69d90fed4ab22323787f9"
+      },
+      {
+        "destination": "query.py",
+        "input_sha256": "1d95dc872e77a2d715afbe45680b445b2d821201dab00d6bf6579cdee6d78302",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "106b37980ee1dbf3629048d572a325a3b98026aa5afc30cd2c2ebb6a6eb42a33",
+        "source": "query.py",
+        "final_output_sha256": "106b37980ee1dbf3629048d572a325a3b98026aa5afc30cd2c2ebb6a6eb42a33",
+        "cli_destination": "query.py",
+        "previous_staging_sha256": "106b37980ee1dbf3629048d572a325a3b98026aa5afc30cd2c2ebb6a6eb42a33"
+      },
+      {
+        "destination": "recovery.py",
+        "input_sha256": "8812f9dafde79269938f146422731cda51528e94dbf21df652a3327d0169cf18",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5054740b7d2a0eb05b5030f478895349d905486513ff50269069e5d6a8a40424",
+        "source": "recovery.py",
+        "final_output_sha256": "5054740b7d2a0eb05b5030f478895349d905486513ff50269069e5d6a8a40424",
+        "cli_destination": "recovery.py",
+        "previous_staging_sha256": "5054740b7d2a0eb05b5030f478895349d905486513ff50269069e5d6a8a40424"
+      },
+      {
+        "destination": "render.py",
+        "input_sha256": "8cbb8b03a7c44484ab352ea1193f03d9a6dea693fd8064e4cbcfe3a2dc37f61a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f7ff42ac23bc7771b5e828a20e9eec589f0a0664c987f053f760758f8484ec71",
+        "source": "render.py",
+        "final_output_sha256": "f7ff42ac23bc7771b5e828a20e9eec589f0a0664c987f053f760758f8484ec71",
+        "cli_destination": "render.py",
+        "previous_staging_sha256": "f7ff42ac23bc7771b5e828a20e9eec589f0a0664c987f053f760758f8484ec71"
+      },
+      {
+        "destination": "supersede.py",
+        "input_sha256": "9a90f287b049b420fbd2ace0cc06dfc1bffaa08a31066a57d19d3f2411996b07",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0cc935d05bc7827f0adcaf813c4ab57d18b60404b955c268caa2c60d43b8c079",
+        "source": "supersede.py",
+        "final_output_sha256": "0cc935d05bc7827f0adcaf813c4ab57d18b60404b955c268caa2c60d43b8c079",
+        "cli_destination": "supersede.py",
+        "previous_staging_sha256": "0cc935d05bc7827f0adcaf813c4ab57d18b60404b955c268caa2c60d43b8c079"
+      },
+      {
+        "destination": "tameru/__init__.py",
+        "input_sha256": "e6d5313f7e38a5a2d7de4199311cbea8eefb1b5e08dd2e7a459c5447cdb18603",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e6d5313f7e38a5a2d7de4199311cbea8eefb1b5e08dd2e7a459c5447cdb18603",
+        "source": "tameru/__init__.py",
+        "final_output_sha256": "e6d5313f7e38a5a2d7de4199311cbea8eefb1b5e08dd2e7a459c5447cdb18603",
+        "cli_destination": "tameru/__init__.py",
+        "previous_staging_sha256": "e6d5313f7e38a5a2d7de4199311cbea8eefb1b5e08dd2e7a459c5447cdb18603"
+      },
+      {
+        "destination": "tameru/agent_extractive_engine.py",
+        "input_sha256": "d50c717d195bc3bcbe213a5044c46007821214a40fdc16e8da0abb6409c1140c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d50c717d195bc3bcbe213a5044c46007821214a40fdc16e8da0abb6409c1140c",
+        "source": "tameru/agent_extractive_engine.py",
+        "final_output_sha256": "d50c717d195bc3bcbe213a5044c46007821214a40fdc16e8da0abb6409c1140c",
+        "cli_destination": "tameru/agent_extractive_engine.py",
+        "previous_staging_sha256": "d50c717d195bc3bcbe213a5044c46007821214a40fdc16e8da0abb6409c1140c"
+      },
+      {
+        "destination": "tameru/agent_formats.py",
+        "input_sha256": "8f27feda28e22f7943b63cb077c9a9e28a8d67ca8f5119031e47978630bac8b8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fffea311a8dfce467fe79f941d85c7461178d6e6389883c2e24d5d14d0d0d309",
+        "source": "tameru/agent_formats.py",
+        "final_output_sha256": "fffea311a8dfce467fe79f941d85c7461178d6e6389883c2e24d5d14d0d0d309",
+        "cli_destination": "tameru/agent_formats.py",
+        "previous_staging_sha256": "fffea311a8dfce467fe79f941d85c7461178d6e6389883c2e24d5d14d0d0d309"
+      },
+      {
+        "destination": "tameru/compress_context.py",
+        "input_sha256": "3bccd2fc3a6f37fa929b410ddfd60b07765b532e60aad89f9b55e16af1879c92",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a1245ffd004ca8e6a9f0113997424d6b1a8e9aae7aeb715cbf00458a543c9606",
+        "source": "tameru/compress_context.py",
+        "final_output_sha256": "a1245ffd004ca8e6a9f0113997424d6b1a8e9aae7aeb715cbf00458a543c9606",
+        "cli_destination": "tameru/compress_context.py",
+        "previous_staging_sha256": "a1245ffd004ca8e6a9f0113997424d6b1a8e9aae7aeb715cbf00458a543c9606"
+      },
+      {
+        "destination": "tameru/contract_gates.py",
+        "input_sha256": "b91ede122504422ecddee9ab3a0ed153591d5bca75e7dd8d35c7c9ee3dc1e2d6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b91ede122504422ecddee9ab3a0ed153591d5bca75e7dd8d35c7c9ee3dc1e2d6",
+        "source": "tameru/contract_gates.py",
+        "final_output_sha256": "b91ede122504422ecddee9ab3a0ed153591d5bca75e7dd8d35c7c9ee3dc1e2d6",
+        "cli_destination": "tameru/contract_gates.py",
+        "previous_staging_sha256": "b91ede122504422ecddee9ab3a0ed153591d5bca75e7dd8d35c7c9ee3dc1e2d6"
+      },
+      {
+        "destination": "tameru/folding.py",
+        "input_sha256": "08d6a41f9bd7732de2c5e4434fd37a27fc1e7b57fdfd894dcb695c394279e59b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "08d6a41f9bd7732de2c5e4434fd37a27fc1e7b57fdfd894dcb695c394279e59b",
+        "source": "tameru/folding.py",
+        "final_output_sha256": "08d6a41f9bd7732de2c5e4434fd37a27fc1e7b57fdfd894dcb695c394279e59b",
+        "cli_destination": "tameru/folding.py",
+        "previous_staging_sha256": "08d6a41f9bd7732de2c5e4434fd37a27fc1e7b57fdfd894dcb695c394279e59b"
+      },
+      {
+        "destination": "tameru/format_adapters.py",
+        "input_sha256": "9ed7c517ed611b0b68cbb619050d7cd19850e33210daea53c36d6256c84acae6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9ed7c517ed611b0b68cbb619050d7cd19850e33210daea53c36d6256c84acae6",
+        "source": "tameru/format_adapters.py",
+        "final_output_sha256": "9ed7c517ed611b0b68cbb619050d7cd19850e33210daea53c36d6256c84acae6",
+        "cli_destination": "tameru/format_adapters.py",
+        "previous_staging_sha256": "9ed7c517ed611b0b68cbb619050d7cd19850e33210daea53c36d6256c84acae6"
+      },
+      {
+        "destination": "tameru/duckwork_extractive_engine.py",
+        "input_sha256": "bbbbda53413a4b09856b1a1713a3eaca8487337ec9102d1a220138539aea499e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a906d977c290037e2c47bbcf89c7c36083e53c3c63471a4faca2d8cb11f501d1",
+        "source": "tameru/hermes_extractive_engine.py",
+        "final_output_sha256": "a906d977c290037e2c47bbcf89c7c36083e53c3c63471a4faca2d8cb11f501d1",
+        "cli_destination": "tameru/duckwork_extractive_engine.py",
+        "previous_staging_sha256": "a906d977c290037e2c47bbcf89c7c36083e53c3c63471a4faca2d8cb11f501d1"
+      },
+      {
+        "destination": "tameru/industrial.py",
+        "input_sha256": "00b8e159bc0a87962b0b8ca91570c89f15e45951bf90530de0b3c6766ea9cdce",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "00b8e159bc0a87962b0b8ca91570c89f15e45951bf90530de0b3c6766ea9cdce",
+        "source": "tameru/industrial.py",
+        "final_output_sha256": "00b8e159bc0a87962b0b8ca91570c89f15e45951bf90530de0b3c6766ea9cdce",
+        "cli_destination": "tameru/industrial.py",
+        "previous_staging_sha256": "00b8e159bc0a87962b0b8ca91570c89f15e45951bf90530de0b3c6766ea9cdce"
+      },
+      {
+        "destination": "tameru/semantic.py",
+        "input_sha256": "bb7021db0910166d27352aacbb35268f70677f7ca39db2a9129ae32ce1002e2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bb7021db0910166d27352aacbb35268f70677f7ca39db2a9129ae32ce1002e2a",
+        "source": "tameru/semantic.py",
+        "final_output_sha256": "bb7021db0910166d27352aacbb35268f70677f7ca39db2a9129ae32ce1002e2a",
+        "cli_destination": "tameru/semantic.py",
+        "previous_staging_sha256": "bb7021db0910166d27352aacbb35268f70677f7ca39db2a9129ae32ce1002e2a"
+      },
+      {
+        "destination": "tameru/supersession.py",
+        "input_sha256": "393a5067cd51ef490484b392b3e3e4c615d2043e3c8444ef7ccc4bae0414ad16",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "393a5067cd51ef490484b392b3e3e4c615d2043e3c8444ef7ccc4bae0414ad16",
+        "source": "tameru/supersession.py",
+        "final_output_sha256": "393a5067cd51ef490484b392b3e3e4c615d2043e3c8444ef7ccc4bae0414ad16",
+        "cli_destination": "tameru/supersession.py",
+        "previous_staging_sha256": "393a5067cd51ef490484b392b3e3e4c615d2043e3c8444ef7ccc4bae0414ad16"
+      },
+      {
+        "destination": "tameru/transcript.py",
+        "input_sha256": "310d733c4019b1c7abafaa2f7a8fff0564be7bd5f9292ae14a2b5c8946c65b10",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2c7674e7e8bc7e672a0906ec3ee8a217e434c26fb8f0fdc4595fd9cabff1dea7",
+        "source": "tameru/transcript.py",
+        "final_output_sha256": "2c7674e7e8bc7e672a0906ec3ee8a217e434c26fb8f0fdc4595fd9cabff1dea7",
+        "cli_destination": "tameru/transcript.py",
+        "previous_staging_sha256": "2c7674e7e8bc7e672a0906ec3ee8a217e434c26fb8f0fdc4595fd9cabff1dea7"
+      },
+      {
+        "destination": "tameru/unicode_profile.py",
+        "input_sha256": "f5dfb21d8f9e107c43ca0a237e6cb18dfb6dfa7c7cffaeadc8e00259d146cd75",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f5dfb21d8f9e107c43ca0a237e6cb18dfb6dfa7c7cffaeadc8e00259d146cd75",
+        "source": "tameru/unicode_profile.py",
+        "final_output_sha256": "f5dfb21d8f9e107c43ca0a237e6cb18dfb6dfa7c7cffaeadc8e00259d146cd75",
+        "cli_destination": "tameru/unicode_profile.py",
+        "previous_staging_sha256": "f5dfb21d8f9e107c43ca0a237e6cb18dfb6dfa7c7cffaeadc8e00259d146cd75"
+      },
+      {
+        "destination": "telemetry.py",
+        "input_sha256": "81e89925e6266fd3ece98d06a84a7eee9af0a7cb7d37f8ae277734d3a16aa28d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ae59d1954faabbc80fd3698d5f982a3ad81cf1c58ad2c735081991a0441cb6f6",
+        "source": "telemetry.py",
+        "final_output_sha256": "ae59d1954faabbc80fd3698d5f982a3ad81cf1c58ad2c735081991a0441cb6f6",
+        "cli_destination": "telemetry.py",
+        "previous_staging_sha256": "ae59d1954faabbc80fd3698d5f982a3ad81cf1c58ad2c735081991a0441cb6f6"
+      }
+    ],
+    "manifest_sha256": "f2f8f841dcb1af4eae10481eede64036fa66b1ef709ed13f98df0461aa4bec7c",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "hermes_tameru_plugin/README.md",
+    "__init__.py": "hermes_tameru_plugin/__init__.py",
+    "_catalog_assets/docs/assets/hero.png": "docs/assets/hero.png",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "_upstream_legal/THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md",
+    "config.py": "hermes_tameru_plugin/config.py",
+    "engine.py": "hermes_tameru_plugin/engine.py",
+    "hermes_compat.py": "hermes_tameru_plugin/hermes_compat.py",
+    "ledger.py": "hermes_tameru_plugin/ledger.py",
+    "payload.py": "hermes_tameru_plugin/payload.py",
+    "plugin.yaml": "hermes_tameru_plugin/plugin.yaml",
+    "query.py": "hermes_tameru_plugin/query.py",
+    "recovery.py": "hermes_tameru_plugin/recovery.py",
+    "render.py": "hermes_tameru_plugin/render.py",
+    "supersede.py": "hermes_tameru_plugin/supersede.py",
+    "tameru/__init__.py": "hermes_tameru_plugin/tameru/__init__.py",
+    "tameru/agent_extractive_engine.py": "hermes_tameru_plugin/tameru/agent_extractive_engine.py",
+    "tameru/agent_formats.py": "hermes_tameru_plugin/tameru/agent_formats.py",
+    "tameru/compress_context.py": "hermes_tameru_plugin/tameru/compress_context.py",
+    "tameru/contract_gates.py": "hermes_tameru_plugin/tameru/contract_gates.py",
+    "tameru/folding.py": "hermes_tameru_plugin/tameru/folding.py",
+    "tameru/format_adapters.py": "hermes_tameru_plugin/tameru/format_adapters.py",
+    "tameru/hermes_extractive_engine.py": "hermes_tameru_plugin/tameru/hermes_extractive_engine.py",
+    "tameru/industrial.py": "hermes_tameru_plugin/tameru/industrial.py",
+    "tameru/semantic.py": "hermes_tameru_plugin/tameru/semantic.py",
+    "tameru/supersession.py": "hermes_tameru_plugin/tameru/supersession.py",
+    "tameru/transcript.py": "hermes_tameru_plugin/tameru/transcript.py",
+    "tameru/unicode_profile.py": "hermes_tameru_plugin/tameru/unicode_profile.py",
+    "telemetry.py": "hermes_tameru_plugin/telemetry.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "tameru",
+    "python_files_compiled": 24,
+    "secret_findings": 0
+  },
+  "canonical_slug": "tameru",
+  "catalog_file": "src/plugin-catalog/tameru.yaml",
+  "identity": {
+    "catalog_id": "tameru",
+    "canonical_slug": "tameru",
+    "original_manifest_name": "tameru",
+    "rebranded_manifest_name": "tameru",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "1f87f5bbcd2ba6b1d12fdae405ded89bdecf845caa73ecd6a77bd04ea5cdc24e",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "f72525688b28a64ef1f3586044698179871d23a140a85df46812894cca92fe94",
+          "after_sha256": "282892748cfbe15b328db036495d4e60e0396e8506c0c9fabeaae4d3483b8ce8",
+          "before_bytes": 6371,
+          "after_bytes": 6235,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "683f889afb64f02121c9946350e69925602da30af0d69d90fed4ab22323787f9",
+          "after_sha256": "00d53f9d6e69d77aea8bb709d9195947d278f2fd4b6bfc5f149551a4151a65e3",
+          "before_bytes": 377,
+          "after_bytes": 362,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

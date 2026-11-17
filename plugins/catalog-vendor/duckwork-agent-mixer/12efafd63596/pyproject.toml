@@ -1,0 +1,34 @@
+[project]
+name = "duckwork-agent-mixer"
+version = "0.2.0"
+description = "A mixing desk for how much a coding agent may change: Duckwork plugin plus Claude Code, Codex and Gemini CLI hooks"
+authors = [{ name = "Sahil Saghir" }]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+agent-mixer = "duckwork_agent_mixer.cli:main"
+
+[project.entry-points."duckwork_agent.plugins"]
+duckwork-agent-mixer = "duckwork_agent_mixer"
+
+[dependency-groups]
+dev = ["pytest>=8.0", "pyyaml>=6.0"]
+dashboard = ["fastapi>=0.110", "httpx>=0.27"]  # only for testing dashboard/plugin_api.py; the file runs in the dashboard server, never in the agent runtime
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "slow: slow test that installs the plugin into a sandbox DUCKWORK_HOME (deselect with -m 'not slow')",
+    "native: drives the real Duckwork plugin loader; needs MIXER_NATIVE_PYTHON (skipped otherwise)",
+]
+
+[tool.setuptools]
+packages = ["duckwork_agent_mixer", "duckwork_agent_mixer.core", "duckwork_agent_mixer.duckwork", "duckwork_agent_mixer.harness"]
+
+[build-system]
+requires = ["setuptools>=77.0"]
+build-backend = "setuptools.build_meta"

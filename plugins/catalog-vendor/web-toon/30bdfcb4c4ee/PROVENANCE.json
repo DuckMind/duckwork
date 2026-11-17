@@ -1,0 +1,234 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "web-toon",
+  "content_id": "30bdfcb4c4ee",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "plugin.yaml",
+  "input_files": [
+    {
+      "bytes": 504,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "7df33ed343cc8dfea8e2916d431da3760ae271ecea460e3a289990501b35d4c3"
+    },
+    {
+      "bytes": 1069,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "03493b3e3e2f43b96d51ef499b85015d6be136662e587fb313af4084404b7284"
+    },
+    {
+      "bytes": 1004,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "b17b7845eadbb013525df4a3c62ab49f35b3d008a9877862e811652f20332f1f"
+    },
+    {
+      "bytes": 6662,
+      "mode": "100644",
+      "path": "provider.py",
+      "sha256": "c645f3501a0293a07cdaf86c98b35f91dabb25b6c1ca62ff05032f8ab9a99cc6"
+    }
+  ],
+  "input_manifest_sha256": "30bdfcb4c4ee134f09b02830616171fd8e6c7ad1eedbaf49e78f1983aca3648b",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "03493b3e3e2f43b96d51ef499b85015d6be136662e587fb313af4084404b7284",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "__init__.py",
+      "plugin.yaml",
+      "provider.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/drew-dot-com/hermes-toon",
+    "sha": "fb0892bd1ee6630309adeeaa68fd37454be247d3",
+    "subdir": "src/hermes_toon"
+  },
+  "original_repo": "https://github.com/drew-dot-com/hermes-toon",
+  "original_sha": "fb0892bd1ee6630309adeeaa68fd37454be247d3",
+  "original_subdir": "src/hermes_toon",
+  "output_files": [
+    {
+      "path": "__init__.py",
+      "sha256": "7c358466f5a4c4337460283addddbe55b5f9a8a6bd3de99852e8f5abc4dadefc",
+      "bytes": 508,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "03493b3e3e2f43b96d51ef499b85015d6be136662e587fb313af4084404b7284",
+      "bytes": 1069,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "6af32d1af4871a91a9a751ff567f74ae27a44ad9acd18c45a5cc540fc30db9a6",
+      "bytes": 1006,
+      "mode": "100644"
+    },
+    {
+      "path": "provider.py",
+      "sha256": "eec6fa7bd022ac13e7d66dc73accf78a6340b756d16398c27d8ba576a35db860",
+      "bytes": 6659,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "c072dcf63aae028595c174eeb2085ec158c44464e1fb2df1b0c6b9a1b5620be1",
+  "pin_verification": {
+    "archive_bytes": 9982,
+    "archive_sha256": "35312fd9b8685a3e8041b92a47f38d961cf9c1587811e81624d0a52df7686669",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "fb0892bd1ee6630309adeeaa68fd37454be247d3",
+    "verified_commit_marker": "fb0892bd1ee6630309adeeaa68fd37454be247d3"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "374b197ddfc464e109b002df2cffa9b1aeee93340aa8b303617d0692ce91823a",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "__init__.py",
+        "input_sha256": "7df33ed343cc8dfea8e2916d431da3760ae271ecea460e3a289990501b35d4c3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7c358466f5a4c4337460283addddbe55b5f9a8a6bd3de99852e8f5abc4dadefc",
+        "source": "__init__.py",
+        "final_output_sha256": "7c358466f5a4c4337460283addddbe55b5f9a8a6bd3de99852e8f5abc4dadefc",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "7c358466f5a4c4337460283addddbe55b5f9a8a6bd3de99852e8f5abc4dadefc"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "03493b3e3e2f43b96d51ef499b85015d6be136662e587fb313af4084404b7284",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "03493b3e3e2f43b96d51ef499b85015d6be136662e587fb313af4084404b7284",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "03493b3e3e2f43b96d51ef499b85015d6be136662e587fb313af4084404b7284",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "03493b3e3e2f43b96d51ef499b85015d6be136662e587fb313af4084404b7284"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "b17b7845eadbb013525df4a3c62ab49f35b3d008a9877862e811652f20332f1f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6af32d1af4871a91a9a751ff567f74ae27a44ad9acd18c45a5cc540fc30db9a6",
+        "source": "plugin.yaml",
+        "final_output_sha256": "6af32d1af4871a91a9a751ff567f74ae27a44ad9acd18c45a5cc540fc30db9a6",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "6af32d1af4871a91a9a751ff567f74ae27a44ad9acd18c45a5cc540fc30db9a6"
+      },
+      {
+        "destination": "provider.py",
+        "input_sha256": "c645f3501a0293a07cdaf86c98b35f91dabb25b6c1ca62ff05032f8ab9a99cc6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7ec6dd9f47722b3e6a35fb92be36729ede78c3b969d7c7fcec00c703b6bdd713",
+        "source": "provider.py",
+        "final_output_sha256": "eec6fa7bd022ac13e7d66dc73accf78a6340b756d16398c27d8ba576a35db860",
+        "cli_destination": "provider.py",
+        "previous_staging_sha256": "7ec6dd9f47722b3e6a35fb92be36729ede78c3b969d7c7fcec00c703b6bdd713"
+      }
+    ],
+    "manifest_sha256": "075fb5bd793fb1af6d2f5c69fe96494efd4d90d68b792bd124f0db7963584b77",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "__init__.py": "src/hermes_toon/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "src/hermes_toon/plugin.yaml",
+    "provider.py": "src/hermes_toon/provider.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "web-toon",
+    "python_files_compiled": 2,
+    "secret_findings": 0
+  },
+  "canonical_slug": "web-toon",
+  "catalog_file": "src/plugin-catalog/web-toon.yaml",
+  "identity": {
+    "catalog_id": "web-toon",
+    "canonical_slug": "web-toon",
+    "original_manifest_name": "web-toon",
+    "rebranded_manifest_name": "web-toon",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "6b1c96ca6dc0684a39fa5783f1bab6dd9a9f7f0a3108f990f0c74d9e0d04b803",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "provider.py",
+          "after_path": "provider.py",
+          "before_sha256": "7ec6dd9f47722b3e6a35fb92be36729ede78c3b969d7c7fcec00c703b6bdd713",
+          "after_sha256": "eec6fa7bd022ac13e7d66dc73accf78a6340b756d16398c27d8ba576a35db860",
+          "before_bytes": 6666,
+          "after_bytes": 6659,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

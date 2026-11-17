@@ -1,0 +1,410 @@
+.aa-duckwork-plugin {
+  --aa-shell-bg: var(--aa-duckwork-shell-bg, var(--background, #041c1c));
+  --aa-shell-divider: var(--aa-duckwork-panel-border, var(--border, rgba(255, 255, 255, 0.22)));
+  --aa-panel: var(--aa-duckwork-panel-bg, color-mix(in srgb, var(--aa-shell-bg) 84%, currentColor 16%));
+  --aa-panel-alt: color-mix(in srgb, var(--aa-panel) 92%, black 8%);
+  --aa-panel-border: var(--aa-duckwork-panel-border, var(--border, rgba(255, 255, 255, 0.24)));
+  --aa-text: var(--aa-duckwork-panel-text, color-mix(in srgb, currentColor 94%, transparent));
+  --aa-text-strong: var(--aa-duckwork-panel-heading, var(--aa-text));
+  --aa-text-muted: var(--aa-duckwork-panel-text-muted, color-mix(in srgb, currentColor 64%, transparent));
+  --aa-kicker: var(--aa-duckwork-kicker, var(--accent, #0f9f5b));
+  --aa-metric-visitors: var(--aa-duckwork-metric-visitors, color-mix(in srgb, var(--aa-kicker) 78%, currentColor 22%));
+  --aa-metric-events: var(--aa-duckwork-metric-events, color-mix(in srgb, var(--aa-kicker) 70%, #f59e0b 30%));
+  --aa-metric-sessions: var(--aa-duckwork-metric-sessions, color-mix(in srgb, var(--aa-kicker) 86%, currentColor 14%));
+  --aa-metric-today: var(--aa-duckwork-metric-today, color-mix(in srgb, var(--aa-kicker) 68%, #facc15 32%));
+  --aa-active-line: color-mix(in srgb, var(--aa-kicker) 54%, transparent);
+  --aa-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  color: var(--aa-text);
+  --aa-font-xs: 0.75rem;
+  --aa-font-sm: 0.875rem;
+  --aa-font-md: 1rem;
+  font-family: var(--theme-font-sans, system-ui, -apple-system, 'Segoe UI', sans-serif);
+  font-size: var(--aa-font-sm);
+  line-height: 1.35;
+  letter-spacing: var(--theme-letter-spacing, 0);
+}
+
+.aa-duckwork-plugin .aa-duckwork-card {
+  border: 1px solid var(--aa-panel-border);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--aa-panel) 88%, transparent) 0%, color-mix(in srgb, var(--aa-panel-alt) 92%, transparent) 100%);
+  box-shadow: var(--aa-shadow);
+}
+
+.aa-duckwork-card-header,
+.aa-duckwork-card-hero {
+  position: relative;
+}
+
+.aa-duckwork-card-header::before,
+.aa-duckwork-card-hero::before,
+.aa-duckwork-empty::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: var(--aa-active-line);
+  opacity: 0.9;
+}
+
+.aa-duckwork-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.aa-duckwork-stack-tight {
+  gap: 0.32rem;
+}
+
+.aa-duckwork-header-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.aa-duckwork-header-row-top {
+  align-items: center;
+}
+
+.aa-duckwork-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.aa-duckwork-grid-kpis {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.aa-duckwork-grid-panels {
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.aa-duckwork-grid-projects {
+  grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
+}
+
+.aa-duckwork-grid-projects > .aa-duckwork-card {
+  position: relative;
+}
+
+.aa-duckwork-grid-projects > .aa-duckwork-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  border-radius: 0.4rem 0.4rem 0 0;
+  background: linear-gradient(90deg, var(--aa-metric-events), var(--aa-kicker), var(--aa-metric-visitors));
+  opacity: 0.95;
+}
+
+.aa-duckwork-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.aa-duckwork-brand-icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  opacity: 0.95;
+}
+
+.aa-duckwork-brand-image {
+  width: 148px;
+  max-width: 42vw;
+  height: auto;
+  object-fit: contain;
+}
+
+.aa-duckwork-brand-image-wordmark {
+  opacity: 0.96;
+}
+
+.aa-duckwork-brand-kicker {
+  color: var(--aa-text-muted);
+  font-size: 0.75rem;
+}
+
+.aa-duckwork-kicker,
+.aa-duckwork-label {
+  color: var(--aa-kicker);
+  font-family: var(--theme-font-mono, ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace);
+  font-size: var(--aa-font-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.aa-duckwork-title,
+.aa-duckwork-subtitle {
+  color: var(--aa-text-strong) !important;
+  font-family: var(--theme-font-sans, system-ui, -apple-system, 'Segoe UI', sans-serif);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.aa-duckwork-title {
+  font-size: 1rem;
+  line-height: inherit;
+}
+
+.aa-duckwork-subtitle {
+  font-size: var(--aa-font-sm);
+  line-height: 1.2;
+}
+
+.aa-duckwork-muted {
+  color: var(--aa-text-muted);
+}
+
+.aa-duckwork-timeframe {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.2rem;
+}
+
+.aa-duckwork-timeframe-label {
+  display: inline-block;
+  border: 1px solid color-mix(in srgb, var(--aa-kicker) 42%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--aa-kicker) 28%, transparent), color-mix(in srgb, var(--aa-metric-visitors) 26%, transparent));
+  color: var(--aa-text-strong);
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.aa-duckwork-timeframe-range {
+  color: var(--aa-text-muted);
+  font-size: 0.75rem;
+}
+
+.aa-duckwork-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.aa-duckwork-account-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.aa-duckwork-account-row-hero {
+  justify-content: flex-end;
+}
+
+.aa-duckwork-account-email {
+  color: var(--aa-text-muted);
+  font-size: 0.75rem;
+}
+
+.aa-duckwork-actions-compact {
+  gap: 0.55rem;
+}
+
+.aa-duckwork-empty .aa-duckwork-muted {
+  line-height: inherit;
+  max-width: 74ch;
+}
+
+.aa-duckwork-empty .aa-duckwork-actions {
+  margin-top: 0.35rem;
+}
+
+.aa-duckwork-path-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+  width: min(100%, 860px);
+}
+
+.aa-duckwork-login-shell {
+  width: min(100%, 920px);
+  margin: 0 auto;
+  align-items: center;
+}
+
+.aa-duckwork-login-hero {
+  align-items: center;
+  text-align: center;
+}
+
+.aa-duckwork-login-note {
+  text-align: center;
+  max-width: 70ch;
+}
+
+.aa-duckwork-path-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--aa-panel-border) 78%, transparent);
+  border-radius: 0.45rem;
+  background: color-mix(in srgb, var(--aa-panel) 72%, transparent);
+  text-align: left;
+}
+
+.aa-duckwork-path-card .aa-duckwork-muted {
+  max-width: none;
+}
+
+.aa-duckwork-button {
+  min-height: 1.9rem;
+  padding: 0.34rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--aa-kicker) 46%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--aa-kicker) 24%, transparent), color-mix(in srgb, var(--aa-metric-visitors) 16%, transparent));
+  color: var(--aa-text-strong);
+  font-size: var(--aa-font-xs);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.16em;
+}
+
+.aa-duckwork-empty .aa-duckwork-button {
+  min-height: 2rem;
+  min-width: 6.5rem;
+  padding-inline: 0.85rem;
+}
+
+.aa-duckwork-button:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--aa-kicker) 34%, transparent), color-mix(in srgb, var(--aa-metric-visitors) 22%, transparent));
+}
+
+.aa-duckwork-button-light,
+.aa-duckwork-button-secondary {
+  border: 1px solid var(--aa-panel-border);
+  background: color-mix(in srgb, var(--aa-panel) 82%, transparent);
+}
+
+.aa-duckwork-badge {
+  border-color: var(--aa-shell-divider);
+  color: var(--aa-text-strong);
+  background: color-mix(in srgb, var(--aa-panel) 76%, transparent);
+}
+
+.aa-duckwork-kpi,
+.aa-duckwork-list-row,
+.aa-duckwork-project-row,
+.aa-duckwork-insight,
+.aa-duckwork-event {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--aa-panel-border) 74%, transparent);
+  background: color-mix(in srgb, var(--aa-panel) 72%, transparent);
+  border-radius: 0.4rem;
+}
+
+.aa-duckwork-kpi {
+  flex-direction: column;
+  border-left-width: 3px;
+}
+
+.aa-duckwork-kpi-visitors {
+  border-left-color: var(--aa-metric-visitors);
+}
+
+.aa-duckwork-kpi-events {
+  border-left-color: var(--aa-metric-events);
+}
+
+.aa-duckwork-kpi-sessions {
+  border-left-color: var(--aa-metric-sessions);
+}
+
+.aa-duckwork-kpi-today {
+  border-left-color: var(--aa-metric-today);
+}
+
+.aa-duckwork-kpi strong,
+.aa-duckwork-list-row strong,
+.aa-duckwork-project-row strong,
+.aa-duckwork-insight strong,
+.aa-duckwork-event strong {
+  color: var(--aa-text-strong);
+}
+
+.aa-duckwork-kpi strong {
+  font-size: var(--aa-font-md);
+  line-height: 1.2;
+}
+
+.aa-duckwork-project-row,
+.aa-duckwork-event {
+  align-items: center;
+}
+
+.aa-duckwork-insight {
+  flex-direction: column;
+}
+
+.aa-duckwork-empty {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--aa-kicker) 42%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--aa-kicker) 10%, transparent), color-mix(in srgb, var(--aa-panel) 86%, transparent));
+}
+
+.aa-duckwork-error {
+  border: 1px solid color-mix(in srgb, #ef4444 44%, transparent);
+  background: color-mix(in srgb, #ef4444 16%, transparent);
+  color: var(--aa-text-strong);
+  border-radius: 0.45rem;
+  padding: 0.9rem 1rem;
+}
+
+.aa-duckwork-doc-link {
+  color: var(--aa-duckwork-link, var(--aa-kicker, #0f9f5b));
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.aa-duckwork-empty .aa-duckwork-doc-link {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.aa-duckwork-doc-link:hover {
+  text-decoration: underline;
+}
+
+.aa-duckwork-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2rem;
+  min-width: 7.25rem;
+  padding: 0.48rem 1rem;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.aa-duckwork-link-button:hover {
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .aa-duckwork-header-row,
+  .aa-duckwork-header-row-top,
+  .aa-duckwork-brand-lockup,
+  .aa-duckwork-project-row,
+  .aa-duckwork-event,
+  .aa-duckwork-account-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .aa-duckwork-brand-image {
+    width: 148px;
+  }
+}

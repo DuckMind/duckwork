@@ -1,0 +1,1154 @@
+// tests/test_mounted_smoke.mjs — MOUNTED integration smoke of the
+// real desktop surface against a local isolated store. jsdom 27+ + React 19 +
+// react-dom 19 (READ-ONLY from the rich-ui plugin's pinned node_modules via
+// tests/__shims__/jsx-real-loader.mjs) mount the actual desktop components
+// (tree, record, blockers, search, drafts, bot_action) with
+// createRoot + act, exactly the pattern proven by
+// rich-ui/duckwork-rich-ui-plugin/tests/test_render_smoke.mjs.
+//
+// The capture shim is REPLACED by the real react/jsx-runtime through the
+// loader hook — no component is rendered through a fake jsx.
+//
+// Store: one disposable scenario store from tests/fixtures/scenarios/
+// make_store.py (seed/read/act/cleanup). Snapshot is built from its
+// READONLY reads exactly as desktop/model.mjs expects (list_all + ready +
+// blocked + storeInfo), the same same-moment-readback discipline as
+// tests/test_scenarios_a.mjs.
+//
+// LIVE-DOM assertions: roles/aria (treeitem, aria-level, aria-expanded,
+// roving tabindex), real KeyboardEvents (arrows/Enter; x/Esc proven inert),
+// hostile titles (script tag, onerror attr, RTL override) rendered as TEXT
+// with zero <script> elements and zero on* attributes in the DOM, drafts
+// surviving unmount/remount through the injected storage adapter and
+// reporting memory-only when storage throws, prefers-reduced-motion probed
+// through a stubbed matchMedia, and no fixed px widths in inline styles
+// (320px reflow proxy: only the declared 16px indent uses px).
+//
+// No browser exists on this host: there are NO screenshots and this test
+// makes NO human-usability claim — it asserts machine-checkable DOM
+// structure, focus movement, escaping, and storage behavior only.
+//
+// Run: node --test tests/test_mounted_smoke.mjs
+//      (scripts/run-mounted-smoke.sh sets RICH_UI_NODE_MODULES + reports dir)
+import test from "node:test";
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { register } from "node:module";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import path from "node:path";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const RU = process.env.RICH_UI_NODE_MODULES
+  || "node_modules";
+const REPORT_DIR = process.env.MOUNTED_REPORT_DIR
+  || path.join(here, ".mounted-evidence");
+
+// ---- real browser-less DOM + React (pattern of rich-ui test_render_smoke) ----
+register(pathToFileURL(path.join(here, "__shims__", "jsx-real-loader.mjs")).href);
+const { JSDOM } = await import("jsdom");
+const dom = new JSDOM("<!doctype html><html><body><div id=\"root\"></div></body></html>", {
+  url: "http://localhost/beads-workbench", // neutral origin; no network
+  pretendToBeVisual: false,
+});
+globalThis.window = dom.window;
+globalThis.document = dom.window.document;
+try { globalThis.navigator = dom.window.navigator; }
+catch {
+  // Node >=21 ships a native navigator getter — override it definably.
+  Object.defineProperty(globalThis, "navigator",
+    { value: dom.window.navigator, configurable: true, writable: true });
+}
+globalThis.Event = dom.window.Event;
+globalThis.KeyboardEvent = dom.window.KeyboardEvent;
+globalThis.HTMLElement = dom.window.HTMLElement;
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+// matchMedia stub: records every query, answer from a controllable table.
+const mmQueries = [];
+let reducedMotion = false;
+dom.window.matchMedia = (q) => {
+  mmQueries.push(q);
+  return {
+    matches: q === "(prefers-reduced-motion: reduce)" && reducedMotion,
+    media: q, addEventListener() {}, removeEventListener() {},
+    addListener() {}, removeListener() {},
+  };
+};
+
+const React = (await import("react")).default;
+const { act } = await import("react");
+const { createRoot } = await import("react-dom/client");
+
+// ---- components under test (REAL shipped modules; react/jsx-runtime real) ---
+// the ONLY app/panel imports are the shipped desktop/workbench.mjs
+// WorkbenchApp (which itself composes the real panels). No test-authored app,
+// panel wrapper, or record converter exists in this file.
+const { buildSnapshot, createWorkbenchState } = await import("../desktop/model.mjs");
+const T = await import("../desktop/tree.mjs");
+const { RecordCard } = await import("../desktop/record.mjs");
+const B = await import("../desktop/blockers.mjs");
+const { searchIssues, SearchPanel, enterSearchHit } = await import("../desktop/search.mjs");
+const { createHistoryStack } = await import("../desktop/history.mjs");
+const { createDraftStore } = await import("../desktop/drafts.mjs");
+const BA = await import("../desktop/bot_action.mjs");
+// mount ONLY shipped exports — the product root composes the
+// panels and binds the keymap; the harness defines no app, panel, or converter.
+const { WorkbenchApp } = await import("../desktop/workbench.mjs");
+
+// ---- assertion + evidence accounting ----------------------------------------
+let CHECKS = 0;
+const ok = (cond, msg) => { CHECKS++; assert.ok(cond, msg); };
+const eq = (a, b, msg) => { CHECKS++; assert.equal(a, b, msg); };
+mkdirSync(REPORT_DIR, { recursive: true });
+const evidence = {}; // name -> file written under REPORT_DIR
+let evidenceSeq = 0;
+async function snap(name, rootEl) {
+  let html;
+  await act(async () => { html = rootEl.innerHTML; });
+  const file = `${String(++evidenceSeq).padStart(2, "0")}-${name}.html`;
+  writeFileSync(path.join(REPORT_DIR, file), html);
+  evidence[name] = { file, bytes: html.length };
+  return html;
+}
+
+// ---- seeded world (native bd v1.3.0 through the seeder CLI) ------------------
+const SEEDER = path.join(here, "fixtures", "scenarios", "make_store.py");
+const BD_BIN = process.env.BEADS_LAB_BD || "bd";
+const ACTOR = "lab-hci";
+const world = JSON.parse(execFileSync("python3", [SEEDER, "seed", "--prefix", "mnt"],
+  { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
+const STORE = world.store;
+const IDS = world.ids;
+const STORE_INFO = world.storeInfo;
+
+test.after(() => {
+  execFileSync("python3", [SEEDER, "cleanup", STORE], { encoding: "utf8" });
+});
+
+function readIn(store, name, ...args) {
+  const out = JSON.parse(execFileSync("python3",
+    [SEEDER, "read", store, name, ...args],
+    { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
+  return out.rc === 0 ? out.payload : { ...out };
+}
+function read(name, ...args) { return readIn(STORE, name, ...args); }
+function actCliIn(store, actor, ...argv) {
+  return JSON.parse(execFileSync("python3", [SEEDER, "act", store, actor, ...argv],
+    { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }));
+}
+function actCli(actor, ...argv) { return actCliIn(STORE, actor, ...argv); }
+// bounded native search/show facades (read_model shape; same as scenarios_a)
+function nativeSearch(query, bound) {
+  const out = execFileSync(BD_BIN,
+    ["-C", STORE, "--readonly", "--actor", ACTOR,
+      "search", query, "--limit", String(bound), "--json"],
+    { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  return JSON.parse(out);
+}
+function nativeShow(id) {
+  const rows = read("show", id);
+  return Array.isArray(rows) ? (rows.find((r) => r && r.id === id) ?? null) : null;
+}
+
+// snapshot from the readonly reads exactly as desktop/model.mjs expects
+// (issues/ready/blocked/storeInfo), the test_scenarios_a.mjs browse shape.
+function liveSnapshot() {
+  return buildSnapshot({
+    issues: read("list_all"),
+    ready: null,
+    blocked: read("blocked"),
+    storeInfo: STORE_INFO,
+  }, { bound: 500 });
+}
+const provider = {
+  storeInfo: STORE_INFO,
+  run: (verb, ...rest) => {
+    if (verb === "dep" && rest[0] === "tree") return read("deptree", rest[1]);
+    if (verb === "show") return read("show", rest[0]);
+    if (verb === "ready") return read("ready");
+    if (verb === "blocked") return read("blocked");
+    if (verb === "list" && rest[0] === "--all") return read("list_all");
+    throw new Error(`unexpected provider query: ${verb} ${rest.join(" ")}`);
+  },
+};
+
+// ---- hostile content (created in the store WE own, then read back native) ----
+const HOSTILE_TITLE =
+  "<script>alert(\"xss\")</script> <img src=x onerror=alert(1)> \u202Eevil\u202C \u0022quoted\u0022";
+const hostileResult = actCli(ACTOR, "create", HOSTILE_TITLE, "--json");
+eq(hostileResult.rc, 0, "hostile-title bead created (native store is the source of truth)");
+const HOSTILE_ID = JSON.parse(hostileResult.stdout).id;
+// prove the hostile bytes round-tripped the NATIVE store, not just the UI
+{
+  const shown = nativeShow(HOSTILE_ID);
+  CHECKS++;
+  assert.equal(shown?.title, HOSTILE_TITLE, "native show returns the hostile title verbatim");
+}
+
+// ============================================================================
+// one mounted session, many states (tracer bullet first: mount + tree aria)
+// ============================================================================
+let snapshot = liveSnapshot();
+const ui = createWorkbenchState(snapshot);
+const controller = T.createTreeController({ snapshot, ui });
+const stack = createHistoryStack({ storeKey: snapshot.storeKey });
+
+const session = {
+  searchResults: null,
+  card: null,
+  draftStore: null,
+  pane: "tree",
+  compare: null, // legacy shape; the compare pane was deleted
+  showBot: false,
+};
+
+const box = {}; // live re-render handle (handed out by the shipped root)
+
+// shared storage adapter so persistence can be proven across remounts
+function makeStorage() {
+  const map = new Map();
+  return {
+    map,
+    get: (k) => (map.has(k) ? map.get(k) : null),
+    set: (k, v) => { map.set(k, v); },
+    remove: (k) => { map.delete(k); },
+    keys: () => [...map.keys()],
+  };
+}
+const sharedStorage = makeStorage();
+
+let mountEl = document.getElementById("root");
+let BEFORE_LIST_ALL = null; // captured after the test's own sanctioned native writes
+let root = null;
+let botView = null; // injected bot panel view (runState fixtures)
+async function mount(sessionOpts = {}) {
+  const { botView: bv, world = null, reads: rd, features = undefined, telemetry = undefined, ...rest } = sessionOpts;
+  Object.assign(session, rest);
+  session.features = features ?? null;// generic panes are flag-gated
+  botView = bv ?? null; // reset every mount unless the fixture supplies one
+  // `reads` is a Prop, never session state — it arrives
+  // separately and lands on the shipped root's reads facade slot.
+  // an injected `world` lets the real-door smoke mount the
+  // SHIPPED root against its own disposable store without disturbing the
+  // browse world's no-mutation guarantee.
+  const w = world ?? { snapshot, ui, controller, stack,
+    storeInfo: STORE_INFO, draftBeadId: IDS.conflict };
+  root = createRoot(mountEl);
+  await act(async () => {
+    root.render(React.createElement(WorkbenchApp, {
+      ...w, session, botView,
+      ...(rd !== undefined ? { reads: rd } : {}),
+      ...(telemetry !== undefined ? { telemetry } : {}),
+      bindRerender: (fn) => { box.rerender = fn; },
+    }));
+  });
+}
+async function unmount() {
+  // A door test that FAILED midway may have thrown out of React's commit
+  // with a pending focus effect: a normal unmount then throws and cascades
+  // (every later mount hits the stale root). Dismount defensively so each
+  // door test fails on ITS OWN assertions, never on a sibling's wreckage.
+  try { await act(async () => { root.unmount(); }); }
+  catch {
+    try { root.unmount(); } catch { /* the tree is gone; the container is reusable */ }
+  }
+  root = null;
+}
+async function press(key, opts = {}, targetSel = null) {
+  await act(async () => {
+    const target = targetSel
+      ? mountEl.querySelector(targetSel)
+      // focus lives in the mounted tree: dispatch on the roving tab stop (or the
+      // focused node when it is inside the React root), never on <body>
+      : (mountEl.contains(document.activeElement) && document.activeElement !== mountEl
+          ? document.activeElement
+          : mountEl.querySelector('[data-tree-focusable="true"]') ?? mountEl);
+    const ev = new dom.window.KeyboardEvent("keydown",
+      { key, bubbles: true, cancelable: true, ...opts });
+    target.dispatchEvent(ev);
+  });
+}
+
+// ---- T1 mount + tree roles/aria ----------------------------------------------
+test("mounted tree: real React DOM with treeitem roles, aria-level/expanded, roving tab stop", async () => {
+  await mount();
+  const tree = mountEl.querySelector('[role="tree"]');
+  ok(tree, "role=tree mounted");
+  const items = [...mountEl.querySelectorAll('[role="treeitem"]')];
+  ok(items.length >= 6, `multiple treeitems rendered (got ${items.length})`);
+  // every row carries aria-level and a parent-FIELD-driven indentation
+  for (const it of items) {
+    CHECKS++;
+    assert.match(it.getAttribute("aria-level"), /^\d+$/, "aria-level numeric");
+  }
+  const epicRow = mountEl.querySelector(`[data-tree-row="${IDS.epic}"]`);
+  ok(epicRow, "epic row present");
+  eq(epicRow.getAttribute("aria-expanded"), "true", "epic expanded by default (model truth)");
+  const taskRow = mountEl.querySelector(`[data-tree-row="${IDS.taskB}"]`);
+  ok(taskRow, "blocked task row present");
+  eq(taskRow.getAttribute("data-blocked-word"), "blocked", "blocked word rendered (not glyph-only)");
+  // roving tab stop: exactly one tabIndex=0
+  const tabbable = items.filter((i) => i.getAttribute("tabindex") === "0");
+  eq(tabbable.length, 1, "exactly one roving tab stop");
+  eq(tabbable[0], mountEl.querySelector('[data-tree-focusable="true"]'),
+    "roving tab stop marks the selection cursor");
+  await snap("mounted-initial-tree", mountEl);
+  await unmount();
+});
+
+// ---- T2 hostile text renders as text ------------------------------------------
+test("hostile titles: rendered as escaped TEXT; zero <script>/<img> and zero on* attributes in DOM", async () => {
+  snapshot = liveSnapshot(); // include the hostile bead (fresh native read)
+  // rebuild ui/controller on the fresh snapshot so nav tests continue coherently
+  session.showBot = true;
+  session.draftStore = createDraftStore({ storage: sharedStorage });
+  sharedStorage.map.clear();
+  session.draftStore.saveDraft(STORE_INFO, IDS.conflict, "draft under hostile session");
+  await mount();
+  const row = mountEl.querySelector(`[data-tree-row="${HOSTILE_ID}"]`);
+  ok(row, "hostile row mounted");
+  ok(row.textContent.includes("<script>"), "literal <script> text present as TEXT");
+  ok(row.textContent.includes("onerror=alert(1)"), "literal onerror text present as TEXT");
+  ok(row.textContent.includes("\u202E"), "RTL override present as text");
+  eq(mountEl.querySelectorAll("script").length, 0, "zero <script> elements mounted");
+  eq(mountEl.querySelectorAll("img").length, 0, "zero <img> elements mounted");
+  const onAttrs = [...mountEl.querySelectorAll("*")]
+    .flatMap((e) => [...e.attributes])
+    .filter((a) => /^on[a-z]+$/i.test(a.name));
+  eq(onAttrs.length, 0, `zero on*-handler attributes (got ${onAttrs.map((a) => a.name)})`);
+  await snap("hostile-text", mountEl);
+  await unmount();
+});
+
+// ---- T3 keyboard navigation on the LIVE surface -------------------------------
+test("keyboard: arrows move the cursor, Enter promotes focus, collapse/expand via arrows, x/Esc inert", async () => {
+  session.showBot = true;
+  session.draftStore = createDraftStore({ storage: sharedStorage });
+  await mount();
+  // cursor starts null: ArrowDown lands on a real row and the DOM follows
+  eq(ui.selection, null, "cursor starts unset");
+  await press("ArrowDown");
+  ok(ui.selection != null, "ArrowDown set the model cursor");
+  let selRow = mountEl.querySelector(`[data-tree-row="${ui.selection}"][data-tree-focusable="true"]`);
+  ok(selRow, "cursor row is the marked focusable row in the DOM");
+  const first = ui.selection;
+  await press("ArrowDown");
+  ok(ui.selection !== first, "second ArrowDown advanced the cursor");
+  eq(mountEl.querySelectorAll('[data-tree-focusable="true"]').length, 1,
+    "exactly one row marked focusable after moves");
+  await snap("keyboard-cursor", mountEl);
+
+  // Enter: cursor -> keyboard focus, DOM marker + aria-label follow
+  await press("Enter");
+  eq(ui.focus, ui.selection, "Enter promotes cursor to keyboard focus");
+  const focusRow = mountEl.querySelector(`[data-tree-row="${ui.focus}"][data-keyboard-focus="true"]`);
+  ok(focusRow, "focused row carries data-keyboard-focus=true in the live DOM");
+  ok(focusRow.getAttribute("aria-label").includes("keyboard focus"),
+    "aria-label announces keyboard focus");
+  await snap("keyboard-enter-focus", mountEl);
+
+  // ArrowRight/ArrowLeft drive the ONE expansion truth (aria-expanded flips)
+  const parentRow = mountEl.querySelector(`[data-tree-row="${IDS.branchB}"]`);
+  ok(parentRow, "branchB row present");
+  eq(parentRow.getAttribute("aria-expanded"), "true", "expanded initially (model default)");
+  // move the cursor onto branchB via ArrowDown presses (bounded walk)
+  let guard = ui.visibleRows().length * 2 + 2;
+  while (ui.selection !== IDS.branchB && guard-- > 0) await press("ArrowDown");
+  eq(ui.selection, IDS.branchB, "cursor reached branchB by repeated ArrowDown");
+  await press("ArrowLeft"); // collapse
+  eq(mountEl.querySelector(`[data-tree-row="${IDS.branchB}"]`).getAttribute("aria-expanded"),
+    "false", "ArrowLeft collapsed (aria-expanded=false)");
+  ok(mountEl.querySelector(`[data-tree-row="${IDS.taskB}"]`) == null,
+    "collapsed subtree rows leave the DOM");
+  await snap("keyboard-collapsed", mountEl);
+  await press("ArrowRight"); // expand again
+  eq(mountEl.querySelector(`[data-tree-row="${IDS.branchB}"]`).getAttribute("aria-expanded"),
+    "true", "ArrowRight re-expanded");
+  ok(mountEl.querySelector(`[data-tree-row="${IDS.taskB}"]`), "subtree rows return");
+
+  // acceptance: app-back + help exercised on the SHIPPED root.
+  // Two pushes with a cursor move between them make Back observable.
+  await press("Enter");                      // push bundle A (focus on cursor)
+  const backTarget = ui.focus;
+  await press("ArrowDown");                  // move cursor somewhere else
+  ok(ui.selection !== backTarget, "cursor moved off the app-back target");
+  await press("Enter");                      // push bundle B
+  await press("ArrowLeft", { altKey: true }); // Alt+ArrowLeft = history-back
+  eq(ui.focus, backTarget, "Alt+ArrowLeft (app-back) restored the prior keyboard focus");
+  await press("ArrowRight", { altKey: true }); // and forward re-applies bundle B
+  ok(ui.focus !== backTarget || ui.selection != null,
+    "Alt+ArrowRight (app-forward) moved focus again");
+  // '?' opens the shortcut overlay through the shipped root's binding
+  await press("?");
+  const dlg = mountEl.querySelector('[role="dialog"][aria-label="Keyboard shortcuts"]');
+  ok(dlg, "? opened the shortcut help overlay on the shipped root");
+  ok(dlg.textContent.includes("cursor-down"), "overlay lists the bound commands");
+  await press("?");
+  ok(mountEl.querySelector('[role="dialog"][aria-label="Keyboard shortcuts"]') == null,
+    "? again closes the overlay");
+
+  // Esc closes the help overlay and focus returns to the prior
+  // tree row — asserted on the SHIPPED root through the existing keybinding.
+  const priorFocusRow = ui.focus;
+  ok(priorFocusRow != null, "a prior tree row holds keyboard focus before help opens");
+  await press("?");
+  ok(mountEl.querySelector('[role="dialog"][aria-label="Keyboard shortcuts"]'),
+    "? re-opened the shortcut help overlay");
+  await press("Escape");
+  ok(mountEl.querySelector('[role="dialog"][aria-label="Keyboard shortcuts"]') == null,
+    "Esc closed the help overlay on the shipped root");
+  eq(ui.focus, priorFocusRow, "Esc left keyboard focus on the prior tree row");
+  const focusedAfterEsc = mountEl.querySelector('[data-keyboard-focus="true"]');
+  eq(focusedAfterEsc?.getAttribute("data-tree-row"), priorFocusRow,
+    "the DOM-focused row after Esc is the prior tree row");
+  await snap("help-esc-closed", mountEl);
+
+  // 'x' stays unbound, and Esc with help CLOSED is inert (close-help no-op):
+  // no state change either way.
+  const before = { sel: ui.selection, focus: ui.focus, exp: [...ui.expanded].sort().join() };
+  await press("x");
+  await press("Escape");
+  eq(ui.selection, before.sel, "unbound 'x' changed nothing");
+  eq(ui.focus, before.focus, "Escape with help closed changed nothing");
+  eq([...ui.expanded].sort().join(), before.exp, "unbound keys did not touch expansion");
+  // a bare 'x' while a text input has focus must be swallowed by the keymap
+  eq(T.resolveKey({ key: "ArrowDown", target: { tagName: "INPUT" } }), null,
+    "arrows fall through to text inputs (keymap swallow)");
+  await unmount();
+});
+
+// ---- T4 search + record + blockers + compare mounted --------------------------
+test("search/record/blockers/compare mount with live DOM evidence", async () => {
+  session.showBot = true;
+  session.draftStore = createDraftStore({ storage: sharedStorage });
+  // search: real native rows, panel mounted, hostile query title escaped too
+  session.searchResults = searchIssues({
+    snapshot, query: "blocked", searchRead: nativeSearch, showRead: nativeShow, limit: 25,
+  });
+  ok(session.searchResults.hits.length > 0, "native search returned hits");// compare is a generic-pane FLAG; this legacy
+  // proof keeps it ON to preserve the shipped-surface evidence.
+  await mount({ features: { compare: true } });
+  const panel = mountEl.querySelector('#search-panel[role="listbox"]');
+  ok(panel, "SearchPanel mounted as listbox");
+  const opts = [...mountEl.querySelectorAll('[role="option"]')];
+  eq(opts.length, session.searchResults.hits.length, "one option per hit");
+  ok([...mountEl.querySelectorAll(".search-hit-path")].some((n) => (n.getAttribute("aria-label") ?? "").startsWith("path: ")), "ancestor path labels present (aria-label on .search-hit-path)");
+  await snap("search-panel", mountEl);
+
+  // Enter on a hit = a navigation entry into the tree (not a parallel world).
+  // RED: equality with the HIT id (the old `!= null` check was
+  // vacuous — ui.focus was already non-null from T3 and the dispatched Enter
+  // resolved to the tree focus-cursor command, not the hit).
+  const hit0id = session.searchResults.hits[0].id;
+  ok(opts.every((o) => o.hasAttribute("tabindex")),
+    "every search option carries a tabIndex (keyboard-activatable)");
+  ui.jump(hit0id === IDS.epic ? IDS.taskB : IDS.epic); // park focus away from the hit
+  await press("Enter", {}, '#search-hit-0');
+  eq(ui.focus, hit0id, "Enter on a search hit moves ui focus to THAT hit id");
+  eq(mountEl.querySelector('#search-panel') != null, false,
+    "activation closes the panel (navigation entry, not a parallel world)");
+
+  // Click does the same (the same navigation entry): park focus away from
+  // the hit, click it, and require equality with THAT hit id.
+  const results2 = searchIssues({ snapshot, query: "blocked", searchRead: nativeSearch,
+    showRead: nativeShow, limit: 25 });
+  ok(results2.hits.length >= 1, "search returns at least one hit for the click leg");
+  const targetId = results2.hits[0].id;
+  ui.jump(targetId === IDS.epic ? IDS.taskB : IDS.epic);
+  session.searchResults = results2;
+  box.rerender();
+  await act(async () => {});
+  await act(async () => { mountEl.querySelector("#search-hit-0").click(); });
+  eq(ui.focus, targetId, "click on a search hit moves ui focus to THAT hit id");
+  session.searchResults = null;
+
+  // Space is the third equal activation path.
+  ui.jump(targetId === IDS.epic ? IDS.taskB : IDS.epic);
+  session.searchResults = results2;
+  box.rerender();
+  await act(async () => {});
+  await press(" ", {}, "#search-hit-0");
+  eq(ui.focus, targetId, "Space on a search hit moves ui focus to THAT hit id");
+  session.searchResults = null;
+
+  // blockers: jumpToBlocker through the readonly provider, card mounted
+  const jump = B.jumpToBlocker({ snapshot, ui, stack, state: {}, provider,
+    targetId: IDS.taskB, pane: "tree" });
+  session.card = jump.card;
+  box.rerender();
+  await act(async () => {});
+  const cardEl = document.getElementById(`blocker-card:${IDS.taskB}`);
+  ok(cardEl, "BlockerCard mounted for the blocked task");
+  eq(cardEl.getAttribute("role"), "complementary", "card is a complementary region");
+  ok(cardEl.textContent.includes(IDS.gateA) || cardEl.textContent.includes("blocked"),
+    "card names the blocker evidence");
+  eq(B.cardMutationSurface(jump.card), false, "card carries no mutation surface");
+  await snap("blocker-card", mountEl);
+  session.card = null;
+
+  // record: stored vs derived rendered separately
+  box.rerender();
+  await act(async () => {});
+  const recSection = [...mountEl.querySelectorAll("section")]
+    .find((e) => (e.getAttribute("aria-label") || "").startsWith("Record "));
+  ok(recSection, "RecordCard mounted (aria-label Record <id>)");
+  ok(recSection.textContent.includes("stored status"), "stored status row");
+  ok(recSection.textContent.includes("derived readiness"), "derived readiness row (separate value)");
+  await snap("record-card", mountEl);
+
+  // ( 2026-09-30: the compare pane was LAUNCH-only via b9s; the
+  // generic-explorer file was deleted — structural churn diffing is proven
+  // native-side, and tests/test_scenarios_b.mjs keeps its own diff proof.)
+  BEFORE_LIST_ALL = JSON.stringify(read("list_all"));
+  await unmount();
+});
+
+// ---- T4b the compare pane must NEVER mount ----
+// desktop/compare.mjs was deleted. Even a session carrying legacy
+// compare state with the old feature flag ON must render no split pane.
+test("compare pane can never mount again (file deleted)", async () => {
+  session.compare = { panes: {}, side: "left", diff: null, confirmed: null };
+  await mount({ features: { compare: true } });
+  eq(mountEl.querySelector('[aria-label="Split compare"]'), null,
+    "no split pane mounts — compare.mjs is gone from the shipped tree");
+  await unmount();
+  session.compare = null;
+});
+
+// ---- T5 drafts: persistence through unmount/remount + honest unavailability ---
+test("drafts: survive unmount/remount via the injected storage; report memory-only when storage throws", async () => {
+  // durable leg: shared adapter already holds the draft saved in T2's session
+  session.showBot = true;
+  session.draftStore = createDraftStore({ storage: sharedStorage });
+  eq(session.draftStore.durability(), "durable", "adapter with get/set/remove/keys is durable");
+  await mount();
+  eq(mountEl.querySelector('[data-durability="durable"]') != null, true,
+    "mounted surface declares durable");
+  const dt = mountEl.querySelector("#draft-text");
+  eq(dt.textContent, "draft under hostile session",
+    "draft SURVIVED unmount/remount (read back through storage after root re-created)");
+  const saveBtn = mountEl.querySelector("#draft-save");
+  eq(saveBtn.disabled, true, "Save disabled (no proven atomic content guard)");
+
+  // acceptance: typing in the description field STEALS letter
+  // keys — bare keys while the textarea owns focus must not move the tree
+  // cursor or open help (the shipped root defers via resolveKey's swallow).
+  const input = mountEl.querySelector("#draft-input");
+  ok(input && input.tagName === "TEXTAREA", "description field is a real textarea");
+  const beforeTyping = { sel: ui.selection, focus: ui.focus,
+    exp: [...ui.expanded].sort().join() };
+  await press("ArrowDown", {}, "#draft-input");
+  await press("x", {}, "#draft-input");
+  await press("?", {}, "#draft-input");
+  await press("Enter", {}, "#draft-input");
+  eq(ui.selection, beforeTyping.sel, "letters/arrows/Enter in the description field move nothing in the tree");
+  eq(ui.focus, beforeTyping.focus, "description typing left keyboard focus untouched");
+  eq([...ui.expanded].sort().join(), beforeTyping.exp, "description typing left expansion untouched");
+  eq(controller.helpOpen, false, "bare ? in the description field did not open help");
+  ok(mountEl.querySelector("#save-limitation").textContent.includes("NO ATOMIC CONTENT GUARD"),
+    "product-limitation notice rendered, no collaborative-edit claim");
+  await snap("drafts-durable", mountEl);
+  await unmount();
+
+  // third mount from a DIFFERENT store object but the SAME storage: still there
+  session.draftStore = createDraftStore({ storage: makeStorageKept(sharedStorage.map) });
+  await mount();
+  eq(mountEl.querySelector("#draft-text").textContent, "draft under hostile session",
+    "draft re-read by a fresh store instance from the same storage");
+  await unmount();
+
+  // unavailable leg: adapter that throws during setup probe
+  const boom = { get() { throw new Error("quota"); }, set() { throw new Error("quota"); },
+    remove() { throw new Error("quota"); }, keys: () => [] };
+  session.draftStore = createDraftStore({ storage: boom });
+  eq(session.draftStore.durability(), "memory-only", "throwing adapter => memory-only");
+  await mount();
+  eq(mountEl.querySelector('[data-durability="memory-only"]') != null, true,
+    "mounted surface honestly declares memory-only");
+  const alert = mountEl.querySelector('[role="alert"][data-warning-kind="storage-error"]');
+  ok(alert, "storage-error warning rendered as an alert");
+  ok(alert.textContent.includes("session-only"), "warning states drafts are session-only");
+  await snap("drafts-unavailable", mountEl);
+  // no-adapter leg: honest memory-only without any throw
+  await unmount();
+  session.draftStore = createDraftStore({});
+  await mount();
+  eq(session.draftStore.warning().kind, "memory-only", "no adapter => memory-only warning kind");
+  await snap("drafts-no-adapter", mountEl);
+  await unmount();
+});
+function makeStorageKept(map) {
+  return { get: (k) => (map.has(k) ? map.get(k) : null),
+    set: (k, v) => { map.set(k, v); }, remove: (k) => { map.delete(k); },
+    keys: () => [...map.keys()] };
+}
+
+// ---- T6 reduced motion + reflow ------------------------------------------------
+test("prefers-reduced-motion probed via matchMedia stub; no fixed px widths in inline styles", async () => {
+  session.showBot = true;
+  session.draftStore = createDraftStore({ storage: sharedStorage });
+  reducedMotion = false;
+  await mount();
+  ok(mmQueries.includes("(prefers-reduced-motion: reduce)"),
+    "the mounted surface queried the reduced-motion media query");
+  eq(mountEl.querySelector("#workbench").getAttribute("data-motion"), "no-preference",
+    "motion preference wired to the mounted root");
+  reducedMotion = true;
+  box.rerender();
+  await act(async () => {});
+  eq(mountEl.querySelector("#workbench").getAttribute("data-motion"), "reduce",
+    "prefers-reduced-motion honoured live (root flips to data-motion=reduce)");
+  await snap("reduced-motion", mountEl);
+
+  // 320px reflow proxy: no fixed pixel WIDTHS anywhere in inline styles;
+  // the only px usage allowed is the declared INDENT_PX indent (padding).
+  const offenders = [];
+  for (const e of mountEl.querySelectorAll("*")) {
+    const s = e.getAttribute("style");
+    if (!s) continue;
+    for (const m of s.split(";")) {
+      const [prop, val] = m.split(":").map((x) => (x ?? "").trim());
+      if (!prop || !val) continue;
+      if (/px\s*$/.test(val) && /width|height|flex-basis|inset|left|right/i.test(prop)) {
+        offenders.push(`${e.tagName}[${e.id || e.getAttribute("role")}] ${prop}:${val}`);
+      }
+    }
+  }
+  eq(offenders.length, 0, `no fixed px sizing (offenders: ${offenders.join(", ")})`);
+  // widths are content-driven; indent px is the ONLY px value (source-declared)
+  const pxVals = new Set();
+  for (const e of mountEl.querySelectorAll("*")) {
+    for (const m of (e.getAttribute("style") ?? "").matchAll(/([a-z-]+)\s*:\s*([^;]+)/gi)) {
+      if (/\d+px/.test(m[2])) pxVals.add(`${m[1]}=px`);
+    }
+  }
+  eq([...pxVals].every((v) => /^padding-inline-start=px$/.test(v)), true,
+    `only padding-inline-start uses px (indent); found: ${[...pxVals]}`);
+  // components do not read matchMedia themselves (source truth): nothing
+  // animates, so there is nothing to suppress — recorded honestly.
+  await snap("reflow-320-proxy", mountEl);
+  await unmount();
+  reducedMotion = false;
+});
+
+// ---- T7 bot_action: precise incompatibility + faithful mount ------------------
+test("bot_action: botActionPanel emits REAL jsx and mounts UNCONVERTED with Work disabled", async () => {
+  // Direct mount attempt with the raw panel (no converter — ).
+  const raw = BA.botActionPanel({
+    ask: BA.askDecision({ ok: false, error: "session_door_unqualified", read_only: true }),
+    work: { present: true, enabled: false, disabledReason: "runner door not bound" },
+  });
+  CHECKS++;
+  assert.ok(raw && raw.$$typeof && /^Symbol\(react\./.test(String(raw.$$typeof)),
+    "botActionPanel emits REAL jsx (react/jsx-runtime $$typeof), so React can mount it directly");
+  const scratch = document.createElement("div");
+  document.body.appendChild(scratch);
+  const r2 = createRoot(scratch);
+  let directErr = null;
+  {
+    const origErr = console.error; console.error = () => {};
+    try { await act(async () => { r2.render(raw); }); }
+    catch (e) { directErr = e; }
+    finally { console.error = origErr; }
+  }
+  const directHtml = scratch.innerHTML;
+  await act(async () => { r2.unmount(); });
+  scratch.remove();
+  CHECKS++;
+  assert.equal(directErr, null, `direct unconverted mount must not throw (${directErr?.message?.slice(0, 80)})`);
+  CHECKS++;
+  assert.ok(/bot-action-panel/.test(directHtml) && /disabled/.test(directHtml),
+    "unconverted mount renders the panel with the Work button disabled");
+
+  session.showBot = true;
+  session.draftStore = createDraftStore({ storage: sharedStorage });
+  await mount();
+  const panel = mountEl.querySelector(".bot-action-panel");
+  ok(panel, "unconverted botActionPanel mounted by the shipped WorkbenchApp");
+  const buttons = [...panel.querySelectorAll("button")];
+  const work = buttons.find((b) => b.textContent.startsWith("Work"));
+  ok(work, "Work button present");
+  eq(work.disabled, true, "Work button disabled (runner door unbound)");
+  ok(panel.textContent.includes("runner door"), "typed disabled reason rendered as title text");
+  const refine = buttons.find((b) => b.textContent.startsWith("Refine"));
+  eq(refine.disabled, false, "Refine stays enabled (draft path works)");
+  await snap("bot-panel", mountEl);
+  await unmount();
+});
+
+// ---- T8 truthful run state + Cancel on the SHIPPED root ---------
+test("bot runState: role=status renders the door state verbatim; Cancel enabled only in admitted/running; no success text unless succeeded", async () => {
+  const VOCAB = ["admitted", "running", "succeeded", "failed", "uncertain",
+    "cancel_requested", "cancelled"];
+  const enabledIn = new Set(["admitted", "running"]);
+  const WORK_ON = { present: true, enabled: true, disabledReason: null };
+  for (const state of VOCAB) {
+    await mount({ showBot: true, draftStore: null,
+      botView: { ask: null, work: WORK_ON, runState: { state } } });
+    const st = mountEl.querySelector('[role="status"]');
+    ok(st, `role=status mounted for state=${state}`);
+    eq(st.textContent.trim(), state, `state=${state} rendered VERBATIM`);
+    const cancel = [...mountEl.querySelectorAll("button")]
+      .find((b) => /^Cancel$|^Cancel \(/.test(b.textContent.trim()));
+    ok(cancel, `Cancel button present for state=${state}`);
+    eq(cancel.disabled, !enabledIn.has(state),
+      `Cancel enabled iff admitted/running (state=${state})`);
+    if (state !== "succeeded") {
+      const html = mountEl.querySelector(".bot-action-panel").innerHTML;
+      ok(!/succeeded/.test(html), `no 'succeeded' text while state=${state}`);
+      ok(!/\bdone\b/.test(html), `no 'done' text while state=${state}`);
+      ok(!/delivered/.test(html), `no 'delivered' text while state=${state}`);
+    } else {
+      ok(mountEl.querySelector('[role="status"]').textContent
+        .includes("succeeded"), "succeeded renders when the door says so");
+    }
+    await snap(`runstate-${state}`, mountEl);
+    await unmount();
+  }
+
+  // Cancel click: the host latches botView.cancelRequested (mirroring
+  // bot_handoff.work_cancel + re-poll); the display shows cancel_requested
+  // even while the door still says running, and keeps showing it until a
+  // LATER state says cancelled.
+  const botView = { ask: null, work: WORK_ON, runState: { state: "running" },
+    cancelRequested: false,
+    onCancel: () => { botView.cancelRequested = true; box.rerender(); } };
+  await mount({ showBot: true, draftStore: null, botView });
+  const cancelBtn = [...mountEl.querySelectorAll("button")]
+    .find((b) => /^Cancel$|^Cancel \(/.test(b.textContent.trim()));
+  await act(async () => { cancelBtn.click(); });
+  eq(mountEl.querySelector('[role="status"]').textContent.trim(),
+    "cancel_requested", "click Cancel -> cancel_requested shown immediately");
+  eq(mountEl.querySelector('.work-run-state[data-run-state="cancel_requested"][role="status"]') != null,
+    true, "status element names the displayed state (data-run-state)");
+  // the door poll may lag: state still 'running' — the latch keeps the truth
+  box.rerender();
+  await act(async () => {});
+  eq(mountEl.querySelector('[role="status"]').textContent.trim(),
+    "cancel_requested", "latched through a lagging door read");
+  // ...until a LATER state confirms the terminal truth
+  botView.runState = { state: "cancelled" };
+  box.rerender();
+  await act(async () => {});
+  eq(mountEl.querySelector('[role="status"]').textContent.trim(),
+    "cancelled", "cancelled renders only once the state says so");
+  // the terminal truth beats even a still-latched request
+  botView.runState = { state: "running" };
+  botView.cancelRequested = true;
+  box.rerender();
+  await act(async () => {});
+  eq(mountEl.querySelector('[role="status"]').textContent.trim(),
+    "cancel_requested", "latched request still shown while pre-terminal");
+  botView.runState = { state: "succeeded" };
+  box.rerender();
+  await act(async () => {});
+  eq(mountEl.querySelector('[role="status"]').textContent.trim(),
+    "succeeded", "a confirmed terminal state beats the latch (no lie)");
+
+  // no runState at all: no fake status element, no enabled Cancel
+  await mount({ showBot: true, draftStore: null,
+    botView: { ask: null, work: WORK_ON } });
+  eq(mountEl.querySelector('#bot-panel-slot [role="status"]') != null, false,
+    "no runState => no role=status element (nothing invented)");
+  await snap("runstate-none", mountEl);
+  await unmount();
+});
+
+// ---- T10 shipped stylesheet, visible focus, separated fields ----
+test("visual layer (F1-F7): one shipped <style> with :focus-visible; roving document focus; separated card/row fields", async () => {
+  const cardJump = B.jumpToBlocker({ snapshot, ui, stack, state: {}, provider,
+    targetId: IDS.taskB, pane: "tree" });
+  const blockerId = cardJump.card.blockers[0]?.id;
+  ok(blockerId != null, "taskB has at least one blocker to assert on");
+  const blockerTitle = snapshot.byId.get(blockerId)?.title ?? null;
+  session.card = cardJump.card;
+  session.searchResults = searchIssues({
+    snapshot, query: "blocked", searchRead: nativeSearch, showRead: nativeShow, limit: 25,
+  });
+  session.showBot = true;
+  session.draftStore = createDraftStore({ storage: sharedStorage });
+  await mount();
+
+  // F1: exactly ONE <style> rendered at the root, carrying the shipped stylesheet.
+  const styles = [...mountEl.querySelectorAll("style")];
+  eq(styles.length, 1, "the shipped root renders exactly one <style> (F1)");
+  const css = styles[0].textContent;
+  ok(css.includes(":focus-visible"), "stylesheet styles :focus-visible (F2)");
+  ok(css.includes("(prefers-reduced-motion: reduce)"), "stylesheet honours prefers-reduced-motion (F1)");
+  ok(/var\(--foreground\s*,\s*CanvasText\)/.test(css), "theme var --foreground with CanvasText fallback");
+  ok(/var\(--accent\s*,\s*Highlight\)/.test(css), "theme var --accent with Highlight fallback");
+  ok(/var\(--border\s*,\s*GrayText\)/.test(css), "theme var --border with GrayText fallback");
+  ok(/2px\s+solid/.test(css) && /outline-offset/.test(css), "2px solid focus ring with offset (F2)");
+  ok(/40rem/.test(css), "layout wraps under 40rem (responsive)");
+  ok(/aria-selected="true"/.test(css), "selected rows styled distinctly from the stylesheet (F2)");
+  assert.ok(!/width\s*:\s*\d+(\.\d+)?px/.test(css), "stylesheet declares no fixed px widths");
+
+  // F3: the keyboard-focus marker carries DOCUMENT focus (roving focus).
+  await press("ArrowDown");                 // cursor onto a row
+  ok(ui.selection != null, "ArrowDown moved the cursor");
+  await press("Enter");                     // marker follows the cursor
+  let marker = mountEl.querySelector('[data-keyboard-focus="true"]');
+  ok(marker, "one row carries data-keyboard-focus=true");
+  eq(document.activeElement, marker,
+    "document.activeElement IS the data-keyboard-focus row after Enter (F3)");
+  await press("ArrowDown");                 // cursor advances: DOM focus follows the tab stop
+  const stop = mountEl.querySelector('[role="treeitem"][tabindex="0"]');
+  eq(stop.getAttribute("data-tree-row"), ui.selection, "tab stop is the cursor row");
+  eq(document.activeElement, stop,
+    "after ArrowDown document.activeElement is the cursor row (roving tabindex; ring paints where the arrows went)");
+  const before = ui.selection;
+  await press("ArrowUp");                   // (cursor may sit on the last row)
+  ok(ui.selection !== before, "the next arrow moves the cursor (no swallowed keypress)");
+  eq(document.activeElement.getAttribute("data-tree-row"), ui.selection,
+    "focus tracks every arrow press");
+  await press("Enter");                     // marker MOVES; focus must move with it
+  marker = mountEl.querySelector('[data-keyboard-focus="true"]');
+  eq(document.activeElement, marker,
+    "after the marker moves, document.activeElement follows it (F3)");
+
+  // F4: tree row fields are separate elements (title, status chip, chips).
+  const row = mountEl.querySelector(`[data-tree-row="${IDS.taskB}"]`);
+  ok(row, "blocked task row mounted");
+  const chip = row.querySelector(".status-chip");
+  ok(chip, "row renders a .status-chip element (F4)");
+  ok((chip.getAttribute("aria-label") ?? "").startsWith("status:"),
+    "status chip carries its own aria-label 'status: X' (F4)");
+  ok(chip.textContent !== row.textContent,
+    "status chip text is only a part of the row (fields not fused) (F4)");
+  if (row.getAttribute("data-blocked-word")) {
+    ok(row.querySelector('[data-blocked-word]') === row
+        || row.querySelectorAll(".status-chip, .blocked-chip, .progress-chip").length >= 2,
+      "blocked rows render separate chip elements (F4)");
+  }
+
+  // F5: blocker card items show 'title (id)' and a separated ancestor path.
+  const cardEl = document.getElementById(`blocker-card:${IDS.taskB}`);
+  ok(cardEl, "blocker card mounted");
+  const items = [...cardEl.querySelectorAll("li")];
+  ok(items.some((li) => li.textContent.includes(`(${blockerId})`)),
+    `a blocker item lists its id in parens: ${blockerId} (F5)`);
+  if (blockerTitle && blockerTitle !== blockerId) {
+    ok(items.some((li) => li.textContent.includes(blockerTitle)),
+      "a blocker item lists the blocker's TITLE, not only the id (F5)");
+  }
+  const anc = cardEl.querySelector('[aria-label="Ancestry"]');
+  ok(anc, "ancestry nav present");
+  ok(anc.textContent.includes("\u203A"),
+    "ancestor path is separated with ' \u203A ' (F5)");
+
+  // F6: search hit = id chip + title + path on its own line, path separated.
+  const panel = mountEl.querySelector('#search-panel[role="listbox"]');
+  ok(panel, "search panel mounted");
+  const opts = [...panel.querySelectorAll('[role="option"]')];
+  ok(opts.length > 0, "search hits mounted");
+  ok(opts.some((o) => (o.querySelector(".search-hit-path")?.textContent ?? "")
+        .includes("\u203A")),
+    "a search hit path uses the ' \u203A ' separator (F6)");
+  ok(opts.some((o) => {
+    const idEl = o.querySelector(".search-hit-id");
+    const tEl = o.querySelector(".search-hit-title");
+    const pEl = o.querySelector(".search-hit-path");
+    return idEl && tEl && pEl && idEl !== o && tEl !== o && pEl !== o;
+  }), "each hit renders id/title/path as separate child elements (F6)");
+
+  // F7: bot panel is a labelled group.
+  const bot = mountEl.querySelector(".bot-action-panel");
+  ok(bot, "bot panel mounted");
+  eq(bot.getAttribute("role"), "group", "bot panel is a role=group (F7)");
+  eq(bot.getAttribute("aria-label"), "Bot actions", "bot panel is labelled 'Bot actions' (F7)");
+
+  await snap("visual-layer", mountEl);
+  session.card = null;
+  session.searchResults = null;
+  await unmount();
+});
+
+// ============================================================================
+// user doors: search box, user-opened blocker card, working
+// Return, roving listbox cursor. RED first: every assertion below fails on the
+// pre-bead root (onReturn=rerender, cursor pinned 0, both surfaces
+// host-injected only).
+// ============================================================================
+const READS211 = { searchRead: nativeSearch, showRead: nativeShow, provider };
+
+// harness cursor-walk (the controller's own slide pattern): steps the model
+// cursor toward the target in model order — placement, never an assertion.
+async function walkCursorTo(id) {
+  const all = ui.visibleRows();
+  const t = all.findIndex((r) => r.id === id);
+  ok(t !== -1, `row ${id} visible for cursor walk`);
+  let guard = all.length * 2 + 4;
+  while (ui.selection !== id && guard-- > 0) {
+    const i = ui.visibleRows().findIndex((r) => r.id === ui.selection);
+    ui.arrow(i === -1 ? 1 : Math.sign(t - i) || 1);
+  }
+  box.rerender();               // the DOM must catch up with the cursor
+  await act(async () => {});
+  eq(ui.selection, id, `cursor walked to ${id}`);
+}
+
+test("doors: type query into the search input -> listbox; ArrowDown moves aria-selected AND document focus to hit 2; Enter lands IN the tree; letters in the input never reach the tree keymap", async () => {
+  session.card = null; session.searchResults = null; session.showBot = false;
+  session.draftStore = null; session.compare = null;
+  await mount({ reads: READS211 });
+  const input = mountEl.querySelector("#search-input");
+  ok(input && input.tagName === "INPUT", "shipped root renders a real search INPUT");
+  eq(input.disabled, false, "input enabled when the reads facade is injected");
+  ok((input.getAttribute("aria-label") ?? "").toLowerCase().includes("search"),
+    "the search input is labelled");
+  const treeSelBefore = ui.selection;
+  // text-target rule: keys typed in the input are swallowed, never tree commands
+  await press("ArrowDown", {}, "#search-input");
+  await press("k", {}, "#search-input");
+  await press("?", {}, "#search-input");
+  eq(ui.selection, treeSelBefore, "arrows/letters/? typed in the search input never move the tree cursor");
+  eq(controller.helpOpen, false, "? typed in the search input did not open help");
+  // type + Enter runs searchIssues through the injected facade
+  await act(async () => { input.value = "multi blocker"; });
+  await press("Enter", {}, "#search-input");
+  const panel = mountEl.querySelector('#search-panel[role="listbox"]');
+  ok(panel, "Enter ran the search through the facade: listbox mounted");
+  const opts = [...panel.querySelectorAll('[role="option"]')];
+  ok(opts.length >= 2, `at least two hits to walk (got ${opts.length})`);
+  eq(opts[0].getAttribute("aria-selected"), "true", "hit 1 starts aria-selected (roving cursor at 0)");
+  eq(document.activeElement, opts[0], "running the search moves DOCUMENT focus into the listbox (hit 1)");
+  // roving cursor: ArrowDown moves aria-selected AND document focus together
+  await press("ArrowDown"); // dispatched on document.activeElement === hit 1
+  eq(opts[1].getAttribute("aria-selected"), "true", "ArrowDown moved aria-selected to hit 2");
+  eq(document.activeElement, opts[1], "ArrowDown moved DOCUMENT focus to hit 2 (roving focus, not tabIndex-only)");
+  await press("ArrowUp");
+  eq(opts[0].getAttribute("aria-selected"), "true", "ArrowUp moved aria-selected back to hit 1");
+  eq(document.activeElement, opts[0], "ArrowUp moved DOCUMENT focus back to hit 1");
+  eq(ui.selection, treeSelBefore, "listbox arrows never move the tree cursor");
+  await press("ArrowDown"); // back onto hit 2 for the Enter leg
+  const hit2id = session.searchResults.hits[1].id;
+  await press("Enter");
+  eq(ui.focus, hit2id, "Enter on hit 2 lands in the tree focused on THAT hit");
+  eq(ui.selection, hit2id, "and the cursor sits on the hit row");
+  ok(mountEl.querySelector(`[data-tree-row="${hit2id}"][data-keyboard-focus="true"]`),
+    "the hit row carries the keyboard-focus marker after activation");
+  eq(mountEl.querySelector("#search-panel") != null, false,
+    "activation closes the listbox (navigation entry, not a parallel world)");
+  await snap("user-search-door", mountEl);
+  await unmount();
+});
+
+test("doors: '/' and Ctrl+/ focus the search input from the tree; ShortcutHelp lists the new bindings", async () => {
+  session.card = null; session.searchResults = null; session.showBot = false;
+  session.draftStore = null; session.compare = null;
+  await mount({ reads: READS211 });
+  await press("ArrowDown");
+  ok(ui.selection != null, "tree cursor is on a row");
+  await press("/"); // plain app gesture from a tree row
+  eq(document.activeElement, mountEl.querySelector("#search-input"),
+    "'/' focuses the search input");
+  // the same door through its KEYMAP binding (listed in ShortcutHelp)
+  const row = mountEl.querySelector('[data-tree-focusable="true"]');
+  await act(async () => { row.focus(); });
+  await press("/", { ctrlKey: true });
+  eq(document.activeElement, mountEl.querySelector("#search-input"),
+    "Ctrl+/ (the keymap row) focuses the search input");
+  // '?' inside the input must NOT open help; from a tree row it must, and the
+  // overlay must list the new commands (no invisible keys)
+  await press("?", {}, "#search-input");
+  eq(controller.helpOpen, false, "? inside the search input is swallowed");
+  const treeRow = mountEl.querySelector('[data-tree-focusable="true"]');
+  await act(async () => { treeRow.focus(); });
+  await press("?");
+  const dlg = mountEl.querySelector('[role="dialog"][aria-label="Keyboard shortcuts"]');
+  ok(dlg, "? opened the shortcut help overlay");
+  ok(dlg.textContent.includes("focus-search"), "help lists focus-search");
+  ok(dlg.textContent.includes("open-blockers"), "help lists open-blockers");
+  await press("?");
+  await snap("user-search-keys", mountEl);
+  await unmount();
+});
+
+test("doors: blocked row shows a visible blockers button AND Ctrl+b opens the card; Return button and Alt+ArrowLeft each clear the card and restore origin selection/focus (one press = one step)", async () => {
+  session.card = null; session.searchResults = null; session.showBot = false;
+  session.draftStore = null; session.compare = null;
+  await mount({ reads: READS211 });
+  // park keyboard focus on the ready row, cursor on the blocked row
+  await walkCursorTo(IDS.ready);
+  await press("Enter");                       // focus follows the cursor
+  eq(ui.focus, IDS.ready, "ready row is the keyboard-focus row");
+  const origin = { selection: IDS.ready, focus: IDS.ready };
+  await walkCursorTo(IDS.taskB);
+  eq(ui.focus, origin.focus, "cursor travel did not move keyboard focus");
+  // (a) the visible button on the blocked row
+  const btn = document.getElementById(`blockers-open:${IDS.taskB}`);
+  ok(btn, "blocked row offers a visible 'blockers' button");
+  eq(btn.disabled, false, "button enabled when the provider facade is injected");
+  await act(async () => { btn.click(); });
+  ok(document.getElementById(`blocker-card:${IDS.taskB}`),
+    "the USER button opened the blocker card (no host injection)");
+  ok(session.card, "the button path populated session.card via jumpToBlocker");
+  eq(ui.focus, IDS.taskB, "the jump moved focus to the blocker context");
+  // (b) Return button: ONE press clears the card AND restores the origin bundle
+  const ret = document.getElementById("blocker-return");
+  ok(ret, "Return button rendered on the card");
+  await act(async () => { ret.click(); });
+  eq(document.getElementById(`blocker-card:${IDS.taskB}`) ?? null, null,
+    "Return cleared the card (negative control: onReturn=rerender alone fails here)");
+  eq(session.card, null, "Return cleared the session view box");
+  eq(ui.focus, origin.focus, "Return restored the origin keyboard focus");
+  eq(ui.selection, IDS.taskB, "cursor stays on the blocked row the card was opened from");
+  // real-Chrome finding: document focus must land on the ROVING
+  // TAB STOP (the cursor row the card was opened from), never on a different
+  // row — else the ring sits on one row while the next arrow moves from
+  // another (observed: ring on wt-aqh, ArrowDown jumped 3 rows).
+  const tabStop = () => mountEl.querySelector('[role="treeitem"][tabindex="0"]')
+    ?.getAttribute("data-tree-row") ?? null;
+  const rowOrder = () => [...mountEl.querySelectorAll('[role="treeitem"]')]
+    .map((r) => r.getAttribute("data-tree-row"));
+  const assertFocusIsTabStopAndArrowStepsOne = async (label) => {
+    const af = document.activeElement?.getAttribute?.("data-tree-row") ?? null;
+    eq(af, tabStop(), `${label}: document focus sits on the roving tab stop`);
+    eq(af, ui.selection, `${label}: document focus is the cursor row`);
+    const order = rowOrder(); const i = order.indexOf(af);
+    ok(i >= 0, `${label}: focused row is rendered (${af} in ${order.join(",")})`);
+    const [k, back, want] = i + 1 < order.length
+      ? ["ArrowDown", "ArrowUp", order[i + 1]] : ["ArrowUp", "ArrowDown", order[i - 1]];
+    await press(k);
+    eq(document.activeElement?.getAttribute?.("data-tree-row") ?? null, want,
+      `${label}: next ${k} moves exactly ONE row from the focused row (order ${order.join(",")})`);
+    await press(back);
+  };
+  await assertFocusIsTabStopAndArrowStepsOne("Return button");
+  // (c) the key door: Ctrl+b for the selected row (cursor on taskB, focus on ready)
+  await walkCursorTo(IDS.ready);
+  await press("Enter", {});
+  await walkCursorTo(IDS.taskB);
+  eq(ui.focus, origin.focus, "focus still parked on the origin row before the key door");
+  await press("b", { ctrlKey: true });
+  ok(document.getElementById(`blocker-card:${IDS.taskB}`),
+    "Ctrl+b opened the blocker card for the selected blocked row");
+  eq(ui.focus, IDS.taskB, "Ctrl+b jumped through the same model truth");
+  // (d) Alt+ArrowLeft with the card open: ONE press clears it + one stack step
+  await press("ArrowLeft", { altKey: true });
+  eq(document.getElementById(`blocker-card:${IDS.taskB}`) ?? null, null,
+    "Alt+ArrowLeft cleared the card (negative control: controller pass-through fails — the card would stay mounted)");
+  eq(session.card, null, "Alt+ArrowLeft cleared session.card");
+  eq(ui.focus, origin.focus, "Alt+ArrowLeft restored the origin keyboard focus");
+  await assertFocusIsTabStopAndArrowStepsOne("Alt+ArrowLeft");
+  await snap("user-blocker-door", mountEl);
+  await unmount();
+});
+
+test("doors: missing facade => controls present-but-disabled with a visible reason, never a throw; host-injected card Return still clears", async () => {
+  session.card = null; session.searchResults = null; session.showBot = false;
+  session.draftStore = null; session.compare = null;
+  await mount(); // no reads prop at all
+  const input = mountEl.querySelector("#search-input");
+  ok(input, "search input is PRESENT without the facade");
+  eq(input.disabled, true, "search input DISABLED when reads.searchRead is absent");
+  const reason = mountEl.querySelector("#search-disabled-reason");
+  ok(reason != null, "a visible reason element accompanies the disabled search door");
+  ok(/search/i.test(reason?.textContent ?? ""), "the reason names the search read facade");
+  await press("Enter", {}, "#search-input");  // must not throw, must not search
+  eq(mountEl.querySelector("#search-panel") != null, false,
+    "the disabled door never runs searchIssues (present-but-disabled, never a throw)");
+  // the blocked-row button is present-but-disabled with its own reason
+  await walkCursorTo(IDS.taskB);
+  await press("Enter", {});
+  const btn = document.getElementById(`blockers-open:${IDS.taskB}`);
+  ok(btn != null, "blockers button PRESENT on the blocked row without the facade");
+  eq(btn.disabled, true, "blockers button DISABLED without the provider facade");
+  const breason = mountEl.querySelector("#blockers-disabled-reason");
+  ok(breason != null && /blocker/i.test(breason.textContent),
+    "a visible reason explains the disabled blockers door");
+  await press("b", { ctrlKey: true });        // honest no-op, never a throw
+  ok(document.getElementById(`blocker-card:${IDS.taskB}`) == null,
+    "Ctrl+b with no facade opens nothing (disabled truth)");
+  // host-injected surfaces keep working (zero-I/O preserved)
+  const jump = B.jumpToBlocker({ snapshot, ui, stack, state: {}, provider,
+    targetId: IDS.taskB, pane: "tree" });
+  session.card = jump.card;
+  box.rerender();
+  await act(async () => {});
+  ok(document.getElementById(`blocker-card:${IDS.taskB}`), "host-injected card still mounts");
+  await act(async () => { document.getElementById("blocker-return").click(); });
+  eq(document.getElementById(`blocker-card:${IDS.taskB}`) ?? null, null,
+    "Return clears even a host-injected card");
+  await snap("missing-facade-disabled", mountEl);
+  await unmount();
+});
+
+// final native readback proof the surface never wrote the store
+test("mounted session never mutated the store (before/after list_all JSON equality)", () => {
+  CHECKS++;
+  assert.ok(BEFORE_LIST_ALL != null, "before-snapshot captured after the sanctioned writes only");
+  const after = JSON.stringify(read("list_all"));
+  CHECKS++;
+  assert.equal(after, BEFORE_LIST_ALL,
+    "list_all is byte-identical before vs after the mounted session (no hidden writes)");
+  const rows = JSON.parse(after);
+  CHECKS++;
+  assert.ok(rows.some((r) => r.id === IDS.epic) && rows.some((r) => r.id === HOSTILE_ID),
+    "store still holds the seeded world + the one bead the harness explicitly created via the seeder act CLI");
+});
+
+// ---- T9 the shipped root emits pane telemetry -------------
+// Deletion policy at 0.x is mechanical, not temporal: flag OFF, prove inert, cut.
+// before any generic pane can be cut. This test proves the counters EXIST and
+// fire on the REAL user paths (key press + real click), on the SHIPPED root.
+test("telemetry: real user paths emit whitelisted events on the shipped root", async () => {
+  const { createTelemetry } = await import("../desktop/telemetry.mjs");
+  const tel = createTelemetry({ storeKey: "telemetry-world" });
+  session.card = null; session.searchResults = null; session.showBot = true;
+  session.draftStore = createDraftStore({ storage: makeStorage() });
+  session.compare = null;
+  const hostBot = {
+    ask: null, work: { present: true, enabled: true }, runState: null,
+    onWork: () => {}, onCancel: () => {},
+  };
+  await mount({ reads: READS211, telemetry: tel, botView: hostBot });
+
+  // search door: type + Enter through the real input (the 2.11 door path)
+  const sIn = mountEl.querySelector("#search-input");
+  await act(async () => { sIn.value = "multi blocker"; });
+  await press("Enter", {}, "#search-input");
+  ok(mountEl.querySelector('#search-panel[role="listbox"]'), "search door opened");
+  // activate a hit through the real click path
+  await act(async () => { mountEl.querySelector("#search-hit-0").click(); });
+  // blockers door: the visible USER button on the blocked row
+  await walkCursorTo(IDS.taskB);
+  const btn = document.getElementById(`blockers-open:${IDS.taskB}`);
+  ok(btn, "blocked row offers the blockers button");
+  await act(async () => { btn.click(); });
+  ok(document.getElementById(`blocker-card:${IDS.taskB}`), "card opened");
+  // drafts door: a real edit through the shipped textarea. React's
+  // value-tracker dedupes a naive .value set, so go through the native
+  // setter — React sees a genuine change and runs onChange -> saveDraft.
+  const dIn = mountEl.querySelector("#draft-input");
+  ok(dIn, "draft textarea mounted");
+  await act(async () => {
+    const setter = Object.getOwnPropertyDescriptor(
+      dom.window.HTMLTextAreaElement.prototype, "value").set;
+    setter.call(dIn, "telemetry draft");
+    dIn.dispatchEvent(new window.Event("input", { bubbles: true }));
+  });
+  // bot door: the enabled Work click through the shipped composition
+  const workBtn = [...mountEl.querySelectorAll("button")]
+    .find(b => b.textContent.trim().startsWith("Work"));
+  ok(workBtn && !workBtn.disabled, "Work button enabled via injected botView");
+  await act(async () => { workBtn.click(); });
+
+  const uses = tel.uses()["telemetry-world"];
+  for (const e of ["search-open", "search-activate", "blockers-card-open",
+    "drafts-save", "bot-action-click"]) {
+    CHECKS++;
+    assert.ok(uses?.[e] >= 1, `telemetry recorded ${e} from the real user path (got ${JSON.stringify(uses)})`);
+  }
+  await unmount();
+  session.draftStore = null; session.showBot = false;
+});
+
+test.childChecks = () => CHECKS;
+process.on("exit", () => {
+  // surface machine-checkable totals + the evidence index for the receipt
+  writeFileSync(path.join(REPORT_DIR, "evidence-index.json"),
+    JSON.stringify({ checks: CHECKS, evidence }, null, 2));
+  console.log(`[mounted-smoke] checks=${CHECKS} evidence=${Object.keys(evidence).length}`);
+});

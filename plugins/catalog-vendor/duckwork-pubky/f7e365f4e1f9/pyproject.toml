@@ -1,0 +1,8 @@
+# Duckwork reads these dependencies when installing the directory plugin.
+# Keep the native package pinned: catalog updates must not pull new code
+# merely because a newer package was published to PyPI.
+[project]
+name = "duckwork-pubky-plugin"
+version = "0.2.3"
+requires-python = ">=3.11,<3.14"
+dependencies = ["duckwork-pubky==0.2.3"]

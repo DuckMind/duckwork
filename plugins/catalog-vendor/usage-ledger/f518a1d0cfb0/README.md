@@ -1,0 +1,164 @@
+# Usage Ledger
+
+A local Duckwork Desktop plugin that adds one **Usage** control to the existing left status-bar group. The popover reads structured values from the active profile’s `tally.md`; it does not add a sidebar, widget, or second status bar.
+
+## Windows and macOS beta 0.4.4
+
+Native Duckwork Desktop has been exercised on macOS 14.3.1 / Apple Silicon,
+in addition to the existing Windows beta validation. Intel Mac native UI
+coverage is not established. Release notes link the exact commit's fresh
+Windows/macOS/Linux automated CI results; automated CI is not native UI
+validation. See [macOS setup and support limits](docs/MACOS.md).
+
+The Mac compatibility changes recognize the profile-global legacy tally
+header and token labels, preserve historical sections, expose an opt-out for
+automatic tally finalization when another updater owns the file, and use a
+public numeric plugin command as a fallback when a running backend has not
+yet mounted the plugin's REST routes. The existing Windows layout and default
+automatic finalizer are unchanged.
+
+## Maintainer and requirements
+
+Maintainer: [3DPrintPioneers](https://github.com/3DPrintPioneers). Requires Duckwork
+0.21.5 or newer with the Desktop Plugin SDK. The repository is
+[3DPrintPioneers/duckwork-usage-ledger](https://github.com/DuckMind/duckwork).
+
+## Install the pinned release
+
+Use the exact 40-character commit SHA recorded in the release notes. In this
+example, replace `<release-commit-sha>` with that SHA, not a branch or tag:
+
+```bash
+duckwork plugins install 3DPrintPioneers/duckwork-usage-ledger --ref <release-commit-sha>
+```
+
+**Before enabling the Agent half:** if another profile-global updater owns
+`tally.md`, leave Agent disabled and turn **Automatically finalize tally.md**
+off in the plugin settings. Then enable the Agent half:
+
+```bash
+duckwork plugins enable usage-ledger
+```
+
+The unified package has two activation surfaces: enable the Python plugin with
+`duckwork plugins enable`, then enable the **Usage Ledger** Desktop renderer in
+Desktop **Capabilities → Plugins**. Catalog-name installs use the previously
+reviewed version until maintainers merge the exact-SHA update PR; publishing
+a GitHub release alone does not update the library.
+
+## Support status
+
+- Windows: the backend and native Desktop display have been exercised locally.
+  Recovery, reopening, and data-retention tests use isolated temporary profiles;
+  the active user's app is not restarted or cleared for release validation.
+- macOS: native Desktop validated on macOS 14.3.1, Apple Silicon/arm64,
+  including isolated installation, popup/preferences/refresh, hot-install
+  command access, fixture accounting, and data retention. Intel Mac native
+  coverage is not established; see [macOS setup](docs/MACOS.md).
+- Windows/macOS/Linux: the release's linked CI checks automated backend and
+  renderer portability. Linux native Desktop is not advertised as supported;
+  CI does not establish native UI coverage on untested hosts/architectures.
+
+## What the control shows
+
+The popover shows **Current** and **Running** values for input, output, cache-read, cache-write, reasoning, **Canonical tokens**, and **Activity tokens (expanded)**; calls; thinking and working durations; words; characters; and coding characters.
+
+- Missing or unsupported values render as `N/A`; an explicit measured `0` remains `0`.
+- The renderer polls its read-only `/tally` endpoint every **30 seconds**; **Refresh now** in the popover refetches the tally and diagnostics immediately.
+- `/tally` reads only labeled numeric fields from the latest `## Current response` block, or the supported legacy root header before history sections. A later unmanaged section cannot override it.
+- `tally.md` remains separate from the observed provider-request ledger. `/summary` never blends those scopes.
+
+## Statusline selection
+
+Clicking **Usage** opens every metric. The first **Show** column contains one native checkbox per metric: checked rows appear in the compact left status-bar summary, while unchecked rows remain available in the popover but are hidden from that summary. The Usage control itself remains available when all rows are unchecked.
+
+The selection is stored as an ordered list of metric keys in the plugin-scoped Desktop storage, defaults to all rows checked, updates immediately, and survives plugin reloads and Duckwork restarts. It does not change collection, tally values, the observed-request ledger, model selection, or status-bar placement.
+
+## Phase D safe operations
+
+The Usage popover includes a compact Diagnostics section showing the active-profile tally scope, 30-second refresh interval, tally-state schema/baseline/completion state, observed-ledger schema/count, and the number of selected statusline metrics. Diagnostics use read-only database connections and render unavailable state as `N/A`.
+
+The **Clear observed ledger** action is destructive only after the native confirmation dialog is accepted. Its backend endpoint also requires an explicit confirmation flag, clears only observed-request rows, preserves the ledger schema and all `tally.md`/finalizer/statusline data, and is read back through `/summary` before the dialog reports success. Disabling, updating, or uninstalling the plugin does not invoke this action or delete its data.
+
+## Phase C automatic local tally finalizer
+
+For each normal, successful final response that Duckwork emits through `post_llm_call`, the backend plugin:
+
+1. records an opaque start reference at `pre_llm_call`;
+2. stages allowed request metrics from `post_api_request` using an opaque logical-request reference;
+3. counts the final assistant text **only in memory** at `post_llm_call`, excluding a terminal Duckwork usage footer; and
+4. persists only numeric word, character, code-character, timing, call, and source-backed token values, then atomically replaces the managed current-response block in `tally.md`.
+
+`post_api_request` can occur for tool-loop/intermediate model calls, so it never writes the human-visible tally itself. Finalization is deduplicated by a per-profile HMAC of Duckwork’s stable turn ID; staged calls are deduplicated by a per-profile HMAC of Duckwork’s logical API request ID. The raw IDs and response text are not written to disk.
+
+Duckwork’s supported plugin contract requires hook callbacks to accept `**kwargs`. The callbacks immediately copy only an allowlisted primitive subset, clear the payload, and never log, serialize, hash, cache, or persist prompt text, assistant text, tool arguments/results, credentials, raw provider payloads, URLs, headers, or response objects. The final assistant response is held only long enough to calculate numeric text counts.
+
+### Existing external tally writers
+
+If another profile-global updater owns `tally.md`, turn **Automatically finalize
+tally.md** (`finalize_tally`) off in the plugin settings before enabling the
+Agent half. This prevents a competing writer while retaining numeric request
+observations and the readout. The default is true for ordinary installations.
+
+The setting is read at plugin registration. Finish agent turns, quiesce every
+process writing this profile, disable the Agent half, change the setting, then
+re-enable it; do not assume a cached collector changes ownership immediately.
+Never leave automatic and external writers running concurrently.
+
+Re-enabling automatic finalization does **not** authorize a baseline reset.
+If the external writer changed running values or missing-work counts, the
+plugin refuses stale recovery/projection instead of overwriting those totals.
+Keep `finalize_tally` off and arrange an explicitly approved, quiescent baseline
+reconciliation before resuming automatic writes. Pending unprojected rows must
+be audited; deleting the database or file is not a handoff procedure.
+
+### Availability rules
+
+- Individual provider usage buckets are counted only when every staged request for that finalized turn supplies a positive finite integer. Missing, zero-normalized, malformed, or partial buckets are `N/A`, never synthetic zeroes.
+- **Canonical tokens** are the derived sum of input + cache-read + cache-write + output, only when every component is observed. They are not represented as a provider-supplied `total_tokens` measurement.
+- **Activity tokens (expanded)** are Canonical tokens + reasoning, only when every component is observed. This intentionally counts reasoning as additional activity even when a provider reports it as an output subcategory; it is shown separately rather than conflated with Canonical tokens.
+- Running Canonical and Activity totals are derived from their respective running component buckets, so the two totals remain intelligible when the latest response has an unavailable bucket.
+- **Thinking time** is the sum of observed provider API durations only when every staged request reports one. It is not private model reasoning time.
+- **Working time** is a local wall-clock proxy from `pre_llm_call` to finalization.
+- Running working time adds measured durations to the confirmed numeric baseline. Missing durations do not block later additions and are never estimated. If any duration is unavailable, the popover marks the running value **incomplete**, explains its scope and missing-response count, and the status bar uses `Work*`. An unknown legacy working-time baseline still renders `N/A`.
+- A fresh tally begins from a known local zero baseline. When adopting an existing legacy tally, unavailable legacy values remain `N/A` rather than being mixed with a partial post-install total.
+- A user-directed **running-total baseline** adopts the complete Running column from the latest canonical `## Current response` block, including any user-corrected values. Future observed provider values add from that exact baseline; current unavailable buckets remain `N/A`, and the adoption is explicitly recorded in the tally rather than presented as a reconstructed billing total.
+
+### Upgrade compatibility
+
+**Upgrades from 0.4.1/0.4.2 to a 0.4.3-or-newer backend require a quiescent restart.** Finish active agent
+turns and stop all older Duckwork processes using this profile before the new
+backend or dashboard API loads. Do not migrate the request ledger while cached
+0.4.1/0.4.2 collectors can still write; mixed-version request collectors are not
+supported. The plugin never restarts the app automatically. Renderer-only
+layout updates can be hot-reloaded separately without migrating either database.
+
+The earlier working-only 0.4.2 repair supported ordinary cached 0.4.1 tally
+completion callbacks. That narrower compatibility does **not** cover the 0.4.3
+request-ledger identity migration.
+
+Explicit running-baseline adoption is **not** a hook or exposed API route.
+Perform any future user-approved baseline correction only through a freshly
+imported current writer, never a cached older writer. Adoption locks the source
+reads and baseline update together, refuses unprojected pending history, then
+durably replays the projection if file replacement fails.
+
+### Durability and limits
+
+The numeric source of truth is `plugin-data/usage-ledger/tally-state.db`, not incremental edits to `tally.md`. A finalized turn is first committed as a pending SQLite row. Before another journal mutation changes a pending aggregate, the plugin saves its numeric projection provenance under the same SQLite write lock. This lets recovery recognize an already-written older pending projection after a crash without making another successful file replacement a prerequisite for preserving incoming events. The plugin serializes the full projection with `BEGIN IMMEDIATE`, writes and fsyncs a same-directory temporary file, replaces `tally.md` atomically, then marks the rows applied and removes pending provenance checkpoints in the same transaction. File-recovery failure does not disable an initialized, ownership-validated numeric journal; pending rows remain recoverable. External running-total mismatches still block replacement. Concurrent writer connections cannot leave a torn projection.
+
+This is exactly-once for duplicate hook delivery, retries sharing Duckwork’s logical API request ID, plugin reloads, late pending writes, and restart recovery. It cannot recover a response if Duckwork terminates before it emits the observer hook; it deliberately does **not** scan transcripts, prompts, or provider payloads to backfill such an event.
+
+## Local observed-request ledger
+
+`plugin-data/usage-ledger/ledger.db` is a separate post-install provider-observation ledger. It stores only per-profile HMAC request/session/turn references, bounded safe provider/model labels, positive input/output observations, and an observation timestamp. A random local identity key remains inside its SQLite metadata, not in the install directory or public source. Schema 2 transactionally wraps legacy SHA-256 references in that keyed scheme without changing usage values, timestamps, row counts, or deduplication. This migration does not scrub old backups or SQLite free pages. Keep backups private. It never promotes Duckwork’s normalized `total_tokens` value as source-backed; the displayed Canonical and Activity totals are explicitly derived from observed buckets. Existing observations are preserved; disabling or uninstalling the package does not delete either database.
+
+## Tests
+
+```bash
+duckwork plugins doctor . --ci
+python -m unittest discover -s tests -v
+node --experimental-vm-modules --test tests/desktop-plugin.test.mjs
+```
+
+The real-hook test uses an isolated temporary `DUCKWORK_HOME`; it makes no provider call and never touches the installed profile.

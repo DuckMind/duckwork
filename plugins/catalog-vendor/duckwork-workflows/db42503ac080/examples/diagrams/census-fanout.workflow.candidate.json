@@ -1,0 +1,125 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Deterministic tally: every item answered or NAMED missing, counts computed from the record",
+        "battery-gauge is a designed dead gauge \u2014 the loud red row is exercised every run",
+        "A severed child becomes a NAMED missing row, never silent loss"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "4 nodes, 1 echo, 1 fan-out: roster -> audit lanes -> tally -> report (after_partial)",
+        "The dead-lane row is proven behavior, not aspirational: see the author receipt",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "census-roster",
+      "id": "census-roster-audit",
+      "to": "audit",
+      "variant": "default"
+    },
+    {
+      "from": "census-roster",
+      "id": "census-roster-tally",
+      "to": "tally",
+      "variant": "default"
+    },
+    {
+      "from": "audit",
+      "id": "audit-tally",
+      "to": "tally",
+      "variant": "default"
+    },
+    {
+      "from": "tally",
+      "id": "tally-report",
+      "to": "report",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "room",
+      "label": "Deterministic",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/census-fanout.html",
+    "quality_profile": "standard",
+    "subtitle": "Deterministic-tally census: a fan-out auditing N generic machine items where the ONLY law is that every dispat",
+    "title": "census-fanout"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "census-roster",
+      "label": "Census Roster",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "audit",
+      "label": "Audit",
+      "lane": "work",
+      "tag": "fan-out N",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "tally",
+      "label": "Tally",
+      "lane": "work",
+      "sublabel": "you are the census",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "report",
+      "label": "Report",
+      "lane": "work",
+      "sublabel": "publish the census",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 2
+    },
+    {
+      "fromCol": 3,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 3
+    }
+  ],
+  "schema_version": 2
+}

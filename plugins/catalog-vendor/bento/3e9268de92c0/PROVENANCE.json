@@ -1,0 +1,1347 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "bento",
+  "content_id": "3e9268de92c0",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 987,
+      "mode": "100644",
+      "path": ".github/workflows/test.yml",
+      "sha256": "387373555006ad4a8aa68ec928ebefa59e775b9b30c661c393bc01e9ee623472"
+    },
+    {
+      "bytes": 1176,
+      "mode": "100644",
+      "path": ".github/workflows/validate.yml",
+      "sha256": "76ed1399a62ee47d9f283234bf7783d37305c3408ca7236973650a4b974d88d5"
+    },
+    {
+      "bytes": 111,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "86bda64ac49e4a4199d4862133117a396eefcd2cbeefc5852dcef1df101042a8"
+    },
+    {
+      "bytes": 1577,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "a307ce8f9e113fe3dd2300c6ebceca0df788319c25149236f4cd073822c273f6"
+    },
+    {
+      "bytes": 1074,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "3d8368fb5a695207347000ad0846982b9e24cf3d5553838a1ebb6b86969220c7"
+    },
+    {
+      "bytes": 17083,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "5baaa7dc5723fb0549158dbd0b1d87321b8146c495e4513c6e069dd801c6f455"
+    },
+    {
+      "bytes": 635,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "0797cf9c05a3e1245f9c84e59a11444d0c5c3b9f5a6f5676df21ca4296dbba36"
+    },
+    {
+      "bytes": 2769,
+      "mode": "100644",
+      "path": "docs/index.md",
+      "sha256": "60efe57b59abc74220a2c5f01b862455c2a39b19f23aef963bb8ba980de95e1a"
+    },
+    {
+      "bytes": 3351,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "9e4866e2150c5ec0623d16adab96bcba5194a852c9cb1e929d196bf1664f995e"
+    },
+    {
+      "bytes": 1095,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "63321fe90e52af35074e1a5ae1936d44194df9911dd8fecd3fd731c12012d74f"
+    },
+    {
+      "bytes": 3642,
+      "mode": "100644",
+      "path": "skills/bento-ops/SKILL.md",
+      "sha256": "8e93667344d4542f2322b38a804fdc16c6801e3dd61f7f9df39c0541ead97dab"
+    },
+    {
+      "bytes": 2249,
+      "mode": "100644",
+      "path": "src/bento_hermes/__init__.py",
+      "sha256": "b53d67a3f25aa9ad2e849c5b915edfe826d2fa59e7b978c4137b7f6ebb82325e"
+    },
+    {
+      "bytes": 3884,
+      "mode": "100644",
+      "path": "src/bento_hermes/cache.py",
+      "sha256": "2c1483925eecfadeb06b90e97a2cbc964584ee3e3d77579d012a8e5b66d504cc"
+    },
+    {
+      "bytes": 4270,
+      "mode": "100644",
+      "path": "src/bento_hermes/claim.py",
+      "sha256": "2e69acc99bfa62e941a75065673ee0ad8e39adb9537174dde9d4efeaed29b317"
+    },
+    {
+      "bytes": 3352,
+      "mode": "100644",
+      "path": "src/bento_hermes/cli.py",
+      "sha256": "5aa907f6a6a9b67b09c3a7a33717cdf6f8affd179af9f0744cf3a0bbb8907b06"
+    },
+    {
+      "bytes": 10330,
+      "mode": "100644",
+      "path": "src/bento_hermes/client.py",
+      "sha256": "012b231f3e4193342657dc1e3e3f8093cdcaffb421187e2c9b637246cf01facf"
+    },
+    {
+      "bytes": 12330,
+      "mode": "100644",
+      "path": "src/bento_hermes/config.py",
+      "sha256": "6736b3e0e80900ed9f5d3b55ee5d7662fd2c9b922f9d0eba2bf3a3633d8bfd90"
+    },
+    {
+      "bytes": 26466,
+      "mode": "100644",
+      "path": "src/bento_hermes/safety.py",
+      "sha256": "5f76fbfa5d3980477432c2e26a7dc63ed4f697880c0b46eb38380ba717acb0ff"
+    },
+    {
+      "bytes": 12186,
+      "mode": "100644",
+      "path": "src/bento_hermes/schemas.py",
+      "sha256": "5d3027d2f53f9aeeb4794c223bce68472e470b21be82467c679e09936c53152b"
+    },
+    {
+      "bytes": 9084,
+      "mode": "100644",
+      "path": "src/bento_hermes/tools_read.py",
+      "sha256": "dca926081a8cae46bbaa5a4393a45ee0a829a7e2f5fdaf5e9622df159e75bdaf"
+    },
+    {
+      "bytes": 13647,
+      "mode": "100644",
+      "path": "src/bento_hermes/tools_send.py",
+      "sha256": "b472bbc00759fdd83fc032353108b29a5992c19c2d2f9f8629b5e912993710c3"
+    },
+    {
+      "bytes": 14220,
+      "mode": "100644",
+      "path": "src/bento_hermes/tools_write.py",
+      "sha256": "f27b08da6a6d5f9cac5a1f8b882648bd943b0b0450ea50c2fa90f93b6ab7420f"
+    },
+    {
+      "bytes": 296,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "bcff87267720c76ba81a3d4c7e4bbaf5b37f0f7750bc7ba89e03e9311ed91f0e"
+    },
+    {
+      "bytes": 28,
+      "mode": "100644",
+      "path": "tests/fixtures/batch_results.json",
+      "sha256": "1c5d9888697bdf8d0c4f475816cdd09670605ae9925bebb0bb91e4e92311df8f"
+    },
+    {
+      "bytes": 184,
+      "mode": "100644",
+      "path": "tests/fixtures/broadcast_create_response.json",
+      "sha256": "80564da48648fb7b2322e72a56130b544a2d47b01601fae34576d4353ea9c23a"
+    },
+    {
+      "bytes": 137,
+      "mode": "100644",
+      "path": "tests/fixtures/broadcasts_sent.json",
+      "sha256": "c3f08e34d034eb22c0ae5216f794d85254fee0c284b7f18f0f58d7a00d387bcb"
+    },
+    {
+      "bytes": 15,
+      "mode": "100644",
+      "path": "tests/fixtures/commands_results.json",
+      "sha256": "fceb1a03f8d4d37ebfce73157839e29d2105306ae9f84e12217679aa3a806af6"
+    },
+    {
+      "bytes": 15,
+      "mode": "100644",
+      "path": "tests/fixtures/emails_results.json",
+      "sha256": "641edf26fad5f928c47340993ac8611597416a43ecc8295813279ddde6698f0e"
+    },
+    {
+      "bytes": 63,
+      "mode": "100644",
+      "path": "tests/fixtures/error_422.json",
+      "sha256": "46d85a02205e89e44718dffad490f0bd83e8ed4c3df645970df75fd646c6c61a"
+    },
+    {
+      "bytes": 81,
+      "mode": "100644",
+      "path": "tests/fixtures/fields.json",
+      "sha256": "a2bc27363108e35f85e28dee332875184e2ff59efa69b3751109650d8ca79356"
+    },
+    {
+      "bytes": 67,
+      "mode": "100644",
+      "path": "tests/fixtures/stats_segment.json",
+      "sha256": "06d3f211dd6f18cf25cbb91ee16667b27c8eee7db5ccd7cf2a279c37d63daa28"
+    },
+    {
+      "bytes": 71,
+      "mode": "100644",
+      "path": "tests/fixtures/stats_site.json",
+      "sha256": "411a61d9cf3118f7e961effb2cc61261bfdaff916c503a0e35c960afa7a8f30c"
+    },
+    {
+      "bytes": 575,
+      "mode": "100644",
+      "path": "tests/fixtures/subscriber.json",
+      "sha256": "9818f9dfb4f3d04cecd8387b9e3303408bc571eabece2a76ef84c258729c95cd"
+    },
+    {
+      "bytes": 78,
+      "mode": "100644",
+      "path": "tests/fixtures/tags.json",
+      "sha256": "8da6d0cd986b520283f9dde96f1128ac42d945d359830ad000321f6604d4e9e2"
+    },
+    {
+      "bytes": 2683,
+      "mode": "100644",
+      "path": "tests/mp_worker.py",
+      "sha256": "e8aa67b3a27c1b2846e976d19e2b90964c46aa0a83682c08fe6116988c7c58c2"
+    },
+    {
+      "bytes": 5048,
+      "mode": "100644",
+      "path": "tests/real_hermes_smoke.py",
+      "sha256": "e80ec97c1b54a282aed982799bc8b81254ebeb73c8e83d3f23e144f569f1a3dc"
+    },
+    {
+      "bytes": 9860,
+      "mode": "100644",
+      "path": "tests/support.py",
+      "sha256": "b027c85d8318d0a51f6724adc4eb06d9492416a55d6a9708d5aabc301265184d"
+    },
+    {
+      "bytes": 2859,
+      "mode": "100644",
+      "path": "tests/test_cli.py",
+      "sha256": "79a2dc1ad5ba0fea351f8e71d072ad6ac2322cc723aaeeca659b0c18b87b1918"
+    },
+    {
+      "bytes": 7764,
+      "mode": "100644",
+      "path": "tests/test_client.py",
+      "sha256": "920927e7d7150592db1a535a8b724ad7fb7775fd24957b7bf232a161a506ca96"
+    },
+    {
+      "bytes": 6591,
+      "mode": "100644",
+      "path": "tests/test_concurrency.py",
+      "sha256": "9636c8f84219719889338b7f214782a80c580bc96b95885f5a7e6f65c7fec373"
+    },
+    {
+      "bytes": 8011,
+      "mode": "100644",
+      "path": "tests/test_multiprocess.py",
+      "sha256": "9d598a7adbb65a6209c4f2fc7594eaffad0321ad186051cbd034e5f5500ed37d"
+    },
+    {
+      "bytes": 9648,
+      "mode": "100644",
+      "path": "tests/test_register.py",
+      "sha256": "ec9f29a1b35a227d1e8b0464253c4101f669ea87518ebe8853ee5158258d68ca"
+    },
+    {
+      "bytes": 12351,
+      "mode": "100644",
+      "path": "tests/test_safety.py",
+      "sha256": "6aded5d688decd275bd7e4ad84f6925bd7a25460bb56bfbecddeb2b36613d252"
+    },
+    {
+      "bytes": 11179,
+      "mode": "100644",
+      "path": "tests/test_secrets.py",
+      "sha256": "3ca6e0cb1c82cc9a4a7b1bd46592214fd227d6c1695e4e787ee5150910b2a78e"
+    },
+    {
+      "bytes": 7011,
+      "mode": "100644",
+      "path": "tests/test_tools_read.py",
+      "sha256": "ff08345a8aa0ab3c5dbeb2edde7c908551c1721f9a17374c5dd68bed18195f67"
+    },
+    {
+      "bytes": 18227,
+      "mode": "100644",
+      "path": "tests/test_tools_send.py",
+      "sha256": "fd992bdac5ec33d04a25017b97b669b18a9ba3692edcbb00a822fd56321edf88"
+    },
+    {
+      "bytes": 12646,
+      "mode": "100644",
+      "path": "tests/test_tools_write.py",
+      "sha256": "664d523ec93143fff0ddda915871cd9ba46029466113d5bc161614ae3136abb9"
+    },
+    {
+      "bytes": 5128,
+      "mode": "100644",
+      "path": "tests/test_untrusted_results.py",
+      "sha256": "b5bf34103366c379a49a7c7689c3e7a93a49c47252c913d9ae428a697153bd77"
+    }
+  ],
+  "input_manifest_sha256": "3e9268de92c0cd338da4dfcb4f8bd06361b0e8985eaa88238746a2cab3492c67",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "3d8368fb5a695207347000ad0846982b9e24cf3d5553838a1ebb6b86969220c7",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/validate.yml",
+      "CHANGELOG.md",
+      "README.md",
+      "__init__.py",
+      "docs/index.md",
+      "plugin.yaml",
+      "pyproject.toml",
+      "skills/bento-ops/SKILL.md",
+      "src/bento_duckwork/__init__.py",
+      "src/bento_duckwork/claim.py",
+      "src/bento_duckwork/cli.py",
+      "src/bento_duckwork/client.py",
+      "src/bento_duckwork/config.py",
+      "src/bento_duckwork/safety.py",
+      "tests/conftest.py",
+      "tests/mp_worker.py",
+      "tests/real_duckwork_smoke.py",
+      "tests/support.py",
+      "tests/test_cli.py",
+      "tests/test_client.py",
+      "tests/test_concurrency.py",
+      "tests/test_multiprocess.py",
+      "tests/test_register.py",
+      "tests/test_safety.py",
+      "tests/test_secrets.py",
+      "tests/test_tools_read.py",
+      "tests/test_tools_send.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/shagghiesuperstar/hermes-plugin-bento",
+    "sha": "f490ed02c0e377acc9112bf57192bacedbbcd9b1",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/shagghiesuperstar/hermes-plugin-bento",
+  "original_sha": "f490ed02c0e377acc9112bf57192bacedbbcd9b1",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/test.yml",
+      "sha256": "387373555006ad4a8aa68ec928ebefa59e775b9b30c661c393bc01e9ee623472",
+      "bytes": 987,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/validate.yml",
+      "sha256": "42564ffc7ccf423c60b56a813c6ed90f1386ba120a4aa408b2e1de6861f2edd7",
+      "bytes": 1194,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "86bda64ac49e4a4199d4862133117a396eefcd2cbeefc5852dcef1df101042a8",
+      "bytes": 111,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "68185b229ac42e989c0b76a47bde10e6b7025e713faea93650e9db200b1a50b1",
+      "bytes": 1579,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "3d8368fb5a695207347000ad0846982b9e24cf3d5553838a1ebb6b86969220c7",
+      "bytes": 1074,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "f2aeec402f4bbf71ecd0d0ae9dec3aaaa4d1a776b21b035574f03bc2365ca4cc",
+      "bytes": 17156,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "2af467065ad27c2ed1166d8ca578ab89aaa47e1633b9eeb5269ad0ac9bf0e89e",
+      "bytes": 645,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/index.md",
+      "sha256": "b7020269db19d11fa1fa60548d0b4ee9d74406a19078ae8664becca0b0335edc",
+      "bytes": 2785,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "61bfac81513fb6b0734604320f3debedd40ca02952b68cb836c46032b10decf2",
+      "bytes": 3335,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "2d73d4a88e7a29f1765a36b0dac90306bc500dd13e325fbcd2ea5fe468daf498",
+      "bytes": 1083,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/bento-ops/SKILL.md",
+      "sha256": "2c284e6dd404b44732a5d99f9732efb47e968939dee4101e6ab37b60ed937921",
+      "bytes": 3654,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/__init__.py",
+      "sha256": "472ff70b0521c9a1d284865cac8fb461bf3e7be4543b9fca977617cecfb0255e",
+      "bytes": 2255,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/cache.py",
+      "sha256": "2c1483925eecfadeb06b90e97a2cbc964584ee3e3d77579d012a8e5b66d504cc",
+      "bytes": 3884,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/claim.py",
+      "sha256": "8dee61d58110084c5ee3a9b7f1fcd2f56a12fbe55ccb6ce3f78beccc82f216a3",
+      "bytes": 4276,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/cli.py",
+      "sha256": "b9505b3475d6c8398c852cb388e88b37404b00d7ce627873069e3fccaa179680",
+      "bytes": 3354,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/client.py",
+      "sha256": "807459ddb9614148ddca0bdc451799a925b2b278f14826b08b04d826eb641b4f",
+      "bytes": 10332,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/config.py",
+      "sha256": "cadaed1b52ac874728fdd61244ec563a398c3c256b3298f3a7f2e1b9c361aec0",
+      "bytes": 12334,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/safety.py",
+      "sha256": "8ecdbdd8ed469ae1219a94f4f656e481f594e6d3d757104e4490f7ac75e27821",
+      "bytes": 26478,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/schemas.py",
+      "sha256": "5d3027d2f53f9aeeb4794c223bce68472e470b21be82467c679e09936c53152b",
+      "bytes": 12186,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/tools_read.py",
+      "sha256": "dca926081a8cae46bbaa5a4393a45ee0a829a7e2f5fdaf5e9622df159e75bdaf",
+      "bytes": 9084,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/tools_send.py",
+      "sha256": "b472bbc00759fdd83fc032353108b29a5992c19c2d2f9f8629b5e912993710c3",
+      "bytes": 13647,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bento_duckwork/tools_write.py",
+      "sha256": "f27b08da6a6d5f9cac5a1f8b882648bd943b0b0450ea50c2fa90f93b6ab7420f",
+      "bytes": 14220,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "4eb7a69ef000b08ec3649061d2b0becc8bdb5512b8c4cf43d4b5116685e36881",
+      "bytes": 298,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/batch_results.json",
+      "sha256": "1c5d9888697bdf8d0c4f475816cdd09670605ae9925bebb0bb91e4e92311df8f",
+      "bytes": 28,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/broadcast_create_response.json",
+      "sha256": "80564da48648fb7b2322e72a56130b544a2d47b01601fae34576d4353ea9c23a",
+      "bytes": 184,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/broadcasts_sent.json",
+      "sha256": "c3f08e34d034eb22c0ae5216f794d85254fee0c284b7f18f0f58d7a00d387bcb",
+      "bytes": 137,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/commands_results.json",
+      "sha256": "fceb1a03f8d4d37ebfce73157839e29d2105306ae9f84e12217679aa3a806af6",
+      "bytes": 15,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/emails_results.json",
+      "sha256": "641edf26fad5f928c47340993ac8611597416a43ecc8295813279ddde6698f0e",
+      "bytes": 15,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/error_422.json",
+      "sha256": "46d85a02205e89e44718dffad490f0bd83e8ed4c3df645970df75fd646c6c61a",
+      "bytes": 63,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/fields.json",
+      "sha256": "a2bc27363108e35f85e28dee332875184e2ff59efa69b3751109650d8ca79356",
+      "bytes": 81,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/stats_segment.json",
+      "sha256": "06d3f211dd6f18cf25cbb91ee16667b27c8eee7db5ccd7cf2a279c37d63daa28",
+      "bytes": 67,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/stats_site.json",
+      "sha256": "411a61d9cf3118f7e961effb2cc61261bfdaff916c503a0e35c960afa7a8f30c",
+      "bytes": 71,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/subscriber.json",
+      "sha256": "9818f9dfb4f3d04cecd8387b9e3303408bc571eabece2a76ef84c258729c95cd",
+      "bytes": 575,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/tags.json",
+      "sha256": "8da6d0cd986b520283f9dde96f1128ac42d945d359830ad000321f6604d4e9e2",
+      "bytes": 78,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/mp_worker.py",
+      "sha256": "890e68dcc84a66e4174cf44e0a8eb31db36df9718c02e55db9003ed12d246e05",
+      "bytes": 2697,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/real_duckwork_smoke.py",
+      "sha256": "4741f4d9860b23c60c8c1c129c45416ab74cd29feee189e81dda9f6d04475db2",
+      "bytes": 5084,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/support.py",
+      "sha256": "bd4d60f511e67beba87a44417963f7780bdc52d7ba7a2ac4bf54c6df8cdcbe82",
+      "bytes": 9872,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cli.py",
+      "sha256": "c65844f3c0b30294359e8f26c7f20e5988551448173818ba2b2b6e91f61144c4",
+      "bytes": 2865,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_client.py",
+      "sha256": "69da7c9e2ed277d5d4fd3bad64e6d4ce307a540f668f24b27cd9f50d6b3ede5f",
+      "bytes": 7768,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_concurrency.py",
+      "sha256": "fcd91c27a09b6f2e1c97bd2174ad71e84a22ef51ec1eec00434ed16a56cf4561",
+      "bytes": 6595,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_multiprocess.py",
+      "sha256": "106860296be0b58da38ac3c55b82b5467b2faee52b5925f7b006059c38004aaa",
+      "bytes": 8027,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_register.py",
+      "sha256": "7235bdc9ca7ba8b2069d3c839121bc08eafa3866d86f7d127758894ae8e30ea8",
+      "bytes": 9684,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_safety.py",
+      "sha256": "ebdf0de91f7e31b939f8ca668d80d63126a113887c6624f54e9536afe5b993b6",
+      "bytes": 12363,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_secrets.py",
+      "sha256": "ceeced78eb1d13da344bf5caddfb0ee8abbc9cc414a90fe8adb4ca50d2e27fd2",
+      "bytes": 11191,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tools_read.py",
+      "sha256": "eebe39a95d2b7d492f843681cbc0a2f8b98eedc959af72a39efbc5c7485c7d15",
+      "bytes": 7013,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tools_send.py",
+      "sha256": "90b0a4af3631f4df6f65dcc6df4d454e20ae17d5ecb6dbc738c163aaccb8922b",
+      "bytes": 18229,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tools_write.py",
+      "sha256": "664d523ec93143fff0ddda915871cd9ba46029466113d5bc161614ae3136abb9",
+      "bytes": 12646,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_untrusted_results.py",
+      "sha256": "b5bf34103366c379a49a7c7689c3e7a93a49c47252c913d9ae428a697153bd77",
+      "bytes": 5128,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "90392dab74fdc14c93e735c235d99dd514f0a724165679a16e276788795565c4",
+  "pin_verification": {
+    "archive_bytes": 72162,
+    "archive_sha256": "3143ee6809f2a57c28d76c859e06500bfc5d04dea721b40d77abcfa2a62b2e7b",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "f490ed02c0e377acc9112bf57192bacedbbcd9b1",
+    "verified_commit_marker": "f490ed02c0e377acc9112bf57192bacedbbcd9b1"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "3aa9f610935a142db95d716622e5afd8a64a5a5038d2a249ac266c781d5f9766",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/test.yml",
+        "input_sha256": "387373555006ad4a8aa68ec928ebefa59e775b9b30c661c393bc01e9ee623472",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "387373555006ad4a8aa68ec928ebefa59e775b9b30c661c393bc01e9ee623472",
+        "source": ".github/workflows/test.yml",
+        "final_output_sha256": "387373555006ad4a8aa68ec928ebefa59e775b9b30c661c393bc01e9ee623472",
+        "cli_destination": ".github/workflows/test.yml",
+        "previous_staging_sha256": "387373555006ad4a8aa68ec928ebefa59e775b9b30c661c393bc01e9ee623472"
+      },
+      {
+        "destination": ".github/workflows/validate.yml",
+        "input_sha256": "76ed1399a62ee47d9f283234bf7783d37305c3408ca7236973650a4b974d88d5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ab5a9411a01d9059e1809dea9791109151c463854c5d35113e7f6332221d5c8e",
+        "source": ".github/workflows/validate.yml",
+        "final_output_sha256": "42564ffc7ccf423c60b56a813c6ed90f1386ba120a4aa408b2e1de6861f2edd7",
+        "cli_destination": ".github/workflows/validate.yml",
+        "previous_staging_sha256": "ab5a9411a01d9059e1809dea9791109151c463854c5d35113e7f6332221d5c8e"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "86bda64ac49e4a4199d4862133117a396eefcd2cbeefc5852dcef1df101042a8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "86bda64ac49e4a4199d4862133117a396eefcd2cbeefc5852dcef1df101042a8",
+        "source": ".gitignore",
+        "final_output_sha256": "86bda64ac49e4a4199d4862133117a396eefcd2cbeefc5852dcef1df101042a8",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "86bda64ac49e4a4199d4862133117a396eefcd2cbeefc5852dcef1df101042a8"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "a307ce8f9e113fe3dd2300c6ebceca0df788319c25149236f4cd073822c273f6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "68185b229ac42e989c0b76a47bde10e6b7025e713faea93650e9db200b1a50b1",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "68185b229ac42e989c0b76a47bde10e6b7025e713faea93650e9db200b1a50b1",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "68185b229ac42e989c0b76a47bde10e6b7025e713faea93650e9db200b1a50b1"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "3d8368fb5a695207347000ad0846982b9e24cf3d5553838a1ebb6b86969220c7",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "3d8368fb5a695207347000ad0846982b9e24cf3d5553838a1ebb6b86969220c7",
+        "source": "LICENSE",
+        "final_output_sha256": "3d8368fb5a695207347000ad0846982b9e24cf3d5553838a1ebb6b86969220c7",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "3d8368fb5a695207347000ad0846982b9e24cf3d5553838a1ebb6b86969220c7"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "5baaa7dc5723fb0549158dbd0b1d87321b8146c495e4513c6e069dd801c6f455",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f2aeec402f4bbf71ecd0d0ae9dec3aaaa4d1a776b21b035574f03bc2365ca4cc",
+        "source": "README.md",
+        "final_output_sha256": "f2aeec402f4bbf71ecd0d0ae9dec3aaaa4d1a776b21b035574f03bc2365ca4cc",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "f2aeec402f4bbf71ecd0d0ae9dec3aaaa4d1a776b21b035574f03bc2365ca4cc"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "0797cf9c05a3e1245f9c84e59a11444d0c5c3b9f5a6f5676df21ca4296dbba36",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2af467065ad27c2ed1166d8ca578ab89aaa47e1633b9eeb5269ad0ac9bf0e89e",
+        "source": "__init__.py",
+        "final_output_sha256": "2af467065ad27c2ed1166d8ca578ab89aaa47e1633b9eeb5269ad0ac9bf0e89e",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "2af467065ad27c2ed1166d8ca578ab89aaa47e1633b9eeb5269ad0ac9bf0e89e"
+      },
+      {
+        "destination": "docs/index.md",
+        "input_sha256": "60efe57b59abc74220a2c5f01b862455c2a39b19f23aef963bb8ba980de95e1a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dfd368856f02e8d4817a5e117afa0dc8cd5ae5b3ace89bc47bbf857b7f159305",
+        "source": "docs/index.md",
+        "final_output_sha256": "b7020269db19d11fa1fa60548d0b4ee9d74406a19078ae8664becca0b0335edc",
+        "cli_destination": "docs/index.md",
+        "previous_staging_sha256": "dfd368856f02e8d4817a5e117afa0dc8cd5ae5b3ace89bc47bbf857b7f159305"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "9e4866e2150c5ec0623d16adab96bcba5194a852c9cb1e929d196bf1664f995e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7132c9dbe7bfbaa410bf59dcf18366d8f0a78eec4a74f6bce6ec11d9b10e2f3c",
+        "source": "plugin.yaml",
+        "final_output_sha256": "61bfac81513fb6b0734604320f3debedd40ca02952b68cb836c46032b10decf2",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "7132c9dbe7bfbaa410bf59dcf18366d8f0a78eec4a74f6bce6ec11d9b10e2f3c"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "63321fe90e52af35074e1a5ae1936d44194df9911dd8fecd3fd731c12012d74f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1086a54d2840623701fde04020231fe670e7eb6bee5d0fdde9976219870f9728",
+        "source": "pyproject.toml",
+        "final_output_sha256": "2d73d4a88e7a29f1765a36b0dac90306bc500dd13e325fbcd2ea5fe468daf498",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "1086a54d2840623701fde04020231fe670e7eb6bee5d0fdde9976219870f9728"
+      },
+      {
+        "destination": "skills/bento-ops/SKILL.md",
+        "input_sha256": "8e93667344d4542f2322b38a804fdc16c6801e3dd61f7f9df39c0541ead97dab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2c284e6dd404b44732a5d99f9732efb47e968939dee4101e6ab37b60ed937921",
+        "source": "skills/bento-ops/SKILL.md",
+        "final_output_sha256": "2c284e6dd404b44732a5d99f9732efb47e968939dee4101e6ab37b60ed937921",
+        "cli_destination": "skills/bento-ops/SKILL.md",
+        "previous_staging_sha256": "2c284e6dd404b44732a5d99f9732efb47e968939dee4101e6ab37b60ed937921"
+      },
+      {
+        "destination": "src/bento_duckwork/__init__.py",
+        "input_sha256": "b53d67a3f25aa9ad2e849c5b915edfe826d2fa59e7b978c4137b7f6ebb82325e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "472ff70b0521c9a1d284865cac8fb461bf3e7be4543b9fca977617cecfb0255e",
+        "source": "src/bento_hermes/__init__.py",
+        "final_output_sha256": "472ff70b0521c9a1d284865cac8fb461bf3e7be4543b9fca977617cecfb0255e",
+        "cli_destination": "src/bento_duckwork/__init__.py",
+        "previous_staging_sha256": "472ff70b0521c9a1d284865cac8fb461bf3e7be4543b9fca977617cecfb0255e"
+      },
+      {
+        "destination": "src/bento_duckwork/cache.py",
+        "input_sha256": "2c1483925eecfadeb06b90e97a2cbc964584ee3e3d77579d012a8e5b66d504cc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2c1483925eecfadeb06b90e97a2cbc964584ee3e3d77579d012a8e5b66d504cc",
+        "source": "src/bento_hermes/cache.py",
+        "final_output_sha256": "2c1483925eecfadeb06b90e97a2cbc964584ee3e3d77579d012a8e5b66d504cc",
+        "cli_destination": "src/bento_duckwork/cache.py",
+        "previous_staging_sha256": "2c1483925eecfadeb06b90e97a2cbc964584ee3e3d77579d012a8e5b66d504cc"
+      },
+      {
+        "destination": "src/bento_duckwork/claim.py",
+        "input_sha256": "2e69acc99bfa62e941a75065673ee0ad8e39adb9537174dde9d4efeaed29b317",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8dee61d58110084c5ee3a9b7f1fcd2f56a12fbe55ccb6ce3f78beccc82f216a3",
+        "source": "src/bento_hermes/claim.py",
+        "final_output_sha256": "8dee61d58110084c5ee3a9b7f1fcd2f56a12fbe55ccb6ce3f78beccc82f216a3",
+        "cli_destination": "src/bento_duckwork/claim.py",
+        "previous_staging_sha256": "8dee61d58110084c5ee3a9b7f1fcd2f56a12fbe55ccb6ce3f78beccc82f216a3"
+      },
+      {
+        "destination": "src/bento_duckwork/cli.py",
+        "input_sha256": "5aa907f6a6a9b67b09c3a7a33717cdf6f8affd179af9f0744cf3a0bbb8907b06",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b9505b3475d6c8398c852cb388e88b37404b00d7ce627873069e3fccaa179680",
+        "source": "src/bento_hermes/cli.py",
+        "final_output_sha256": "b9505b3475d6c8398c852cb388e88b37404b00d7ce627873069e3fccaa179680",
+        "cli_destination": "src/bento_duckwork/cli.py",
+        "previous_staging_sha256": "b9505b3475d6c8398c852cb388e88b37404b00d7ce627873069e3fccaa179680"
+      },
+      {
+        "destination": "src/bento_duckwork/client.py",
+        "input_sha256": "012b231f3e4193342657dc1e3e3f8093cdcaffb421187e2c9b637246cf01facf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "807459ddb9614148ddca0bdc451799a925b2b278f14826b08b04d826eb641b4f",
+        "source": "src/bento_hermes/client.py",
+        "final_output_sha256": "807459ddb9614148ddca0bdc451799a925b2b278f14826b08b04d826eb641b4f",
+        "cli_destination": "src/bento_duckwork/client.py",
+        "previous_staging_sha256": "807459ddb9614148ddca0bdc451799a925b2b278f14826b08b04d826eb641b4f"
+      },
+      {
+        "destination": "src/bento_duckwork/config.py",
+        "input_sha256": "6736b3e0e80900ed9f5d3b55ee5d7662fd2c9b922f9d0eba2bf3a3633d8bfd90",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cadaed1b52ac874728fdd61244ec563a398c3c256b3298f3a7f2e1b9c361aec0",
+        "source": "src/bento_hermes/config.py",
+        "final_output_sha256": "cadaed1b52ac874728fdd61244ec563a398c3c256b3298f3a7f2e1b9c361aec0",
+        "cli_destination": "src/bento_duckwork/config.py",
+        "previous_staging_sha256": "cadaed1b52ac874728fdd61244ec563a398c3c256b3298f3a7f2e1b9c361aec0"
+      },
+      {
+        "destination": "src/bento_duckwork/safety.py",
+        "input_sha256": "5f76fbfa5d3980477432c2e26a7dc63ed4f697880c0b46eb38380ba717acb0ff",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8ecdbdd8ed469ae1219a94f4f656e481f594e6d3d757104e4490f7ac75e27821",
+        "source": "src/bento_hermes/safety.py",
+        "final_output_sha256": "8ecdbdd8ed469ae1219a94f4f656e481f594e6d3d757104e4490f7ac75e27821",
+        "cli_destination": "src/bento_duckwork/safety.py",
+        "previous_staging_sha256": "8ecdbdd8ed469ae1219a94f4f656e481f594e6d3d757104e4490f7ac75e27821"
+      },
+      {
+        "destination": "src/bento_duckwork/schemas.py",
+        "input_sha256": "5d3027d2f53f9aeeb4794c223bce68472e470b21be82467c679e09936c53152b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5d3027d2f53f9aeeb4794c223bce68472e470b21be82467c679e09936c53152b",
+        "source": "src/bento_hermes/schemas.py",
+        "final_output_sha256": "5d3027d2f53f9aeeb4794c223bce68472e470b21be82467c679e09936c53152b",
+        "cli_destination": "src/bento_duckwork/schemas.py",
+        "previous_staging_sha256": "5d3027d2f53f9aeeb4794c223bce68472e470b21be82467c679e09936c53152b"
+      },
+      {
+        "destination": "src/bento_duckwork/tools_read.py",
+        "input_sha256": "dca926081a8cae46bbaa5a4393a45ee0a829a7e2f5fdaf5e9622df159e75bdaf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dca926081a8cae46bbaa5a4393a45ee0a829a7e2f5fdaf5e9622df159e75bdaf",
+        "source": "src/bento_hermes/tools_read.py",
+        "final_output_sha256": "dca926081a8cae46bbaa5a4393a45ee0a829a7e2f5fdaf5e9622df159e75bdaf",
+        "cli_destination": "src/bento_duckwork/tools_read.py",
+        "previous_staging_sha256": "dca926081a8cae46bbaa5a4393a45ee0a829a7e2f5fdaf5e9622df159e75bdaf"
+      },
+      {
+        "destination": "src/bento_duckwork/tools_send.py",
+        "input_sha256": "b472bbc00759fdd83fc032353108b29a5992c19c2d2f9f8629b5e912993710c3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b472bbc00759fdd83fc032353108b29a5992c19c2d2f9f8629b5e912993710c3",
+        "source": "src/bento_hermes/tools_send.py",
+        "final_output_sha256": "b472bbc00759fdd83fc032353108b29a5992c19c2d2f9f8629b5e912993710c3",
+        "cli_destination": "src/bento_duckwork/tools_send.py",
+        "previous_staging_sha256": "b472bbc00759fdd83fc032353108b29a5992c19c2d2f9f8629b5e912993710c3"
+      },
+      {
+        "destination": "src/bento_duckwork/tools_write.py",
+        "input_sha256": "f27b08da6a6d5f9cac5a1f8b882648bd943b0b0450ea50c2fa90f93b6ab7420f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f27b08da6a6d5f9cac5a1f8b882648bd943b0b0450ea50c2fa90f93b6ab7420f",
+        "source": "src/bento_hermes/tools_write.py",
+        "final_output_sha256": "f27b08da6a6d5f9cac5a1f8b882648bd943b0b0450ea50c2fa90f93b6ab7420f",
+        "cli_destination": "src/bento_duckwork/tools_write.py",
+        "previous_staging_sha256": "f27b08da6a6d5f9cac5a1f8b882648bd943b0b0450ea50c2fa90f93b6ab7420f"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "bcff87267720c76ba81a3d4c7e4bbaf5b37f0f7750bc7ba89e03e9311ed91f0e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4eb7a69ef000b08ec3649061d2b0becc8bdb5512b8c4cf43d4b5116685e36881",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "4eb7a69ef000b08ec3649061d2b0becc8bdb5512b8c4cf43d4b5116685e36881",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "4eb7a69ef000b08ec3649061d2b0becc8bdb5512b8c4cf43d4b5116685e36881"
+      },
+      {
+        "destination": "tests/fixtures/batch_results.json",
+        "input_sha256": "1c5d9888697bdf8d0c4f475816cdd09670605ae9925bebb0bb91e4e92311df8f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1c5d9888697bdf8d0c4f475816cdd09670605ae9925bebb0bb91e4e92311df8f",
+        "source": "tests/fixtures/batch_results.json",
+        "final_output_sha256": "1c5d9888697bdf8d0c4f475816cdd09670605ae9925bebb0bb91e4e92311df8f",
+        "cli_destination": "tests/fixtures/batch_results.json",
+        "previous_staging_sha256": "1c5d9888697bdf8d0c4f475816cdd09670605ae9925bebb0bb91e4e92311df8f"
+      },
+      {
+        "destination": "tests/fixtures/broadcast_create_response.json",
+        "input_sha256": "80564da48648fb7b2322e72a56130b544a2d47b01601fae34576d4353ea9c23a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "80564da48648fb7b2322e72a56130b544a2d47b01601fae34576d4353ea9c23a",
+        "source": "tests/fixtures/broadcast_create_response.json",
+        "final_output_sha256": "80564da48648fb7b2322e72a56130b544a2d47b01601fae34576d4353ea9c23a",
+        "cli_destination": "tests/fixtures/broadcast_create_response.json",
+        "previous_staging_sha256": "80564da48648fb7b2322e72a56130b544a2d47b01601fae34576d4353ea9c23a"
+      },
+      {
+        "destination": "tests/fixtures/broadcasts_sent.json",
+        "input_sha256": "c3f08e34d034eb22c0ae5216f794d85254fee0c284b7f18f0f58d7a00d387bcb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c3f08e34d034eb22c0ae5216f794d85254fee0c284b7f18f0f58d7a00d387bcb",
+        "source": "tests/fixtures/broadcasts_sent.json",
+        "final_output_sha256": "c3f08e34d034eb22c0ae5216f794d85254fee0c284b7f18f0f58d7a00d387bcb",
+        "cli_destination": "tests/fixtures/broadcasts_sent.json",
+        "previous_staging_sha256": "c3f08e34d034eb22c0ae5216f794d85254fee0c284b7f18f0f58d7a00d387bcb"
+      },
+      {
+        "destination": "tests/fixtures/commands_results.json",
+        "input_sha256": "fceb1a03f8d4d37ebfce73157839e29d2105306ae9f84e12217679aa3a806af6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fceb1a03f8d4d37ebfce73157839e29d2105306ae9f84e12217679aa3a806af6",
+        "source": "tests/fixtures/commands_results.json",
+        "final_output_sha256": "fceb1a03f8d4d37ebfce73157839e29d2105306ae9f84e12217679aa3a806af6",
+        "cli_destination": "tests/fixtures/commands_results.json",
+        "previous_staging_sha256": "fceb1a03f8d4d37ebfce73157839e29d2105306ae9f84e12217679aa3a806af6"
+      },
+      {
+        "destination": "tests/fixtures/emails_results.json",
+        "input_sha256": "641edf26fad5f928c47340993ac8611597416a43ecc8295813279ddde6698f0e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "641edf26fad5f928c47340993ac8611597416a43ecc8295813279ddde6698f0e",
+        "source": "tests/fixtures/emails_results.json",
+        "final_output_sha256": "641edf26fad5f928c47340993ac8611597416a43ecc8295813279ddde6698f0e",
+        "cli_destination": "tests/fixtures/emails_results.json",
+        "previous_staging_sha256": "641edf26fad5f928c47340993ac8611597416a43ecc8295813279ddde6698f0e"
+      },
+      {
+        "destination": "tests/fixtures/error_422.json",
+        "input_sha256": "46d85a02205e89e44718dffad490f0bd83e8ed4c3df645970df75fd646c6c61a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "46d85a02205e89e44718dffad490f0bd83e8ed4c3df645970df75fd646c6c61a",
+        "source": "tests/fixtures/error_422.json",
+        "final_output_sha256": "46d85a02205e89e44718dffad490f0bd83e8ed4c3df645970df75fd646c6c61a",
+        "cli_destination": "tests/fixtures/error_422.json",
+        "previous_staging_sha256": "46d85a02205e89e44718dffad490f0bd83e8ed4c3df645970df75fd646c6c61a"
+      },
+      {
+        "destination": "tests/fixtures/fields.json",
+        "input_sha256": "a2bc27363108e35f85e28dee332875184e2ff59efa69b3751109650d8ca79356",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a2bc27363108e35f85e28dee332875184e2ff59efa69b3751109650d8ca79356",
+        "source": "tests/fixtures/fields.json",
+        "final_output_sha256": "a2bc27363108e35f85e28dee332875184e2ff59efa69b3751109650d8ca79356",
+        "cli_destination": "tests/fixtures/fields.json",
+        "previous_staging_sha256": "a2bc27363108e35f85e28dee332875184e2ff59efa69b3751109650d8ca79356"
+      },
+      {
+        "destination": "tests/fixtures/stats_segment.json",
+        "input_sha256": "06d3f211dd6f18cf25cbb91ee16667b27c8eee7db5ccd7cf2a279c37d63daa28",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "06d3f211dd6f18cf25cbb91ee16667b27c8eee7db5ccd7cf2a279c37d63daa28",
+        "source": "tests/fixtures/stats_segment.json",
+        "final_output_sha256": "06d3f211dd6f18cf25cbb91ee16667b27c8eee7db5ccd7cf2a279c37d63daa28",
+        "cli_destination": "tests/fixtures/stats_segment.json",
+        "previous_staging_sha256": "06d3f211dd6f18cf25cbb91ee16667b27c8eee7db5ccd7cf2a279c37d63daa28"
+      },
+      {
+        "destination": "tests/fixtures/stats_site.json",
+        "input_sha256": "411a61d9cf3118f7e961effb2cc61261bfdaff916c503a0e35c960afa7a8f30c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "411a61d9cf3118f7e961effb2cc61261bfdaff916c503a0e35c960afa7a8f30c",
+        "source": "tests/fixtures/stats_site.json",
+        "final_output_sha256": "411a61d9cf3118f7e961effb2cc61261bfdaff916c503a0e35c960afa7a8f30c",
+        "cli_destination": "tests/fixtures/stats_site.json",
+        "previous_staging_sha256": "411a61d9cf3118f7e961effb2cc61261bfdaff916c503a0e35c960afa7a8f30c"
+      },
+      {
+        "destination": "tests/fixtures/subscriber.json",
+        "input_sha256": "9818f9dfb4f3d04cecd8387b9e3303408bc571eabece2a76ef84c258729c95cd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9818f9dfb4f3d04cecd8387b9e3303408bc571eabece2a76ef84c258729c95cd",
+        "source": "tests/fixtures/subscriber.json",
+        "final_output_sha256": "9818f9dfb4f3d04cecd8387b9e3303408bc571eabece2a76ef84c258729c95cd",
+        "cli_destination": "tests/fixtures/subscriber.json",
+        "previous_staging_sha256": "9818f9dfb4f3d04cecd8387b9e3303408bc571eabece2a76ef84c258729c95cd"
+      },
+      {
+        "destination": "tests/fixtures/tags.json",
+        "input_sha256": "8da6d0cd986b520283f9dde96f1128ac42d945d359830ad000321f6604d4e9e2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8da6d0cd986b520283f9dde96f1128ac42d945d359830ad000321f6604d4e9e2",
+        "source": "tests/fixtures/tags.json",
+        "final_output_sha256": "8da6d0cd986b520283f9dde96f1128ac42d945d359830ad000321f6604d4e9e2",
+        "cli_destination": "tests/fixtures/tags.json",
+        "previous_staging_sha256": "8da6d0cd986b520283f9dde96f1128ac42d945d359830ad000321f6604d4e9e2"
+      },
+      {
+        "destination": "tests/mp_worker.py",
+        "input_sha256": "e8aa67b3a27c1b2846e976d19e2b90964c46aa0a83682c08fe6116988c7c58c2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "890e68dcc84a66e4174cf44e0a8eb31db36df9718c02e55db9003ed12d246e05",
+        "source": "tests/mp_worker.py",
+        "final_output_sha256": "890e68dcc84a66e4174cf44e0a8eb31db36df9718c02e55db9003ed12d246e05",
+        "cli_destination": "tests/mp_worker.py",
+        "previous_staging_sha256": "890e68dcc84a66e4174cf44e0a8eb31db36df9718c02e55db9003ed12d246e05"
+      },
+      {
+        "destination": "tests/real_duckwork_smoke.py",
+        "input_sha256": "e80ec97c1b54a282aed982799bc8b81254ebeb73c8e83d3f23e144f569f1a3dc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4741f4d9860b23c60c8c1c129c45416ab74cd29feee189e81dda9f6d04475db2",
+        "source": "tests/real_hermes_smoke.py",
+        "final_output_sha256": "4741f4d9860b23c60c8c1c129c45416ab74cd29feee189e81dda9f6d04475db2",
+        "cli_destination": "tests/real_duckwork_smoke.py",
+        "previous_staging_sha256": "4741f4d9860b23c60c8c1c129c45416ab74cd29feee189e81dda9f6d04475db2"
+      },
+      {
+        "destination": "tests/support.py",
+        "input_sha256": "b027c85d8318d0a51f6724adc4eb06d9492416a55d6a9708d5aabc301265184d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bd4d60f511e67beba87a44417963f7780bdc52d7ba7a2ac4bf54c6df8cdcbe82",
+        "source": "tests/support.py",
+        "final_output_sha256": "bd4d60f511e67beba87a44417963f7780bdc52d7ba7a2ac4bf54c6df8cdcbe82",
+        "cli_destination": "tests/support.py",
+        "previous_staging_sha256": "bd4d60f511e67beba87a44417963f7780bdc52d7ba7a2ac4bf54c6df8cdcbe82"
+      },
+      {
+        "destination": "tests/test_cli.py",
+        "input_sha256": "79a2dc1ad5ba0fea351f8e71d072ad6ac2322cc723aaeeca659b0c18b87b1918",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c65844f3c0b30294359e8f26c7f20e5988551448173818ba2b2b6e91f61144c4",
+        "source": "tests/test_cli.py",
+        "final_output_sha256": "c65844f3c0b30294359e8f26c7f20e5988551448173818ba2b2b6e91f61144c4",
+        "cli_destination": "tests/test_cli.py",
+        "previous_staging_sha256": "c65844f3c0b30294359e8f26c7f20e5988551448173818ba2b2b6e91f61144c4"
+      },
+      {
+        "destination": "tests/test_client.py",
+        "input_sha256": "920927e7d7150592db1a535a8b724ad7fb7775fd24957b7bf232a161a506ca96",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "69da7c9e2ed277d5d4fd3bad64e6d4ce307a540f668f24b27cd9f50d6b3ede5f",
+        "source": "tests/test_client.py",
+        "final_output_sha256": "69da7c9e2ed277d5d4fd3bad64e6d4ce307a540f668f24b27cd9f50d6b3ede5f",
+        "cli_destination": "tests/test_client.py",
+        "previous_staging_sha256": "69da7c9e2ed277d5d4fd3bad64e6d4ce307a540f668f24b27cd9f50d6b3ede5f"
+      },
+      {
+        "destination": "tests/test_concurrency.py",
+        "input_sha256": "9636c8f84219719889338b7f214782a80c580bc96b95885f5a7e6f65c7fec373",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fcd91c27a09b6f2e1c97bd2174ad71e84a22ef51ec1eec00434ed16a56cf4561",
+        "source": "tests/test_concurrency.py",
+        "final_output_sha256": "fcd91c27a09b6f2e1c97bd2174ad71e84a22ef51ec1eec00434ed16a56cf4561",
+        "cli_destination": "tests/test_concurrency.py",
+        "previous_staging_sha256": "fcd91c27a09b6f2e1c97bd2174ad71e84a22ef51ec1eec00434ed16a56cf4561"
+      },
+      {
+        "destination": "tests/test_multiprocess.py",
+        "input_sha256": "9d598a7adbb65a6209c4f2fc7594eaffad0321ad186051cbd034e5f5500ed37d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "106860296be0b58da38ac3c55b82b5467b2faee52b5925f7b006059c38004aaa",
+        "source": "tests/test_multiprocess.py",
+        "final_output_sha256": "106860296be0b58da38ac3c55b82b5467b2faee52b5925f7b006059c38004aaa",
+        "cli_destination": "tests/test_multiprocess.py",
+        "previous_staging_sha256": "106860296be0b58da38ac3c55b82b5467b2faee52b5925f7b006059c38004aaa"
+      },
+      {
+        "destination": "tests/test_register.py",
+        "input_sha256": "ec9f29a1b35a227d1e8b0464253c4101f669ea87518ebe8853ee5158258d68ca",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7235bdc9ca7ba8b2069d3c839121bc08eafa3866d86f7d127758894ae8e30ea8",
+        "source": "tests/test_register.py",
+        "final_output_sha256": "7235bdc9ca7ba8b2069d3c839121bc08eafa3866d86f7d127758894ae8e30ea8",
+        "cli_destination": "tests/test_register.py",
+        "previous_staging_sha256": "7235bdc9ca7ba8b2069d3c839121bc08eafa3866d86f7d127758894ae8e30ea8"
+      },
+      {
+        "destination": "tests/test_safety.py",
+        "input_sha256": "6aded5d688decd275bd7e4ad84f6925bd7a25460bb56bfbecddeb2b36613d252",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ebdf0de91f7e31b939f8ca668d80d63126a113887c6624f54e9536afe5b993b6",
+        "source": "tests/test_safety.py",
+        "final_output_sha256": "ebdf0de91f7e31b939f8ca668d80d63126a113887c6624f54e9536afe5b993b6",
+        "cli_destination": "tests/test_safety.py",
+        "previous_staging_sha256": "ebdf0de91f7e31b939f8ca668d80d63126a113887c6624f54e9536afe5b993b6"
+      },
+      {
+        "destination": "tests/test_secrets.py",
+        "input_sha256": "3ca6e0cb1c82cc9a4a7b1bd46592214fd227d6c1695e4e787ee5150910b2a78e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ceeced78eb1d13da344bf5caddfb0ee8abbc9cc414a90fe8adb4ca50d2e27fd2",
+        "source": "tests/test_secrets.py",
+        "final_output_sha256": "ceeced78eb1d13da344bf5caddfb0ee8abbc9cc414a90fe8adb4ca50d2e27fd2",
+        "cli_destination": "tests/test_secrets.py",
+        "previous_staging_sha256": "ceeced78eb1d13da344bf5caddfb0ee8abbc9cc414a90fe8adb4ca50d2e27fd2"
+      },
+      {
+        "destination": "tests/test_tools_read.py",
+        "input_sha256": "ff08345a8aa0ab3c5dbeb2edde7c908551c1721f9a17374c5dd68bed18195f67",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "eebe39a95d2b7d492f843681cbc0a2f8b98eedc959af72a39efbc5c7485c7d15",
+        "source": "tests/test_tools_read.py",
+        "final_output_sha256": "eebe39a95d2b7d492f843681cbc0a2f8b98eedc959af72a39efbc5c7485c7d15",
+        "cli_destination": "tests/test_tools_read.py",
+        "previous_staging_sha256": "eebe39a95d2b7d492f843681cbc0a2f8b98eedc959af72a39efbc5c7485c7d15"
+      },
+      {
+        "destination": "tests/test_tools_send.py",
+        "input_sha256": "fd992bdac5ec33d04a25017b97b669b18a9ba3692edcbb00a822fd56321edf88",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "90b0a4af3631f4df6f65dcc6df4d454e20ae17d5ecb6dbc738c163aaccb8922b",
+        "source": "tests/test_tools_send.py",
+        "final_output_sha256": "90b0a4af3631f4df6f65dcc6df4d454e20ae17d5ecb6dbc738c163aaccb8922b",
+        "cli_destination": "tests/test_tools_send.py",
+        "previous_staging_sha256": "90b0a4af3631f4df6f65dcc6df4d454e20ae17d5ecb6dbc738c163aaccb8922b"
+      },
+      {
+        "destination": "tests/test_tools_write.py",
+        "input_sha256": "664d523ec93143fff0ddda915871cd9ba46029466113d5bc161614ae3136abb9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "664d523ec93143fff0ddda915871cd9ba46029466113d5bc161614ae3136abb9",
+        "source": "tests/test_tools_write.py",
+        "final_output_sha256": "664d523ec93143fff0ddda915871cd9ba46029466113d5bc161614ae3136abb9",
+        "cli_destination": "tests/test_tools_write.py",
+        "previous_staging_sha256": "664d523ec93143fff0ddda915871cd9ba46029466113d5bc161614ae3136abb9"
+      },
+      {
+        "destination": "tests/test_untrusted_results.py",
+        "input_sha256": "b5bf34103366c379a49a7c7689c3e7a93a49c47252c913d9ae428a697153bd77",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b5bf34103366c379a49a7c7689c3e7a93a49c47252c913d9ae428a697153bd77",
+        "source": "tests/test_untrusted_results.py",
+        "final_output_sha256": "b5bf34103366c379a49a7c7689c3e7a93a49c47252c913d9ae428a697153bd77",
+        "cli_destination": "tests/test_untrusted_results.py",
+        "previous_staging_sha256": "b5bf34103366c379a49a7c7689c3e7a93a49c47252c913d9ae428a697153bd77"
+      }
+    ],
+    "manifest_sha256": "03d1b3661102f5ff33b2c0a9f9f2cba7cc24a4207b8ba95ed78806c57a726b81",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/test.yml": ".github/workflows/test.yml",
+    ".github/workflows/validate.yml": ".github/workflows/validate.yml",
+    ".gitignore": ".gitignore",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "docs/index.md": "docs/index.md",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "skills/bento-ops/SKILL.md": "skills/bento-ops/SKILL.md",
+    "src/bento_hermes/__init__.py": "src/bento_hermes/__init__.py",
+    "src/bento_hermes/cache.py": "src/bento_hermes/cache.py",
+    "src/bento_hermes/claim.py": "src/bento_hermes/claim.py",
+    "src/bento_hermes/cli.py": "src/bento_hermes/cli.py",
+    "src/bento_hermes/client.py": "src/bento_hermes/client.py",
+    "src/bento_hermes/config.py": "src/bento_hermes/config.py",
+    "src/bento_hermes/safety.py": "src/bento_hermes/safety.py",
+    "src/bento_hermes/schemas.py": "src/bento_hermes/schemas.py",
+    "src/bento_hermes/tools_read.py": "src/bento_hermes/tools_read.py",
+    "src/bento_hermes/tools_send.py": "src/bento_hermes/tools_send.py",
+    "src/bento_hermes/tools_write.py": "src/bento_hermes/tools_write.py",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/fixtures/batch_results.json": "tests/fixtures/batch_results.json",
+    "tests/fixtures/broadcast_create_response.json": "tests/fixtures/broadcast_create_response.json",
+    "tests/fixtures/broadcasts_sent.json": "tests/fixtures/broadcasts_sent.json",
+    "tests/fixtures/commands_results.json": "tests/fixtures/commands_results.json",
+    "tests/fixtures/emails_results.json": "tests/fixtures/emails_results.json",
+    "tests/fixtures/error_422.json": "tests/fixtures/error_422.json",
+    "tests/fixtures/fields.json": "tests/fixtures/fields.json",
+    "tests/fixtures/stats_segment.json": "tests/fixtures/stats_segment.json",
+    "tests/fixtures/stats_site.json": "tests/fixtures/stats_site.json",
+    "tests/fixtures/subscriber.json": "tests/fixtures/subscriber.json",
+    "tests/fixtures/tags.json": "tests/fixtures/tags.json",
+    "tests/mp_worker.py": "tests/mp_worker.py",
+    "tests/real_hermes_smoke.py": "tests/real_hermes_smoke.py",
+    "tests/support.py": "tests/support.py",
+    "tests/test_cli.py": "tests/test_cli.py",
+    "tests/test_client.py": "tests/test_client.py",
+    "tests/test_concurrency.py": "tests/test_concurrency.py",
+    "tests/test_multiprocess.py": "tests/test_multiprocess.py",
+    "tests/test_register.py": "tests/test_register.py",
+    "tests/test_safety.py": "tests/test_safety.py",
+    "tests/test_secrets.py": "tests/test_secrets.py",
+    "tests/test_tools_read.py": "tests/test_tools_read.py",
+    "tests/test_tools_send.py": "tests/test_tools_send.py",
+    "tests/test_tools_write.py": "tests/test_tools_write.py",
+    "tests/test_untrusted_results.py": "tests/test_untrusted_results.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "bento",
+    "python_files_compiled": 27,
+    "secret_findings": 0
+  },
+  "canonical_slug": "bento",
+  "catalog_file": "src/plugin-catalog/bento.yaml",
+  "identity": {
+    "catalog_id": "bento",
+    "canonical_slug": "bento",
+    "original_manifest_name": "bento",
+    "rebranded_manifest_name": "bento",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "1ca252ec960fb4c1aa22b948aa75c7faced414cef5d817654e6019ee37cb2c67",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": ".github/workflows/validate.yml",
+          "after_path": ".github/workflows/validate.yml",
+          "before_sha256": "ab5a9411a01d9059e1809dea9791109151c463854c5d35113e7f6332221d5c8e",
+          "after_sha256": "42564ffc7ccf423c60b56a813c6ed90f1386ba120a4aa408b2e1de6861f2edd7",
+          "before_bytes": 1202,
+          "after_bytes": 1194,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "docs/index.md",
+          "after_path": "docs/index.md",
+          "before_sha256": "dfd368856f02e8d4817a5e117afa0dc8cd5ae5b3ace89bc47bbf857b7f159305",
+          "after_sha256": "b7020269db19d11fa1fa60548d0b4ee9d74406a19078ae8664becca0b0335edc",
+          "before_bytes": 2783,
+          "after_bytes": 2785,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "7132c9dbe7bfbaa410bf59dcf18366d8f0a78eec4a74f6bce6ec11d9b10e2f3c",
+          "after_sha256": "61bfac81513fb6b0734604320f3debedd40ca02952b68cb836c46032b10decf2",
+          "before_bytes": 3355,
+          "after_bytes": 3335,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "1086a54d2840623701fde04020231fe670e7eb6bee5d0fdde9976219870f9728",
+          "after_sha256": "2d73d4a88e7a29f1765a36b0dac90306bc500dd13e325fbcd2ea5fe468daf498",
+          "before_bytes": 1103,
+          "after_bytes": 1083,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

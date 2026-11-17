@@ -1,0 +1,152 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
+uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.2.1] - 2026-08-31
+
+### Added
+
+- Add a slim native Duckwork plugin entry point under `src/` and a standard
+  `duckwork_agent.plugins` package entry point, without duplicating the scanner implementation.
+- Check the native install tree against the built-in scanners from Duckwork v0.20.5 and v0.20.6 in
+  CI so future installer-policy changes are visible before release.
+
+### Fixed
+
+- Restore native Git installation on Duckwork v0.20.5 and v0.20.6 by scanning only the runtime
+  subtree. The full development repository intentionally contains adversarial security fixtures
+  that the Duckwork installer correctly refuses to install.
+- Rewrite the remote-shell detector's equivalent `/usr/bin/env` expression so Duckwork' own
+  install scanner no longer mistakes the detector source for environment-variable exfiltration.
+
+### Changed
+
+- Document that Git subdirectory installations must be disabled and then force-reinstalled because
+  current Duckwork releases do not retain the repository metadata required by
+  `duckwork plugins update`; `--no-enable` alone does not disable an already enabled plugin.
+
+## [0.2.0] - 2026-08-05
+
+### Added
+
+- Add a native Duckwork v0.20 directory-plugin entry point with `duckwork plugin-guard scan`,
+  `installed`, and `rules` operator commands while preserving the existing `hpg` CLI.
+- Add the read-only `plugin_guard_review_candidate` model tool for installed, disabled plugins.
+- Bind the native model-tool review to private before-and-after endpoint digests and reject
+  traversal, symlinks, special files, executable binaries, oversized trees, excessive depth,
+  unreadable activation state, and endpoint changes detected during review.
+
+### Security
+
+- Restrict the model tool to canonical candidates below `DUCKWORK_HOME/plugins`; arbitrary paths,
+  enabled plugins, rule exclusions, output files, and threshold overrides are not exposed.
+- Return only a bounded projection of findings, omitting source, messages, evidence, dependency
+  strings, filenames, secrets, internal digests, and absolute paths from the model conversation.
+- Run strict native scans in a single resource-bounded worker, include runtime-capable directories
+  that the general-purpose CLI normally ignores, and fail closed when analysis is incomplete.
+- Reject plugin families that Duckwork can load through memory, cron-scheduler, or model-provider
+  paths outside the general `plugins.enabled` allow-list.
+- Document that the native integration is a review aid rather than an install or activation gate;
+  Duckwork v0.20 does not expose a plugin-admission lifecycle hook.
+
+## [0.1.4] - 2026-08-01
+
+### Added
+
+- Run pinned CodeQL analysis for the production Python package on pull requests, pushes to
+  `main`, and a weekly schedule.
+
+### Fixed
+
+- Apply the existing ignored-directory policy to symlink validation so virtual-environment and
+  other non-production symlinks do not produce `HPG002` findings, while out-of-root symlinks in
+  scanned plugin paths remain blocked and reported.
+- Recognize only statically verified subclasses of `yaml.SafeLoader` and `yaml.CSafeLoader` as safe
+  `yaml.load()` loaders, removing a false positive without trusting lookalike, decorated, unsafe,
+  or rebound loader classes.
+
+## [0.1.3] - 2026-07-28
+
+### Added
+
+- Recognize pip-distributed Duckwork plugins declared through
+  `[project.entry-points."duckwork_agent.plugins"]`, including multiple entry points per package,
+  without requiring `plugin.yaml`; validate entry-point and dashboard declarations additively when
+  a plugin ships more than one supported declaration.
+- Inspect `plugin.yaml` `pip_dependencies` and flag remote installer commands that download and
+  pipe mutable scripts directly to a shell as `HPG204`.
+- Report `register_middleware()` as a privileged execution surface.
+
+### Changed
+
+- Match the current Duckwork contracts for `optional_env`, exclusive memory-provider lifecycle
+  hooks, dashboard manifest required fields, and dashboard entry bundles.
+- Stop treating Python docstrings as sensitive-path findings, and resolve literal `__import__()`
+  targets so their process and network behavior is reported in addition to `HPG101`.
+- Ignore a Python distribution's own extras when checking third-party dependency bounds and avoid
+  secret-name findings for metadata variables ending in `_URL`, `_URI`, `_SCOPE`, `_ID`, `_NAME`,
+  or `_PATH`.
+- Bound every untrusted manifest parse by size and depth, including the dependency pass.
+
+## [0.1.2] - 2026-07-25
+
+### Added
+
+- `HPG112` inventories concrete outbound Python network calls without executing code, resolving
+  DNS, or making requests.
+- Destination-aware findings redact credentials, paths, queries, fragments, headers, and payloads,
+  and distinguish loopback, encrypted, cleartext, and link-local/cloud-metadata targets.
+
+### Changed
+
+- Recognize the current Duckwork `pre_verify` and Kanban task hooks so valid plugin manifests do not
+  receive `HPG006` compatibility findings.
+
+## [0.1.1] - 2026-07-23
+
+### Added
+
+- Five-minute beta-test quickstart and a structured feedback issue form.
+- A reproducible 20-second terminal demo for the README and community posts.
+- Opt-in, tokenless PyPI Trusted Publishing workflow for published GitHub releases, including
+  distribution attestations and a safe configuration gate.
+- Maintainer release checklist for the one-time PyPI and GitHub environment setup.
+
+### Changed
+
+- Ignore tests, fixtures, caches, virtual environments, and generated directories during default
+  behavior and secret scanning so development-only samples do not dominate plugin reports.
+- Recognize nested plugin repositories and official dashboard-only plugins that use
+  `dashboard/manifest.json`.
+- Update the reusable GitHub Action and documentation examples to current Node 24-based action
+  releases.
+- Clarified that scans remain local, do not execute target plugin code, make no network requests,
+  include no telemetry, and upload neither source nor results.
+- Updated installation and GitHub Action examples for the v0.1.1 release.
+
+## [0.1.0] - 2026-07-23
+
+### Added
+
+- Static discovery and validation of one plugin or a repository of plugins.
+- Manifest checks for metadata, plugin kind, entry point, declared environment, and hook drift.
+- AST-based checks for high-risk Python capabilities and load-time behavior.
+- Heuristic scanning for committed secret material.
+- Remote-dependency pinning and version-bound checks.
+- Human-readable, JSON, SARIF, and GitHub annotation output.
+- Configurable failure thresholds and per-rule command-line exclusions.
+- Composite GitHub Action and pinned continuous-integration workflow.
+
+[Unreleased]: https://github.com/DuckMind/duckwork
+[0.2.1]: https://github.com/DuckMind/duckwork
+[0.2.0]: https://github.com/DuckMind/duckwork
+[0.1.4]: https://github.com/DuckMind/duckwork
+[0.1.3]: https://github.com/DuckMind/duckwork
+[0.1.2]: https://github.com/DuckMind/duckwork
+[0.1.1]: https://github.com/DuckMind/duckwork
+[0.1.0]: https://github.com/DuckMind/duckwork

@@ -1,0 +1,283 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "web-serply",
+  "content_id": "6047d177c4d8",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 104,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "e3794872a62790e599f18b9575014191317ffd322cb4629d3c6f7eb5d40b800d"
+    },
+    {
+      "bytes": 1063,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "d52891ab1842171d8e2de8f42e8f03c450fb11703983e2d0c4b92c624e187398"
+    },
+    {
+      "bytes": 3029,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "d3d7545161e73530178af06554ffe8f1905dd4705e47a81869274b3471d1d961"
+    },
+    {
+      "bytes": 305,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "c00c4df49af599ec4fbf4d7d687f2fe97a0bea11eac9b61e6a08b02ea565c60a"
+    },
+    {
+      "bytes": 376,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "d331f28dfd0521a0b805199660ca8931fe8c6b595dead91dc5ee910b48a21c7e"
+    },
+    {
+      "bytes": 6226,
+      "mode": "100644",
+      "path": "provider.py",
+      "sha256": "01ee16d40cde91c1e4582e8e1038d8010164651e10d545edea96f6630376edbb"
+    }
+  ],
+  "input_manifest_sha256": "6047d177c4d831f1ca487df0f572d91c1fc98e65bbee023b868dd65d76eb20dc",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "d52891ab1842171d8e2de8f42e8f03c450fb11703983e2d0c4b92c624e187398",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "provider.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/serply-inc/hermes-web-serply",
+    "sha": "c6cab41471586a110e5a584061168a045f566e08",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/serply-inc/hermes-web-serply",
+  "original_sha": "c6cab41471586a110e5a584061168a045f566e08",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "e3794872a62790e599f18b9575014191317ffd322cb4629d3c6f7eb5d40b800d",
+      "bytes": 104,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "d52891ab1842171d8e2de8f42e8f03c450fb11703983e2d0c4b92c624e187398",
+      "bytes": 1063,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "be79d279b586205a9fc13a2174d0ae636dfa934ed168508b162dbc2e75062b90",
+      "bytes": 2959,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "2234ba9a13f47047cc3980f741567dbf63332b056feeae0dca0a43d822509f86",
+      "bytes": 309,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "92b923318f626389e76570a340e2f5b91126dcc43a010130e0e22007789259c6",
+      "bytes": 378,
+      "mode": "100644"
+    },
+    {
+      "path": "provider.py",
+      "sha256": "0ef760873774a8743c8f245eb5d7fac6858ffb69f6721a8d5366bfefa7104d9a",
+      "bytes": 6238,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "627125c448aed7e73a6a7ae191014c01997e85f6e5a278d8aed4f8c8e9e47085",
+  "pin_verification": {
+    "archive_bytes": 4868,
+    "archive_sha256": "848ffd49b22ef4a62b8fced67814f92b546b04e97adb0cfd2d3aaa9572ae4abf",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "c6cab41471586a110e5a584061168a045f566e08",
+    "verified_commit_marker": "c6cab41471586a110e5a584061168a045f566e08"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "c548d3bc28073a8a25084c332291392adf4b83123605ec7d32cde7e628d0f36c",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "e3794872a62790e599f18b9575014191317ffd322cb4629d3c6f7eb5d40b800d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3794872a62790e599f18b9575014191317ffd322cb4629d3c6f7eb5d40b800d",
+        "source": ".gitignore",
+        "final_output_sha256": "e3794872a62790e599f18b9575014191317ffd322cb4629d3c6f7eb5d40b800d",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "e3794872a62790e599f18b9575014191317ffd322cb4629d3c6f7eb5d40b800d"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "d52891ab1842171d8e2de8f42e8f03c450fb11703983e2d0c4b92c624e187398",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "d52891ab1842171d8e2de8f42e8f03c450fb11703983e2d0c4b92c624e187398",
+        "source": "LICENSE",
+        "final_output_sha256": "d52891ab1842171d8e2de8f42e8f03c450fb11703983e2d0c4b92c624e187398",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "d52891ab1842171d8e2de8f42e8f03c450fb11703983e2d0c4b92c624e187398"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "d3d7545161e73530178af06554ffe8f1905dd4705e47a81869274b3471d1d961",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ab59817de9fde1a303b99fcaeb843811c1a1f25eb5f2598d711e2aa839d9b37c",
+        "source": "README.md",
+        "final_output_sha256": "be79d279b586205a9fc13a2174d0ae636dfa934ed168508b162dbc2e75062b90",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "ab59817de9fde1a303b99fcaeb843811c1a1f25eb5f2598d711e2aa839d9b37c"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "c00c4df49af599ec4fbf4d7d687f2fe97a0bea11eac9b61e6a08b02ea565c60a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2234ba9a13f47047cc3980f741567dbf63332b056feeae0dca0a43d822509f86",
+        "source": "__init__.py",
+        "final_output_sha256": "2234ba9a13f47047cc3980f741567dbf63332b056feeae0dca0a43d822509f86",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "2234ba9a13f47047cc3980f741567dbf63332b056feeae0dca0a43d822509f86"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "d331f28dfd0521a0b805199660ca8931fe8c6b595dead91dc5ee910b48a21c7e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "92b923318f626389e76570a340e2f5b91126dcc43a010130e0e22007789259c6",
+        "source": "plugin.yaml",
+        "final_output_sha256": "92b923318f626389e76570a340e2f5b91126dcc43a010130e0e22007789259c6",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "92b923318f626389e76570a340e2f5b91126dcc43a010130e0e22007789259c6"
+      },
+      {
+        "destination": "provider.py",
+        "input_sha256": "01ee16d40cde91c1e4582e8e1038d8010164651e10d545edea96f6630376edbb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0ef760873774a8743c8f245eb5d7fac6858ffb69f6721a8d5366bfefa7104d9a",
+        "source": "provider.py",
+        "final_output_sha256": "0ef760873774a8743c8f245eb5d7fac6858ffb69f6721a8d5366bfefa7104d9a",
+        "cli_destination": "provider.py",
+        "previous_staging_sha256": "0ef760873774a8743c8f245eb5d7fac6858ffb69f6721a8d5366bfefa7104d9a"
+      }
+    ],
+    "manifest_sha256": "d16e04a2a34f80057d0ccde85b5a5ea7c888ed9efaf06b62bef8b2c983ddee70",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "plugin.yaml": "plugin.yaml",
+    "provider.py": "provider.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "web-serply",
+    "python_files_compiled": 2,
+    "secret_findings": 0
+  },
+  "canonical_slug": "web-serply",
+  "catalog_file": "src/plugin-catalog/web-serply.yaml",
+  "identity": {
+    "catalog_id": "web-serply",
+    "canonical_slug": "web-serply",
+    "original_manifest_name": "web-serply",
+    "rebranded_manifest_name": "web-serply",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "48b33e111a3a954cafc78b86842359cde1514628e97b46d7826153e7f2bf6651",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "ab59817de9fde1a303b99fcaeb843811c1a1f25eb5f2598d711e2aa839d9b37c",
+          "after_sha256": "be79d279b586205a9fc13a2174d0ae636dfa934ed168508b162dbc2e75062b90",
+          "before_bytes": 3055,
+          "after_bytes": 2959,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

@@ -1,0 +1,102 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: python -m pip install "ruff>=0.6,<1"
+      - run: ruff check .
+
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install "pytest>=8,<9"
+      - run: python -m pytest -c tests/pytest.ini --rootdir tests tests
+
+  duckwork:
+    name: duckwork validate (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    # Duckwork main changes every day: a failure there is a warning to look at, not a red build.
+    continue-on-error: ${{ matrix.upstream }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The oldest supported Duckwork (requires_duckwork in plugin.yaml): it has no
+          # `duckwork plugins validate`, and its requires-python stops before 3.14.
+          - name: Duckwork Agent 0.20.6
+            ref: v2026.8.27
+            python: "3.12"
+            validate: false
+            upstream: false
+          - name: Duckwork Agent 0.21.5
+            ref: v2026.9.24
+            python: "3.14"
+            validate: true
+            upstream: false
+          - name: duckwork-agent main
+            ref: main
+            python: "3.14"
+            validate: true
+            upstream: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: plugin
+      - uses: astral-sh/setup-uv@v7
+      - name: Install Duckwork Agent
+        env:
+          DUCKWORK_REF: ${{ matrix.ref }}
+          DUCKWORK_PYTHON: ${{ matrix.python }}
+        run: |
+          # Whole history and tags, file contents on demand, as the plugin catalog CI checks out Duckwork:
+          # main reads its own version from the release tags and reports "unknown" in a shallow clone.
+          git clone --filter=blob:none --branch "$DUCKWORK_REF" https://github.com/DuckMind/duckwork duckwork
+          uv venv --python "$DUCKWORK_PYTHON" .venv
+          uv pip install --python .venv -e ./duckwork
+      - name: Validate like the plugin catalog
+        if: ${{ matrix.validate }}
+        working-directory: plugin
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: ../.venv/bin/duckwork plugins validate . --install-deps
+      - name: Check runtime contracts
+        working-directory: plugin
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: ../.venv/bin/duckwork plugins doctor . --ci
+      - name: Check that Duckwork' sticker note still names the pack
+        # Without the plugin's Telegram handler, packs of static stickers are learned from this note.
+        working-directory: plugin
+        run: |
+          ../.venv/bin/python - <<'EOF'
+          import sys
+          sys.path.insert(0, ".")
+          import stickers
+          from gateway.sticker_cache import build_sticker_injection
+          text = build_sticker_injection("A cat waving", "\U0001F600", "Pack_1")
+          assert stickers.sticker_notes(text) == ["Pack_1"], text
+          print("sticker note format OK:", text)
+          EOF

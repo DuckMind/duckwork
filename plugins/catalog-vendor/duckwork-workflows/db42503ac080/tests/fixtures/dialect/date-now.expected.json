@@ -1,0 +1,10 @@
+{
+  "verdict": "refuse",
+  "reason": "`Date.now()` at line 6 — their runtime throws on it so a relaunch repeats the same agent() calls; ours has no expression to write it in; refused BY NAME for a clear error (dialect.md row 13) even though the `const stamp = <non-agent expression>` would be caught as glue anyway; the documented fix is to pass the timestamp via args -> `{run.stamp}`",
+  "rows": [
+    13,
+    6
+  ],
+  "refuse_construct": "Date.now()",
+  "refuse_line": 6
+}

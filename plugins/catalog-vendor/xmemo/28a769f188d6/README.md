@@ -1,0 +1,219 @@
+# XMemo Memory Provider for Duckwork
+
+Native, user-owned long-term memory for Duckwork Agent.
+
+This directory is the provider bundle installed under
+`$DUCKWORK_HOME/plugins/xmemo/`. It participates directly in Duckwork' memory
+lifecycle and connects the active profile to [XMemo](https://xmemo.dev).
+
+## Discovery
+
+| Resource | URL |
+|---|---|
+| Agent discovery | `https://xmemo.dev/.well-known/agent-discovery.json` |
+| Duckwork configuration | `https://xmemo.dev/v1/mcp/config/hermes` |
+| Hosted MCP fallback | `https://xmemo.dev/mcp` |
+| Source repository | `https://github.com/DuckMind/duckwork` |
+
+For Duckwork, prefer this native provider. The hosted MCP endpoint is a portable
+fallback for MCP-only clients and does not provide Duckwork lifecycle hooks.
+
+## Setup
+
+Recommended:
+
+```bash
+npm install -g @xmemo/client
+xmemo login
+xmemo setup duckwork
+```
+
+Direct PyPI installation:
+
+```bash
+pip install duckwork-xmemo
+duckwork-xmemo install
+duckwork memory setup xmemo
+```
+
+The setup flow:
+
+- installs the provider under `$DUCKWORK_HOME/plugins/xmemo/`;
+- sets `memory.provider` to `xmemo`;
+- stores non-secret settings in `$DUCKWORK_HOME/xmemo.json`;
+- reuses the user-scoped credential from `xmemo login` when available;
+- can sync the token to `$DUCKWORK_HOME/.env` as `XMEMO_KEY` for compatibility.
+
+Hosted MCP is not configured by default. Use
+`xmemo setup duckwork --with-mcp` only when that fallback is intentional.
+
+## Lifecycle
+
+1. **Before a turn** — prefetch a bounded context pack from memories visible to
+   the current XMemo account.
+2. **During a turn** — expose explicit search, recall, remember, and working
+   state tools. Duckwork built-in `memory` writes are mirrored while XMemo is the
+   active provider.
+3. **After a turn** — optionally capture high-signal timeline events.
+4. **At session end** — capture a restart snapshot and schedule a final outbox
+   sync.
+
+Prefetch state is isolated per Duckwork profile and session.
+
+## Tools
+
+### Default
+
+| Tool | Purpose |
+|---|---|
+| `xmemo_recall_context` | Build a bounded, ranked context pack |
+| `xmemo_search` | Search durable memories semantically |
+| `xmemo_get` | Retrieve full untruncated content of a single memory by ID |
+| `xmemo_list` | List memories under an optional path prefix or category |
+| `xmemo_remember` | Save a durable fact, preference, or decision |
+| `xmemo_update_state` | Save active task, next action, or blocker with TTL |
+
+### Temporal retrieval options
+
+Both `xmemo_search` and `xmemo_recall_context` accept these optional fields:
+
+| Field | Meaning |
+|---|---|
+| `since` | Inclusive start, RFC3339 timestamp with timezone offset |
+| `until` | Exclusive end, RFC3339 timestamp with timezone offset; must be later than `since` |
+| `time_order` | `asc` (oldest first) or `desc` (newest first) |
+| `owner_timezone` | Non-empty IANA name such as `Asia/Tokyo`; the server validates the name |
+| `reference_time` | Reference instant in RFC3339 with timezone offset |
+| `temporal_axis_mode` | `created_at`, `updated_at`, or `split_filter_created_order_updated` |
+| `query_mode` | `topic` for relevant memories, or `activity_log` for a bounded event feed |
+| `hypothetical_answer` | Non-empty semantic expansion; **`xmemo_recall_context` only** |
+
+The interval is half-open: `[since, until)`. Use an explicit offset, for example
+`2026-10-01T00:00:00+09:00` or `2026-09-30T15:00:00Z`; naive timestamps are rejected.
+`query_mode=activity_log` requires **both** `since` and `until`. Invalid or missing
+required bounds are rejected locally without sending a request.
+
+Omit unused fields; do not send empty strings. Existing calls without temporal
+fields remain backward compatible. Read-cache keys bind account identity and
+temporal fields. Background prefetch does not infer temporal filters from
+text such as “last week”, “yesterday”, or “上周”; use explicit tool arguments when
+you need a bounded time interval.
+
+### Optional workflow tools
+
+Set `"enable_workflow_tools": true` in `xmemo.json`:
+
+| Tool | Purpose |
+|---|---|
+| `xmemo_record_event` | Append a timeline event or milestone |
+| `xmemo_create_reminder` | Create a TODO or action item |
+| `xmemo_list_reminders` | List reminders |
+| `xmemo_complete_reminder` | Complete a reminder |
+
+Set `"enable_destructive_tools": true` to expose `xmemo_forget`. It requires an
+exact memory ID and is disabled by default.
+
+## Configuration
+
+Non-secret configuration lives in `$DUCKWORK_HOME/xmemo.json`:
+
+| Key | Default | Purpose |
+|---|---|---|
+| `agent_id` | `duckwork` | Agent family identifier |
+| `agent_instance_id` | generated | Stable, opaque installation identifier |
+| `bucket` | `work` | Namespace for new Duckwork-authored writes |
+| `scope` | `duckwork/default` | Scope for new Duckwork-authored writes |
+| `read_bucket` | `%` | Recall/search bucket filter |
+| `read_scope` | unset | Recall/search scope filter |
+| `timeout_seconds` | `5.0` | REST request timeout |
+| `prefetch_max_items` | `5` | Maximum recalled items |
+| `prefetch_max_tokens` | `900` | Maximum recalled context tokens |
+| `enable_workflow_tools` | `false` | Expose reminder and event tools |
+| `enable_destructive_tools` | `false` | Expose `xmemo_forget` |
+| `capture_timeline` | `false` | Record high-signal turns |
+| `enable_non_idempotent_replay` | `false` | Auto-replay queued non-idempotent writes |
+
+Supported environment overrides:
+
+```text
+XMEMO_KEY
+XMEMO_URL
+XMEMO_AGENT_ID
+XMEMO_AGENT_INSTANCE_ID
+XMEMO_BUCKET
+XMEMO_SCOPE
+XMEMO_READ_BUCKET
+XMEMO_READ_SCOPE
+XMEMO_TIMEOUT_SECONDS
+XMEMO_PREFETCH_MAX_ITEMS
+XMEMO_PREFETCH_MAX_TOKENS
+```
+
+Legacy `MEMORY_OS_API_KEY`, `MEMORY_OS_MCP_TOKEN`, and `MEMORY_OS_URL`
+variables remain accepted.
+
+## Credentials
+
+Credential priority is:
+
+1. `XMEMO_KEY`, then supported legacy environment variables.
+2. The user-scoped credential stored by `xmemo login`.
+
+API keys are never read from or written to `xmemo.json`. Do not place tokens in
+git-tracked files, logs, or shell history.
+
+## Reliability
+
+The provider stores its local reliability state in
+`$DUCKWORK_HOME/xmemo_cache.db`:
+
+- search reuses matching fresh results for 5 minutes;
+- recall_context and prefetch are online first; cached context is used only on offline/transient failures;
+- marked stale results can be used for up to 24 hours during transient
+  failures;
+- transiently failed writes enter an outbox with stable idempotency keys;
+- idempotent writes retry up to 5 times with exponential backoff;
+- non-idempotent writes are held by default to prevent duplicates;
+- sent records are retained for 24 hours, failed records for 7 days, and the
+  failed queue is capped at 100.
+
+Read-cache keys isolate `base_url`, a one-way credential/agent identity
+fingerprint, and retrieval parameters including temporal fields. Credential
+changes stop reuse. Opening the cache removes legacy entries without identity
+and entries past the fallback window, while preserving the write outbox.
+Fresh search hits do not contact the server; remote permission changes are
+observed on the next online request.
+
+Queued writes are bound to a one-way fingerprint of the initiating credentials
+and agent identity. After an account switch, another identity cannot replay
+them; they remain queued for the original identity to return. On upgrade,
+unsent legacy writes without an owner identity are preserved as `held` with automatic
+replay disabled, for manual recovery.
+
+The SQLite database stores cached responses and queued payloads as plain-text
+JSON. It never stores credentials, but the Duckwork home directory should still
+be protected as private user data.
+
+## Privacy boundaries
+
+- The provider reads XMemo memories the user saved or authorized. It does not
+  read another client's built-in private memory.
+- New Duckwork-authored writes use the configured Duckwork bucket and scope.
+- Timeline capture and destructive tools are disabled by default.
+- A circuit breaker and bounded timeouts keep service failures from blocking
+  the conversation.
+
+## Disable
+
+```bash
+duckwork config set memory.provider ""
+```
+
+Re-enable:
+
+```bash
+duckwork config set memory.provider xmemo
+```
+
+Full project documentation:
+<https://github.com/DuckMind/duckwork>

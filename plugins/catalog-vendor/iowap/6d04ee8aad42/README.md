@@ -1,0 +1,139 @@
+# IOWAP Duckwork Integration
+
+**IOWAP** ([Infrastructure · Offloading · Workload Assignment
+Platform](https://github.com/iowap-org/iowap)) is a distributed capability
+framework: nodes claim what they can do, the relay connects them, and
+workloads get routed to whichever node actually has the capability.
+
+A [Duckwork desktop](https://duckwork-agent.fordex.com) plugin that puts
+IOWAP fleet data into the desktop app:
+
+- **Statusbar chip** — live dot + `N/M` nodes online, click opens the fleet page
+- **Fleet pane** (right zone, draggable) — compact node list
+- **Fleet page** (`/iowap-fleet`, sidebar nav + ⌘K) — full overview: status,
+  load, queue depth, capabilities per node, plus an **Activity** section
+  (daemon self-sight, tracked tasks, task-capability provider health)
+- **Tasks page** (`/iowap-tasks`, sidebar nav + ⌘K) — submit a task to any
+  task-type capability (capability picker, JSON payload, optional name),
+  track an existing task by its relay id, and watch tracked tasks live
+  (per-stage status dots, result previews, artifacts). Tasks submitted from
+  agent sessions via `iowap-task submit` (repo `tools/iowap-task`, installed
+  at `~/.local/bin/iowap-task`) land in the same track store — the bridge
+  wraps `node-cli task submit` and merges into
+  `~/.duckwork/plugin-data/iowap/task-track-iowap.json`. Owner-directed tasks
+  (`--owner <node_id>`) show as `delegated` rows (result unreadable from
+  this node — server-side T-005g scoping) instead of fetch errors.
+- **⌘K commands** — refresh fleet data, notify fleet status, open the pages
+
+## Architecture
+
+```
+desktop renderer (plugin.js)        gateway process (plugin_api.py)        relay
+┌─────────────────────┐   ctx.rest  ┌──────────────────────────┐  node-cli  ┌───────┐
+│ chip / pane / page  │ ──────────► │ /api/plugins/iowap/fleet │ ─────────► │ :8788 │
+└─────────────────────┘             └──────────────────────────┘            └───────┘
+```
+
+The desktop **frontend** never touches relay HTTP or tokens. The **backend**
+(`/api/plugins/iowap/*`) shells out to `node-cli --json`, which owns all relay
+auth and token handling (`~/.relay/*`). Relay tokens never enter the renderer.
+
+## Install
+
+Install straight from the plugin catalog:
+
+```bash
+duckwork plugins install iowap
+```
+
+Updates land through the same channel — the catalog keeps a pinned
+version and `duckwork plugins update iowap` pulls it:
+
+```bash
+duckwork plugins update iowap
+```
+
+Requires the **node-cli** from the
+[iowap-node](https://github.com/iowap-org/iowap-node) framework on the
+desktop host (it is not a PyPI package — install with
+`git clone https://github.com/iowap-org/iowap-node && pip install -e .`)
+and a logged-in node state (`~/.relay/iowap-agent.*`). Then **restart the
+Duckwork desktop app** (the backend imports live in the gateway process — a
+plugin reload is not enough the first time) and run **Reload desktop
+plugins** (⌘K) afterwards for frontend edits. Without the backend the UI
+degrades gracefully to an onboarding hint.
+
+**How the backend finds node-cli** (the desktop-spawned gateway does not
+inherit the login-shell PATH — resolution must never depend on it):
+`~/.relay/node.yaml` top-level **`node_cli_path`** pin → `PATH` → a short
+list of known venv locations. The pin is written by **node-cli itself**
+(every invocation re-stamps its own absolute path, drift-guarded and
+self-healing through `capabilities publish`; requires iowap-node
+≥ 2.3.20 — with an older wheel, run any `node-cli` command once or set
+the key by hand). This backend reads the key strictly read-only; a stale
+pin falls through to the next link instead of blocking.
+
+## Install from source (dev)
+
+For repo checkouts and development — catalog users don't need this
+section.
+
+**Desktop half** (chip, pane, page, commands):
+
+```bash
+mkdir -p ~/.duckwork/desktop-plugins/iowap
+curl -o ~/.duckwork/desktop-plugins/iowap/plugin.js \
+  https://github.com/DuckMind/duckwork
+```
+
+**Backend half** (fleet data through node-cli):
+
+```bash
+mkdir -p ~/.duckwork/plugins/iowap/dashboard
+curl -o ~/.duckwork/plugins/iowap/dashboard/manifest.json \
+  https://github.com/DuckMind/duckwork
+curl -o ~/.duckwork/plugins/iowap/dashboard/plugin_api.py \
+  https://github.com/DuckMind/duckwork
+duckwork config set plugins.enabled '["iowap"]'
+```
+
+**Update an installed plugin** (from a repo checkout):
+
+```bash
+tools/deploy.sh   # copies both halves, verifies md5; frontend hot-reloads,
+                  # backend edits need one app restart
+```
+
+The plugin id is `iowap` — the desktop folder name must match it (SDK
+requirement). Enable the desktop half in **Capabilities → Plugins** if it
+stays off.
+
+## Status
+
+**v0.3.2** — chip + pane + fleet page + palette commands + **tasks page**
+(submit, track, delegated rows), live data via `node-cli`; release notes:
+[CHANGELOG.md](CHANGELOG.md). Agent sessions
+join through the `iowap-task` bridge (repo `tools/`, installed at
+`~/.local/bin/iowap-task`) into a shared flock-protected track store. The
+relay health probe runs through node-cli itself (`node-cli server health`)
+— no raw HTTP and no hand-parsed relay URL on the backend side; the target
+pin (relay_config.json, mDNS fallback) stays node-cli's business. Per-node
+detail
+(`load_source`) distinguishes host-load (`loadavg`) from agent-scoped cgroup
+values — do not compare load numbers across nodes.
+
+## Layout of this repo
+
+```
+desktop/plugin.js          ← desktop half (→ ~/.duckwork/desktop-plugins/iowap/)
+dashboard/manifest.json     ← backend manifest (→ ~/.duckwork/plugins/iowap/dashboard/)
+dashboard/plugin_api.py     ← backend routes (→ ~/.duckwork/plugins/iowap/dashboard/)
+tests/                      ← pytest suite (track store, delegated rows, cache eviction)
+tools/iowap-task            ← session bridge (→ ~/.local/bin/iowap-task)
+tools/deploy.sh             ← install both halves + md5 verify
+README.md
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

@@ -1,0 +1,90 @@
+{
+  "service": "suno",
+  "title": "Ace Data Cloud Suno",
+  "kind": "audio",
+  "description": "Music generation with prompts or custom lyrics through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_suno",
+  "generate_path": "/suno/audios",
+  "task_path": "/suno/tasks",
+  "defaults": {
+    "model": "chirp-v6",
+    "custom": false,
+    "instrumental": false,
+    "action": "generate"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [],
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "model": {
+        "enum": [
+          "chirp-v6",
+          "chirp-v6-wild",
+          "chirp-v6-mini",
+          "chirp-v5-5",
+          "chirp-v5",
+          "chirp-v4-5-plus",
+          "chirp-v4-5",
+          "chirp-v4",
+          "chirp-v3-5",
+          "chirp-v3-0"
+        ],
+        "type": "string",
+        "maxLength": 4000
+      },
+      "custom": {
+        "type": "boolean"
+      },
+      "instrumental": {
+        "type": "boolean"
+      },
+      "title": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "style": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "lyric": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "duration": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 360
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_suno_generate",
+  "tools": [
+    "acedatacloud_suno_generate",
+    "acedatacloud_suno_task"
+  ],
+  "toolset": "acedatacloud-suno"
+}

@@ -1,0 +1,41 @@
+name: validate
+
+# Runs the same two gates the Duckwork plugin catalog CI runs against the pinned SHA.
+# First run on v0.1.0 passed (doctor --ci + validate --install-deps). Review before bumping DUCKWORK_REF.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  DUCKWORK_REPO: https://github.com/DuckMind/duckwork
+  DUCKWORK_REF: 9b6fc23baf2628e3331b57210ee7e27edc98ae9e
+
+jobs:
+  duckwork-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ env.DUCKWORK_REF }}
+          path: duckwork-agent
+      - uses: astral-sh/setup-uv@v5
+      - name: Install Duckwork from the pinned checkout
+        run: |
+          cd duckwork-agent
+          uv venv --python 3.14
+          uv pip install -e .
+      - name: duckwork plugins doctor
+        run: |
+          source duckwork-agent/.venv/bin/activate
+          duckwork plugins doctor plugin --ci
+      - name: duckwork plugins validate
+        run: |
+          source duckwork-agent/.venv/bin/activate
+          duckwork plugins validate plugin --install-deps

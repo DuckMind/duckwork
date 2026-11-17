@@ -1,0 +1,18 @@
+# Runtime state lives OUTSIDE this directory: <DUCKWORK_HOME>/qdrant.json
+# (save_config — may carry a Qdrant API key) and <DUCKWORK_HOME>/qdrant-status.json
+# (get_status_config bookkeeping). Writing here would change a file
+# pm.workspace.members_stamp() hashes into the venv dependency stamp, re-syncing
+# dependencies on every `duckwork` launch. These entries only guard against a
+# stale copy still writing the old location.
+config.json
+status.json
+
+# Python / tooling. The two tool caches churn on every run, and
+# pm.workspace.members_stamp() hashes them until the core-side fix lands; both
+# also ship their own `*` .gitignore, which is what that fix keys on. Declared
+# here too so the intent is visible at the root.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/

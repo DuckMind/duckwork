@@ -1,0 +1,220 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "bharatcode-provider",
+  "content_id": "0906bc711229",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 585,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "046224ca5aedd3d1ed01cced6f16e717a6c440590e35b663395a9ea664e678aa"
+    },
+    {
+      "bytes": 857,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "31faa5b7cce5e67f9b09492e92af37b70881d9637adf3bd6b61f7dfe0c7679f1"
+    },
+    {
+      "bytes": 1068,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "abd61cb3ec385ae9689cbf69f062dbaa78145d3d148ddd8a920f9d693ca66ec8"
+    },
+    {
+      "bytes": 286,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "75aa828ca2664a3728a72dd26e3e3c288b4e512ebbe0124f0b4ecd913d723d8c"
+    }
+  ],
+  "input_manifest_sha256": "0906bc7112291c2499d1cc1a599bdbc67d28f3b4e04e19dffcdbb48c6aecd8ba",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "abd61cb3ec385ae9689cbf69f062dbaa78145d3d148ddd8a920f9d693ca66ec8",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/thenabbu/bharatcode-hermes",
+    "sha": "f4cc1d1f2977963173b23b9ac6a19c3ca8851050",
+    "subdir": "model-providers/bharatcode"
+  },
+  "original_repo": "https://github.com/thenabbu/bharatcode-hermes",
+  "original_sha": "f4cc1d1f2977963173b23b9ac6a19c3ca8851050",
+  "original_subdir": "model-providers/bharatcode",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "758ff85b975ce8b2caf9ee4be1d5eafbc527ad3e033e3f4474664b62219e1ad6",
+      "bytes": 593,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "31faa5b7cce5e67f9b09492e92af37b70881d9637adf3bd6b61f7dfe0c7679f1",
+      "bytes": 857,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "abd61cb3ec385ae9689cbf69f062dbaa78145d3d148ddd8a920f9d693ca66ec8",
+      "bytes": 1068,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "75aa828ca2664a3728a72dd26e3e3c288b4e512ebbe0124f0b4ecd913d723d8c",
+      "bytes": 286,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "88b25c4e59bb74e000fa0eac93c747f4e0faefb720e8a3fc5742da13b6731bfb",
+  "pin_verification": {
+    "archive_bytes": 2407,
+    "archive_sha256": "59db80954971a876bb011c8d2f1e600a7b5ab484c1ac59fa47a000a08de40eed",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "f4cc1d1f2977963173b23b9ac6a19c3ca8851050",
+    "verified_commit_marker": "f4cc1d1f2977963173b23b9ac6a19c3ca8851050"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "7bba906c917a49632b491ec6771053fe4a38ebd74fdd14100684e0001825bde3",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "046224ca5aedd3d1ed01cced6f16e717a6c440590e35b663395a9ea664e678aa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "758ff85b975ce8b2caf9ee4be1d5eafbc527ad3e033e3f4474664b62219e1ad6",
+        "source": "README.md",
+        "final_output_sha256": "758ff85b975ce8b2caf9ee4be1d5eafbc527ad3e033e3f4474664b62219e1ad6",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "758ff85b975ce8b2caf9ee4be1d5eafbc527ad3e033e3f4474664b62219e1ad6"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "31faa5b7cce5e67f9b09492e92af37b70881d9637adf3bd6b61f7dfe0c7679f1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "31faa5b7cce5e67f9b09492e92af37b70881d9637adf3bd6b61f7dfe0c7679f1",
+        "source": "__init__.py",
+        "final_output_sha256": "31faa5b7cce5e67f9b09492e92af37b70881d9637adf3bd6b61f7dfe0c7679f1",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "31faa5b7cce5e67f9b09492e92af37b70881d9637adf3bd6b61f7dfe0c7679f1"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "abd61cb3ec385ae9689cbf69f062dbaa78145d3d148ddd8a920f9d693ca66ec8",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "abd61cb3ec385ae9689cbf69f062dbaa78145d3d148ddd8a920f9d693ca66ec8",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "abd61cb3ec385ae9689cbf69f062dbaa78145d3d148ddd8a920f9d693ca66ec8",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "abd61cb3ec385ae9689cbf69f062dbaa78145d3d148ddd8a920f9d693ca66ec8"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "75aa828ca2664a3728a72dd26e3e3c288b4e512ebbe0124f0b4ecd913d723d8c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "75aa828ca2664a3728a72dd26e3e3c288b4e512ebbe0124f0b4ecd913d723d8c",
+        "source": "plugin.yaml",
+        "final_output_sha256": "75aa828ca2664a3728a72dd26e3e3c288b4e512ebbe0124f0b4ecd913d723d8c",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "75aa828ca2664a3728a72dd26e3e3c288b4e512ebbe0124f0b4ecd913d723d8c"
+      }
+    ],
+    "manifest_sha256": "b1d0514d07a96409ae973eab7ea576266246b18d0b20287f39a6021d0e2f498d",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "model-providers/bharatcode/README.md",
+    "__init__.py": "model-providers/bharatcode/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "model-providers/bharatcode/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "bharatcode-provider",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "bharatcode-provider",
+  "catalog_file": "src/plugin-catalog/bharatcode-provider.yaml",
+  "identity": {
+    "catalog_id": "bharatcode-provider",
+    "canonical_slug": "bharatcode-provider",
+    "original_manifest_name": "bharatcode-provider",
+    "rebranded_manifest_name": "bharatcode-provider",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "61be7651c2867bf7a84c3b2fc7fec283292d47b3b3118d873276bdc39f5253ac",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

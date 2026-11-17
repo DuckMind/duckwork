@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-skill-router"
+version = "0.7.0"
+description = "Duckwork plugin: evidence-based, session-safe skill routing"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+
+[project.entry-points."duckwork_agent.plugins"]
+skill-router = "skill_router:register"
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "mypy",
+    "pytest",
+    "fastapi",  # dashboard/plugin_api.py (Tests)
+]
+
+[tool.setuptools]
+packages = ["skill_router"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff.lint]
+# N999: Der Repo-Ordnername enthält einen Bindestrich (duckwork-skill-router) —
+# Root-Wrapper und Paket-__init__ sind deshalb formal keine gültigen Modul-Namen.
+# Für Plugin-Repos Standard: per-file-ignore statt Umbenennung.
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["N999"]
+"*/__init__.py" = ["N999"]
+
+[tool.mypy]
+# Root-Wrapper (Plugin-Einstieg) ist kein validierbares Paketmodul —
+# mypy direkt auf das skill_router-Paket richten (nicht auf das Repo-Root).
+files = ["skill_router"]

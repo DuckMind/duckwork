@@ -1,0 +1,621 @@
+name: reusable-ci
+
+# Reusable CI body for iap/duckwork-guide. Called by ci.yml; not invoked directly
+# in normal operation, but a `workflow_call`-only workflow cannot also be run by
+# hand, so `workflow_dispatch` is exposed for reproducing a leg locally.
+on:
+  workflow_call:
+    inputs:
+      # Set by the caller from `github.event_name`. The tap-install smoke test
+      # tolerates a "Could not fetch" miss ONLY for pull_request, because the
+      # tap serves master and a PR that ADDS a skill cannot be installable from
+      # it until merge. Passing the event name in as an input keeps that
+      # condition identical in the called workflow instead of re-deriving it.
+      event-name:
+        description: "GitHub event that triggered the caller (e.g. pull_request, push, merge_group)"
+        type: string
+        required: false
+        default: pull_request
+      # The caller resolves the base ref. Kept as an input so the version-bump
+      # guard can diff against it without the callee guessing at a default.
+      # Value is a GIT REF (origin/<branch>), not a bare branch name, because
+      # tools/check_skill_version_bump.py resolves it with `git merge-base`.
+      base-ref:
+        description: "Git ref the change is compared against, e.g. origin/master"
+        type: string
+        required: false
+        default: origin/master
+      # Skip the slowest, network-dependent legs on ordinary pushes. CI on a PR
+      # always runs them; a direct push to master runs the fast tier only.
+      run-full-gate:
+        description: "Run the network-dependent legs (Duckwork install, tap smoke test, citation clone)"
+        type: boolean
+        required: false
+        default: true
+    outputs:
+      plugin-result:
+        description: "Concatenated matrix result for the plugin job"
+        value: ${{ jobs.plugin.result }}
+  # Manual entry point: `gh workflow run reusable-ci.yml` is not available for a
+  # workflow_call-only file, so keep workflow_dispatch for reproducing a leg.
+  workflow_dispatch:
+    inputs:
+      run-full-gate:
+        description: "Run the network-dependent legs"
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  # NOTE: `concurrency` in a called workflow is IGNORED for the callee's jobs in
+  # some GitHub Actions versions; the caller's group is authoritative. This group
+  # is kept anyway so a manual dispatch of this file cancels its own prior run.
+  group: reusable-ci-${{ github.ref }}-${{ github.run_attempt }}
+  cancel-in-progress: true
+
+jobs:
+  plugin:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Pinned, not floating: ubuntu-latest migrates to Ubuntu 26 on
+        # 2026-10-19 (actions/runner-images#14748) and a surprise image
+        # bump under a green tree is indistinguishable from a real
+        # regression. Same philosophy as the macos-15-intel pin below.
+        # (`linux` is not a GHA-hosted runner label — jobs would queue
+        # forever — so pinning the Ubuntu version is the available lever.)
+        os: [ubuntu-24.04, windows-latest]
+        # Floor (3.11) tracks upstream's .python-version; ceiling (3.12) is
+        # what this repo already ran. Upstream declares >=3.11,<3.15 (verified
+        # against tag v2026.9.24), so a single pin in either direction just
+        # moves the drift.
+        python-version: ["3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    # Windows runs the same steps except mypy, the plugin doctor, the tap smoke
+    # test, the host-pressure probe, and the CLI-resolution test, which stay
+    # Linux-gated (POSIX /tmp workaround, no bash on Windows, and
+    # Duckwork-on-Windows CI unexplored upstream).
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history so the version-bump guard can resolve the merge base
+          # against the base ref (a depth-1 checkout makes it silently skip).
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          # No `cache:` here on purpose. The repo has no requirements files,
+          # so a cache-dependency-path glob matches nothing and the cache key
+          # carries no file hash (every run re-downloads anyway); and several
+          # tests assert on a freshly resolved interpreter, so a cached
+          # site-packages would mask a real resolution bug.
+
+      - name: Install Duckwork
+        if: inputs.run-full-gate
+        shell: bash
+        run: |
+          # pip/PyPI is no longer a supported Duckwork distribution method
+          # (PyPI is stale at 0.19.0). Install from the upstream git tag as an
+          # editable install — wheel/sdist builds are blocked outside Nix, but
+          # editable installs are the documented dev path. $RUNNER_TEMP keeps
+          # the clone path valid on both Linux and Windows runners.
+          # NOTE: a post-PM main SHA pin was tried here and reverted: the
+          # PM-era install scanner (skills-guard-v10) blocks our own
+          # host-pressure probe's gated /proc reads, failing the tap step
+          # with no content-side fix available. Re-land the SHA pin together
+          # with upstream #136259 (proc exemption) — see issue #204.
+          git clone --depth 1 --branch v2026.9.24 https://github.com/DuckMind/duckwork "$RUNNER_TEMP/duckwork-agent"
+          pip install -e "$RUNNER_TEMP/duckwork-agent"
+
+      - name: Python syntax check
+        run: python -m py_compile __init__.py checks.py constants.py
+
+      - name: Type check
+        # The /tmp package-copy workaround is POSIX-only; widen later if
+        # Windows mypy coverage is wanted.
+        if: runner.os == 'Linux' && inputs.run-full-gate
+        run: |
+          pip install mypy types-PyYAML
+          # mypy rejects the hyphenated `duckwork-guide` dir as a package name;
+          # typecheck the modules under a valid package name.
+          mkdir -p /tmp/duckwork_guide
+          cp __init__.py checks.py constants.py /tmp/duckwork_guide/
+          mypy /tmp/duckwork_guide
+
+      - name: Plugin doctor
+        # Duckwork-on-Windows CI is unexplored upstream; the runtime tests below
+        # already cover the plugin's own cross-platform paths.
+        if: runner.os == 'Linux' && inputs.run-full-gate
+        run: duckwork plugins doctor . --ci
+
+      - name: Docs self-claim guard
+        run: python tools/check_self_claim.py
+
+      - name: Tone guard
+        # Emoji outside string literals in Python, filler phrases in Markdown
+        # prose. Reads the tree via `git ls-files` and tokenizes Python, so it
+        # needs no Duckwork install and belongs in the fast tier. The tokenizer
+        # pass is what lets checks.py keep the hook markers it parses from
+        # `duckwork hooks doctor` while still refusing emoji in comments.
+        run: |
+          python tools/check_doc_style.py --selftest
+          python tools/check_doc_style.py
+
+      - name: Issue-template guard
+        # The reporter-facing surface is the one place a doc can promise a path
+        # that does not exist: #141 pointed reporters at config.yml as a
+        # template, and #147 sent questions to an issue tracker that
+        # blank_issues_enabled had closed off. Both were invisible to a prose
+        # linter. Pure file reads, so it belongs in the fast tier.
+        run: |
+          python tools/check_issue_templates.py --selftest
+          python tools/check_issue_templates.py
+
+      - name: Scope-enumeration guard
+        # The plugin's health-check scopes live in checks.py `_CHECKS`. Three
+        # hand-written restatements of that set cannot be generated: plugin.yaml
+        # prints through `duckwork plugins info`, and README/router-skill prose
+        # sits outside a BEGIN/END GENERATED block. This guard reads all three.
+        # They drifted twice: the router skill was corrected seven to nine on
+        # 2026-10-17 while plugin.yaml kept the stale seven. Pure reads, fast tier.
+        run: |
+          python tools/check_scope_enumeration.py --selftest
+          python tools/check_scope_enumeration.py
+
+      - name: No-mutation guard
+        run: |
+          python tools/check_no_mutation.py --selftest
+          python tools/check_no_mutation.py
+
+      - name: Scanner-hygiene guard
+        # Mirrors upstream plugin_guard patterns (proc_access, dump_all_env,
+        # curl_pipe_shell) over skills text. Pure file reads, fast tier.
+        # Lives under tests/: the scanner rates literal attack-string fixtures
+        # in a non-tests path as dangerous (hard-blocks install); anything
+        # under tests/ rates one step lower (upstream review on #135747).
+        run: |
+          python tests/check_scanner_hygiene.py --selftest
+          python tests/check_scanner_hygiene.py
+
+      - name: Line-ending contract guard
+        # `.gitattributes` is a declaration nothing else verifies, so a
+        # loosened rule would only surface as a Windows CRLF diff or a shell
+        # script that stopped executing. Reads the declaration plus
+        # `git ls-files --eol`; no network, no Duckwork, so fast tier. The
+        # regression test runs the fixtures AND a live audit of this checkout.
+        run: |
+          python tools/check_eol_contract.py
+          python tools/test_check_eol_contract.py
+
+      - name: Gate status contract regression
+        # The `gate` context is what branch protection requires, but the commit
+        # STATUS is what the ruleset evaluates -- a check run of that name does
+        # not satisfy it (#292). Stdlib only: parses this repo's ci.yml and runs
+        # the step's real shell body against a stubbed `gh`, so a one-character
+        # drift in the context name, state, or target SHA fails here instead of
+        # silently unmergeing the repository.
+        # Cross-platform: `python`, not `python3`, matching every other
+        # Windows-capable step. The behavioral half is POSIX-only (it writes a
+        # #!/bin/sh stub and execs bash), so the test SKIPS those two cases on
+        # Windows and still asserts the static contract -- 5 of 7. Gating the
+        # whole step to Linux instead would hide the static half from Windows
+        # for no added signal, since it asserts on the same file text either way.
+        run: python tools/test_gate_status.py
+
+      - name: Tool coverage guard
+        # Stdlib only, so it runs in the fast tier. Fails if a tools/ guard or
+        # regression test is never referenced by a workflow -- unwired coverage
+        # is silently dead. Ungated by necessity and by design.
+        run: |
+          python tools/check_tool_coverage.py --selftest
+          python tools/check_tool_coverage.py
+
+      - name: Host-pressure probe behavioral test
+        # Linux legs only: the probe is a bash script reading /proc, and the
+        # fixtures stub macOS tools (sysctl/top/vm_stat) that do not exist here.
+        # Windows has no bash at all. Test itself skips non-applicable cases.
+        if: runner.os == 'Linux' && inputs.run-full-gate
+        run: python3 tools/test_host_pressure_probe.py
+
+      - name: Read-only runtime smoke test
+        # Requires the `duckwork` CLI on PATH, so it MUST stay behind the same gate
+        # as the install above. It has no internal skip guard, so running it with
+        # run-full-gate=false would fail on every direct push to master.
+        if: inputs.run-full-gate
+        run: python tools/test_readonly_runtime.py
+
+      - name: Dogfood check (live install)
+        # Read-only smoke test against the live Duckwork install. Skips cleanly
+        # when duckwork is absent. Runs only in the full tier (needs the install).
+        if: inputs.run-full-gate
+        run: python tools/check_skill_dogfood.py
+
+      - name: MCP shape regression test
+        # Copies the plugin into a temp dir and imports it, so it needs PyYAML
+        # from the install above. Its own import block hides that: every
+        # module-level import is stdlib, and the plugin import sits inside
+        # main(), so nothing at the step level reads as dependency-bearing.
+        # It has no internal skip guard, so run-full-gate=false would fail on
+        # every direct push to master.
+        if: inputs.run-full-gate
+        run: python tools/test_mcp_shape.py
+
+      - name: Memory hygiene regression test
+        if: inputs.run-full-gate
+        run: python tools/test_memory_hygiene.py
+
+      - name: Session health regression test
+        # Shim-loads checks.py with fixture logs — no Duckwork, no network.
+        if: inputs.run-full-gate
+        run: python tools/test_session_health.py
+
+      - name: Update lock regression test
+        # Shim-loads checks.py with fixture lock dirs — no Duckwork, no network.
+        if: inputs.run-full-gate
+        run: python tools/test_update_lock.py
+
+      - name: Exit contract (guide CLI)
+        if: inputs.run-full-gate
+        run: python tools/test_exit_contract.py
+
+      - name: JSON output contract regression test
+        # Shim-loads the plugin package with faked envelopes — no Duckwork, no
+        # network. Locks the `duckwork guide --json` document: key order,
+        # envelope passthrough, status derivation, exit 0/1/2, notice
+        # suppression, and zero subprocess calls on that path.
+        if: inputs.run-full-gate
+        run: python tools/test_json_output.py
+
+      - name: Fast mode regression test
+        # Shim-loads checks.py with _run recorded, not executed — one segment needs a duckwork candidate.
+        if: inputs.run-full-gate
+        run: python tools/test_fast_mode.py
+
+      - name: Check-envelope regression test
+        if: inputs.run-full-gate
+        run: python tools/test_check_envelopes.py
+
+      - name: Finding-contract regression test
+        # AST scan of checks.py plus run_all() fixtures - no Duckwork, no
+        # $DUCKWORK_HOME. Pins stable ids and registry-expanded impact/fix.
+        if: inputs.run-full-gate
+        run: python tools/test_finding_ids.py
+
+      - name: Update-notice invocation site regression test
+        # Shim-loads the plugin package with a counting git stub — no Duckwork,
+        # no network. Session start must stay subprocess-free; guide/doctor
+        # own the update check after their reports.
+        if: inputs.run-full-gate
+        run: python tools/test_update_notice_site.py
+
+      - name: Claim-judge regression test
+        # Extracts and runs the judge embedded in validate-claim.yml, so the
+        # OUTCOME vocabulary cannot silently lose a plural again. The test list
+        # here is explicit rather than a glob, so a new test file that nobody
+        # adds to this workflow simply never runs -- which is how the judge's
+        # `failure`/`failures` gap survived with no failing test to point at it.
+        # Needs only the stdlib, so it is safe in the fast tier too.
+        run: python tools/test_claim_validation.py
+
+      - name: CLI resolution regression test
+        # Fabricates POSIX console scripts to stand in for duckwork entry points,
+        # which needs a POSIX shell and real permission bits — same reason the
+        # probe above is Linux-gated. The duckwork.exe branch of the resolver is
+        # left to the Windows-owned surface.
+        if: runner.os == 'Linux' && inputs.run-full-gate
+        run: python tools/test_checks_cli_resolution.py
+
+      - name: Skill version bump guard
+        # Stdlib-only (git + regex frontmatter read, no PyYAML, no Duckwork), so
+        # it belongs in the fast tier: direct pushes to master must also bump.
+        run: python tools/check_skill_version_bump.py ${{ inputs.base-ref }}
+
+      - name: Version bump guard regression
+        # Stdlib-only like the guard itself; fast tier.
+        run: python tools/test_skill_version_bump.py
+
+      - name: Version consistency guard
+        # plugin.yaml is the shipped version and release.yml compares only the
+        # tag against it, so __init__.py and SECURITY.md can drift silently.
+        run: |
+          python tools/check_version_consistency.py --selftest
+          python tools/check_version_consistency.py
+
+      - name: Release-readiness gate wiring
+        # The readiness gate itself is a manual pre-tag verdict (needs gh +
+        # network for CI/blocker items), so CI only runs its --selftest probe:
+        # that keeps the delegates wired without gating PRs on release state.
+        run: python tools/check_release_readiness.py --selftest
+
+      - name: Changelog release-section guard
+        # release.yml runs `gen_changelog.py --check` at tag time and fails
+        # closed on a missing section. That is too late to be useful: the
+        # version-bump PR has already merged by then, so the release is blocked
+        # and the fix needs a second PR. Running it here moves the failure onto
+        # the bump PR, where the section is supposed to be added — the same
+        # shape as the version-consistency guard above. Also part of the
+        # hermetic tier (tools/check_gates.py), which runs in the legacy-mac
+        # and validate-claim jobs.
+        run: python tools/gen_changelog.py --check
+
+      - name: Changelog guard regression
+        # The guard is only worth having if it can fail, so this runs its
+        # behavioral cases (plus --upcoming idempotence) on every PR.
+        # Stdlib-only git fixtures — no Duckwork, no network.
+        run: python tools/test_gen_changelog.py
+
+      - name: Release-readiness verdict regression
+        # Stubbed _run — no gh, no network, hermetic-safe.
+        run: python tools/test_release_readiness.py
+
+      - name: Malformed skill-name regression
+        # Imports duckwork_guide.checks, so it needs the full tier.
+        if: inputs.run-full-gate
+        run: python tools/test_skill_malformed_name.py
+
+      - name: Skill-library behavioral test
+        if: inputs.run-full-gate
+        run: python tools/test_skill_checks.py
+
+      - name: Hooks allowlist reachability regression
+        if: inputs.run-full-gate
+        run: python tools/test_reachable_allowlist_check.py
+
+      - name: Proactive hooks read-only regression
+        # check_hooks_readonly() is what proactive boundaries run; keep it
+        # strictly in-process (no hook execution, no subprocess) and wired.
+        if: inputs.run-full-gate
+        run: python tools/test_hooks_readonly_check.py
+
+      - name: Bootstrap skill registration regression
+        # register() must always register the plugin-side router skill
+        # (duckwork-guide:start) from plugin-skills/, kept out of the tap
+        # inventory. Imports duckwork_guide, so it needs the full tier.
+        if: inputs.run-full-gate
+        run: python tools/test_bootstrap_skill.py
+
+      - name: Plugin notes regression
+        if: inputs.run-full-gate
+        run: python tools/test_plugins_notes.py
+
+      - name: Portable plugin.json discovery regression
+        if: inputs.run-full-gate
+        run: python tools/test_portable_plugin_manifest.py
+
+      - name: Subcategory-dir constants regression
+        if: inputs.run-full-gate
+        run: python tools/test_plugin_skip_source.py
+
+      - name: Upstream drift hygiene regression
+        run: python tools/test_upstream_drift_hygiene.py
+
+      - name: Drift watch parity regression
+        run: python tools/test_drift_watch_parity.py
+
+      - name: Venv resolver behavioral test
+        # Executes skills/diagnosing-path/references/resolve_venv.py against
+        # fixture trees (guards only scan it). Hermetic: tempdirs, stdlib,
+        # ambient interpreter neutralized via mock.
+        run: python tools/test_resolve_venv.py
+
+      - name: Citation integrity against the upstream baseline
+        # The cited symbols/lines live in the Duckwork tree, so this check resolves
+        # them against the revision recorded in .github/upstream-drift.baseline —
+        # not the CI install pin. One leg is enough: the check is OS- and
+        # interpreter-independent. Same blobless --no-checkout clone idiom as
+        # check_upstream_drift.py; `git show <rev>:<path>` lazily fetches only the
+        # blobs the checker reads. The revision is read by the script itself, never
+        # passed via $(cat ...) — the baseline file is CRLF in a Windows checkout
+        # and a stray CR breaks git's SHA parsing.
+        if: runner.os == 'Linux' && matrix.python-version == '3.11' && inputs.run-full-gate
+        run: |
+          # Offline parser regression first (no clone needed), then the real check.
+          python3 tools/check_citation_integrity.py --selftest
+          # The already-cloned Duckwork install (v2026.9.24) is the --src tree;
+          # no separate clone needed. The shallow clone has no commit objects,
+          # so the declared baseline revision is fetched into it (depth 1),
+          # and the check runs with the script's DEFAULT revision — which is
+          # the baseline file, not --rev HEAD: the install tree is a month
+          # behind the pin, and validating cites there defeats the contract.
+          # The pin line is read via the script's own encoding rule (
+          # utf-8-sig + strip): the committed file has carried a BOM.
+          pin="$(python3 -c "import pathlib; print(pathlib.Path('.github/upstream-drift.baseline').read_text(encoding='utf-8-sig').strip())")"
+          git -C "$RUNNER_TEMP/duckwork-agent" fetch --depth 1 origin "$pin"
+          python3 tools/check_citation_integrity.py --src "$RUNNER_TEMP/duckwork-agent"
+
+      - name: Install-scan parity (upstream scanner, real rules)
+        # The scanner-hygiene guard under tests/ is a hand-maintained MIRROR of
+        # a few upstream rules, so a scanner escalation cannot fail it. This
+        # runs upstream's real tools/skills_guard.py - at the pinned baseline
+        # revision, same discipline as the citations above - over every skill at
+        # community trust, which is what a tap install resolves to. It asserts
+        # the property users feel: should_allow_install() must be true. Without
+        # it, diagnosing-host-pressure stayed un-installable for months with
+        # every gate green (issue #204).
+        #
+        # This EXECUTES upstream code, which the citation check does not. The
+        # pin is what bounds that: a specific revision from a checkout already
+        # cloned by the install step, never "main".
+        if: runner.os == 'Linux' && matrix.python-version == '3.11' && inputs.run-full-gate
+        run: |
+          # Fetch the pin into this clone MYSELF. The citation step above does
+          # the same thing for the same clone, and this step used to lean on that:
+          # reorder or drop that step and this one starts failing with "not
+          # present at baseline", which looks like a real regression and is not.
+          # Reproduced locally against a fresh `clone --depth 1 --branch
+          # v2026.9.24`, where the pin genuinely is absent.
+          pin="$(python3 -c "import pathlib; print(pathlib.Path('.github/upstream-drift.baseline').read_text(encoding='utf-8-sig').strip())")"
+          git -C "$RUNNER_TEMP/duckwork-agent" fetch --depth 1 origin "$pin"
+          python3 tools/check_install_scan.py --src "$RUNNER_TEMP/duckwork-agent"
+          python3 tools/test_check_install_scan.py
+
+      - name: Skill provenance footer guard
+        # Requires a dated upstream-anchored footer per skill.
+        run: |
+          python tools/check_skill_provenance.py --selftest
+          python tools/check_skill_provenance.py
+          python tools/test_skill_provenance.py
+
+      - name: Scope validation regression
+        if: inputs.run-full-gate
+        run: python tools/test_scope_validation.py
+
+      - name: PR metadata label parser regression
+        # The parser drives auto-labelling, so its vocabulary and its
+        # placeholder handling are behavior, not configuration. Pure string
+        # work: no network, no git, no CLI.
+        run: python tools/pr_metadata_labels.py --selftest
+
+      - name: Doc skill/check count consistency
+        # Pure file reads + git ls-files (also in the hermetic tier); fast tier.
+        run: python tools/test_skill_counts.py
+
+      - name: Cross-skill count consistency
+        # One filename-anchored count must agree repo-wide (or carry a scope
+        # word). Pure file reads; fast tier.
+        run: |
+          python tools/check_skill_consistency.py --selftest
+          python tools/check_skill_consistency.py
+
+      - name: CLI registry mirror sync
+        # PLUGIN_COMMANDS in tools/check_cli_surface.py hand-mirrors the
+        # checks._CHECKS scopes and the _setup_cli flags (`duckwork guide`
+        # scope validation consumes that mirror). Compare the three here so
+        # a renamed, added or dropped check cannot pass against a stale copy
+        # in the fast tier; the full-tier CLI surface assertion additionally
+        # resolves skill cites against the live CLI.
+        run: python tools/check_cli_surface.py --check-mirror
+
+      - name: CLI surface assertion
+        # Every `duckwork <subcommand>` cited in skills must resolve against
+        # the live CLI (top + subcommand + flags, aliases and hidden
+        # commands included). Needs the install above, so full tier only.
+        if: inputs.run-full-gate
+        run: |
+          python tools/check_cli_surface.py --selftest
+          python tools/check_cli_surface.py
+
+      - name: Generated doc blocks
+        # The counts, scope list and install loop in README.md / AGENTS.md are
+        # rendered from the tree by tools/render_docs.py. Check mode is the
+        # script's default, so a hand-edit inside a BEGIN/END GENERATED block —
+        # or a new skill that nobody re-rendered for — fails here. Pure file
+        # reads, so it belongs in the fast tier too.
+        run: |
+          python tools/render_docs.py --selftest
+          python tools/render_docs.py
+
+      - name: Tap discovery smoke test
+        if: runner.os == 'Linux' && inputs.run-full-gate && inputs.event-name == 'pull_request'
+        timeout-minutes: 10
+        # Installs run authenticated: on CI there is no $DUCKWORK_HOME/.env and
+        # no gh login, so get_secret() falls through to os.environ and
+        # GitHubAuth picks this up (priority 1). Anonymous installs shared the
+        # runner IP's 60 req/hr quota and died wholesale on #49 ("Could not
+        # fetch ... rate limit exhausted"). Trade-off: the anonymous cold-user
+        # path is no longer exercised here; scanner honesty is (no --force).
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          duckwork skills tap add iap/duckwork-guide
+          # Derive the list from the checkout, never hardcode it: a stale
+          # hardcoded list is how the scanner verdicts on diagnosing-memory
+          # and diagnosing-desktop shipped unnoticed (the step kept testing
+          # nine skills while the repo had eleven).
+          SKILLS=$(for d in skills/*/; do basename "$d"; done | sort | tr '\n' ' ')
+          echo "skills under test: $SKILLS"
+          # Capture the installed list once up front: if `duckwork skills list`
+          # itself errors, an empty pipe would make every `grep -q` miss look
+          # like a "new skill added by this PR" and pass vacuously with only
+          # a warning. Fail closed instead.
+          if ! INSTALLED=$(duckwork skills list 2>&1); then
+            printf '%s\n' "$INSTALLED"
+            echo "install failed: could not list installed skills"
+            exit 1
+          fi
+          pr_added=""
+          failed=0
+          for s in $SKILLS; do
+            echo "::group::install $s"
+            if ! out=$(duckwork skills install --yes "iap/duckwork-guide/skills/$s" 2>&1); then
+              printf '%s\n' "$out"
+              echo "::endgroup::"
+              # No --force: every skill must pass the install scanner honestly.
+              # The tap serves master, so on a PR ADDING a skill the fetch misses
+              # until merge. Tolerate exactly that miss (the "Could not fetch"
+              # signature) on pull_request events only; scanner verdicts, auth
+              # failures, and every other failure still fail the step - on PRs
+              # and on post-merge master pushes alike.
+              # Names are lowercase alnum+hyphen, so hyphen-aware boundaries keep
+              # `diagnosing-mcp` from matching `diagnosing-mcp-extra` (or a
+              # longer name containing it). Deliberately format-agnostic: the
+              # list renders as a Rich table on a TTY and plain text off it,
+              # so cell/column parsing would couple this step to one layout.
+              if [ "${{ inputs.event-name }}" = "pull_request" ] \
+                 && printf '%s' "$out" | grep -qF -- 'Could not fetch' \
+                 && ! printf '%s' "$INSTALLED" | grep -qE "(^|[^a-z0-9-])$s([^a-z0-9-]|$)"; then
+                echo "::warning::$s is added by this PR - not installable from the tap until merge"
+                pr_added="$pr_added $s"
+                continue
+              fi
+              echo "install failed: $s"
+              failed=1
+            else
+              echo "::endgroup::"
+            fi
+            # Refresh the installed list after each success so a later skill's
+            # tolerance check reads current state, not the pre-loop snapshot.
+            if ! INSTALLED=$(duckwork skills list 2>&1); then
+              printf '%s\n' "$INSTALLED"
+              echo "install failed: could not list installed skills"
+              exit 1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then exit 1; fi
+          echo "OK: tap-install pass done; new-in-PR skills pending merge:${pr_added:- none}"
+
+      - name: Security lint (bandit)
+        run: |
+          pip install bandit
+          # Scan plugin runtime sources only (tools/ are CI utilities). B404/B603
+          # are informational noise: this plugin legitimately calls the `duckwork`
+          # CLI via subprocess.run (list args, no shell=True).
+          bandit __init__.py checks.py constants.py --skip B404,B603
+
+  legacy-mac:
+    # Legacy-mac hermetic leg: proves the hermetic gates pass on the oldest
+    # supported GHA-hosted Intel macOS image (macos-15-intel).
+    # macos-13 was retired 2025-12-04 and queues forever; macos-14 retires
+    # 2026-11-02. Closest hosted match to the repo's 12.7 lineage
+    # (checks.py macOS 12.7 note, the 12.7.6 host-pressure baseline).
+    # Hermetic gates only -- py_compile + check_gates.py are pure file reads
+    # with no network and no Duckwork install, so there is deliberately no
+    # clone/pip-install step here. The Duckwork install itself is covered by
+    # the plugin job above (same v2026.9.24 pin).
+    # Full-gate only, matching the network-leg rule (this job exists to
+    # shadow the full tier on Intel mac, not to gate fast pushes).
+    if: inputs.run-full-gate
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history: this leg runs check_gates.py, and the changelog guard
+          # fails closed on a shallow clone (it cannot verify tag ranges).
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+
+      - name: Python syntax check
+        run: python -m py_compile __init__.py checks.py constants.py
+
+      - name: Hermetic gates
+        run: python tools/check_gates.py

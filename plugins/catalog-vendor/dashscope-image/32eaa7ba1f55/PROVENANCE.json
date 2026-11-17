@@ -1,0 +1,281 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "dashscope-image",
+  "content_id": "32eaa7ba1f55",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 4628,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "fe07aeae2cfd1ff2ce4c0c5911dfbb550a3f1065e213175039abadfc3a5a15bb"
+    },
+    {
+      "bytes": 1069,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "849a60a4215d81afe0851f3444b4b641f3f77ab1827073bcc1cc968654b114d8"
+    },
+    {
+      "bytes": 2750,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "53ae30ee656280e0c46e6341363ba23522f257e4d9e97d5ea78112ab5dc09f8e"
+    },
+    {
+      "bytes": 11423,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "6f1b29c5cd1cccff22e3740e08336a1cdf632e61def6615c316af2b4120c9707"
+    },
+    {
+      "bytes": 2173980,
+      "mode": "100644",
+      "path": "examples/cyberpunk-qwen.png",
+      "sha256": "f69ec87c183d4434d88b3a4ea2a01c8734f145cd021a4c8494020abd2bdcdeb6"
+    },
+    {
+      "bytes": 269,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "37fcfe4573ce92e9df9b8185f5ad25ae30f8b323d835ef13c626af6cd3862604"
+    }
+  ],
+  "input_manifest_sha256": "32eaa7ba1f551e598197adf43e04c3c59e8c3ce75653daa5b028be39ace3e921",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "849a60a4215d81afe0851f3444b4b641f3f77ab1827073bcc1cc968654b114d8",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/rriggs/hermes-plugin-dashscope-image",
+    "sha": "f13665c97eb852b3ef90e30e020dbdcf0c9dc38b",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/rriggs/hermes-plugin-dashscope-image",
+  "original_sha": "f13665c97eb852b3ef90e30e020dbdcf0c9dc38b",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "fe07aeae2cfd1ff2ce4c0c5911dfbb550a3f1065e213175039abadfc3a5a15bb",
+      "bytes": 4628,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "849a60a4215d81afe0851f3444b4b641f3f77ab1827073bcc1cc968654b114d8",
+      "bytes": 1069,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "5c266097a0ee40d27fa7634e2cadcac95cdb766d5c9efb32bd9641a326fca50b",
+      "bytes": 2762,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "974f0c6170489daff6daf9cfb2d2d10ee03d012804cd4b6539f300d4d4d22ded",
+      "bytes": 11427,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/cyberpunk-qwen.png",
+      "sha256": "f69ec87c183d4434d88b3a4ea2a01c8734f145cd021a4c8494020abd2bdcdeb6",
+      "bytes": 2173980,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "37fcfe4573ce92e9df9b8185f5ad25ae30f8b323d835ef13c626af6cd3862604",
+      "bytes": 269,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "96a1bf772fd1df4089538699fca528ab15194209d795e728dcaf66bbe06a0090",
+  "pin_verification": {
+    "archive_bytes": 2182275,
+    "archive_sha256": "9e67d2e4b4b6c7051fee248b208b776316a90cb30a25bcc832df083ba894b3e5",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "f13665c97eb852b3ef90e30e020dbdcf0c9dc38b",
+    "verified_commit_marker": "f13665c97eb852b3ef90e30e020dbdcf0c9dc38b"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "42bf9763caeaba72f8058816ffe6caa57768eff0e28c58b94a2796c9cc0fe597",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "fe07aeae2cfd1ff2ce4c0c5911dfbb550a3f1065e213175039abadfc3a5a15bb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fe07aeae2cfd1ff2ce4c0c5911dfbb550a3f1065e213175039abadfc3a5a15bb",
+        "source": ".gitignore",
+        "final_output_sha256": "fe07aeae2cfd1ff2ce4c0c5911dfbb550a3f1065e213175039abadfc3a5a15bb",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "fe07aeae2cfd1ff2ce4c0c5911dfbb550a3f1065e213175039abadfc3a5a15bb"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "849a60a4215d81afe0851f3444b4b641f3f77ab1827073bcc1cc968654b114d8",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "849a60a4215d81afe0851f3444b4b641f3f77ab1827073bcc1cc968654b114d8",
+        "source": "LICENSE",
+        "final_output_sha256": "849a60a4215d81afe0851f3444b4b641f3f77ab1827073bcc1cc968654b114d8",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "849a60a4215d81afe0851f3444b4b641f3f77ab1827073bcc1cc968654b114d8"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "53ae30ee656280e0c46e6341363ba23522f257e4d9e97d5ea78112ab5dc09f8e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9bedbbe118ff53c1d1fb4f2686aa3b70f166885cc2a762bb59f5300f55288d14",
+        "source": "README.md",
+        "final_output_sha256": "5c266097a0ee40d27fa7634e2cadcac95cdb766d5c9efb32bd9641a326fca50b",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "9bedbbe118ff53c1d1fb4f2686aa3b70f166885cc2a762bb59f5300f55288d14"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "6f1b29c5cd1cccff22e3740e08336a1cdf632e61def6615c316af2b4120c9707",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "974f0c6170489daff6daf9cfb2d2d10ee03d012804cd4b6539f300d4d4d22ded",
+        "source": "__init__.py",
+        "final_output_sha256": "974f0c6170489daff6daf9cfb2d2d10ee03d012804cd4b6539f300d4d4d22ded",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "974f0c6170489daff6daf9cfb2d2d10ee03d012804cd4b6539f300d4d4d22ded"
+      },
+      {
+        "destination": "examples/cyberpunk-qwen.png",
+        "input_sha256": "f69ec87c183d4434d88b3a4ea2a01c8734f145cd021a4c8494020abd2bdcdeb6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f69ec87c183d4434d88b3a4ea2a01c8734f145cd021a4c8494020abd2bdcdeb6",
+        "source": "examples/cyberpunk-qwen.png",
+        "final_output_sha256": "f69ec87c183d4434d88b3a4ea2a01c8734f145cd021a4c8494020abd2bdcdeb6",
+        "cli_destination": "examples/cyberpunk-qwen.png",
+        "previous_staging_sha256": "f69ec87c183d4434d88b3a4ea2a01c8734f145cd021a4c8494020abd2bdcdeb6"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "37fcfe4573ce92e9df9b8185f5ad25ae30f8b323d835ef13c626af6cd3862604",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "37fcfe4573ce92e9df9b8185f5ad25ae30f8b323d835ef13c626af6cd3862604",
+        "source": "plugin.yaml",
+        "final_output_sha256": "37fcfe4573ce92e9df9b8185f5ad25ae30f8b323d835ef13c626af6cd3862604",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "37fcfe4573ce92e9df9b8185f5ad25ae30f8b323d835ef13c626af6cd3862604"
+      }
+    ],
+    "manifest_sha256": "3a89771590d9df56c7f9547884759a144faac4bc2876d637220c6d35e55f8238",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "examples/cyberpunk-qwen.png": "examples/cyberpunk-qwen.png",
+    "plugin.yaml": "plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "dashscope-image",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "dashscope-image",
+  "catalog_file": "src/plugin-catalog/dashscope-image.yaml",
+  "identity": {
+    "catalog_id": "dashscope-image",
+    "canonical_slug": "dashscope-image",
+    "original_manifest_name": "dashscope-image",
+    "rebranded_manifest_name": "dashscope-image",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "e0d1358e68e034eaddba4b68a19de139868f76454e09aa7d2213a8fd015b2a4b",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "9bedbbe118ff53c1d1fb4f2686aa3b70f166885cc2a762bb59f5300f55288d14",
+          "after_sha256": "5c266097a0ee40d27fa7634e2cadcac95cdb766d5c9efb32bd9641a326fca50b",
+          "before_bytes": 2770,
+          "after_bytes": 2762,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

@@ -1,0 +1,279 @@
+---
+name: Duckwork Session Lens
+description: A native Duckwork observatory for provider capacity, session evidence, accounting, and operational health.
+colors:
+  accent: "var(--ui-accent)"
+  accent-soft: "color-mix(in srgb, var(--ui-accent) 14%, transparent)"
+  success: "var(--ui-success)"
+  success-soft: "color-mix(in srgb, var(--ui-success) 12%, transparent)"
+  warning: "var(--ui-warning)"
+  warning-soft: "color-mix(in srgb, var(--ui-warning) 12%, transparent)"
+  destructive: "var(--destructive)"
+  destructive-soft: "color-mix(in srgb, var(--destructive) 12%, transparent)"
+  text-primary: "var(--ui-text-primary)"
+  text-secondary: "var(--ui-text-secondary)"
+  text-tertiary: "var(--ui-text-tertiary)"
+  text-quaternary: "var(--ui-text-quaternary)"
+  stroke-secondary: "var(--ui-stroke-secondary)"
+  surface-secondary: "var(--ui-bg-secondary)"
+  surface-tertiary: "var(--ui-bg-tertiary)"
+typography:
+  page-title:
+    fontFamily: "inherit"
+    fontSize: "1.0625rem"
+    fontWeight: 680
+    lineHeight: 1.3
+    letterSpacing: "-0.015em"
+  section-title:
+    fontFamily: "inherit"
+    fontSize: "0.9375rem"
+    fontWeight: 650
+    lineHeight: 1.35
+  body:
+    fontFamily: "inherit"
+    fontSize: "0.75rem"
+    fontWeight: 400
+    lineHeight: 1.5
+  label:
+    fontFamily: "inherit"
+    fontSize: "0.6875rem"
+    fontWeight: 400
+    lineHeight: 1.45
+  signal:
+    fontFamily: "inherit"
+    fontSize: "1rem"
+    fontWeight: 650
+    lineHeight: 1.3
+  evidence:
+    fontFamily: "var(--font-mono)"
+    fontSize: "0.6875rem"
+    fontWeight: 400
+    lineHeight: 1.55
+rounded:
+  control: "4px"
+  evidence: "5px"
+  container: "6px"
+  pill: "999px"
+spacing:
+  xxs: "0.15rem"
+  xs: "0.35rem"
+  sm: "0.5rem"
+  md: "0.75rem"
+  lg: "1rem"
+  xl: "1.5rem"
+components:
+  status-pill-neutral:
+    backgroundColor: "{colors.surface-tertiary}"
+    textColor: "{colors.text-secondary}"
+    typography: "{typography.label}"
+    rounded: "{rounded.pill}"
+    padding: "0.1rem 0.45rem"
+  status-pill-accent:
+    backgroundColor: "{colors.accent-soft}"
+    textColor: "{colors.accent}"
+    typography: "{typography.label}"
+    rounded: "{rounded.pill}"
+    padding: "0.1rem 0.45rem"
+  status-pill-danger:
+    backgroundColor: "{colors.destructive-soft}"
+    textColor: "{colors.destructive}"
+    typography: "{typography.label}"
+    rounded: "{rounded.pill}"
+    padding: "0.1rem 0.45rem"
+  view-tab-active:
+    backgroundColor: "transparent"
+    textColor: "{colors.text-primary}"
+    typography: "{typography.body}"
+    padding: "0.62rem 0.7rem"
+  session-row-selected:
+    backgroundColor: "{colors.accent-soft}"
+    textColor: "{colors.text-primary}"
+    padding: "0.78rem 0.85rem"
+  evidence-table:
+    backgroundColor: "{colors.surface-secondary}"
+    textColor: "{colors.text-primary}"
+    typography: "{typography.body}"
+    rounded: "{rounded.container}"
+---
+
+# Design System: Duckwork Session Lens
+
+## Overview
+
+**Creative North Star: "The Native Observatory"**
+
+Duckwork Session Lens is an **Operate** surface inside Duckwork Desktop: one native observatory connecting provider capacity and session evidence to accounting and operational health. It inherits Duckwork typography, controls, codicons, focus behavior, and light/dark theme roles; it does not establish a separate brand skin.
+
+This design document describes Duckwork Session Lens `0.53.2`.
+
+The interface is compact, quiet, and evidence-first. A user finds a session, verifies trace and accounting, then inspects runtime, profile, or schedule state without leaving Duckwork. Progressive disclosure carries the density, while explicit provenance, bounded excerpts, and read-only language make the trust boundary visible.
+
+**Key Characteristics:**
+
+- Native Duckwork controls, theme roles, and codicons.
+- Compact borders, tabular data, and independent scrolling regions.
+- Failure-first ordering with restrained, labelled status color.
+- Stable navigation from fleet-level signals to session-level evidence.
+- Redacted, bounded, read-only presentation of local records.
+
+## Colors
+
+The palette is wholly theme-owned: Duckwork accent and neutral roles carry structure, while the destructive role is reserved for failure evidence.
+
+### Primary
+
+- **Duckwork Accent:** Active tabs, selected-state emphasis, positive/running status, lightweight daily bars, and invoked-skill markers.
+- **Duckwork Accent Wash:** Selected rows and compact accent pills without creating a separate card layer.
+
+### Neutral
+
+- **Primary Text:** Titles, metric values, active labels, and table values.
+- **Secondary Text:** Evidence content and secondary status text.
+- **Tertiary Text:** Labels, descriptions, inactive navigation, and supporting metadata.
+- **Quaternary Text:** Timestamps and the quietest contextual details.
+- **Secondary Stroke:** The one-pixel separator used throughout the workspace.
+- **Secondary Surface:** Table headers, trace notes, and monospace evidence blocks.
+- **Tertiary Surface:** Neutral pills and native select surfaces.
+
+### Semantic status
+
+- **Duckwork Destructive:** Failed outcomes, detected failure counts, failed tool events, and caution copy.
+- **Duckwork Destructive Wash:** The bounded failure-inspector notice and failure pills.
+
+**The Theme Owns Color Rule.** Every color resolves from Duckwork theme variables; do not add hardcoded light- or dark-mode colors.
+
+**The Label Before Hue Rule.** Status always includes readable text and, where useful, a codicon; color never carries meaning alone.
+
+## Typography
+
+**Display Font:** Duckwork inherited UI family
+**Body Font:** Duckwork inherited UI family
+**Label/Mono Font:** Duckwork `--font-mono` role for recorded evidence
+
+**Character:** Typography is deliberately compact and native, with modest weight changes rather than oversized headings. Numerals carry operational authority through tabular alignment; monospace is limited to paths, identifiers, prompts, and tool evidence.
+
+### Hierarchy
+
+- **Page title:** Compact route identity in the header.
+- **Section title:** Dense workspace and table-section headings.
+- **Body:** Tabs, table rows, labels, and explanatory content.
+- **Label:** Metadata, timestamps, field names, status pills, and supporting descriptions.
+- **Signal:** The four top-line accounting values and detail metrics.
+- **Evidence:** Read-only recorded content, paths, IDs, tool results, and prompt previews.
+
+**The Numbers Line Up Rule.** Tokens, costs, counts, percentages, and durations use tabular numerals in metrics, tables, and definitions.
+
+**The Evidence Stays Evidence Rule.** Monospace identifies recorded or generated material; it is not a decorative type choice.
+
+## Layout
+
+The page fills its Duckwork route and uses a compact header, a four-signal strip, seven stable view tabs, then a dense scroll-managed workspace. Session views establish recorded cost, tokens, sessions, and failures; AI Usage swaps those signals for connected providers, attention, next reset, and refresh freshness; AI Models shows distinct models, requests, total tokens, and known API cost.
+
+An attention banner precedes the Sessions toolbar when runaway work exists: a warning-wash strip listing up to five sessions that are open past the 24-hour threshold (still-active ones always; idle ones only with five-million-plus tokens) or were reaped with five-million-plus tokens, each row a button that reveals that session in the list. Severity distinguishes still-active runaways (destructive text) from idle never-closed sessions (primary text). Each note carries a close control; dismissals persist in plugin storage (capped at one hundred ids) and a quiet restore link brings them back — dismissing all collapses the banner to a one-line dismissed count. The banner renders nothing when no session qualifies.
+
+Sessions uses a wide master/detail split with a minimum 20rem list and 28rem detail, weighted 0.82/1.38. List and detail scroll independently. The detail proceeds through its own header, four metrics, Summary/Trace/Tools/Failures/Files tabs, then a single content scroller.
+
+At the Duckwork 700px narrow threshold, Sessions becomes a list-to-detail drill-in, not a vertical stack. The list and search/filter toolbar occupy the page until selection; selection replaces them with detail, and a labelled Back control returns to the list. The selected session and detail tab remain stable through the drill-in.
+
+Top-level tabs, detail tabs, and four-column signal strips scroll horizontally when needed. Search and filters wrap before they clip. Evidence tables retain a 34rem minimum and scroll horizontally rather than collapsing columns into ambiguous cards. Aggregate views center their content within measured 68–84rem bounds.
+
+**The One Evidence Pane Rule.** Narrow mode shows either the session list or the session detail, never compressed halves or stacked duplicates.
+
+## Elevation & Depth
+
+The system is flat and uses no decorative shadows or gradients. Depth comes from Duckwork secondary and tertiary surfaces, one-pixel secondary strokes, selected-row washes, and the two-pixel active-tab underline.
+
+**The Stroke, Not Shadow Rule.** Separate operational regions with theme strokes and tonal surfaces; shadows would make this native evidence workspace feel like a separate dashboard.
+
+## Shapes
+
+The form language is compact and lightly softened. Native/select controls use restrained corners, evidence blocks are slightly rounded, table containers use the largest small-radius step, and pills are fully rounded. Daily bars use only a subtle two-pixel top radius. Large decorative cards and ornamental silhouettes are absent.
+
+## Components
+
+### Native controls
+
+- **Buttons, inputs, textareas, and segmented controls:** Use Duckwork SDK components so hover, focus, disabled, keyboard, and theme behavior remain native.
+- **Selects:** Native selects match Duckwork surfaces, secondary strokes, compact padding, and the accent outline.
+- **Icons:** Codicons remain baseline-aligned with labels; icon-only actions carry accessible names and titles.
+
+### Header and signals
+
+- **Header:** Compact title and grounding sentence on the left; preset/custom time range and explicit refresh on the right. Custom ranges expose labelled native start/end date fields and treat the end date as inclusive. AI Usage replaces historical controls with a labelled live-quota state and makes refresh bypass the provider cache. AI Models keeps the historical range and refreshes both local model evidence and shared account quotas.
+- **Refresh cadence:** AI Models reuses unchanged backend payloads for 60 seconds and polls from the Desktop every five minutes. Closed-session classification facts remain in memory for the process lifetime; open sessions are recomputed. Manual refresh passes `fresh=true` and updates the visible query immediately.
+- **Signal strip:** Four equal accounting cells—Recorded cost, Tokens, Sessions, and Failures detected—with a small provenance/detail line below each value.
+- **Partial-known cost:** When some sessions are unpriced, preserve the sum of known cost and show the unpriced session count; do not replace known accounting with a false zero.
+
+### Navigation
+
+- **View tabs:** Sessions, Overview, Operations, Tools, System, AI Usage, and AI Models remain stable and horizontally scrollable. Active state uses stronger text and an accent underline. Skill invocations render as a section inside Tools.
+- **Operations segments:** Health, Profiles, and Schedules use the Duckwork segmented control. Health ends with a context-compression readout that stays a single quiet line until distress is recorded. Schedules opens with the agent run-health scoreboard: one row per cron job (grouped by title prefix), a latest-runs strip with outcome-toned squares (latest rightmost, tooltips carrying date, outcome, duration, tokens, and cost), failure and streak counts, and per-run averages; job names drill through to the Sessions view.
+- **Overview projects:** "Where the spend goes" rolls sessions up by git repository, then working directory, then source, and states plainly how many sessions record no directory; with several profiles in scope each profile keeps its own rows, so a bot profile never merges into another profile's "no recorded directory" row. Costs show unpriced counts rather than pretending zero.
+- **Periods and hidden sessions:** A period holds every session active in it (last active at or after its start, started before its end), because bot sessions run for days; Duckwork records usage per session, not per day, so a straddling session counts whole and the daily bars place it on its last-active day. Sessions hidden from the Duckwork sidebar count everywhere and are labelled in their detail header — hiding is a listing preference, not a refund. Per session, tokens, calls and cost are the higher of Duckwork' session row and the sum of its per-model usage rows (`_accounted_sessions_sql`), because the session row lags on long sessions; AI Models reads the usage rows directly, so the two agree.
+- **Detail segments:** Summary, Trace, Tools, Failures, and Files preserve their order and surface counts when known.
+
+### Session rows and status pills
+
+- **Session row:** Title and outcome lead; timestamp/source, tokens, tool calls, cost, model, and optional bounded search snippet follow in descending emphasis. Selection uses the accent wash.
+- **Pills:** Neutral, accent, and destructive tones are compact and fully rounded. Outcome pills pair label and codicon; failure counts remain visibly distinct.
+
+### AI Usage
+
+- **Provider grid:** All configured sources—Codex, Anthropic Claude, Fordex Portal, OpenRouter, DeepSeek, Grok, Kimi Code Plan, and Z.AI GLM Coding Plan—appear together under Supported providers. Connected providers lead while every other provider retains its configured order. Each provider uses a compact bordered section in a two-column wide layout and a one-column narrow layout; these are operational groupings, not decorative cards.
+- **Quota windows:** Labels and tabular remaining values lead; progress bars carry `progressbar` semantics and never communicate state by color alone. Monetary balances retain their unit and never become a fabricated percentage when no denominator exists.
+- **Rules tab:** A rule list (enable dot, name, profile pill, plain-sentence summary, Edit, Delete) above an inline WHEN/THEN editor: a "Start from" preset select, then one row per clause (kind select, its fields inline, a "not" tick, remove) under "When" and "Then the model must", with the live sentence in italics beside Save; the scoreboard shows an "All rules together" table, then one table per rule (turns checked, passed, failed, pass rate, risk bound, rank or "below floor") followed by the failing turns as compact rows with an Open button that drills into the session. Sample floor is an inline number field on the scoreboard heading.
+- **Export menus:** An outline "Export" button in the section heading (or the Sessions toolbar) opens a solid popover listing each format with its filename hint and two small actions, Download and Copy; a spinner replaces the icon while an export builds, and the host toast reports a copy or a failure. Downloads use the desktop's Save File dialog.
+- **Services & tools:** Non-model services reuse the provider card exactly (balance windows, details, status pill, per-card refresh) under their own group, followed by an "Everything configured" evidence table — Service, Found via, Status (Monitored / Needs attention / Not read yet / No usage API), Note — so a configured service is never silently absent. Rows without an adapter carry an inline link to the adapter recipe, so the path from "listed" to "monitored" is visible where the gap is.
+- **Monthly budgets:** A bordered list under the provider grid, one row per provider plus an "All providers" total: month-to-date spend with its source named (account / local records), the projected month-end figure, an inline cap field, and a two-layer bar (solid = spent, tinted = projected). Status pills read Over cap / On pace to exceed / Within cap / No cap in words; the projection basis is spelled out on hover.
+- **Burn attribution:** Each window ends with a collapsed "What consumed this window" line whose headline names the top two projects and their local share; expanding it reveals a Projects/Sessions/Models segmented list with share bars, token counts, and drill-through labels. Copy always says "local" and, for money windows, states the unexplained remainder rather than implying the account percentage is accounted for.
+- **Provider states:** Connected, not configured, expired or rejected, forbidden, unavailable, partial, and stale are stated in text. Stale data names the failed refresh while preserving the last successful reading.
+- **Trust boundary:** The view states that credentials stay in the Python backend, browser cookies are not read, and only normalized account usage reaches JavaScript. The System tab's privacy posture lists the external hosts the adapters declare (from `/system`) and states that failure signatures match English error text only; both come from the backend, never from copy alone.
+
+### AI Models
+
+- **Automatic inventory:** One row per all-time distinct model ID from `session_model_usage`, with a session-row fallback for older accounting. No model list is hardcoded, so first-time routes appear automatically; requests, tokens, cost, reliability, latency, task mix, and trend values honor the selected period.
+- **Routing summary:** A compact card above the table states the best current evidence per task type — Coding, Writing, Analysis, General — each naming the model with the lowest 95%-confidence failure bound (Wilson score) at that task type among models that have cleared the floor for that type, with its completed/eligible fraction. While no model clears the floor the cell says "no rankable evidence yet" and names the leading candidate as a fraction only — never a percentage. Model names drill through to the Sessions view.
+- **Verdict-first rows:** Under each model name the row states a one-sentence verdict fused from the two evidence layers—API health from bounded logs and work evidence from eligible tasks (for example, "API steady. Ranked #2 of 2 — failure rate at most 6.5% (95% confidence)." or "API steady. Too little finished work to rank — 4 of the 20 tasks needed."). Below the floor the verdict never states a percentage. One phrase, "task failure rate at most X% (95% confidence)", names the Wilson bound everywhere it appears: verdict, work-evidence column, ledger headline, and routing summary. The word "task" is deliberate: the table's "API fail rate" is an observed per-call count, while this is a per-task ceiling from the sample size, and the two must never read as the same number. The verdict is generated only from already-computed values and never asserts a judgment the data does not support.
+- **Comparison table:** All ten headers—Model, Route, Requests, Tokens in/out/cache, Cost · quota, API fail rate, Retry/switch, Work evidence, Total latency, and Trend (7d requests)—are keyboard-sortable. The default is reliability rank (lowest failure bound first, unrankable rows after); the wide evidence table scrolls horizontally and retains input/output/cache token alignment. Cost and quota burn share one column, each stating its own scope: a pay-go cell reads "$14.32 · 30d" (the selected period), a subscription cell reads "36% of weekly cap · 99% elapsed · on pace". Routes that resolve to the same label merge into one row, so "+N more" only appears for genuinely different routes. Work evidence is a dedicated column showing eligible tasks against the ranking gate ("4 of 20 tasks", or rank when achieved) and a progress meter toward the gate; the failure bound appears only once the gate is passed ("26 tasks · failure ≤ 12.9%"), never below it. Fail and retry/switch cells state the count with the denominator ("4 of 148 sessions").
+- **Two denominators, two panes:** A rate never sits next to a sample it does not describe. Fail and retry/switch cells render the percentage above its own denominator ("0.4% · of 1,306 logged calls"); any sample below the configured floor renders as a plain neutral fraction ("2/3") instead of a percentage. The bounded-log window is declared once as a chip on the section header. The word "requests" never appears next to a task count.
+- **Expanded evidence card:** Opens with a warning-toned banner when the model is below the task floor ("Not rankable yet — X of 20 eligible tasks. A failure rate is shown once 20 tasks are scored."), so no percentage can read as the headline on a tiny sample. Below it sit two explicitly labeled panes. "API layer — logs cover N of M calls (P%) · <window>" states the log coverage that every denominator on the pane rests on, then holds the request mix by session type in call units, rate-limit/timeout/API-error counts each shown "of N logged", tool failures with their denominator ("X of Y tool calls · Z%"), and total latency. "Work ledger — N eligible tasks" holds the rank and the "failure rate at most X% (95% confidence)" headline when rankable, a one-line summary ("No task failed and no API failure occurred across N eligible tasks" when both counts are zero), a per-task-type table with Eligible / Completed / Clean / Recovered as plain counts — Recovered is a dash with a tooltip when no API failure occurred, and each row's ineligible tasks carry their reasons ("41 not eligible: 30 still open, 11 outside log coverage") — a by-route breakdown when needed, and cost per completed task (recorded cost ÷ ledger completions, after ten completions) so the divisor is a number shown on the same card. Acceptance bases surface as row tooltips. The insight line never restates a number already on the card: latency earns a line only when the model's median is at least 1.5× the median of the other logged models in the period, stated as that comparison. Session classification itself is unchanged: each session receives one primary type in first-match order—Orchestration, Coding, Writing, Analysis, General—from recorded tool calls, arguments, code-mutating commands, and artifact paths; transport and schedule sources never determine type, read-only Git/GitHub inspection does not imply Coding, and auxiliary jobs remain separate and unscored.
+- **Narrow expansion:** Expanded model evidence becomes a normal `width: 100%` block inside its table row, with one-column internal layout and no sticky positioning or viewport-width calculation.
+- **Balance drawdown:** Providers that report a balance rather than spend reveal cost only by how far the balance falls between readings. The desktop keeps one ledger entry per provider per month in its plugin storage (first and last reading, sum of falls, sum of rises), shows it under the balance window ("Down $3.51 this month · since Sep 5"), and sends the USD part to the budgets, attention and digest routes as `balances`; the backend treats it as the provider's account figure with source `balance` and paces the projection on the drawdown's own span (never shorter than a day). Nothing is stored by the backend.
+- **Card compaction:** Provider cards are ordered by what needs a look first (credential trouble, then a window on pace to run out, then quota windows in use by fullness, then balances by local spend, then untouched or rate-limit-only cards, then not configured), each extra account card following its base. A quota window earns a bar only when something is used in it; untouched windows collapse to one "Untouched: …" sentence with sizes and reset countdowns, and per-minute rate limits to one "Rate limits per minute: …" sentence. Zero-valued magnitude lines, vendor update nags and raw URLs move to `details_muted` — hidden on the card, kept in the JSON export. The Fordex Portal card leads with a "Usable credits" balance window. Attribution headlines skip shares under 0.5%. The header's Next reset is the soonest among windows with something used, and names its provider and window.
+- **Quota burn:** OAuth subscription routes reuse provider-account quota windows. The fill states cap used and a one-pixel tick marks inferred period elapsed; the first 10% of a period is labelled `early in period` without a pace judgment, then text labels accompany success, warning, and destructive theme roles. Over-pace windows add a one-line forecast in the pace tone — "at this pace, empty ~<date> (46% used with 39% of the window elapsed)" — computed once, in the backend, by linear extrapolation of the window's own burn, and shown only when the window is at least 10% elapsed, usage runs ahead of time, and the run-out lands at least 10% of the window before the reset. The same forecast feeds the card line, the attention strip, the AI Models quota cell, the digest, and the header's Needs attention count, so a forecast never appears on one surface and not another. Pay-as-you-go routes say `pay-go`.
+- **Evidence drill-through:** Aggregates link to their evidence. The tool-failure count and the work-ledger task count in the expanded card are accent-colored links that open the Sessions view pre-filtered to that model (failures-only for the failure link), so no number on the page is a dead end.
+- **Provenance block:** Each expanded card ends with one collapsed disclosure, "How these numbers are computed", holding the provenance as a short list—routes and mapping source, the log window and the TTFT-not-recorded caveat, work-ledger eligibility, exclusions, and the ranking rule, and the classification order with acceptance bases—so the rules are one click away without a wall of small grey text under every card.
+- **Honest gaps:** Cached tokens become a dash when the route has not demonstrated cache reporting. Retry/switch includes rewinds, same-model near-identical prompt resends within five minutes, and same-role model changes while excluding cross-role routing. The table failure rate counts bounded-log API attempts that ended in errors, timeouts, or rate limits; recorded tool-call failures are shown separately with their tool-call denominator for reconciliation. Work reliability scores finished sessions: those that completed explicitly and those Duckwork Desktop closed by a session reset or an orphan reap with no failure end reason, which is how most interactive Desktop sessions end. A completed task after an observed API failure is recovered; an unrecovered failure is counted when a session ended failed, or closed, with its last attributable API event still a failure. Open, cancelled, orchestration, auxiliary, ambiguous, switched-away, and uncovered runs are explicit exclusions, never implicit successes, and the ledger reports the count per reason for each task type. Comparable models require the configured sample floor and rank by the lowest 95% Wilson upper failure bound. A row with no selected-period requests suppresses bounded-log fail rate and latency with an explanatory tooltip. Unknown routes use configured model-id globs, then distinct historical model/family routes, and finally the actionable `Unmapped (edit in config)` state. Total latency remains a bounded-log observation; TTFT is not recorded by Duckwork, which the provenance block states. General and Analysis acceptance uses the conservative first-attempt proxy; Coding requires a resolved session with a successful code artifact save or commit; Writing requires a resolved session with a successful non-code artifact write; Orchestration says `n/a`.
+
+### Evidence tables and trace
+
+- **Tables:** Secondary-surface headers, one-pixel row separators, right-aligned numeric columns, and horizontal overflow preserve dense comparisons. Every header is a keyboard-accessible sort control with a Codicon direction indicator and `aria-sort` state; sorting is local and stable.
+- **Trace:** Chronological user, assistant, reasoning, tool-call, and tool-result rows. Reasoning is collapsed by default; tool results use bounded, scrollable monospace blocks.
+- **Failure inspector:** Begins with a destructive-wash notice distinguishing failures shown in the bounded event scan from the confirmed full-session total. SQL only prefilters candidate content; the shared Python signature confirms it before any count, while recorded Duckwork finish/effect states remain authoritative.
+- **Ask Duckwork:** An outline `xs` button beside **Open session**, shown only when the bounded scan holds at least one failure. It follows a prepare-and-hand-over pattern: the backend renders the prompt, the desktop copies it and opens a new chat, and a toast states the size and the next step. The plugin never submits a prompt or creates a session; the button spins while the prompt is fetched and is disabled meanwhile.
+- **Trust note:** Trace copy explicitly excludes system and scheduled-job scaffold prompts and states that content is secret-redacted and bounded to 6,000 characters per event.
+
+### States
+
+- **Loading, empty, error, unpriced, partial, and truncated states:** Use Duckwork SDK states or quiet inline notices; uncertainty is stated directly rather than hidden.
+- **Tools truncation:** Aggregate tool evidence scans the latest 50,000 assistant rows. When the cap is exceeded, the view states that the aggregate is truncated rather than implying complete history.
+- **Log coverage:** Log-window labels use the earliest and latest parseable lines across the bounded source files, even when those lines cannot be attributed to a model. The in-memory parser cache retains only the ten most recently used paths.
+
+## Do's and Don'ts
+
+### Do:
+
+- **Do** preserve Duckwork SDK controls, theme variables, codicons, and native focus behavior.
+- **Do** keep the context-appropriate four-signal strip, stable tabs, and dense evidence workspace visible in the first viewport.
+- **Do** pair failure color with text or a codicon and expose bounded evidence for inspection.
+- **Do** preserve known aggregate cost alongside an explicit unpriced-session count.
+- **Do** exclude scheduled-job scaffold prompts and system prompts from trace presentation.
+- **Do** use the 700px list→detail drill-in with Back for narrow Sessions views.
+
+### Don't:
+
+- **Don't** add a separate brand palette, external font, dashboard gradient, decorative shadow, or ornamental animation.
+- **Don't** turn dense tables into card stacks when horizontal scrolling preserves comparison better.
+- **Don't** present unavailable pricing as zero, available skills as invoked, or conservative failure signatures as certainty.
+- **Don't** expose schedule prompts, secrets, or unbounded recorded content.
+- **Don't** show list and detail together below the Duckwork narrow threshold.

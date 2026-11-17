@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=70.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-local-knowledge"
+version = "0.4.20"
+description = "Reusable Duckwork Agent plugin for local capability indexing"
+requires-python = ">=3.11"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Alex Stepanov" }]
+keywords = ["duckwork-agent", "plugin", "knowledge-router", "local-search"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.optional-dependencies]
+test = [
+    "build>=1,<2",
+    "mypy>=1.18,<3",
+    "pytest>=8,<10",
+    "PyYAML>=6,<7",
+    "ruff>=0.15,<0.17",
+    "setuptools>=70.1",
+]
+mutation = [
+    "mutmut>=3,<4",
+]
+
+[project.urls]
+Repository = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+
+[project.entry-points."duckwork_agent.plugins"]
+local_knowledge = "duckwork_local_knowledge.plugin"
+
+[tool.setuptools.packages.find]
+include = ["duckwork_local_knowledge*"]
+exclude = ["tests*", "mutants*"]
+
+[tool.setuptools.package-data]
+duckwork_local_knowledge = ["skills/*/SKILL.md"]
+
+[tool.mutmut]
+source_paths = ["duckwork_local_knowledge"]
+also_copy = ["plugin.yaml"]
+pytest_add_cli_args_test_selection = ["-k", "not install_smoke"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.mypy]
+python_version = "3.11"
+explicit_package_bases = true
+files = ["duckwork_local_knowledge", "tests", "scripts"]

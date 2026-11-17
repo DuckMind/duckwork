@@ -1,0 +1,98 @@
+# Manual acceptance test
+
+Use a disposable Duckwork home. Do not point these steps at a real profile.
+
+```bash
+export DUCKWORK_HOME="$(mktemp -d)"
+mkdir -p "$DUCKWORK_HOME/plugins"
+cp -R /path/to/duckwork-plan-mode "$DUCKWORK_HOME/plugins/plan-mode"
+duckwork plugins enable plan-mode
+```
+
+Run the following on each supported surface (CLI, gateway, TUI, and Desktop):
+
+Enforced in the classic CLI on released Duckwork. Gateway/TUI/Desktop need Duckwork
+`v2026.9.24` (0.21.5) or later; earlier builds refuse `/planmode on` there
+instead of pretending. On such an earlier build, step 1
+on gateway, TUI or Desktop must return the clear session-binding refusal;
+continue those flows only on a build that includes the matching commit.
+
+1. Start a session in a disposable workspace and run `/planmode on write a
+   hello-world plan`.
+2. Confirm the reply prints an absolute
+   `<workspace>/.duckwork/plans` directory and explains the blocked surfaces.
+3. Ask Duckwork to inspect a file and search the web. Confirm read-only calls are
+   allowed.
+4. Ask Duckwork to run `pwd`, execute code, call an MCP tool, send a message, and
+   write outside the printed directory. Confirm each returns a `Plan mode is
+   on` block message.
+5. Ask Duckwork to write a plan using a **relative** path. Confirm it is blocked
+   and tells the model to use an absolute path.
+6. Ask Duckwork to write
+   `<absolute-plans-dir>/YYYY-MM-DD_HHMMSS-hello-world.md`. Confirm it succeeds.
+7. Run `/planmode status`; confirm the entry time, directory, and plan path.
+8. Run `/planmode reject add rollback details`, then send a normal turn.
+   Confirm the rejection note appears once and plan mode remains active.
+9. Run `/planmode approve`, then send a normal turn. Confirm the approval note
+   appears once and implementation tools are unblocked.
+10. Re-enter plan mode and run `/new` or `/reset`. Confirm plan mode is cleared
+    for the replacement session (gateway: run one turn first; see the README).
+11. In TUI/Desktop, enter plan mode, trigger `/compress`, then repeat a blocked
+    terminal call. It must remain blocked after the durable session key rotates.
+12. Create a second chat in the same workspace and write a lexically later plan
+    there. Back in the first chat, run `/planmode approve`; confirm it approves
+    only the first chat's newest plan. Repeat with `/planmode approve <file>`.
+13. Enter plan mode and call `skill_view` with the default profile config
+    (`skills.inline_shell` unset or `false`); confirm it is allowed. Set
+    `skills.inline_shell: true` in the disposable profile's `config.yaml`, call
+    `skill_view` again, and confirm it is blocked with a message naming
+    `skills.inline_shell`.
+
+Agent tool (`plan_mode`), on the CLI, the TUI and a gateway chat (Telegram):
+
+14. With plan mode off, ask "write a plan for a hello-world script before doing
+    it". Confirm the agent calls `plan_mode` with `action="on"`, then a
+    `write_file` outside the plans directory and a `terminal` call are blocked,
+    and a plan write under the plans directory succeeds.
+15. Before it submits, ask the agent to drop the plan; confirm
+    `plan_mode(action="off")` succeeds (the plan file stays). After a submit,
+    the same call must be refused: a submitted plan belongs to the user.
+16. Run `/planmode on` yourself, then ask the agent to turn plan mode off.
+    Confirm the tool refuses with `Plan mode was entered by the user; only
+    /planmode approve, reject or off can end it.` and enforcement stays on.
+17. Ask the agent to approve its own plan. Confirm it cannot: the tool offers
+    `on`, `status`, `off` and `submit`, and `submit` only asks you.
+18. In TUI/Desktop, after the agent enters plan mode, run `/planmode status`
+    in the same tab; it must report `Plan mode: on`.
+19. On Telegram, confirm typing `/planmode` works even if the bot menu hides it;
+    with `platforms.telegram.extra.command_menu.priority: [planmode]` it shows.
+
+Plan approval (v0.3), on the CLI, the TUI/Desktop and a gateway chat:
+
+20. Run `/plan add a hello-world script` (core `/plan`). Confirm a `terminal`
+    call is blocked in that first turn, and the agent writes
+    `<plans-dir>/YYYY-MM-DD_HHMMSS-<slug>.md` with the timestamp from the note.
+21. Confirm the agent shows the full plan in its reply, then Duckwork' approval
+    prompt appears with `Plan rev 1`: one line on the CLI and TUI/Desktop
+    (with the choices fully visible), the full plan on text platforms (capped
+    at 1000 chars on WhatsApp Cloud, with a note giving the full-plan path),
+    a short summary on Telegram, Slack and Discord.
+22. Deny. Confirm plan mode stays on, the agent asks what to change (or uses
+    the gateway `/deny <reason>` text), revises and submits `Plan rev 2`.
+23. Edit the plan file by hand while the prompt is open, then approve. Confirm
+    the approval is refused as stale and the agent resubmits.
+24. Approve. Confirm plan mode turns off in the same turn, the agent fills
+    `todo_list`, `/planmode status` reports `executing (rev N: <path>)`, and on
+    a chat platform short replies end with `Plan progress n/m`. When every todo
+    is completed, status reports `Phase: off`.
+25. With `approvals.mode: off` (or yolo), submit again. Confirm plan mode stays
+    on and the agent asks you to run `/planmode approve`.
+26. Let a prompt time out (`approvals.timeout`). Confirm `/planmode approve`
+    approves the submitted revision and `/planmode show` prints it.
+
+CLI compression check: enter plan mode, trigger or wait for compression, then
+repeat a blocked terminal call. It must remain blocked because CLI state is
+keyed by process, not the rotating `session_id`.
+
+Do not use Codex app-server for this test. Its native `exec` and `applyPatch`
+bypass Duckwork `pre_tool_call`, as documented in the README.

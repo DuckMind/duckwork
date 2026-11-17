@@ -1,0 +1,87 @@
+name: release
+
+# Maintainer pushes a tag `v<plugin.yaml version>` (e.g. `v0.4.0`) to cut a
+# release. The job fails closed unless the tag matches plugin.yaml, so a
+# mistyped tag can never publish a mismatched release. Uses pip, not uv:
+# three tiny installs, no lockfile — a new toolchain buys nothing here.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+
+      - name: Tag must match plugin.yaml version
+        run: |
+          plugin_version="v$(grep '^version:' plugin.yaml | awk '{print $2}')"
+          if [ "$plugin_version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME != plugin.yaml $plugin_version"
+            exit 1
+          fi
+          echo "releasing $GITHUB_REF_NAME (matches plugin.yaml)"
+
+      - name: Tagged commit must be on master with passing checks
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The ruleset requires a pull request plus a passing CodeQL check
+          # before anything reaches master (ruleset 20960311; it grants no
+          # bypass actor, so this holds for admins too). Requiring the tagged
+          # commit to be an ancestor of origin/master therefore guarantees it
+          # was merged and validated — a broken/unmerged commit cannot be
+          # tagged and published.
+          git fetch origin master
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/master; then
+            echo "::error::tagged commit $GITHUB_SHA is not on origin/master"
+            exit 1
+          fi
+          echo "$GITHUB_SHA is on origin/master (required checks passed at merge)"
+
+      - name: Quick gates (no Duckwork install needed)
+        run: |
+          python -m py_compile __init__.py checks.py constants.py
+          pip install "pyyaml==6.0.3"
+          python tools/check_no_mutation.py --selftest
+          python tools/check_no_mutation.py
+          python tools/check_self_claim.py
+          python tools/check_skill_version_bump.py
+          python tools/test_skill_counts.py
+          python tools/check_version_consistency.py
+
+      - name: Every tag has a changelog section
+        # Read-only guard, deliberately NOT a generator. The section is written
+        # by `gen_changelog.py --upcoming` in the version-bump PR, so it is
+        # reviewed and CI-validated before the tag exists. Generating here
+        # instead (the previous behaviour) produced a commit that could only be
+        # pushed to a side branch: master takes no direct push, a
+        # GITHUB_TOKEN-created PR triggers no workflows so its required CodeQL
+        # check never reports, and this repo has no PAT or App token to open one
+        # that would. Every release therefore stranded its section and
+        # CHANGELOG.md fell one version behind — v0.7.1 shipped that way. This
+        # step fails the release closed if a section is missing.
+        run: python tools/gen_changelog.py --check
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes

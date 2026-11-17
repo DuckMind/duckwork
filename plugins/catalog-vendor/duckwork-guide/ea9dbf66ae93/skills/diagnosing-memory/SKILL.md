@@ -1,0 +1,140 @@
+---
+name: diagnosing-memory
+description: "Diagnose Duckwork memory problems — the agent forgot something, an external memory provider configured but silently unavailable, missing provider plugins or API keys, and built-in MEMORY.md/USER.md errors from config or char limits."
+version: 1.2.8
+metadata:
+  duckwork:
+    tags: [duckwork, memory, providers, troubleshooting, diagnosing]
+    related_skills: [duckwork-configuration-guide, diagnosing-plugins, diagnosing-path]
+---
+
+# Diagnosing Memory
+
+Goal: reduce any "it forgot what I told it" / "my memories are gone" / memory-provider failure to one concrete fix — a config field, an env var, a plugin install, or a session restart.
+
+> **Disambiguation**: if a model provider is configured but silently unavailable (not a memory issue), see `diagnosing-providers`.
+
+> [!WARNING]
+> **Duckwork memory has two independent layers, and the external one fails silently.** Built-in memory (`MEMORY.md` / `USER.md`) is always active. At most one external provider can be active; if it is unavailable, **external memory is disabled for that session and built-in memory answers instead** — the agent does not announce this. "My mem0 memories are gone" usually means "mem0 was unavailable; built-in answered."
+
+## 1. How memory resolves
+
+| Layer | Files / source | Controlled by |
+|---|---|---|
+| **Built-in** (always available) | `$DUCKWORK_HOME/memories/MEMORY.md` (agent notes) + `USER.md` (user profile) | `memory.memory_enabled`, `memory.user_profile_enabled` in `config.yaml` |
+| **External provider** (opt-in, one at a time) | plugin at `$DUCKWORK_HOME/plugins/memory/<name>/` + pip deps in the install's dependency environment (PM-era: `$DUCKWORK_HOME/installs`; older checkouts: the in-tree venv) + secrets in `$DUCKWORK_HOME/.env` | `memory.provider:` in `config.yaml` (empty string = built-in only) |
+
+The `provider:` comment in `config.yaml` lists the one-at-a-time set — but since 2026-10 only **`retaindb`** and **`byterover`** still ship bundled; `openviking`, `mem0`, `holographic`, `honcho`, and `supermemory` all moved to catalog plugins (install first: `duckwork plugins install <name>`, e.g. `hindsight` made the same bundled → catalog move in 2026-09) — and that list is **not exhaustive**. Providers shipped as optional skills/plugins (e.g. `honcho`, from `optional-skills/autonomous-ai-agents/honcho`, pip `honcho-ai`) install the same way and show up in the installed-plugins list of `duckwork memory status`. Trust that list over any comment.
+
+A provider is *available* only when all four hold: plugin installed, its pip dependencies importable in the install's dependency environment (PM-era: `$DUCKWORK_HOME/installs`; older checkouts: the in-tree venv), its env vars set, and its `is_available()` check passing. Any one missing → silent fallback to built-in (see the warning above).
+
+> [!IMPORTANT]
+> **Built-in memory is a frozen snapshot.** `MEMORY.md`/`USER.md` are injected into the system prompt once at session start. Mid-session saves hit disk immediately but do **not** update the current session's prompt — this is by design (it keeps the prompt cache stable). "It forgot what I just told it" is usually this, not a bug: the write landed and appears next session. Verify with a file read before diagnosing further.
+
+## 2. How to inspect
+
+Probe in this order — the first two are built-in helpers and answer most cases:
+
+1. **`duckwork memory status`** — the authoritative check. Real example (a machine with `honcho` selected but no API key):
+
+   ```
+   Memory status
+   ────────────────────────────────────────
+     Built-in (MEMORY.md / USER.md):
+       Memory injection:   enabled ✓
+       User profile:       enabled ✓
+       Memory tool:        enabled ✓
+     Provider:  honcho
+     Plugin:    installed ✓
+     Status:    not available ✗
+     Missing:
+       ✗ HONCHO_API_KEY  → https://app.honcho.dev
+   ```
+
+   A trailing `Note:` line (quoted verbatim in the tool's output) explains that systemd/gateway services do not inherit the profile `.env` secrets file — set any listed variables in the service environment itself (see the gateway/systemd row in §3).
+
+   Read it line by line: the three built-in lines confirm the stores and the `memory` tool are on; `Provider:` shows what `memory.provider` is set to; `Plugin:` / `Status:` / `Missing:` are the three failure points in order (plugin file → pip deps → env vars). The installed-plugins list at the bottom is the ground truth for provider names — the `duckwork memory --help` string is not kept in sync with it.
+
+2. **`duckwork doctor`** — its "Memory Provider" section probes the active provider deeper (config file, API key, live connect, `ImportError` on the provider package). Run it after `memory status` points at a layer.
+
+3. **Config + files** — read the `memory:` block of `$DUCKWORK_HOME/config.yaml` (or `duckwork config show`), and `ls "$DUCKWORK_HOME/memories/"`. On native Windows `$DUCKWORK_HOME` is `%LOCALAPPDATA%\duckwork` — confirm with `duckwork config path`, never assume.
+
+4. **Session log** — a provider selected but unavailable logs a one-shot warning at agent start (wording varies by version; look for a line naming the provider and saying external memory is disabled for the session): `duckwork logs --follow` while starting a session. The gate that produces it is the external-provider block in `agent/system_prompt.py`.
+
+5. **`duckwork guide memories`** (or `/duckwork-doctor memories` in-session) — this plugin's read-only hygiene audit of the built-in stores: over-limit files, exact/near-duplicate entries, user-profile facts mis-targeted into `MEMORY.md`, and undated dynamic entries. It reports content-level findings that `duckwork memory status` does not look at.
+
+## 3. Pitfalls (symptom → cause → fix)
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Agent forgot something said mid-session | Frozen snapshot by design (see §1) | **Temporary:** start a new session (it picks the write up). **Permanent:** none — this is intended. Verify the write landed in `$DUCKWORK_HOME/memories/MEMORY.md` first |
+| External provider "not available ✗", missing env var listed | Secret absent from `$DUCKWORK_HOME/.env` | **Temporary:** none needed — built-in memory is already carrying the running session (the fallback happened at session start). **Permanent:** add the var to `.env` (and to the service environment for gateway/systemd) via `duckwork memory setup <provider>`; alternatively `duckwork memory off` to stop future external-provider attempts — it takes effect for **subsequently started** sessions, not the current one. Keep secrets out of `config.yaml` |
+| Provider works in terminal, not in gateway/systemd | Services do not inherit `$DUCKWORK_HOME/.env` | Set the provider's env vars in the service environment itself |
+| `duckwork memory status`: "Plugin: NOT installed ✗" | `memory.provider` names a provider with no plugin under `$DUCKWORK_HOME/plugins/memory/` | Install the provider plugin (hub: `duckwork plugins install …`), or `duckwork memory off` to go built-in-only |
+| `duckwork doctor`: "honcho-ai not installed" / "mem0ai not installed" | dependency-environment resync stripped provider pip deps (PM-era: `$DUCKWORK_HOME/installs`; older checkouts: the in-tree venv) | Re-run `duckwork memory setup <provider>` (force-reinstalls its deps) or `duckwork update` |
+| Hindsight local mode fails to import | local mode needs `hindsight-all`, not `hindsight-client` | `duckwork memory setup hindsight` after setting `mode: local` in `hindsight/config.json` |
+| Memory tool missing from the tool schema | Both stores disabled: `memory.memory_enabled: false` **and** `memory.user_profile_enabled: false` | Re-enable one in `config.yaml`; both off removes the tool entirely |
+| Writes rejected: "…would exceed the limit. Consolidate now…" | Char limits are hard caps (defaults 2200 / 1375 chars) — there is no auto-compaction | **Temporary:** consolidate/dedupe in the same turn. **Permanent:** raise `memory.memory_char_limit` deliberately, or keep entries dated (`[YYYY-MM-DD] …`) so consolidation stays cheap |
+| Writes silently staged, never saved | `memory.write_approval: true` stages writes for review | Approve via `/memory approve` in-session, or set `write_approval: false` |
+| Hygiene check flags "no entry has a [YYYY-MM-DD] date prefix" | Entries carry no dates, so staleness is uncheckable — the `memories` scope of `duckwork guide` reports undated entries as notes | Date new entries `[YYYY-MM-DD] …` where staleness matters; undated entries are a note, not an error |
+| Provider config edits ignored | Active-provider name mismatch, or edits made to the wrong profile's home | `duckwork config path` to confirm the active home/profile; one provider at a time — `memory.provider` is a single string |
+| Memory "disappeared" after profile work | `DUCKWORK_HOME` unset while a non-default profile is active → files written to the wrong home | Set `DUCKWORK_HOME` explicitly for profile work; watch for the `[DUCKWORK_HOME fallback]` stderr warning |
+
+Two name traps that are **not** this surface:
+
+- `context.memory_trim` is **process-heap release** for long-lived gateway processes (Linux/glibc only) — nothing to do with `MEMORY.md`.
+- `duckwork memory-graph` is an alias of `duckwork journey` (learned-skills/memory timeline viewer), not a memory provider.
+
+## 4. The `memory:` config block
+
+| Key | Default | Meaning |
+|---|---|---|
+| `provider` | `""` | Active external provider; empty = built-in only; `duckwork memory off` sets this |
+| `memory_enabled` | `true` | Agent-notes store (`MEMORY.md`) |
+| `user_profile_enabled` | `true` | User-profile store (`USER.md`) |
+| `memory_char_limit` | `2200` | Hard cap in characters of the decoded file (`len(text)`) — not bytes, not tokens |
+| `user_char_limit` | `1375` | Hard cap in characters of the decoded file (`len(text)`) — not bytes, not tokens |
+| `nudge_interval` | `10` | Memory-save nudge every N user turns; `0` = off |
+| `write_approval` | `false` | Stage writes for `/memory approve` instead of saving |
+
+Duckwork configuration is **YAML** — edit `config.yaml`, never JSON syntax.
+
+## 5. Apply and verify
+
+There is no `/reload-memory`: built-in memory is snapshotted at session start, so **restart the session** after any config/`.env`/plugin fix. Then confirm with `duckwork memory status` (all lines ✓, or provider lines as intended) and, for built-in, ask the agent to remember something and check the file changed on disk.
+
+> [!CAUTION]
+> `duckwork memory reset` **erases** `$DUCKWORK_HOME/memories/MEMORY.md` and/or `USER.md` irreversibly (`--target all|memory|user`, confirmation prompt, `--yes` skips it). It resets built-in memory only — it does not touch external providers.
+
+## 6. The session database (`state.db`) — size and compaction
+
+The session *log* (`$DUCKWORK_HOME/state.db`, SQLite) grows independently of both
+memory stores — a 900+ MB database or a large WAL is not a memory problem. Full
+procedure (table map, compaction canary, integrity queries, prune/archive/
+optimize sequence): `references/state_db.md`.
+
+## Report
+
+This skill diagnoses memory problems — the agent forgot something, an external memory provider configured but silently unavailable, missing provider plugins or API keys, and built-in MEMORY.md/USER.md errors. When you run the diagnostic workflow, present findings in the standard format below.
+
+### Summary
+Your external memory provider (honcho) is not available because the API key is missing from `.env`. The provider is selected in config but silently falls back to built-in memory, so your honcho memories appear "gone."
+
+### Findings
+| Severity | What | Evidence |
+|---|---|---|
+| HIGH | HONCHO_API_KEY missing from `.env` | `duckwork memory status` shows `Status: not available ✗` with `Missing: ✗ HONCHO_API_KEY → https://app.honcho.dev` |
+| MEDIUM | External memory disabled for session | Log at session start: `honcho unavailable; external memory disabled for this session` |
+
+### Recommended Fix
+Add `HONCHO_API_KEY=<your-key>` to `$DUCKWORK_HOME/.env`, then restart the session. Verify with `duckwork memory status` — the provider should show `Status: available ✓`. If the provider plugin is also missing, run `duckwork memory setup honcho` first.
+
+### References
+- `$DUCKWORK_HOME/.env` — the missing API key
+- `$DUCKWORK_HOME/config.yaml` — `memory.provider: honcho`
+- `agent/system_prompt.py` — external-provider gate
+- `tools/memory_tool_store.py` — memory store limits
+
+---
+
+*Facts re-verified 2026-09-14 against upstream source at commit `46a0daee58abbc1b07f84f505a5ba90f1958295c`: `tools/memory_tool_store.py` (limits + rejection text), `duckwork_cli/config_defaults.py` (the `memory:` block and its provider comment), `agent/memory_provider.py` (plugin path), `agent/system_prompt.py` (the external-provider gate), `duckwork_cli/mem_trim.py` (`context.memory_trim`), `duckwork_cli/subcommands/journey.py` (`memory-graph` alias), plus `optional-skills/autonomous-ai-agents/honcho/` for the provider-list note; provider comment re-verified 2026-09-29 at `5000e2993` (`hindsight` is now catalog-installed). Re-checked 2026-10-12 against upstream main (`53bc70c5`): only `retaindb` + `byterover` remain bundled under `plugins/memory/` — `openviking`, `mem0`, `holographic`, `honcho`, `supermemory` are catalog plugins. Re-verify before reuse.*

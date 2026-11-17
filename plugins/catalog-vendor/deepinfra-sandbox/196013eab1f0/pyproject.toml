@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepinfra-duckwork-sandbox"
+version = "0.1.0"
+description = "DeepInfra cloud sandbox (deep_sands) terminal backend plugin for duckwork-agent"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "DeepInfra" }]
+dependencies = [
+    "deepinfra>=0.3,<0.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+"DeepInfra Sandboxes docs" = "https://docs.deepinfra.com/sandboxes/overview"
+
+[project.entry-points."duckwork_agent.plugins"]
+# The plugin/enable-name is "deepinfra-sandbox", not "deepinfra" -- duckwork-agent
+# already bundles two unrelated plugins named bare "deepinfra" (image_gen and
+# video_gen backends), and `duckwork plugins enable <name>`'s exact-match
+# resolution (duckwork_cli/plugins_cmd.py:_resolve_plugin_key) takes the first
+# entry matching the bare name without checking for uniqueness -- so reusing
+# "deepinfra" here would make `duckwork plugins enable deepinfra` silently
+# enable one of those instead of this plugin. DeepInfraProvider.name (the
+# terminal.backend value) is unaffected -- it's a different registry/namespace.
+deepinfra-sandbox = "deepinfra_duckwork_sandbox"
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1"]
+
+[tool.setuptools.packages.find]
+include = ["deepinfra_duckwork_sandbox*"]

@@ -1,0 +1,20 @@
+[project]
+name = "duckwork-custodian-plugin"
+version = "3.0.1"
+description = "Operational monitoring, auto-repair, and escalation for Duckwork"
+authors = [{name = "Indigo Karasu", email = "mx.indigo.karasu@gmail.com"}]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.entry-points."duckwork_agent.plugins"]
+custodian = "duckwork_custodian_plugin"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["duckwork_custodian_plugin*"]

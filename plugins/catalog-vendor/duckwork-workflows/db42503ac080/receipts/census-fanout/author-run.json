@@ -1,0 +1,43 @@
+{
+  "template": "census-fanout",
+  "receipt_kind": "author-run",
+  "status": "pass",
+  "from": "author estate (this PR's author), laps executed at the seat with the engine's own door API",
+  "template_bytes": {
+    "sha256": "ef8a99b52b601c8f5fa9495f5ce290a15437371792820c4957da96399b914538",
+    "source_digest": "d3c8a778ebfdea817f29d864f8600d86ed90fcceba42d6d07957ee901bdd7ffb"
+  },
+  "gates_at_bytes": {
+    "validate_graph": "[]",
+    "example_gate": "22 checks passed (test_example_census_fanout.py)",
+    "packaging": "ALL PASS",
+    "validate_0923": "ALL PASS (53 graphs)",
+    "make_public_scrub": "0 hits",
+    "plugins_validate": "passed"
+  },
+  "laps": [
+    {
+      "lap": "honest",
+      "run_id": "20261002-212422-core10-a-census-honest",
+      "setup": "all five roster items dispatched to real children (each ran its stock command with its own terminal tool)",
+      "observations": {
+        "audit": "done; five child rows {item, observed, ok}; battery-gauge answered observed=NO_GAUGE_FOUND ok=false — the designed dead gauge reported honestly as dead",
+        "tally": "done; computed from audit.all_results vs census-roster.master: dispatched 5, committed 5, missing []; rows carry item/state/evidence; verdict '4 ok / 1 failed(battery-gauge: NO_GAUGE_FOUND) / 0 missing — not a clean census'",
+        "report": "done; honest_statement names all four ok rows with their verbatim observations AND the failed row with its evidence; states the census 'stands as 4 ok / 1 failed / 0 missing and must not be read as' clean — the red row is loud, never silently green",
+        "terminal": "done"
+      }
+    },
+    {
+      "lap": "severed (silent-loss class)",
+      "run_id": "20261002-213000-core10-a-census-severed",
+      "setup": "battery-gauge removed from the machine record ENTIRELY before the tally ever read it (child node record deleted, audit items + all_results rows stripped, tally/report nodes rewound, run resumed replay-skip) — the not-dispatched/no-status/no-error shape, not failed-with-evidence",
+      "observations": {
+        "tally": "done; dispatched 4, committed 4, missing ['battery-gauge'] NAMED from the record; verdict '4 ok / 0 failed / 1 missing(battery-gauge: never appears in the record — not dispatched, no status, no error to quote) — not a clean census'",
+        "report": "done; honest_statement states dispatched/committed from the record, quotes the four committed rows, and names battery-gauge's absence with why (no entry in all_results carries it); after_partial on report kept it live over a rewound ancestor",
+        "terminal": "done"
+      },
+      "fixture_lesson": "first sever attempt was a fixture bug: all_results rows key 'item' as the item dict payload, so a bare-name filter severed nothing and the tally faithfully reported a whole roster — the fixture, not the template, had to be fixed before the law could be tested"
+    }
+  ],
+  "verdict": "PASS — the deterministic-tally law holds both directions: a dead gauge is a loud red row, and a lost child is a named missing row; the report computes from the machine record, never from prose, and cannot darken silently."
+}

@@ -1,0 +1,12 @@
+# Keep the workflow actions (pinned to commit SHAs) current. The plugin itself has
+# no runtime dependencies, so there is nothing else to update here.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+    labels:
+      - dependencies

@@ -1,0 +1,224 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: heartbeat2
+version: "0.2.1"
+description: >-
+  HeartBeat 2.0: bounded wakes and watchers in the conversation that armed them. Disclosure — wakes and watchers run full turns on the conversation's own model,
+  billed like any message; command probes run allowlisted read-only commands without
+  an approval prompt; url probes make GET requests you configured; state stays in the
+  profile's plugin-data; no telemetry.
+
+  The argv guard is not a sandbox: allowlisted programs and local configuration
+  must be trusted and read-only. Model wake turns retain the conversation's tools
+  and permissions. GET requests include the configured URL, including its query;
+  URL userinfo, cookies, Authorization headers and ambient proxies are refused or
+  unused by the probe. Command probes use Duckwork' sanitizer on an allowlisted
+  environment, without provider, bot or GitHub tokens; gh uses its own hosts.yml
+  or keyring. URL probes always block cloud metadata and block private/local
+  addresses unless url_allow_private is enabled, checking each hop at connect
+  time. File probes honor Duckwork read blocks at arm/update and every check,
+  including rotation. Helpers run in the watcher's profile scope. Existing git/gh
+  credentials and remote configuration can be used by command probes.
+  gh -R HOST/... and git ls-remote <url> can reach any host the machine can reach.
+  The plugin adds no telemetry; Duckwork, model providers
+  and configured endpoints retain their own data handling.
+author: Electric Sheep
+manifest_version: 2
+api_version: 1
+kind: standalone
+requires_duckwork: ">=0.21.6"
+license: Apache-2.0
+homepage: https://github.com/electricsheephq/heartbeat2
+config_schema:
+  enabled:
+    type: bool
+    default: true
+    label: "Enabled"
+    description: "Master switch for wakes and watchers in this profile."
+  agent_can_create:
+    type: str
+    default: "yes"
+    label: "Agent can arm wakes"
+    description: "yes · ask_first (the agent's wakes wait for `/pulse ok <id>`) · no"
+    choices: ["yes", "ask_first", "no"]
+  dm_only:
+    type: bool
+    default: true
+    label: "Direct messages only"
+    description: "Refuse group chats. Unknown chat types are refused too."
+  timezone:
+    type: str
+    default: ""
+    label: "Time zone"
+    description: "IANA name such as Europe/Paris. Blank uses the profile's time zone."
+  quiet_hours:
+    type: str
+    default: "22:00-08:00"
+    label: "Quiet hours"
+    description: "HH:MM-HH:MM, may cross midnight; blank for none. Due one-shots wait until the end; recurring ticks inside are skipped."
+  quiet_hours_urgent:
+    type: bool
+    default: false
+    label: "Urgent wakes ignore quiet hours"
+    description: "Let wakes marked urgent through quiet hours."
+  max_model_wakes_per_day:
+    type: int
+    default: 24
+    label: "Wake turns per day"
+    description: "Per chat, local day. Each wake turn is a full model turn."
+  max_messages_per_day:
+    type: int
+    default: 6
+    label: "Wake messages per day"
+    description: "Per chat, local day."
+  max_unanswered:
+    type: int
+    default: 2
+    label: "Unanswered messages before mute"
+    description: "Wakes you armed always fire; agent watchers wait for your reply; agent reminders are dropped."
+  min_interval_minutes:
+    type: int
+    default: 15
+    label: "Shortest repeat (minutes)"
+    description: "Floor for every recurring time wake. Maximum 525600 (one year)."
+  agent_ungated_floor_minutes:
+    type: int
+    default: 55
+    label: "Shortest agent timer without a watcher (minutes)"
+    description: "Floor for recurring timers the agent arms without a watcher. Maximum 525600 (one year)."
+  wake_spacing_minutes:
+    type: int
+    default: 10
+    label: "Minutes between wake turns"
+    description: "Per chat."
+  probe_floor_seconds:
+    type: int
+    default: 60
+    label: "Fastest watcher check (seconds)"
+    description: "Watchers never check more often than this. Maximum 604800 (one week)."
+  max_active:
+    type: int
+    default: 10
+    label: "Active wakes per chat"
+    description: "Also capped at 50 across the profile."
+  max_lifetime_days:
+    type: int
+    default: 14
+    label: "Longest lifetime (days)"
+    description: "Recurring wakes, watchers and agent follow-ups expire by then; agent recurring wakes default to 7 days. Maximum 3650 (ten years)."
+  max_reminder_days:
+    type: int
+    default: 365
+    label: "Longest owner one-time reminder (days)"
+    description: "Owner-requested one-time reminders expire by then. Maximum 3650 (ten years)."
+  owner_silent_checkin:
+    type: bool
+    default: false
+    label: "Check in after a long silence"
+    description: "Off by default. One check-in per silence, with how to turn it off."
+  checkin_after_hours:
+    type: int
+    default: 24
+    label: "Silence before a check-in (hours)"
+    description: "Doubles for the next silence if a check-in is ignored. Maximum 8760 (one year)."
+  max_rearm_chain:
+    type: int
+    default: 2
+    label: "Wake-from-wake depth"
+    description: "How many wakes deep a chain armed inside wake turns may go; a message from you resets it."
+  noop_slowdown_after:
+    type: int
+    default: 3
+    label: "Empty fires before slowing down"
+    description: "A recurring wake that keeps finding nothing doubles its interval after this many."
+  noop_backoff_factor:
+    type: int
+    default: 2
+    label: "Slow-down multiplier"
+    description: "How much each slow-down stretches the interval. Maximum 100."
+  noop_max_backoff_hours:
+    type: int
+    default: 24
+    label: "Longest slowed interval (hours)"
+    description: "Slowing down stops at this interval. Maximum 8760 (one year)."
+  suggest_gate_after:
+    type: int
+    default: 4
+    label: "Empty fires before suggesting a watcher"
+    description: "The wake text suggests turning the timer into a watcher."
+  noop_pause_after:
+    type: int
+    default: 6
+    label: "Empty fires before pausing"
+    description: "Pauses the wake and asks you once: keep, slow, stop or watch."
+  ignored_pause_after:
+    type: int
+    default: 3
+    label: "Ignored messages before pausing"
+    description: "Delivered messages with no reply in the engagement window."
+  error_pause_after:
+    type: int
+    default: 5
+    label: "Errors in a row before pausing"
+    description: "Pause a wake after this many consecutive errors and ask you how to proceed."
+  engagement_window_hours:
+    type: int
+    default: 6
+    label: "Reply window (hours)"
+    description: "A reply within this window counts a delivered message as useful."
+  catch_up_hours:
+    type: int
+    default: 6
+    label: "Catch-up window (hours)"
+    description: "A one-shot more than this late after downtime is reported as missed instead of firing."
+  probe_commands:
+    type: str
+    default: "gh pr view, gh pr checks, gh run view, gh run list, git ls-remote, git status, git log"
+    label: "Allowed watcher commands"
+    description: "Comma-separated argv prefixes for command watchers. Blank disables command watchers."
+  source_silence:
+    type: bool
+    default: true
+    label: "Silence check-ins"
+    description: "Turn off to refuse new silence wakes and stop checking existing ones."
+  source_process:
+    type: bool
+    default: true
+    label: "Process watchers"
+    description: "Turn off to refuse new process watchers and stop checking existing ones."
+  source_file:
+    type: bool
+    default: true
+    label: "File watchers"
+    description: "Turn off to refuse new file watchers and stop checking existing ones."
+  source_url:
+    type: bool
+    default: true
+    label: "URL watchers"
+    description: "Turn off to refuse new URL watchers and stop checking existing ones."
+  url_allow_private:
+    type: bool
+    default: false
+    label: "Let URL watchers reach private and local addresses"
+    description: "Allow private and local URL targets (loopback, private ranges). Cloud metadata and the IPv4 link-local range 169.254.0.0/16 stay blocked."
+  source_command:
+    type: bool
+    default: true
+    label: "Command watchers"
+    description: "Turn off to refuse new command watchers and stop checking existing ones."
+  source_events:
+    type: bool
+    default: true
+    label: "Duckwork event watchers"
+    description: "Kanban, subagent, API error and reaction events."
+  presence_line:
+    type: bool
+    default: true
+    label: "Tell the agent what's armed"
+    description: "One short context line on your turns while something is armed."
+  ledger_days:
+    type: int
+    default: 30
+    label: "Ledger history (days)"
+    description: "Keep daily wake counts and cost history for this many days. Maximum 36500 (100 years)."
+provides_tools: [pulse]
+provides_hooks: [pre_gateway_dispatch, gateway_platform_event, pre_llm_call, pre_api_request, post_api_request, transform_llm_output, on_session_end, agent_loop_stopped, on_session_reset, kanban_task_completed, kanban_task_blocked, on_kanban_worker_exited, subagent_stop, api_request_error]

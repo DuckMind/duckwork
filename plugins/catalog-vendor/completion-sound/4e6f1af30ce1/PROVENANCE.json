@@ -1,0 +1,564 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "completion-sound",
+  "content_id": "4e6f1af30ce1",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 14,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97"
+    },
+    {
+      "bytes": 1065,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "0869f701419a3a6be2c526a13357cf84533b446b11b604188fbc67abdaa94840"
+    },
+    {
+      "bytes": 1261,
+      "mode": "100644",
+      "path": "NOTICE",
+      "sha256": "204cffb039f8c77b34bfe104e58a8ea95553b707a8c4508539402f4fc72bb405"
+    },
+    {
+      "bytes": 2669,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "bf35255308c3f879d2f93381ead0435ff4bd06cbdb515509fa233f33fc2b2c35"
+    },
+    {
+      "bytes": 1397,
+      "mode": "100644",
+      "path": "build.mjs",
+      "sha256": "ca74f16498b7b151c310134f711c579096b6f9456ca4667bd0bbc542736ffc83"
+    },
+    {
+      "bytes": 23934,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "e367838267f584402f5e7e425cd13318247ccec91c60abba3503b324f1f89800"
+    },
+    {
+      "bytes": 14515,
+      "mode": "100644",
+      "path": "package-lock.json",
+      "sha256": "505a341fd8cbc22dc0d87c2debc13165c51c9454da88d73ff26de6f65a9d81a6"
+    },
+    {
+      "bytes": 368,
+      "mode": "100644",
+      "path": "package.json",
+      "sha256": "6544bdf5c36a0a49deb9f239272b28656fbc5ce5a4ff297ce7afa4b5002e596e"
+    },
+    {
+      "bytes": 477,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "290f7f9e81ce4387a155ddd11ddbfed12e099b8dc59917b11f2a05912d495323"
+    },
+    {
+      "bytes": 2415,
+      "mode": "100644",
+      "path": "src/messages.js",
+      "sha256": "fd94051b345135d64fec7f9237f06be3c4f22a187fd7003bc010e82d629e493c"
+    },
+    {
+      "bytes": 8745,
+      "mode": "100644",
+      "path": "src/plugin.jsx",
+      "sha256": "c290018ba1dc687e770d60cc1ebb17e8de04f8cfdcaf469669c76a038bb2d0ef"
+    },
+    {
+      "bytes": 1261,
+      "mode": "100644",
+      "path": "src/vendor/audio-context.ts",
+      "sha256": "a45792f665016dcd70a3a70be6636297dd05128767bf31874acb787e1c73004a"
+    },
+    {
+      "bytes": 15390,
+      "mode": "100644",
+      "path": "src/vendor/completion-sound.ts",
+      "sha256": "89a0f09e34de4aa6a818cdf1cf46f06f764fa47f3280c436a360a6ac44492d48"
+    },
+    {
+      "bytes": 164,
+      "mode": "100644",
+      "path": "src/vendor/shims/ambient.js",
+      "sha256": "c81d12656b71476ca9ba3dface328f4712f2ac56bb7655901a7184bced8e5fd7"
+    },
+    {
+      "bytes": 264,
+      "mode": "100644",
+      "path": "src/vendor/shims/completion-store.js",
+      "sha256": "1299c84f8e0140693f502b9f81685e7675c3fc2d73f5e08ce4e7e8bfd30752a4"
+    },
+    {
+      "bytes": 150,
+      "mode": "100644",
+      "path": "src/vendor/shims/haptics.js",
+      "sha256": "3f5b55c9b95fc3210ed57892d07f363406817bf6cdc4a66c40a68551420167b1"
+    }
+  ],
+  "input_manifest_sha256": "4e6f1af30ce1af65fa6960009dc30b6d55d9a78e6df9efb2ac2fba52c28dffb9",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "0869f701419a3a6be2c526a13357cf84533b446b11b604188fbc67abdaa94840",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "NOTICE",
+        "sha256": "204cffb039f8c77b34bfe104e58a8ea95553b707a8c4508539402f4fc72bb405",
+        "source_path": "NOTICE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "build.mjs",
+      "desktop/plugin.js",
+      "package-lock.json",
+      "package.json",
+      "plugin.yaml",
+      "src/messages.js",
+      "src/plugin.jsx"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Zamoca42/hermes-completion-sound",
+    "sha": "160883daf31f7e788f862197cf2bedb7b8715be2",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/Zamoca42/hermes-completion-sound",
+  "original_sha": "160883daf31f7e788f862197cf2bedb7b8715be2",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97",
+      "bytes": 14,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "0869f701419a3a6be2c526a13357cf84533b446b11b604188fbc67abdaa94840",
+      "bytes": 1065,
+      "mode": "100644"
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "204cffb039f8c77b34bfe104e58a8ea95553b707a8c4508539402f4fc72bb405",
+      "bytes": 1261,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "c08c5e7bcff1ef06618b627ae44b5bdec78e386c5bfe62c2d660e7c6fc826d2c",
+      "bytes": 2627,
+      "mode": "100644"
+    },
+    {
+      "path": "build.mjs",
+      "sha256": "e399b95625a95a317face9b78a8187938b45686a46329513065d778e827f5751",
+      "bytes": 1401,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "1367d6036d023d57f5c4446cea8d33220332d4124bf9407036c75db660119dd0",
+      "bytes": 23954,
+      "mode": "100644"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "74d46d2c0217be8fd0d8827349555deb940438cc70a7a59b4ba7ebe557c1ff95",
+      "bytes": 14519,
+      "mode": "100644"
+    },
+    {
+      "path": "package.json",
+      "sha256": "96ed75de1f11cdec387b33e95e3089dc2da10bb2df41600f68da28b5b85050fa",
+      "bytes": 374,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "bfc599f50a1a2dfdc1d5aa929cea97d443a515fd1813b1b73ea831ffb5487f4a",
+      "bytes": 466,
+      "mode": "100644"
+    },
+    {
+      "path": "src/messages.js",
+      "sha256": "0c350319090ddbd582c7db5be4790b3a65f88656d152dd50502ef54b8668aff9",
+      "bytes": 2431,
+      "mode": "100644"
+    },
+    {
+      "path": "src/plugin.jsx",
+      "sha256": "9db9816ef7f1f2ab6c3279e2f674a75eee9eb9500e3081a649b7f394c97a1ad6",
+      "bytes": 8759,
+      "mode": "100644"
+    },
+    {
+      "path": "src/vendor/audio-context.ts",
+      "sha256": "a45792f665016dcd70a3a70be6636297dd05128767bf31874acb787e1c73004a",
+      "bytes": 1261,
+      "mode": "100644"
+    },
+    {
+      "path": "src/vendor/completion-sound.ts",
+      "sha256": "89a0f09e34de4aa6a818cdf1cf46f06f764fa47f3280c436a360a6ac44492d48",
+      "bytes": 15390,
+      "mode": "100644"
+    },
+    {
+      "path": "src/vendor/shims/ambient.js",
+      "sha256": "c81d12656b71476ca9ba3dface328f4712f2ac56bb7655901a7184bced8e5fd7",
+      "bytes": 164,
+      "mode": "100644"
+    },
+    {
+      "path": "src/vendor/shims/completion-store.js",
+      "sha256": "1299c84f8e0140693f502b9f81685e7675c3fc2d73f5e08ce4e7e8bfd30752a4",
+      "bytes": 264,
+      "mode": "100644"
+    },
+    {
+      "path": "src/vendor/shims/haptics.js",
+      "sha256": "3f5b55c9b95fc3210ed57892d07f363406817bf6cdc4a66c40a68551420167b1",
+      "bytes": 150,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "b15c67f91debe9e9e3b89fa8a1ea6b8299001f2e24d83075eaff5cffd42f2987",
+  "pin_verification": {
+    "archive_bytes": 19381,
+    "archive_sha256": "b5e9363fc8b1952970c7dd0db0763c342bc872f2aa7b39da3d2ee0d61cfc714f",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "160883daf31f7e788f862197cf2bedb7b8715be2",
+    "verified_commit_marker": "160883daf31f7e788f862197cf2bedb7b8715be2"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "f565ce2ec95bc7e6bfa4a70803f3ceace03e4aff2a73b812fb054004d8db03dd",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97",
+        "source": ".gitignore",
+        "final_output_sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "0869f701419a3a6be2c526a13357cf84533b446b11b604188fbc67abdaa94840",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "0869f701419a3a6be2c526a13357cf84533b446b11b604188fbc67abdaa94840",
+        "source": "LICENSE",
+        "final_output_sha256": "0869f701419a3a6be2c526a13357cf84533b446b11b604188fbc67abdaa94840",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "0869f701419a3a6be2c526a13357cf84533b446b11b604188fbc67abdaa94840"
+      },
+      {
+        "destination": "NOTICE",
+        "input_sha256": "204cffb039f8c77b34bfe104e58a8ea95553b707a8c4508539402f4fc72bb405",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "204cffb039f8c77b34bfe104e58a8ea95553b707a8c4508539402f4fc72bb405",
+        "source": "NOTICE",
+        "final_output_sha256": "204cffb039f8c77b34bfe104e58a8ea95553b707a8c4508539402f4fc72bb405",
+        "cli_destination": "NOTICE",
+        "previous_staging_sha256": "204cffb039f8c77b34bfe104e58a8ea95553b707a8c4508539402f4fc72bb405"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "bf35255308c3f879d2f93381ead0435ff4bd06cbdb515509fa233f33fc2b2c35",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7a46996f665ddbd0e832510af72060a81193f152fa312bd4080d33f546c5e202",
+        "source": "README.md",
+        "final_output_sha256": "c08c5e7bcff1ef06618b627ae44b5bdec78e386c5bfe62c2d660e7c6fc826d2c",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "7a46996f665ddbd0e832510af72060a81193f152fa312bd4080d33f546c5e202"
+      },
+      {
+        "destination": "build.mjs",
+        "input_sha256": "ca74f16498b7b151c310134f711c579096b6f9456ca4667bd0bbc542736ffc83",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e399b95625a95a317face9b78a8187938b45686a46329513065d778e827f5751",
+        "source": "build.mjs",
+        "final_output_sha256": "e399b95625a95a317face9b78a8187938b45686a46329513065d778e827f5751",
+        "cli_destination": "build.mjs",
+        "previous_staging_sha256": "e399b95625a95a317face9b78a8187938b45686a46329513065d778e827f5751"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "e367838267f584402f5e7e425cd13318247ccec91c60abba3503b324f1f89800",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1367d6036d023d57f5c4446cea8d33220332d4124bf9407036c75db660119dd0",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "1367d6036d023d57f5c4446cea8d33220332d4124bf9407036c75db660119dd0",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "1367d6036d023d57f5c4446cea8d33220332d4124bf9407036c75db660119dd0"
+      },
+      {
+        "destination": "package-lock.json",
+        "input_sha256": "505a341fd8cbc22dc0d87c2debc13165c51c9454da88d73ff26de6f65a9d81a6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "74d46d2c0217be8fd0d8827349555deb940438cc70a7a59b4ba7ebe557c1ff95",
+        "source": "package-lock.json",
+        "final_output_sha256": "74d46d2c0217be8fd0d8827349555deb940438cc70a7a59b4ba7ebe557c1ff95",
+        "cli_destination": "package-lock.json",
+        "previous_staging_sha256": "74d46d2c0217be8fd0d8827349555deb940438cc70a7a59b4ba7ebe557c1ff95"
+      },
+      {
+        "destination": "package.json",
+        "input_sha256": "6544bdf5c36a0a49deb9f239272b28656fbc5ce5a4ff297ce7afa4b5002e596e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "96ed75de1f11cdec387b33e95e3089dc2da10bb2df41600f68da28b5b85050fa",
+        "source": "package.json",
+        "final_output_sha256": "96ed75de1f11cdec387b33e95e3089dc2da10bb2df41600f68da28b5b85050fa",
+        "cli_destination": "package.json",
+        "previous_staging_sha256": "96ed75de1f11cdec387b33e95e3089dc2da10bb2df41600f68da28b5b85050fa"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "290f7f9e81ce4387a155ddd11ddbfed12e099b8dc59917b11f2a05912d495323",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f9a0aaca2cf36c1bcc94709994ba9357de4d2d5a3c3383d00435d5376c766404",
+        "source": "plugin.yaml",
+        "final_output_sha256": "bfc599f50a1a2dfdc1d5aa929cea97d443a515fd1813b1b73ea831ffb5487f4a",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "f9a0aaca2cf36c1bcc94709994ba9357de4d2d5a3c3383d00435d5376c766404"
+      },
+      {
+        "destination": "src/messages.js",
+        "input_sha256": "fd94051b345135d64fec7f9237f06be3c4f22a187fd7003bc010e82d629e493c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c350319090ddbd582c7db5be4790b3a65f88656d152dd50502ef54b8668aff9",
+        "source": "src/messages.js",
+        "final_output_sha256": "0c350319090ddbd582c7db5be4790b3a65f88656d152dd50502ef54b8668aff9",
+        "cli_destination": "src/messages.js",
+        "previous_staging_sha256": "0c350319090ddbd582c7db5be4790b3a65f88656d152dd50502ef54b8668aff9"
+      },
+      {
+        "destination": "src/plugin.jsx",
+        "input_sha256": "c290018ba1dc687e770d60cc1ebb17e8de04f8cfdcaf469669c76a038bb2d0ef",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9db9816ef7f1f2ab6c3279e2f674a75eee9eb9500e3081a649b7f394c97a1ad6",
+        "source": "src/plugin.jsx",
+        "final_output_sha256": "9db9816ef7f1f2ab6c3279e2f674a75eee9eb9500e3081a649b7f394c97a1ad6",
+        "cli_destination": "src/plugin.jsx",
+        "previous_staging_sha256": "9db9816ef7f1f2ab6c3279e2f674a75eee9eb9500e3081a649b7f394c97a1ad6"
+      },
+      {
+        "destination": "src/vendor/audio-context.ts",
+        "input_sha256": "a45792f665016dcd70a3a70be6636297dd05128767bf31874acb787e1c73004a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a45792f665016dcd70a3a70be6636297dd05128767bf31874acb787e1c73004a",
+        "source": "src/vendor/audio-context.ts",
+        "final_output_sha256": "a45792f665016dcd70a3a70be6636297dd05128767bf31874acb787e1c73004a",
+        "cli_destination": "src/vendor/audio-context.ts",
+        "previous_staging_sha256": "a45792f665016dcd70a3a70be6636297dd05128767bf31874acb787e1c73004a"
+      },
+      {
+        "destination": "src/vendor/completion-sound.ts",
+        "input_sha256": "89a0f09e34de4aa6a818cdf1cf46f06f764fa47f3280c436a360a6ac44492d48",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "89a0f09e34de4aa6a818cdf1cf46f06f764fa47f3280c436a360a6ac44492d48",
+        "source": "src/vendor/completion-sound.ts",
+        "final_output_sha256": "89a0f09e34de4aa6a818cdf1cf46f06f764fa47f3280c436a360a6ac44492d48",
+        "cli_destination": "src/vendor/completion-sound.ts",
+        "previous_staging_sha256": "89a0f09e34de4aa6a818cdf1cf46f06f764fa47f3280c436a360a6ac44492d48"
+      },
+      {
+        "destination": "src/vendor/shims/ambient.js",
+        "input_sha256": "c81d12656b71476ca9ba3dface328f4712f2ac56bb7655901a7184bced8e5fd7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c81d12656b71476ca9ba3dface328f4712f2ac56bb7655901a7184bced8e5fd7",
+        "source": "src/vendor/shims/ambient.js",
+        "final_output_sha256": "c81d12656b71476ca9ba3dface328f4712f2ac56bb7655901a7184bced8e5fd7",
+        "cli_destination": "src/vendor/shims/ambient.js",
+        "previous_staging_sha256": "c81d12656b71476ca9ba3dface328f4712f2ac56bb7655901a7184bced8e5fd7"
+      },
+      {
+        "destination": "src/vendor/shims/completion-store.js",
+        "input_sha256": "1299c84f8e0140693f502b9f81685e7675c3fc2d73f5e08ce4e7e8bfd30752a4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1299c84f8e0140693f502b9f81685e7675c3fc2d73f5e08ce4e7e8bfd30752a4",
+        "source": "src/vendor/shims/completion-store.js",
+        "final_output_sha256": "1299c84f8e0140693f502b9f81685e7675c3fc2d73f5e08ce4e7e8bfd30752a4",
+        "cli_destination": "src/vendor/shims/completion-store.js",
+        "previous_staging_sha256": "1299c84f8e0140693f502b9f81685e7675c3fc2d73f5e08ce4e7e8bfd30752a4"
+      },
+      {
+        "destination": "src/vendor/shims/haptics.js",
+        "input_sha256": "3f5b55c9b95fc3210ed57892d07f363406817bf6cdc4a66c40a68551420167b1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3f5b55c9b95fc3210ed57892d07f363406817bf6cdc4a66c40a68551420167b1",
+        "source": "src/vendor/shims/haptics.js",
+        "final_output_sha256": "3f5b55c9b95fc3210ed57892d07f363406817bf6cdc4a66c40a68551420167b1",
+        "cli_destination": "src/vendor/shims/haptics.js",
+        "previous_staging_sha256": "3f5b55c9b95fc3210ed57892d07f363406817bf6cdc4a66c40a68551420167b1"
+      }
+    ],
+    "manifest_sha256": "422482826bd06d2c5478bdda89e05a6e372c45d5da697a184dcb2e61754d3258",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "NOTICE": "NOTICE",
+    "README.md": "README.md",
+    "build.mjs": "build.mjs",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "package-lock.json": "package-lock.json",
+    "package.json": "package.json",
+    "plugin.yaml": "plugin.yaml",
+    "src/messages.js": "src/messages.js",
+    "src/plugin.jsx": "src/plugin.jsx",
+    "src/vendor/audio-context.ts": "src/vendor/audio-context.ts",
+    "src/vendor/completion-sound.ts": "src/vendor/completion-sound.ts",
+    "src/vendor/shims/ambient.js": "src/vendor/shims/ambient.js",
+    "src/vendor/shims/completion-store.js": "src/vendor/shims/completion-store.js",
+    "src/vendor/shims/haptics.js": "src/vendor/shims/haptics.js"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "completion-sound",
+    "python_files_compiled": 0,
+    "secret_findings": 0
+  },
+  "canonical_slug": "completion-sound",
+  "catalog_file": "src/plugin-catalog/completion-sound.yaml",
+  "identity": {
+    "catalog_id": "completion-sound",
+    "canonical_slug": "completion-sound",
+    "original_manifest_name": "completion-sound",
+    "rebranded_manifest_name": "completion-sound",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "aea5c837c3812ad6cb384df86b115d303734a487872dd2470c799beaca815899",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "7a46996f665ddbd0e832510af72060a81193f152fa312bd4080d33f546c5e202",
+          "after_sha256": "c08c5e7bcff1ef06618b627ae44b5bdec78e386c5bfe62c2d660e7c6fc826d2c",
+          "before_bytes": 2689,
+          "after_bytes": 2627,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "f9a0aaca2cf36c1bcc94709994ba9357de4d2d5a3c3383d00435d5376c766404",
+          "after_sha256": "bfc599f50a1a2dfdc1d5aa929cea97d443a515fd1813b1b73ea831ffb5487f4a",
+          "before_bytes": 481,
+          "after_bytes": 466,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "README.md": [
+      {
+        "value": "MIT. Includes code from hermes-agent, Copyright (c) 2025 Nous Research, under the MIT license (`NOTICE`).",
+        "reason": "immutable copyright line"
+      }
+    ],
+    "src/vendor/audio-context.ts": [
+      {
+        "value": "// Vendored from NousResearch/hermes-agent apps/desktop/src/lib/audio-context.ts at d923a5eb48 (MIT, Copyright (c) 2025 Nous Research).",
+        "reason": "immutable copyright line"
+      }
+    ],
+    "src/vendor/completion-sound.ts": [
+      {
+        "value": "// Vendored from NousResearch/hermes-agent apps/desktop/src/lib/completion-sound.ts at d923a5eb48 (MIT, Copyright (c) 2025 Nous Research).",
+        "reason": "immutable copyright line"
+      }
+    ]
+  }
+}

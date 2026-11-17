@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Spectator — a privacy-safe, read-only live view of a host's AI coding session.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f3ede0" media="(prefers-color-scheme: light)">
+<title>Spectator — Live Session</title>
+<style>
+  /* =========================================================================
+     Spectator — Broadcast Studio
+     An observatory for someone else's AI session.
+     One accent (signal amber). No CDN. No build. Respects reduced motion.
+
+     Brand: warm parchment (light) / deep ink (dark), single amber live signal,
+     concentric-arc broadcast mark, editorial serif headlines + monospace data.
+     ========================================================================= */
+
+  /* ---------- Fonts (system stack — no network) ---------- */
+  :root {
+    --font-serif: ui-serif, "Iowan Old Style", "Apple Garamond", "Baskerville",
+                   "Times New Roman", "Droid Serif", "Times", serif;
+    --font-sans:  ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                  "Inter", "Helvetica Neue", Arial, sans-serif;
+    --font-mono:  ui-monospace, "JetBrains Mono", "SF Mono", SFMono-Regular,
+                  Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* DARK — studio control room (default) */
+    --bg:           #0d0f12;
+    --bg-elev:     #14171c;
+    --bg-sunken:   #0a0c0f;
+    --panel:       #161a20;
+    --panel-edge:  #1e2229;
+    --hairline:    #23272f;
+    --hairline-2:  #2a2f38;
+    --ink:         #ece6d8;
+    --ink-soft:    #c9c2b2;
+    --ink-faint:   #989184;
+    --accent:      #f4b75c;   /* signal amber */
+    --accent-ink:  #1c1207;
+    --accent-soft: rgba(244, 183, 92, .12);
+    --ok:          #6dd29a;
+    --warn:        #e7a35a;
+    --danger:      #e57979;
+    --live:        #f4b75c;
+
+    --radius:      14px;
+    --radius-sm:   8px;
+    --radius-pill: 999px;
+    --ease:        cubic-bezier(.2, .7, .2, 1);
+  }
+
+  /* LIGHT — daylight broadcast booth (prefers light) */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:         #f3ede0;
+      --bg-elev:    #ece5d4;
+      --bg-sunken:  #ddd5c1;
+      --panel:      #faf5e9;
+      --panel-edge: #e6dfcc;
+      --hairline:   #d8d0bb;
+      --hairline-2: #c8bfa7;
+      --ink:        #1a1d22;
+      --ink-soft:   #4a4d54;
+      --ink-faint:  #84817a;
+      --accent-ink: #1c1207;
+      --accent-soft: rgba(180, 110, 25, .12);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "ss01", "cv11";
+    min-height: 100dvh;
+    background-image:
+      radial-gradient(900px 480px at 88% -10%, var(--accent-soft), transparent 60%),
+      radial-gradient(1100px 600px at -10% 110%, rgba(120,90,40,.05), transparent 65%);
+    background-attachment: fixed;
+  }
+
+  /* --- film-grain over the whole page for a non-flat premium feel --- */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: .045;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  button, input, textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* High-visibility focus, brand-aligned (amber ring) */
+  :focus { outline: none; }
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  a:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* skip link for keyboard users */
+  .skip {
+    position: absolute; left: -9999px; top: 8px;
+    background: var(--ink); color: var(--bg);
+    padding: 8px 12px; border-radius: 6px;
+    font-weight: 600; z-index: 10;
+  }
+  .skip:focus { left: 8px; }
+
+  /* ==================  LAYOUT  ================== */
+  .shell {
+    position: relative;
+    z-index: 1;
+    width: min(1320px, 100%);
+    margin: 0 auto;
+    padding: 28px clamp(16px, 4vw, 40px) 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ==================  HEADER  ================== */
+  header.top {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: clamp(16px, 3vw, 36px);
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+  .mark {
+    width: 44px; height: 44px;
+    flex: 0 0 auto;
+    position: relative;
+    display: grid; place-items: center;
+  }
+  .mark svg { width: 100%; height: 100%; display: block; }
+  .mark .pulse {
+    transform-origin: 50% 50%;
+    animation: ring 3.2s var(--ease) infinite;
+  }
+  @keyframes ring {
+    0%   { transform: scale(.85); opacity: .9; }
+    70%  { transform: scale(1.15); opacity: 0; }
+    100% { transform: scale(1.15); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mark .pulse { animation: none; opacity: .6; }
+  }
+
+  .brand .name {
+    font-family: var(--font-serif);
+    font-size: 1.45rem;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .brand .name em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .brand .tag {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .22em;
+    color: var(--ink-faint);
+  }
+
+  .session-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding-left: clamp(0px, 2vw, 12px);
+    border-left: 1px solid var(--hairline);
+  }
+  #session-meta {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: .92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #branch-meta {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #branch-meta::before {
+    content: "⌥ ";
+    color: var(--accent);
+  }
+
+  /* connection pill */
+  .connection {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--hairline-2);
+    border-radius: var(--radius-pill);
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    white-space: nowrap;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    position: relative;
+    flex: 0 0 auto;
+  }
+  .dot.live {
+    background: var(--live);
+    box-shadow: 0 0 0 0 var(--live);
+    animation: livepulse 1.6s var(--ease) infinite;
+  }
+  @keyframes livepulse {
+    0%   { box-shadow: 0 0 0 0 rgba(244,183,92,.45); }
+    70%  { box-shadow: 0 0 0 10px rgba(244,183,92,0); }
+    100% { box-shadow: 0 0 0 0 rgba(244,183,92,0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dot.live { animation: none; }
+  }
+
+  /* ==================  BANNER / NOTICE  ================== */
+  #notice {
+    margin: 0;
+    padding: 14px 18px;
+    border: 1px solid var(--hairline-2);
+    border-left: 3px solid var(--danger);
+    background: var(--bg-elev);
+    color: var(--ink);
+    border-radius: var(--radius-sm);
+    font-size: .92rem;
+  }
+  #notice[hidden] { display: none; }
+
+  /* ==================  WORKSPACE GRID  ================== */
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "stream  summary"
+      "query   query";
+    gap: 20px;
+  }
+  #live-stream     { grid-area: stream;  }
+  #summary-entries { grid-area: summary; }
+  #branch-query    { grid-area: query;   }
+
+  /* ==================  PANEL  ================== */
+  .panel {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.02) inset,
+      0 24px 60px -36px rgba(0,0,0,.55);
+  }
+  .panel::before {
+    content: "";
+    position: absolute; left: 0; right: 0; top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
+    opacity: .6;
+  }
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .panel-head h2 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .panel-head .panel-note {
+    margin: 4px 0 0;
+    font-size: .82rem;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+  .panel-head .kicker {
+    font-family: var(--font-mono);
+    font-size: .66rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  /* ==================  SCROLL REGIONS (feed)  ================== */
+  .scroll-region {
+    height: 460px;
+    overflow-y: auto;
+    padding: 6px 0;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--hairline-2) transparent;
+  }
+  .scroll-region::-webkit-scrollbar { width: 8px; }
+  .scroll-region::-webkit-scrollbar-track { background: transparent; }
+  .scroll-region::-webkit-scrollbar-thumb {
+    background: var(--hairline-2);
+    border-radius: 4px;
+  }
+
+  /* feed entries */
+  .entry {
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--hairline);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 16px;
+    align-items: baseline;
+    transition: background .25s var(--ease);
+  }
+  .entry:hover { background: var(--bg-elev); }
+  .entry:last-child { border-bottom: 0; }
+  .entry-title {
+    font-weight: 600;
+    color: var(--ink);
+    text-transform: capitalize;
+    letter-spacing: .01em;
+    font-size: .95rem;
+  }
+  .entry-body {
+    grid-column: 1 / -1;
+    color: var(--ink-soft);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: .9rem;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .entry-meta {
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .empty {
+    padding: 40px 22px;
+    color: var(--ink-faint);
+    text-align: center;
+    font-style: italic;
+    font-size: .92rem;
+  }
+  .empty::before {
+    content: "·";
+    display: block;
+    color: var(--accent);
+    font-size: 2rem;
+    line-height: 0.4;
+    margin-bottom: 18px;
+  }
+
+  /* ==================  BRANCH QUERY PANEL  ================== */
+  .query-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px 12px;
+    padding: 18px 22px 16px;
+    align-items: end;
+  }
+  .query-form label.meta {
+    grid-column: 1 / -1;
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    margin: 0;
+  }
+  input, textarea {
+    width: 100%;
+    border: 1px solid var(--hairline-2);
+    background: var(--bg-sunken);
+    color: var(--ink);
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: .95rem;
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+  }
+  input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+  input:hover, textarea:hover { border-color: var(--ink-faint); }
+  input:focus, textarea:focus { background: var(--bg-elev); }
+  textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+
+  button {
+    appearance: none;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-family: var(--font-sans);
+    font-size: .92rem;
+    letter-spacing: .01em;
+    cursor: pointer;
+    transition: transform .12s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+    box-shadow: 0 6px 18px -8px rgba(244,183,92,.6);
+  }
+  button:hover { background: #ffc77a; box-shadow: 0 8px 22px -6px rgba(244,183,92,.7); }
+  button:active { transform: translateY(1px); }
+  button:disabled {
+    background: var(--bg-elev);
+    border-color: var(--hairline-2);
+    color: var(--ink-soft);
+    opacity: 1;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .query-results {
+    border-top: 1px solid var(--hairline);
+    padding: 8px 0;
+    min-height: 80px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .code-match {
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .code-match:last-child { border-bottom: 0; }
+  .code-path {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: .82rem;
+    font-weight: 600;
+  }
+  .code-path::before { content: "▸ "; opacity: .7; }
+  pre {
+    margin: 8px 0 0;
+    padding: 12px 14px;
+    overflow: auto;
+    background: var(--bg-sunken);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: .8rem;
+    line-height: 1.55;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  /* ==================  SUGGESTION  ================== */
+  .suggestion {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 22px 24px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .suggestion::after {
+    content: "";
+    position: absolute; right: -40px; top: -40px;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, var(--accent-soft), transparent 70%);
+    pointer-events: none;
+  }
+  .suggestion h2 {
+    margin: 0 0 4px;
+    font-family: var(--font-serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+  }
+  .suggestion .meta {
+    color: var(--ink-faint);
+    font-size: .82rem;
+    font-style: italic;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .suggestion textarea { width: 100%; }
+  .suggestion-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  #receipt {
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    letter-spacing: .04em;
+  }
+  #receipt[data-state="ok"] { color: var(--ok); }
+  #receipt[data-state="error"] { color: var(--danger); }
+
+  /* ==================  RESPONSIVE  ================== */
+  @media (max-width: 1080px) {
+    .workspace {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "stream"
+        "summary"
+        "query";
+    }
+  }
+  @media (max-width: 720px) {
+    .shell { padding: 20px 16px 56px; gap: 18px; }
+    header.top {
+      grid-template-columns: auto auto;
+      grid-template-rows: auto auto;
+      row-gap: 12px;
+    }
+    .session-strip {
+      grid-column: 1 / -1;
+      padding-left: 0;
+      border-left: 0;
+      border-top: 1px solid var(--hairline);
+      padding-top: 12px;
+    }
+    .scroll-region { height: 280px; }
+    .panel-head { padding: 16px 18px 12px; }
+    .entry { padding: 12px 18px; }
+    .code-match { padding: 12px 18px; }
+    .query-form { padding: 16px 18px 14px; }
+    .brand .name { font-size: 1.2rem; }
+  }
+
+  @media (max-width: 420px) {
+    .connection { padding: 6px 10px; font-size: .7rem; }
+    .mark { width: 38px; height: 38px; }
+    .scroll-region { height: 220px; }
+    .query-form { grid-template-columns: 1fr; }
+    .query-form label.meta { grid-column: 1; }
+    .query-form button { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to content</a>
+<main class="shell" id="main">
+  <header class="top">
+    <div class="brand" aria-label="Spectator">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="22" cy="22" r="6" fill="var(--accent)"/>
+          <circle class="pulse" cx="22" cy="22" r="6" stroke="var(--accent)" stroke-width="1.2" fill="none"/>
+          <path d="M14 22a8 8 0 0 1 16 0" stroke="var(--accent)" stroke-width="1.2" fill="none" opacity=".65"/>
+          <path d="M9 22a13 13 0 0 1 26 0" stroke="var(--accent)" stroke-width="1.2" fill="none" opacity=".4"/>
+          <path d="M4 22a18 18 0 0 1 36 0" stroke="var(--accent)" stroke-width="1.2" fill="none" opacity=".2"/>
+        </svg>
+      </span>
+      <span>
+        <span class="name">Spectator <em>mode</em></span>
+        <span class="tag">Live · Privacy-safe · Read-only</span>
+      </span>
+    </div>
+
+    <div class="session-strip">
+      <p class="lede" id="session-meta">Joining the shared session…</p>
+      <p class="meta" id="branch-meta">branch · commit · snapshot</p>
+    </div>
+
+    <div class="connection" role="status" aria-live="polite">
+      <span class="dot" id="connection-dot" aria-hidden="true"></span>
+      <span id="connection-state">Connecting</span>
+    </div>
+  </header>
+
+  <div id="notice" role="alert" hidden></div>
+
+  <div class="workspace">
+    <section class="panel" id="live-stream" aria-labelledby="live-stream-title">
+      <div class="panel-head">
+        <div>
+          <div class="kicker">Stream</div>
+          <h2 id="live-stream-title">Live session stream</h2>
+          <p class="panel-note">Privacy-safe session activity as it happens.</p>
+        </div>
+      </div>
+      <div class="scroll-region" id="stream-list" aria-live="polite" aria-relevant="additions">
+        <div class="empty" id="stream-empty">Waiting for session activity…</div>
+      </div>
+    </section>
+
+    <section class="panel" id="summary-entries" aria-labelledby="summary-title">
+      <div class="panel-head">
+        <div>
+          <div class="kicker">Narrative</div>
+          <h2 id="summary-title">Summary entries</h2>
+          <p class="panel-note">A continuously updated, readable account.</p>
+        </div>
+      </div>
+      <div class="scroll-region" id="summary-list" aria-live="polite" aria-relevant="additions">
+        <div class="empty" id="summary-empty">No summary entries yet.</div>
+      </div>
+    </section>
+
+    <section class="panel" id="branch-query" aria-labelledby="branch-query-title">
+      <div class="panel-head">
+        <div>
+          <div class="kicker">Branch</div>
+          <h2 id="branch-query-title">Query branch code</h2>
+          <p class="panel-note" id="branch-meta-search-hint">Searches the exact committed branch snapshot shared by the host.</p>
+        </div>
+      </div>
+      <form class="query-form" id="query-form">
+        <label for="query-input" class="meta">Search term</label>
+        <input id="query-input" name="query" maxlength="200" required autocomplete="off" placeholder="Function, class, error text or symbol">
+        <button type="submit" id="query-button">Search code</button>
+      </form>
+      <div class="query-results" id="query-results" aria-live="polite">
+        <div class="empty">Enter a term to search the shared branch.</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="suggestion" id="suggestion-panel" aria-labelledby="suggestion-title">
+    <h2 id="suggestion-title">Suggest the next step</h2>
+    <label for="suggestion-text" class="meta">The host must approve this before it can enter their session.</label>
+    <textarea id="suggestion-text" maxlength="4000" placeholder="What would you like the host to consider next?"></textarea>
+    <div class="suggestion-actions">
+      <button id="submit-suggestion" type="button">Submit suggestion</button>
+      <span id="receipt" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // The page is delivered as a static asset; the WS path is fixed.
+  const API = '/api/plugins/spectator';
+  const WS_PATH = '/api/plugins/spectator/events';
+  const TOKEN_KEY = 'spectator.guest.token';
+  const SESSION_KEY = 'spectator.guest.session';
+  const CURSOR_PREFIX = 'spectator.guest.cursor.';
+  const SUMMARY_CURSOR_PREFIX = 'spectator.guest.summary.';
+
+  const state = {
+    token: sessionStorage.getItem(TOKEN_KEY) || '',
+    sessionId: sessionStorage.getItem(SESSION_KEY) || '',
+    cursor: 0,
+    summaryCursor: 0,
+    ws: null,
+    wsLive: false,
+    pollTimer: null,
+    reconnectTimer: null,
+    summaryTimer: null,
+    closed: false,
+    seen: new Set(),
+    summarySeen: new Set()
+  };
+
+  const el = {
+    dot: document.getElementById('connection-dot'),
+    connection: document.getElementById('connection-state'),
+    notice: document.getElementById('notice'),
+    sessionMeta: document.getElementById('session-meta'),
+    branchMeta: document.getElementById('branch-meta'),
+    stream: document.getElementById('stream-list'),
+    streamEmpty: document.getElementById('stream-empty'),
+    summaries: document.getElementById('summary-list'),
+    summaryEmpty: document.getElementById('summary-empty'),
+    queryForm: document.getElementById('query-form'),
+    queryInput: document.getElementById('query-input'),
+    queryButton: document.getElementById('query-button'),
+    queryResults: document.getElementById('query-results'),
+    suggestionPanel: document.getElementById('suggestion-panel'),
+    suggestion: document.getElementById('suggestion-text'),
+    submitSuggestion: document.getElementById('submit-suggestion'),
+    receipt: document.getElementById('receipt')
+  };
+
+  function setConnection(label, live) {
+    el.connection.textContent = label;
+    el.dot.classList.toggle('live', Boolean(live));
+  }
+
+  function showNotice(message) {
+    el.notice.textContent = message;
+    el.notice.hidden = false;
+  }
+
+  function clearNotice() {
+    el.notice.hidden = true;
+    el.notice.textContent = '';
+  }
+
+  async function api(path, options) {
+    const opts = options || {};
+    const headers = { 'Content-Type': 'application/json' };
+    if (state.token) headers.Authorization = 'Bearer ' + state.token;
+    const response = await fetch(API + path, {
+      method: opts.method || 'GET',
+      headers: headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+    let data = null;
+    try { data = await response.json(); } catch (_) { data = null; }
+    if (!response.ok) {
+      const error = new Error((data && data.detail && data.detail.message) || 'Request failed');
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+    return data;
+  }
+
+  function readInvite() {
+    const hash = window.location.hash || '';
+    if (!hash.startsWith('#invite=')) return '';
+    return decodeURIComponent(hash.slice('#invite='.length));
+  }
+
+  async function joinFromFragment(invite) {
+    const joined = await api('/invites/join', { method: 'POST', body: { token: invite } });
+    state.token = joined.guest_token;
+    state.sessionId = joined.session_id;
+    sessionStorage.setItem(TOKEN_KEY, state.token);
+    sessionStorage.setItem(SESSION_KEY, state.sessionId);
+    history.replaceState(null, document.title, window.location.pathname);
+  }
+
+  function cursorKey() { return CURSOR_PREFIX + state.sessionId; }
+  function summaryCursorKey() { return SUMMARY_CURSOR_PREFIX + state.sessionId; }
+  function loadCursors() {
+    state.cursor = parseInt(localStorage.getItem(cursorKey()) || '0', 10) || 0;
+    state.summaryCursor = parseInt(localStorage.getItem(summaryCursorKey()) || '0', 10) || 0;
+  }
+  function saveCursor() { localStorage.setItem(cursorKey(), String(state.cursor)); }
+  function saveSummaryCursor() { localStorage.setItem(summaryCursorKey(), String(state.summaryCursor)); }
+
+  function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleTimeString();
+  }
+
+  function summaryText(summary) {
+    if (!summary || typeof summary !== 'object') return 'Activity recorded';
+    if (summary.note) return String(summary.note);
+    if (summary.tool) return String(summary.tool) + ' · ' + String(summary.status || 'activity');
+    if (summary.from || summary.to) return String(summary.from || 'unknown') + ' → ' + String(summary.to || 'unknown');
+    return 'Activity recorded';
+  }
+
+  function appendStream(event) {
+    if (state.seen.has(event.cursor)) return;
+    state.seen.add(event.cursor);
+    if (el.streamEmpty) el.streamEmpty.remove();
+    const item = document.createElement('article');
+    item.className = 'entry';
+    const title = document.createElement('div');
+    title.className = 'entry-title';
+    title.textContent = event.type.replaceAll('_', ' ');
+    const body = document.createElement('div');
+    body.className = 'entry-body';
+    body.textContent = summaryText(event.summary);
+    const meta = document.createElement('div');
+    meta.className = 'entry-meta';
+    meta.textContent = '#' + event.cursor + ' · ' + formatTime(event.timestamp);
+    item.append(title, body, meta);
+    el.stream.appendChild(item);
+    el.stream.scrollTop = el.stream.scrollHeight;
+  }
+
+  function appendSummary(entry) {
+    if (state.summarySeen.has(entry.cursor)) return;
+    state.summarySeen.add(entry.cursor);
+    if (el.summaryEmpty) el.summaryEmpty.remove();
+    const item = document.createElement('article');
+    item.className = 'entry';
+    const title = document.createElement('div');
+    title.className = 'entry-title';
+    title.textContent = entry.title;
+    const body = document.createElement('div');
+    body.className = 'entry-body';
+    body.textContent = entry.body;
+    const meta = document.createElement('div');
+    meta.className = 'entry-meta';
+    meta.textContent = formatTime(entry.timestamp);
+    item.append(title, body, meta);
+    el.summaries.appendChild(item);
+    el.summaries.scrollTop = el.summaries.scrollHeight;
+  }
+
+  async function loadSession() {
+    const session = await api('/session');
+    state.sessionId = session.session_id;
+    sessionStorage.setItem(SESSION_KEY, state.sessionId);
+    loadCursors();
+    el.sessionMeta.textContent = session.owner_label + ' · ' + session.harness;
+    el.branchMeta.textContent = session.branch + ' · ' + session.head_sha.slice(0, 12) + ' · committed snapshot';
+    el.suggestionPanel.hidden = !(session.capabilities || []).includes('suggestion_injection');
+  }
+
+  async function loadStream() {
+    const page = await api('/stream?after=' + state.cursor + '&limit=200');
+    if (page.reset) {
+      state.cursor = Math.max(0, (page.oldest_cursor || 1) - 1);
+      state.seen.clear();
+      el.stream.replaceChildren();
+    }
+    (page.events || []).forEach(appendStream);
+    state.cursor = Math.max(state.cursor, page.cursor || 0);
+    saveCursor();
+  }
+
+  async function loadSummaries() {
+    const page = await api('/summary-entries?after=' + state.summaryCursor + '&limit=200');
+    if (page.reset) {
+      state.summaryCursor = Math.max(0, (page.oldest_cursor || 1) - 1);
+      state.summarySeen.clear();
+      el.summaries.replaceChildren();
+    }
+    (page.entries || []).forEach(appendSummary);
+    state.summaryCursor = Math.max(state.summaryCursor, page.cursor || 0);
+    saveSummaryCursor();
+  }
+
+  function scheduleSummaryRefresh() {
+    if (state.summaryTimer) return;
+    state.summaryTimer = window.setTimeout(async function () {
+      state.summaryTimer = null;
+      try { await loadSummaries(); } catch (_) { /* next update retries */ }
+    }, 150);
+  }
+
+  function wsUrl() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return protocol + '//' + window.location.host + WS_PATH;
+  }
+
+  function stopPolling() {
+    if (state.pollTimer) window.clearInterval(state.pollTimer);
+    state.pollTimer = null;
+  }
+
+  function startPolling() {
+    if (state.pollTimer || state.closed) return;
+    setConnection('Polling', false);
+    const tick = async function () {
+      try {
+        await Promise.all([loadStream(), loadSummaries()]);
+        clearNotice();
+      } catch (error) {
+        if (error.status === 401 || error.status === 410) closeSession('This share has expired or been revoked.');
+      }
+    };
+    tick();
+    state.pollTimer = window.setInterval(tick, 2000);
+  }
+
+  function connectWebSocket() {
+    if (state.closed || !state.token) return;
+    let ws;
+    try { ws = new WebSocket(wsUrl()); } catch (_) { startPolling(); return; }
+    state.ws = ws;
+    ws.onopen = function () {
+      ws.send(JSON.stringify({ op: 'auth', token: state.token }));
+    };
+    ws.onmessage = async function (message) {
+      let frame;
+      try { frame = JSON.parse(message.data); } catch (_) { return; }
+      if (frame.op === 'auth_ok') {
+        state.wsLive = true;
+        stopPolling();
+        setConnection('Live', true);
+        clearNotice();
+        try { await Promise.all([loadStream(), loadSummaries()]); } catch (_) { startPolling(); }
+      } else if (frame.op === 'feed_event') {
+        const event = {
+          cursor: frame.seq,
+          type: frame.type,
+          summary: typeof frame.summary === 'string' ? JSON.parse(frame.summary) : frame.summary,
+          timestamp: frame.timestamp
+        };
+        appendStream(event);
+        state.cursor = Math.max(state.cursor, event.cursor);
+        saveCursor();
+        scheduleSummaryRefresh();
+      } else if (frame.op === 'reset') {
+        state.cursor = Math.max(0, (frame.oldest_seq || 1) - 1);
+        saveCursor();
+        loadStream();
+      } else if (frame.op === 'revoked') {
+        closeSession('This share has been revoked by the host.');
+      } else if (frame.op === 'auth_error') {
+        closeSession('This share is no longer available.');
+      }
+    };
+    ws.onclose = function () {
+      state.wsLive = false;
+      state.ws = null;
+      if (!state.closed) {
+        startPolling();
+        if (!state.reconnectTimer) {
+          state.reconnectTimer = window.setTimeout(function () {
+            state.reconnectTimer = null;
+            connectWebSocket();
+          }, 2000);
+        }
+      }
+    };
+    ws.onerror = function () { /* close handler starts the fallback */ };
+  }
+
+  function closeSession(message) {
+    state.closed = true;
+    stopPolling();
+    if (state.ws) state.ws.close();
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    setConnection('Closed', false);
+    showNotice(message);
+    el.queryButton.disabled = true;
+    el.submitSuggestion.disabled = true;
+  }
+
+  el.queryForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const query = el.queryInput.value.trim();
+    if (!query) return;
+    el.queryButton.disabled = true;
+    el.queryResults.replaceChildren();
+    const pending = document.createElement('div');
+    pending.className = 'empty';
+    pending.textContent = 'Searching the committed branch…';
+    el.queryResults.appendChild(pending);
+    try {
+      const result = await api('/code/query', { method: 'POST', body: { query: query, limit: 30 } });
+      el.queryResults.replaceChildren();
+      if (!result.matches.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No matches in this branch snapshot.';
+        el.queryResults.appendChild(empty);
+      }
+      result.matches.forEach(function (match) {
+        const item = document.createElement('article');
+        item.className = 'code-match';
+        const path = document.createElement('div');
+        path.className = 'code-path';
+        path.textContent = match.path + ':' + match.line;
+        const code = document.createElement('pre');
+        code.textContent = match.snippet;
+        item.append(path, code);
+        el.queryResults.appendChild(item);
+      });
+    } catch (error) {
+      el.queryResults.replaceChildren();
+      const failed = document.createElement('div');
+      failed.className = 'empty';
+      failed.textContent = 'The branch query could not be completed.';
+      el.queryResults.appendChild(failed);
+    } finally {
+      el.queryButton.disabled = false;
+    }
+  });
+
+  el.submitSuggestion.addEventListener('click', async function () {
+    const content = el.suggestion.value.trim();
+    if (!content || state.closed) return;
+    el.submitSuggestion.disabled = true;
+    el.receipt.textContent = 'Submitting…';
+    try {
+      const result = await api('/suggestions', { method: 'POST', body: { content: content, role: 'user' } });
+      el.suggestion.value = '';
+      el.receipt.textContent = result.receipt === 'held' ? 'Waiting for host approval.' : result.receipt;
+    } catch (_) {
+      el.receipt.textContent = 'Suggestion could not be submitted.';
+    } finally {
+      el.submitSuggestion.disabled = false;
+    }
+  });
+
+  async function boot() {
+    const invite = readInvite(); // Invite links use #invite= so the token never reaches server logs.
+    try {
+      if (invite) await joinFromFragment(invite);
+      if (!state.token) {
+        closeSession('Open a valid Spectator invite link to join a session.');
+        return;
+      }
+      await loadSession();
+      connectWebSocket();
+    } catch (_) {
+      closeSession('The shared session could not be opened. The invite may be invalid or expired.');
+    }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

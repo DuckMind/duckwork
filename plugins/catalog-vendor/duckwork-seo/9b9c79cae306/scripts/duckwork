@@ -1,0 +1,37 @@
+#!/bin/sh
+set -eu
+
+if [ "${1-}" != "seo" ]; then
+    echo "only 'duckwork seo' is available in this sandbox" >&2
+    exit 127
+fi
+shift
+
+DUCKWORK_SEO_ROOT="${DUCKWORK_SEO_ROOT:-/opt/duckwork-seo}"
+DUCKWORK_SEO_DATA_DIR="${DUCKWORK_SEO_DATA_DIR:-/var/lib/duckwork-seo}"
+export DUCKWORK_SEO_ROOT DUCKWORK_SEO_DATA_DIR
+
+if [ "${1-}" = "show" ]; then
+    shift
+    if [ "$#" -ne 1 ]; then
+        echo "usage: duckwork seo show <bundled-path>" >&2
+        exit 2
+    fi
+    exec python3 - "$DUCKWORK_SEO_ROOT" "$1" <<'PYCODE'
+from pathlib import Path
+import sys
+
+try:
+    root = Path(sys.argv[1]).resolve(strict=True)
+    target = (root / sys.argv[2]).resolve(strict=True)
+    target.relative_to(root)
+    if not target.is_file():
+        raise OSError("bundled path is not a file")
+    sys.stdout.write(target.read_text(encoding="utf-8"))
+except (OSError, ValueError) as exc:
+    print(f"Cannot read bundled file: {exc}", file=sys.stderr)
+    raise SystemExit(2)
+PYCODE
+fi
+
+exec "${DUCKWORK_SEO_ROOT}/scripts/duckwork-seo" "$@"

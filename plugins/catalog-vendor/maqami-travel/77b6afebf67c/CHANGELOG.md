@@ -1,0 +1,47 @@
+# Changelog
+
+All notable changes to the `maqami-travel` npm package, registry metadata and documentation.
+
+## [Unreleased]
+
+## [1.0.7] - 2026-10-06
+
+### Added
+- Documentation only: quick start table, agent booking flow and FAQ in the README, `AGENTS.md`, `llms.txt`, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue forms and `CITATION.cff`. No changes to `index.js` or the hosted server.
+
+- Plugin packaging only: `.claude-plugin/marketplace.json` (Claude Code marketplace `maqami`), `.codex-plugin/plugin.json` with `assets/logo-512.png` (Codex plugin), and the `maqami-travel-booking` skill in `skills/`. No changes to `index.js` or the hosted server.
+
+### Changed
+- Website-only checkout: the skill, README, `AGENTS.md`, `llms.txt`, `GEMINI.md` and plugin descriptions now match the live server. Customers book and pay only on book.maqami.co: hotels use the `checkoutUrl` from `post_rates_prebook`, flights the `checkoutUrl` from `post_flights_verify`. In-chat booking and payment steps, removed tools and every payment-method name are gone from the docs; the hotel cancel tool is documented as `cancel_hotel_booking`. Documentation only.
+- `maqami-travel-booking` skill: new "Untrusted content" section, and the confirm-before-booking rules now also cover the amend and cancel tools. Documentation only.
+
+- Skill, `AGENTS.md`, `GEMINI.md`, `llms.txt` and README: documented flow matches the hardened server. There is no places-search step (search rates by `cityName` with `countryCode`, coordinates, `iataCode`, `hotelIds` or `aiSearch`); hotel `offerId`s are signed and must be passed exactly as returned; rebooking, tour booking, hotel add-ons, places and price-index tools are not available; only the tools in `tools/list` exist. Documentation only.
+
+### Removed
+- `DIRECTORY-SUBMISSIONS.md` (internal notes).
+
+## [1.0.6] - 2026-10-03
+
+### Changed
+- `index.js` is now a stdio-to-Streamable-HTTP bridge built on the official MCP SDK client. It performs the full `initialize` handshake with `https://mcp.maqami.co/`, keeps the `Mcp-Session-Id`, and forwards tools, resources and prompts.
+- Pinned `@modelcontextprotocol/sdk` to 1.32.0.
+- The npm tarball ships only the bridge, README, LICENSE and `package.json`.
+- `server.json` declares the remote as `streamable-http` (previously `sse`) and adds the npm stdio package.
+- README rewritten with current connection instructions for each client.
+
+### Removed
+- `index.d.ts`, which declared exports the package never provided.
+
+## [1.0.5] - 2026-09-28
+
+### Added
+- Runnable stdio launcher (`index.js`) that proxied tool calls to the remote endpoint
+- `glama.json` for Glama directory ownership claim
+
+### Fixed
+- Package type compatibility: converted to proper ES module
+
+## [1.0.0] - 2025-01-01
+
+### Added
+- Initial release

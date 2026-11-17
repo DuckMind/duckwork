@@ -1,0 +1,15 @@
+{
+  "cards": [
+    {"dot": "cyan", "title": "Why it works", "items": [
+      "Preflight refuses the lane before any change; a second, INDEPENDENT verifier node re-checks the prep it did not make",
+      "Complementary prune gates route drift and halt to echoes that terminate loud, so no silent half-release",
+      "Publication is audited per-channel: the fan-out runs each channel's OWN check, never a global pipeline status"
+    ]},
+    {"dot": "rose", "title": "Contract", "items": [
+      "{{nodes}} nodes: preflight -> {{branches}}-way route -> prep -> verify -> approve -> publish -> await-ci -> per-channel fan-out -> closeout",
+      "Human gates carry the launch/answer surface; await-ci is a machine gate parking at no token cost at all",
+      "closeout joins every arm, live or pruned, from machine records auto-injected in ## Inputs",
+      "Derived from this example's bytes by scripts/graph_diagram.py"
+    ]}
+  ]
+}

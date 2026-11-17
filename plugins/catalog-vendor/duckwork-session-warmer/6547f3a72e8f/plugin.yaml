@@ -1,0 +1,16 @@
+name: duckwork-session-warmer
+version: "0.1.0"
+description: Opt-in bounded idle prompt warming for explicitly allowlisted OpenAI-compatible chat endpoints.
+author: mojomast
+provides_tools: []
+provides_hooks:
+  - pre_llm_call
+  - post_llm_call
+  - on_session_end
+provides_middleware:
+  - llm_request
+requires_env: []
+optional_env:
+  - DUCKWORK_SESSION_WARMER_API_KEY
+license: MIT
+homepage: https://github.com/DuckMind/duckwork

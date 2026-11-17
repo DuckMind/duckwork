@@ -1,0 +1,32 @@
+name: Skill improvement
+description: Improve an existing official skill without adding a new skill package
+title: "[improve] "
+labels: ["official-skill"]
+body:
+  - type: input
+    id: skill
+    attributes:
+      label: Skill name
+      placeholder: mermail-manage-inbox
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is unclear or incomplete?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Wording, workflow steps, scenarios, or reference docs
+    validations:
+      required: true
+  - type: checkboxes
+    id: security
+    attributes:
+      label: Security impact
+      options:
+        - label: This change does not weaken approval, destructive, or untrusted-email contracts
+          required: true

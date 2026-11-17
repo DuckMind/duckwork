@@ -1,0 +1,46 @@
+{
+  "name": "you",
+  "version": "0.6.0",
+  "description": "You.com skills for search, contents, research, finance, and integration discovery with MCP, ARD, API-key, OAuth, and MPP/x402 payment guidance.",
+  "keywords": [
+    "you.com",
+    "kimi-code",
+    "agent-skills",
+    "mcp",
+    "web-search",
+    "content-extraction",
+    "research",
+    "finance",
+    "citations",
+    "ard",
+    "ai-catalog",
+    "x402",
+    "mpp"
+  ],
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "homepage": "https://docs.you.com",
+  "license": "MIT",
+  "skills": "./skills/",
+  "mcpServers": {
+    "you": {
+      "url": "https://api.you.com/mcp"
+    },
+    "you-finance": {
+      "url": "https://api.you.com/mcp/finance"
+    },
+    "you-research": {
+      "url": "https://api.you.com/mcp/research"
+    }
+  },
+  "interface": {
+    "displayName": "You.com",
+    "shortDescription": "You.com web search, research, finance, and discovery skills",
+    "longDescription": "Use You.com skills for current web search, URL content extraction, cited research, finance-specific answers, and integration discovery. The skills guide agents through free, API-key, OAuth, and MPP/x402 access paths, and the plugin bundles MCP server configs for the default, finance, and research endpoints.",
+    "developerName": "You.com",
+    "websiteURL": "https://you.com"
+  }
+}

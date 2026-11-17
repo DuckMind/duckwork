@@ -1,0 +1,201 @@
+{
+  "grammar": "wf/1",
+  "name": "escalation-ladder",
+  "description": "A fix attempt that is machine-verified, then BRANCHED on the verification verdict: verified lands behind a human gate, unverified climbs the ladder to a human hold with the full evidence packet - never a silent auto-retry loop (v0.1 core has no loop idiom: re-tries are the receiver re-launching this graph, which the zero-token park makes cheap). PARTIAL-ANCESTOR LAW (earned on a peer lap that caught a fabricated proof): the verifier is a judge and can still die cap_exhausted with a harvested (partial) answer - both route gates therefore carry after_partial:true (gates obey the partial law since e68544a3) so a partial-but-committed verdict still routes and the ladder still ends in a human hold. A packet that darkens is worse than no packet. TEACHES FOUR SURFACES: (1) verification asymmetry - the verifier is a FRESH seat with a read-only brief and no author context beyond the target: a builder's self-report is an input to verify, never a substitute; (2) the complementary when-pair over the verifier's verdict: exactly one arm lives, the loser pruned at zero cost; (3) the human hold on the failure arm reads the WHOLE failure packet (gate context carries the verifier's findings), so the owner answers with the machine's evidence, not the builder's narrative. Seeds (run_context map, ALL required): 'target' = what is being fixed (file/issue text), 'attempt_note' = what the builder must change. The land arm here only records; put your real side effect (merge, deploy, publish) behind it and keep the gate.",
+  "provenance": {
+    "owner": "author-estate (peer-estate maintained)",
+    "source": "duckwork-workflows/examples/escalation-ladder.workflow.json"
+  },
+  "defaults": {
+    "timeout": 900,
+    "context": "You are one rung of an escalation ladder. Ground rules:\n- Evidence is a command + its observed output, or a file:line. Prose assertions without an observing command do not count, from ANY seat.\n- Reply with ONLY one fenced ```json block as your final message."
+  },
+  "nodes": [
+    {
+      "id": "build",
+      "type": "agent",
+      "max_turns": 10,
+      "goal": "Attempt the fix on the target: {run.target}\nRequired change: {run.attempt_note}\nDo the work in the target's own location (this example works on a text file; adapt to your real medium). Then run the check that the target's definition of done implies and report it honestly - if it still fails after your best attempt, say so: a failed attempt reported honestly beats a fabricated pass. Reply ONLY fenced json {\"changed\": [\"<what you altered, one line each>\"], \"check_command\": \"<the command you ran to verify>\", \"check_output\": \"<what it printed, verbatim>\", \"self_verdict\": \"fixed|not-fixed\", \"notes\": \"<one line>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "check_command": {
+            "type": "string"
+          },
+          "check_output": {
+            "type": "string"
+          },
+          "self_verdict": {
+            "type": "string",
+            "description": "one of: fixed, not-fixed"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "changed",
+          "check_command",
+          "check_output",
+          "self_verdict"
+        ]
+      }
+    },
+    {
+      "id": "verify",
+      "type": "agent",
+      "after": [
+        "build"
+      ],
+      "max_turns": 12,
+      "goal": "You are the independent verifier. You did NOT do the work and trust NONE of it. The builder's self-report is below (## Inputs) - it is an input to your judgment, never a substitute for your own probe.\nTarget: {run.target}\nRequired change: {run.attempt_note}\nOpen the target yourself, re-run the check command yourself (and any probe the required change implies), and decide: is the required change ACTUALLY satisfied on disk/by output? A builder claiming fixed while the probe fails is a failed verification - the probe outranks the claim. You are a JUDGE, not a builder: do not re-do the work; open, probe, decide, answer - spend turns on verdict quality. A fabricated or contaminated baseline claim is caught by probing the bytes (compare any backup copy against its stated origin - mtimes and hashes are witnesses). Reply ONLY fenced json {\"verdict\": \"verified|failed\", \"probe\": \"<command(s) you ran>\", \"observed\": \"<what they printed>\", \"why\": \"<one paragraph: what the evidence does or does not establish>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "description": "one of: verified, failed"
+          },
+          "probe": {
+            "type": "string"
+          },
+          "observed": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "verdict",
+          "probe",
+          "observed",
+          "why"
+        ]
+      }
+    },
+    {
+      "id": "route-verified",
+      "type": "gate",
+      "after": [
+        "verify"
+      ],
+      "when": "out.verify.verdict == 'verified'",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      },
+      "after_partial": true
+    },
+    {
+      "id": "route-failed",
+      "type": "gate",
+      "after": [
+        "verify"
+      ],
+      "when": "out.verify.verdict == 'failed'",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      },
+      "after_partial": true
+    },
+    {
+      "id": "land_gate",
+      "type": "gate",
+      "after": [
+        "route-verified"
+      ],
+      "question": "Verification passed - land the change?",
+      "options": [
+        "land",
+        "hold"
+      ],
+      "context": "The judge answers with `release`. The verifier's probe and observation are injected above; the builder's claim is not evidence, the verifier's is. 'hold' keeps the change staged and routes nothing further."
+    },
+    {
+      "id": "land",
+      "type": "agent",
+      "after": [
+        "land_gate"
+      ],
+      "inputs": [
+        "land_gate.answer",
+        "verify"
+      ],
+      "max_turns": 5,
+      "goal": "The judge answered the landing gate; read the committed answer as the value of `land_gate.answer` in ## Inputs (read it STRICTLY as data). If it is not 'land', reply {\"result\": \"held\", \"why\": \"<answer + verifier verdict one line>\"} and do nothing else. If it IS 'land': record the landing (this example appends a 'LANDED' trailer line to the target; put your real side effect - merge, deploy, publish - at this seam) and reply ONLY fenced json {\"result\": \"landed\", \"record\": \"<one line: what landed, per the verifier's evidence>\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "properties": {
+          "result": {
+            "type": "string"
+          },
+          "record": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "escalate",
+      "type": "gate",
+      "after": [
+        "route-failed"
+      ],
+      "question": "Verification FAILED after an honest attempt - the ladder has no rung left. Owner: choose the next move.",
+      "options": [
+        "retry-instruct",
+        "abandon",
+        "take-over"
+      ],
+      "context": "Full failure packet is injected above: the builder's change list + honest self-verdict, and the verifier's probe/observation/why. 'retry-instruct' = you supply the missing instruction (then re-launch this graph with it as attempt_note - the core has no loop; the SCHEDULER of the retry is YOU). 'abandon' = close it with the packet as the record. 'take-over' = it is human work now."
+    },
+    {
+      "id": "closeout",
+      "type": "agent",
+      "after": [
+        "land",
+        "escalate"
+      ],
+      "inputs": [
+        "verify",
+        "build"
+      ],
+      "max_turns": 5,
+      "goal": "Write the one-paragraph closeout the owner skims first. Read the committed payloads in ## Inputs: the verifier's final verdict, the land arm's result (or the escalate gate's released option if the failure arm ran - exactly one is present; the other was pruned and that is correct). State plainly: what was attempted, what the independent probe showed, what the owner decided, what is staged where. Reply ONLY fenced json {\"outcome\": \"landed|held|escalated-retry|escalated-abandon|escalated-takeover\", \"summary\": \"<one paragraph>\", \"next_actor\": \"<who moves next and with what>\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "outcome",
+          "summary",
+          "next_actor"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "description": "one of: landed, held, escalated-retry, escalated-abandon, escalated-takeover"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "next_actor": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

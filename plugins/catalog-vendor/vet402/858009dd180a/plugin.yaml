@@ -1,0 +1,9 @@
+name: vet402
+version: 0.2.0
+description: Check a paid x402 or MPP URL in vet402's public purchase record before the agent pays it.
+author: vet402
+requires_duckwork: ">=0.22.2"
+provides_tools:
+  - vet402_check
+provides_hooks:
+  - pre_tool_call

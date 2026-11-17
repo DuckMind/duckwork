@@ -1,0 +1,20 @@
+manifest_version: 1
+name: duckwork-speech
+version: 0.3.3
+description: "Conversational and slash-command AllModels TTS/STT setup with native Duckwork speech providers."
+author: AllModels
+kind: standalone
+requires_duckwork: ">=0.20.0"
+requires_env: []
+provides_tools:
+  - allmodels_speech_setup
+  - allmodels_speech_manage
+provides_hooks: []
+provides_middleware: []
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags:
+  - speech
+  - tts
+  - stt
+  - voice

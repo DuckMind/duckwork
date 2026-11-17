@@ -1,0 +1,16 @@
+name: duckwork-lang-it-full
+version: 0.1.0
+description: >-
+  Italian (Italiano) language pack for Duckwork Desktop — 5,082 of 5,085 keys on
+  main (the 3 the pack format rejects are array/object leaves), including the
+  newest sections (firstRun, themePicker, connector accounts, update channel).
+  Core, CLI and TUI keep the Italian catalogs already bundled with Duckwork.
+  Generated from a hand-reviewed typed catalog; functions ship as positional
+  {0} templates. Text-only plugin: no code paths beyond a no-op register(),
+  no network, no env. Registering the pack never changes display.language; the
+  user opts in via `duckwork config set display.language it` or the switcher.
+requires_duckwork: ">=0.21.6"
+provides_locales:
+  - id: it
+    endonym: Italiano
+    rtl: false

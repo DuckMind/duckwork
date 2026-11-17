@@ -1,0 +1,57 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: Upstream Duckwork
+
+# Loads the plugin through Fordex/duckwork-agent `main` via Duckwork's real
+# plugin loader, both install routes. Runs nightly so "tested against upstream"
+# stays true as Duckwork changes; also on PRs that touch this job.
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/upstream-duckwork.yml"
+      - "tests/test_upstream_duckwork.py"
+      - "__init__.py"
+      - "plugin.yaml"
+      - "pyproject.toml"
+      - "duckwork_tenuo/**"
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    name: ${{ matrix.route }} route
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        route: [entrypoint, directory]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: main
+          path: duckwork-agent
+      - uses: actions/setup-python@v5
+        with:
+          # Duckwork installs its runtime dependencies only on Python 3.14.
+          python-version: "3.14"
+      - name: Install Duckwork from source
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ./duckwork-agent
+          python -c "import duckwork_cli, importlib.metadata as m; print('duckwork-agent', m.version('duckwork-agent'))"
+          python -c "import duckwork_cli.plugins"
+          git -C duckwork-agent log -1 --format='upstream %h %ad %s' --date=short
+      - name: Install the plugin (entrypoint route)
+        if: matrix.route == 'entrypoint'
+        run: pip install . pytest
+      - name: Install only tenuo (directory route)
+        if: matrix.route == 'directory'
+        run: pip install "tenuo>=0.3.2" pytest
+      - name: Load through Duckwork's plugin loader
+        run: python -m pytest tests/test_upstream_duckwork.py -q -rs --tb=short

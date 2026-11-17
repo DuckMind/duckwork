@@ -1,0 +1,26 @@
+# Changelog
+
+## 0.2.4
+
+- Require Duckwork >=0.21.6 and declare Linux/macOS support.
+- Use English feedback, callback instructions and continuation messages while
+  preserving the user's original question, labels and answer text.
+- Remove completed per-question feedback locks through a stable, nonblocking
+  admission guard; preserve retry/cancellation safety across processes.
+- Append the directory-plugin path without overriding existing import priority.
+- Add real cross-process contention, cancellation, unload and cleanup-failure
+  regressions. Stop older gateway processes before upgrading the lock protocol.
+
+## 0.2.3
+
+- Public distribution with a conventional Python package, wheel entrypoint and
+  directory-plugin bridge that retains package identity across core force reload.
+- Durable queued questions, exact-route answer capture, optional continuation,
+  feedback outbox and lifecycle-owned gateway workers.
+- Telegram readiness/recovery and private, non-content runtime diagnostics.
+- VK generic callback integration (requires duckwork-vk-platform 0.2.6+), native
+  feedback error classification and addressed-text fallback for older adapters.
+- Portable isolated regression suite and catalog submission guidance.
+
+The public tree begins with clean history. Private deployment records, profiles,
+verification artifacts and credentials are not part of this distribution.

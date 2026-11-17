@@ -1,0 +1,77 @@
+{
+  "name": "approve-publish",
+  "nodes": [
+    {
+      "id": "draft",
+      "type": "agent",
+      "goal": "Reply exactly: {\"result\": \"draft-ready\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "result"
+        ]
+      },
+      "max_turns": 4
+    },
+    {
+      "id": "approve",
+      "type": "gate",
+      "after": [
+        "draft"
+      ],
+      "question": "Publish?",
+      "options": [
+        "publish",
+        "rewrite"
+      ],
+      "context": "Owner-routed: pressing a button should wake THIS chat, not whichever is open"
+    },
+    {
+      "id": "publish_gate",
+      "type": "gate",
+      "after": ["approve"],
+      "when": "out.approve.answer == 'publish'",
+      "on_skip": "prune",
+      "wait": {"wait_s": 0.01}
+    },
+    {
+      "id": "rewrite_gate",
+      "type": "gate",
+      "after": ["approve"],
+      "when": "out.approve.answer == 'rewrite'",
+      "on_skip": "prune",
+      "wait": {"wait_s": 0.01}
+    },
+    {
+      "id": "publish",
+      "type": "agent",
+      "after": [
+        "publish_gate"
+      ],
+      "goal": "Reply exactly: {\"result\": \"published\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "result"
+        ]
+      },
+      "max_turns": 4
+    },
+    {
+      "id": "rewrite",
+      "type": "agent",
+      "after": [
+        "rewrite_gate"
+      ],
+      "goal": "Reply exactly: {\"result\": \"rewritten\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "result"
+        ]
+      },
+      "max_turns": 4
+    }
+  ],
+  "description": "draft -> human approval -> complementary prune gates -> exactly one publish|rewrite arm"
+}

@@ -1,0 +1,221 @@
+<p align="center">
+  <img src=".github/social-preview.png" alt="Duckwork Speech — TTS and STT plugin for Duckwork Agent" width="100%">
+</p>
+
+<h1 align="center">Duckwork Speech — TTS &amp; STT Plugin for Duckwork Agent</h1>
+
+<p align="center">
+  <a href="https://github.com/DuckMind/duckwork"><img src="https://img.shields.io/github/v/release/allmodels-io/duckwork-speech?display_name=tag&amp;sort=semver" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/allmodels-io/duckwork-speech" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/Duckwork_Agent-0.20%2B-3b82f6" alt="Duckwork Agent 0.20 or later">
+  <img src="https://img.shields.io/badge/extra_pip_dependencies-none-111113" alt="No additional pip dependencies">
+</p>
+
+Give [Duckwork Agent](https://github.com/DuckMind/duckwork) native
+text-to-speech (TTS), speech-to-text (STT), streaming audio, searchable voice
+previews, and conversational speech setup through [AllModels](https://allmodels.io).
+One AllModels API key connects Duckwork to every supported speech provider, model,
+and voice in the live catalogue.
+
+`duckwork-speech` registers `allmodels` as a normal Duckwork TTS and transcription
+provider. Duckwork' existing `/voice` mode, sentence pipeline, messaging gateways,
+CLI, TUI, and desktop app continue to work normally. See the
+[AllModels Duckwork Agent guide](https://github.com/DuckMind/duckwork) for the
+user-facing walkthrough.
+
+## What it does
+
+- **Native Duckwork Agent TTS and STT** — spoken replies and voice-message
+  transcription use Duckwork' standard provider interfaces.
+- **Conversational setup** — tell your agent to set up speech; it handles
+  AllModels signup, verification, and compatible starting defaults.
+- **Voice search and previews** — find voices by name, description, language,
+  gender, provider, or qualities and hear samples before selecting one.
+- **Streaming-aware speech** — supported models use streaming TTS; other models
+  automatically retain Duckwork' synchronous sentence pipeline.
+- **Speech management** — change models and voices, tune speed and transcription,
+  check balance, create top-up links, test audio, and check for plugin updates.
+- **No additional pip install** — it uses the OpenAI and HTTP clients already
+  bundled with Duckwork.
+
+## Requirements
+
+- Duckwork Agent 0.20.0 or later
+- No additional Python packages; the plugin uses Duckwork' bundled `openai` and
+  `httpx` libraries
+
+## Install
+
+The easiest installation is conversational. Send this message to your Duckwork
+agent:
+
+```text
+install this plugin and set it up:
+https://github.com/DuckMind/duckwork
+```
+
+Or install and enable it from the terminal:
+
+```bash
+duckwork plugins install allmodels-io/duckwork-speech --enable
+```
+
+Duckwork Desktop users can also use the
+[one-click installation link](duckwork://plugin/install?repo=allmodels-io/duckwork-speech&enable=1).
+Duckwork will show its normal review and confirmation screen before installing.
+
+Restart a running Duckwork CLI, desktop backend, or gateway after installation.
+
+## Quick start
+
+Ask Duckwork to configure AllModels speech:
+
+```text
+Set up AllModels speech for me.
+```
+
+Then enable Duckwork' normal voice pipeline:
+
+```text
+/voice on
+/voice tts
+```
+
+Try managing speech in normal conversation:
+
+```text
+Find elon's voice and use it.
+```
+
+## Conversational speech setup and management
+
+With the plugin enabled, its setup and management tools direct Duckwork to the
+bundled, namespaced skills
+`duckwork-speech:configure-allmodels-speech` and
+`duckwork-speech:manage-allmodels-speech`. Duckwork loads the applicable workflow
+with `skill_view`. There is no per-message intent hook or fixed sentence list.
+Explicit requests for local, offline, Edge, Whisper, or another named provider
+remain with Duckwork' built-in setup.
+
+Duckwork checks the current setup, asks for an email and the single-use code only
+when needed, and installs balanced TTS/STT defaults. By default it selects
+`fish/s2-1-pro` with Fish voice `Elon Musk(Noise reduction)`
+and `soniox/stt-async-v5`, with catalog-ordered fallbacks if a preferred entry
+is unavailable.
+
+The setup tool never requires an API key as an argument and never returns one.
+
+After setup, management is conversational too. Requests such as `Find a warmer
+voice`, `Switch my STT model`, `Check my AllModels balance`, or `Create a $25
+top-up link` use `duckwork-speech:manage-allmodels-speech`. Its agent-facing tool
+uses the same client, catalog, provider, and settings implementation as the
+`/speech` interface; it does not perform signup.
+
+Voice search uses the [AllModels voice catalogue API](https://docs.allmodels.io/voices)
+directly. Natural-language queries such as `British female narrator` are ranked
+server-side across voice names, descriptions, languages, categories, and labels,
+and can span all synchronous TTS models. The plugin does not download or cache
+the full catalogue; it retains only a bounded cache of compact metadata for
+voices returned by queries. A conversational `preview_voice` action validates
+and synthesizes an exact model/voice pair as a temporary MP3 without changing
+the configured TTS model, voice, speed, or format, then returns audio through
+Duckwork' normal `MEDIA:` delivery.
+
+Run `/speech`. If `ALLMODELS_API_KEY` is not configured, Duckwork immediately
+starts AllModels email signup:
+
+```text
+/speech signup you@example.com
+/speech verify 123456
+```
+
+After verification, setup continues with the TTS author picker. Model setup is
+guided as author → model → voice for TTS and author → model for STT.
+
+Useful direct commands:
+
+```text
+/speech tts model
+/speech tts voice search <name, language, gender, or provider>
+/speech tts voice preview <number> [optional sample text]
+/speech stt model
+/speech balance
+/speech topup 25
+/speech test Hello from Duckwork
+/speech advanced speed 1.1
+/speech advanced language ja
+/speech advanced prompt Product names: Duckwork, AllModels
+/speech update
+```
+
+`/voice` remains the Duckwork command for enabling or disabling voice mode.
+`/speech` configures which AllModels models and voice Duckwork uses.
+
+For conversational speech, enable Duckwork' normal pipeline with `/voice on`
+followed by `/voice tts`. Duckwork splits streamed replies into sentences,
+synthesizes each sentence through the registered AllModels provider, and plays
+them in order. When the selected catalog binding supports streaming, the plugin
+uses Duckwork' bundled OpenAI client to yield raw PCM chunks through Duckwork'
+streaming-TTS pipeline. Other models automatically retain the synchronous,
+sentence-pipelined path. Local CLI/TUI/desktop file output keeps Duckwork'
+requested MP3; messaging gateways that require native voice bubbles use
+Ogg/Opus.
+
+## TTS, STT, and voice providers
+
+Duckwork Speech reads the live AllModels model and voice catalogues instead of
+shipping a fixed provider list. One integration can expose text-to-speech,
+speech-to-text, voice search, and streaming audio from supported providers such
+as ElevenLabs, Cartesia, Fish Audio, Soniox, and OpenAI-compatible speech APIs.
+Models and availability change over time; the
+[AllModels model catalogue](https://allmodels.io/models) and
+[voice catalogue](https://docs.allmodels.io/voices) are the source of truth.
+
+## Configuration
+
+The plugin registers its bundled workflows with Duckwork as read-only, namespaced
+plugin skills. It does not modify `skills.external_dirs` or any other discovery
+configuration. The skills use the plugin's setup and management tools directly
+or through Duckwork' deferred tool search. Speech setup writes only its relevant
+keys in `config.yaml`. The API key is stored in the profile's protected `.env`
+as `ALLMODELS_API_KEY`; it is never displayed after signup.
+
+The model catalogue refreshes automatically in the background. Voice discovery
+uses live text search with compact stale-cache fallback. There is no manual
+refresh command.
+
+Duckwork Speech checks the repository's latest stable GitHub Release in the
+background when `/speech` or an agent-facing plugin tool is used. The result is
+cached for 24 hours and an available release is mentioned at most weekly until
+installed. The checker sends no account, speech, model, voice, or installation
+identifier data. Disable automatic checks with:
+
+```yaml
+plugins:
+  duckwork-speech:
+    update_check: false
+```
+
+Automatic checks only notify. `/speech update` performs the same read-only
+release check and, when a release is available, asks the user to request a
+host-managed update from their agent and reminds them to restart the Duckwork
+gateway after the update completes. An explicit conversational request such as
+`Update the duckwork-speech plugin` uses Duckwork' normal
+`duckwork plugins update duckwork-speech` path. The plugin never modifies its own
+source files.
+
+## Support
+
+- Read the [AllModels Duckwork Agent guide](https://github.com/DuckMind/duckwork).
+- Review the [Duckwork Agent voice and TTS documentation](https://duckwork-agent.fordex.com/docs/user-guide/features/tts).
+- Report plugin bugs or request improvements through
+  [GitHub Issues](https://github.com/DuckMind/duckwork).
+
+## Development
+
+Run the focused suite from the repository root with Duckwork' Python environment:
+
+```bash
+python -m pytest -q tests
+python -m ruff check .
+```

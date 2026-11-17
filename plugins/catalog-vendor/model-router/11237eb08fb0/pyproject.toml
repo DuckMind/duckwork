@@ -1,0 +1,11 @@
+[project]
+name = "duckwork-model-router"
+version = "0.4.8"
+description = "Profile-scoped model settings and default-on task routing for Duckwork Agent"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6,<7"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

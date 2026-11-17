@@ -1,0 +1,38 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "adwhispr",
+  "version": "1.0.1",
+  "description": "Competitor ad research, ad cloning, and campaign execution: find who is advertising in any niche right now, surface their longest-running Meta and TikTok ads and Instagram content, clone a winner into a finished image or video for your brand, then launch and manage paused campaigns on Meta, Google, TikTok, X, and ChatGPT Ads.",
+  "author": {
+    "name": "AdWhispr",
+    "email": "basil@adwhispr.com",
+    "url": "https://adwhispr.com/?utm_source=duckwork&utm_medium=plugin&utm_campaign=duckwork_plugin"
+  },
+  "homepage": "https://github.com/DuckMind/duckwork",
+  "repository": "https://github.com/DuckMind/duckwork",
+  "license": "MIT",
+  "keywords": [
+    "advertising",
+    "competitor-research",
+    "ad-library",
+    "ad-cloning",
+    "ai-video-ads",
+    "meta-ads",
+    "google-ads",
+    "tiktok-ads",
+    "x-ads",
+    "chatgpt-ads",
+    "instagram",
+    "keyword-research",
+    "mcp"
+  ],
+  "extensions": {
+    "com.fordex.duckwork": {
+      "servers": {
+        "adwhispr": {
+          "trust": "untrusted"
+        }
+      }
+    }
+  }
+}

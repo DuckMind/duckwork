@@ -1,0 +1,1251 @@
+"""The live snapshot KAME leaves on disk for the Desktop plugin to read.
+
+Why a file, and not an API. A Duckwork plugin has two doors it could publish
+through, and only one of them is available to a plugin that is already
+installed and running:
+
+* ``plugin_api.py`` mounted at ``/api/plugins/<name>/`` — real, but it lives
+  behind ``dashboard/plugin.json`` discovery, an ``plugins.enabled`` allow-list
+  entry, and a backend restart. It is the door for a plugin designed around
+  a dashboard, not one a user already has running.
+* a file the plugin writes and the renderer reads. The Desktop bridge exposes
+  ``readFileText`` and ``watchDirectory`` to a runtime plugin (it uses them to
+  load runtime plugins in the first place), so this needs nothing enabled,
+  nothing restarted, and no new HTTP surface.
+
+The second one is also the honest shape for what this is: a status readout,
+written by one process, read by another, where a stale read is harmless and a
+missed read costs nothing.
+
+**No key material, ever.** The snapshot carries fingerprints
+(``core.carousel.fingerprint``) and counts. It never carries a key, a prefix of
+a key, or the contents of ``.env`` — the same rule the log lines follow, for
+the same reason: this file is meant to be readable, and a readable file that
+holds credentials is a leak with a UI.
+
+The write is atomic (temp file then ``os.replace``) because the reader polls:
+a half-written JSON document read at the wrong moment would show the user an
+error where the truth is "nothing has changed".
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import sys
+import tempfile
+import threading
+import time
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+from .core import __version__
+
+logger = logging.getLogger(__name__)
+
+#: The plugin's own name, which is also its directory name under both
+#: ``plugins/`` and ``plugin-data/``. Hard-coded rather than derived from
+#: ``__package__`` because the package name is underscored by the loader
+#: (``duckwork_plugins.duckwork_kame_api_rotation``) and the directory is not.
+PLUGIN_ID = "duckwork-kame-api-rotation"
+
+#: Schema version of the document below. The Desktop plugin refuses a document
+#: it does not understand rather than half-rendering it, so this number and the
+#: check that reads it are a pair — bump both or neither.
+#:
+#: 2 (1.1.1): settings rows gained everything an editor needs (title, help,
+#: bounds, units), pools gained ``invalid`` and ``idle_for``, and the document
+#: gained ``events``, ``control`` and ``first_run``.
+#: 3 (1.2.0): settings rows gained ``group``, and the document gained
+#: ``setting_groups`` — the titles and the one-sentence explanation of each
+#: shelf, so the panel lays the screen out from the process that owns the
+#: settings rather than from a copy of the same decisions written in
+#: JavaScript.
+#: 4 (1.2.2): the document gained ``settings_pending_restart`` — the settings
+#: whose ``config.yaml`` entry has been edited since this Duckwork read it, so
+#: the panel can say "restart to apply" instead of showing a value the user
+#: has already changed and letting them conclude the edit was wrong.
+#: 5 (1.4.0): the document gained ``build`` — whether every module this plugin
+#: needs is actually on disk, a fingerprint of the source tree that is there,
+#: and where the host-guidance blocks were resolved from. Events gained
+#: ``detail`` (the provider's payload, redacted on the way in) and
+#: ``sized_by`` (where the cooldown came from). The first exists because an
+#: install missing its whole ``core/`` package reported ``installed: true,
+#: reason: "active"`` for nine days; the second because two thirds of every
+#: cooldown in that period was a guess and nothing said so.
+#: 6 (1.6.0.1): the document gained ``processes`` — one section per Duckwork
+#: that has this plugin loaded and shares this home. Until this schema the
+#: file described exactly one process and every process wrote the whole of
+#: it, so on a machine running both the Desktop and the gateway the two
+#: overwrote each other several times a second. Measured on the owner's own
+#: install: 40 reads in 20 seconds returned 26 documents from one process and
+#: 14 from the other, one of them a whole release behind. The panel re-reads
+#: once a second and re-renders whenever the bytes change, so the Settings
+#: form rebuilt itself under the cursor — the exact fault 1.2.3's byte
+#: comparison was written to stop, defeated by there being two writers.
+SCHEMA = 6
+
+#: Floor between two writes of an *unchanged* document. A changed document is
+#: always written immediately: the whole point is that the chip moves when the
+#: pool moves. This only stops a settled pool from rewriting the same bytes on
+#: every call.
+_MIN_INTERVAL_S = 1.0
+
+#: How long a process's section survives without being rewritten before it is
+#: dropped as dead. Comfortably longer than the heartbeat that rewrites an
+#: idle process's section, so a Duckwork sitting still is never mistaken for a
+#: Duckwork that exited; short enough that yesterday's crash is gone today.
+_PROCESS_STALE_S = 120.0
+
+_lock = threading.Lock()
+_last_written: Optional[str] = None
+_last_write_at = 0.0
+_disabled_reason = ""
+_cached_path = ""
+_cached_stamp = None
+_cached_document = ""
+
+#: The live binding, remembered once at registration so anything that has a
+#: reason to republish — the control poller, the heartbeat, a command — can do
+#: it without carrying the binding around. Before 1.1.1 a caller with no
+#: binding to hand published ``installed: false`` over a perfectly healthy
+#: snapshot, and the panel showed the plugin as missing until the next call.
+_binding: Any = None
+#: The pool binding, for the credential picture. See ``set_pool_binding``.
+_pool_binding: Any = None
+
+
+def attach(binding: Any) -> None:
+    """Remember the installed binding for every later publish."""
+    global _binding
+    _binding = binding
+
+
+def attached() -> Any:
+    return _binding
+
+
+def _duckwork_home() -> Optional[Path]:
+    """The base Duckwork home, asked of Duckwork rather than guessed at.
+
+    A profile-scoped home (``.../profiles/<name>``) is walked back up to its
+    base, because the Desktop reads this file relative to the plugin root the
+    bridge reports, and that root is the base home. Publishing under a profile
+    directory would leave the chip permanently empty for anyone not on the
+    default profile — which is the one case where a wrong answer here is
+    invisible to me and visible to them.
+    """
+    home: Optional[Path] = None
+    try:
+        from duckwork_constants import get_duckwork_home
+
+        home = Path(get_duckwork_home())
+    except Exception:
+        logger.debug("kame: no duckwork_constants; falling back to the environment", exc_info=True)
+        raw = os.environ.get("DUCKWORK_HOME", "").strip()
+        if raw:
+            home = Path(raw)
+    if home is None:
+        return None
+    # Each profile keeps its own plugin-data directory. Do NOT walk to the
+    # base home — that collapsed all profiles to the same state.json and
+    # caused races between concurrent profiles (fixed v1.2.4).
+    return home
+
+
+def state_dir() -> Optional[Path]:
+    home = _duckwork_home()
+    return None if home is None else home / "plugin-data" / PLUGIN_ID
+
+
+def state_path() -> Optional[Path]:
+    directory = state_dir()
+    return None if directory is None else directory / "state.json"
+
+
+def role() -> str:
+    """Which Duckwork this process is, in one word.
+
+    A home can be served by more than one Duckwork at a time and usually is:
+    the Desktop runs ``duckwork_cli.main --profile <name> serve`` while the
+    gateway that the phone app talks to runs ``duckwork_cli.main gateway run``.
+    Both load this plugin, both use the same credential pool, and until 1.6.0.1
+    neither knew the other existed.
+
+    Read off ``sys.argv`` because that is where the host itself decides which
+    it is, and because the alternative — asking the plugin context — answers
+    the same for both.
+
+    **It reports ``duckwork`` more often than 1.6.0.1 assumed, and nothing may
+    depend on it being right.** Measured on the owner's machine: three live
+    processes sharing one home, all three answering ``duckwork``, because the
+    Desktop starts its backends in a way that matches neither ``serve`` nor
+    ``--profile``. The panel's ``ownSection`` picked "the one whose role is
+    ``desktop``, else the freshest", so the first half never matched and the
+    second named a different process on every heartbeat — the Events tab
+    showed 150 rows, then none, then three. It now ranks on
+    ``counters.last_call_at``, which is evidence of traffic rather than a
+    guess about a command line, and uses the role only to break ties. Treat
+    this function as a hint for a human reading the panel, never as an
+    identity anything selects on.
+    """
+    try:
+        argv = " ".join(sys.argv).lower()
+    except Exception:  # pragma: no cover — argv is always a list of strings
+        return "duckwork"
+    if " gateway" in argv or argv.endswith("gateway"):
+        return "gateway"
+    if " serve" in argv or " --profile" in argv:
+        return "desktop"
+    return "duckwork"
+
+
+def profile_name() -> str:
+    """The profile this process was started with, or an empty string.
+
+    ``--profile <name>`` is on the Desktop's command line and nowhere else, so
+    this is how the panel can say *which* profile the other Duckwork is serving
+    rather than only that there is one.
+    """
+    try:
+        argv = list(sys.argv)
+    except Exception:  # pragma: no cover
+        return ""
+    for index, token in enumerate(argv):
+        if token == "--profile" and index + 1 < len(argv):
+            return str(argv[index + 1])
+        if token.startswith("--profile="):
+            return token.split("=", 1)[1]
+    return ""
+
+
+def disabled_reason() -> str:
+    """Empty while publishing works; otherwise why it does not.
+
+    Surfaced by ``/kame`` so "the chip is not moving" has an answer that is not
+    a guess.
+    """
+    return _disabled_reason
+
+
+def _outside_pool() -> Dict[str, List[str]]:
+    """Per identity, the fingerprints of keys the credential pool never held.
+
+    Read off the dispatch binding, which is the only place that sees the whole
+    candidate list for a call. Empty whenever the carousel is not installed,
+    which is the honest answer rather than a claim that there are none.
+    """
+    binding = globals().get("_binding")
+    found = getattr(binding, "keys_outside_the_pool", None)
+    return found if isinstance(found, dict) else {}
+
+
+def _fallback_view(rows: List[Dict[str, Any]], binding: Any = None) -> Dict[str, Any]:
+    """Duckwork' fallback chain as the panel shows it (1.8.2.7, read-only).
+
+    KAME never edits the chain: Duckwork owns it (`duckwork fallback add`). This
+    says what is in it, how each model's pool is doing, and whether KAME will
+    hand a call over to it, so "why did it stay on the slow model?" has an
+    answer on screen.
+    """
+    try:
+        from . import settings
+        from .core import fallback_chain
+
+        primary, chain = fallback_chain.read()
+        by_identity = {row["identity"]: row for row in rows}
+
+        def entry(identity: str, role: str) -> Dict[str, Any]:
+            row = next((r for i, r in by_identity.items()
+                        if i == identity or i.startswith(identity + ":")), None)
+            view = getattr(binding, "busy_view", None)
+            busy = view(identity) if callable(view) else {}
+            return {
+                "identity": identity,
+                "role": role,
+                # 1.8.2.9: the panel's ring halo and 'asked again in ...' countdown
+                "busy_until": busy.get("busy_until"),
+                "busy_kind": busy.get("busy_kind"),
+                "probe_at": busy.get("probe_at"),
+                "keys": row["keys"] if row else None,
+                "healthy": row["healthy"] if row else None,
+                "soonest_s": row["soonest_s"] if row else None,
+                # Has KAME served this model yet? (a missing row is "not yet", not "not a pool")
+                "kame_serves": bool(row),
+            }
+
+        entries = ([entry(primary, "primary")] if primary else []) + [entry(i, "fallback") for i in chain]
+        flag_on = settings.is_on(settings.NO_MODEL_FALLBACK)
+        mode = settings.model_switch_mode()
+        threshold = settings.number(settings.FAILOVER_AFTER, 60.0) if mode == "timed" else 0.0
+        if not chain:
+            state, why = "no_chain", ("Switching: off - no fallback models are set in Duckwork, so KAME waits for your keys. "
+                                 "Add some with duckwork fallback add and switching is automatic.")
+        elif flag_on:
+            state, why = "off_by_flag", "Switching: off - \"Ignore my fallback list\" is on, so KAME waits for your keys."
+        elif mode == "never":
+            state, why = "off_by_zero", "Fallback: off - 'Fallback' is set to Never."
+        elif mode == "timed" and threshold <= 0:
+            state, why = "off_by_zero", "Switching: off - your time is 0."
+        elif mode == "timed":
+            state, why = "on", (f"Switching: after your time - once you have waited {int(threshold)} s with nothing "
+                                "on screen, Duckwork answers with the next model below, and comes back to your model "
+                                "as soon as it can answer.")
+        else:
+            state, why = "on", ("Switching: automatic - when your provider is busy, Duckwork answers with the next "
+                                "model below at once; when your keys are resting, after a few seconds (KAME learns "
+                                "how long your model usually takes). Your model comes back as soon as it can answer, "
+                                "and the first model in the list is always tried first.")
+        # 1.8.2.7: Duckwork switches at most agent.api_max_retries times in one
+        # message (default 3); past that the turn ends with "No reply".
+        limit = fallback_chain.switch_limit()
+        warning = ""
+        if chain and state == "on" and len(chain) > limit:
+            warning = (f"Duckwork switches model at most {limit} times in one message, and your list has "
+                       f"{len(chain)} fallback models: when the first {limit} are all out, the rest are "
+                       f"never reached and the message ends with no reply. Set agent.api_max_retries: "
+                       f"{len(chain) + 1} in Duckwork' config.yaml to reach all of them. That number is also how "
+                       f"many times Duckwork retries an ordinary error, so raising it makes a failing call try longer.")
+        return {"state": state, "why": why, "threshold_s": threshold, "entries": entries,
+                "switch_limit": limit, "warning": warning}
+    except Exception:
+        logger.debug("kame: could not build the fallback view", exc_info=True)
+        return {"state": "unknown", "why": "", "threshold_s": 0, "entries": []}
+
+
+def _speed_view(binding: Any = None) -> Dict[str, Any]:
+    """The cost readout: the mode, what it may spend, what it did in the last hour, and since start."""
+    try:
+        from . import settings
+        from .core.hedging import HEDGE_TRACKER
+
+        mode = str(settings.text_value(settings.HEDGE_MODE) or "adaptive")
+        balanced, faster = settings.speed_multipliers()
+        cap = {"off": 0, "adaptive": round((balanced - 1.0) * 100), "max": round((faster - 1.0) * 100)}.get(mode, 0)
+        paused: Dict[str, float] = {}
+        mono, wall = time.monotonic(), time.time()
+        for identity, until in list(HEDGE_TRACKER._max_downgraded_until.items()):
+            if until > mono:
+                paused[identity] = round(wall + (until - mono), 1)
+        view = binding.speed_view() if callable(getattr(binding, "speed_view", None)) else {}
+        return {"mode": mode, "cap_pct": cap, "paused_until": paused, **view}
+    except Exception:
+        logger.debug("kame: could not build the speed view", exc_info=True)
+        return {"mode": "adaptive", "cap_pct": 10, "paused_until": {}}
+
+
+def _quota_use_view(binding: Any = None) -> Dict[str, Any]:
+    """Requests per model over the last day, chat vs background jobs, plus a read-only suggestion.
+
+    1.8.2.9 (decisions/0032 A7/A9). Counts change only when a request starts, so the "nothing changed"
+    shortcut of ``publish`` is not defeated. The suggestion names only a model of the user's own list."""
+    empty = {"since": 0.0, "models": {}, "stopped": {}, "suggestion": None}
+    try:
+        view = binding.quota_use_view() if callable(getattr(binding, "quota_use_view", None)) else None
+        if not view:
+            return empty
+        from .core import aux_budget, fallback_chain
+
+        primary, chain = fallback_chain.read()
+        view["suggestion"] = aux_budget.suggest(
+            view["models"], primary, list(chain),
+            lambda entry: (fallback_chain.entry_source(entry) or ("", ""))[0], view["since"])
+        return view
+    except Exception:
+        logger.debug("kame: could not build the quota-use view", exc_info=True)
+        return empty
+
+
+def _pool_rows() -> List[Dict[str, Any]]:
+    try:
+        from .core.carousel import ENGINE
+
+        pools: Dict[str, Dict[str, Any]] = ENGINE.snapshot()
+    except Exception:
+        logger.debug("kame: could not read the pool for the snapshot", exc_info=True)
+        return []
+    rows: List[Dict[str, Any]] = []
+    try:  # 1.8.2.9: the key each running call last put on the wire, for the ring's "answering now"
+        from .core.events import INFLIGHT as _inflight
+
+        on_wire = _inflight.keys_on_the_wire()
+    except Exception:
+        on_wire = {}
+    for identity in sorted(pools):
+        row = pools[identity]
+        live = {fp for owner, fps in on_wire.items()
+                if owner == identity or identity.startswith(owner + ":") or owner.startswith(identity + ":")
+                for fp in fps}
+        key_states = [
+            ([fp, "f", until, kind] if (code == "r" and fp in live) else [fp, code, until, kind])
+            for fp, code, until, kind in (row.get("key_states") or [])
+        ]
+        rows.append(
+            {
+                "identity": identity,
+                "key_states": key_states,          # 1.8.2.9: [fingerprint, code, until_epoch|None, kind]
+                "in_flight": sum(1 for state_row in key_states if state_row[1] == "f"),
+                "keys": int(row.get("keys", 0)),
+                "healthy": int(row.get("healthy", 0)),
+                "resting": int(row.get("resting", 0)),
+                # Seconds until the first key comes back, or null when one is
+                # usable now. The renderer turns it into a clock; keeping it a
+                # number here means a snapshot read one second late is one
+                # second wrong rather than a minute wrong.
+                "soonest_s": row.get("soonest"),
+                "successes": int(row.get("successes", 0)),
+                "failures": int(row.get("failures", 0)),
+                "kinds": list(row.get("kinds") or []),
+                # Keys the provider refused as credentials. Counted apart from
+                # ``resting`` because waiting does not fix one: the panel says
+                # "replace this key" rather than showing a countdown that will
+                # come back round for ever.
+                "invalid": int(row.get("invalid", 0)),
+                "invalid_keys": list(row.get("invalid_keys") or []),
+                # 1.6.0.1. Out of rotation, which is a different sentence from
+                # benched: one asks the reader to wait, the other asks them to
+                # replace a key. The panel could only say the first.
+                "retired": int(row.get("retired", 0)),
+                "retired_keys": list(row.get("retired_keys") or []),
+                # 1.6.0.1. Keys this identity is using that the credential pool
+                # has never held. Not a fault — the carousel adds the key the
+                # agent already carries when the pool does not know it, because
+                # dropping it would narrow what the host would have sent — but
+                # a fact nothing said out loud, and one worth saying: a key
+                # nobody remembers configuring is a key nobody can fix.
+                "outside_pool": list(_outside_pool().get(identity) or []),
+                # Seconds since this pool was last asked for a key, or null if
+                # it never has been. The status bar shows what is in use and
+                # leaves out what is not.
+                "idle_for_s": row.get("idle_for"),
+            }
+        )
+    return rows
+
+
+def _totals(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """One pair of numbers for the status bar, across every pool.
+
+    The chip has room for one fraction. Summing the pools is the only honest
+    way to produce it: showing the first pool would silently pick a winner,
+    and showing nothing until there is exactly one pool would leave the chip
+    blank for anyone using a main model and an auxiliary one.
+    """
+    keys = sum(r["keys"] for r in rows)
+    healthy = sum(r["healthy"] for r in rows)
+    # Credentials the provider rejected outright. Counted apart because
+    # ``healthy`` cannot tell the truth about them: a rejected key is benched
+    # for an hour and no longer benched after it, so it goes back to counting
+    # as ready while the banner above it says, correctly, that waiting will
+    # not repair one. Two numbers on one screen contradicting each other, and
+    # the one in large type was the wrong one.
+    #
+    # The *behaviour* is deliberate and stays: since 1.4.0 KAME does not retire
+    # a key on a 401, because doing that quarantined twenty-one healthy keys on
+    # transient auth failures. It offers them again. It should not call them
+    # ready while it does.
+    rejected = sum(r.get("invalid", 0) for r in rows)
+    retired = sum(r.get("retired", 0) for r in rows)
+    waiting = [r["soonest_s"] for r in rows if r["soonest_s"] is not None]
+    return {
+        "keys": keys,
+        "healthy": healthy,
+        # What is actually available to serve a call, which is the number the
+        # header shows. Floored at zero: a pool where every key was rejected
+        # reports none ready, never a negative.
+        "ready": max(0, healthy - rejected),
+        "rejected": rejected,
+        # Of the rejected, the ones that have stopped being offered entirely.
+        # Never larger than ``rejected``, and the number the header uses to
+        # say "replace" rather than "waiting".
+        "retired": retired,
+        "resting": keys - healthy,
+        # The soonest across every pool that has nothing usable. A pool with a
+        # healthy key reports null, so this is null whenever any lane can still
+        # be served — which is exactly when an ETA would be a lie.
+        "soonest_s": min(waiting) if waiting else None,
+    }
+
+
+def _reply_rows(binding: Any) -> List[Dict[str, Any]]:
+    try:
+        rows = list(getattr(binding, "replies", None) or [])
+    except Exception:
+        return []
+    return [dict(row) for row in reversed(rows[-12:])]
+
+
+def snapshot(binding: Any = None, activity: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """The whole document. Pure — builds, never writes."""
+    rows = _pool_rows()
+    counters = {
+        "calls": int(getattr(binding, "calls", 0) or 0),
+        # 1.6.0.2. When the last of those calls went out, as wall clock, or 0.
+        #
+        # `updated_at` above says when this document was written, which happens
+        # on a timer whether or not anything is using the plugin. This says
+        # when KAME last had a call to route, and it is the difference between
+        # "quiet" and "stopped" — the two things the Events tab could not
+        # separate, because both draw an empty list.
+        "last_call_at": float(getattr(binding, "last_call_at", 0.0) or 0.0),
+        "rotations": int(getattr(binding, "rotations", 0) or 0),
+        "recovered": int(getattr(binding, "recovered", 0) or 0),
+        "surfaced": int(getattr(binding, "surfaced", 0) or 0),
+        # 1.8.2.7: calls handed to Duckwork' fallback list, and dry pools probed
+        # several keys at once (decisions/0025, 0027).
+        "handed_over": int(getattr(binding, "handed_over", 0) or 0),
+        "probe_bursts": int(getattr(binding, "probe_bursts", 0) or 0),
+        "waits": int(getattr(binding, "waits", 0) or 0),
+        "waited_s": float(getattr(binding, "waited_s", 0.0) or 0.0),
+        "mid_stream_cuts": int(getattr(binding, "mid_stream_cuts", 0) or 0),
+        # 1.1.1. ``stream_drops`` is how often a provider stopped in the
+        # middle of an answer; ``resumes`` is how often KAME carried it on
+        # elsewhere; ``stitched`` is how often the result was handed back as
+        # one continuous response. ``mid_stream_cuts`` keeps its old meaning —
+        # a cut the user was actually shown — so the two can be compared.
+        "stream_drops": int(getattr(binding, "stream_drops", 0) or 0),
+        "resumes": int(getattr(binding, "resumes", 0) or 0),
+        "stitched": int(getattr(binding, "stitched", 0) or 0),
+        # 1.1.3. The drops nothing can continue, because the stream stopped
+        # inside a tool call. Counted apart from the rest: they are the ones
+        # that end a turn whatever KAME does, so a pool where this number
+        # climbs is a pool with a key that cannot hold a long stream.
+        "tool_call_cuts": int(getattr(binding, "tool_call_cuts", 0) or 0),
+        # 1.6.0.0. The same drop caught before it reached Duckwork and became
+        # "your previous tool call was too large — do NOT retry". A number
+        # climbing here is a number *not* climbing above it.
+        "tool_call_retries": int(getattr(binding, "tool_call_retries", 0) or 0),
+        # 1.6.0.0, and the only counter here that comes off the *pool*
+        # binding rather than the dispatch one. Benches written against a
+        # credential whose key is not the one the request carried. Zero is the
+        # only healthy value: anything else says the pool's pointer and the
+        # wire disagree about which credential is in use, which is the shape
+        # of every attribution bug this release fixed.
+        "blamed_another_key": int(
+            getattr(globals().get("_pool_binding"), "blamed_another_key", 0) or 0
+        ),
+    }
+    return {
+        "schema": SCHEMA,
+        "version": __version__,
+        # Wall clock, so the renderer can say how old the reading is. A stale
+        # file is the one failure mode a poller cannot detect any other way:
+        # a Duckwork that died mid-turn leaves a snapshot that looks live.
+        "updated_at": time.time(),
+        "pid": os.getpid(),
+        # 1.6.0.1. Which Duckwork wrote this, and for which profile. The
+        # top-level fields still describe one process — whichever wrote last —
+        # because an older panel reads them and must keep working. What is new
+        # is that the panel can now tell whether the document it is looking at
+        # came from the Duckwork it is part of, or from the gateway serving the
+        # phone.
+        "role": role(),
+        "profile": profile_name(),
+        "installed": binding is not None,
+        "reason": str(getattr(binding, "reason", "not installed")),
+        # 1.4.0. `installed` and `reason` describe *registration*, and for nine
+        # days they said `true` / `"active"` on an install whose `core/`
+        # package was not on disk at all — true about registration, worthless
+        # about function, and the only thing anybody could see. `build` is
+        # computed from the bytes actually present, so it cannot describe files
+        # that are missing, and `complete` is the field that says whether this
+        # plugin can do its job. See `integrity.py`.
+        "build": _integrity(),
+        "counters": counters,
+        "pools": rows,
+        "totals": _totals(rows),
+        # What KAME is doing *right now*, or null between calls. The chip reads
+        # this to say "on key 3" while a turn is running and fall back to plain
+        # health when nothing is in flight.
+        "activity": activity,
+        # 1.8.1.9. Whether Duckwork draws KAME's status line on its own spinner
+        # (``notify_turn_status``). When it does, the panel's composer line
+        # stays empty, so the Desktop shows the one line 1.8.1.8 showed.
+        "status_rail": _status_rail(),
+        "gemini_tool_call_fix": _gemini_fix_state(),
+        # 1.6.0.0. The panel's answer to "is it even seeing my keys?".
+        #
+        # Everything above describes what KAME *did*. Nothing described what
+        # it is looking at, and that is the question every report about this
+        # plugin has actually been: a profile where the key separation
+        # "doesn't seem to work", a provider that says the API key is wrong.
+        # Both are answerable in one line each — how many rows the pool has,
+        # how many keys those rows turned out to be, and where they came
+        # from — and neither was anywhere on screen.
+        #
+        # Counts and origins only. Never a key, never a prefix of one.
+        "credentials": _credential_rows(),
+        "settings": _settings_rows(),
+        # 1.8.2.7. Duckwork' own fallback chain, read-only, and whether KAME will
+        # hand a call over to it.
+        "fallback": _fallback_view(rows, binding),
+        # 1.8.2.9 (decisions/0031 J5): what the speed mode has really cost, and where Faster is
+        # stepped back. Counters and epoch deadlines: they change only when a call does.
+        "speed": _speed_view(binding),
+        # 1.8.2.9 (decisions/0032 A7): requests per model over the last day, chat vs background jobs.
+        "quota_use": _quota_use_view(binding),
+        # 1.2.0. The shelves the rows above are sorted onto, titled and
+        # explained here rather than in the panel: the reason one setting is
+        # optional and another is an escape hatch is a fact about the plugin,
+        # and a copy of it in JavaScript is a copy that will disagree.
+        "setting_groups": _setting_groups(),
+        # 1.2.2. The settings whose config.yaml entry has been edited since
+        # this Duckwork started, and which therefore still hold the value they
+        # were read with. The panel says so rather than leaving somebody to
+        # decide, from a screen that shows the old number, whether their edit
+        # was wrong or merely not yet in force.
+        "settings_pending_restart": _settings_pending_restart(),
+        "desktop_ui": _desktop_ui_state(),
+        # The last fifty decisions, newest first, so the panel's Events screen
+        # can answer "why did that stall" without anyone opening a log file.
+        "events": _event_rows(),
+        # 1.8.2.3. The auxiliary tab: title/vision/compression and every
+        # other side channel, kept apart from the chat model's own rotations
+        # so a burst of background traffic cannot bury the conversation.
+        "secondary_events": _secondary_event_rows(),
+        # 1.8.2.6. Calls still running — for the "still waiting" line, so a
+        # background call stuck for an hour says so in one sentence.
+        "inflight": _inflight_rows(),
+        # 1.8.2.8: the last replies of the conversation, newest first - the
+        # model that wrote each and how long it took (decisions/0028 D6).
+        "replies": _reply_rows(binding),
+        # 1.8.2.3. The speed readouts: hedge budgets and learned
+        # thresholds per identity, and the pacer's live windows.
+        "hedge_state": _hedge_state_rows(),
+        "pacing_state": _pacing_state_rows(),
+        # 1.8.2.3. Which build line this is — the panel header shows it so
+        # "which version is actually installed" is one glance, not a guess.
+        # 1.8.2.4: read from the code's own version — 1.8.2.3 wrote the number
+        # here by hand, so every later build would have shown "1.8.2.3".
+        "build_line": __version__,
+        # What became of the last thing the panel asked for. The panel writes a
+        # request and has no other way to learn whether it was accepted.
+        "control": _control_state(),
+        # True when there is nothing to rotate yet. The panel shows a short
+        # "how to start" page instead of a wall of zeroes.
+        "first_run": not rows,
+    }
+
+
+def _credential_rows() -> Dict[str, Any]:
+    """What KAME can see of the pool, per provider, without reading a key.
+
+    Three numbers per provider and one word about where they came from:
+
+    ``rows``
+        What the host stored — one per credential *entry*, which for a
+        multi-key environment variable is one row holding several keys.
+    ``keys``
+        What those rows are after KAME splits them. ``keys > rows`` is the
+        splitter working; ``keys == rows`` on a provider whose variable holds
+        a comma list is the report that started this, visible instead of
+        inferred.
+    ``benched``
+        How many of those the host currently considers spent.
+
+    ``origin`` names the source vocabulary the host used — ``env``,
+    ``config``, ``manual``, ``gh_cli`` — because "I put my keys in the new
+    profile" and "the new profile has a stored row from somewhere else" look
+    identical from the outside and are different problems.
+
+    Read from what the pool binding recorded the last time it touched each
+    pool, because there is nothing to enumerate at snapshot time:
+    ``load_pool()`` builds a new object per call and Duckwork keeps no registry
+    of them. Numbers only — no entry is held and no key is stored.
+    """
+    binding = globals().get("_pool_binding")
+    installed = binding is not None and getattr(binding, "installed", False)
+    out: Dict[str, Any] = {
+        "readable": False,
+        "reason": "the pool binding is not installed",
+        "splitting": bool(getattr(binding, "splitting_multikey", False)),
+        "guarding_container": bool(getattr(binding, "guarding_current", False)),
+        "providers": [],
+    }
+    if not installed:
+        return out
+    try:
+        seen = dict(getattr(binding, "seen_pools", {}) or {})
+        out["providers"] = [
+            {
+                "provider": str(row.get("provider", "")),
+                "rows": int(row.get("rows", 0) or 0),
+                "keys": int(row.get("keys", 0) or 0),
+                "benched": int(row.get("benched", 0) or 0),
+                "origin": str(row.get("origin", "") or ""),
+                "split": bool(row.get("split", False)),
+            }
+            for row in sorted(seen.values(), key=lambda r: str(r.get("provider", "")))
+        ]
+        out["readable"] = True
+        out["reason"] = "" if out["providers"] else "no pool has been used yet"
+    except Exception:
+        logger.debug("kame: could not read the credential pools", exc_info=True)
+        out["reason"] = "the pool could not be read"
+    return out
+
+
+def set_pool_binding(binding: Any) -> None:
+    """Remember the pool binding, so the snapshot can ask it what it sees.
+
+    Separate from ``remember`` above, which holds the dispatch binding: the
+    two are different objects with different jobs, and the counters come from
+    one while the credential picture comes from the other.
+    """
+    global _pool_binding
+    _pool_binding = binding
+
+
+def _settings_rows() -> List[Dict[str, Any]]:
+    """Every KAME setting, described well enough for the panel to edit it.
+
+    Read-only until 1.1.1, when ``control.py`` gave the page a way back and
+    ``settings.describe_all`` gave it something to render: the title, the
+    one-sentence explanation, the value, the default, where the value came
+    from, the range, and whether changing it is consequential enough to ask
+    first. Everything the editor needs is decided here, in the process that
+    owns the settings, rather than restated in JavaScript where it would drift.
+    """
+    try:
+        from . import settings as _settings
+
+        return list(_settings.describe_all())
+    except Exception:
+        logger.debug("kame: could not read settings for the snapshot", exc_info=True)
+        return []
+
+
+def _settings_pending_restart() -> List[str]:
+    """Settings edited in ``config.yaml`` since Duckwork read it.
+
+    Empty on every host without a config surface, and empty — deliberately —
+    for a setting the environment owns, since restarting would not apply that
+    edit either. See ``settings.pending_restart``.
+    """
+    try:
+        from . import settings as _settings
+
+        return list(_settings.pending_restart())
+    except Exception:
+        logger.debug("kame: could not check the config for edits", exc_info=True)
+        return []
+
+
+def _setting_groups() -> List[Dict[str, Any]]:
+    """The shelves, so the panel can title and explain each card."""
+    try:
+        from . import settings as _settings
+
+        return list(_settings.groups())
+    except Exception:
+        logger.debug("kame: could not read the setting groups", exc_info=True)
+        return []
+
+
+def _secondary_event_rows() -> List[Dict[str, Any]]:
+    """The Secondary tab's rows — auxiliary calls only, newest first.
+
+    1.8.2.6: the whole buffer (200), not 50 — the tab now filters by task,
+    and a filter over a quarter of the buffer hid most of every task.
+    """
+    try:
+        from .core.events import SECONDARY_EVENTS
+        return SECONDARY_EVENTS.recent(200)
+    except Exception:
+        return []
+
+
+def _inflight_rows() -> List[Dict[str, Any]]:
+    """Calls that have not finished, longest-waiting first (1.8.2.6)."""
+    try:
+        from .core.events import INFLIGHT
+        return INFLIGHT.rows()
+    except Exception:
+        return []
+
+
+def _hedge_state_rows() -> Dict[str, Any]:
+    """Hedge readouts for the Speed card: budgets, thresholds, cooldowns."""
+    try:
+        from .core.hedging import HEDGE_TRACKER
+        return HEDGE_TRACKER.snapshot()
+    except Exception:
+        return {}
+
+
+def _pacing_state_rows() -> Dict[str, Any]:
+    """Pacer readouts: per-scope RPM, window occupancy, next-free."""
+    try:
+        from .core.pacing import PACER
+        return PACER.snapshot()
+    except Exception:
+        return {}
+
+
+def _event_rows() -> List[Dict[str, Any]]:
+    """The recent decisions. Fingerprints and counts only — never a key."""
+    try:
+        from .core.events import EVENTS
+
+        return EVENTS.recent()
+    except Exception:
+        logger.debug("kame: could not read the events for the snapshot", exc_info=True)
+        return []
+
+
+def _control_state() -> Dict[str, Any]:
+    """What happened to the panel's last request, so it can stop waiting."""
+    try:
+        from . import control
+
+        return control.last_result()
+    except Exception:
+        logger.debug("kame: could not read the control result", exc_info=True)
+        return {}
+
+
+def _integrity() -> Dict[str, Any]:
+    """What the install actually contains, for every reader of the snapshot.
+
+    Read from the value `register()` computed rather than recomputed here: the
+    fingerprint walks the package directory, and the snapshot is written on a
+    twenty-second heartbeat. Hashing every file on every tick to answer a
+    question whose answer cannot change without a restart would be a lot of
+    disk for nothing.
+    """
+    try:
+        from . import _INTEGRITY, host_text
+
+        return {
+            "complete": bool(_INTEGRITY.get("complete", True)),
+            "fingerprint": str(_INTEGRITY.get("fingerprint") or ""),
+            "missing": list(_INTEGRITY.get("missing_required") or []),
+            # Where the host's appended-guidance blocks came from. A plugin
+            # silently running on fallback literals is one Duckwork reword away
+            # from reading its own host's handwriting as evidence, which is the
+            # bug that benched fourteen keys for an hour at a time.
+            "guidance": host_text.guidance_source(),
+        }
+    except Exception:
+        logger.debug("kame: could not read the install report", exc_info=True)
+        return {"complete": True, "fingerprint": "", "missing": [], "guidance": ""}
+
+
+def _desktop_ui_state() -> Dict[str, Any]:
+    """Whether this release's UI file reached the door Desktop loads from.
+
+    Read by nothing on screen -- the panel that would show it is the panel
+    that is missing when this is False. It is here for the log, for `/kame`,
+    and for the next person asking why the chip did not appear.
+    """
+    try:
+        from . import desktop_ui
+
+        return desktop_ui.report()
+    except Exception:
+        logger.debug("kame: could not read the desktop install state", exc_info=True)
+        return {"installed": False, "reason": "unavailable", "path": ""}
+
+
+def _status_rail() -> bool:
+    try:
+        from .transport import status_rail_available
+
+        return bool(status_rail_available())
+    except Exception:
+        return False
+
+
+def _gemini_fix_state() -> Dict[str, Any]:
+    """1.8.1.9: Duckwork fixed the parallel tool-call slots itself (#111686), so
+    KAME no longer patches the translator. Kept in the snapshot so an older
+    panel reading this field gets an honest answer instead of a missing key."""
+    return {"applied": False, "reason": "fixed in Duckwork itself", "repaired": 0}
+
+
+def neighbours(now: Optional[float] = None) -> List[Dict[str, Any]]:
+    """The other live Duckwork processes writing this file, newest first.
+
+    The panel works this out for itself, from the document it already read.
+    ``/kame doctor`` has no document — it builds its own section in memory —
+    so without this it would have said nothing about the neighbours at all,
+    which is the single most useful thing on the panel's own Overview: a
+    gateway on last month's build is why a fix that is definitely installed is
+    definitely not working on half the traffic.
+
+    Never raises. A doctor that cannot read the file reports one process,
+    which is what it can see.
+    """
+    now = time.time() if now is None else now
+    path = state_path()
+    if path is None:
+        return []
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    if not isinstance(document, dict):
+        return []
+    sections = document.get("processes")
+    if not isinstance(sections, dict):
+        return []
+    mine = str(os.getpid())
+    out: List[Dict[str, Any]] = []
+    for pid, section in sections.items():
+        if str(pid) == mine or not isinstance(section, dict):
+            continue
+        try:
+            seen_at = float(section.get("updated_at"))
+        except (TypeError, ValueError):
+            continue
+        if now - seen_at > _PROCESS_STALE_S:
+            continue
+        out.append(section)
+    out.sort(key=lambda section: section.get("updated_at", 0.0), reverse=True)
+    return out
+
+
+def _file_stamp(path: Path):
+    """Identity for the exact atomic document; absent identity disables reuse."""
+    try:
+        stat = path.stat()
+        if not stat.st_ino:
+            return None
+        return stat.st_dev, stat.st_ino, stat.st_mtime_ns, stat.st_size
+    except OSError:
+        return None
+
+
+def _read_for_merge(path: Path) -> str:
+    stamp = _file_stamp(path)
+    if stamp is not None and str(path) == _cached_path and stamp == _cached_stamp:
+        return _cached_document
+    return path.read_text(encoding="utf-8")
+
+
+def _merged(path: Path, mine: Dict[str, Any]) -> Dict[str, Any]:
+    """The file as it should stand once this process has had its say.
+
+    One section per Duckwork, each holding that process's whole view. Nothing is
+    shared and nothing is duplicated: what a reader wants is *one* process's
+    picture — its pools, its events, the settings it resolved — and which one
+    depends on who is asking. The Desktop panel wants the Desktop's; a
+    diagnostic wants all of them.
+
+    The alternative, kept until 1.6.0.1, was one document per file with every
+    process writing all of it. That is correct on a machine running one
+    Duckwork and silently wrong on a machine running two, which is the ordinary
+    shape here: the Desktop serves the app and the gateway serves the phone,
+    both load this plugin, both use the same keys.
+
+    Read-modify-write, which is neither free nor atomic across processes.
+    Both are acceptable and neither is an accident:
+
+    * The read is a few kilobytes, on a path already throttled to one write a
+      second and only when something changed.
+    * A lost update costs one section one heartbeat, because the process it
+      describes rewrites its own on the next one. What it buys is that no
+      process can erase another's news — which is what was happening on this
+      machine several times a second.
+
+    No compatibility copy is left at the top level. A panel older than this
+    schema refuses the document by its number and says so in a sentence, which
+    is a better failure than half-rendering somebody else's process.
+    """
+    now = time.time()
+    sections: Dict[str, Any] = {}
+    try:
+        existing = json.loads(_read_for_merge(path))
+    except (OSError, ValueError):
+        existing = None
+    if isinstance(existing, dict):
+        found = existing.get("processes")
+        if not isinstance(found, dict):
+            # Written by a KAME older than this schema. The document *is* one
+            # process's section — that is exactly what it was — so it is kept
+            # as one rather than thrown away, and it ages out like any other.
+            found = {str(existing.get("pid") or "?"): existing}
+        for pid, section in found.items():
+            if not isinstance(section, dict):
+                continue
+            if str(pid) == str(mine.get("pid")):
+                # Ours is written below. A stale copy of ourselves would be
+                # worse than none.
+                continue
+            try:
+                seen_at = float(section.get("updated_at"))
+            except (TypeError, ValueError):
+                continue
+            if now - seen_at > _PROCESS_STALE_S:
+                # That Duckwork is gone. Keeping it would leave a dead process
+                # on the panel for ever, and the panel would be right to
+                # believe the file.
+                continue
+            sections[str(pid)] = section
+    sections[str(mine.get("pid"))] = mine
+    return {
+        "schema": SCHEMA,
+        # The freshest thing in the file, so a reader can age the whole
+        # document without walking it.
+        "updated_at": mine.get("updated_at", now),
+        "processes": sections,
+    }
+
+
+def publish(
+    binding: Any = None,
+    *,
+    activity: Optional[Dict[str, Any]] = None,
+    force: bool = False,
+) -> bool:
+    """Write the snapshot. Returns whether bytes reached the disk.
+
+    Never raises. This is called from the rotation path, and a status readout
+    that can break a chat turn is worse than no status readout at all — the
+    whole reason the live line went through ``thinking.delta`` in the first
+    place.
+    """
+    global _last_written, _last_write_at, _disabled_reason
+    global _cached_path, _cached_stamp, _cached_document
+    if binding is None:
+        # A caller with nothing to hand means "publish what is installed", not
+        # "publish that nothing is installed".
+        binding = _binding
+    path = state_path()
+    if path is None:
+        _disabled_reason = "this Duckwork exposes no home directory"
+        return False
+    try:
+        mine = snapshot(binding, activity)
+    except Exception as exc:
+        _disabled_reason = f"could not build the snapshot: {type(exc).__name__}"
+        logger.debug("kame: could not build the snapshot", exc_info=True)
+        return False
+
+    now = time.monotonic()
+    with _lock:
+        # `updated_at` changes on every build, so comparing whole documents
+        # would never match. Compare everything else — and compare *before*
+        # the other processes' sections are merged in, or a busy gateway would
+        # make this Duckwork rewrite the file on every heartbeat to record
+        # somebody else's news.
+        try:
+            comparable = _without_clock(json.dumps(mine, sort_keys=True))
+        except Exception as exc:
+            _disabled_reason = f"could not build the snapshot: {type(exc).__name__}"
+            logger.debug("kame: could not serialise the snapshot", exc_info=True)
+            return False
+        if not force and comparable == _last_written and (now - _last_write_at) < _MIN_INTERVAL_S:
+            return False
+        try:
+            document = json.dumps(_merged(path, mine), sort_keys=True)
+        except Exception as exc:
+            _disabled_reason = f"could not merge the snapshot: {type(exc).__name__}"
+            logger.debug("kame: could not merge the snapshot", exc_info=True)
+            return False
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            # Atomic: the reader polls, and a torn read would show an error
+            # where the truth is "nothing changed".
+            handle, temporary = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
+            try:
+                with os.fdopen(handle, "w", encoding="utf-8") as stream:
+                    stream.write(document)
+                # Capture OUR inode before replace: a foreign writer may replace
+                # the destination immediately afterward. Its stamp must never
+                # be paired with our cached text.
+                stamp = _file_stamp(Path(temporary))
+                _replace_patiently(temporary, path)
+            except BaseException:
+                try:
+                    os.unlink(temporary)
+                except OSError:
+                    pass
+                raise
+        except Exception as exc:
+            _disabled_reason = f"could not write {path}: {type(exc).__name__}"
+            logger.debug("kame: could not write the snapshot", exc_info=True)
+            return False
+        _last_written = comparable
+        _last_write_at = now
+        _cached_path, _cached_stamp, _cached_document = str(path), stamp, document
+        _disabled_reason = ""
+    _sweep_once(path.parent)
+    return True
+
+
+# --- 1.8.2.9 (decisions/0031, step 0): the snapshot is built OFF the request thread --------------
+#
+# Until 1.8.2.8 the transport called ``publish`` itself, at the start of every attempt and after
+# most decisions: a full snapshot (two JSON dumps, a file read, a file write, up to 80 ms of
+# sleeps when the panel was reading) on the thread that is waiting for the model. Measured with
+# ``tools/bench_publish.py``: about 10 ms alone, 27 ms (p95 50 ms) with the panel polling the file.
+# Now the request thread only leaves a note; the heartbeat thread (one per process, already there
+# for the panel's requests) wakes at once and writes. With no heartbeat running (a test, a process
+# that never registered) the note is written inline, exactly as before.
+_wake = threading.Event()
+_pending_lock = threading.Lock()
+_pending: Optional[Tuple[Any, Optional[Dict[str, Any]]]] = None
+_current_activity: Optional[Dict[str, Any]] = None
+_consumers = 0
+_in_flight = False
+
+
+def add_consumer() -> None:
+    """The heartbeat thread announces itself: notes are left for it, not written inline."""
+    global _consumers
+    with _pending_lock:
+        _consumers += 1
+
+
+def remove_consumer() -> None:
+    global _consumers
+    with _pending_lock:
+        _consumers = max(0, _consumers - 1)
+    _wake.set()
+
+
+def request_publish(binding: Any = None, *, activity: Optional[Dict[str, Any]] = None) -> None:
+    """Ask for a snapshot from the request thread: one lock, two assignments, one ``Event.set()``.
+
+    The last request wins (``activity`` included, ``None`` meaning the call ended), and
+    the heartbeat keeps the last activity for its own periodic writes so the panel's
+    'Right now' line does not fall back to idle every few seconds during a long call."""
+    global _pending, _current_activity
+    with _pending_lock:
+        if _consumers > 0:
+            _pending = (binding, activity)
+            _current_activity = activity
+            queued = True
+        else:
+            queued = False
+    if queued:
+        _wake.set()
+    else:
+        publish(binding, activity=activity)
+
+
+def take_pending() -> Optional[Tuple[Any, Optional[Dict[str, Any]]]]:
+    global _pending, _in_flight
+    with _pending_lock:
+        note, _pending = _pending, None
+        if note is not None:
+            _in_flight = True
+        return note
+
+
+def current_activity() -> Optional[Dict[str, Any]]:
+    return _current_activity
+
+
+def drain_pending() -> bool:
+    """Write the note left by the request thread, if any. Run by the heartbeat thread."""
+    global _in_flight
+    note = take_pending()
+    if note is None:
+        return False
+    try:
+        publish(note[0], activity=note[1])
+    finally:
+        _in_flight = False
+    return True
+
+
+def drain(timeout: float = 2.0) -> bool:
+    """Wait until nothing is waiting to be written (tests, shutdown). ``True`` when settled."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        with _pending_lock:
+            settled = _pending is None and not _in_flight
+        if settled:
+            return True
+        time.sleep(0.005)
+    return False
+
+
+def _replace_patiently(temporary: str, path: Any, tries: int = 5, pause_s: float = 0.02) -> None:
+    """``os.replace`` that survives a reader holding the file for a moment.
+
+    1.8.2.7. On Windows the panel's read (``dashboard/plugin_api.py``) opens
+    ``state.json`` without delete-sharing, and for those milliseconds a replace
+    fails with ``PermissionError``; the snapshot was then skipped until the next
+    heartbeat. A few short retries, then the original error.
+    """
+    for attempt in range(tries):
+        try:
+            os.replace(temporary, path)
+            return
+        except PermissionError:
+            if attempt + 1 >= tries:
+                raise
+            time.sleep(pause_s)
+
+
+# Stale temporary files are swept at most once per process. Orphans only ever
+# accumulate across restarts, so a scan per publish would be a directory
+# listing on the rotation path in exchange for nothing.
+_swept = False
+
+
+def _sweep_once(directory: Any) -> None:
+    """Remove temporary files a previous run never got to rename.
+
+    The write above is atomic and cleans up after itself on every exception.
+    What it cannot clean up after is not running: ``os.replace`` is the last
+    statement, and a process killed between ``mkstemp`` and that line leaves
+    the temporary behind with nobody left to unlink it.
+
+    That is not hypothetical. The owner's own plugin-data directory holds six
+    of them — three empty, three with a snapshot in them, 40 KB in total —
+    one per time Duckwork Desktop was closed or restarted mid-write. Nothing
+    ever removed them and nothing ever would have.
+
+    Two rules keep this from touching a file that is still in use:
+
+    * only names ``mkstemp`` produces, in KAME's own state directory;
+    * only files older than a minute, which is far longer than the gap this
+      leaks in and means a second Duckwork process writing right now is safe.
+
+    Failures are ignored on purpose. This runs after the snapshot has already
+    been written, and tidying is never worth a raised exception on the
+    rotation path.
+    """
+    global _swept
+    if _swept:
+        return
+    _swept = True
+    try:
+        cutoff = time.time() - 60.0
+        for candidate in directory.glob("tmp*.tmp"):
+            try:
+                if candidate.is_file() and candidate.stat().st_mtime < cutoff:
+                    candidate.unlink()
+            except OSError:
+                continue
+    except Exception:  # pragma: no cover - a listing that cannot be done
+        logger.debug("kame: could not sweep stale snapshot temporaries", exc_info=True)
+
+
+def _without_clock(document: str) -> str:
+    """The document minus the fields that change on every build.
+
+    Used only for the "has anything actually changed" test. Parsing and
+    re-serialising is cheap next to the file write it avoids.
+    """
+    try:
+        loaded = json.loads(document)
+        loaded.pop("updated_at", None)
+        return json.dumps(loaded, sort_keys=True)
+    except Exception:
+        return document
+
+
+def clear() -> None:
+    """Forget the write throttle. For tests, and for a pool that was replaced."""
+    global _last_written, _last_write_at
+    global _cached_path, _cached_stamp, _cached_document
+    with _lock:
+        _last_written = None
+        _last_write_at = 0.0
+        _cached_path, _cached_stamp, _cached_document = "", None, ""

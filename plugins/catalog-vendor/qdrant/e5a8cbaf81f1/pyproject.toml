@@ -1,0 +1,116 @@
+[project]
+name = "duckwork-plugin-qdrant"
+version = "0.1.8"
+description = "Self-hostable Qdrant vector-memory backend for Duckwork Agent"
+readme = "README.md"
+requires-python = ">=3.11,<3.15"
+license = { text = "MIT" }
+authors = [{ name = "Hermes Agent community" }]
+keywords = ["duckwork", "qdrant", "memory", "vector-search", "plugin"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Database :: Database Engines/Servers",
+]
+
+# The sole dependency authority for this plugin. plugin.yaml's
+# python_dependencies mirrors these for documentation — core parses the manifest
+# but never auto-installs from it, so this file is what resolves the environment.
+dependencies = [
+    # 1.10.0 is the oldest floor with query_points + Prefetch + FusionQuery;
+    # the upper bound is the next major. A newest-release floor (e.g. >=1.14)
+    # would exclude working older servers for no reason.
+    "qdrant-client>=1.10.0,<2",
+    # Both embedder backends ship. fastembed (ONNX Runtime, CPU-only) is the
+    # default: measured 287 MB peak RSS against sentence-transformers'
+    # 2,191 MB, and 0.01 s vs 18.24 s to first embed. ST stays a first-class
+    # option because it is materially faster on a GPU host. The plugin only
+    # calls SentenceTransformer(...).encode(...), stable since 2.x.
+    # Bounded on both ends, per catalog rule 9 (bare floors get a request for
+    # the oldest API-compatible floor plus an upper bound).
+    #
+    # Lower bound measured, not guessed: the plugin only ever touches
+    # TextEmbedding(model_name=..., cache_dir=...) and .embed(). fastembed
+    # 0.4.0 already accepts both (verified by installing that exact version and
+    # running the same call), so 0.4.0 is the oldest API-compatible floor --
+    # NOT a floor on the newest release.
+    #
+    # Upper bound = next major. 0.x majors break API (0.8 changed the model
+    # registry surface); the plugin is tested against 0.8.1, the version
+    # uv.lock pins. Bounding at <1 stops a future fastembed release from
+    # silently changing the vector space under an existing collection.
+    "fastembed>=0.4.0,<1",
+]
+
+# sentence-transformers is an OPTIONAL EXTRA, not a runtime dependency.
+#
+# It was a hard dependency until 2026-10-02, which made every install pull
+# PyTorch transitively: measured 711 MB of torch (1.2 GB site-packages total)
+# in our own dev venv, against fastembed's 62 MB of onnxruntime. The default
+# backend never touches it, so the "sleek default install" claim was false as
+# written -- true of peak RSS (287 MB), false of disk.
+#
+# The code degrades cleanly without it: embedder.py raises a clear
+# EmbeddingConfigError naming this extra, so selecting
+# memory.qdrant.embedder=sentence-transformers without it is a good error, not
+# a crash. Duckwork' installer has no extras mechanism (`duckwork plugins install`
+# takes no --extra flag), so the install path is "install qdrant, then approve
+# the sentence-transformers dependency" or `pip install
+# 'duckwork-plugin-qdrant[gpu]'` -- see README.
+[project.optional-dependencies]
+gpu = ["sentence-transformers>=2.7.0,<7"]
+# torch itself stays undeclared: it is transitive, and ~5.3 GB in a CUDA build
+# is not ours to pin.
+
+[dependency-groups]
+# torch is listed here (dev only) so the source pin below binds: uv's
+# [tool.uv.sources] applies to direct dependencies, and sentence-transformers
+# needs torch for the vector-parity tests. Not a runtime declaration.
+dev = ["pytest>=8.0,<10", "ruff==0.15.10", "torch>=2.0"]
+
+# This is a directory plugin, not an importable distribution — Duckwork loads it
+# by directory path from $DUCKWORK_HOME/plugins/qdrant/, so there is nothing to
+# build or install into site-packages. `package = false` makes `uv sync` install
+# dependencies only.
+[tool.uv]
+package = false
+
+# torch for dev/CI comes from PyTorch's CPU index. PyPI's default linux torch
+# wheel is the CUDA build (~5.2 GB incl. nvidia-* wheels); this plugin never
+# uses CUDA (runtime default is fastembed/ONNX). `explicit = true` keeps the
+# mirror from ever serving *other* packages (uv's first-index strategy would
+# otherwise stop at PyTorch's stale `requests`), and the sources pin below is
+# what routes torch there. End-user installs are unaffected: duckwork reads only
+# [project].dependencies from a plugin pyproject (pm/plugin_declarations.py),
+# never [tool.uv] tables or dependency-groups.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "allow_real_home_io: needs a real Qdrant server / real filesystem; see the live_qdrant fixture",
+]
+
+# Whole-tree lint. The tree stays clean under this config — no changed-files
+# workaround (the peer plugin needed one because ~423 violations had already
+# accumulated tree-wide; this codebase is small enough that never happening
+# is the cheaper option).
+#
+# E,F  pyflakes + pycodestyle errors (line length: default 88)
+# I    isort — import order
+# UP   pyupgrade — modern syntax; py311 = the floor duckwork core itself
+#      requires (>=3.11,<3.15), so the plugin never claims older
+# B    bugbear — real footguns: B904 exception chaining, B905 zip strict
+# W    pycodestyle warnings
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]

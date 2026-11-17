@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Node (only ever transient: this repo ships no build step and no runtime deps)
+node_modules/
+
+# Plugin runtime artifacts
+.duckwork-catalog.json
+.install-metadata.json
+plugin-data/
+
+# Plan-mode artifacts (working plans live here; the plan itself is not a deliverable)
+.duckwork/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.log
+.env
+.env.*

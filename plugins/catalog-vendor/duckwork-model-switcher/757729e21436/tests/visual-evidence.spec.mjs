@@ -1,0 +1,93 @@
+import { test, expect } from '@playwright/test';
+import { setProvider, setModel } from "./route-helpers.mjs";
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+
+const out = path.join(process.env.TMPDIR, 'model-switcher-visual');
+const files = ['ui/src/main.jsx', 'ui/src/api.js', 'ui/src/styles.css', 'dashboard/dist/index.js'];
+const digest = crypto.createHash('sha256');
+for (const file of files) digest.update(fs.readFileSync(file));
+const lineage = { repo: process.cwd(), commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  surfaceDigest: digest.digest('hex'), sourceFiles: files, captureBoundary: 'Compiled UI in same-origin real-router SDK fixture with real FastAPI/canonical save against isolated home; no production mutation' };
+
+for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+  test(`observed UI captures and interactive layout at ${viewport.width}px`, async ({ page }) => {
+    fs.mkdirSync(out, { recursive: true });
+    await page.setViewportSize(viewport);
+    const consoleErrors = [], failedRequests = [], captures = [];
+    page.on('pageerror', error => consoleErrors.push(error.message));
+    page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+    page.on('requestfailed', request => failedRequests.push({ url: request.url(), error: request.failure()?.errorText }));
+    // Same-origin real SDK transport: no mock API or cross-server route
+    // interception. Public host calls and plugin transforms reach one lab app.
+    async function capture(state) {
+      const filename = path.join(out, `${viewport.width}-${state}.png`);
+      if (state === 'operation') await page.evaluate(() => scrollTo(0, 0));
+      await page.screenshot({ path: filename, fullPage: state !== 'operation' });
+      const bounds = await page.evaluate(() => ({ width: innerWidth, documentWidth: document.documentElement.scrollWidth }));
+      captures.push({ state, file: filename, viewport, bounds });
+      expect(bounds.documentWidth, `${state} horizontal overflow`).toBeLessThanOrEqual(viewport.width);
+    }
+    await page.goto('http://localhost:8932/fixture-real.html');
+    await expect(page.getByLabel('New provider', { exact: true })).toBeVisible();
+    await capture('idle');
+    await page.getByLabel('Profile research', { exact: true }).check();
+    await expect(page.locator('tr[data-row^="default/"]')).toHaveCount(0);
+    await capture('profile-filter');
+    if (viewport.width < 600) {
+      const table = page.getByTestId('matrix-scroll');
+      await table.focus();
+      await expect(table).toBeFocused();
+      await page.keyboard.press('ArrowRight');
+      await expect.poll(() => table.evaluate(node => node.scrollLeft)).toBeGreaterThan(0);
+      await table.evaluate(node => { node.scrollLeft = 0; });
+    }
+    await page.getByRole('button', { name: 'All profiles', exact: true }).click();
+    await page.getByLabel('Select default main', { exact: true }).check();
+    await setProvider(page, 'zhipu');
+    await setModel(page, 'glm-5.3-flash');
+    await page.getByLabel('I acknowledge unknown-cost routes').check();
+    await page.getByRole('button', { name: 'Preview changes', exact: true }).click();
+    await expect(page.getByTestId('preview-panel')).toBeVisible();
+    await capture('preview');
+    // Editing the reviewed route invalidates the review BEFORE apply: the
+    // panel clears and Apply is disabled (the changed review lifecycle).
+    await setModel(page, 'glm-5.3-flash-edited');
+    await expect(page.getByTestId('preview-panel')).toHaveCount(0);
+    await expect(page.getByTestId('apply-custom')).toBeDisabled();
+    await capture('invalidated');
+    await setModel(page, 'glm-5.3-flash');
+    await page.getByRole('button', { name: 'Preview changes', exact: true }).click();
+    await expect(page.getByTestId('preview-panel')).toBeVisible();
+    await page.getByTestId('apply-custom').click();
+    await expect(page.getByTestId('operation-drawer')).toBeVisible();
+    await expect(page.getByTestId('result-default')).toContainText('Applied + read back');
+    const drawer = await page.getByTestId('operation-drawer').boundingBox();
+    expect(drawer.x).toBeGreaterThanOrEqual(0);
+    expect(drawer.x + drawer.width).toBeLessThanOrEqual(viewport.width);
+    await page.getByRole('button', { name: 'Close operation drawer' }).focus();
+    await expect(page.getByRole('button', { name: 'Close operation drawer' })).toBeFocused();
+    await capture('operation');
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('operation-drawer')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Show last operation' }).click();
+    await page.getByTestId('undo-guard').check();
+    const enriched = page.waitForResponse(response => response.url().endsWith('/state') &&
+      response.request().method() === 'POST');
+    await page.getByTestId('undo-button').click();
+    await expect(page.getByTestId('result-default')).toContainText('Restored');
+    await expect(page.getByTestId('live-status')).toContainText('Undo finished');
+    // Include the out-of-band host enrichment in the observed journey.
+    expect((await (await enriched).json()).ok).toBe(true);
+    expect(await page.evaluate(() => window.__realSdkCalls.some(
+      call => call.url.startsWith('/api/model/options?')))).toBe(true);
+    fs.writeFileSync(path.join(out, `${viewport.width}-manifest.json`), JSON.stringify({
+      lineage, viewport, captures, consoleErrors, failedRequests, observedAt: new Date().toISOString(),
+      journeys: ['profile filter and reset', 'review and edit-invalidation', 'review and apply',
+        'keyboard close and reopen', 'guarded undo'] }, null, 2));
+    expect(consoleErrors).toEqual([]);
+    expect(failedRequests).toEqual([]);
+  });
+}

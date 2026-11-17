@@ -1,0 +1,185 @@
+# web-search-plus FAQ
+
+## Why did SerpBase not get used after I set `SERPBASE_API_KEY`?
+
+Because SerpBase is explicit-opt-in for automatic routing. The key enables direct calls:
+
+```python
+web_search_plus(query="best DAC reviews", provider="serpbase")
+```
+
+To let `provider="auto"` or fallback select SerpBase, opt in:
+
+```bash
+python ~/.duckwork/plugins/web-search-plus/setup.py config set-auto-allow serpbase on
+```
+
+Turn it back off with:
+
+```bash
+python ~/.duckwork/plugins/web-search-plus/setup.py config set-auto-allow serpbase off
+```
+
+## Which provider gets picked when multiple providers are configured?
+
+Automatic routing assigns the query one of eight intents (academic, community, docs, general, local, news, security, shopping) and tries Brave first, except Exa for academic and docs queries and Serper for security and shopping queries. Providers without a key, in `disabled_providers`, or with `auto_allow=false` are skipped; the rest of the chain follows `auto_routing.provider_priority`. The router does not score providers per query.
+
+The default priority is Brave, Serper, Exa, Tavily, You.com, Firecrawl, Linkup, Parallel, then SerpBase, Querit, SearXNG and Keenable. SerpBase and Querit default to explicit/guarded use. To use your own order for every query, run `setup.py config set-order exa,serper,brave` (`set-order auto` switches back).
+
+For the exact flow, see [Routing](ROUTING.md) and [Architecture](ARCHITECTURE.md#routing-engine).
+
+## Which search or extraction provider order should I use?
+
+Measure instead of guessing: run the built-in provider bench, which races your configured providers against a small fixed query suite and recommends an `auto_routing.provider_priority` order ranked by success rate, median latency, and simple quality signals:
+
+```bash
+duckwork web-search-plus bench
+# or, from the plugin directory with the keys exported:
+python3 search.py --bench
+```
+
+The bench never changes your config — it prints the recommended **search** priority plus the exact `config set-priority` command to apply it. With the default `auto_routing.order: measured`, that priority only orders the fallback chain; to make the bench order the first choice for every query, apply the same list with `config set-order`. Bench runs call providers directly, so they do not trigger cooldowns or feed the latency statistics that time the fallback, but they do spend a few real API calls per provider.
+
+Extraction has a separate order because search quality and extraction quality are different jobs. Configure it independently:
+
+```bash
+python ~/.duckwork/plugins/web-search-plus/setup.py config set-extract-priority serper,parallel,tavily,exa,linkup,firecrawl,you,keenable
+```
+
+This writes `auto_routing.extract_provider_priority`; it never changes search `provider_priority`. Omitted extract-capable providers are appended in registry order. See [User Guide → Bench your providers](USER_GUIDE.md#bench-your-providers).
+
+## How do I force one provider?
+
+Per call:
+
+```python
+web_search_plus(query="Duckwork Agent docs", provider="you")
+```
+
+Persistently:
+
+```bash
+python ~/.duckwork/plugins/web-search-plus/setup.py config set-default you
+```
+
+Re-enable auto-routing later:
+
+```bash
+python ~/.duckwork/plugins/web-search-plus/setup.py config set-routing on
+```
+
+## What happens if all providers fail?
+
+The tool returns a structured error or warning metadata instead of fabricating results. In fallback paths, the plugin keeps partial results when it has them. Providers with repeated failures enter cooldown and are skipped temporarily.
+
+Typical causes:
+
+- missing key
+- quota or rate limit
+- provider outage
+- network timeout
+- bad or unsupported query parameters
+
+## Why is my new key not detected?
+
+Since 5.1, Web Search Plus reads keys only from your active Duckwork profile. A key kept only in the plugin folder's `.env` or in `~/.duckwork/plugins/.env` is not seen; store it in the profile:
+
+```bash
+duckwork config set YOU_API_KEY <key>
+duckwork web-search-plus status
+```
+
+A new or changed key applies from your next message on the gateway (Telegram, Discord, API); in the interactive CLI run `/reload` first. To switch a provider off, set its key to an empty value (`duckwork config set BRAVE_API_KEY ""`): `duckwork config unset` removes the line, but a key Duckwork does not know by name stays active until Duckwork restarts. With several Duckwork profiles, store the key in the profile that runs the agent.
+
+## How do I cap spend?
+
+Use fewer providers, pin cheaper providers, keep extraction capped, and avoid research mode unless needed.
+
+Useful controls:
+
+- `count` limits search result count.
+- `mode="normal"` avoids multi-provider research fanout.
+- `research_time_budget` limits research-mode wall-clock work between steps.
+- `setup.py config set-default <provider>` pins search to one provider.
+- `setup.py config disable <provider>` removes a provider from auto-routing.
+- `setup.py config set-auto-allow <provider> off` keeps a provider explicit-only.
+
+These are plugin-side controls, not a billing guarantee. Providers own their own pricing and rate limits.
+
+## Why do SerpBase results differ from Google?
+
+Different SERP APIs can have different freshness, ranking, localization, personalization, vertical support, and parsing behavior. Treat SerpBase as a Google-like SERP provider, not as a promise of exact Google parity.
+
+## Can I run with only one provider?
+
+Yes. Configure one search-capable provider and pin it if you want predictable behavior:
+
+```bash
+duckwork config set YOU_API_KEY <key>
+duckwork web-search-plus config set-default you
+```
+
+Extraction requires an extraction-capable provider such as Linkup, Firecrawl, Tavily, Exa, Parallel, You.com, or the separately installed local DonSeTch sidecar.
+
+## Can I run fully offline?
+
+No. The plugin calls external provider APIs for search and extraction. You can use a self-hosted SearXNG instance or local DonSeTch sidecar, but searches and fetched URLs still produce outbound requests to public engines or destination websites. Local and keyless do not mean offline or anonymous.
+
+## Does the plugin log or send results anywhere else?
+
+The normal data flow is:
+
+```text
+Duckwork tool call → web-search-plus plugin → configured provider API or local DonSeTch sidecar → plugin response → Duckwork agent
+```
+
+The plugin writes local cache files and provider health state under the cache directory. It does not add a separate analytics service. Provider APIs still receive the queries or URLs you ask them to process.
+
+## Where is the cache?
+
+By default the cache directory is near the plugin install under the Duckwork plugin cache area. Override it with:
+
+```bash
+export WSP_CACHE_DIR=/path/to/cache
+```
+
+Search cache TTL is 1 hour. CLI tests can bypass cache with:
+
+```bash
+python3 search.py --query "Duckwork Agent" --provider auto --no-cache
+```
+
+## What do I do about repeated 429 or quota errors?
+
+- Wait for the provider quota window to reset.
+- Disable that provider temporarily:
+
+```bash
+python ~/.duckwork/plugins/web-search-plus/setup.py config disable brave
+```
+
+- Pin a different provider:
+
+```bash
+python ~/.duckwork/plugins/web-search-plus/setup.py config set-default tavily
+```
+
+- Reduce fanout by avoiding `mode="research"`.
+
+Repeated provider failures are cooled down automatically, but provider-side quota exhaustion still needs provider-side quota management.
+
+## How do I debug routing decisions?
+
+Use `quality_report=True` or CLI `--quality-report`:
+
+```python
+web_search_plus(query="best bookshelf speakers under 1000", quality_report=True)
+```
+
+```bash
+python3 search.py --query "best bookshelf speakers under 1000" --provider auto --quality-report --compact
+```
+
+Look for the selected provider, the intent and its signals, skipped providers, cooldown skips, and `auto_allow_excluded`.
+
+For `--explain-routing` and a generated reference of every intent with its signals and first provider, see [Routing Reference](ROUTING.md).

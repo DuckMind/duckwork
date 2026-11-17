@@ -1,0 +1,278 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+"""Scripted allow/deny transcript. No Duckwork process, no API key."""
+
+from __future__ import annotations
+
+import time
+from typing import Any, Optional
+
+from tenuo import SigningKey, Subpath, Warrant, Wildcard
+
+from duckwork_tenuo.duckwork_guard import DuckworkGuard
+
+# Lines CI and the README both pin. Do not reword without updating both.
+# Denial lines print the real tool result first, then an editorial gloss after "←".
+CRON_ALLOW = "ALLOW  read_file  path=/data/reports/q3.csv"
+CRON_DENY_PASSWD = "DENY   read_file  path=/opt/private/payroll.csv"
+CRON_DENY_TERMINAL = "DENY   terminal  command=ls"
+CRON_DENY_EXPIRED = "DENY   read_file  path=/data/reports/q3.csv"
+CHILD_ALLOW_SEARCH = "[researcher] ALLOW  web_search  query=AI papers 2026"
+CHILD_DENY_WRITE = "[researcher] DENY   write_file  path=/data/output/x.md"
+CHILD_SCENE = "Same rule, after a handoff. The researcher was only granted web_search."
+VIEWER_DENY_REPORTS = "[viewer] DENY   read_file  path=/data/reports/q1.csv"
+CRON_WHY_OUTSIDE_DIR = "/opt/private/payroll.csv is not under /data/reports"
+CRON_WHY_TERMINAL = "terminal is not on the slip"
+CRON_WHY_EXPIRED = "the job window ended"
+CHILD_WHY_WRITE = "the researcher was not granted write_file"
+VIEWER_WHY_REPORTS = "/data/reports is not on the viewer's slip"
+
+
+def _args_label(args: dict[str, Any]) -> str:
+    parts = []
+    for key, value in args.items():
+        if key == "content":
+            continue
+        text = str(value)
+        if len(text) > 40:
+            text = text[:37] + "..."
+        parts.append(f"{key}={text}")
+    return "  ".join(parts)
+
+
+def _call(
+    lines: list[str],
+    guard: DuckworkGuard,
+    tool: str,
+    args: dict[str, Any],
+    *,
+    session_id: str = "",
+    tag: str = "",
+    why: str = "",
+) -> Optional[dict[str, Any]]:
+    result = guard.pre_tool_call(tool, args, session_id=session_id)
+    status = "DENY  " if result else "ALLOW "
+    label = _args_label(args)
+    prefix = f"[{tag}] " if tag else ""
+    line = f"  {prefix}{status} {tool}"
+    if label:
+        line = f"{line}  {label}"
+    lines.append(line.rstrip())
+    if result:
+        message = str(result.get("message") or "").strip()
+        if "has expired" in message:
+            message = "Warrant has expired"
+        if message and why:
+            lines.append(f"         {message}  ← {why}")
+        elif message:
+            lines.append(f"         {message}")
+    return result
+
+
+def render_demo() -> str:
+    lines: list[str] = [
+        "A nightly job gets a permission slip: read /data/reports,",
+        "write /tmp/nightly, then stop. Nothing else runs.",
+        "No Duckwork process, no API key.",
+        "",
+        "== Cron ==",
+        "The job does the work. Then it tries to leave the slip.",
+    ]
+
+    control = SigningKey.generate()
+    cron_key = SigningKey.generate()
+    cron_warrant = (
+        Warrant.mint_builder()
+        .holder(cron_key.public_key)
+        .capability("read_file", path=Subpath("/data/reports"))
+        .capability("write_file", path=Subpath("/tmp/nightly"), content=Wildcard())
+        .capability("memory", action=Wildcard(), key=Wildcard())
+        .ttl(1)
+        .mint(control)
+    )
+    cron = DuckworkGuard(
+        warrant=cron_warrant,
+        signing_key=cron_key,
+        trusted_roots=[control.public_key],
+        on_denial="block",
+    )
+    _call(lines, cron, "read_file", {"path": "/data/reports/q3.csv"}, session_id="cron")
+    _call(
+        lines,
+        cron,
+        "write_file",
+        {"path": "/tmp/nightly/report.md", "content": "# Report"},
+        session_id="cron",
+    )
+    _call(
+        lines,
+        cron,
+        "read_file",
+        {"path": "/opt/private/payroll.csv"},
+        session_id="cron",
+        why=CRON_WHY_OUTSIDE_DIR,
+    )
+    _call(
+        lines,
+        cron,
+        "terminal",
+        {"command": "ls"},
+        session_id="cron",
+        why=CRON_WHY_TERMINAL,
+    )
+    time.sleep(1.2)
+    lines.append("  (one second later)")
+    _call(
+        lines,
+        cron,
+        "read_file",
+        {"path": "/data/reports/q3.csv"},
+        session_id="cron",
+        why=CRON_WHY_EXPIRED,
+    )
+
+    lines.extend(
+        [
+            "",
+            "That slip is a Tenuo warrant: signed, expiring, checked before",
+            "the handler runs. Same check, two more shapes:",
+            "",
+            "== delegate_task ==",
+            CHILD_SCENE,
+        ]
+    )
+    orch_key = SigningKey.generate()
+    researcher_key = SigningKey.generate()
+    orch_warrant = (
+        Warrant.mint_builder()
+        .holder(orch_key.public_key)
+        .capability("read_file", path=Subpath("/data"))
+        .capability("write_file", path=Subpath("/data/output"), content=Wildcard())
+        .capability("web_search", query=Wildcard())
+        .capability("delegate_task", task=Wildcard(), context=Wildcard())
+        .ttl(7200)
+        .mint(control)
+    )
+    child_warrant = (
+        orch_warrant.grant_builder()
+        .capability("web_search", query=Wildcard())
+        .holder(researcher_key.public_key)
+        .ttl(600)
+        .grant(orch_key)
+    )
+    orch = DuckworkGuard(
+        warrant=orch_warrant,
+        signing_key=orch_key,
+        trusted_roots=[control.public_key],
+        on_denial="block",
+    )
+    _call(
+        lines,
+        orch,
+        "read_file",
+        {"path": "/data/input.csv"},
+        session_id="orchestrator",
+        tag="orchestrator",
+    )
+    _call(
+        lines,
+        orch,
+        "delegate_task",
+        {"task": "research q3", "context": "web_search only"},
+        session_id="orchestrator",
+        tag="orchestrator",
+    )
+    orch.set_session_warrant(
+        "researcher",
+        child_warrant,
+        researcher_key,
+        parent_warrant=orch_warrant,
+    )
+    _call(
+        lines,
+        orch,
+        "web_search",
+        {"query": "AI papers 2026"},
+        session_id="researcher",
+        tag="researcher",
+    )
+    _call(
+        lines,
+        orch,
+        "write_file",
+        {"path": "/data/output/x.md", "content": "..."},
+        session_id="researcher",
+        tag="researcher",
+        why=CHILD_WHY_WRITE,
+    )
+
+    lines.extend(
+        [
+            "",
+            "== Gateway ==",
+            "Same server, two slips.",
+        ]
+    )
+    gw_key = SigningKey.generate()
+
+    def role_warrant(path: str) -> Any:
+        return (
+            Warrant.mint_builder()
+            .holder(gw_key.public_key)
+            .capability("read_file", path=Subpath(path))
+            .capability("web_search", query=Wildcard())
+            .ttl(1800)
+            .mint(control)
+        )
+
+    gw = DuckworkGuard(
+        signing_key=gw_key,
+        trusted_roots=[control.public_key],
+        on_denial="block",
+    )
+    gw.set_session_warrant("session-analyst", role_warrant("/data/reports"), gw_key)
+    gw.set_session_warrant("session-viewer", role_warrant("/data/public"), gw_key)
+    _call(
+        lines,
+        gw,
+        "read_file",
+        {"path": "/data/reports/q1.csv"},
+        session_id="session-analyst",
+        tag="analyst",
+    )
+    _call(
+        lines,
+        gw,
+        "write_file",
+        {"path": "/data/output/x.txt", "content": "hi"},
+        session_id="session-analyst",
+        tag="analyst",
+        why="write_file is not on the analyst's slip",
+    )
+    _call(
+        lines,
+        gw,
+        "read_file",
+        {"path": "/data/public/faq.md"},
+        session_id="session-viewer",
+        tag="viewer",
+    )
+    _call(
+        lines,
+        gw,
+        "read_file",
+        {"path": "/data/reports/q1.csv"},
+        session_id="session-viewer",
+        tag="viewer",
+        why=VIEWER_WHY_REPORTS,
+    )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def main() -> int:
+    print(render_demo(), end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

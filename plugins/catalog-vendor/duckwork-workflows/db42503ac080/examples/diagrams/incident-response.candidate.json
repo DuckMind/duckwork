@@ -1,0 +1,249 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Full incident lifecycle: alert -> verdict branch -> machine recovery probe -> merge-gated close",
+        "Human escalation carries the whole packet; machine probes poll, humans decide",
+        "Close is gated on the merge \u2014 no self-declared resolution"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "12 nodes across 4 gates, 2 branches \u2014 adapt the run_context seeds and sweep-adapter to your stack",
+        "Validates but is not smoke-run: real lanes need your stack",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "triage",
+      "id": "triage-confirm-live",
+      "to": "confirm-live",
+      "variant": "default"
+    },
+    {
+      "from": "confirm-live",
+      "id": "confirm-live-correlate",
+      "to": "correlate",
+      "variant": "default"
+    },
+    {
+      "from": "correlate",
+      "id": "correlate-gate-false-alarm",
+      "to": "gate-false-alarm",
+      "variant": "security"
+    },
+    {
+      "from": "correlate",
+      "id": "correlate-gate-incident",
+      "to": "gate-incident",
+      "variant": "security"
+    },
+    {
+      "from": "gate-false-alarm",
+      "id": "gate-false-alarm-tune-alert",
+      "to": "tune-alert",
+      "variant": "default"
+    },
+    {
+      "from": "tune-alert",
+      "id": "tune-alert-report-false-alarm",
+      "to": "report-false-alarm",
+      "variant": "default"
+    },
+    {
+      "from": "gate-incident",
+      "id": "gate-incident-mitigate",
+      "to": "mitigate",
+      "variant": "default"
+    },
+    {
+      "from": "mitigate",
+      "id": "mitigate-recovery-probe",
+      "to": "recovery-probe",
+      "variant": "default"
+    },
+    {
+      "from": "recovery-probe",
+      "id": "recovery-probe-resiliency",
+      "to": "resiliency",
+      "variant": "default"
+    },
+    {
+      "from": "resiliency",
+      "id": "resiliency-converge",
+      "to": "converge",
+      "variant": "default"
+    },
+    {
+      "from": "converge",
+      "id": "converge-closeout",
+      "to": "closeout",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "gates",
+      "label": "Gates",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/incident-response.html",
+    "quality_profile": "standard",
+    "subtitle": "Alert-triggered incident lifecycle template: triage -> debounce (confirm-live is a bare wait_s:120 timer \u2014 no ",
+    "title": "incident-response"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "triage",
+      "label": "Triage",
+      "lane": "work",
+      "sublabel": "incident triage",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "confirm-live",
+      "label": "Confirm Live",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "machine hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "correlate",
+      "label": "Correlate",
+      "lane": "work",
+      "sublabel": "causal correlation",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "gate-false-alarm",
+      "label": "Gate False\u2026",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "gate-incident",
+      "label": "Gate Incident",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 4,
+      "id": "mitigate",
+      "label": "Mitigate",
+      "lane": "work",
+      "sublabel": "incident arm",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 4,
+      "id": "tune-alert",
+      "label": "Tune Alert",
+      "lane": "work",
+      "sublabel": "false alarm arm tune",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 5,
+      "id": "closeout",
+      "label": "Closeout",
+      "lane": "work",
+      "sublabel": "close the incident",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "converge",
+      "label": "Converge",
+      "lane": "work",
+      "sublabel": "convergence pass 0",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 5,
+      "id": "recovery-probe",
+      "label": "Recovery Probe",
+      "lane": "gates",
+      "sublabel": "usr bin python3",
+      "tag": "machine hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "report-false-alarm",
+      "label": "Report False\u2026",
+      "lane": "work",
+      "sublabel": "false alarm closeout",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 184
+    },
+    {
+      "col": 5,
+      "id": "resiliency",
+      "label": "Resiliency",
+      "lane": "work",
+      "sublabel": "recovery confirmed",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 276
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 4
+    },
+    {
+      "fromCol": 5,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 5
+    }
+  ],
+  "schema_version": 2
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "gurusup-brain",
+  "version": "0.1.0",
+  "description": "GuruSup Brain: your company's memory in your AI. Search decisions, people, customers and projects across every connected source.",
+  "author": { "name": "GuruSup", "url": "https://gurusup.com" },
+  "homepage": "https://gurusup.com/brain/mcp",
+  "repository": "https://github.com/gurusup/gurusup-brain-plugin",
+  "license": "MIT",
+  "keywords": ["company-memory", "knowledge", "search", "slack", "hubspot", "notion"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "GuruSup Brain",
+        "shortDescription": "Your company brain",
+        "longDescription": "GuruSup Brain is your company brain inside ChatGPT. It connects your team's knowledge from Slack, HubSpot, Notion and the documents you upload, and answers questions about customers, projects, people and decisions with the sources behind each answer.\n\nUse it to prep for a customer meeting, catch up on a project you missed, find out why something was decided and who decided it, or get a new hire up to speed without digging through old threads.\n\nAnswers respect your permissions: you only see what your GuruSup account can see. You need a GuruSup Brain account to use it.",
+        "developerName": "GuruSup",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "websiteURL": "https://gurusup.com/brain/mcp",
+        "supportURL": "https://gurusup.com/contact",
+        "privacyPolicyURL": "https://gurusup.com/privacy#brain",
+        "termsOfServiceURL": "https://gurusup.com/terms",
+        "defaultPrompt": [
+          "What should I know about Acme Retail before my meeting with them?",
+          "Why did we change the onboarding flow, and who decided it?",
+          "What's the latest with Acme, and what did we promise them?"
+        ],
+        "brandColor": "#2ECF8F",
+        "composerIcon": "./assets/logo.png",
+        "logo": "./assets/logo.png"
+      }
+    }
+  }
+}

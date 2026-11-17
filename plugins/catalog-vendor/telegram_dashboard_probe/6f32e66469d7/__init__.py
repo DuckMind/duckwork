@@ -1,0 +1,884 @@
+"""The dashboard as a gateway plugin: one pinned message, edited in place on every tick.
+
+``register(ctx)`` → ``ctx.register_platform_handler("telegram", wire)`` → the Telegram adapter
+calls ``wire(native, adapter)`` from its ``connect()`` → ``wire`` spawns ONE supervised task via
+``ctx.spawn_task`` → every tick composes the first screen (collect → render → plain text) and
+edits the same message through ``adapter.edit_message``.
+
+Two traps this plugin is built around (found by reading 0.21.1, see the report):
+
+* ``connect()`` runs the factory again on every reconnect with a NEW adapter instance, so a naive
+  plugin would spawn a second loop each time. The guard keeps the first task and only records the
+  new adapter generation.
+* ``TelegramAdapter.edit_message`` does not forward to the replacement adapter after a reconnect
+  (``send`` does). A loop holding the adapter it was born with would answer "Not connected"
+  forever while looking alive. Each tick therefore asks ``runner.adapters`` for the current one
+  and only uses an adapter that reports ``is_connected``.
+
+Also: the factory fires BEFORE the adapter finishes ``initialize()``/``start()``, so the first
+tick waits for ``is_connected`` instead of sending into a bot that is not initialised yet.
+
+The screen goes out as HTML when the adapter has a verb for it, plain otherwise. Which verb is
+read off the adapter object, never off a version number (``_html_verb``): the public
+``edit_message`` when its signature has a ``parse_mode`` parameter, else the adapter's own
+``_edit_text(chat, id, text, parse_mode)``, else nothing. On 0.21.1 to 0.21.5 and on main the
+public verb takes no parse mode: without ``finalize`` it sends plain text, and its ``finalize``
+path converts to MarkdownV2 and splits an over-long payload into NEW messages, which a pinned
+dashboard must never do; ``_edit_text`` (the same on all of them) takes a parse mode and raises
+on refusal. Every tick tries the HTML form (bold headings, the details in a collapsed quote)
+through the verb it found and, on any refusal, edits plain through the public verb in the same
+tick. A plain edit that succeeds right after a failed HTML one means the HTML form was refused:
+plain from then on, the record says ``screen_format: plain``, why (``html_error``) and which
+verb carries the HTML when one does (``html_verb``), and HTML is tried again after
+``HTML_RETRY_TICKS``. Whatever happens while composing, the message is edited: a screen that
+could not be built is replaced by a loud one-screen plain notice with the time, never left as
+yesterday's text.
+
+The ``telegram_dashboard`` package is looked up beside this file first (the deployment copies
+both directories into the same plugin folder), then in the interpreter. Settings come from the
+plugin's config entry (``plugins.entries.telegram_dashboard_probe.settings``) or environment
+variables; no chat id, path or token lives in code. Everything is fail-open: a failed tick is
+logged and the next one runs.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import importlib
+import inspect
+import logging
+import math
+import os
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from datetime import UTC, datetime, tzinfo
+from pathlib import Path
+from typing import Any
+from zoneinfo import ZoneInfo
+
+logger = logging.getLogger("duckwork.plugins.telegram_dashboard_probe")
+
+PLATFORM = "telegram"
+TASK_NAME = "telegram_dashboard_probe:tick"
+STATE_KEY = "probe"
+DEFAULT_PERIOD_SECONDS = 60.0
+# float("inf") and float("nan") are valid floats; sleep(inf) parks the loop forever with the
+# old message on screen. Anything non-finite falls back, the rest is clamped to this range.
+MIN_PERIOD_SECONDS = 0.01
+MAX_PERIOD_SECONDS = 86_400.0
+# While the Telegram adapter is not connected yet (right after a start) the next try comes this
+# soon, not a period later: with a long period the first screen after a restart would wait it.
+WAITING_RETRY_SECONDS = 30.0
+DEFAULT_DUCKWORK_HOME = "~/.duckwork"
+ENV_CHAT = "DUCKWORK_DASHBOARD_PROBE_CHAT"
+ENV_THREAD = "DUCKWORK_DASHBOARD_PROBE_THREAD"
+ENV_PERIOD = "DUCKWORK_DASHBOARD_PROBE_PERIOD"
+ENV_HOME = "DUCKWORK_HOME"  # the engine's own variable; the cron path reads the same one
+ENV_DRIFT_REPORT = "DUCKWORK_DASHBOARD_PROBE_DRIFT_REPORT"
+ENV_LIMITS = "DUCKWORK_DASHBOARD_PROBE_LIMITS"
+ENV_LIMITS_REFRESH = "DUCKWORK_DASHBOARD_PROBE_LIMITS_REFRESH"
+ENV_TZ = "DUCKWORK_DASHBOARD_PROBE_TZ"
+ENV_BACKUP_STATUS = "DUCKWORK_DASHBOARD_PROBE_BACKUP_STATUS"
+ENV_CONTEXT_FILES = "DUCKWORK_DASHBOARD_PROBE_CONTEXT_FILES"
+ENV_MEMORY = "DUCKWORK_DASHBOARD_PROBE_MEMORY"
+ENV_TERMINAL_CWD = "TERMINAL_CWD"  # the engine's own variable, read for the rules line
+# The Grok and Kimi quotas are asked at most once per this many seconds each, not every tick:
+# a weekly number does not move faster, and the surfaces are not documented ones. The caches
+# live in the record, one per provider (``limits_cache.grok``, ``limits_cache.kimi``).
+DEFAULT_LIMITS_REFRESH_SECONDS = 900.0
+MIN_LIMITS_REFRESH_SECONDS = 60.0
+LIMITS_CACHE_KEY = "limits_cache"
+QUOTA_CACHE_PROVIDERS = ("grok", "kimi")
+# The check of the latest Duckwork release upstream (at most one per 15 minutes) keeps its last
+# answer and attempt beside them, so a restart neither asks GitHub again nor forgets the answer.
+RELEASE_CACHE_KEY = "release_cache"
+# External limit sources (``limits_sources``, contract 1) keep one attempt each, by URL
+# digest, under a key of their own.
+EXTERNAL_CACHE_KEY = "external_cache"
+# The last Gemini 429 the engine's log showed, so one that rotated out of the log stays "last".
+GEMINI_CACHE_KEY = "gemini_log_cache"
+# The cron line's record (0.9.0): the failures the engine erased between two ticks, held a
+# while, and where the run-history read left off.
+CRON_CACHE_KEY = "cron_cache"
+# The channel's record (0.9.0): the counter and generation last seen, the daily gaps, the
+# first sighting of a blocked send path, the last send error.
+TRAFFIC_CACHE_KEY = "traffic_cache"
+_FALSE_WORDS = frozenset({"0", "false", "no", "off"})
+# Bot API wording for "the message you want to edit is gone"; anything else keeps the id.
+LOST_MARKERS = ("message to edit not found", "message can't be edited", "message_id_invalid")
+DASHBOARD_MODULES = ("collect", "compat", "freshness", "render", "telegram_traffic")
+# What the tick calls; a copy of the package that lacks any of it is refused at import time.
+REQUIRED_API: dict[str, tuple[str, ...]] = {
+    # VERSION_FLIGHT came with ``version_cache`` (0.6.0), collect_external and read_sources
+    # with the external limit sources (0.8.0), GEMINI_LOG with ``gemini_cache`` (0.8.1),
+    # CRON_RUNS and TRAFFIC with ``cron_cache``, ``traffic_probe`` and ``traffic_cache``
+    # (0.9.0), RULES with the rules line's ``Environment`` fields (0.10.0): a copy without them
+    # would reject the tick's arguments every time.
+    "collect": (
+        "collect_all_async",
+        "SubprocessRunner",
+        "Flights",
+        "VERSION_FLIGHT",
+        "collect_external",
+        "read_sources",
+        "GEMINI_LOG",
+        "CRON_RUNS",
+        "TRAFFIC",
+        "RULES",
+    ),
+    "compat": ("Environment",),
+    "freshness": ("record_from_plugin_state",),
+    "render": ("render_dashboard", "to_telegram_plain", "to_telegram_html"),
+    "telegram_traffic": ("probe_adapter",),
+}
+# The Bot API name of the parse mode, passed as a string: ``telegram.constants.ParseMode.HTML``
+# is that string, and importing it would tie the plugin to the engine's PTB.
+HTML_PARSE_MODE = "HTML"
+# The verbs an adapter may edit HTML with, in the order they are asked for: the public one when
+# its signature takes a parse mode (the catalog review's order), the adapter's own otherwise.
+PUBLIC_VERB = "edit_message"
+PRIVATE_VERB = "_edit_text"
+PARSE_MODE_PARAMETER = "parse_mode"
+# A real parameter of that name. ``**kwargs`` does not count: a verb that swallows the keyword
+# would send the markup as plain text and answer success.
+_PARSE_MODE_KINDS = (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+NO_HTML_VERB = "no HTML verb (edit_message without parse_mode, no _edit_text)"
+# After a refused HTML edit the screen is plain for this many ticks, then HTML is tried once
+# more: an hour at the pilot's period, so a transient failure does not lock plain in for good.
+HTML_RETRY_TICKS = 12
+
+Collector = Callable[[datetime], Awaitable[Any]]
+
+
+@dataclass(frozen=True)
+class Settings:
+    chat_id: str
+    thread_id: str | None
+    period_seconds: float
+    duckwork_home: Path
+    drift_report: Path | None
+    drift_command: tuple[str, ...] | None
+    limits_enabled: bool
+    limits_refresh_seconds: float
+    display_timezone: str
+    backup_status: Path | None
+    # External limit sources as the config lists them; the package checks every entry.
+    limits_sources: tuple[Any, ...] = ()
+    # The rules line (whether the agent sees its context files); on unless turned off.
+    context_files: bool = True
+    # The memory section (notebooks, the approval queue, a provider); on unless turned off.
+    memory: bool = True
+
+
+@dataclass(frozen=True)
+class Dashboard:
+    """The package's modules the tick needs, wherever they were imported from."""
+
+    collect: Any
+    compat: Any
+    freshness: Any
+    render: Any
+    telegram_traffic: Any
+    origin: str
+
+
+@dataclass(frozen=True)
+class Screen:
+    """One tick's text in both forms. ``html`` is ``None`` for the notice: the loud path stays
+    plain so that nothing can be refused on the way to the chat."""
+
+    plain: str
+    html: str | None = None
+
+
+@dataclass(frozen=True)
+class _EditResult:
+    """What ``_edit`` answers when the HTML verb took the text: the public verb's ``SendResult``
+    is not constructed by the plugin, so a shape with the two fields the tick reads."""
+
+    success: bool
+    error: str | None = None
+
+
+def read_settings(ctx: Any) -> Settings | None:
+    """Plugin config entry first, environment second. ``None`` when there is no chat to write to."""
+    chat = _setting(ctx, "chat_id", ENV_CHAT)
+    if not chat:
+        return None
+    thread = _setting(ctx, "thread_id", ENV_THREAD) or None
+    report = _setting(ctx, "drift_report", ENV_DRIFT_REPORT)
+    limits = _setting(ctx, "limits_enabled", ENV_LIMITS)
+    backup_status = _setting(ctx, "backup_status", ENV_BACKUP_STATUS)
+    return Settings(
+        chat_id=str(chat),
+        thread_id=str(thread) if thread else None,
+        period_seconds=_period(_setting(ctx, "period_seconds", ENV_PERIOD)),
+        duckwork_home=_home(ctx),
+        drift_report=Path(report).expanduser() if report else None,
+        drift_command=_argv(_raw_setting(ctx, "drift_command")),
+        limits_enabled=limits.lower() not in _FALSE_WORDS,
+        limits_refresh_seconds=_refresh(
+            _setting(ctx, "limits_refresh_seconds", ENV_LIMITS_REFRESH)
+        ),
+        display_timezone=_setting(ctx, "display_timezone", ENV_TZ) or "UTC",
+        backup_status=Path(backup_status).expanduser() if backup_status else None,
+        limits_sources=_entries(_raw_setting(ctx, "limits_sources")),
+        context_files=_setting(ctx, "context_files", ENV_CONTEXT_FILES).lower() not in _FALSE_WORDS,
+        memory=_setting(ctx, "memory", ENV_MEMORY).lower() not in _FALSE_WORDS,
+    )
+
+
+def _entries(raw: object) -> tuple[Any, ...]:
+    """``limits_sources`` as a list in the config entry; anything else is "none configured"."""
+    if isinstance(raw, (list, tuple)):
+        return tuple(raw)
+    if raw not in (None, ""):
+        logger.warning("probe: limits_sources must be a list; ignoring %r", type(raw))
+    return ()
+
+
+def _home(ctx: Any) -> Path:
+    """The profile home: the plugin's setting, else derived from its own state file
+    (``<home>/plugin-data/<namespace>/state.json``, always the running profile), else the
+    engine's ``DUCKWORK_HOME`` variable (set in-process only for ``-p profile``), else
+    ``~/.duckwork``."""
+    configured = _raw_setting(ctx, "duckwork_home")
+    if isinstance(configured, str) and configured.strip():
+        return Path(configured.strip()).expanduser()
+    state_path = getattr(getattr(ctx, "state", None), "path", None)
+    if isinstance(state_path, (str, Path)):
+        parents = Path(state_path).parents
+        if len(parents) >= 3 and parents[1].name == "plugin-data":
+            return parents[2]
+    return Path(os.environ.get(ENV_HOME, "").strip() or DEFAULT_DUCKWORK_HOME).expanduser()
+
+
+def _working_dir() -> Path | None:
+    """The gateway process's working directory (a service unit's ``WorkingDirectory``), where an
+    operator may have put the agent's rules; ``None`` when it is gone."""
+    try:
+        return Path.cwd()
+    except OSError:
+        return None
+
+
+def _terminal_cwd() -> Path | None:
+    """The engine's own ``TERMINAL_CWD`` in this process (a path, never a secret): where a
+    sandbox backend's context-file discovery runs when the prompt names no host directory."""
+    value = os.environ.get(ENV_TERMINAL_CWD, "").strip()
+    return Path(value).expanduser() if value else None
+
+
+def display_zone(settings: Settings) -> tzinfo:
+    """The configured zone; an unknown name degrades to UTC with a warning, never raises."""
+    name = settings.display_timezone
+    if not name or name.upper() == "UTC":
+        return UTC
+    try:
+        return ZoneInfo(name)
+    except Exception as exc:
+        # ZoneInfoNotFoundError for an unknown key; OSError for a directory name ("Europe")
+        # where tzdata is a package. A typo here must not stop the plugin from loading.
+        logger.warning(
+            "probe: display_timezone %r unusable (%s); using UTC", name, type(exc).__name__
+        )
+        return UTC
+
+
+def _period(raw: str) -> float:
+    """A finite period inside [MIN, MAX]; unreadable or non-finite input uses the default."""
+    if not raw:
+        return DEFAULT_PERIOD_SECONDS
+    try:
+        period = float(raw)
+    except ValueError:
+        logger.warning(
+            "probe: period_seconds %r unreadable; using %.0fs", raw, DEFAULT_PERIOD_SECONDS
+        )
+        return DEFAULT_PERIOD_SECONDS
+    if not math.isfinite(period):
+        logger.warning(
+            "probe: period_seconds %r not finite; using %.0fs", raw, DEFAULT_PERIOD_SECONDS
+        )
+        return DEFAULT_PERIOD_SECONDS
+    clamped = min(max(period, MIN_PERIOD_SECONDS), MAX_PERIOD_SECONDS)
+    if clamped != period:
+        logger.warning("probe: period_seconds %r clamped to %.2fs", raw, clamped)
+    return clamped
+
+
+def _refresh(raw: str) -> float:
+    """A finite refresh interval of at least MIN; unreadable input uses the default."""
+    if not raw:
+        return DEFAULT_LIMITS_REFRESH_SECONDS
+    try:
+        seconds = float(raw)
+    except ValueError:
+        seconds = math.nan
+    if not math.isfinite(seconds):
+        logger.warning(
+            "probe: limits_refresh_seconds %r unusable; using %.0fs",
+            raw,
+            DEFAULT_LIMITS_REFRESH_SECONDS,
+        )
+        return DEFAULT_LIMITS_REFRESH_SECONDS
+    clamped = max(seconds, MIN_LIMITS_REFRESH_SECONDS)
+    if clamped != seconds:
+        logger.warning("probe: limits_refresh_seconds %r clamped to %.0fs", raw, clamped)
+    return clamped
+
+
+def _argv(raw: object) -> tuple[str, ...] | None:
+    """A command as a list of strings in the config entry; anything else is "not configured"."""
+    if isinstance(raw, (list, tuple)) and raw and all(isinstance(part, str) for part in raw):
+        return tuple(raw)
+    if raw not in (None, ""):
+        logger.warning("probe: drift_command must be a list of strings; ignoring %r", type(raw))
+    return None
+
+
+def _raw_setting(ctx: Any, key: str) -> object:
+    getter = getattr(ctx, "get_config", None)
+    if not callable(getter):
+        return None
+    try:
+        return getter(key)
+    except Exception as exc:  # config unreadable must not kill the plugin
+        logger.warning("probe: reading setting %s failed: %s", key, type(exc).__name__)
+        return None
+
+
+def _setting(ctx: Any, key: str, env_name: str) -> str:
+    value = _raw_setting(ctx, key)
+    if value in (None, ""):
+        value = os.environ.get(env_name, "")
+    return str(value).strip()
+
+
+def import_dashboard() -> Dashboard | None:
+    """``telegram_dashboard`` beside the plugin, else the interpreter's own; ``None`` for neither.
+
+    Never raises: a missing or broken package is announced on the screen, not in a traceback.
+    """
+    candidates: list[tuple[str, str]] = []
+    if __package__:
+        candidates.append(("vendored", f"{__package__}.telegram_dashboard"))
+    candidates.append(("installed", "telegram_dashboard"))
+    for origin, base in candidates:
+        try:
+            modules = {
+                name: importlib.import_module(f"{base}.{name}") for name in DASHBOARD_MODULES
+            }
+        except ModuleNotFoundError as exc:
+            # The package itself is absent: expected for one of the two candidates. A module
+            # missing INSIDE a present package is a broken copy and deserves a warning.
+            level = logging.INFO if str(exc.name or "").startswith(base) else logging.WARNING
+            logger.log(level, "probe: %s package not importable: %s", origin, exc.name)
+            continue
+        except Exception as exc:
+            logger.warning("probe: %s package broken: %s", origin, type(exc).__name__)
+            continue
+        missing = [
+            f"{name}.{attr}"
+            for name, attrs in REQUIRED_API.items()
+            for attr in attrs
+            if not hasattr(modules[name], attr)
+        ]
+        if missing:
+            # An older copy: refused here, once, instead of AttributeError on every tick.
+            logger.warning("probe: %s package lacks %s; skipped", origin, ", ".join(missing))
+            continue
+        logger.info("probe: dashboard package from %s (%s)", origin, base)
+        return Dashboard(origin=origin, **modules)
+    logger.error("probe: telegram_dashboard package not importable; the screen cannot be built")
+    return None
+
+
+def _takes_parse_mode(verb: object) -> bool:
+    """Whether ``verb`` is a coroutine function with a ``parse_mode`` parameter of its own."""
+    if not inspect.iscoroutinefunction(verb):
+        return False
+    try:
+        parameter = inspect.signature(verb).parameters.get(PARSE_MODE_PARAMETER)
+    except (TypeError, ValueError):
+        return False
+    return parameter is not None and parameter.kind in _PARSE_MODE_KINDS
+
+
+def _html_verb(live: Any) -> tuple[str, Any] | None:
+    """The verb this adapter edits HTML with: the public ``edit_message`` when it takes a parse
+    mode, else the adapter's own ``_edit_text``, else nothing. A capability read off the object
+    on every tick (a reconnect brings a new adapter), never a version number."""
+    public = getattr(live, PUBLIC_VERB, None)
+    if _takes_parse_mode(public):
+        return PUBLIC_VERB, public
+    private = getattr(live, PRIVATE_VERB, None)
+    if inspect.iscoroutinefunction(private):
+        return PRIVATE_VERB, private
+    return None
+
+
+class ProbeRuntime:
+    """One per ``register()``; survives adapter replacement, owns exactly one task."""
+
+    def __init__(self, ctx: Any, settings: Settings, dashboard: Dashboard | None) -> None:
+        self._ctx = ctx
+        self.settings = settings
+        self.dashboard = dashboard
+        self.zone = display_zone(settings)
+        # register() runs as the gateway starts: what the engine says once per process is said
+        # after this moment (``Environment.process_started_at``).
+        self.started_at = datetime.now(UTC)
+        self.collector: Collector = self._collect
+        # One worker per source across ticks: a source abandoned by its deadline is not
+        # started again until it returns (collect.Flights).
+        self.flights: Any = dashboard.collect.Flights() if dashboard is not None else None
+        self.task: asyncio.Task[None] | None = None
+        self.latest: Any = None
+        self.generation = 0
+        self._generations: dict[int, int] = {}
+        self.ticks = 0
+        self.record: dict[str, Any] = {}
+        # ``None`` until the first edit answers; ``False`` while HTML is refused, with the tick
+        # from which it is worth trying again.
+        self.html: bool | None = None
+        self.html_retry_tick = 0
+        # The adapter's own counters, read as attributes before each screen is composed.
+        self.traffic_probe: Any = None
+
+    # ------------------------------------------------------------------ factory (connect-time)
+
+    def wire(self, native: Any, adapter: Any) -> None:
+        """Called by the adapter's ``connect()``; a reconnect calls it AGAIN with a new adapter."""
+        self.generation += 1
+        self.latest = adapter
+        self._generations[id(adapter)] = self.generation
+        if self.task is not None and not self.task.done():
+            logger.warning(
+                "probe: adapter generation %d wired while the loop runs; keeping one loop",
+                self.generation,
+            )
+            return
+        self.task = self._ctx.spawn_task(self.run(), name=TASK_NAME)
+        logger.info("probe: tick loop spawned on adapter generation %d", self.generation)
+
+    # ------------------------------------------------------------------ resolution
+
+    def live_adapter(self) -> Any | None:
+        """The adapter the runner publishes now, else the one last handed to us; connected only."""
+        latest = self.latest
+        runner = getattr(latest, "gateway_runner", None)
+        adapters = getattr(runner, "adapters", None)
+        candidates: list[Any] = []
+        if isinstance(adapters, dict):
+            candidates.append(adapters.get(getattr(latest, "platform", None)))
+        candidates.append(latest)
+        for candidate in candidates:
+            if candidate is not None and bool(getattr(candidate, "is_connected", False)):
+                return candidate
+        return None
+
+    def generation_of(self, adapter: Any) -> int:
+        return self._generations.get(id(adapter), 0)
+
+    # ------------------------------------------------------------------ loop
+
+    async def run(self) -> None:
+        self._load_record()
+        loop = asyncio.get_running_loop()
+        while True:
+            started = loop.time()
+            try:
+                await self.tick()
+            except (asyncio.CancelledError, KeyboardInterrupt):
+                raise
+            except BaseException as exc:
+                # BaseException, not Exception: SystemExit from a worker thread comes back
+                # through to_thread and must not take the loop down with the old text pinned.
+                # The record must say it: a loop that only logs leaves last_status=edited
+                # on disk while every tick dies, and a watchdog reading the state sees
+                # a healthy updater. Class name only: the message may carry chat ids.
+                logger.exception("probe: tick failed; next tick continues")
+                self._note(status="tick_failed", error=type(exc).__name__)
+            # Fixed cadence: sleep what is left of the period, not the whole period. Otherwise a
+            # slow collector pushes every confirmation past the freshness threshold and the
+            # message banners "lagging" on a healthy system.
+            elapsed = loop.time() - started
+            await asyncio.sleep(max(0.0, self._pause() - elapsed))
+
+    def _pause(self) -> float:
+        """The whole period after a tick that got to Telegram; a short retry while waiting for
+        the adapter, so the first screen after a restart does not wait a whole period."""
+        period = self.settings.period_seconds
+        if self.record.get("last_status") == "waiting":
+            return min(period, WAITING_RETRY_SECONDS)
+        return period
+
+    async def tick(self) -> None:
+        live = self.live_adapter()
+        if live is None:
+            # Composing costs a facade call; not worth it while nothing can be delivered.
+            self._note(status="waiting", error="no connected Telegram adapter")
+            return
+        self.ticks += 1
+        self.traffic_probe = self._probe(live)
+        now = datetime.now(UTC)
+        screen = await self.compose(now)
+        live = self.live_adapter()
+        if live is None:
+            self._note(status="waiting", error="no connected Telegram adapter")
+            return
+        generation = self.generation_of(live)
+        chat = self.settings.chat_id
+        message_id = self.record.get("message_id")
+        if message_id and self.record.get("chat_id") == chat:
+            result = await self._edit(live, chat, str(message_id), screen)
+            if result.success:
+                self._note(status="edited", error=None, generation=generation, confirmed=True)
+                return
+            error = str(result.error or "")
+            if any(marker in error.lower() for marker in LOST_MARKERS):
+                logger.error("probe: message %s lost (%s); sending a new one", message_id, error)
+                self.record["lost_at"] = now.isoformat()
+                self.record["message_id"] = None
+            else:
+                self._note(status="edit_failed", error=error, generation=generation)
+                return
+        # Creation goes through the public verb as plain text (the adapter's own markdown
+        # conversion, which the screen has no constructs for); the next tick edits it as HTML.
+        metadata = {"thread_id": self.settings.thread_id} if self.settings.thread_id else None
+        result = await live.send(chat, screen.plain, metadata=metadata)
+        if result.success and result.message_id:
+            if self.record.get("lost_at"):
+                self.record["recreated_at"] = now.isoformat()
+            self.record["message_id"] = str(result.message_id)
+            self.record["chat_id"] = chat
+            self.record["thread_id"] = self.settings.thread_id
+            self._note(status="created", error=None, generation=generation, confirmed=True)
+            return
+        self._note(
+            status="send_failed", error=str(result.error or "no message id"), generation=generation
+        )
+
+    # ------------------------------------------------------------------ the edit
+
+    async def _edit(self, live: Any, chat: str, message_id: str, screen: Screen) -> Any:
+        """HTML through the verb the adapter has for it (``_html_verb``), plain through the
+        public ``edit_message`` otherwise; the record says which form is on the screen and
+        which verb carried it.
+
+        The verbs cannot tell "HTML refused" from "network down" on their own: the plain edit
+        right after a failed HTML one does. Plain succeeded, HTML did not: the form was refused.
+        Both failed: no verdict, the tick's own error handling takes the plain result."""
+        reason: str | None = None
+        if screen.html is not None and self._html_wanted():
+            verb = _html_verb(live)
+            if verb is None:
+                reason = NO_HTML_VERB
+            else:
+                name, edit_html = verb
+                try:
+                    if name == PUBLIC_VERB:
+                        result = await edit_html(
+                            chat, message_id, screen.html, parse_mode=HTML_PARSE_MODE
+                        )
+                        if result.success:
+                            self._html_verdict(True, None, name)
+                            return result
+                        # A SendResult, not an exception; the record keeps the adapter's error
+                        # texts already (last_error), bounded here.
+                        reason = f"{PUBLIC_VERB}: {str(result.error or 'refused')[:80]}"
+                    else:
+                        await edit_html(chat, message_id, screen.html, HTML_PARSE_MODE)
+                        self._html_verdict(True, None, name)
+                        return _EditResult(success=True)
+                except (asyncio.CancelledError, KeyboardInterrupt):
+                    raise
+                except BaseException as exc:
+                    if "not modified" in str(exc).lower():
+                        # Telegram compared our text with the live message: it exists and
+                        # already says this, in HTML.
+                        self._html_verdict(True, None, name)
+                        return _EditResult(success=True)
+                    # Class name only: the message may carry chat ids.
+                    reason = type(exc).__name__
+        result = await live.edit_message(chat, message_id, screen.plain)
+        if reason is not None and result.success:
+            self._html_verdict(False, reason, None)
+        return result
+
+    def _html_wanted(self) -> bool:
+        return self.html is not False or self.ticks >= self.html_retry_tick
+
+    def _html_verdict(self, ok: bool, reason: str | None, verb: str | None) -> None:
+        if ok:
+            if self.html is not True:
+                logger.info("probe: the screen is edited as HTML through %s", verb)
+            self.html = True
+        else:
+            if self.html is not False:
+                logger.warning(
+                    "probe: HTML edit refused (%s); plain text, HTML tried again in %d ticks",
+                    reason,
+                    HTML_RETRY_TICKS,
+                )
+            self.html = False
+            self.html_retry_tick = self.ticks + HTML_RETRY_TICKS
+        # Saved with the tick's own note, right after this edit.
+        self.record["screen_format"] = "html" if ok else "plain"
+        self.record["html_error"] = reason
+        self.record["html_verb"] = verb if ok else None
+
+    # ------------------------------------------------------------------ the screen
+
+    async def compose(self, now: datetime) -> Screen:
+        """The first screen in both forms, or a loud one-screen plain notice. Never raises."""
+        dashboard = self.dashboard
+        if dashboard is None:
+            self.record["last_render_error"] = "ImportError"
+            return Screen(
+                self._notice(now, "package telegram_dashboard not importable, screen not built")
+            )
+        try:
+            snapshot = await self.collector(now)
+            record = dashboard.freshness.record_from_plugin_state(
+                {STATE_KEY: self._record_as_delivered(now)}
+            )
+            text = dashboard.render.render_dashboard(
+                snapshot,
+                now=now,
+                delivery=record,
+                period_seconds=self._render_period(),
+                zone=self.zone,
+            )
+            plain: str = dashboard.render.to_telegram_plain(text)
+            html: str = dashboard.render.to_telegram_html(text)
+        except (asyncio.CancelledError, KeyboardInterrupt):
+            raise
+        except BaseException as exc:
+            # Class name only: the text of an exception may carry chat ids or paths. One
+            # traceback per failure class, then one line per tick: a persistent failure must
+            # not fill the journal with the same traceback every minute.
+            reason = type(exc).__name__
+            if self.record.get("last_render_error") == reason:
+                logger.warning("probe: screen still not composed (%s); notice sent again", reason)
+            else:
+                logger.exception("probe: screen not composed; the message gets a notice instead")
+            self.record["last_render_error"] = reason
+            return Screen(self._notice(now, f"screen not built: {reason}"))
+        self.record["last_render_error"] = None
+        return Screen(plain=plain, html=html)
+
+    def _record_as_delivered(self, now: datetime) -> dict[str, Any]:
+        """The record as it will be once this text lands.
+
+        The text is composed before delivery. When the message was lost and this tick will send
+        a new one, any text that lands IS the recreation: the banner must say "recreated",
+        not "NOT restored" for a whole period on the very message that restored it.
+        """
+        record = dict(self.record)
+        chat = self.settings.chat_id
+        will_send = not record.get("message_id") or record.get("chat_id") != chat
+        if will_send and record.get("lost_at"):
+            record["recreated_at"] = now.isoformat()
+        return record
+
+    async def _collect(self, now: datetime) -> Any:
+        dashboard = self.dashboard
+        assert dashboard is not None  # compose() checks before calling
+        env = dashboard.compat.Environment(
+            duckwork_home=self.settings.duckwork_home,
+            drift_command=self.settings.drift_command,
+            drift_report=self.settings.drift_report,
+            limits_enabled=self.settings.limits_enabled,
+            backup_status=self.settings.backup_status,
+            limits_sources=self.settings.limits_sources,
+            context_files_enabled=self.settings.context_files,
+            memory_enabled=self.settings.memory,
+            gateway_dir=_working_dir(),
+            terminal_cwd=_terminal_cwd(),
+            process_started_at=self.started_at,
+        )
+        runner = dashboard.collect.SubprocessRunner()
+        caches = self.quota_caches()
+        return await dashboard.collect.collect_all_async(
+            env,
+            runner,
+            now=now,
+            flights=self.flights,
+            grok_cache=caches["grok"],
+            grok_interval_seconds=self.settings.limits_refresh_seconds,
+            kimi_cache=caches["kimi"],
+            kimi_interval_seconds=self.settings.limits_refresh_seconds,
+            version_cache=self.release_cache(),
+            external_caches=self.external_cache(),
+            external_interval_seconds=self.settings.limits_refresh_seconds,
+            period_seconds=self.settings.period_seconds,
+            gemini_cache=self.gemini_cache(),
+            cron_cache=self.cron_cache(),
+            traffic_probe=self.traffic_probe,
+            traffic_cache=self.traffic_cache(),
+        )
+
+    def quota_caches(self) -> dict[str, dict[str, Any]]:
+        """One cache dict per provider inside the record's ``limits_cache``, the same objects on
+        every tick so the collector's writes land in the record.
+
+        The layout before Kimi kept Grok's attempt at the top level (``attempted_at``, ``item``);
+        a record in that shape is moved under ``grok`` once, so a restart keeps its interval.
+        """
+        cache = self.record.get(LIMITS_CACHE_KEY)
+        if not isinstance(cache, dict):
+            cache = {}
+        if "attempted_at" in cache or "item" in cache:
+            cache = {"grok": cache}
+        self.record[LIMITS_CACHE_KEY] = cache
+        for provider in QUOTA_CACHE_PROVIDERS:
+            if not isinstance(cache.get(provider), dict):
+                cache[provider] = {}
+        return cache
+
+    def release_cache(self) -> dict[str, Any]:
+        """The upstream release check's cache inside the record, the same object on every tick
+        so the collector's write lands in the record and in the state file with it."""
+        cache = self.record.get(RELEASE_CACHE_KEY)
+        if not isinstance(cache, dict):
+            cache = {}
+            self.record[RELEASE_CACHE_KEY] = cache
+        return cache
+
+    def external_cache(self) -> dict[str, Any]:
+        """The external limit sources' caches inside the record, one per URL digest, the same
+        object on every tick so a worker that returns late still writes into the record."""
+        cache = self.record.get(EXTERNAL_CACHE_KEY)
+        if not isinstance(cache, dict):
+            cache = {}
+            self.record[EXTERNAL_CACHE_KEY] = cache
+        return cache
+
+    def gemini_cache(self) -> dict[str, Any]:
+        """The Gemini log's record inside the plugin's record, the same object on every tick so
+        a reader that returns after the deadline still writes into the record."""
+        cache = self.record.get(GEMINI_CACHE_KEY)
+        if not isinstance(cache, dict):
+            cache = {}
+            self.record[GEMINI_CACHE_KEY] = cache
+        return cache
+
+    def cron_cache(self) -> dict[str, Any]:
+        """The cron line's record inside the plugin's record, the same object on every tick:
+        where the history read left off and the failures the details still hold."""
+        cache = self.record.get(CRON_CACHE_KEY)
+        if not isinstance(cache, dict):
+            cache = {}
+            self.record[CRON_CACHE_KEY] = cache
+        return cache
+
+    def traffic_cache(self) -> dict[str, Any]:
+        """The channel's record inside the plugin's record, the same object on every tick."""
+        cache = self.record.get(TRAFFIC_CACHE_KEY)
+        if not isinstance(cache, dict):
+            cache = {}
+            self.record[TRAFFIC_CACHE_KEY] = cache
+        return cache
+
+    def _probe(self, live: Any) -> Any:
+        """The adapter's own counters, read as attributes before the screen is composed; a
+        package without the module (an older copy) means no traffic line."""
+        dashboard = self.dashboard
+        if dashboard is None:
+            return None
+        try:
+            return dashboard.telegram_traffic.probe_adapter(live)
+        except Exception as exc:  # the probe never raises by contract; belt and braces
+            logger.warning("probe: traffic counters not read (%s)", type(exc).__name__)
+            return None
+
+    def _render_period(self) -> int:
+        return max(1, round(self.settings.period_seconds))
+
+    def _notice(self, now: datetime, reason: str) -> str:
+        """What the message says when the screen could not be built: loud, dated, one screen."""
+        stamp = now.astimezone(self.zone)
+        minutes = max(1, self._render_period() // 60)
+        return "\n".join(
+            [
+                f"⚠️ DUCKWORK DASHBOARD: {reason}",
+                f"Data: none · tick {self.ticks}",
+                f"Updated: {stamp:%Y-%m-%d %H:%M %Z} · period {minutes} min",
+            ]
+        )
+
+    # ------------------------------------------------------------------ durable record
+
+    def _load_record(self) -> None:
+        state = getattr(self._ctx, "state", None)
+        try:
+            stored = state.get(STATE_KEY, {}) if state is not None else {}
+        except Exception as exc:
+            logger.warning(
+                "probe: plugin state unreadable (%s); starting empty", type(exc).__name__
+            )
+            stored = {}
+        self.record = dict(stored) if isinstance(stored, dict) else {}
+
+    def _note(
+        self,
+        *,
+        status: str,
+        error: str | None,
+        generation: int | None = None,
+        confirmed: bool = False,
+    ) -> None:
+        # The confirmation is stamped now, after the edit, not with the tick's start time: the
+        # next tick measures the age of this stamp against its own start.
+        stamp = datetime.now(UTC).isoformat()
+        self.record["last_status"] = status
+        self.record["last_error"] = error
+        self.record["ticks"] = self.ticks
+        self.record["last_attempt_at"] = stamp
+        if generation is not None:
+            self.record["adapter_generation"] = generation
+        if confirmed:
+            self.record["last_confirmed_at"] = stamp
+        if error:
+            logger.warning("probe: %s: %s", status, error)
+        state = getattr(self._ctx, "state", None)
+        if state is None:
+            return
+        try:
+            state.set(STATE_KEY, self.record)
+        except Exception as exc:
+            logger.warning("probe: plugin state not saved (%s)", type(exc).__name__)
+
+
+def _announce_sources(runtime: ProbeRuntime) -> None:
+    """The start-up check of ``limits_sources``: a refused entry is named in the log once, and
+    on the screen every tick (its line says why)."""
+    if not runtime.settings.limits_sources or runtime.dashboard is None:
+        return
+    sources = runtime.dashboard.collect.read_sources(runtime.settings.limits_sources)
+    for source in sources:
+        if source.problem:
+            logger.warning("probe: limits source %d refused: %s", source.number, source.problem)
+    logger.info("probe: %d external limits source(s) configured", len(sources))
+
+
+def register(ctx: Any) -> ProbeRuntime | None:
+    settings = read_settings(ctx)
+    if settings is None:
+        logger.error(
+            "probe: no chat configured (settings.chat_id or %s); handler not registered", ENV_CHAT
+        )
+        return None
+    runtime = ProbeRuntime(ctx, settings, import_dashboard())
+    _announce_sources(runtime)
+    ctx.register_platform_handler(PLATFORM, runtime.wire)
+    logger.info(
+        "probe: registered Telegram handler factory (period %.0fs)", settings.period_seconds
+    )
+    # The plugin-data directory name carries a digest; the watchdog config needs this exact path.
+    state_path = getattr(getattr(ctx, "state", None), "path", None)
+    if state_path is not None:
+        logger.info("probe: delivery record for --check plugin_state_path: %s", state_path)
+    return runtime

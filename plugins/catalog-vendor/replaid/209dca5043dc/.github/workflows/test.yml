@@ -1,0 +1,32 @@
+name: Plugin checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: 36842e639a178741b70c821e0f4cdd129cd0dfe3
+          path: .ci-duckwork
+      - name: Install tested Duckwork runtime
+        run: python -m pip install -e './.ci-duckwork[mcp]'
+      - name: Test setup and profile isolation
+        run: python -m unittest discover -s tests -v
+      - name: Check plugin runtime and catalog declarations
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/replaid-validation
+        run: |
+          mkdir -p "$RUNNER_TEMP/replaid-package"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/replaid-package"
+          duckwork plugins doctor "$RUNNER_TEMP/replaid-package" --ci
+          duckwork plugins validate "$RUNNER_TEMP/replaid-package" --json

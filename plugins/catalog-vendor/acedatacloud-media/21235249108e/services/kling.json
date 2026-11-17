@@ -1,0 +1,83 @@
+{
+  "service": "kling",
+  "title": "Ace Data Cloud Kling",
+  "kind": "video",
+  "description": "Kling 3 Turbo text-to-video generation through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_kling",
+  "generate_path": "/kling/videos",
+  "task_path": "/kling/tasks",
+  "defaults": {
+    "model": "kling-v3-turbo",
+    "action": "text2video",
+    "mode": "std",
+    "duration": 5,
+    "aspect_ratio": "16:9"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "prompt"
+    ],
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16",
+          "1:1"
+        ],
+        "type": "string",
+        "maxLength": 4000
+      },
+      "model": {
+        "type": "string",
+        "enum": [
+          "kling-v3-turbo"
+        ],
+        "maxLength": 4000
+      },
+      "mode": {
+        "type": "string",
+        "enum": [
+          "std",
+          "pro"
+        ],
+        "maxLength": 4000
+      },
+      "duration": {
+        "type": "integer",
+        "minimum": 3,
+        "maximum": 15
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_kling_generate",
+  "tools": [
+    "acedatacloud_kling_generate",
+    "acedatacloud_kling_task"
+  ],
+  "toolset": "acedatacloud-kling"
+}

@@ -1,0 +1,19 @@
+# Ready for a reviewed PR to Fordex/duckwork-agent/plugin-catalog/.
+# Pins the tested plugin-source commit, not this later metadata-only commit.
+name: deferred-questions
+repo: https://github.com/DuckMind/duckwork
+sha: 38ed92318a65ced3a036375d70e455ab7cd9154e
+description: Durable non-blocking questions with exact answer binding and gateway continuation.
+maintainer: web3blind
+tier: community
+category: automation
+requires_duckwork: ">=0.21.6"
+platforms: [linux, macos]
+version: "0.2.4"
+docs_url: https://github.com/DuckMind/duckwork
+readme: true
+capabilities:
+  provides_tools: [deferred_questions]
+  provides_hooks: [pre_gateway_dispatch]
+  provides_middleware: []
+  requires_env: []

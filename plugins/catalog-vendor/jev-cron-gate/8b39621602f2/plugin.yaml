@@ -1,0 +1,17 @@
+name: jev-cron-gate
+version: 0.1.0
+description: >
+  Skip agent cron runs that would do nothing. Before a job runs, TypeSafe Jev scores one
+  yes/no question over a small state snapshot; if it's confident the run is pointless,
+  Duckwork cron's built-in wake gate skips the LLM call. Fail-open, stdlib only.
+author: superlowburn
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags: [jev, typesafe, cron, cost, wake-gate]
+provides_tools:
+  - jev_cron_gate
+requires_env:
+  - name: TYPESAFE_API_KEY
+    description: TypeSafe API key for Jev (JEV_API_KEY is also accepted)
+    url: https://console.typesafe.ai/keys
+    secret: true

@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/QingYunA/answer-me-with-html",
+  "version": "0.4.14",
+  "commit": "e729b248816c0c420531ee61be0d1aac6b197220",
+  "sourcePath": "skills/answer-me-with-html/scripts/am.mjs",
+  "upstreamSha256": "980f248600ab7516be3f8698c08c7f38f4d99b4b831188cccfdfe4f206fd0684",
+  "shippedSha256": "4bcea2768b2b3f8a5949ee90fbb45df1d2ff92789f401bd0322c65e72676e2d8",
+  "modifications": [
+    "src/update.js is replaced by an inert stub: the vendored renderer keeps no upstream update check and reaches no network for one.",
+    "the update_check config key is removed from CONFIG_KEYS because nothing reads it any more."
+  ],
+  "dependencies": {
+    "marked": "18.0.14",
+    "@dagrejs/dagre": "3.1.1",
+    "@dagrejs/graphlib": "4.0.5"
+  }
+}

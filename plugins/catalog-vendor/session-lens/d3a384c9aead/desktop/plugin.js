@@ -1,0 +1,7086 @@
+/*
+THESIS: One native observatory connects session evidence to Duckwork operations without becoming a separate dashboard.
+OWN-WORLD: Duckwork Desktop theme variables, SDK controls, codicons, compact borders, tabular data, and restrained status pills.
+STORY: Find a session, verify its trace and accounting, then inspect runtime, profile, and schedule health without leaving Duckwork.
+FIRST VIEWPORT: Native left navigation opens a compact header, four accounting signals, stable view tabs, and a dense evidence workspace.
+FORM: Operate surface; evidence remains primary, progressive disclosure carries density, and redacted read-only data sets the trust boundary.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+*/
+import {
+  Button,
+  Codicon,
+  EmptyState,
+  ErrorState,
+  Input,
+  PALETTE_AREA,
+  ROUTES_AREA,
+  SegmentedControl,
+  SIDEBAR_NAV_AREA,
+  Skeleton,
+  Textarea,
+  compactNumber,
+  host,
+  useQuery,
+  useQueryClient,
+  useValue
+} from '@duckwork/plugin-sdk'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, jsx, jsxs } from 'react/jsx-runtime'
+
+const PLUGIN_ID = 'session-lens'
+const ROUTE = '/session-lens'
+
+const color = {
+  accent: 'var(--ui-accent)',
+  accentSoft: 'color-mix(in srgb, var(--ui-accent) 14%, transparent)',
+  success: 'var(--ui-success)',
+  successSoft: 'color-mix(in srgb, var(--ui-success) 12%, transparent)',
+  warning: 'var(--ui-yellow, #c08532)',
+  warningSoft: 'color-mix(in srgb, var(--ui-yellow, #c08532) 12%, transparent)',
+  danger: 'var(--dt-destructive, var(--ui-red, #cf2d56))',
+  dangerSoft: 'color-mix(in srgb, var(--dt-destructive, var(--ui-red, #cf2d56)) 12%, transparent)',
+  primary: 'var(--ui-text-primary)',
+  secondary: 'var(--ui-text-secondary)',
+  tertiary: 'var(--ui-text-tertiary)',
+  quaternary: 'var(--ui-text-quaternary)',
+  stroke: 'var(--ui-stroke-secondary)',
+  surface: 'var(--ui-bg-secondary)',
+  surfaceRaised: 'var(--ui-bg-tertiary)'
+}
+
+const border = `1px solid ${color.stroke}`
+const tabular = { fontVariantNumeric: 'tabular-nums' }
+const timeOptions = [
+  { id: '7', label: '7d' },
+  { id: '30', label: '30d' },
+  { id: '90', label: '90d' },
+  { id: '0', label: 'All' },
+  { id: 'custom', label: 'Custom' }
+]
+const pageTabs = [
+  { id: 'sessions', label: 'Sessions', codicon: 'list-tree' },
+  { id: 'overview', label: 'Overview', codicon: 'graph' },
+  { id: 'fleet', label: 'Fleet', codicon: 'organization' },
+  { id: 'operations', label: 'Operations', codicon: 'pulse' },
+  { id: 'tools', label: 'Tools', codicon: 'tools' },
+  { id: 'rules', label: 'Rules', codicon: 'checklist' },
+  { id: 'system', label: 'System', codicon: 'server-environment' },
+  { id: 'ai-usage', label: 'AI Usage', codicon: 'dashboard' },
+  { id: 'ai-models', label: 'AI Models', codicon: 'symbol-enum' }
+]
+
+// ============================================================================
+// SHARED FOUNDATION
+// ============================================================================
+
+// Active profile scope for backend reads ('' = the serving profile,
+// 'all' = every profile, or a comma list). Set by SessionLensPage during
+// render; apiPath folds it into every request so views need no plumbing.
+// An explicit params.profiles (e.g. a session detail pinned to its own
+// profile) wins over the page-wide scope.
+let activeProfilesParam = ''
+let activeBudgetsParam = ''
+let activeBalancesParam = ''
+// Runaway-watch alert rates (`cash:1,list:5`), from this desktop's storage.
+let activeWatchParam = ''
+
+// Enabled instruction rules as JSON, sent only with /digest so the weekly
+// digest can grade them; the Rules tab sends its own copy to /rules.
+let activeRulesParam = ''
+
+function apiPath(path, params = {}) {
+  const merged = { ...params }
+  if (activeProfilesParam) merged.profiles = activeProfilesParam
+  if (activeBudgetsParam) merged.budgets = activeBudgetsParam
+  if (activeBalancesParam && (path === '/budgets' || path === '/attention' || path === '/digest')) merged.balances = activeBalancesParam
+  if (activeRulesParam && path === '/digest') merged.rules = activeRulesParam
+  if (activeWatchParam && (path === '/attention' || path === '/watch')) merged.watch = activeWatchParam
+  const query = Object.entries(merged)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&')
+  return query ? `${path}?${query}` : path
+}
+
+// Every read goes through here. Duckwork' desktop bridge resolves null for an
+// empty 2xx body, and a query that resolves to nothing would render as a
+// crash deep inside a view; a thrown error instead lands in ErrorBlock with
+// its Retry button. The path is trimmed to its route so the message never
+// carries query parameters.
+// Duckwork' bridge gives up on a plugin request after 30 s by default — the
+// same moment the backend's route budget used to answer with its own
+// sentence, so the user saw a bare "Timed out connecting". Wait longer than
+// any budget the backend applies; it always answers first.
+const PLUGIN_REST_TIMEOUT_MS = 90_000
+
+async function pluginRest(ctx, path, options) {
+  const result = await ctx.rest(path, { timeoutMs: PLUGIN_REST_TIMEOUT_MS, ...(options || {}) })
+  if (result === undefined || result === null) {
+    throw new Error(`Duckwork returned no data for ${String(path).split('?')[0]} — the backend may be busy or restarting`)
+  }
+  return result
+}
+
+// A query that is neither loading nor failed can still have no data: React
+// Query pauses fetches while the app believes it is offline, and a reset
+// query sits idle until its next fetch. Treat both as "still waiting".
+// Balance ledger: providers that report a balance rather than spend reveal
+// what they cost only by how far the balance falls between readings. One
+// entry per provider per month: the first and last reading, the sum of the
+// falls (spent) and of the rises (topped up). Stored in this desktop's plugin
+// storage next to the budget caps, sent to the backend as `balances`.
+function currentMonthKey(t) {
+  const date = new Date(t)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+function recordBalanceReading(ledger, provider, unit, value, t) {
+  if (!Number.isFinite(value) || !provider) return ledger
+  const month = currentMonthKey(t)
+  const previous = ledger[provider]
+  if (!previous || previous.month !== month || previous.unit !== unit) {
+    return { ...ledger, [provider]: { month, unit, first_at: t, first: value, last_at: t, last: value, spent: 0, topped_up: 0, readings: 1 } }
+  }
+  if (t - previous.last_at < 60_000) return ledger
+  const delta = previous.last - value
+  return {
+    ...ledger,
+    [provider]: {
+      ...previous,
+      last_at: t,
+      last: value,
+      spent: previous.spent + (delta > 0 ? delta : 0),
+      topped_up: previous.topped_up + (delta < 0 ? -delta : 0),
+      readings: previous.readings + 1
+    }
+  }
+}
+
+function balancesParamFrom(ledger) {
+  const month = currentMonthKey(Date.now())
+  const items = Object.entries(ledger || {})
+    .filter(([, entry]) => entry && entry.month === month && entry.unit === 'USD' && entry.readings > 1)
+    .map(([provider, entry]) => ({ p: provider, s: Number(entry.spent.toFixed(4)), t: Number(entry.topped_up.toFixed(4)), a: Math.round(entry.first_at / 1000), l: Math.round(entry.last_at / 1000) }))
+  return items.length ? JSON.stringify(items) : ''
+}
+
+function balanceLedgerLine(entry) {
+  if (!entry || entry.readings < 2) return null
+  const parts = [`Down ${formatUsageAmount(entry.spent, entry.unit)} this month`]
+  if (entry.topped_up > 0) parts.push(`topped up ${formatUsageAmount(entry.topped_up, entry.unit)}`)
+  parts.push(`since ${formatShortDate(entry.first_at / 1000)}`)
+  return parts.join(' · ')
+}
+
+function queryPending(query) {
+  return Boolean(query?.isLoading || (query?.data === undefined && !query?.isError))
+}
+
+// The header's refresh button should turn whenever any Session Lens query
+// is in flight, whichever tab declared it. React Query's useIsFetching is
+// not part of the Duckwork SDK surface, so subscribe to the cache directly.
+function usePluginFetching(queryClient) {
+  const [fetching, setFetching] = useState(() => queryClient.isFetching({ queryKey: [PLUGIN_ID] }) > 0)
+  useEffect(() => {
+    const update = () => setFetching(queryClient.isFetching({ queryKey: [PLUGIN_ID] }) > 0)
+    update()
+    return queryClient.getQueryCache().subscribe(update)
+  }, [queryClient])
+  return fetching
+}
+
+function dateInputValue(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function dateDaysAgo(days) {
+  const date = new Date()
+  date.setHours(12, 0, 0, 0)
+  date.setDate(date.getDate() - days)
+  return dateInputValue(date)
+}
+
+function normaliseDateInput(value, fallback) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return fallback
+  const parsed = new Date(`${value}T00:00:00`)
+  return Number.isNaN(parsed.getTime()) ? fallback : String(value)
+}
+
+function periodParams(range, customStart, customEnd) {
+  if (range !== 'custom') return { days: Number(range) || 0 }
+  const start = new Date(`${customStart}T00:00:00`)
+  const end = new Date(`${customEnd}T00:00:00`)
+  end.setDate(end.getDate() + 1)
+  return {
+    start_at: Math.floor(start.getTime() / 1000),
+    end_at: Math.floor(end.getTime() / 1000)
+  }
+}
+
+function timestampDate(timestamp) {
+  if (!timestamp) return null
+  const numeric = Number(timestamp)
+  const date = Number.isFinite(numeric)
+    ? new Date(numeric > 10_000_000_000 ? numeric : numeric * 1000)
+    : new Date(timestamp)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function formatDate(timestamp) {
+  const date = timestampDate(timestamp)
+  if (!date) return 'Unknown time'
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(date)
+  } catch {
+    return 'Unknown time'
+  }
+}
+
+function formatShortDate(timestamp) {
+  const date = timestampDate(timestamp)
+  if (!date) return '—'
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(date)
+  } catch {
+    return '—'
+  }
+}
+
+function formatDuration(seconds) {
+  if (seconds === null || seconds === undefined) return '—'
+  const total = Math.max(0, Number(seconds) || 0)
+  if (total < 60) return `${Math.round(total)}s`
+  if (total < 3600) return `${Math.round(total / 60)}m`
+  const hours = Math.floor(total / 3600)
+  const minutes = Math.round((total % 3600) / 60)
+  return minutes ? `${hours}h ${minutes}m` : `${hours}h`
+}
+
+function formatCount(value) {
+  const number = Number(value) || 0
+  return compactNumber(number)
+}
+
+function formatCost(value, kind = 'unpriced') {
+  if (kind === 'included') return 'Included'
+  if (kind === 'mixed') return `${formatCost(value, 'estimated')} + included`
+  if (value === null || value === undefined || kind === 'unpriced') return 'Unpriced'
+  const amount = Number(value) || 0
+  if (amount === 0) return '$0.00'
+  if (amount < 0.01) return `$${amount.toFixed(4)}`
+  return `$${amount.toFixed(2)}`
+}
+
+function formatPercent(value) {
+  if (value === null || value === undefined) return '—'
+  return `${(Number(value) * 100).toFixed(1)}%`
+}
+
+function formatSeconds(value) {
+  if (value === null || value === undefined) return '—'
+  const seconds = Number(value) || 0
+  return seconds < 10 ? `${seconds.toFixed(2)}s` : `${seconds.toFixed(1)}s`
+}
+
+function formatRelativeTime(timestamp) {
+  const date = timestampDate(timestamp)
+  if (!date) return 'last used unknown'
+  const seconds = Math.max(0, Math.round((Date.now() - date.getTime()) / 1000))
+  if (seconds < 60) return 'last used just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `last used ${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `last used ${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `last used ${days}d ago`
+  const months = Math.floor(days / 30)
+  if (months < 12) return `last used ${months}mo ago`
+  return `last used ${Math.floor(months / 12)}y ago`
+}
+
+function metricTone(value) {
+  if (value === null || value === undefined) return 'neutral'
+  const numeric = Number(value)
+  if (numeric < 0.02) return 'success'
+  if (numeric <= 0.05) return 'warning'
+  return 'danger'
+}
+
+function toneColor(tone) {
+  if (tone === 'success') return color.success
+  if (tone === 'warning') return color.warning
+  if (tone === 'danger') return color.danger
+  return color.tertiary
+}
+
+function LoadingBlock({ rows = 4 }) {
+  return jsx('div', {
+    'aria-label': 'Loading',
+    style: { display: 'grid', gap: '0.625rem', padding: '1rem' },
+    children: Array.from({ length: rows }, (_, index) =>
+      jsx(Skeleton, { style: { height: index === 0 ? '2.25rem' : '1.15rem', width: index % 2 ? '82%' : '100%' } }, index)
+    )
+  })
+}
+
+// Duckwork' bridge rejects with "<status>: <body>"; when the body is the
+// backend's own JSON detail (a 503 from the route budget, a 404), show that
+// sentence rather than the envelope, and skip the first-install hint.
+function describeError(error) {
+  const raw = error?.message || String(error || 'The backend did not return data.')
+  // Duckwork' bridge reports "<status>: <json body>", sometimes behind
+  // Electron's "Error invoking remote method 'duckwork:api': Error: " prefix.
+  const envelope = raw.match(/(?:^|\s)(\d{3}):\s*(\{[\s\S]*\})\s*$/)
+  if (envelope) {
+    try {
+      const detail = JSON.parse(envelope[2])?.detail
+      if (typeof detail === 'string' && detail.trim()) return { message: detail.trim(), fromBackend: true }
+    } catch {
+      // fall through to the raw text
+    }
+  }
+  return { message: raw, fromBackend: false }
+}
+
+function ErrorBlock({ error, onRetry, title = 'Session Lens could not load this view' }) {
+  const { message, fromBackend } = describeError(error)
+  if (/plugin not found/i.test(message)) {
+    return jsx('div', {
+      style: { display: 'grid', minHeight: '15rem', placeItems: 'center', padding: '2rem' },
+      children: jsxs(EmptyState, {
+        title: 'Duckwork is not serving Session Lens',
+        description: 'The Duckwork backend answered “Plugin not found” for session-lens: it is not enabled in the Duckwork configuration that backend started with. Turn it on in Capabilities → Plugins (or run “duckwork plugins enable session-lens”; install it first with “duckwork plugins install abualnassr/duckwork-session-lens” if it is missing), then restart Duckwork. Duckwork Desktop serves every local profile from one backend, so enabling it once covers them all.',
+        children: [
+          jsx(Button, { variant: 'outline', size: 'sm', onClick: onRetry, children: 'Check again' })
+        ]
+      })
+    })
+  }
+  return jsx('div', {
+    style: { display: 'grid', minHeight: '15rem', placeItems: 'center', padding: '2rem' },
+    children: jsxs(ErrorState, {
+      title,
+      description: fromBackend ? message : `${message} Enable session-lens in Duckwork plugins and restart the gateway if this is the first install.`,
+      children: [
+        jsx(Button, { variant: 'outline', size: 'sm', onClick: onRetry, children: 'Try again' })
+      ]
+    })
+  })
+}
+
+function Pill({ children, tone = 'neutral', title }) {
+  const danger = tone === 'danger'
+  const accent = tone === 'accent'
+  return jsx('span', {
+    title,
+    style: {
+      alignItems: 'center',
+      background: danger ? color.dangerSoft : accent ? color.accentSoft : color.surfaceRaised,
+      borderRadius: '999px',
+      color: danger ? color.danger : accent ? color.accent : color.secondary,
+      display: 'inline-flex',
+      fontSize: '0.6875rem',
+      fontWeight: 600,
+      gap: '0.3rem',
+      lineHeight: 1.5,
+      maxWidth: '100%',
+      padding: '0.1rem 0.45rem',
+      whiteSpace: 'nowrap'
+    },
+    children
+  })
+}
+
+function Metric({ label, value, detail, danger = false }) {
+  return jsxs('div', {
+    style: {
+      borderRight: border,
+      minWidth: 0,
+      padding: '0.7rem 1rem'
+    },
+    children: [
+      jsx('div', {
+        style: {
+          color: color.tertiary,
+          fontSize: '0.6875rem',
+          lineHeight: 1.35,
+          marginBottom: '0.18rem'
+        },
+        children: label
+      }),
+      jsx('div', {
+        style: {
+          ...tabular,
+          color: danger ? color.danger : color.primary,
+          fontSize: '1rem',
+          fontWeight: 650,
+          lineHeight: 1.3,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        },
+        children: value
+      }),
+      detail
+        ? jsx('div', {
+            style: { color: color.quaternary, fontSize: '0.625rem', marginTop: '0.15rem' },
+            children: detail
+          })
+        : null
+    ]
+  })
+}
+
+function StatStrip({ overview }) {
+  const totals = overview?.totals || {}
+  return jsx('div', {
+    style: {
+      borderBottom: border,
+      borderTop: border,
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, minmax(7rem, 1fr))',
+      overflowX: 'auto'
+    },
+    children: [
+      jsx(Metric, {
+        label: 'Recorded cost',
+        value: overview ? formatCost(totals.display_cost_usd, totals.cost_kind) : '—',
+        detail: overview ? `${formatCount(totals.unpriced_sessions)} unpriced sessions` : null
+      }, 'cost'),
+      jsx(Metric, {
+        label: 'Tokens',
+        value: overview ? formatCount(totals.total_tokens) : '—',
+        detail: overview ? `${formatCount(totals.cache_read_tokens)} cache read` : null
+      }, 'tokens'),
+      jsx(Metric, {
+        label: 'Sessions',
+        value: overview ? formatCount(totals.sessions) : '—',
+        detail: overview ? `${formatCount(totals.messages)} messages` : null
+      }, 'sessions'),
+      jsx(Metric, {
+        label: 'Failures detected',
+        value: overview ? formatCount(totals.failures) : '—',
+        detail: overview ? `${formatCount(totals.tool_calls)} tool calls` : null,
+        danger: Number(totals.failures) > 0
+      }, 'failures')
+    ]
+  })
+}
+
+function SectionHeading({ title, description, action }) {
+  return jsxs('div', {
+    style: {
+      alignItems: 'flex-start',
+      display: 'flex',
+      gap: '1rem',
+      justifyContent: 'space-between',
+      marginBottom: '0.85rem'
+    },
+    children: [
+      jsxs('div', {
+        style: { minWidth: 0 },
+        children: [
+          jsx('h2', {
+            style: { color: color.primary, fontSize: '0.9375rem', fontWeight: 650, lineHeight: 1.35, margin: 0 },
+            children: title
+          }),
+          description
+            ? jsx('p', {
+                style: { color: color.tertiary, fontSize: '0.75rem', lineHeight: 1.5, margin: '0.2rem 0 0' },
+                children: description
+              })
+            : null
+        ]
+      }),
+      action || null
+    ]
+  })
+}
+
+// Duckwork' text and surface tokens are color-mix() values over transparent and
+// its root keeps `color-scheme: light` in every mode. Chromium paints a native
+// <select> popup in a separate page popup that follows the element's
+// color-scheme and cannot resolve those mixed colors, so in a dark theme the
+// option list came out as dark default text on a dark translucent surface —
+// unreadable until hovered. The popup therefore gets its own scheme (from the
+// root's `dark` class) and plain colors built on Duckwork' hex theme seeds.
+const nativeSelectCss = [
+  '.session-lens-select option { background: #ffffff; color: var(--theme-foreground, #17171a); }',
+  ':root.dark .session-lens-select option { background: var(--theme-neutral-card, #161618); color: #f2f2f3; }'
+].join(' ')
+
+function nativeSelectScheme() {
+  try {
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  } catch {
+    return 'light'
+  }
+}
+
+function NativeSelect({ value, onChange, label, children }) {
+  return jsx('label', {
+    style: { alignItems: 'center', color: color.tertiary, display: 'inline-flex', fontSize: '0.6875rem', gap: '0.4rem' },
+    children: jsxs(Fragment, {
+      children: [
+        jsx('style', { children: nativeSelectCss }),
+        jsx('span', { children: label }),
+        jsx('select', {
+          className: 'session-lens-select',
+          value,
+          onChange: event => onChange(event.target.value),
+          style: {
+            background: color.surfaceRaised,
+            border,
+            borderRadius: '4px',
+            color: color.primary,
+            colorScheme: nativeSelectScheme(),
+            font: 'inherit',
+            outlineColor: color.accent,
+            padding: '0.28rem 1.7rem 0.28rem 0.45rem'
+          },
+          children
+        })
+      ]
+    })
+  })
+}
+
+function DateField({ label, value, onChange, min, max }) {
+  return jsxs('label', {
+    style: { alignItems: 'center', color: color.tertiary, display: 'inline-flex', fontSize: '0.6875rem', gap: '0.35rem' },
+    children: [
+      jsx('span', { children: label }),
+      jsx(Input, {
+        type: 'date',
+        value,
+        min,
+        max,
+        required: true,
+        onChange: event => onChange(event.target.value),
+        'aria-label': `${label} date`,
+        style: { fontVariantNumeric: 'tabular-nums', width: '8.6rem' }
+      })
+    ]
+  })
+}
+
+// Usage on a flat-rate subscription route costs no cash; Duckwork still
+// records what it would have cost at API list price, shown for scale.
+function listPriceNote(session) {
+  const price = Number(session.list_price_usd)
+  return price > 0 ? `≈ ${formatCost(price, 'estimated')} at API list price` : ''
+}
+
+function CostLabel({ session }) {
+  const kind = session.cost_kind || 'unpriced'
+  const listPrice = listPriceNote(session)
+  return jsx(Pill, {
+    tone: kind === 'actual' ? 'accent' : 'neutral',
+    title: [listPrice ? `Subscription usage, ${listPrice}` : '', session.cost_source ? `Source: ${session.cost_source}` : `Cost: ${kind}`].filter(Boolean).join(' · '),
+    children: formatCost(session.display_cost_usd, kind)
+  })
+}
+
+function OutcomePill({ session }) {
+  const outcome = session.outcome || 'closed'
+  const tone = outcome === 'failed' ? 'danger' : outcome === 'running' || outcome === 'completed' ? 'accent' : 'neutral'
+  const icon = outcome === 'failed' ? 'error' : outcome === 'running' ? 'record' : outcome === 'completed' ? 'pass' : 'circle-outline'
+  return jsx(Pill, {
+    tone,
+    title: session.end_reason ? `Duckwork end reason: ${session.end_reason}` : 'No end reason recorded',
+    children: jsxs(Fragment, {
+      children: [jsx(Codicon, { name: icon, size: '0.65rem' }), session.outcome_label || 'Closed']
+    })
+  })
+}
+
+// ============================================================================
+// SESSIONS
+// ============================================================================
+
+function SessionRow({ session, selected, onSelect }) {
+  return jsx('button', {
+    type: 'button',
+    onClick: onSelect,
+    'aria-current': selected ? 'true' : undefined,
+    style: {
+      background: selected ? color.accentSoft : 'transparent',
+      border: 'none',
+      borderBottom: border,
+      color: color.primary,
+      cursor: 'pointer',
+      display: 'grid',
+      gap: '0.45rem',
+      padding: '0.78rem 0.85rem',
+      textAlign: 'left',
+      width: '100%'
+    },
+    children: [
+      jsxs('div', {
+        style: { alignItems: 'flex-start', display: 'flex', gap: '0.6rem', justifyContent: 'space-between', minWidth: 0 },
+        children: [
+          jsxs('div', {
+            style: { minWidth: 0 },
+            children: [
+              jsx('div', {
+                style: {
+                  fontSize: '0.8125rem',
+                  fontWeight: selected ? 650 : 550,
+                  lineHeight: 1.35,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                },
+                children: session.title
+              }),
+              jsx('div', {
+                style: { color: color.quaternary, fontSize: '0.6875rem', marginTop: '0.15rem' },
+                children: `${formatShortDate(session.last_activity_at || session.started_at)} · ${session.source || 'unknown'}`
+              })
+            ]
+          }),
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.3rem', justifyContent: 'flex-end' },
+            children: [
+              jsx(OutcomePill, { session }),
+              session.failure_count > 0
+                ? jsx(Pill, {
+                    tone: 'danger',
+                    title: 'Detected failed tool results',
+                    children: jsxs(Fragment, {
+                      children: [jsx(Codicon, { name: 'warning', size: '0.65rem' }), String(session.failure_count)]
+                    })
+                  })
+                : null
+            ]
+          })
+        ]
+      }),
+      jsxs('div', {
+        style: { alignItems: 'center', color: color.tertiary, display: 'flex', flexWrap: 'wrap', fontSize: '0.6875rem', gap: '0.35rem 0.7rem' },
+        children: [
+          jsx('span', { style: tabular, children: `${formatCount(session.total_tokens)} tokens` }),
+          jsx('span', { style: tabular, children: `${formatCount(session.tool_call_count)} tools` }),
+          jsx(CostLabel, { session }),
+          session.profile && (activeProfilesParam === 'all' || activeProfilesParam.includes(','))
+            ? jsx('span', {
+                title: `Recorded in the ${session.profile} profile`,
+                style: { background: color.surface, border, borderRadius: '999px', fontSize: '0.6rem', padding: '0.05rem 0.4rem' },
+                children: session.profile
+              })
+            : null
+        ]
+      }),
+      session.model
+        ? jsx('div', {
+            style: { color: color.quaternary, fontSize: '0.625rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+            children: session.model
+          })
+        : null,
+      session.search_snippet || session.search_match
+        ? jsxs('div', {
+            style: {
+              borderTop: border,
+              color: color.tertiary,
+              fontSize: '0.6875rem',
+              lineHeight: 1.45,
+              marginTop: '0.1rem',
+              overflowWrap: 'anywhere',
+              paddingTop: '0.4rem'
+            },
+            children: [
+              session.search_match
+                ? jsx('span', {
+                    style: { color: SEARCH_DETAIL_MATCHES.has(session.search_match) ? color.accent : color.quaternary, fontWeight: 600, marginRight: '0.35rem' },
+                    children: SEARCH_DETAIL_MATCHES.has(session.search_match) ? `Matches the ${session.search_match}` : `Mentioned in ${/^[aeiou]/i.test(session.search_match) ? 'an' : 'a'} ${session.search_match}${session.search_snippet ? ':' : ''}`
+                  })
+                : null,
+              ...searchSnippetParts(session.search_snippet)
+            ]
+          })
+        : null
+    ]
+  })
+}
+
+// Duckwork' full-text search marks the matched term >>>like this<<<.
+const SEARCH_DETAIL_MATCHES = new Set(['title', 'folder', 'model', 'id', 'source'])
+
+function searchSnippetParts(snippet) {
+  if (!snippet) return []
+  return String(snippet).split(/>>>([\s\S]*?)<<</).map((part, index) => index % 2
+    ? jsx('mark', { style: { background: 'transparent', color: color.primary, fontWeight: 650 }, children: part }, index)
+    : part)
+}
+
+function DetailMetricGrid({ session }) {
+  const items = [
+    ['Cost', formatCost(session.display_cost_usd, session.cost_kind), listPriceNote(session) || session.cost_kind],
+    ['Tokens', formatCount(session.total_tokens), `${formatCount(session.input_tokens)} in · ${formatCount(session.output_tokens)} out`],
+    ['Tools', formatCount(session.tool_call_count), `${formatCount(session.failure_count)} failures`],
+    ['Duration', formatDuration(session.duration_seconds), `${formatCount(session.message_count)} messages`]
+  ]
+  return jsx('div', {
+    style: { borderBottom: border, borderTop: border, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(7rem, 1fr))', overflowX: 'auto' },
+    children: items.map(([label, value, detail]) => jsx(Metric, { label, value, detail, danger: label === 'Tools' && session.failure_count > 0 }, label))
+  })
+}
+
+function tableSortValue(column, row) {
+  const value = column.sortValue ? column.sortValue(row) : row[column.key]
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value === 'boolean') return value ? 1 : 0
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  return String(value).toLocaleLowerCase()
+}
+
+function tableRowKey(row, index, columns) {
+  const signature = columns.map(column => {
+    const value = row[column.key]
+    return value === null || value === undefined || typeof value === 'object' ? '' : String(value)
+  }).join('\u001f')
+  return `${signature}\u001e${index}`
+}
+
+// ── Export helpers ────────────────────────────────────────────────────────
+// Exports are built in the desktop from data the page already holds (or the
+// same read-only routes it already calls); the backend gains no export route
+// and writes nothing. Downloads go through Electron's Save File dialog.
+function csvCell(value) {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : ''
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+  const text = typeof value === 'object' ? JSON.stringify(value) : String(value)
+  return /[",\r\n]/.test(text) || /^\s|\s$/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+}
+
+function toCsv(columns, rows) {
+  const header = columns.map(column => csvCell(column.label || column.key)).join(',')
+  const lines = (rows || []).map(row =>
+    columns.map(column => csvCell(column.value ? column.value(row) : row[column.key])).join(',')
+  )
+  return '\ufeff' + [header, ...lines].join('\r\n') + '\r\n'
+}
+
+function isoStamp(seconds) {
+  const number = Number(seconds)
+  return Number.isFinite(number) && number > 0 ? new Date(number * 1000).toISOString() : ''
+}
+
+function exportFilename(name, period, extension) {
+  const now = new Date()
+  const pad = value => String(value).padStart(2, '0')
+  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`
+  let scope = ''
+  if (period) {
+    if (period.start_at) scope = 'custom'
+    else scope = Number(period.days) > 0 ? `${period.days}d` : 'all'
+  }
+  return ['session-lens', name, scope, stamp].filter(Boolean).join('-') + '.' + extension
+}
+// ── End export helpers ────────────────────────────────────────────────────
+
+function downloadText(filename, text, mime) {
+  const blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.rel = 'noopener'
+  anchor.style.display = 'none'
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+  const area = document.createElement('textarea')
+  area.value = text
+  area.setAttribute('readonly', '')
+  area.style.position = 'fixed'
+  area.style.opacity = '0'
+  document.body.appendChild(area)
+  area.select()
+  try {
+    if (!document.execCommand('copy')) throw new Error('clipboard unavailable')
+  } finally {
+    area.remove()
+  }
+}
+
+function notifyHost(kind, message) {
+  try {
+    if (typeof host?.notify === 'function') host.notify({ kind, message })
+  } catch {
+    // The toast is a courtesy; the export already happened.
+  }
+}
+
+// ── Ask Duckwork ─────────────────────────────────────────────────────────────
+// "Prepare and hand over": the backend renders a bounded, secret-redacted,
+// session-grounded failure-analysis prompt; the desktop copies it to the
+// clipboard and opens a fresh Duckwork chat for the user to paste it into.
+// Session Lens never submits a prompt or creates a session itself, so it stays
+// read-only and the user sees exactly what the model will read before any
+// tokens are spent.
+async function askDuckworkAboutFailures({ ctx, sessionId, profile }) {
+  return handOverPrompt({ ctx, path: apiPath(`/sessions/${encodeURIComponent(sessionId)}/analysis-prompt`, profile ? { profiles: profile } : {}), profile })
+}
+
+async function handOverPrompt({ ctx, path, profile }) {
+  const payload = await pluginRest(ctx, path)
+  const prompt = payload?.prompt
+  if (typeof prompt !== 'string' || !prompt.trim()) throw new Error('the analysis prompt came back empty')
+  await copyText(prompt)
+  let opened = false
+  try {
+    if (typeof host?.newChat === 'function') {
+      await host.newChat(profile || undefined)
+      opened = true
+    }
+  } catch {
+    // Opening the chat is a convenience; the prompt is already on the clipboard.
+  }
+  return { ...payload, opened }
+}
+
+function AskDuckworkButton({ ctx, session, profile, failuresShown }) {
+  const [busy, setBusy] = useState(false)
+  if (!failuresShown) return null
+  const run = async () => {
+    setBusy(true)
+    try {
+      const result = await askDuckworkAboutFailures({ ctx, sessionId: session.id, profile })
+      const groups = Number(result.failure_groups) || 0
+      const size = `${formatCount(result.characters)} characters · ${formatCount(groups)} failure group${groups === 1 ? '' : 's'}`
+      notifyHost('success', result.opened
+        ? `Analysis prompt copied (${size}). Paste it into the new chat and send.`
+        : `Analysis prompt copied (${size}). Open a new Duckwork chat, paste it, and send.`)
+    } catch (error) {
+      notifyHost('error', `Could not prepare the analysis prompt: ${error?.message || error}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+  return jsx(Button, {
+    variant: 'outline',
+    size: 'xs',
+    disabled: busy,
+    onClick: run,
+    title: "Copy a failure-analysis prompt built from this session's recorded failures (bounded, secret-redacted) and open a new Duckwork chat to paste it into. Nothing is sent until you press send.",
+    children: jsxs(Fragment, { children: [busy ? jsx(SpinIcon, { size: '0.7rem' }) : jsx(Codicon, { name: 'comment-discussion' }), 'Ask Duckwork'] })
+  })
+}
+// One recurring failure across every session it hit: the prompt carries the
+// most recent distinct cases with the calls that produced them.
+function singleProfileScope() {
+  return activeProfilesParam && activeProfilesParam !== 'all' && !activeProfilesParam.includes(',') ? activeProfilesParam : undefined
+}
+
+function AskDuckworkAboutFaultButton({ ctx, row, period }) {
+  const [busy, setBusy] = useState(false)
+  const run = async () => {
+    setBusy(true)
+    try {
+      const profile = row.profiles?.length === 1 ? row.profiles[0] : singleProfileScope()
+      const result = await handOverPrompt({ ctx, path: apiPath('/failures/recurring/prompt', { ...period, key: row.key }), profile })
+      const size = `${formatCount(result.characters)} characters · ${formatCount(result.examples_included)} example${Number(result.examples_included) === 1 ? '' : 's'} · ${formatCount(result.sessions_total)} session${Number(result.sessions_total) === 1 ? '' : 's'}`
+      notifyHost('success', result.opened
+        ? `Investigation prompt copied (${size}). Paste it into the new chat and send.`
+        : `Investigation prompt copied (${size}). Open a new Duckwork chat, paste it, and send.`)
+    } catch (error) {
+      notifyHost('error', `Could not prepare the investigation prompt: ${error?.message || error}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+  return jsx(Button, {
+    variant: 'outline',
+    size: 'xs',
+    disabled: busy || !row.key,
+    onClick: run,
+    title: 'Copy a prompt to investigate this failure — its pattern, the most recent distinct cases with the calls that caused them, and the sessions it hit (bounded, secret-redacted) — and open a new Duckwork chat to paste it into. Nothing is sent until you press send.',
+    children: jsxs(Fragment, { children: [busy ? jsx(SpinIcon, { size: '0.7rem' }) : jsx(Codicon, { name: 'comment-discussion' }), 'Ask Duckwork'] })
+  })
+}
+// ── End Ask Duckwork ─────────────────────────────────────────────────────────
+
+// Items: { id, label, hint?, filename, mime?, build: () => string | Promise<string> }.
+// Every item offers Download (Save File dialog) and Copy (clipboard).
+function ExportMenu({ items, label = 'Export', title = 'Export this view as CSV, JSON, or Markdown' }) {
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState('')
+  const run = async (item, mode) => {
+    const key = `${item.id}:${mode}`
+    setBusy(key)
+    try {
+      const text = await item.build()
+      if (typeof text !== 'string' || !text.length) throw new Error('nothing to export')
+      if (mode === 'copy') {
+        await copyText(text)
+        notifyHost('success', `Copied ${item.label} to the clipboard.`)
+      } else {
+        downloadText(item.filename, text, item.mime)
+      }
+      setOpen(false)
+    } catch (error) {
+      notifyHost('error', `Export failed: ${error?.message || error}`)
+    } finally {
+      setBusy('')
+    }
+  }
+  const miniButton = (item, mode, icon, text) => jsxs('button', {
+    type: 'button',
+    role: 'menuitem',
+    disabled: Boolean(busy),
+    onClick: () => run(item, mode),
+    'aria-label': `${text} ${item.label}`,
+    title: mode === 'copy' ? `Copy ${item.label} to the clipboard` : `Save ${item.filename}`,
+    style: {
+      alignItems: 'center', background: color.surfaceRaised, border, borderRadius: '4px',
+      color: color.secondary, cursor: busy ? 'progress' : 'pointer', display: 'inline-flex',
+      font: 'inherit', fontSize: '0.625rem', gap: '0.25rem', padding: '0.2rem 0.45rem', whiteSpace: 'nowrap'
+    },
+    children: [
+      busy === `${item.id}:${mode}` ? jsx(SpinIcon, { size: '0.7rem' }) : jsx(Codicon, { name: icon, size: '0.7rem' }),
+      text
+    ]
+  })
+  if (!items?.length) return null
+  return jsxs('div', {
+    style: { flexShrink: 0, position: 'relative' },
+    children: [
+      jsx(Button, {
+        variant: 'outline',
+        size: 'xs',
+        'aria-haspopup': 'menu',
+        'aria-expanded': open,
+        title,
+        onClick: () => setOpen(value => !value),
+        children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'export' }), label, jsx(Codicon, { name: 'chevron-down', size: '0.6rem' })] })
+      }),
+      open ? jsx('div', { onClick: () => setOpen(false), style: { inset: 0, position: 'fixed', zIndex: 29 } }) : null,
+      open
+        ? jsx('div', {
+            role: 'menu',
+            'aria-label': 'Export options',
+            style: { background: 'var(--popover, var(--background, Canvas))', border, borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.28)', minWidth: '19rem', padding: '0.35rem', position: 'absolute', right: 0, top: 'calc(100% + 0.35rem)', zIndex: 30 },
+            children: items.map(item => jsxs('div', {
+              style: { alignItems: 'center', display: 'flex', gap: '0.5rem', justifyContent: 'space-between', padding: '0.35rem 0.45rem' },
+              children: [
+                jsxs('div', {
+                  style: { minWidth: 0 },
+                  children: [
+                    jsx('div', { style: { color: color.primary, fontSize: '0.6875rem', fontWeight: 600 }, children: item.label }),
+                    item.hint ? jsx('div', { style: { color: color.tertiary, fontSize: '0.625rem', lineHeight: 1.4 }, children: item.hint }) : null
+                  ]
+                }),
+                jsxs('div', {
+                  style: { display: 'flex', flexShrink: 0, gap: '0.3rem' },
+                  children: [miniButton(item, 'download', 'desktop-download', 'Download'), miniButton(item, 'copy', 'copy', 'Copy')]
+                })
+              ]
+            }, item.id))
+          })
+        : null
+    ]
+  })
+}
+
+const SESSION_EXPORT_COLUMNS = [
+  { key: 'id', label: 'Session ID' },
+  { key: 'title', label: 'Title' },
+  { key: 'profile', label: 'Profile' },
+  { key: 'source', label: 'Source' },
+  { key: 'model', label: 'Model' },
+  { key: 'billing_provider', label: 'Billing provider' },
+  { key: 'cwd', label: 'Working directory' },
+  { key: 'git_branch', label: 'Branch' },
+  { key: 'started_at', label: 'Started (UTC)', value: row => isoStamp(row.started_at) },
+  { key: 'ended_at', label: 'Ended (UTC)', value: row => isoStamp(row.ended_at) },
+  { key: 'duration_seconds', label: 'Duration (s)', value: row => row.duration_seconds == null ? '' : Math.round(Number(row.duration_seconds)) },
+  { key: 'outcome_label', label: 'Outcome' },
+  { key: 'end_reason', label: 'End reason' },
+  { key: 'message_count', label: 'Messages' },
+  { key: 'tool_call_count', label: 'Tool calls' },
+  { key: 'api_call_count', label: 'API calls' },
+  { key: 'failure_count', label: 'Failures' },
+  { key: 'input_tokens', label: 'Input tokens' },
+  { key: 'output_tokens', label: 'Output tokens' },
+  { key: 'cache_read_tokens', label: 'Cache read tokens' },
+  { key: 'cache_write_tokens', label: 'Cache write tokens' },
+  { key: 'reasoning_tokens', label: 'Reasoning tokens' },
+  { key: 'total_tokens', label: 'Total tokens' },
+  { key: 'display_cost_usd', label: 'Cost (USD)' },
+  { key: 'cost_kind', label: 'Cost kind' },
+  { key: 'cost_status', label: 'Cost status' }
+]
+
+const TOOL_EXPORT_COLUMNS = [
+  { key: 'name', label: 'Tool' },
+  { key: 'group', label: 'Source' },
+  { key: 'kind', label: 'Kind' },
+  { key: 'calls', label: 'Calls' },
+  { key: 'sessions', label: 'Sessions' },
+  { key: 'failures', label: 'Failures' },
+  { key: 'failure_rate', label: 'Failure rate' },
+  { key: 'log_calls', label: 'Logged calls' },
+  { key: 'latency_p50_seconds', label: 'Latency p50 (s)' },
+  { key: 'latency_p95_seconds', label: 'Latency p95 (s)' },
+  { key: 'context_tokens_estimate', label: 'Context tokens (est.)' },
+  { key: 'context_cost_usd', label: 'Context cost (USD)' },
+  { key: 'carried_tokens_estimate', label: 'Carried tokens (est., upper bound)' },
+  { key: 'carried_cost_usd', label: 'Carried cost (USD, upper bound)' },
+  { key: 'context_pricing', label: 'Context pricing' },
+  { key: 'last_used_at', label: 'Last used (UTC)', value: row => isoStamp(row.last_used_at) }
+]
+
+// The line under a tool source's name: how much of what it offers was used,
+// or why it has no calls. MCP servers come from config.yaml and Duckwork'
+// schema cache, so a connected server shows before its first call.
+function toolSourceNote(row) {
+  const used = Number(row.tool_count) || 0
+  const available = row.available_tools == null ? null : Number(row.available_tools)
+  const offered = available == null ? '' : `${formatCount(available)} tool${available === 1 ? '' : 's'}`
+  if (row.status === 'disabled') return offered ? `${offered} · switched off` : 'switched off'
+  if (row.status === 'unused') return offered ? `${offered} · no calls in this period` : 'no calls in this period'
+  if (row.status === 'removed') return `${formatCount(used)} used · no longer configured`
+  if (available != null) return `${formatCount(used)} of ${offered} used`
+  return `${formatCount(used)} tool${used === 1 ? '' : 's'}`
+}
+
+const TOOL_GROUP_EXPORT_COLUMNS = [
+  { key: 'name', label: 'Source', value: row => row.label || row.name },
+  { key: 'kind', label: 'Kind' },
+  { key: 'status', label: 'Status' },
+  { key: 'tool_count', label: 'Tools used' },
+  { key: 'available_tools', label: 'Tools available' },
+  { key: 'calls', label: 'Calls' },
+  { key: 'sessions', label: 'Sessions' },
+  { key: 'failures', label: 'Failures' },
+  { key: 'failure_rate', label: 'Failure rate' },
+  { key: 'log_calls', label: 'Logged calls' },
+  { key: 'latency_p50_seconds', label: 'Latency p50 (s)' },
+  { key: 'latency_p95_seconds', label: 'Latency p95 (s)' },
+  { key: 'context_tokens_estimate', label: 'Context tokens (est.)' },
+  { key: 'context_cost_usd', label: 'Context cost (USD)' },
+  { key: 'carried_cost_usd', label: 'Carried cost (USD, upper bound)' },
+  { key: 'context_pricing', label: 'Context pricing' },
+  { key: 'last_used_at', label: 'Last used (UTC)', value: row => isoStamp(row.last_used_at) }
+]
+
+const MODEL_EXPORT_COLUMNS = [
+  { key: 'display_name', label: 'Model' },
+  { key: 'model_id', label: 'Model ID' },
+  { key: 'route_label', label: 'Route' },
+  { key: 'requests', label: 'Requests' },
+  { key: 'total_tokens', label: 'Total tokens' },
+  { key: 'input_tokens', label: 'Input tokens' },
+  { key: 'output_tokens', label: 'Output tokens' },
+  { key: 'cache_read_tokens', label: 'Cached tokens' },
+  { key: 'cost_usd', label: 'Cost (USD)' },
+  { key: 'cost_kind', label: 'Cost kind' },
+  { key: 'failure_rate', label: 'API fail rate', value: row => row.failures?.rate ?? '' },
+  { key: 'failure_samples', label: 'API fail samples', value: row => row.failures?.samples ?? '' },
+  { key: 'retry_switch_rate', label: 'Retry/switch rate' },
+  { key: 'retry_switch_samples', label: 'Retry/switch samples' },
+  { key: 'eligible_tasks', label: 'Eligible tasks', value: row => row.work_reliability?.eligible_tasks ?? '' },
+  { key: 'failure_rate_upper_bound_95', label: 'Work failure bound (95%)', value: row => row.work_reliability?.failure_rate_upper_bound_95 ?? '' },
+  { key: 'rank', label: 'Reliability rank', value: row => row.work_reliability?.rank ?? '' },
+  { key: 'latency_total_p50_seconds', label: 'Total latency p50 (s)', value: row => row.latency?.total_p50_seconds ?? '' },
+  { key: 'latency_total_p95_seconds', label: 'Total latency p95 (s)', value: row => row.latency?.total_p95_seconds ?? '' }
+]
+
+const OVERVIEW_MODEL_EXPORT_COLUMNS = [
+  { key: 'model', label: 'Model' },
+  { key: 'billing_provider', label: 'Provider' },
+  { key: 'sessions', label: 'Sessions' },
+  { key: 'total_tokens', label: 'Tokens' },
+  { key: 'cost_usd', label: 'Recorded cost (USD)' }
+]
+
+function digestExportItem(ctx, period) {
+  return {
+    id: 'digest-md',
+    label: 'Digest (Markdown)',
+    hint: 'Totals, attention, models, monthly spend, quota windows, service balances — the same text GET /digest returns for this period',
+    filename: exportFilename('digest', period, 'md'),
+    mime: 'text/markdown;charset=utf-8',
+    build: async () => String((await pluginRest(ctx, apiPath('/digest', period)))?.markdown || '')
+  }
+}
+
+function jsonExportItem(id, label, hint, name, period, data) {
+  return {
+    id,
+    label,
+    hint,
+    filename: exportFilename(name, period, 'json'),
+    mime: 'application/json',
+    build: () => JSON.stringify(data ?? null, null, 2)
+  }
+}
+
+function SimpleTable({ columns, rows, emptyTitle = 'Nothing recorded', emptyDescription, rowDetail }) {
+  const [sortState, setSortState] = useState(null)
+  const sortedRows = useMemo(() => {
+    const materialRows = (rows || []).map((row, index) => ({
+      row,
+      index,
+      key: tableRowKey(row, index, columns)
+    }))
+    if (!sortState) return materialRows
+    const column = columns.find(item => item.key === sortState.key)
+    if (!column) return materialRows
+    const direction = sortState.direction === 'desc' ? -1 : 1
+    return materialRows
+      .map(item => ({ ...item, value: tableSortValue(column, item.row) }))
+      .sort((left, right) => {
+        if (left.value === null && right.value === null) return left.index - right.index
+        if (left.value === null) return 1
+        if (right.value === null) return -1
+        const comparison = typeof left.value === 'number' && typeof right.value === 'number'
+          ? left.value - right.value
+          : String(left.value).localeCompare(String(right.value), undefined, { numeric: true, sensitivity: 'base' })
+        return comparison === 0 ? left.index - right.index : comparison * direction
+      })
+  }, [columns, rows, sortState])
+
+  if (!rows?.length) {
+    return jsx(EmptyState, { title: emptyTitle, description: emptyDescription })
+  }
+  return jsx('div', {
+    style: { border, borderRadius: '6px', overflowX: 'auto' },
+    children: jsx('table', {
+      style: { borderCollapse: 'collapse', fontSize: '0.75rem', minWidth: '34rem', width: '100%' },
+      children: [
+        jsx('thead', {
+          children: jsx('tr', {
+            children: columns.map(column =>
+              jsx('th', {
+                scope: 'col',
+                'aria-sort': sortState?.key === column.key
+                  ? (sortState.direction === 'asc' ? 'ascending' : 'descending')
+                  : 'none',
+                style: {
+                  background: color.surface,
+                  borderBottom: border,
+                  padding: 0,
+                  whiteSpace: 'nowrap'
+                },
+                children: jsx('button', {
+                  type: 'button',
+                  onClick: () => setSortState(current => ({
+                    key: column.key,
+                    direction: current?.key === column.key && current.direction === 'asc' ? 'desc' : 'asc'
+                  })),
+                  'aria-label': `Sort by ${column.label}${sortState?.key === column.key ? `, currently ${sortState.direction === 'asc' ? 'ascending' : 'descending'}` : ''}`,
+                  title: `Sort by ${column.label}`,
+                  style: {
+                    alignItems: 'center',
+                    background: 'transparent',
+                    border: 'none',
+                    color: sortState?.key === column.key ? color.primary : color.tertiary,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    font: 'inherit',
+                    fontSize: '0.6875rem',
+                    fontWeight: sortState?.key === column.key ? 650 : 600,
+                    gap: '0.3rem',
+                    justifyContent: column.align === 'right' ? 'flex-end' : 'flex-start',
+                    outlineColor: color.accent,
+                    padding: '0.5rem 0.65rem',
+                    textAlign: column.align || 'left',
+                    width: '100%'
+                  },
+                  children: [
+                    jsx('span', { children: column.label }),
+                    jsx(Codicon, {
+                      name: sortState?.key === column.key
+                        ? (sortState.direction === 'asc' ? 'arrow-small-up' : 'arrow-small-down')
+                        : 'arrow-swap',
+                      size: '0.7rem',
+                      style: { color: sortState?.key === column.key ? color.accent : color.quaternary },
+                      'aria-hidden': true
+                    })
+                  ]
+                })
+              }, column.key)
+            )
+          })
+        }),
+        jsx('tbody', {
+          children: sortedRows.flatMap((item, rowIndex) => {
+            const row = item.row
+            const isLast = rowIndex === sortedRows.length - 1
+            const detail = rowDetail ? rowDetail(row) : null
+            const line = jsx('tr', {
+              children: columns.map(column =>
+                jsx('td', {
+                  style: {
+                    ...tabular,
+                    borderBottom: isLast && !detail ? 'none' : border,
+                    color: column.muted ? color.tertiary : color.primary,
+                    padding: '0.58rem 0.65rem',
+                    textAlign: column.align || 'left',
+                    verticalAlign: 'top'
+                  },
+                  children: column.render ? column.render(row) : row[column.key]
+                }, column.key)
+              )
+            }, item.key)
+            if (!detail) return [line]
+            return [
+              line,
+              jsx('tr', {
+                children: jsx('td', {
+                  colSpan: columns.length,
+                  style: { background: color.surface, borderBottom: isLast ? 'none' : border, padding: 0 },
+                  children: detail
+                })
+              }, `${item.key}\u001ddetail`)
+            ]
+          })
+        })
+      ]
+    })
+  })
+}
+
+function SessionSummary({ detail }) {
+  const session = detail.session
+  const messageRows = Object.entries(detail.message_roles || {}).map(([name, count]) => ({ name, count }))
+  return jsxs('div', {
+    style: { display: 'grid', gap: '1.35rem', padding: '1rem' },
+    children: [
+      jsxs('section', {
+        children: [
+          jsx(SectionHeading, { title: 'Accounting provenance', description: 'Duckwork-recorded usage split by model and auxiliary task.' }),
+          jsx(SimpleTable, {
+            columns: [
+              { key: 'model', label: 'Model' },
+              { key: 'task', label: 'Task', muted: true, sortValue: row => row.task || 'main', render: row => row.task || 'main' },
+              { key: 'total_tokens', label: 'Tokens', align: 'right', render: row => formatCount(row.total_tokens) },
+              { key: 'api_call_count', label: 'Calls', align: 'right', render: row => formatCount(row.api_call_count) },
+              { key: 'cost', label: 'Cost', align: 'right', sortValue: row => row.display_cost_usd, render: row => formatCost(row.display_cost_usd, row.cost_kind) }
+            ],
+            rows: detail.models,
+            emptyTitle: 'No per-model accounting rows',
+            emptyDescription: 'This session may predate per-model usage storage; the session totals above remain available.'
+          })
+        ]
+      }),
+      jsxs('section', {
+        children: [
+          jsx(SectionHeading, { title: 'Message composition', description: 'Active database rows by recorded role.' }),
+          jsx('div', {
+            style: { display: 'flex', flexWrap: 'wrap', gap: '0.45rem' },
+            children: messageRows.map(row => jsx(Pill, { children: `${row.name} ${formatCount(row.count)}` }, row.name))
+          })
+        ]
+      }),
+      detail.skills?.length
+        ? jsxs('section', {
+            children: [
+              jsx(SectionHeading, { title: 'Skills invoked', description: 'Only explicit skill tool calls count as evidence.' }),
+              jsx('div', {
+                style: { display: 'flex', flexWrap: 'wrap', gap: '0.45rem' },
+                children: detail.skills.map(skill =>
+                  jsx(Pill, {
+                    tone: 'accent',
+                    title: `${skill.view_count} views · ${skill.manage_count} management actions`,
+                    children: `${skill.name} · ${skill.view_count + skill.manage_count}`
+                  }, skill.name)
+                )
+              })
+            ]
+          })
+        : null,
+      detail.delegations?.length
+        ? jsxs('section', {
+            children: [
+              jsx(SectionHeading, { title: 'Delegated work', description: 'Async delegations linked to this session.' }),
+              jsx(SimpleTable, {
+                columns: [
+                  { key: 'delegation_id', label: 'Delegation', render: row => String(row.delegation_id).slice(0, 18) },
+                  { key: 'state', label: 'State' },
+                  { key: 'delivery_state', label: 'Delivery', muted: true },
+                  { key: 'dispatched_at', label: 'Dispatched', render: row => formatShortDate(row.dispatched_at) }
+                ],
+                rows: detail.delegations
+              })
+            ]
+          })
+        : null,
+      jsxs('section', {
+        style: { borderTop: border, paddingTop: '0.9rem' },
+        children: [
+          jsx('div', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'Outcome' }),
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.45rem', marginTop: '0.25rem' },
+            children: [
+              jsx(OutcomePill, { session }),
+              session.end_reason
+                ? jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: session.end_reason })
+                : null
+            ]
+          }),
+          jsx('div', { style: { color: color.tertiary, fontSize: '0.6875rem', marginTop: '0.75rem' }, children: 'Session ID' }),
+          jsx('code', { style: { color: color.secondary, fontSize: '0.6875rem', overflowWrap: 'anywhere' }, children: session.id }),
+          session.parent_session_id
+            ? jsxs(Fragment, {
+                children: [
+                  jsx('div', { style: { color: color.tertiary, fontSize: '0.6875rem', marginTop: '0.6rem' }, children: 'Parent session' }),
+                  jsx('code', { style: { color: color.secondary, fontSize: '0.6875rem', overflowWrap: 'anywhere' }, children: session.parent_session_id })
+                ]
+              })
+            : null,
+          jsx('div', { style: { color: color.tertiary, fontSize: '0.6875rem', marginTop: '0.6rem' }, children: 'Working directory' }),
+          jsx('code', { style: { color: color.secondary, fontSize: '0.6875rem', overflowWrap: 'anywhere' }, children: session.cwd || 'Not recorded' })
+        ]
+      })
+    ]
+  })
+}
+
+function ToolEvents({ events }) {
+  if (!events?.length) {
+    return jsx(EmptyState, { title: 'No tool calls recorded', description: 'Duckwork did not store tool-call evidence for this session.' })
+  }
+  return jsx('div', {
+    style: { display: 'grid' },
+    children: events.slice(0, 300).map((event, index) =>
+      jsxs('div', {
+        style: { borderBottom: border, display: 'grid', gap: '0.35rem', padding: '0.75rem 1rem' },
+        children: [
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', gap: '0.5rem', justifyContent: 'space-between' },
+            children: [
+              jsxs('div', {
+                style: { alignItems: 'center', display: 'flex', gap: '0.4rem', minWidth: 0 },
+                children: [
+                  jsx(Codicon, { name: event.failure ? 'error' : 'tools', size: '0.78rem' }),
+                  jsx('strong', { style: { fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis' }, children: event.name })
+                ]
+              }),
+              jsx(Pill, { tone: event.failure ? 'danger' : 'neutral', children: event.status })
+            ]
+          }),
+          jsx('div', { style: { color: color.tertiary, fontSize: '0.6875rem', lineHeight: 1.45, overflowWrap: 'anywhere' }, children: event.argument_summary }),
+          event.result_snippet
+            ? jsx('pre', {
+                style: {
+                  background: color.surface,
+                  borderRadius: '4px',
+                  color: event.failure ? color.danger : color.secondary,
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.65625rem',
+                  lineHeight: 1.45,
+                  margin: '0.15rem 0 0',
+                  maxHeight: '8rem',
+                  overflow: 'auto',
+                  padding: '0.55rem',
+                  whiteSpace: 'pre-wrap'
+                },
+                children: event.result_snippet
+              })
+            : null,
+          jsx('time', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: formatShortDate(event.timestamp) })
+        ]
+      }, event.call_id || `${event.name}-${event.timestamp}-${index}`)
+    )
+  })
+}
+
+function FailureInspector({ failures, detectedTotal = 0 }) {
+  if (!failures?.length) {
+    return jsx(EmptyState, {
+      title: 'No failures detected',
+      description: 'No recorded error state or conservative failure signature was found in the analyzed tool results. Signatures match English error text only; a tool that fails in another language counts only through a recorded error state.'
+    })
+  }
+  return jsxs('div', {
+    children: [
+      jsx('div', {
+        style: { background: color.dangerSoft, borderBottom: border, color: color.danger, fontSize: '0.6875rem', lineHeight: 1.5, padding: '0.65rem 1rem' },
+        children: `${formatCount(failures.length)} shown in the bounded event scan; ${formatCount(detectedTotal || failures.length)} confirmed failure${detectedTotal === 1 ? '' : 's'} in the full session. Review the recorded result before drawing conclusions, or use Ask Duckwork above to have a fresh chat explain them.`
+      }),
+      jsx(ToolEvents, { events: failures })
+    ]
+  })
+}
+
+function FilesView({ files, truncated }) {
+  if (!files?.length) {
+    return jsx(EmptyState, {
+      title: 'No file paths observed',
+      description: 'Session Lens only reports paths found in recorded tool arguments or bounded command text.'
+    })
+  }
+  return jsxs('div', {
+    style: { display: 'grid' },
+    children: [
+      truncated
+        ? jsx('div', {
+            style: { borderBottom: border, color: color.tertiary, fontSize: '0.6875rem', padding: '0.6rem 1rem' },
+            children: 'The event scan reached its safety limit. This file list may be partial.'
+          })
+        : null,
+      ...files.map(file =>
+        jsxs('div', {
+          style: { alignItems: 'center', borderBottom: border, display: 'flex', gap: '0.65rem', padding: '0.65rem 1rem' },
+          children: [
+            jsx(Codicon, { name: file.action === 'modified' ? 'edit' : file.action === 'read' ? 'file' : 'link', size: '0.8rem' }),
+            jsx('code', {
+              style: { color: color.secondary, flex: 1, fontSize: '0.6875rem', overflowWrap: 'anywhere' },
+              children: file.path
+            }),
+            jsx(Pill, { tone: file.action === 'modified' ? 'accent' : 'neutral', children: file.action })
+          ]
+        }, file.path)
+      )
+    ]
+  })
+}
+
+function TraceView({ ctx, sessionId, period }) {
+  const [limit, setLimit] = useState(100)
+  useEffect(() => setLimit(100), [sessionId])
+  const traceQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'trace', activeProfilesParam, sessionId, limit],
+    queryFn: () => pluginRest(ctx, apiPath(`/sessions/${encodeURIComponent(sessionId)}/trace`, { limit })),
+    enabled: Boolean(sessionId),
+    placeholderData: previous => previous
+  })
+  const telemetryQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'session-telemetry', sessionId, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/telemetry', { ...period, session_id: sessionId })),
+    enabled: Boolean(sessionId),
+    refetchInterval: 60_000
+  })
+  if (queryPending(traceQuery)) return jsx(LoadingBlock, { rows: 9 })
+  if (traceQuery.isError) return jsx(ErrorBlock, { error: traceQuery.error, onRetry: traceQuery.refetch, title: 'Session trace unavailable' })
+  const data = traceQuery.data
+  const runtime = telemetryQuery.data?.summary
+  const kindMeta = {
+    user: ['account', 'User'],
+    assistant: ['hubot', 'Assistant'],
+    reasoning: ['lightbulb', 'Reasoning'],
+    tool_call: ['tools', 'Tool call'],
+    tool_result: ['terminal', 'Tool result']
+  }
+  return jsxs('div', {
+    style: { display: 'grid' },
+    children: [
+      runtime
+        ? jsx('div', {
+            style: { borderBottom: border, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(7rem, 1fr))', overflowX: 'auto' },
+            children: [
+              jsx(Metric, { label: 'API calls in logs', value: formatCount(runtime.api_calls), detail: 'Session-attributed' }, 'calls'),
+              jsx(Metric, { label: 'Median latency', value: formatSeconds(runtime.latency_p50_seconds), detail: `p95 ${formatSeconds(runtime.latency_p95_seconds)}` }, 'latency'),
+              jsx(Metric, { label: 'Cache hit ratio', value: formatPercent(runtime.cache_hit_ratio), detail: `${formatCount(runtime.cache_read_tokens)} cache read` }, 'cache'),
+              jsx(Metric, { label: 'Timed tool runs', value: formatCount(runtime.tool_runs), detail: 'From local agent logs' }, 'tools')
+            ]
+          })
+        : null,
+      jsx('div', {
+        style: { background: color.surface, borderBottom: border, color: color.tertiary, fontSize: '0.6875rem', lineHeight: 1.5, padding: '0.55rem 1rem' },
+        children: 'Chronological active-message trace. System and scheduled-job prompts are excluded; recorded content is secret-redacted and bounded to 6,000 characters per event.'
+      }),
+      data.events?.length
+        ? jsx('ol', {
+            style: { listStyle: 'none', margin: 0, padding: 0 },
+            children: data.events.map(event => {
+              const [icon, label] = kindMeta[event.kind] || ['circle-outline', event.kind]
+              const failed = event.status === 'failed'
+              return jsx('li', {
+                style: { borderBottom: border, display: 'grid', gap: '0.45rem', padding: '0.8rem 1rem' },
+                children: [
+                  jsxs('div', {
+                    style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'space-between' },
+                    children: [
+                      jsxs('div', {
+                        style: { alignItems: 'center', display: 'flex', gap: '0.4rem', minWidth: 0 },
+                        children: [
+                          jsx(Codicon, { name: failed ? 'error' : icon, size: '0.78rem' }),
+                          jsx('strong', { style: { fontSize: '0.75rem', fontWeight: 650 }, children: event.tool_name || label }),
+                          event.kind === 'tool_call' ? jsx(Pill, { children: label }) : null,
+                          failed ? jsx(Pill, { tone: 'danger', children: 'Failed' }) : null
+                        ]
+                      }),
+                      jsx('time', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: formatShortDate(event.timestamp) })
+                    ]
+                  }),
+                  event.kind === 'reasoning'
+                    ? jsxs('details', {
+                        children: [
+                          jsx('summary', { style: { color: color.tertiary, cursor: 'pointer', fontSize: '0.6875rem' }, children: 'Show recorded reasoning' }),
+                          jsx('pre', {
+                            style: { background: color.surface, borderRadius: '5px', color: color.secondary, fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', lineHeight: 1.55, margin: '0.45rem 0 0', maxHeight: '24rem', overflow: 'auto', padding: '0.65rem', whiteSpace: 'pre-wrap' },
+                            children: event.content
+                          })
+                        ]
+                      })
+                    : jsx(event.kind === 'tool_result' ? 'pre' : 'div', {
+                        style: {
+                          background: event.kind === 'tool_result' ? color.surface : 'transparent',
+                          borderRadius: event.kind === 'tool_result' ? '5px' : 0,
+                          color: failed ? color.danger : color.secondary,
+                          fontFamily: event.kind === 'tool_result' ? 'var(--font-mono)' : 'inherit',
+                          fontSize: '0.71875rem',
+                          lineHeight: 1.55,
+                          margin: 0,
+                          maxHeight: event.kind === 'tool_result' ? '24rem' : 'none',
+                          overflow: event.kind === 'tool_result' ? 'auto' : 'visible',
+                          overflowWrap: 'anywhere',
+                          padding: event.kind === 'tool_result' ? '0.65rem' : 0,
+                          whiteSpace: 'pre-wrap'
+                        },
+                        children: event.content || 'No display content recorded.'
+                      })
+                ]
+              }, event.id)
+            })
+          })
+        : jsx(EmptyState, { title: 'No trace events', description: 'No active user, assistant, reasoning, or tool rows were recorded.' }),
+      data.pagination?.has_more
+        ? jsx('div', {
+            style: { padding: '0.75rem 1rem' },
+            children: jsx(Button, {
+              variant: 'outline',
+              size: 'sm',
+              disabled: traceQuery.isFetching || limit >= 200,
+              onClick: () => setLimit(value => Math.min(200, value + 100)),
+              children: limit >= 200 ? '200-message safety limit reached' : 'Load 100 more messages'
+            })
+          })
+        : null
+    ]
+  })
+}
+
+// ============================================================================
+// COST ANATOMY
+// ============================================================================
+
+function AnatomyMetric({ label, value, hint }) {
+  return jsxs('div', {
+    title: hint,
+    style: { border, borderRadius: '6px', display: 'grid', gap: '0.15rem', padding: '0.55rem 0.7rem' },
+    children: [
+      jsx('span', { style: { color: color.tertiary, fontSize: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.04em' }, children: label }),
+      jsx('span', { style: { ...tabular, color: color.primary, fontSize: '0.9375rem', fontWeight: 650 }, children: value })
+    ]
+  })
+}
+
+// Prompt size of every logged call (downsampled), the cached part shaded;
+// a fall of more than 30% between calls marks a compression.
+function ContextChart({ points, compressions }) {
+  if (!points?.length) return jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem', margin: 0 }, children: 'No API calls for this session are in the retained agent logs.' })
+  const max = Math.max(...points.map(point => point.prompt), 1)
+  const width = 600
+  const height = 120
+  const step = width / points.length
+  const marks = new Set((compressions || []).map(item => Number(item.timestamp)))
+  return jsxs('svg', {
+    viewBox: `0 0 ${width} ${height}`,
+    preserveAspectRatio: 'none',
+    role: 'img',
+    'aria-label': `Prompt tokens per call, up to ${formatCount(max)}`,
+    style: { display: 'block', height: '8rem', width: '100%' },
+    children: points.map((point, index) => {
+      const total = (point.prompt / max) * (height - 4)
+      const cached = (Math.min(point.cached, point.prompt) / max) * (height - 4)
+      const x = index * step
+      const w = Math.max(step - 0.6, 0.6)
+      return jsxs('g', {
+        children: [
+          jsx('rect', { x, y: height - total, width: w, height: total, fill: color.warning, opacity: 0.85 }),
+          jsx('rect', { x, y: height - cached, width: w, height: cached, fill: color.accent, opacity: 0.75 }),
+          marks.has(Number(point.timestamp)) ? jsx('rect', { x, y: 0, width: Math.max(w, 1.5), height, fill: color.danger, opacity: 0.35 }) : null,
+          jsx('title', { children: `${formatShortDate(point.timestamp)} · ${formatCount(point.prompt)} prompt tokens (${formatCount(point.cached)} from cache)${point.cost_usd != null ? ` · ${formatCost(point.cost_usd, 'estimated')}` : ''}` })
+        ]
+      }, index)
+    })
+  })
+}
+
+function SplitBars({ split, total }) {
+  const rows = [
+    ['Prompt that missed the cache', split.uncached_input, color.warning],
+    ['Prompt read from the cache', split.cache_read, color.accent],
+    ['Output', split.output, color.secondary]
+  ]
+  return jsx('div', {
+    style: { display: 'grid', gap: '0.35rem' },
+    children: rows.map(([label, value, tone]) => jsxs('div', {
+      style: { alignItems: 'center', display: 'grid', gap: '0.5rem', gridTemplateColumns: '13rem 1fr 4.5rem' },
+      children: [
+        jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: label }),
+        jsx('div', { style: { background: color.surfaceRaised, borderRadius: '3px', height: '0.5rem', overflow: 'hidden' }, children: jsx('div', { style: { background: tone, height: '100%', width: `${total ? (Number(value) / total) * 100 : 0}%` } }) }),
+        jsx('span', { style: { ...tabular, color: color.primary, fontSize: '0.6875rem', textAlign: 'right' }, children: formatCost(value, 'estimated') })
+      ]
+    }, label))
+  })
+}
+
+function AnatomyView({ ctx, sessionId, profile }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'anatomy', activeProfilesParam, sessionId, profile || ''],
+    queryFn: () => pluginRest(ctx, apiPath(`/sessions/${encodeURIComponent(sessionId)}/anatomy`, profile ? { profiles: profile } : {})),
+    staleTime: 60_000
+  })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 6 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Cost anatomy unavailable' })
+  const data = query.data
+  const context = data.context || {}
+  const listNote = Number(data.cost?.list_price_usd) > 0 ? ` · ≈ ${formatCost(data.cost.list_price_usd, 'estimated')} list` : ''
+  return jsx('div', {
+    style: { display: 'grid', gap: '1.1rem', padding: '1rem' },
+    children: [
+      jsx('div', {
+        style: { display: 'grid', gap: '0.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(9.5rem, 1fr))' },
+        children: [
+          jsx(AnatomyMetric, { label: 'Cost', value: `${formatCost(data.cost?.display_cost_usd, data.cost?.cost_kind)}${listNote}` }),
+          jsx(AnatomyMetric, { label: 'Calls logged', value: `${formatCount(data.calls?.logged)} of ${formatCount(data.calls?.recorded)}`, hint: 'Calls found in the retained agent logs, of the calls Duckwork recorded for the session' }),
+          jsx(AnatomyMetric, { label: 'Context per call', value: context.mean_prompt_tokens != null ? `${formatCount(context.mean_prompt_tokens)} avg` : '—', hint: context.max_prompt_tokens != null ? `Largest ${formatCount(context.max_prompt_tokens)} · first ${formatCount(context.first_prompt_tokens)}` : undefined }),
+          jsx(AnatomyMetric, { label: 'Compressions', value: formatCount((context.compressions || []).length) }),
+          jsx(AnatomyMetric, { label: 'Span', value: `${Number(data.span_hours || 0).toFixed(1)} h` })
+        ]
+      }),
+      data.findings?.length
+        ? jsx('div', {
+            style: { display: 'grid', gap: '0.5rem' },
+            children: data.findings.map(finding => jsxs('div', {
+              style: { borderLeft: `3px solid ${color.warning}`, display: 'grid', gap: '0.2rem', padding: '0.3rem 0 0.3rem 0.7rem' },
+              children: [
+                jsx('span', { style: { color: color.primary, fontSize: '0.8125rem', fontWeight: 650 }, children: finding.headline }),
+                jsx('span', { style: { color: color.secondary, fontSize: '0.75rem', lineHeight: 1.45 }, children: finding.detail }),
+                finding.setting
+                  ? jsx('code', { style: { color: color.tertiary, fontFamily: 'var(--font-mono, monospace)', fontSize: '0.6875rem' }, children: `${finding.setting}: ${finding.current == null ? 'not set' : finding.current}` })
+                  : null
+              ]
+            }, finding.kind + finding.headline))
+          })
+        : jsx('p', { style: { color: color.tertiary, fontSize: '0.75rem', margin: 0 }, children: 'Nothing stands out: no cost driver crossed its threshold for this session.' }),
+      jsxs('section', {
+        children: [
+          jsx(SectionHeading, { title: 'Context per call', description: 'Prompt tokens of each logged call; blue was read from the cache, amber billed at the full input rate; red marks a compression.' }),
+          jsx(ContextChart, { points: context.points, compressions: context.compressions })
+        ]
+      }),
+      Number(data.priced_total_usd) > 0
+        ? jsxs('section', {
+            children: [
+              jsx(SectionHeading, { title: 'Where the cost went', description: `${formatCost(data.priced_total_usd, 'estimated')} priced from the logged calls${data.route === 'subscription' ? ' at API list price' : ''}.` }),
+              jsx(SplitBars, { split: data.priced_split_usd || {}, total: Number(data.priced_total_usd) })
+            ]
+          })
+        : null,
+      jsxs('section', {
+        children: [
+          jsx(SectionHeading, { title: 'What tools put into context', description: `${formatCount(data.tool_context?.tokens_estimate)} tokens of recorded tool results (length ÷ 4); every later call carries them until compression.` }),
+          jsx(SimpleTable, {
+            columns: [
+              { key: 'tool', label: 'Tool' },
+              { key: 'results', label: 'Results', align: 'right', render: row => formatCount(row.results) },
+              { key: 'tokens_estimate', label: 'Tokens', align: 'right', render: row => formatCount(row.tokens_estimate) },
+              { key: 'share', label: 'Share', align: 'right', render: row => `${(Number(row.share) * 100).toFixed(0)}%` },
+              { key: 'largest_chars', label: 'Largest', align: 'right', muted: true, render: row => formatCount(Math.round(row.largest_chars / 4)) }
+            ],
+            rows: data.tool_context?.top || [],
+            emptyTitle: 'No tool results recorded',
+            emptyDescription: 'This session recorded no tool output.'
+          })
+        ]
+      }),
+      data.helpers?.length
+        ? jsxs('section', {
+            children: [
+              jsx(SectionHeading, { title: 'Helper tasks in this session', description: 'Titles, vision, approvals, reviews and compression run beside the conversation on their own route.' }),
+              jsx(SimpleTable, {
+                columns: [
+                  { key: 'task', label: 'Task' },
+                  { key: 'model', label: 'Model', muted: true },
+                  { key: 'calls', label: 'Calls', align: 'right', render: row => formatCount(row.calls) },
+                  { key: 'cash_usd', label: 'Cost', align: 'right', render: row => row.list_price_usd ? `≈ ${formatCost(row.list_price_usd, 'estimated')} sub.` : formatCost(row.cash_usd, 'estimated') }
+                ],
+                rows: data.helpers
+              })
+            ]
+          })
+        : null
+    ]
+  })
+}
+
+function HelperTasksSection({ ctx, period }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'helper-tasks', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/helper-tasks', period)),
+    staleTime: 60_000
+  })
+  if (query.isError || !query.data?.tasks?.length) return null
+  const data = query.data
+  return jsxs('section', {
+    children: [
+      jsx(SectionHeading, {
+        title: 'Helper tasks',
+        description: `${formatCost(data.totals.cash_usd, 'estimated')} cash${data.totals.list_price_usd ? ` and ≈ ${formatCost(data.totals.list_price_usd, 'estimated')} of subscription use` : ''} across ${formatCount(data.totals.calls)} calls. ${data.definition}`
+      }),
+      jsx(SimpleTable, {
+        columns: [
+          { key: 'task', label: 'Task' },
+          { key: 'model', label: 'Ran on', render: row => jsx('span', { style: { fontSize: '0.6875rem' }, children: row.model || '—' }) },
+          { key: 'profile', label: 'Profile', muted: true, render: row => row.profile || '—' },
+          { key: 'calls', label: 'Calls', align: 'right', render: row => formatCount(row.calls) },
+          { key: 'cost', label: 'Cost', align: 'right', sortValue: row => row.cash_usd + row.list_price_usd, render: row => row.list_price_usd ? `≈ ${formatCost(row.list_price_usd, 'estimated')} sub.` : formatCost(row.cash_usd, 'estimated') },
+          { key: 'configured_model', label: 'Setting', muted: true, render: row => jsx('code', { style: { fontFamily: 'var(--font-mono, monospace)', fontSize: '0.625rem' }, children: `${row.setting}: ${row.configured_model || 'not set'}` }) }
+        ],
+        rows: data.tasks.slice(0, 15)
+      })
+    ]
+  })
+}
+
+function chainCost(chain) {
+  return fleetSpend(chain.cash_usd, chain.list_price_usd)
+}
+
+function chainLinksLabel(links) {
+  const parts = []
+  if (links?.continuation) parts.push(`${links.continuation} continued`)
+  if (links?.subagent) parts.push(`${links.subagent} subagent${links.subagent === 1 ? '' : 's'}`)
+  if (links?.branch) parts.push(`${links.branch} branched`)
+  return parts.join(' · ')
+}
+
+// One conversation's cost across the sessions it was split into: a chat that
+// hits session_reset continues in a new, linked session, and each piece
+// alone looks cheap.
+function ConversationChainsSection({ ctx, period, onOpenSession }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'chains', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/chains', period)),
+    staleTime: 60_000
+  })
+  if (query.isError || !query.data?.chains?.length) return null
+  const data = query.data
+  const totals = data.totals || {}
+  return jsxs('section', {
+    children: [
+      jsx(SectionHeading, {
+        title: 'Conversations across sessions',
+        description: `${formatCount(totals.chains)} conversations were split into ${formatCount(totals.sessions)} sessions, costing ${fleetSpend(totals.cash_usd, totals.list_price_usd)} in all. ${data.definition || ''}`
+      }),
+      jsx(SimpleTable, {
+        columns: [
+          {
+            key: 'title',
+            label: 'Conversation',
+            render: row => jsx('button', {
+              type: 'button',
+              onClick: () => onOpenSession(row.latest_id),
+              title: `Open the latest session: ${row.latest_title}`,
+              style: { background: 'transparent', border: 'none', color: color.primary, cursor: 'pointer', font: 'inherit', fontWeight: 600, maxWidth: '28rem', outlineColor: color.accent, overflow: 'hidden', padding: 0, textAlign: 'left', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+              children: row.title
+            })
+          },
+          { key: 'profile', label: 'Profile', muted: true, render: row => row.profile ? `${row.profile} · ${row.source || ''}` : (row.source || '—') },
+          { key: 'sessions', label: 'Sessions', align: 'right', render: row => jsx('span', { title: chainLinksLabel(row.links), children: formatCount(row.sessions) }) },
+          { key: 'started_at', label: 'Span', muted: true, render: row => `${formatShortDate(row.started_at)} → ${formatShortDate(row.last_activity_at)}` },
+          { key: 'cost', label: 'Total cost', align: 'right', sortValue: row => row.cash_usd + row.list_price_usd, render: row => jsx('span', { style: tabular, children: chainCost(row) }) }
+        ],
+        rows: data.chains.slice(0, 12)
+      })
+    ]
+  })
+}
+
+function ChainNote({ ctx, sessionId, profile }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'chain', activeProfilesParam, sessionId, profile || ''],
+    queryFn: () => pluginRest(ctx, apiPath(`/sessions/${encodeURIComponent(sessionId)}/chain`, profile ? { profiles: profile } : {})),
+    staleTime: 60_000
+  })
+  const chain = query.data
+  if (!chain || chain.sessions < 2) return null
+  return jsx('div', {
+    title: chainLinksLabel(chain.links),
+    style: { color: color.tertiary, fontSize: '0.6875rem', marginTop: '0.15rem' },
+    children: `Session ${chain.position} of ${chain.sessions} in one conversation · ${chainCost(chain)} in total`
+  })
+}
+
+function SessionDetail({ query, detailTab, setDetailTab, ctx, period, profile, onBack }) {
+  if (!query) {
+    return jsx(EmptyState, { title: 'Choose a session', description: 'Select a session to inspect its recorded evidence.' })
+  }
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 7 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Session detail unavailable' })
+  const detail = query.data
+  const session = detail.session
+  const detailOptions = [
+    { id: 'summary', label: 'Summary' },
+    { id: 'anatomy', label: 'Why it cost' },
+    { id: 'trace', label: 'Trace' },
+    { id: 'tools', label: `Tools ${detail.tools?.length || 0}` },
+    { id: 'failures', label: `Failures ${session.failure_count || 0}` },
+    { id: 'files', label: `Files ${detail.files?.length || 0}` }
+  ]
+  let content = jsx(SessionSummary, { detail })
+  if (detailTab === 'trace') content = jsx(TraceView, { ctx, sessionId: session.id, period })
+  if (detailTab === 'anatomy') content = jsx(AnatomyView, { ctx, sessionId: session.id, profile })
+  if (detailTab === 'tools') content = jsx(ToolEvents, { events: detail.tools })
+  if (detailTab === 'failures') content = jsx(FailureInspector, { failures: detail.failures, detectedTotal: session.failure_count })
+  if (detailTab === 'files') content = jsx(FilesView, { files: detail.files, truncated: detail.analysis?.truncated })
+
+  return jsxs('div', {
+    style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 },
+    children: [
+      jsxs('header', {
+        style: { alignItems: 'flex-start', display: 'flex', gap: '1rem', justifyContent: 'space-between', padding: '0.9rem 1rem' },
+        children: [
+          jsxs('div', {
+            style: { alignItems: 'flex-start', display: 'flex', gap: '0.55rem', minWidth: 0 },
+            children: [
+              onBack
+                ? jsx(Button, {
+                    variant: 'ghost',
+                    size: 'icon-xs',
+                    onClick: onBack,
+                    'aria-label': 'Back to sessions',
+                    title: 'Back to sessions',
+                    children: jsx(Codicon, { name: 'arrow-left' })
+                  })
+                : null,
+              jsxs('div', {
+                style: { minWidth: 0 },
+                children: [
+                  jsx('h2', {
+                    style: { color: color.primary, fontSize: '1rem', fontWeight: 650, lineHeight: 1.35, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis' },
+                    children: session.title
+                  }),
+                  jsx('div', {
+                    style: { color: color.tertiary, fontSize: '0.6875rem', marginTop: '0.2rem' },
+                    children: `${formatDate(session.started_at)} · ${session.model || 'model not recorded'}${session.hidden ? ' · hidden from the Duckwork sidebar' : ''}`
+                  }),
+                  jsx(ChainNote, { ctx, sessionId: session.id, profile })
+                ]
+              })
+            ]
+          }),
+          jsxs('div', {
+            style: { display: 'flex', flexShrink: 0, flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'flex-end' },
+            children: [
+              jsx(AskDuckworkButton, { ctx, session, profile, failuresShown: detail.failures?.length || 0 }),
+              jsx(Button, {
+                variant: 'outline',
+                size: 'xs',
+                onClick: () => host.openSession(session.id, { intent: 'stack' }),
+                children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'go-to-file' }), 'Open session'] })
+              })
+            ]
+          })
+        ]
+      }),
+      jsx(DetailMetricGrid, { session }),
+      jsx('div', {
+        style: { borderBottom: border, overflowX: 'auto', padding: '0.55rem 1rem' },
+        children: jsx(SegmentedControl, { options: detailOptions, value: detailTab, onChange: setDetailTab })
+      }),
+      jsx('div', { style: { flex: 1, minHeight: 0, overflow: 'auto' }, children: content })
+    ]
+  })
+}
+
+function AttentionBanner({ data, onSelect, dismissedIds, onDismiss, onRestore }) {
+  const dismissed = new Set(dismissedIds || [])
+  const allSessions = data?.sessions || []
+  const sessions = allSessions.filter(session => !dismissed.has(session.id))
+  const dismissedCount = allSessions.length - sessions.length
+  if (!allSessions.length) return null
+  if (!sessions.length) {
+    return jsxs('div', {
+      style: { alignItems: 'center', borderBottom: border, color: color.quaternary, display: 'flex', fontSize: '0.625rem', gap: '0.4rem', padding: '0.3rem 0.8rem' },
+      children: [
+        jsx('span', { children: `${formatCount(dismissedCount)} attention note${dismissedCount === 1 ? '' : 's'} dismissed.` }),
+        jsx('button', {
+          type: 'button',
+          onClick: onRestore,
+          style: { background: 'transparent', border: 'none', color: color.accent, cursor: 'pointer', font: 'inherit', fontSize: '0.625rem', outlineColor: color.accent, padding: 0, textDecoration: 'underline', textUnderlineOffset: '2px' },
+          children: 'Restore'
+        })
+      ]
+    })
+  }
+  const openCount = sessions.filter(session => session.ended_at === null || session.ended_at === undefined).length
+  const reapedCount = sessions.length - openCount
+  const hiddenFlagged = Math.max(0, (Number(data.totals?.flagged) || allSessions.length) - allSessions.length)
+  const summaryParts = []
+  if (openCount) summaryParts.push(`${formatCount(openCount)} open past ${formatCount(data.thresholds?.open_hours || 24)}h`)
+  if (reapedCount) summaryParts.push(`${formatCount(reapedCount)} reaped with heavy spend`)
+  return jsxs('div', {
+    role: 'status',
+    style: { background: color.warningSoft, borderBottom: border, display: 'grid', gap: '0.35rem', padding: '0.55rem 0.8rem' },
+    children: [
+      jsxs('div', {
+        style: { alignItems: 'center', color: color.warning, display: 'flex', fontSize: '0.6875rem', fontWeight: 650, gap: '0.4rem' },
+        children: [
+          jsx(Codicon, { name: 'warning', size: '0.75rem' }),
+          jsx('span', { style: { flex: 1 }, children: `${formatCount(sessions.length)} session${sessions.length === 1 ? '' : 's'} need attention — ${summaryParts.join(' · ')}` }),
+          dismissedCount > 0
+            ? jsx('button', {
+                type: 'button',
+                onClick: onRestore,
+                style: { background: 'transparent', border: 'none', color: color.warning, cursor: 'pointer', font: 'inherit', fontSize: '0.625rem', fontWeight: 400, outlineColor: color.accent, padding: 0, textDecoration: 'underline', textUnderlineOffset: '2px' },
+                children: `restore ${formatCount(dismissedCount)} dismissed`
+              })
+            : null,
+          jsx('button', {
+            type: 'button',
+            onClick: () => onDismiss(sessions.map(session => session.id)),
+            title: 'Dismiss all current attention notes. Restore brings them back.',
+            style: { background: 'transparent', border: 'none', color: color.warning, cursor: 'pointer', font: 'inherit', fontSize: '0.625rem', fontWeight: 400, outlineColor: color.accent, padding: 0, textDecoration: 'underline', textUnderlineOffset: '2px' },
+            children: 'dismiss all'
+          })
+        ]
+      }),
+      jsx('div', {
+        style: { display: 'grid', gap: '0.15rem' },
+        children: sessions.slice(0, 5).map(session => jsxs('div', {
+          style: { alignItems: 'baseline', display: 'flex', gap: '0.45rem' },
+          children: [
+            jsxs('button', {
+              type: 'button',
+              onClick: () => onSelect(session.id),
+              title: 'Show this session in the list below',
+              style: {
+                alignItems: 'baseline',
+                background: 'transparent',
+                border: 'none',
+                color: color.secondary,
+                cursor: 'pointer',
+                display: 'flex',
+                flex: 1,
+                font: 'inherit',
+                fontSize: '0.6875rem',
+                gap: '0.6rem',
+                justifyContent: 'space-between',
+                minWidth: 0,
+                outlineColor: color.accent,
+                padding: '0.12rem 0',
+                textAlign: 'left'
+              },
+              children: [
+                jsxs('span', {
+                  style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+                  children: [
+                    jsx('span', { style: { color: session.severity === 'danger' ? color.danger : color.primary, fontWeight: 650 }, children: session.title || session.id }),
+                    jsx('span', { style: { color: color.tertiary }, children: ` — ${session.reason}` })
+                  ]
+                }),
+                jsx('span', {
+                  style: { ...tabular, color: color.tertiary, flexShrink: 0 },
+                  children: `${formatCount(session.total_tokens)} tok · ${formatCost(session.display_cost_usd, session.cost_kind)}`
+                })
+              ]
+            }),
+            jsx('button', {
+              type: 'button',
+              onClick: () => onDismiss([session.id]),
+              'aria-label': `Dismiss the attention note for ${session.title || session.id}`,
+              title: 'Dismiss this note',
+              style: { alignItems: 'center', background: 'transparent', border: 'none', color: color.quaternary, cursor: 'pointer', display: 'flex', flexShrink: 0, outlineColor: color.accent, padding: '0.05rem' },
+              children: jsx(Codicon, { name: 'close', size: '0.7rem' })
+            })
+          ]
+        }, session.id))
+      }),
+      sessions.length > 5 || hiddenFlagged > 0
+        ? jsx('span', { style: { color: color.tertiary, fontSize: '0.625rem' }, children: `${formatCount(Math.max(0, sessions.length - 5) + hiddenFlagged)} more flagged; search or sort by tokens to review the rest.` })
+        : null
+    ]
+  })
+}
+
+function SessionsView({ ctx, period, narrow, drill }) {
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState('failures')
+  const [failuresOnly, setFailuresOnly] = useState(false)
+  const [limit, setLimit] = useState(50)
+  const [selected, setSelected] = useState(null)
+  const [detailTab, setDetailTab] = useState('summary')
+  const [narrowPane, setNarrowPane] = useState('list')
+  const debouncedSearch = useDebounced(search, 250)
+
+  useEffect(() => setLimit(50), [debouncedSearch, sort, failuresOnly, period.days, period.start_at, period.end_at])
+  useEffect(() => {
+    if (narrow) setNarrowPane('list')
+  }, [narrow])
+  useEffect(() => {
+    if (!drill) return
+    setSearch(drill.search || '')
+    setFailuresOnly(Boolean(drill.failuresOnly))
+    setSort('failures')
+    setNarrowPane('list')
+  }, [drill])
+
+  const [dismissedAttention, setDismissedAttention] = useState(() => {
+    const stored = ctx.storage.get('attentionDismissed')
+    return Array.isArray(stored) ? stored.filter(item => typeof item === 'string').slice(0, 100) : []
+  })
+  useEffect(() => {
+    ctx.storage.set('attentionDismissed', dismissedAttention)
+  }, [ctx, dismissedAttention])
+  const attentionQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'attention', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/attention', period)),
+    refetchInterval: 120_000
+  })
+  const listQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'sessions', activeProfilesParam, period.days, period.start_at, period.end_at, debouncedSearch, sort, failuresOnly, limit],
+    queryFn: () =>
+      pluginRest(ctx, apiPath('/sessions', {
+        ...period,
+        q: debouncedSearch,
+        sort,
+        failures_only: failuresOnly,
+        limit
+      })),
+    placeholderData: previous => previous,
+    refetchInterval: 60_000
+  })
+  const sessions = listQuery.data?.sessions || []
+
+  useEffect(() => {
+    if (!sessions.length) {
+      setSelected(null)
+      return
+    }
+    if (!selected || !sessions.some(item => item.id === selected)) {
+      setSelected(sessions[0].id)
+      setDetailTab('summary')
+    }
+  }, [sessions, selected])
+
+  const selectedProfile = sessions.find(item => item.id === selected)?.profile || ''
+  const detailQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'session', selected, selectedProfile],
+    queryFn: () => pluginRest(ctx, apiPath(`/sessions/${encodeURIComponent(selected)}`, selectedProfile ? { profiles: selectedProfile } : {})),
+    enabled: Boolean(selected),
+    refetchInterval: 30_000
+  })
+  const pagination = listQuery.data?.pagination
+
+  return jsxs('div', {
+    style: { display: 'flex', flex: 1, flexDirection: 'column', minHeight: 0 },
+    children: [
+      narrow && narrowPane === 'detail'
+        ? null
+        : jsx(AttentionBanner, {
+            data: attentionQuery.data,
+            dismissedIds: dismissedAttention,
+            onDismiss: ids => setDismissedAttention(current => [...new Set([...current, ...ids])].slice(-100)),
+            onRestore: () => setDismissedAttention([]),
+            onSelect: id => {
+              setSearch(id)
+              setFailuresOnly(false)
+              setNarrowPane('list')
+            }
+          }),
+      jsxs('div', {
+        style: { alignItems: 'center', borderBottom: border, display: narrow && narrowPane === 'detail' ? 'none' : 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0.65rem 0.8rem' },
+        children: [
+          jsx('div', {
+            style: { flex: '1 1 16rem', minWidth: '12rem' },
+            children: jsx(Input, {
+              type: 'search',
+              value: search,
+              onChange: event => setSearch(event.target.value),
+              placeholder: 'Search sessions and messages… try model:opus failed:yes',
+              title: 'Free text, or filters: model: project: source: branch: provider: profile: id: title: failed:yes|no tokens:>500k cost:>1 — quote values with spaces',
+              'aria-label': 'Search sessions'
+            })
+          }),
+          jsx(NativeSelect, {
+            label: 'Sort',
+            value: sort,
+            onChange: setSort,
+            children: [
+              jsx('option', { value: 'failures', children: 'Failures first' }),
+              jsx('option', { value: 'recent', children: 'Recent' }),
+              jsx('option', { value: 'cost', children: 'Cost' }),
+              jsx('option', { value: 'tokens', children: 'Tokens' }),
+              jsx('option', { value: 'tools', children: 'Tool calls' })
+            ]
+          }),
+          jsx(Button, {
+            variant: failuresOnly ? 'secondary' : 'outline',
+            size: 'xs',
+            'aria-pressed': failuresOnly,
+            onClick: () => setFailuresOnly(value => !value),
+            children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'error' }), 'Failures only'] })
+          }),
+          jsx(ExportMenu, {
+            title: 'Export the sessions matching the current search, sort, and period',
+            items: (() => {
+              const params = { ...period, q: debouncedSearch, sort, failures_only: failuresOnly, limit: 500, offset: 0 }
+              const fetchPage = () => pluginRest(ctx, apiPath('/sessions', params))
+              const hint = `Current filters and sort, up to 500 sessions${pagination?.total > 500 ? ` (${formatCount(pagination.total)} match)` : ''}`
+              return [
+                {
+                  id: 'sessions-csv',
+                  label: 'Sessions (CSV)',
+                  hint,
+                  filename: exportFilename('sessions', period, 'csv'),
+                  mime: 'text/csv;charset=utf-8',
+                  build: async () => toCsv(SESSION_EXPORT_COLUMNS, (await fetchPage())?.sessions || [])
+                },
+                {
+                  id: 'sessions-json',
+                  label: 'Sessions (JSON)',
+                  hint: 'Same rows with every recorded field, plus the filters used',
+                  filename: exportFilename('sessions', period, 'json'),
+                  mime: 'application/json',
+                  build: async () => JSON.stringify(await fetchPage(), null, 2)
+                }
+              ]
+            })()
+          })
+        ]
+      }),
+      search.includes(':') && !(narrow && narrowPane === 'detail')
+        ? jsx('div', {
+            style: { borderBottom: border, color: color.tertiary, fontSize: '0.625rem', lineHeight: 1.5, padding: '0.3rem 0.85rem' },
+            children: 'Filters: model: · project: · source: · branch: · provider: · profile: · failed:yes|no · tokens:>500k · cost:>1 — quote values with spaces; anything else searches as text'
+          })
+        : null,
+      listQuery.isError
+        ? jsx(ErrorBlock, { error: listQuery.error, onRetry: listQuery.refetch })
+        : jsx('div', {
+            style: {
+              display: 'grid',
+              flex: 1,
+              gridTemplateColumns: narrow ? 'minmax(0, 1fr)' : 'minmax(20rem, 0.82fr) minmax(28rem, 1.38fr)',
+              gridTemplateRows: 'minmax(0, 1fr)',
+              minHeight: 0,
+              overflow: 'hidden'
+            },
+            children: [
+              jsxs('aside', {
+                'aria-label': 'Sessions',
+                style: { borderRight: narrow ? 'none' : border, display: narrow && narrowPane !== 'list' ? 'none' : 'flex', flexDirection: 'column', minHeight: 0 },
+                children: [
+                  jsxs('div', {
+                    style: { alignItems: 'center', borderBottom: border, color: color.tertiary, display: 'flex', fontSize: '0.6875rem', justifyContent: 'space-between', padding: '0.45rem 0.85rem' },
+                    children: [
+                      jsx('span', { children: pagination ? `${formatCount(pagination.total)} sessions` : 'Loading sessions…' }),
+                      listQuery.isFetching ? jsx(SpinIcon, { size: '0.7rem' }) : null
+                    ]
+                  }),
+                  listQuery.isLoading
+                    ? jsx(LoadingBlock, { rows: 6 })
+                    : sessions.length
+                      ? jsx('div', {
+                          style: { flex: 1, minHeight: 0, overflow: 'auto' },
+                          children: sessions.map(session =>
+                            jsx(SessionRow, {
+                              session,
+                              selected: session.id === selected,
+                              onSelect: () => {
+                                setSelected(session.id)
+                                setDetailTab('summary')
+                                if (narrow) setNarrowPane('detail')
+                              }
+                            }, session.id)
+                          )
+                        })
+                      : jsx(EmptyState, {
+                          title: 'No matching sessions',
+                          description: search ? 'Try a broader search or a longer time range.' : 'No sessions were recorded in this time range.'
+                        }),
+                  pagination?.has_more
+                    ? jsx('div', {
+                        style: { borderTop: border, padding: '0.55rem 0.75rem' },
+                        children: jsx(Button, {
+                          variant: 'outline',
+                          size: 'xs',
+                          disabled: listQuery.isFetching || limit >= 500,
+                          onClick: () => setLimit(value => Math.min(500, value + 50)),
+                          style: { width: '100%' },
+                          children: limit >= 500 ? '500-session safety limit reached' : 'Load 50 more'
+                        })
+                      })
+                    : null
+                ]
+              }),
+              jsx('main', {
+                style: { display: narrow && narrowPane !== 'detail' ? 'none' : 'block', minHeight: 0, overflow: 'hidden' },
+                children: selected
+                  ? jsx(SessionDetail, {
+                      query: detailQuery,
+                      detailTab,
+                      setDetailTab,
+                      ctx,
+                      period,
+                      profile: selectedProfile,
+                      onBack: narrow ? () => setNarrowPane('list') : undefined
+                    })
+                  : jsx(EmptyState, { title: 'Choose a session', description: 'Session evidence will appear here.' })
+              })
+            ]
+          })
+    ]
+  })
+}
+
+function useDebounced(value, delay) {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(timeout)
+  }, [value, delay])
+  return debounced
+}
+
+// ============================================================================
+// OVERVIEW AND OPERATIONS
+// ============================================================================
+
+function DailyBars({ rows }) {
+  if (!rows?.length) return jsx(EmptyState, { title: 'No daily activity', description: 'No session was active in this period.' })
+  const max = Math.max(...rows.map(row => Number(row.total_tokens) || 0), 1)
+  return jsx('div', {
+    style: { alignItems: 'end', borderBottom: border, display: 'flex', gap: '0.25rem', height: '11rem', overflowX: 'auto', padding: '0.75rem 0.25rem 0' },
+    children: rows.map(row => {
+      const height = Math.max(3, ((Number(row.total_tokens) || 0) / max) * 100)
+      return jsxs('div', {
+        title: `${row.day}: ${formatCount(row.total_tokens)} tokens · ${row.sessions} sessions last active this day · ${formatCost(row.cost_usd, 'estimated')}`,
+        style: { alignItems: 'center', display: 'flex', flex: '1 0 0.8rem', flexDirection: 'column', height: '100%', justifyContent: 'end', minWidth: '0.55rem' },
+        children: [
+          jsx('div', {
+            style: { background: color.accent, borderRadius: '2px 2px 0 0', height: `${height}%`, minHeight: '3px', opacity: 0.75, width: '100%' }
+          }),
+          jsx('span', {
+            style: { color: color.quaternary, fontSize: '0.5625rem', marginTop: '0.25rem', writingMode: rows.length > 18 ? 'vertical-rl' : 'horizontal-tb' },
+            children: row.day.slice(5)
+          })
+        ]
+      }, row.day)
+    })
+  })
+}
+
+function formatDurationShort(seconds) {
+  if (seconds === null || seconds === undefined) return '—'
+  const value = Number(seconds) || 0
+  if (value < 90) return `${Math.round(value)}s`
+  if (value < 5400) return `${(value / 60).toFixed(value < 600 ? 1 : 0)}m`
+  return `${(value / 3600).toFixed(1)}h`
+}
+
+function ProjectsSection({ ctx, period }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'projects', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/projects', period)),
+    refetchInterval: 120_000
+  })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 4 })
+  if (query.isError) return jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'Project rollup is temporarily unavailable.' })
+  const data = query.data
+  const totals = data.totals || {}
+  return jsxs('section', {
+    children: [
+      jsx(SectionHeading, {
+        title: 'Where the spend goes',
+        description: `Sessions active in the period, rolled up by git repository, then working directory, then source; with several profiles in scope, each profile keeps its own rows. ${formatCount(totals.sessions_without_directory)} of ${formatCount(totals.sessions)} sessions record no directory and group by source. Sessions hidden from the Duckwork sidebar count too — hiding is a listing preference, not a refund.`
+      }),
+      jsx(SimpleTable, {
+        columns: [
+          {
+            key: 'label',
+            label: 'Project',
+            render: row => jsxs('span', {
+              title: row.path || undefined,
+              style: { display: 'grid', gap: '0.1rem', minWidth: 0 },
+              children: [
+                jsx('span', { style: { fontWeight: 600, overflowWrap: 'anywhere' }, children: row.label }),
+                jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: row.kind === 'repo' ? 'git repository' : row.kind === 'directory' ? 'working directory' : 'grouped by source' })
+              ]
+            })
+          },
+          { key: 'sessions', label: 'Sessions', align: 'right', render: row => formatCount(row.sessions) },
+          { key: 'total_tokens', label: 'Tokens', align: 'right', render: row => formatCount(row.total_tokens) },
+          {
+            key: 'recorded_cost_usd',
+            label: 'Recorded cost',
+            align: 'right',
+            render: row => jsxs('span', {
+              style: { display: 'grid', gap: '0.1rem', justifyItems: 'end' },
+              children: [
+                jsx('span', { children: formatCost(row.recorded_cost_usd, 'actual') }),
+                Number(row.unpriced_sessions) > 0
+                  ? jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: `${formatCount(row.unpriced_sessions)} unpriced` })
+                  : null
+              ]
+            })
+          },
+          {
+            key: 'failure_events',
+            label: 'Failures',
+            align: 'right',
+            render: row => Number(row.failure_events) > 0
+              ? jsx(Pill, { tone: 'danger', children: formatCount(row.failure_events) })
+              : '0'
+          },
+          {
+            key: 'models',
+            label: 'Models',
+            muted: true,
+            sortValue: row => (row.models || []).map(item => item.model).join(', '),
+            render: row => distinctValues((row.models || []).map(item => _modelBasename(item.model))).join(' · ') || '—'
+          },
+          { key: 'last_activity_at', label: 'Last active', render: row => formatShortDate(row.last_activity_at), muted: true }
+        ],
+        rows: data.projects,
+        emptyTitle: 'No sessions in this period',
+        emptyDescription: 'The selected period contains no recorded sessions to roll up.'
+      })
+    ]
+  })
+}
+
+function _modelBasename(model) {
+  const text = String(model || '')
+  const slash = text.lastIndexOf('/')
+  return slash >= 0 ? text.slice(slash + 1) : text
+}
+
+const WATCH_DEFAULT_RATES = { cash: 1, list: 5 }
+
+function WatchRateField({ label, value, onCommit, hint }) {
+  const [draft, setDraft] = useState(String(value))
+  useEffect(() => setDraft(String(value)), [value])
+  const commit = () => {
+    const number = Number(draft.trim())
+    if (!Number.isFinite(number) || number <= 0) {
+      setDraft(String(value))
+      return
+    }
+    const rounded = Math.round(number * 100) / 100
+    if (rounded !== value) onCommit(rounded)
+  }
+  return jsxs('label', {
+    title: hint,
+    style: { alignItems: 'center', color: color.tertiary, display: 'inline-flex', fontSize: '0.6875rem', gap: '0.3rem' },
+    children: [
+      label,
+      jsx('span', { style: { color: color.quaternary }, children: '$' }),
+      jsx(Input, {
+        type: 'number',
+        min: 0,
+        step: 0.5,
+        inputMode: 'decimal',
+        value: draft,
+        'aria-label': `${label} in USD per hour`,
+        onChange: event => setDraft(event.target.value),
+        onBlur: commit,
+        onKeyDown: event => {
+          if (event.key === 'Enter') event.currentTarget.blur()
+          if (event.key === 'Escape') setDraft(String(value))
+        },
+        style: { ...tabular, textAlign: 'right', width: '4.4rem' }
+      }),
+      jsx('span', { style: { color: color.quaternary }, children: '/h' })
+    ]
+  })
+}
+
+function watchBurnLabel(row) {
+  if (row.route === 'subscription') return `≈ ${formatCost(row.list_last_hour_usd, 'estimated')} list`
+  if (!row.cash_last_hour_usd && row.unpriced_calls) return 'Unpriced'
+  return formatCost(row.cash_last_hour_usd, 'estimated')
+}
+
+// Sessions that called a model in the last hour, with what they burned in
+// it, read from Duckwork' agent logs. Past an alert rate a running session is
+// flagged here, in the strip on every tab, and (optionally) by a desktop
+// notification — while it runs, not in next week's totals.
+function RunningNowPanel({ ctx, rates, onRatesChange, notify, onNotifyChange, onOpenSession }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'watch', activeProfilesParam, activeWatchParam],
+    queryFn: () => pluginRest(ctx, apiPath('/watch')),
+    refetchInterval: 60_000
+  })
+  const data = query.data
+  const rows = data?.sessions || []
+  const running = Number(data?.totals?.running) || 0
+  return jsxs('section', {
+    'aria-labelledby': 'running-now',
+    style: { display: 'grid', gap: '0.6rem' },
+    children: [
+      jsxs('div', {
+        style: { alignItems: 'flex-end', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'space-between' },
+        children: [
+          jsxs('div', {
+            children: [
+              jsx('h3', { id: 'running-now', style: { color: color.primary, fontSize: '0.9375rem', fontWeight: 650, margin: 0 }, children: 'Running now' }),
+              jsx('p', {
+                style: { color: color.tertiary, fontSize: '0.6875rem', margin: '0.15rem 0 0' },
+                children: data
+                  ? `${formatCount(running)} running · ${formatCost(data.totals.cash_last_hour_usd, 'estimated')} cash in the last hour${data.totals.list_last_hour_usd ? ` · ≈ ${formatCost(data.totals.list_last_hour_usd, 'estimated')} subscription use at list price` : ''}`
+                  : 'Reading the last hour of calls…'
+              })
+            ]
+          }),
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.75rem' },
+            children: [
+              jsx(WatchRateField, { label: 'Alert above', value: rates.cash, onCommit: cash => onRatesChange({ ...rates, cash }), hint: 'Cash spent by one running session in the last hour' }),
+              jsx(WatchRateField, { label: 'Subscription', value: rates.list, onCommit: list => onRatesChange({ ...rates, list }), hint: 'Subscription use by one running session in the last hour, at API list price' }),
+              jsxs('label', {
+                title: 'A desktop notification the first time a session crosses an alert rate each day. Duckwork shows plugin notifications while you are away from the app.',
+                style: { alignItems: 'center', color: color.tertiary, cursor: 'pointer', display: 'inline-flex', fontSize: '0.6875rem', gap: '0.3rem' },
+                children: [
+                  jsx('input', { type: 'checkbox', checked: Boolean(notify), onChange: event => onNotifyChange(event.target.checked) }),
+                  'Notify me'
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+      query.isError
+        ? jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem', margin: 0 }, children: describeError(query.error).message })
+        : jsx(SimpleTable, {
+            columns: [
+              {
+                key: 'title',
+                label: 'Session',
+                render: row => jsxs('button', {
+                  type: 'button',
+                  onClick: () => onOpenSession(row.id),
+                  title: 'Open this session',
+                  style: { alignItems: 'center', background: 'transparent', border: 'none', color: row.over ? color.danger : color.primary, cursor: 'pointer', display: 'flex', font: 'inherit', fontWeight: 600, gap: '0.4rem', minWidth: 0, outlineColor: color.accent, padding: 0, textAlign: 'left' },
+                  children: [
+                    row.over ? jsx(Codicon, { name: 'flame', size: '0.7rem' }) : null,
+                    jsx('span', { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, children: row.title }),
+                    row.profile ? jsx(Pill, { children: row.profile }) : null
+                  ]
+                })
+              },
+              { key: 'model', label: 'Model', muted: true, render: row => jsx('span', { style: { fontSize: '0.6875rem' }, children: row.model || '—' }) },
+              { key: 'burn', label: 'Last hour', align: 'right', sortValue: row => row.cash_last_hour_usd + row.list_last_hour_usd, render: row => jsx('span', { style: { ...tabular, color: row.over ? color.danger : color.primary }, children: watchBurnLabel(row) }) },
+              { key: 'calls_last_hour', label: 'Calls', align: 'right', render: row => formatCount(row.calls_last_hour) },
+              { key: 'running', label: 'State', render: row => row.running ? jsx(Pill, { tone: row.over ? 'danger' : 'accent', children: row.over ? 'Over rate' : 'Running' }) : jsx('span', { style: { color: color.quaternary, fontSize: '0.6875rem' }, children: `idle ${formatDurationShort(Date.now() / 1000 - Number(row.last_call_at))}` }) },
+              { key: 'cost_so_far_usd', label: 'Session so far', align: 'right', muted: true, render: row => formatCost(row.cost_so_far_usd, row.cost_kind) }
+            ],
+            rows,
+            emptyTitle: 'Nothing running',
+            emptyDescription: 'No session has called a model in the last hour.'
+          })
+    ]
+  })
+}
+
+function OverviewView({ query, ctx, period, watch }) {
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 8 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Overview unavailable' })
+  const data = query.data
+  return jsx('div', {
+    style: { flex: 1, minHeight: 0, overflow: 'auto', padding: '1rem' },
+    children: jsxs('div', {
+      style: { display: 'grid', gap: '1.5rem', margin: '0 auto', maxWidth: '84rem' },
+      children: [
+        watch ? jsx(RunningNowPanel, { ctx, ...watch }) : null,
+        jsx(HelperTasksSection, { ctx, period }),
+        watch?.onOpenSession ? jsx(ConversationChainsSection, { ctx, period, onOpenSession: watch.onOpenSession }) : null,
+        jsxs('section', {
+          children: [
+            jsx(SectionHeading, {
+              title: 'Usage over time',
+              description: 'Total recorded input, output, and cache tokens by local calendar day.',
+              action: jsx(ExportMenu, {
+                title: 'Export the digest or the overview tables for the selected period',
+                items: [
+                  digestExportItem(ctx, period),
+                  {
+                    id: 'overview-models-csv',
+                    label: 'Models (CSV)',
+                    hint: 'Per-model sessions, tokens, and recorded cost for this period',
+                    filename: exportFilename('overview-models', period, 'csv'),
+                    mime: 'text/csv;charset=utf-8',
+                    build: () => toCsv(OVERVIEW_MODEL_EXPORT_COLUMNS, data.models || [])
+                  },
+                  jsonExportItem('overview-json', 'Overview payload (JSON)', 'Daily bars, models, sources, and outcomes', 'overview', period, data)
+                ]
+              })
+            }),
+            jsx(DailyBars, { rows: data.daily })
+          ]
+        }),
+        jsx(ProjectsSection, { ctx, period }),
+        jsxs('section', {
+          children: [
+            jsx(SectionHeading, { title: 'Models', description: 'Per-model usage rows include auxiliary work such as compression and title generation.' }),
+            jsx(SimpleTable, {
+              columns: [
+                { key: 'model', label: 'Model' },
+                { key: 'billing_provider', label: 'Provider', muted: true, sortValue: row => row.billing_provider || 'unknown', render: row => row.billing_provider || 'unknown' },
+                { key: 'sessions', label: 'Sessions', align: 'right', render: row => formatCount(row.sessions) },
+                { key: 'total_tokens', label: 'Tokens', align: 'right', render: row => formatCount(row.total_tokens) },
+                { key: 'cost_usd', label: 'Recorded cost', align: 'right', render: row => formatCost(row.cost_usd, row.cost_kind) }
+              ],
+              rows: data.models,
+              emptyTitle: 'No model usage rows'
+            })
+          ]
+        }),
+        jsxs('section', {
+          children: [
+            jsx(SectionHeading, { title: 'Session outcomes', description: 'Conservative classification based on the recorded Duckwork end reason.' }),
+            jsx(SimpleTable, {
+              columns: [
+                { key: 'outcome', label: 'Outcome', render: row => jsx(Pill, { tone: row.outcome === 'failed' ? 'danger' : row.outcome === 'running' || row.outcome === 'completed' ? 'accent' : 'neutral', children: row.outcome.charAt(0).toUpperCase() + row.outcome.slice(1) }) },
+                { key: 'sessions', label: 'Sessions', align: 'right', render: row => formatCount(row.sessions) }
+              ],
+              rows: data.outcomes,
+              emptyTitle: 'No session outcomes'
+            })
+          ]
+        }),
+        jsxs('section', {
+          children: [
+            jsx(SectionHeading, { title: 'Session sources', description: 'Where sessions entered Duckwork.' }),
+            jsx(SimpleTable, {
+              columns: [
+                { key: 'source', label: 'Source' },
+                { key: 'sessions', label: 'Sessions', align: 'right', render: row => formatCount(row.sessions) },
+                { key: 'total_tokens', label: 'Tokens', align: 'right', render: row => formatCount(row.total_tokens) },
+                { key: 'tool_calls', label: 'Tool calls', align: 'right', render: row => formatCount(row.tool_calls) }
+              ],
+              rows: data.sources,
+              emptyTitle: 'No session sources'
+            })
+          ]
+        })
+      ]
+    })
+  })
+}
+
+function contextCostLabel(row) {
+  if (!row.context_chars) return null
+  if (row.context_pricing === 'included') return { text: 'quota', muted: true }
+  if (row.context_pricing === 'unpriced') return { text: 'unpriced', muted: true }
+  const cost = Number(row.context_cost_usd) || 0
+  const text = cost > 0 ? formatCost(cost, 'estimated') : '$0.00'
+  if (row.context_pricing === 'mixed') {
+    const quotaShare = Math.round((Number(row.context_included_share) || 0) * 100)
+    return { text: `${text} + quota`, muted: false, note: `${quotaShare}% of these results ran on subscription routes and count against a quota instead.` }
+  }
+  return { text, muted: false }
+}
+
+function contextCostTitle(row) {
+  const parts = [
+    `Tool results returned ${formatCount(row.context_chars)} characters (≈${formatCount(row.context_tokens_estimate)} tokens) into model context in this period.`
+  ]
+  if (row.context_pricing === 'included') {
+    parts.push('These sessions ran on OAuth subscription routes: the tokens count against the provider quota, not an invoice.')
+  } else if (row.context_pricing === 'unpriced') {
+    parts.push('Duckwork has no pricing entry for these sessions’ routes, so no dollar figure is claimed.')
+  } else {
+    parts.push(`Direct entry priced at each session’s input rate from Duckwork’ pricing tables: ${formatCost(row.context_cost_usd, 'estimated')}.`)
+    if (row.carried_tokens_estimate) {
+      parts.push(`Re-sent on later calls in the same sessions ≈${formatCount(row.carried_tokens_estimate)} tokens, about ${formatCost(row.carried_cost_usd, 'estimated')} at cache-read rates — an upper bound, because compaction eventually drops old results and that moment is not recorded.`)
+    }
+    if (row.context_pricing === 'mixed') {
+      parts.push(`${Math.round((Number(row.context_priced_share) || 0) * 100)}% of the characters were on priced routes; the rest ran on subscription quota or unpriced routes.`)
+    }
+  }
+  return parts.join(' ')
+}
+
+function ContextWeightCell({ row }) {
+  if (!row.context_chars) return jsx('span', { style: { color: color.quaternary }, children: '—' })
+  const cost = contextCostLabel(row)
+  return jsxs('span', {
+    title: contextCostTitle(row),
+    style: { ...tabular, display: 'inline-grid', justifyItems: 'end', lineHeight: 1.3 },
+    children: [
+      jsx('span', { children: `≈${formatCount(row.context_tokens_estimate)} tok` }),
+      cost
+        ? jsx('span', { style: { color: cost.muted ? color.quaternary : color.secondary, fontSize: '0.625rem' }, children: cost.text })
+        : null
+    ]
+  })
+}
+
+function recurringPatternPill(row) {
+  if (row.pattern === 'recurring') return { tone: 'danger', label: `Recurring · ${row.days_seen} days` }
+  if (row.pattern === 'burst') return { tone: 'neutral', label: 'Burst' }
+  if (row.pattern === 'once') return { tone: 'neutral', label: 'Once' }
+  return { tone: 'neutral', label: `${row.days_seen} day${row.days_seen === 1 ? '' : 's'}` }
+}
+
+function recurringRowId(row) {
+  return `${row.tool}|${row.signature}`
+}
+
+// Every session a fault happened in, most recent first.
+function RecurringSessionsList({ row, onOpenSession }) {
+  const sessions = row.affected_sessions || []
+  const hidden = Math.max(0, Number(row.sessions || 0) - sessions.length)
+  return jsxs('div', {
+    style: { display: 'grid', gap: '0.15rem', maxHeight: '22rem', overflowY: 'auto', padding: '0.5rem 0.65rem 0.6rem 2.4rem' },
+    children: [
+      jsx('span', {
+        style: { color: color.tertiary, fontSize: '0.625rem', marginBottom: '0.2rem' },
+        children: `${formatCount(row.sessions)} session${Number(row.sessions) === 1 ? '' : 's'} with this failure, most recent first${hidden ? ` · showing ${formatCount(sessions.length)}` : ''}`
+      }),
+      ...sessions.map(session => jsxs('div', {
+        style: { alignItems: 'center', display: 'grid', gap: '0.75rem', gridTemplateColumns: 'minmax(0, 1fr) auto auto' },
+        children: [
+          jsxs('button', {
+            type: 'button',
+            onClick: () => onOpenSession(session.session_id),
+            title: `Open ${session.session_id}`,
+            style: { alignItems: 'center', background: 'transparent', border: 'none', color: color.accent, cursor: 'pointer', display: 'flex', font: 'inherit', fontSize: '0.6875rem', gap: '0.4rem', minWidth: 0, outlineColor: color.accent, padding: '0.15rem 0', textAlign: 'left' },
+            children: [
+              jsx('span', { style: { overflow: 'hidden', textDecoration: 'underline', textOverflow: 'ellipsis', textUnderlineOffset: '2px', whiteSpace: 'nowrap' }, children: session.title || session.session_id }),
+              session.profile ? jsx(Pill, { children: session.profile }) : null
+            ]
+          }),
+          jsx('span', { style: { ...tabular, color: color.secondary, fontSize: '0.6875rem' }, children: `${formatCount(session.count)}×` }),
+          jsx('span', { style: { ...tabular, color: color.tertiary, fontSize: '0.6875rem', minWidth: '7.5rem', textAlign: 'right' }, children: formatShortDate(session.last_at) })
+        ]
+      }, session.session_id))
+    ]
+  })
+}
+
+// The agent's bad actors: confirmed failures grouped by what went wrong
+// across every session, ranked by how often they recur.
+function RecurringFailuresSection({ ctx, period, onOpenSession }) {
+  const [open, setOpen] = useState(() => new Set())
+  const toggle = id => setOpen(current => {
+    const next = new Set(current)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    return next
+  })
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'recurring-failures', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/failures/recurring', period)),
+    refetchInterval: 120_000
+  })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Recurring failures unavailable' })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 4 })
+  const data = query.data
+  const totals = data.totals || {}
+  return jsxs('section', {
+    children: [
+      jsx(SectionHeading, {
+        title: 'Recurring failures',
+        description: `${formatCount(totals.failures)} confirmed failures in ${formatCount(totals.signatures)} distinct faults; the top five are ${(Number(totals.top5_share) * 100).toFixed(0)}% of them${totals.recurring ? ` · ${formatCount(totals.recurring)} recur on three or more days` : ''}${totals.still_happening ? ` · ${formatCount(totals.still_happening)} happened in the last 24 h` : ''}. ${data.definition || ''}`
+      }),
+      jsx(SimpleTable, {
+        columns: [
+          { key: 'rank', label: '#', align: 'right', muted: true },
+          {
+            key: 'headline',
+            label: 'Failure',
+            render: row => jsxs('div', {
+              title: `Signature: ${row.signature}`,
+              style: { display: 'grid', gap: '0.1rem', minWidth: 0 },
+              children: [
+                jsx('span', { style: { color: color.tertiary, fontSize: '0.625rem' }, children: row.tool }),
+                jsx('span', { style: { color: color.primary, fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis' }, children: row.headline })
+              ]
+            })
+          },
+          {
+            key: 'count',
+            label: 'Count',
+            align: 'right',
+            render: row => jsx('span', { style: tabular, title: `${(Number(row.share) * 100).toFixed(1)}% of failures · ${(Number(row.cumulative_share) * 100).toFixed(0)}% with those above`, children: formatCount(row.count) })
+          },
+          {
+            key: 'pattern',
+            label: 'Pattern',
+            render: row => {
+              const pill = recurringPatternPill(row)
+              return jsx(Pill, { tone: pill.tone, children: pill.label })
+            }
+          },
+          {
+            key: 'sessions',
+            label: 'Sessions',
+            align: 'right',
+            render: row => {
+              const isOpen = open.has(recurringRowId(row))
+              return jsxs('button', {
+                type: 'button',
+                onClick: () => toggle(recurringRowId(row)),
+                'aria-expanded': isOpen,
+                title: isOpen ? 'Hide the sessions' : 'List every session with this failure',
+                style: { ...tabular, alignItems: 'center', background: 'transparent', border: 'none', color: color.accent, cursor: 'pointer', display: 'inline-flex', font: 'inherit', gap: '0.25rem', outlineColor: color.accent, padding: 0, textDecoration: 'underline', textUnderlineOffset: '2px' },
+                children: [
+                  formatCount(row.sessions),
+                  jsx(Codicon, { name: isOpen ? 'chevron-down' : 'chevron-right', size: '0.7rem', 'aria-hidden': true })
+                ]
+              })
+            }
+          },
+          {
+            key: 'last_at',
+            label: 'Last seen',
+            muted: true,
+            render: row => row.still_happening
+              ? jsx(Pill, { tone: 'danger', children: 'last 24 h' })
+              : formatShortDate(row.last_at)
+          },
+          { key: 'trend', label: 'Trend (14d)', align: 'right', render: row => jsx(TrendBars, { rows: row.trend }) },
+          { key: 'investigate', label: 'Investigate', sortValue: () => null, render: row => jsx(AskDuckworkAboutFaultButton, { ctx, row, period }) }
+        ],
+        rows: data.groups || [],
+        rowDetail: row => open.has(recurringRowId(row)) ? jsx(RecurringSessionsList, { row, onOpenSession }) : null,
+        emptyTitle: 'No confirmed failures',
+        emptyDescription: 'No tool failure was confirmed in this period.'
+      })
+    ]
+  })
+}
+
+function ToolsView({ ctx, period, onOpenSession }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'tools', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/tools', period)),
+    refetchInterval: 60_000
+  })
+  const skillsQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'skills', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/skills', period)),
+    refetchInterval: 60_000
+  })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 8 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Tool analytics unavailable' })
+  const data = query.data
+  const skills = skillsQuery.data
+  return jsx('div', {
+    style: { flex: 1, minHeight: 0, overflow: 'auto', padding: '1rem' },
+    children: jsxs('div', {
+      style: { display: 'grid', gap: '1.5rem', margin: '0 auto', maxWidth: '78rem' },
+      children: [
+        jsx(SectionHeading, {
+          title: 'Tools & MCP servers',
+          description: `${formatCount(data.totals.calls)} recorded calls across ${formatCount(data.totals.distinct_tools)} tools${data.totals.mcp_servers ? ` · ${formatCount(data.totals.mcp_servers)} MCP server${data.totals.mcp_servers === 1 ? '' : 's'}${data.totals.mcp_servers_unused ? ` (${formatCount(data.totals.mcp_servers_unused)} with no calls in this period)` : ''}` : ''}. Latency comes from bounded local agent logs. Context weight estimates the tokens tool results push into model context (recorded result length ÷ 4) and prices them at each session's billing route via Duckwork' pricing tables — hover a value for the direct and carried figures.`,
+          action: jsx(ExportMenu, {
+            title: 'Export tool and MCP-server analytics for the selected period',
+            items: [
+              {
+                id: 'tools-csv',
+                label: 'Tools (CSV)',
+                hint: 'One row per tool: calls, failures, latency, context weight and cost',
+                filename: exportFilename('tools', period, 'csv'),
+                mime: 'text/csv;charset=utf-8',
+                build: () => toCsv(TOOL_EXPORT_COLUMNS, data.tools || [])
+              },
+              {
+                id: 'tool-groups-csv',
+                label: 'MCP servers & sources (CSV)',
+                hint: 'One row per MCP server or tool source',
+                filename: exportFilename('tool-sources', period, 'csv'),
+                mime: 'text/csv;charset=utf-8',
+                build: () => toCsv(TOOL_GROUP_EXPORT_COLUMNS, data.groups || [])
+              },
+              jsonExportItem('tools-json', 'Tools payload (JSON)', 'Everything this tab renders, including 7-day trends', 'tools', period, data)
+            ]
+          })
+        }),
+        jsx(SimpleTable, {
+          columns: [
+            {
+              key: 'name',
+              label: 'Source',
+              render: row => jsxs('div', {
+                style: { alignItems: 'center', display: 'flex', gap: '0.4rem', minWidth: 0 },
+                children: [
+                  jsx('span', {
+                    title: row.host ? `${row.transport || 'http'} · ${row.host}` : row.transport || undefined,
+                    style: { color: row.calls ? color.primary : color.tertiary, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' },
+                    children: row.label || row.name
+                  }),
+                  row.kind === 'mcp' ? jsx(Pill, { tone: 'accent', children: 'MCP' }) : null,
+                  row.kind === 'connector' ? jsx(Pill, { tone: 'accent', title: 'An app linked through Duckwork connectors', children: 'Connector' }) : null,
+                  row.status === 'disabled' ? jsx(Pill, { title: 'enabled: false in config.yaml', children: 'Off' }) : null,
+                  jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', whiteSpace: 'nowrap' }, children: toolSourceNote(row) })
+                ]
+              })
+            },
+            { key: 'calls', label: 'Calls', align: 'right', render: row => formatCount(row.calls) },
+            { key: 'sessions', label: 'Sessions', align: 'right', render: row => formatCount(row.sessions) },
+            {
+              key: 'failure_rate',
+              label: 'Fail rate',
+              align: 'right',
+              render: row => row.failures
+                ? jsx(Pill, { tone: 'danger', children: `${(Number(row.failure_rate) * 100).toFixed(1)}%` })
+                : '0%'
+            },
+            {
+              key: 'latency_p50_seconds',
+              label: 'p50 / p95',
+              align: 'right',
+              render: row => row.latency_p50_seconds != null
+                ? jsx('span', { style: tabular, title: `Median and 95th-percentile tool latency from ${formatCount(row.log_calls)} logged calls`, children: `${Number(row.latency_p50_seconds).toFixed(1)}s / ${Number(row.latency_p95_seconds).toFixed(1)}s` })
+                : jsx('span', { style: { color: color.quaternary }, children: '—' })
+            },
+            {
+              key: 'context_tokens_estimate',
+              label: 'Context weight',
+              align: 'right',
+              render: row => jsx(ContextWeightCell, { row })
+            },
+            {
+              key: 'context_cost_usd',
+              label: 'Context cost',
+              align: 'right',
+              render: row => {
+                const cost = contextCostLabel(row)
+                if (!cost) return jsx('span', { style: { color: color.quaternary }, children: '—' })
+                return jsx('span', { title: contextCostTitle(row), style: { ...tabular, color: cost.muted ? color.quaternary : color.primary }, children: cost.text })
+              }
+            },
+            { key: 'last_used_at', label: 'Last used', render: row => formatShortDate(row.last_used_at), muted: true },
+            { key: 'trend', label: 'Trend (7d)', align: 'right', render: row => jsx(TrendBars, { rows: row.trend }) }
+          ],
+          rows: data.groups || [],
+          emptyTitle: 'No tool calls recorded',
+          emptyDescription: 'The selected period contains no tool-call evidence.'
+        }),
+        onOpenSession ? jsx(RecurringFailuresSection, { ctx, period, onOpenSession }) : null,
+        jsx(SectionHeading, {
+          title: 'Per-tool reliability',
+          description: 'Every individual tool, ranked failures-first. Failure signatures are conservative, match English error text only, and are inspectable per session; recorded error states count in any language.'
+        }),
+        jsx(SimpleTable, {
+          columns: [
+            {
+              key: 'name',
+              label: 'Tool',
+              render: row => row.kind === 'mcp' || row.kind === 'connector'
+                ? jsxs('span', { children: [jsx('span', { style: { color: color.quaternary }, children: `${row.group} · ` }), row.short_name] })
+                : row.name
+            },
+            { key: 'calls', label: 'Calls', align: 'right', render: row => formatCount(row.calls) },
+            { key: 'sessions', label: 'Sessions', align: 'right', render: row => formatCount(row.sessions) },
+            {
+              key: 'failures',
+              label: 'Failures',
+              align: 'right',
+              render: row => row.failures ? jsx(Pill, { tone: 'danger', children: formatCount(row.failures) }) : '0'
+            },
+            { key: 'failure_rate', label: 'Failure rate', align: 'right', render: row => `${(Number(row.failure_rate) * 100).toFixed(1)}%` },
+            {
+              key: 'latency_p50_seconds',
+              label: 'p50 latency',
+              align: 'right',
+              render: row => row.latency_p50_seconds != null
+                ? jsx('span', { style: tabular, children: `${Number(row.latency_p50_seconds).toFixed(1)}s` })
+                : jsx('span', { style: { color: color.quaternary }, children: '—' })
+            },
+            { key: 'context_tokens_estimate', label: 'Context weight', align: 'right', render: row => jsx(ContextWeightCell, { row }) },
+            { key: 'last_used_at', label: 'Last used', render: row => formatShortDate(row.last_used_at), muted: true }
+          ],
+          rows: data.tools,
+          emptyTitle: 'No tool calls recorded',
+          emptyDescription: 'The selected period contains no tool-call evidence.'
+        }),
+        data.truncated
+          ? jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'The aggregate scan reached its 50,000-row safety limit.' })
+          : null,
+        data.context_truncated
+          ? jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'The context-weight scan reached its 200,000-row safety limit; weights and costs cover the most recent rows only.' })
+          : null,
+        skills
+          ? jsxs('section', {
+              children: [
+                jsx(SectionHeading, {
+                  title: 'Skills actually invoked',
+                  description: skills.definition
+                }),
+                jsx(SimpleTable, {
+                  columns: [
+                    { key: 'name', label: 'Skill' },
+                    { key: 'view_count', label: 'Loads', align: 'right', render: row => formatCount(row.view_count) },
+                    { key: 'manage_count', label: 'Management', align: 'right', render: row => formatCount(row.manage_count) },
+                    { key: 'sessions', label: 'Sessions', align: 'right', render: row => formatCount(row.sessions) },
+                    { key: 'last_used_at', label: 'Last invoked', render: row => formatShortDate(row.last_used_at), muted: true }
+                  ],
+                  rows: skills.skills,
+                  emptyTitle: 'No explicit skill invocations',
+                  emptyDescription: 'Available or loaded skills are intentionally not presented as used.'
+                })
+              ]
+            })
+          : skillsQuery.isError
+            ? jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'Skill analytics are temporarily unavailable.' })
+            : null
+      ]
+    })
+  })
+}
+
+function CompressionStrip({ ctx }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'compression', activeProfilesParam],
+    queryFn: () => pluginRest(ctx, apiPath('/compression')),
+    refetchInterval: 300_000
+  })
+  const data = query.data
+  if (!data) return null
+  const distressed = data.fallback_sessions + data.ineffective_sessions + data.failed_sessions + data.cooldown_sessions
+  if (!distressed) {
+    return jsx('p', {
+      style: { color: color.quaternary, fontSize: '0.6875rem', margin: 0 },
+      children: `Context compression: no distress recorded across ${formatCount(data.sessions)} sessions.`
+    })
+  }
+  return jsxs('section', {
+    style: { display: 'grid', gap: '0.5rem' },
+    children: [
+      jsx(SectionHeading, {
+        title: 'Context compression distress',
+        description: 'Sessions where Duckwork recorded compression falling back, failing, or not reclaiming space.'
+      }),
+      jsx('div', {
+        style: { borderTop: border, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(7rem, 1fr))', overflowX: 'auto' },
+        children: [
+          jsx(Metric, { label: 'Fallback streaks', value: formatCount(data.fallback_sessions), danger: data.fallback_sessions > 0 }, 'fallback'),
+          jsx(Metric, { label: 'Ineffective passes', value: formatCount(data.ineffective_sessions), danger: data.ineffective_sessions > 0 }, 'ineffective'),
+          jsx(Metric, { label: 'Compression failures', value: formatCount(data.failed_sessions), danger: data.failed_sessions > 0 }, 'failed'),
+          jsx(Metric, { label: 'In cooldown now', value: formatCount(data.cooldown_sessions), danger: data.cooldown_sessions > 0 }, 'cooldown')
+        ]
+      }),
+      jsx('div', {
+        style: { display: 'grid', gap: '0.2rem' },
+        children: (data.offenders || []).map(item => jsxs('div', {
+          style: { alignItems: 'baseline', display: 'flex', gap: '0.75rem', justifyContent: 'space-between' },
+          children: [
+            jsx('span', { style: { color: color.secondary, fontSize: '0.6875rem', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, children: item.title }),
+            jsx('span', { style: { ...tabular, color: color.tertiary, flexShrink: 0, fontSize: '0.625rem' }, children: `streak ${formatCount(item.fallback_streak)} · ineffective ${formatCount(item.ineffective_count)}${item.in_cooldown ? ' · cooling down' : ''}` })
+          ]
+        }, item.id))
+      })
+    ]
+  })
+}
+
+function RuntimeHealth({ ctx, period }) {
+  const telemetryQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'telemetry', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/telemetry', period)),
+    refetchInterval: 60_000
+  })
+  const gatewayQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'gateway'],
+    queryFn: () => pluginRest(ctx, '/gateway'),
+    refetchInterval: 30_000
+  })
+  if (queryPending(telemetryQuery) || queryPending(gatewayQuery)) return jsx(LoadingBlock, { rows: 9 })
+  if (telemetryQuery.isError) return jsx(ErrorBlock, { error: telemetryQuery.error, onRetry: telemetryQuery.refetch, title: 'Runtime telemetry unavailable' })
+  if (gatewayQuery.isError) return jsx(ErrorBlock, { error: gatewayQuery.error, onRetry: gatewayQuery.refetch, title: 'Gateway health unavailable' })
+  const telemetry = telemetryQuery.data
+  const summary = telemetry.summary
+  const gateways = gatewayQuery.data.gateways || []
+  return jsxs('div', {
+    style: { display: 'grid', gap: '1.5rem' },
+    children: [
+      jsx('div', {
+        style: { borderBottom: border, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(7rem, 1fr))', overflowX: 'auto' },
+        children: [
+          jsx(Metric, { label: 'API calls in logs', value: formatCount(summary.api_calls), detail: `${formatCount(telemetry.models.length)} models` }, 'calls'),
+          jsx(Metric, { label: 'Median latency', value: formatSeconds(summary.latency_p50_seconds), detail: `p95 ${formatSeconds(summary.latency_p95_seconds)}` }, 'latency'),
+          jsx(Metric, { label: 'Cache hit ratio', value: formatPercent(summary.cache_hit_ratio), detail: `${formatCount(summary.cache_read_tokens)} tokens read` }, 'cache'),
+          jsx(Metric, { label: 'Timed tool runs', value: formatCount(summary.tool_runs), detail: `${formatCount(telemetry.tools.reduce((count, item) => count + item.failed, 0))} failed`, danger: telemetry.tools.some(item => item.failed) }, 'tools')
+        ]
+      }),
+      jsxs('section', {
+        children: [
+          jsx(SectionHeading, { title: 'Gateway and platforms', description: 'Current local gateway state for the default and named Duckwork profiles.' }),
+          jsx(SimpleTable, {
+            columns: [
+              { key: 'profile', label: 'Profile' },
+              { key: 'state', label: 'Gateway', render: row => jsx(Pill, { tone: row.state === 'running' ? 'accent' : 'neutral', children: row.state }) },
+              { key: 'platforms', label: 'Platforms', sortValue: row => row.platforms?.length ? row.platforms.map(item => `${item.name}: ${item.state}`).join(' · ') : 'None recorded', render: row => row.platforms?.length ? row.platforms.map(item => `${item.name}: ${item.state}`).join(' · ') : 'None recorded' },
+              { key: 'active_agents', label: 'Agents', align: 'right', render: row => formatCount(row.active_agents) },
+              { key: 'updated_at', label: 'Updated', render: row => formatShortDate(row.updated_at), muted: true }
+            ],
+            rows: gateways,
+            emptyTitle: 'No gateway state files',
+            emptyDescription: 'Duckwork has not written gateway status for these profiles.'
+          })
+        ]
+      }),
+      jsxs('section', {
+        children: [
+          jsx(SectionHeading, { title: 'Model latency and cache', description: 'Parsed from bounded local Duckwork agent logs and cached until a log file changes.' }),
+          jsx(SimpleTable, {
+            columns: [
+              { key: 'model', label: 'Model' },
+              { key: 'api_calls', label: 'Calls', align: 'right', render: row => formatCount(row.api_calls) },
+              { key: 'latency_p50_seconds', label: 'p50', align: 'right', render: row => formatSeconds(row.latency_p50_seconds) },
+              { key: 'latency_p95_seconds', label: 'p95', align: 'right', render: row => formatSeconds(row.latency_p95_seconds) },
+              { key: 'cache_hit_ratio', label: 'Cache hit', align: 'right', render: row => formatPercent(row.cache_hit_ratio) }
+            ],
+            rows: telemetry.models,
+            emptyTitle: 'No API timing rows',
+            emptyDescription: 'The selected log window contains no recognized Duckwork API metrics.'
+          })
+        ]
+      }),
+      jsxs('section', {
+        children: [
+          jsx(SectionHeading, { title: 'Tool duration', description: 'Executor timings complement the database-backed reliability view.' }),
+          jsx(SimpleTable, {
+            columns: [
+              { key: 'tool', label: 'Tool' },
+              { key: 'runs', label: 'Runs', align: 'right', render: row => formatCount(row.runs) },
+              { key: 'duration_avg_seconds', label: 'Average', align: 'right', render: row => formatSeconds(row.duration_avg_seconds) },
+              { key: 'duration_p95_seconds', label: 'p95', align: 'right', render: row => formatSeconds(row.duration_p95_seconds) },
+              { key: 'failed', label: 'Failed', align: 'right', render: row => row.failed ? jsx(Pill, { tone: 'danger', children: formatCount(row.failed) }) : '0' },
+              { key: 'cancelled', label: 'Cancelled', align: 'right', render: row => formatCount(row.cancelled) }
+            ],
+            rows: telemetry.tools,
+            emptyTitle: 'No timed tool runs',
+            emptyDescription: 'The selected log window contains no recognized executor metrics.'
+          })
+        ]
+      }),
+      jsx(CompressionStrip, { ctx })
+    ]
+  })
+}
+
+function ProfilesView({ ctx, period }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'profiles', period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/profiles', period)),
+    refetchInterval: 60_000
+  })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 8 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Profile analytics unavailable' })
+  const data = query.data
+  return jsxs('div', {
+    style: { display: 'grid', gap: '1rem' },
+    children: [
+      jsx(SectionHeading, {
+        title: 'Duckwork profiles',
+        description: `${formatCount(data.totals.sessions)} sessions across ${formatCount(data.totals.profiles)} read-only profile stores in this period.`
+      }),
+      jsx(SimpleTable, {
+        columns: [
+          { key: 'name', label: 'Profile', render: row => row.is_default ? `${row.name} · root` : row.name },
+          { key: 'sessions', label: 'Sessions', align: 'right', render: row => formatCount(row.sessions) },
+          { key: 'total_tokens', label: 'Tokens', align: 'right', render: row => formatCount(row.total_tokens) },
+          { key: 'recorded_cost_usd', label: 'Recorded cost', align: 'right', render: row => formatCost(row.recorded_cost_usd, 'estimated') },
+          { key: 'running', label: 'Running', align: 'right', sortValue: row => row.outcomes?.running || 0, render: row => formatCount(row.outcomes?.running) },
+          { key: 'open', label: 'Open', align: 'right', sortValue: row => row.outcomes?.open || 0, render: row => formatCount(row.outcomes?.open) },
+          { key: 'failed', label: 'Failed', align: 'right', sortValue: row => row.outcomes?.failed || 0, render: row => row.outcomes?.failed ? jsx(Pill, { tone: 'danger', children: formatCount(row.outcomes.failed) }) : '0' },
+          { key: 'last_activity_at', label: 'Last activity', render: row => formatShortDate(row.last_activity_at), muted: true }
+        ],
+        rows: data.profiles,
+        emptyTitle: 'No profile stores found'
+      })
+    ]
+  })
+}
+
+const _RUN_TONES = {
+  completed: 'success',
+  clean: 'success',
+  failed: 'danger',
+  cancelled: 'warning',
+  running: 'accent',
+  open: 'accent'
+}
+
+function AgentRunStrip({ runs }) {
+  const ordered = [...(runs || [])].reverse()
+  return jsx('div', {
+    style: { display: 'flex', gap: '0.18rem' },
+    children: ordered.map(run => {
+      const tone = _RUN_TONES[run.outcome] || 'neutral'
+      const fill = tone === 'neutral' ? color.stroke : toneColor(tone)
+      return jsx('span', {
+        title: `${formatShortDate(run.started_at)} · ${run.outcome} · ${formatDurationShort(run.duration_seconds)} · ${formatCount(run.total_tokens)} tok · ${formatCost(run.display_cost_usd, run.cost_kind)}`,
+        style: { background: fill, borderRadius: '2px', display: 'block', height: '0.85rem', opacity: tone === 'neutral' ? 0.6 : 0.9, width: '0.55rem' }
+      }, run.session_id)
+    })
+  })
+}
+
+function AgentScoreboard({ ctx, period, onSelectJob }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'agent-runs', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/agent-runs', period)),
+    refetchInterval: 120_000
+  })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 3 })
+  if (query.isError) return jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'Agent run history is temporarily unavailable.' })
+  const data = query.data
+  const jobs = data?.jobs || []
+  if (!jobs.length) return null
+  return jsxs('section', {
+    style: { display: 'grid', gap: '0.6rem' },
+    children: [
+      jsx(SectionHeading, {
+        title: 'Agent run health',
+        description: `${formatCount(data.totals.runs)} cron runs across ${formatCount(data.totals.jobs)} jobs in the selected period · ${formatCount(data.totals.failed_runs)} failed. Latest run is rightmost.`
+      }),
+      jsx('div', {
+        style: { border, borderRadius: '6px', display: 'grid' },
+        children: jobs.map(job => {
+          const failTone = job.failed_runs > 0 ? color.danger : color.tertiary
+          const streakNote = job.current_streak > 1 ? ` · ${formatCount(job.current_streak)}× ${job.last_outcome} streak` : ''
+          return jsxs('div', {
+            style: { alignItems: 'center', borderBottom: border, display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem', padding: '0.55rem 0.75rem' },
+            children: [
+              jsx('button', {
+                type: 'button',
+                onClick: () => onSelectJob(job.label),
+                title: 'Show this job\u2019s sessions in the Sessions view',
+                style: { background: 'transparent', border: 'none', color: color.primary, cursor: 'pointer', flex: '1 1 14rem', font: 'inherit', fontSize: '0.75rem', fontWeight: 650, minWidth: 0, outlineColor: color.accent, overflowWrap: 'anywhere', padding: 0, textAlign: 'left' },
+                children: job.label
+              }),
+              jsx(AgentRunStrip, { runs: job.runs }),
+              jsx('span', {
+                style: { ...tabular, color: failTone, flexShrink: 0, fontSize: '0.625rem' },
+                children: `${formatCount(job.runs_recorded)} runs · ${formatCount(job.failed_runs)} failed${streakNote}`
+              }),
+              jsx('span', {
+                style: { ...tabular, color: color.quaternary, flexShrink: 0, fontSize: '0.625rem' },
+                children: `avg ${formatDurationShort(job.avg_duration_seconds)} · avg ${formatCost(job.avg_cost_usd, 'actual')} · ${formatRelativeTime(job.last_run_at)}`
+              })
+            ]
+          }, job.label)
+        })
+      })
+    ]
+  })
+}
+
+function SchedulesView({ ctx, period, onSelectJob }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'schedules'],
+    queryFn: () => pluginRest(ctx, '/schedules'),
+    refetchInterval: 30_000
+  })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 8 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Schedules unavailable' })
+  const data = query.data
+  return jsxs('div', {
+    style: { display: 'grid', gap: '1rem' },
+    children: [
+      jsx(AgentScoreboard, { ctx, period, onSelectJob }),
+      jsx(SectionHeading, {
+        title: 'Scheduled jobs',
+        description: `${formatCount(data.totals.enabled)} of ${formatCount(data.totals.jobs)} jobs enabled. Prompts are intentionally excluded.`
+      }),
+      jsx(SimpleTable, {
+        columns: [
+          { key: 'name', label: 'Job' },
+          { key: 'profile', label: 'Profile', muted: true },
+          { key: 'enabled', label: 'State', render: row => jsx(Pill, { tone: row.enabled ? 'accent' : 'neutral', children: row.enabled ? 'Enabled' : 'Disabled' }) },
+          { key: 'schedule', label: 'Schedule' },
+          { key: 'next_run_at', label: 'Next run', render: row => formatShortDate(row.next_run_at) },
+          { key: 'last_status', label: 'Last status', sortValue: row => row.last_status || (row.last_error ? 'Error' : ''), render: row => row.last_error ? jsx(Pill, { tone: 'danger', title: row.last_error, children: row.last_status || 'Error' }) : row.last_status || '—' },
+          { key: 'failure_streak', label: 'Failures', align: 'right', render: row => formatCount(row.failure_streak) }
+        ],
+        rows: data.schedules,
+        emptyTitle: 'No scheduled jobs',
+        emptyDescription: 'No cron job metadata was found in the default or named profiles.'
+      })
+    ]
+  })
+}
+
+// ============================================================================
+// FLEET
+// ============================================================================
+
+function fleetStatePill(row) {
+  if (row.state === 'running') return { tone: 'accent', label: 'Running', icon: 'record' }
+  if (row.state === 'idle') return { tone: 'neutral', label: 'Idle', icon: 'circle-outline' }
+  if (row.state === 'quiet') return { tone: 'neutral', label: 'Quiet this week', icon: 'circle-outline' }
+  return { tone: 'neutral', label: 'Dormant', icon: 'circle-slash' }
+}
+
+function fleetSpend(cash, list) {
+  const parts = []
+  if (Number(cash) > 0 || !(Number(list) > 0)) parts.push(formatCost(cash, 'estimated'))
+  if (Number(list) > 0) parts.push(`≈ ${formatCost(list, 'estimated')} sub.`)
+  return parts.join(' + ')
+}
+
+// Every profile on this machine as one row: alive or not, what it is doing,
+// what it costs today. Bot profiles keep sessions open for weeks, so spend
+// over time is read from each profile's logged API calls, not session totals.
+function FleetView({ ctx, onOpenProfile }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'fleet'],
+    queryFn: () => pluginRest(ctx, apiPath('/fleet')),
+    refetchInterval: 60_000
+  })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 8 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Fleet unavailable' })
+  const data = query.data
+  const totals = data.totals || {}
+  return jsx('div', {
+    style: { flex: 1, minHeight: 0, overflow: 'auto', padding: '1rem' },
+    children: jsxs('div', {
+      style: { display: 'grid', gap: '1rem', margin: '0 auto', maxWidth: '84rem' },
+      children: [
+        jsx(SectionHeading, {
+          title: 'Fleet',
+          description: `${formatCount(totals.profiles)} profiles · ${formatCount(totals.running)} running · ${formatCount(totals.calls_day)} calls and ${fleetSpend(totals.cash_day_usd, totals.list_day_usd)} in the last 24 h${totals.flagged ? ` · ${formatCount(totals.flagged)} need a look` : ''}. ${data.definition || ''}`
+        }),
+        jsx(SimpleTable, {
+          columns: [
+            {
+              key: 'profile',
+              label: 'Profile',
+              render: row => jsxs('div', {
+                style: { display: 'grid', gap: '0.15rem', minWidth: 0 },
+                children: [
+                  jsx('button', {
+                    type: 'button',
+                    onClick: () => onOpenProfile(row.profile),
+                    title: 'Show this profile’s sessions',
+                    style: { background: 'transparent', border: 'none', color: row.flags?.length ? color.danger : color.primary, cursor: 'pointer', font: 'inherit', fontWeight: 600, outlineColor: color.accent, padding: 0, textAlign: 'left' },
+                    children: row.profile
+                  }),
+                  row.flags?.length
+                    ? jsx('span', { style: { color: color.danger, fontSize: '0.625rem' }, children: row.flags.join(' · ') })
+                    : null
+                ]
+              })
+            },
+            {
+              key: 'state',
+              label: 'State',
+              render: row => {
+                const pill = fleetStatePill(row)
+                return jsx(Pill, { tone: pill.tone, children: jsxs(Fragment, { children: [jsx(Codicon, { name: pill.icon, size: '0.65rem' }), pill.label] }) })
+              }
+            },
+            { key: 'last_activity_at', label: 'Last activity', muted: true, render: row => row.last_activity_at ? formatShortDate(row.last_activity_at) : '—' },
+            { key: 'calls_day', label: 'Calls 1 h / 24 h', align: 'right', render: row => jsx('span', { style: tabular, children: `${formatCount(row.calls_hour)} / ${formatCount(row.calls_day)}` }) },
+            {
+              key: 'spend_day',
+              label: 'Spend 24 h',
+              align: 'right',
+              sortValue: row => Number(row.cash_day_usd) + Number(row.list_day_usd),
+              render: row => jsx('span', {
+                style: tabular,
+                title: `Last hour: ${fleetSpend(row.cash_hour_usd, row.list_hour_usd)}${row.unpriced_calls_day ? ` · ${formatCount(row.unpriced_calls_day)} calls unpriced` : ''}${row.logs_cover_day ? '' : ' · logs cover less than 24 h'}`,
+                children: fleetSpend(row.cash_day_usd, row.list_day_usd)
+              })
+            },
+            { key: 'failures_day', label: 'Failures 24 h', align: 'right', render: row => row.failures_day ? jsx(Pill, { tone: row.failures_day >= 10 ? 'danger' : 'neutral', children: formatCount(row.failures_day) }) : '0' },
+            { key: 'api_errors_day', label: 'API errors 24 h', align: 'right', render: row => row.api_errors_day ? jsx(Pill, { tone: row.api_errors_day >= 3 ? 'danger' : 'neutral', children: formatCount(row.api_errors_day) }) : '0' },
+            { key: 'open_sessions', label: 'Open sessions', align: 'right', render: row => formatCount(row.open_sessions) },
+            { key: 'top_model', label: 'Main model 24 h', muted: true, render: row => jsx('span', { style: { fontSize: '0.6875rem' }, children: row.top_model || '—' }) },
+            { key: 'gateway', label: 'Gateway', muted: true, render: row => row.gateway ? `${row.gateway.state}${row.gateway.platforms?.length ? ` · ${row.gateway.platforms.join(', ')}` : ''}` : '—' }
+          ],
+          rows: data.profiles || [],
+          emptyTitle: 'No profiles found',
+          emptyDescription: 'Duckwork profiles with a state.db appear here.'
+        }),
+        data.errors?.length
+          ? jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem', margin: 0 }, children: `Could not read: ${data.errors.map(item => `${item.profile} (${item.error})`).join('; ')}` })
+          : null
+      ]
+    })
+  })
+}
+
+function OperationsView({ ctx, period, onDrill }) {
+  const [section, setSection] = useState('health')
+  const options = [
+    { id: 'health', label: 'Health' },
+    { id: 'profiles', label: 'Profiles' },
+    { id: 'schedules', label: 'Schedules' }
+  ]
+  let content = jsx(RuntimeHealth, { ctx, period })
+  if (section === 'profiles') content = jsx(ProfilesView, { ctx, period })
+  if (section === 'schedules') content = jsx(SchedulesView, { ctx, period, onSelectJob: label => onDrill && onDrill({ search: label }) })
+  return jsx('div', {
+    style: { flex: 1, minHeight: 0, overflow: 'auto', padding: '1rem' },
+    children: jsxs('div', {
+      style: { display: 'grid', gap: '1.25rem', margin: '0 auto', maxWidth: '84rem' },
+      children: [
+        jsxs('div', {
+          style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'space-between' },
+          children: [
+            jsx(SectionHeading, { title: 'Operations', description: 'Runtime health, profiles, and schedules for the Duckwork agent.' }),
+            jsx(SegmentedControl, { options, value: section, onChange: setSection })
+          ]
+        }),
+        content
+      ]
+    })
+  })
+}
+
+const usageProviderIcons = {
+  codex: 'terminal',
+  anthropic: 'comment-discussion',
+  deepseek: 'search',
+  grok: 'sparkle',
+  kimi: 'sparkle',
+  fordex: 'beaker',
+  openrouter: 'globe',
+  zai: 'pulse',
+  firecrawl: 'flame',
+  scrapecreators: 'cloud-download',
+  agentmail: 'mail',
+  brightdata: 'globe',
+  monid: 'terminal'
+}
+
+// ============================================================================
+// AI USAGE
+// ============================================================================
+
+function formatCountdown(value) {
+  const date = timestampDate(value)
+  if (!date) return null
+  const seconds = Math.round((date.getTime() - Date.now()) / 1000)
+  if (seconds <= 0) return null
+  const days = Math.floor(seconds / 86_400)
+  const hours = Math.floor((seconds % 86_400) / 3_600)
+  const minutes = Math.floor((seconds % 3_600) / 60)
+  if (days) return `in ${days}d ${hours}h`
+  if (hours) return `in ${hours}h ${minutes}m`
+  return `in ${Math.max(1, minutes)}m`
+}
+
+// Sort key for provider cards: broken credentials first (monitoring is blind
+// there), then transient failures, then working providers by their hottest
+// quota window — the card most likely to need action floats to the top.
+function usageUrgency(provider) {
+  if (provider.status === 'expired' || provider.status === 'forbidden') return 1000
+  if (provider.status === 'unavailable') return 900
+  const quotas = (provider.windows || []).filter(window =>
+    window.kind === 'quota' && Number.isFinite(Number(window.percentage_used))
+  )
+  const maxUsed = quotas.length ? Math.max(...quotas.map(window => Number(window.percentage_used))) : 0
+  return maxUsed + (provider.status === 'stale' ? 40 : 0)
+}
+
+function usageStatus(provider) {
+  const status = provider?.status || 'unavailable'
+  if (status === 'ok') return { label: 'Connected', tone: 'accent', icon: 'pass' }
+  if (status === 'stale') return { label: 'Last known', tone: 'neutral', icon: 'history' }
+  if (status === 'not_configured') return { label: 'Not configured', tone: 'neutral', icon: 'circle-slash' }
+  if (status === 'expired') {
+    const oauth = String(provider?.auth_source || '').toLowerCase().includes('oauth')
+    return { label: oauth ? 'Login expired' : 'Key rejected', tone: 'danger', icon: 'key' }
+  }
+  if (status === 'forbidden') return { label: 'Access denied', tone: 'danger', icon: 'lock' }
+  return { label: 'Unavailable', tone: 'danger', icon: 'warning' }
+}
+
+function formatUsageAmount(value, unit) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return null
+  const amount = Number(value)
+  const normalisedUnit = String(unit || '')
+  const currency = normalisedUnit.toUpperCase()
+  if (['USD', 'CNY'].includes(currency)) {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 }).format(amount)
+  }
+  if (unit === 'credits') return `${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} credits`
+  const formatted = amount.toLocaleString(undefined, { maximumFractionDigits: 2 })
+  return normalisedUnit ? `${formatted} ${normalisedUnit}` : formatted
+}
+
+function SpinIcon({ size }) {
+  // Duckwork' Codicon component does not understand codicon spin-modifier
+  // names (they rendered a blank box), so the rotation is animated here.
+  return jsxs(Fragment, {
+    children: [
+      jsx('style', { children: '@keyframes session-lens-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }' }),
+      jsx('span', {
+        style: { animation: 'session-lens-spin 1.1s linear infinite', display: 'inline-flex', lineHeight: 0 },
+        children: jsx(Codicon, { name: 'sync', size })
+      })
+    ]
+  })
+}
+
+const usageAttributionViews = [
+  { id: 'project', label: 'Projects' },
+  { id: 'session', label: 'Sessions' },
+  { id: 'model', label: 'Models' }
+]
+
+function UsageAttributionRow({ row, onDrill }) {
+  const share = Math.max(0, Math.min(100, Number(row.share_percent) || 0))
+  const drillable = Boolean(onDrill && row.search && !row.other)
+  const meta = [
+    row.kind && row.kind !== 'repo' ? row.kind : null,
+    row.project && row.project !== row.label ? row.project : null,
+    row.model || null,
+    row.sessions !== undefined && row.sessions !== null ? `${formatCount(row.sessions)} session${Number(row.sessions) === 1 ? '' : 's'}` : null
+  ].filter(Boolean).join(' · ')
+  const label = jsxs('span', {
+    style: { display: 'block', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+    children: [
+      jsx('span', { style: { color: row.other ? color.tertiary : color.secondary, fontWeight: 600 }, children: row.label }),
+      meta ? jsx('span', { style: { color: color.quaternary, marginLeft: '0.4rem' }, children: meta }) : null
+    ]
+  })
+  return jsxs('div', {
+    role: 'row',
+    style: { alignItems: 'center', display: 'grid', gap: '0.55rem', gridTemplateColumns: 'minmax(0, 1fr) 3.6rem auto', fontSize: '0.6875rem', lineHeight: 1.4 },
+    children: [
+      drillable
+        ? jsx('button', {
+            type: 'button',
+            onClick: () => onDrill({ search: row.search }),
+            title: `Open the Sessions tab filtered to ${row.search}`,
+            style: { background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', font: 'inherit', minWidth: 0, outlineColor: color.accent, padding: 0, textAlign: 'left' },
+            children: label
+          })
+        : label,
+      jsx('div', {
+        'aria-hidden': true,
+        style: { background: color.surfaceRaised, borderRadius: '999px', height: '0.3rem', overflow: 'hidden' },
+        children: jsx('div', { style: { background: row.other ? color.stroke : color.accent, borderRadius: '999px', height: '100%', width: `${share}%` } })
+      }),
+      jsxs('span', {
+        style: { ...tabular, color: color.tertiary, textAlign: 'right', whiteSpace: 'nowrap' },
+        children: [
+          jsx('span', { style: { color: color.primary, fontWeight: 600 }, children: `${Math.round(share)}%` }),
+          ` · ${formatCount(row.tokens)} tok`,
+          Number(row.cost_usd) > 0 ? ` · ${formatUsageAmount(row.cost_usd, 'USD')}` : ''
+        ]
+      })
+    ]
+  })
+}
+
+function UsageAttribution({ window, onDrill }) {
+  const [open, setOpen] = useState(false)
+  const [view, setView] = useState('project')
+  const attribution = window.attribution
+  if (!attribution) return null
+  const trailing = attribution.basis === 'trailing_7d'
+  const scope = trailing ? 'the last 7 days' : 'this window'
+  const sessions = Number(attribution.sessions) || 0
+  if (!sessions) {
+    return jsx('div', {
+      style: { color: color.quaternary, fontSize: '0.625rem', lineHeight: 1.45 },
+      children: trailing
+        ? 'No local Duckwork sessions recorded against this provider in the last 7 days.'
+        : 'No local Duckwork sessions recorded in this window — the account usage came from elsewhere.'
+    })
+  }
+  const lead = (attribution.by_project || []).filter(row => !row.other && Number(row.share_percent) >= 0.5).slice(0, 2)
+  const headline = lead.map(row => `${row.label} ${Math.round(Number(row.share_percent) || 0)}%`).join(' · ')
+  const totals = [
+    `${formatCount(attribution.tokens)} tok`,
+    Number(attribution.cost_usd) > 0 ? formatUsageAmount(attribution.cost_usd, 'USD') : null,
+    `${formatCount(sessions)} session${sessions === 1 ? '' : 's'}`
+  ].filter(Boolean).join(' · ')
+  const profileRows = attribution.by_profile || []
+  const views = profileRows.length ? [...usageAttributionViews, { id: 'profile', label: 'Profiles' }] : usageAttributionViews
+  const rows = view === 'session'
+    ? attribution.by_session
+    : view === 'model' ? attribution.by_model : view === 'profile' ? profileRows : attribution.by_project
+  const notes = []
+  if (trailing) notes.push('This allowance has no readable window span, so local records cover the trailing 7 days instead.')
+  if (attribution.model_family) notes.push(`Counting only ${attribution.model_family} models, to match this window.`)
+  const explained = attribution.explained
+  const explainedLine = explained
+    ? explained.percent >= 99
+      ? `Local Duckwork sessions account for essentially all of the ${formatUsageAmount(explained.account_used, explained.unit)} used.`
+      : `Local Duckwork sessions explain ${formatUsageAmount(explained.local_cost_usd, 'USD')} of the ${formatUsageAmount(explained.account_used, explained.unit)} used (${Math.round(explained.percent)}%); the rest came from other machines, tools, or profiles on this account.`
+    : null
+  return jsxs('div', {
+    style: { display: 'grid', gap: '0.45rem' },
+    children: [
+      jsxs('button', {
+        type: 'button',
+        onClick: () => setOpen(current => !current),
+        'aria-expanded': open,
+        title: 'Local Duckwork records that ran inside this quota window. Shares are of locally recorded tokens; the provider counts in its own units and may include other machines on the same account.',
+        style: { alignItems: 'center', background: 'transparent', border: 'none', color: color.tertiary, cursor: 'pointer', display: 'flex', font: 'inherit', fontSize: '0.6875rem', gap: '0.35rem', minWidth: 0, outlineColor: color.accent, padding: 0, textAlign: 'left' },
+        children: [
+          jsx(Codicon, { name: open ? 'chevron-down' : 'chevron-right', size: '0.65rem' }),
+          jsx('span', { style: { color: color.secondary, fontWeight: 600, whiteSpace: 'nowrap' }, children: `What consumed ${scope}` }),
+          jsx('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, children: headline ? `${headline} · ${totals}` : totals })
+        ]
+      }),
+      open
+        ? jsxs('div', {
+            role: 'table',
+            'aria-label': `${window.label} usage by ${view}`,
+            style: { display: 'grid', gap: '0.4rem', paddingLeft: '1rem' },
+            children: [
+              jsx(SegmentedControl, { options: views, value: view, onChange: setView }),
+              ...(rows || []).map((row, index) => jsx(UsageAttributionRow, { row, onDrill }, `${view}-${row.search || row.label || index}`)),
+              explainedLine
+                ? jsx('div', { style: { color: explained.percent < 50 ? color.warning : color.quaternary, fontSize: '0.625rem', lineHeight: 1.45 }, children: explainedLine })
+                : null,
+              notes.length
+                ? jsx('div', { style: { color: color.quaternary, fontSize: '0.625rem', lineHeight: 1.45 }, children: notes.join(' ') })
+                : null
+            ]
+          })
+        : null
+    ]
+  })
+}
+
+function UsageWindow({ window, series, ledgerEntry, onDrill }) {
+  const rawUsed = window.percentage_used
+  const rawRemaining = window.percentage_remaining
+  const hasPercent = rawUsed !== null && rawUsed !== undefined && Number.isFinite(Number(rawUsed))
+  const used = hasPercent ? Number(rawUsed) : 0
+  const hasRemainingPercent = rawRemaining !== null && rawRemaining !== undefined && Number.isFinite(Number(rawRemaining))
+  const remainingPercent = hasRemainingPercent ? Number(rawRemaining) : null
+  const danger = hasPercent && used >= 90
+  const remainingAmount = formatUsageAmount(window.remaining, window.unit)
+  const usedAmount = formatUsageAmount(window.used, window.unit)
+  const limitAmount = formatUsageAmount(window.limit, window.unit)
+  const value = remainingAmount || (remainingPercent !== null ? `${Math.round(remainingPercent)}% remaining` : 'Recorded balance')
+  // The backend computes the one forecast every surface shows (card line,
+  // attention strip, header counter, AI Models cell, digest), with its rules
+  // and its basis; the desktop only renders it.
+  const forecast = window.kind === 'quota' && window.forecast?.exhaust_at ? window.forecast : null
+  const exhaustAt = forecast ? forecast.exhaust_at : null
+  const detailParts = []
+  if (usedAmount && limitAmount) detailParts.push(`${usedAmount} used of ${limitAmount}`)
+  if (window.detail) detailParts.push(window.detail)
+  if (window.reset_at) {
+    const countdown = formatCountdown(window.reset_at)
+    detailParts.push(`Resets ${formatDate(window.reset_at)}${countdown ? ` · ${countdown}` : ''}`)
+  }
+  return jsxs('div', {
+    style: { borderTop: border, display: 'grid', gap: '0.45rem', padding: '0.72rem 0' },
+    children: [
+      jsxs('div', {
+        style: { alignItems: 'baseline', display: 'flex', gap: '0.75rem', justifyContent: 'space-between' },
+        children: [
+          jsx('span', { style: { color: color.secondary, fontSize: '0.75rem', fontWeight: 600 }, children: window.label }),
+          jsx('span', {
+            style: { ...tabular, color: danger ? color.danger : color.primary, fontSize: '0.75rem', fontWeight: 650, textAlign: 'right' },
+            children: value
+          })
+        ]
+      }),
+      hasPercent
+        ? jsx('div', {
+            role: 'progressbar',
+            'aria-label': `${window.label} usage`,
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': Math.round(used),
+            style: { background: color.surfaceRaised, borderRadius: '999px', height: '0.38rem', overflow: 'hidden' },
+            children: jsx('div', {
+              style: {
+                background: danger ? color.danger : color.accent,
+                borderRadius: '999px',
+                height: '100%',
+                width: `${Math.max(0, Math.min(100, used))}%`
+              }
+            })
+          })
+        : null,
+      exhaustAt
+        ? jsx('div', {
+            title: `Linear extrapolation of this window's own burn (${forecast.basis}). Shown only when the window is at least 10% elapsed, usage runs ahead of time, and the run-out lands at least 10% of the window before the reset; counted under Needs attention.`,
+            style: { color: used >= 90 ? color.danger : color.warning, fontSize: '0.6875rem', fontWeight: 600 },
+            children: `At this pace, empty ~${formatShortDate(exhaustAt)} — before the reset (${forecast.basis}).`
+          })
+        : null,
+      detailParts.length
+        ? jsx('div', {
+            style: { color: color.quaternary, fontSize: '0.6875rem', lineHeight: 1.45 },
+            children: detailParts.join(' · ')
+          })
+        : null,
+      balanceLedgerLine(ledgerEntry)
+        ? jsx('div', {
+            title: 'How far this balance has fallen between this desktop\'s readings this month, and how much was added. Readings are stored in this desktop\'s plugin storage only.',
+            style: { color: color.quaternary, fontSize: '0.6875rem', lineHeight: 1.45 },
+            children: balanceLedgerLine(ledgerEntry)
+          })
+        : null,
+      jsx(UsageAttribution, { window, onDrill })
+    ]
+  })
+}
+
+// A window earns a bar only when something is happening in it. Untouched
+// quota windows and per-minute rate limits each collapse to one sentence, so
+// a card is as tall as its news and no taller.
+function ProviderWindows({ provider, history, ledger, onDrill }) {
+  const windows = provider.windows || []
+  const rateLimits = windows.filter(window => window.kind === 'rate_limit')
+  const idle = windows.filter(window => window.kind === 'quota' && !(Number(window.percentage_used) > 0) && !window.forecast?.exhaust_at)
+  const live = windows.filter(window => !rateLimits.includes(window) && !idle.includes(window))
+  const compactStyle = { borderTop: border, color: color.quaternary, fontSize: '0.6875rem', lineHeight: 1.45, padding: '0.6rem 0' }
+  return jsxs('div', {
+    style: { marginTop: '0.65rem' },
+    children: [
+      ...live.map(window => jsx(UsageWindow, { window, series: history?.[`${provider.provider}:${window.id}`], ledgerEntry: window.kind === 'balance' ? ledger?.[provider.provider] : null, onDrill }, `${provider.provider}-${window.id}`)),
+      idle.length
+        ? jsx('div', {
+            title: 'Quota windows with nothing used yet; each shows its size and when it resets.',
+            style: compactStyle,
+            children: `Untouched: ${idle.map(window => {
+              const size = formatUsageAmount(window.limit, window.unit)
+              const countdown = formatCountdown(window.reset_at)
+              return `${window.label}${size ? ` (${size})` : ''}${countdown ? ` · resets ${countdown}` : ''}`
+            }).join(' · ')}`
+          }, `${provider.provider}-idle`)
+        : null,
+      rateLimits.length
+        ? jsx('div', {
+            title: 'Per-minute rate limits reported by the provider. They reset every minute and say nothing about spend; the ceilings are listed so you know them.',
+            style: compactStyle,
+            children: `Rate limits per minute: ${rateLimits.map(window => `${formatCount(window.limit)} ${String(window.label || '').replace(/\s+per minute$/i, '').toLowerCase()}`).join(' · ')}`
+          }, `${provider.provider}-rate-limits`)
+        : null
+    ]
+  })
+}
+
+function UsageProvider({ ctx, provider, history, ledger, onRefresh, onDrill }) {
+  const status = usageStatus(provider)
+  const messageDanger = ['expired', 'forbidden', 'unavailable'].includes(provider.status)
+  const [busy, setBusy] = useState(false)
+  const refreshOne = async () => {
+    if (busy || !onRefresh) return
+    setBusy(true)
+    try {
+      await onRefresh(provider.base_provider || provider.provider)
+    } finally {
+      setBusy(false)
+    }
+  }
+  return jsxs('section', {
+    style: { border, borderRadius: '6px', minWidth: 0, padding: '0.85rem 1rem' },
+    children: [
+      jsxs('div', {
+        style: { alignItems: 'flex-start', display: 'flex', gap: '0.8rem', justifyContent: 'space-between' },
+        children: [
+          jsxs('div', {
+            style: { display: 'flex', gap: '0.6rem', minWidth: 0 },
+            children: [
+              jsx(Codicon, { name: usageProviderIcons[provider.base_provider || provider.provider] || 'dashboard', size: '0.9rem', style: { color: color.tertiary, marginTop: '0.18rem' } }),
+              jsxs('div', {
+                style: { minWidth: 0 },
+                children: [
+                  jsx('h4', {
+                    style: { color: color.primary, fontSize: '0.75rem', fontWeight: 650, lineHeight: 1.35, margin: 0 },
+                    children: provider.label
+                  }),
+                  jsx('div', {
+                    style: { color: color.quaternary, fontSize: '0.6875rem', lineHeight: 1.45, marginTop: '0.12rem' },
+                    children: [provider.plan, provider.auth_source].filter(Boolean).join(' · ')
+                  })
+                ]
+              })
+            ]
+          }),
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flexShrink: 0, gap: '0.35rem' },
+            children: [
+              jsx(Pill, {
+                tone: status.tone,
+                children: jsxs(Fragment, { children: [jsx(Codicon, { name: status.icon, size: '0.65rem' }), status.label] })
+              }),
+              onRefresh
+                ? jsx('button', {
+                    type: 'button',
+                    onClick: refreshOne,
+                    disabled: busy,
+                    'aria-label': `Refresh ${provider.label} usage`,
+                    title: `Refresh only ${provider.label}. The other cards keep their current readings.`,
+                    style: { alignItems: 'center', background: 'transparent', border: 'none', color: color.quaternary, cursor: busy ? 'default' : 'pointer', display: 'flex', outlineColor: color.accent, padding: '0.1rem' },
+                    children: busy ? jsx(SpinIcon, { size: '0.7rem' }) : jsx(Codicon, { name: 'refresh', size: '0.7rem' })
+                  })
+                : null
+            ]
+          })
+        ]
+      }),
+      provider.message
+        ? jsx('p', {
+            role: messageDanger ? 'alert' : undefined,
+            style: {
+              background: messageDanger ? color.dangerSoft : color.surface,
+              borderRadius: '5px',
+              color: messageDanger ? color.danger : color.secondary,
+              fontSize: '0.6875rem',
+              lineHeight: 1.5,
+              margin: '0.75rem 0 0',
+              padding: '0.5rem 0.6rem'
+            },
+            children: provider.status === 'stale'
+              ? `Latest refresh failed; showing the last successful reading. ${provider.message}`
+              : provider.message
+          })
+        : null,
+      provider.windows?.length
+        ? jsx(ProviderWindows, { provider, history, ledger, onDrill })
+        : jsx('div', {
+            style: { borderTop: border, color: color.quaternary, fontSize: '0.75rem', marginTop: '0.75rem', paddingTop: '0.75rem' },
+            children: provider.status === 'not_configured'
+              ? 'Sign in or configure this provider in Duckwork to expose account usage.'
+              : 'No quota windows are available right now.'
+          }),
+      provider.details?.length
+        ? jsx('ul', {
+            style: { color: color.tertiary, display: 'grid', fontSize: '0.6875rem', gap: '0.25rem', lineHeight: 1.45, margin: '0.65rem 0 0', paddingLeft: '1rem' },
+            children: provider.details.map((detail, index) => jsx('li', { children: detail }, `${provider.provider}-detail-${index}`))
+          })
+        : null,
+      provider.links?.length
+        ? jsx('div', {
+            style: { display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' },
+            children: provider.links.map(link => jsx(Button, {
+              variant: 'outline',
+              size: 'sm',
+              onClick: () => openExternalLink(ctx, link.url),
+              title: link.url,
+              children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'link-external', size: '0.7rem' }), ' ', link.label] })
+            }, `${provider.provider}-link-${link.url}`))
+          })
+        : null,
+      provider.month_reconciliation
+        ? jsx('div', {
+            title: 'The provider\'s own month-to-date figure beside the local estimate for the same calendar month. The local estimate prices cached tokens at the full rate and cannot see other machines on the account, so the two are expected to differ.',
+            style: { color: color.quaternary, fontSize: '0.625rem', marginTop: '0.65rem' },
+            children: `This month: provider ${formatUsageAmount(provider.month_reconciliation.provider_usd, 'USD')} · local estimate ${formatUsageAmount(provider.month_reconciliation.local_usd, 'USD')} across ${formatCount(provider.month_reconciliation.local_sessions)} session${Number(provider.month_reconciliation.local_sessions) === 1 ? '' : 's'}`
+          })
+        : null,
+      provider.recorded_local && (provider.recorded_local.tokens || provider.recorded_local.sessions)
+        ? jsx('div', {
+            title: 'What your local Duckwork sessions recorded against this provider in the selected period. The account quota above may also include usage from other machines or tools on the same account.',
+            style: { color: color.quaternary, fontSize: '0.625rem', marginTop: '0.65rem' },
+            children: `Recorded locally: ${formatCount(provider.recorded_local.tokens)} tok · ${formatUsageAmount(provider.recorded_local.cost_usd, 'USD')} across ${formatCount(provider.recorded_local.sessions)} session${Number(provider.recorded_local.sessions) === 1 ? '' : 's'} (${provider.recorded_local.label})`
+          })
+        : null,
+      provider.fetched_at
+        ? jsx('div', {
+            style: { color: color.quaternary, fontSize: '0.625rem', marginTop: '0.65rem' },
+            children: `${provider.stale ? 'Last successful reading' : 'Provider checked'} ${formatDate(provider.fetched_at)}`
+          })
+        : null
+    ]
+  })
+}
+
+function UsageProviderGroup({ ctx, title, description, providers, narrow, id, history, ledger, onRefresh, onDrill }) {
+  if (!providers.length) return null
+  return jsxs('section', {
+    'aria-labelledby': id,
+    style: { display: 'grid', gap: '0.65rem' },
+    children: [
+      jsxs('div', {
+        children: [
+          jsx('h3', {
+            id,
+            style: { color: color.primary, fontSize: '0.9375rem', fontWeight: 650, lineHeight: 1.35, margin: 0 },
+            children: title
+          }),
+          jsx('p', {
+            style: { color: color.tertiary, fontSize: '0.6875rem', lineHeight: 1.5, margin: '0.15rem 0 0' },
+            children: description
+          })
+        ]
+      }),
+      jsx('div', {
+        style: { display: 'grid', gap: '0.85rem', gridTemplateColumns: narrow ? 'minmax(0, 1fr)' : 'repeat(2, minmax(0, 1fr))' },
+        children: providers.map(provider => jsx(UsageProvider, { ctx, provider, history, ledger, onRefresh, onDrill }, provider.provider))
+      })
+    ]
+  })
+}
+
+function AIUsageStatStrip({ data }) {
+  const summary = data?.summary || {}
+  return jsx('div', {
+    style: {
+      borderBottom: border,
+      borderTop: border,
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, minmax(8rem, 1fr))',
+      overflowX: 'auto'
+    },
+    children: [
+      jsx(Metric, {
+        label: 'Connected providers',
+        value: data ? `${formatCount(summary.connected)} / ${formatCount(summary.configured ?? summary.providers)}` : '—',
+        detail: data ? `${formatCount(summary.not_configured)} more supported` : null
+      }, 'connected'),
+      jsx(Metric, {
+        label: 'Needs attention',
+        value: data ? formatCount(summary.needs_attention) : '—',
+        detail: data ? `${formatCount(summary.forecasts)} on pace to run out · ${formatCount(summary.stale)} last-known readings` : null,
+        danger: Number(summary.needs_attention) > 0
+      }, 'attention'),
+      jsx(Metric, {
+        label: 'Next reset',
+        value: summary.next_reset_at
+          ? (formatCountdown(summary.next_reset_at) || formatShortDate(summary.next_reset_at))
+          : '—',
+        detail: summary.next_reset_at ? `${formatDate(summary.next_reset_at)}${summary.next_reset_provider ? ` · ${summary.next_reset_provider} ${summary.next_reset_window || ''}`.trimEnd() : ''}${summary.next_reset_in_use ? '' : ' · nothing used yet'}` : 'No timed window reported'
+      }, 'reset'),
+      jsx(Metric, {
+        label: 'Last refresh',
+        value: data?.generated_at ? formatShortDate(data.generated_at) : '—',
+        detail: data ? `${data.cached ? 'Cached' : 'Live'} · ${Math.round((data.cache_ttl_seconds || 300) / 60)} min cache` : null
+      }, 'refresh')
+    ]
+  })
+}
+
+function QuotaAlertStrip({ notes, dismissedIds, onDismiss, onOpen }) {
+  const dismissed = new Set(dismissedIds || [])
+  const visible = (notes || []).filter(note => !dismissed.has(note.id))
+  if (!visible.length) return null
+  return jsx('div', {
+    role: 'status',
+    style: { background: color.warningSoft, borderBottom: border, display: 'grid', gap: '0.2rem', padding: '0.4rem 0.8rem' },
+    children: visible.slice(0, 3).map(note => jsxs('div', {
+      style: { alignItems: 'center', display: 'flex', gap: '0.45rem' },
+      children: [
+        jsx(Codicon, {
+          name: note.severity === 'danger' ? 'flame' : 'warning',
+          size: '0.7rem',
+          style: { color: note.severity === 'danger' ? color.danger : color.warning, flexShrink: 0 }
+        }),
+        jsxs('button', {
+          type: 'button',
+          onClick: () => onOpen(note),
+          title: note.kind === 'runaway'
+            ? 'Open this session'
+            : `Open AI Usage. Reading from ${formatDate(note.as_of)}${note.stale ? ' (last known; the latest refresh failed)' : ''}.`,
+          style: {
+            alignItems: 'baseline',
+            background: 'transparent',
+            border: 'none',
+            color: color.secondary,
+            cursor: 'pointer',
+            display: 'flex',
+            flex: 1,
+            font: 'inherit',
+            fontSize: '0.6875rem',
+            gap: '0.45rem',
+            minWidth: 0,
+            outlineColor: color.accent,
+            overflow: 'hidden',
+            padding: '0.1rem 0',
+            textAlign: 'left',
+            whiteSpace: 'nowrap'
+          },
+          children: [
+            jsx('span', {
+              style: { color: note.severity === 'danger' ? color.danger : color.primary, fontWeight: 650 },
+              children: `${note.provider_label} · ${note.window_label}`
+            }),
+            jsx('span', {
+              style: { color: color.tertiary, overflow: 'hidden', textOverflow: 'ellipsis' },
+              children: `${note.reason}${note.exhaust_at ? ` — empty ~${formatShortDate(note.exhaust_at)}` : ''}`
+            })
+          ]
+        }),
+        jsx('button', {
+          type: 'button',
+          onClick: () => onDismiss(note.id),
+          'aria-label': `Dismiss the note for ${note.provider_label} ${note.window_label}`,
+          title: note.kind === 'runaway'
+            ? 'Dismiss for today. It returns tomorrow if the session is still burning past the alert rate.'
+            : 'Dismiss this note for the current window. It returns after the reset if the condition persists.',
+          style: { alignItems: 'center', background: 'transparent', border: 'none', color: color.quaternary, cursor: 'pointer', display: 'flex', flexShrink: 0, outlineColor: color.accent, padding: '0.05rem' },
+          children: jsx(Codicon, { name: 'close', size: '0.7rem' })
+        })
+      ]
+    }, note.id))
+  })
+}
+
+function budgetStatusPill(entry) {
+  if (entry.status === 'over') return { tone: 'danger', label: 'Over cap', icon: 'flame' }
+  if (entry.status === 'at_risk') return { tone: 'warning', label: 'On pace to exceed', icon: 'warning' }
+  if (entry.status === 'ok') return { tone: 'success', label: 'Within cap', icon: 'check' }
+  return { tone: 'neutral', label: 'No cap', icon: 'circle-outline' }
+}
+
+function BudgetCapField({ entry, onChange }) {
+  const [draft, setDraft] = useState(entry.cap_usd == null ? '' : String(entry.cap_usd))
+  useEffect(() => {
+    setDraft(entry.cap_usd == null ? '' : String(entry.cap_usd))
+  }, [entry.cap_usd])
+  const commit = () => {
+    const trimmed = draft.trim()
+    if (!trimmed) {
+      if (entry.cap_usd != null) onChange(entry.id, null)
+      return
+    }
+    const value = Number(trimmed)
+    if (!Number.isFinite(value) || value <= 0) {
+      setDraft(entry.cap_usd == null ? '' : String(entry.cap_usd))
+      return
+    }
+    const rounded = Math.round(value * 100) / 100
+    if (rounded !== entry.cap_usd) onChange(entry.id, rounded)
+  }
+  return jsxs('label', {
+    style: { alignItems: 'center', display: 'inline-flex', gap: '0.25rem', justifyContent: 'flex-end' },
+    children: [
+      jsx('span', { style: { color: color.quaternary, fontSize: '0.6875rem' }, children: '$' }),
+      jsx(Input, {
+        type: 'number',
+        min: 0,
+        step: 1,
+        inputMode: 'decimal',
+        value: draft,
+        placeholder: 'none',
+        'aria-label': `Monthly cap for ${entry.label} in USD`,
+        onChange: event => setDraft(event.target.value),
+        onBlur: commit,
+        onKeyDown: event => {
+          if (event.key === 'Enter') event.currentTarget.blur()
+          if (event.key === 'Escape') setDraft(entry.cap_usd == null ? '' : String(entry.cap_usd))
+        },
+        style: { ...tabular, textAlign: 'right', width: '5.6rem' }
+      })
+    ]
+  })
+}
+
+function BudgetRow({ entry, month, onChange, narrow }) {
+  const pill = budgetStatusPill(entry)
+  const cap = Number(entry.cap_usd) || 0
+  const spendShare = cap ? Math.min(100, (Number(entry.spend_usd) / cap) * 100) : 0
+  const projectedShare = cap ? Math.min(100, (Number(entry.projected_usd) / cap) * 100) : 0
+  const barTone = entry.status === 'over' ? color.danger : entry.status === 'at_risk' ? color.warning : color.accent
+  const sourceLabel = entry.spend_source === 'account'
+    ? 'account'
+    : entry.spend_source === 'balance'
+      ? 'balance drawdown'
+      : entry.spend_source === 'mixed' ? 'account + local' : 'local records'
+  const sourceTitle = entry.spend_source === 'account'
+    ? `Reported by the provider for this account${entry.account_as_of ? ` as of ${formatDate(entry.account_as_of)}` : ''}${entry.account_stale ? ' (last known reading)' : ''}. Local sessions recorded ${formatUsageAmount(entry.local_spend_usd, 'USD')} of it.`
+    : entry.spend_source === 'balance'
+      ? `How far the provider's balance fell between this desktop's readings since ${formatShortDate(entry.balance_since)}${Number(entry.balance_topped_up_usd) > 0 ? `, after ${formatUsageAmount(entry.balance_topped_up_usd, 'USD')} topped up` : ''}. Spend elsewhere on the same account is included; readings between this desktop's sessions are not.`
+    : entry.spend_source === 'mixed'
+      ? 'Sum of each provider’s best figure: the account number where the provider reports one, its balance drawdown where it reports only a balance, local session records otherwise.'
+      : `Recorded locally by ${formatCount(entry.local_sessions)} Duckwork session${Number(entry.local_sessions) === 1 ? '' : 's'} this month. Usage from other machines or tools on the same account is not included.`
+  const projectionTitle = entry.projection_basis === 'linear'
+    ? 'No spend in the last seven days; projected by extending the month-to-date average.'
+    : `Month-to-date plus ${formatUsageAmount(entry.pace_daily_usd, 'USD')}/day (last seven days’ pace) for the remaining ${Math.round(month?.days_remaining || 0)} days.`
+  return jsxs('div', {
+    style: { borderTop: border, display: 'grid', gap: '0.45rem', padding: '0.65rem 0' },
+    children: [
+      jsxs('div', {
+        style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.5rem 0.85rem', justifyContent: 'space-between' },
+        children: [
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', gap: '0.45rem', minWidth: 0 },
+            children: [
+              jsx('span', { style: { color: color.primary, fontSize: '0.75rem', fontWeight: 650 }, children: entry.label }),
+              jsx(Pill, { tone: pill.tone, children: jsxs(Fragment, { children: [jsx(Codicon, { name: pill.icon, size: '0.65rem' }), pill.label] }) })
+            ]
+          }),
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' },
+            children: [
+              jsxs('span', {
+                title: sourceTitle,
+                style: { ...tabular, color: color.secondary, fontSize: '0.75rem' },
+                children: [
+                  jsx('span', { style: { color: color.primary, fontWeight: 650 }, children: formatUsageAmount(entry.spend_usd, 'USD') }),
+                  jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', marginLeft: '0.3rem' }, children: `so far · ${sourceLabel}` })
+                ]
+              }),
+              jsxs('span', {
+                title: projectionTitle,
+                style: { ...tabular, color: color.secondary, fontSize: '0.75rem' },
+                children: [
+                  jsx('span', { style: { color: entry.status === 'over' || entry.status === 'at_risk' ? color.warning : color.primary, fontWeight: 650 }, children: `→ ${formatUsageAmount(entry.projected_usd, 'USD')}` }),
+                  jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', marginLeft: '0.3rem' }, children: 'projected month end' })
+                ]
+              }),
+              jsx(BudgetCapField, { entry, onChange })
+            ]
+          })
+        ]
+      }),
+      cap
+        ? jsx('div', {
+            role: 'progressbar',
+            'aria-label': `${entry.label} monthly budget`,
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': Math.round(spendShare),
+            title: `${Math.round(Number(entry.percent_of_cap) || 0)}% of the cap spent; ${Math.round(Number(entry.projected_percent_of_cap) || 0)}% projected.`,
+            style: { background: color.surfaceRaised, borderRadius: '999px', height: '0.38rem', overflow: 'hidden', position: 'relative' },
+            children: jsxs(Fragment, {
+              children: [
+                jsx('div', { style: { background: `color-mix(in srgb, ${barTone} 30%, transparent)`, borderRadius: '999px', height: '100%', position: 'absolute', width: `${projectedShare}%` } }),
+                jsx('div', { style: { background: barTone, borderRadius: '999px', height: '100%', position: 'absolute', width: `${spendShare}%` } })
+              ]
+            })
+          })
+        : null,
+      entry.status === 'at_risk' && entry.cross_at
+        ? jsx('div', { style: { color: color.warning, fontSize: '0.6875rem', fontWeight: 600 }, children: `At this pace the cap is passed ~${formatShortDate(entry.cross_at)}.` })
+        : null
+    ]
+  })
+}
+
+function BudgetsSection({ ctx, budgets, onChange, narrow }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'budgets', activeProfilesParam],
+    queryFn: () => pluginRest(ctx, apiPath('/budgets')),
+    refetchInterval: 300_000
+  })
+  const data = query.data
+  const entries = data?.entries || []
+  const total = data?.total
+  const month = data?.month
+  const monthLabel = month?.start ? timestampDate(month.start)?.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : ''
+  return jsxs('section', {
+    'aria-labelledby': 'ai-usage-budgets',
+    style: { display: 'grid', gap: '0.65rem' },
+    children: [
+      jsxs('div', {
+        children: [
+          jsx('h3', { id: 'ai-usage-budgets', style: { color: color.primary, fontSize: '0.9375rem', fontWeight: 650, lineHeight: 1.35, margin: 0 }, children: `Monthly budgets${monthLabel ? ` · ${monthLabel}` : ''}` }),
+          jsx('p', {
+            style: { color: color.tertiary, fontSize: '0.6875rem', lineHeight: 1.5, margin: '0.15rem 0 0' },
+            children: `Set a cap per provider (or for everything) and Session Lens projects month-end spend from the last seven days’ pace, warning in the attention strip when the projection crosses it. Spend uses the provider’s account figure where it reports one and local session records otherwise${month ? ` · ${Math.round(month.days_remaining)} days left this month` : ''}. Caps are stored on this desktop only.`
+          })
+        ]
+      }),
+      query.isError
+        ? jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Budgets are unavailable' })
+        : query.isLoading
+          ? jsx(LoadingBlock, { rows: 3 })
+          : jsxs('div', {
+              style: { border, borderRadius: '6px', padding: '0.2rem 1rem' },
+              children: [
+                total ? jsx(BudgetRow, { entry: total, month, onChange, narrow }) : null,
+                ...entries.map(entry => jsx(BudgetRow, { entry, month, onChange, narrow }, entry.id)),
+                !entries.length
+                  ? jsx('div', { style: { borderTop: border, color: color.quaternary, fontSize: '0.75rem', padding: '0.75rem 0' }, children: 'No provider has recorded spend this month yet. Providers appear here as soon as a session records cost, or set a cap for “All providers” now.' })
+                  : null
+              ]
+            })
+    ]
+  })
+}
+
+function serviceInventoryStatus(row) {
+  if (row.status === 'monitored') return { tone: 'accent', label: 'Monitored', icon: 'pass' }
+  if (row.status === 'attention') return { tone: 'danger', label: 'Needs attention', icon: 'warning' }
+  if (row.status === 'monitorable') return { tone: 'neutral', label: 'Not read yet', icon: 'circle-outline' }
+  if (row.status === 'local') return { tone: 'neutral', label: 'Local · nothing to meter', icon: 'device-desktop' }
+  return { tone: 'neutral', label: 'No usage API', icon: 'circle-slash' }
+}
+
+// The adapter recipe helps only for a vendor Session Lens does not know.
+// Known vendors without an API (Brave, Telegram, Reef, TypeSafe…) and local
+// MCP servers already say why there is no card.
+function serviceNeedsAdapter(row) {
+  return !row.adapter && !row.known && row.status !== 'local'
+}
+
+// Services without an adapter are inventoried from their key name or MCP
+// entry and never hidden; a balance card needs a small adapter module. The
+// recipe lives in the repository, one click from every unreadable row.
+const ADAPTER_RECIPE_URL = 'https://github.com/DuckMind/duckwork'
+
+async function openExternalLink(ctx, url) {
+  try {
+    if (typeof ctx?.os?.openExternal === 'function' && (await ctx.os.openExternal(url))) return
+  } catch {
+    // Fall through to the browser-style open below.
+  }
+  try {
+    window.open(url, '_blank', 'noopener')
+  } catch {
+    // Nothing else to try; the URL is also in the README.
+  }
+}
+
+function ServicesSection({ ctx, query, narrow, history, ledger, onRefresh }) {
+  const data = query.data
+  const cards = data?.cards || []
+  const inventory = data?.inventory || []
+  const summary = data?.summary || {}
+  return jsxs('div', {
+    style: { display: 'grid', gap: '1rem' },
+    children: [
+      query.isError
+        ? jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'Service balances are unavailable' })
+        : query.isLoading
+          ? jsx(LoadingBlock, { rows: 4 })
+          : cards.length
+            ? jsx(UsageProviderGroup, {
+                ctx,
+                id: 'service-usage',
+                title: 'Services & tools',
+                description: 'Credits and balances for the non-model services Duckwork holds keys for — search, scraping, mail, data marketplaces — read from each vendor’s own usage endpoint.',
+                providers: [...cards].sort((a, b) => usageUrgency(b) - usageUrgency(a)),
+                narrow,
+                history,
+                ledger,
+                onRefresh
+              })
+            : null,
+      data
+        ? jsxs('section', {
+            'aria-labelledby': 'service-inventory',
+            style: { display: 'grid', gap: '0.65rem' },
+            children: [
+              jsxs('div', {
+                children: [
+                  jsx('h3', { id: 'service-inventory', style: { color: color.primary, fontSize: '0.9375rem', fontWeight: 650, lineHeight: 1.35, margin: 0 }, children: 'Everything configured' }),
+                  jsx('p', {
+                    style: { color: color.tertiary, fontSize: '0.6875rem', lineHeight: 1.5, margin: '0.15rem 0 0' },
+                    children: `${formatCount(summary.configured)} non-model service${Number(summary.configured) === 1 ? '' : 's'} found in Duckwork — ${formatCount(summary.monitored)} monitored, ${formatCount(summary.unreadable)} with no usage API Session Lens can read${summary.local ? `, ${formatCount(summary.local)} local MCP server${Number(summary.local) === 1 ? '' : 's'} with nothing to meter` : ''}. ${data.definition || ''} A service Session Lens does not recognise is still listed from its key name or MCP entry, never hidden, and its row links the recipe for a small adapter that gives it a balance card.`
+                  })
+                ]
+              }),
+              jsx(SimpleTable, {
+                columns: [
+                  {
+                    key: 'label',
+                    label: 'Service',
+                    render: row => jsxs('div', {
+                      style: { alignItems: 'center', display: 'flex', gap: '0.4rem', minWidth: 0 },
+                      children: [
+                        jsx('span', { style: { fontWeight: 600 }, children: row.label }),
+                        row.kind === 'mcp' || row.mcp ? jsx(Pill, { tone: 'accent', children: 'MCP' }) : null,
+                        row.kind === 'key' ? jsx(Pill, { tone: 'neutral', children: 'key' }) : null,
+                        row.accounts?.length ? jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: `+${row.accounts.length} more key${row.accounts.length === 1 ? '' : 's'}` }) : null
+                      ]
+                    })
+                  },
+                  {
+                    key: 'sources',
+                    label: 'Found via',
+                    render: row => jsx('span', { style: { ...tabular, color: color.tertiary, fontSize: '0.6875rem', overflowWrap: 'anywhere' }, children: (row.sources || []).join(' · ') }),
+                    muted: true
+                  },
+                  {
+                    key: 'status',
+                    label: 'Status',
+                    render: row => {
+                      const status = serviceInventoryStatus(row)
+                      return jsx(Pill, { tone: status.tone, children: jsxs(Fragment, { children: [jsx(Codicon, { name: status.icon, size: '0.65rem' }), status.label] }) })
+                    }
+                  },
+                  {
+                    key: 'note',
+                    label: 'Note',
+                    render: row => jsxs('span', {
+                      style: { color: color.quaternary, fontSize: '0.6875rem', lineHeight: 1.4 },
+                      children: [
+                        row.note || (row.status === 'monitored' ? 'Read from the vendor’s usage endpoint.' : ''),
+                        serviceNeedsAdapter(row)
+                          ? jsx('button', {
+                              type: 'button',
+                              onClick: () => openExternalLink(ctx, ADAPTER_RECIPE_URL),
+                              title: 'Opens ADAPTERS.md on GitHub: how a small adapter module gives this service a balance card',
+                              style: { background: 'transparent', border: 'none', color: color.accent, cursor: 'pointer', font: 'inherit', fontSize: '0.625rem', marginLeft: '0.35rem', outlineColor: color.accent, padding: 0, textDecoration: 'underline', textUnderlineOffset: '2px' },
+                              children: 'How to add an adapter'
+                            })
+                          : null
+                      ]
+                    }),
+                    muted: true
+                  }
+                ],
+                rows: inventory,
+                emptyTitle: 'No non-model services found',
+                emptyDescription: 'Keys in the Duckwork .env, mcp_servers in config.yaml, and known CLIs on PATH appear here automatically.'
+              })
+            ]
+          })
+        : null
+    ]
+  })
+}
+
+function AIUsageView({ ctx, query, servicesQuery, narrow, refreshError, history, ledger, onRefreshProvider, onRefreshService, onDrill, budgets, onBudgetsChange, period }) {
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 8 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'AI usage is unavailable' })
+  const data = query.data
+  const providers = data?.providers || []
+  const configured = providers.filter(provider => provider.status !== 'not_configured')
+  const unconfigured = providers.filter(provider => provider.status === 'not_configured')
+  // The backend orders the cards (_order_usage_cards); re-sorting here would undo it.
+  const orderedProviders = configured
+  return jsx('div', {
+    style: { flex: 1, minHeight: 0, overflow: 'auto', padding: '1rem' },
+    children: jsxs('div', {
+      style: { display: 'grid', gap: '1rem', margin: '0 auto', maxWidth: '84rem' },
+      children: [
+        jsx(SectionHeading, {
+          title: 'Provider allowances and balances',
+          description: 'Current account-level usage from the credentials already configured in Duckwork. These limits are separate from Session Lens token and cost history.',
+          action: jsx(ExportMenu, {
+            title: 'Export the digest or the current provider and service readings',
+            items: [
+              digestExportItem(ctx, period),
+              jsonExportItem('usage-json', 'Provider usage (JSON)', 'The readings shown on this tab, with attribution and recorded 7-day usage', 'ai-usage', null, query.data),
+              jsonExportItem('services-json', 'Services (JSON)', 'Non-model service balances and the "Everything configured" inventory', 'services', null, servicesQuery?.data)
+            ]
+          })
+        }),
+        refreshError
+          ? jsx('div', {
+              role: 'alert',
+              style: { background: color.dangerSoft, borderRadius: '5px', color: color.danger, fontSize: '0.75rem', padding: '0.65rem 0.75rem' },
+              children: `Manual refresh failed: ${refreshError}`
+            })
+          : null,
+        configured.length
+          ? jsx(UsageProviderGroup, {
+              ctx,
+              id: 'supported-ai-usage',
+              title: 'Your providers',
+              description: 'Account limits and balances for the providers Duckwork holds credentials for.',
+              providers: orderedProviders,
+              narrow,
+              history,
+              ledger,
+              onRefresh: onRefreshProvider,
+              onDrill
+            })
+          : jsx(EmptyState, {
+              title: 'No monitorable AI providers are connected',
+              description: [
+                (data?.duckwork_configured_unsupported || []).length
+                  ? `Duckwork has credentials for ${data.duckwork_configured_unsupported.map(item => item.label).join(', ')}, but those providers expose no account-usage API Session Lens can read.`
+                  : null,
+                unconfigured.length
+                  ? `Session Lens can monitor account allowances for ${unconfigured.map(provider => provider.label).join(', ')}. Sign in or add the API key in Duckwork and the provider appears here automatically.`
+                  : 'No provider credentials were found in Duckwork.'
+              ].filter(Boolean).join(' ')
+            }),
+        jsx(ServicesSection, { ctx, query: servicesQuery, narrow, history, onRefresh: onRefreshService }),
+        jsx(BudgetsSection, { ctx, budgets, onChange: onBudgetsChange, narrow }),
+        configured.length && unconfigured.length
+          ? jsxs('div', {
+              style: { alignItems: 'flex-start', borderTop: border, color: color.quaternary, display: 'flex', fontSize: '0.6875rem', gap: '0.5rem', lineHeight: 1.5, paddingTop: '0.75rem' },
+              children: [
+                jsx(Codicon, { name: 'plug', size: '0.75rem', style: { marginTop: '0.15rem' } }),
+                jsxs('span', {
+                  children: [
+                    jsx('span', { style: { color: color.tertiary, fontWeight: 600 }, children: 'Also supported: ' }),
+                    `${unconfigured.map(provider => provider.label).join(' · ')} — sign in or add the key in Duckwork and they appear here.`
+                  ]
+                })
+              ]
+            })
+          : null,
+        (data?.duckwork_configured_unsupported || []).length
+          ? jsxs('div', {
+              style: { alignItems: 'flex-start', color: color.quaternary, display: 'flex', fontSize: '0.6875rem', gap: '0.5rem', lineHeight: 1.5 },
+              children: [
+                jsx(Codicon, { name: 'circle-slash', size: '0.75rem', style: { marginTop: '0.15rem' } }),
+                jsxs('span', {
+                  children: [
+                    jsx('span', { style: { color: color.tertiary, fontWeight: 600 }, children: 'Configured in Duckwork, not yet monitorable: ' }),
+                    `${data.duckwork_configured_unsupported.map(item => item.label).join(' · ')} — these providers expose no account-usage API Session Lens can read.`
+                  ]
+                })
+              ]
+            })
+          : null,
+        jsxs('div', {
+          style: { alignItems: 'flex-start', borderTop: border, color: color.tertiary, display: 'flex', fontSize: '0.6875rem', gap: '0.5rem', lineHeight: 1.5, paddingTop: '0.75rem' },
+          children: [
+            jsx(Codicon, { name: 'lock', size: '0.75rem', style: { marginTop: '0.15rem' } }),
+            jsx('span', {
+              children: 'Credentials remain in the Duckwork Python backend. Session Lens returns only normalized usage, status, and reset information; it does not read browser cookies or expose tokens to the desktop UI.'
+            })
+          ]
+        })
+      ]
+    })
+  })
+}
+
+// ============================================================================
+// SYSTEM
+// ============================================================================
+
+function DefinitionList({ rows }) {
+  return jsx('dl', {
+    style: { borderTop: border, margin: 0 },
+    children: rows.flatMap(([term, description]) => [
+      jsx('dt', {
+        style: { borderBottom: border, color: color.tertiary, fontSize: '0.6875rem', fontWeight: 600, padding: '0.65rem 0.75rem' },
+        children: term
+      }, `${term}-term`),
+      jsx('dd', {
+        style: { ...tabular, borderBottom: border, color: color.primary, fontSize: '0.75rem', margin: 0, overflowWrap: 'anywhere', padding: '0.65rem 0.75rem' },
+        children: description
+      }, `${term}-value`)
+    ])
+  })
+}
+
+function SystemView({ ctx }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'system', activeProfilesParam],
+    queryFn: () => pluginRest(ctx, apiPath('/system')),
+    refetchInterval: 60_000
+  })
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 8 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'System information unavailable' })
+  const data = query.data
+  const db = data.database
+  return jsx('div', {
+    style: { flex: 1, minHeight: 0, overflow: 'auto', padding: '1rem' },
+    children: jsxs('div', {
+      style: { display: 'grid', gap: '1.5rem', margin: '0 auto', maxWidth: '68rem' },
+      children: [
+        jsxs('section', {
+          children: [
+            jsx(SectionHeading, {
+              title: 'Data source',
+              description: 'The active profile database opened through Duckwork in query-only mode.'
+            }),
+            jsx(DefinitionList, {
+              rows: [
+                ['Status', db.available && db.read_only ? 'Available · read-only' : 'Check configuration'],
+                ['Schema', `v${db.schema_version}`],
+                ['Database', db.path],
+                ['Size', `${formatCount(db.size_bytes)} bytes · WAL ${formatCount(db.wal_size_bytes)} bytes`],
+                ['Last modified', formatDate(db.last_modified_at)],
+                ['Search', `${db.fts_enabled ? 'FTS enabled' : 'FTS unavailable'} · ${db.trigram_fts_enabled ? 'trigram enabled' : 'trigram unavailable'}`]
+              ]
+            })
+          ]
+        }),
+        jsxs('section', {
+          children: [
+            jsx(SectionHeading, { title: 'Store counts', description: 'Raw rows in the active Duckwork profile.' }),
+            jsx(DefinitionList, {
+              rows: [
+                ['Sessions', formatCount(data.counts.sessions)],
+                ['Messages', formatCount(data.counts.messages)],
+                ['Model usage rows', formatCount(data.counts.model_usage_rows)],
+                ['Delegations', formatCount(data.counts.delegations)]
+              ]
+            })
+          ]
+        }),
+        jsxs('section', {
+          children: [
+            jsx(SectionHeading, { title: 'Privacy posture', description: 'Design constraints enforced by the backend.' }),
+            jsx(DefinitionList, {
+              rows: [
+                ['Network upload', data.privacy.network_upload ? 'Enabled' : 'None'],
+                ['Provider usage checks', data.privacy.provider_usage_requests ? 'Direct to configured providers' : 'Disabled'],
+                ['Credentials in desktop UI', data.privacy.provider_credentials_returned_to_desktop ? 'Review required' : 'Never returned'],
+                ['External hosts', (data.privacy.external_hosts || []).length ? data.privacy.external_hosts.join(', ') : 'None declared'],
+                ['Inference probes', (data.privacy.inference_probes || []).length
+                  ? data.privacy.inference_probes.map(item => `${item.label}: ${item.note || 'token-sized request to read rate-limit headers'}`).join(' · ')
+                  : 'None — usage and balance endpoints only'],
+                ['Mutation endpoints', String(data.privacy.mutation_endpoints)],
+                ['Time budget per view', Number(data.privacy.route_budget_seconds) > 0 ? `${Number(data.privacy.route_budget_seconds)} s, then the backend stops the build and the view says so (route_budget_seconds)` : 'Disabled (route_budget_seconds: 0)'],
+                ['Snippets', data.privacy.snippets_redacted_and_bounded ? 'Redacted and bounded' : 'Review required'],
+                ['Failure signatures', data.privacy.failure_signatures_language === 'english' ? 'English error text only, plus recorded error states in any language' : 'Review required'],
+                ['Connection', data.privacy.database_connection],
+                ['Plugin version', data.plugin.version]
+              ]
+            })
+          ]
+        })
+      ]
+    })
+  })
+}
+
+// ============================================================================
+// APPLICATION SHELL
+// ============================================================================
+
+function ProfileScopePicker({ serving, available, scope, onChange }) {
+  const [open, setOpen] = useState(false)
+  const scopedNames = scope === 'all' ? available : Array.isArray(scope) ? scope : []
+  const chipLabel = scope === 'all'
+    ? `data: all profiles (${available.length || '…'})`
+    : scopedNames.length === 1
+      ? `data: ${scopedNames[0]} profile`
+      : scopedNames.length > 1
+        ? `data: ${scopedNames.length} profiles`
+        : serving
+          ? `data: ${serving} profile`
+          : 'data: profile'
+  const isChecked = name => scope === 'all' || (Array.isArray(scope) ? scope.includes(name) : name === serving)
+  const toggleProfile = name => {
+    const current = scope === 'all'
+      ? [...available]
+      : Array.isArray(scope) ? [...scope] : serving ? [serving] : []
+    const next = current.includes(name) ? current.filter(item => item !== name) : [...current, name]
+    if (!next.length) {
+      onChange(null)
+      return
+    }
+    const ordered = available.filter(item => next.includes(item))
+    onChange(ordered.length === available.length && available.length > 1 ? 'all' : ordered)
+  }
+  const itemStyle = active => ({
+    alignItems: 'center', background: active ? color.surface : 'transparent', border: 'none',
+    borderRadius: '4px', color: color.primary, cursor: 'pointer', display: 'flex', fontSize: '0.6875rem',
+    gap: '0.45rem', padding: '0.35rem 0.5rem', textAlign: 'left', width: '100%'
+  })
+  return jsxs('div', {
+    style: { flexShrink: 0, position: 'relative' },
+    children: [
+      jsxs('button', {
+        type: 'button',
+        onClick: () => setOpen(value => !value),
+        'aria-haspopup': 'menu',
+        'aria-expanded': open,
+        title: 'Choose which Duckwork profiles the telemetry pages read: the serving profile, any single profile, several, or all of them. Account-level pages (AI Usage) always show account-wide data.',
+        style: { ...tabular, alignItems: 'center', background: color.surfaceRaised, border, borderRadius: '999px', color: color.tertiary, cursor: 'pointer', display: 'flex', flexShrink: 0, fontSize: '0.625rem', gap: '0.3rem', padding: '0.22rem 0.6rem', whiteSpace: 'nowrap' },
+        children: [chipLabel, jsx(Codicon, { name: 'chevron-down', size: '0.6rem' })]
+      }),
+      open ? jsx('div', { onClick: () => setOpen(false), style: { inset: 0, position: 'fixed', zIndex: 29 } }) : null,
+      open
+        ? jsxs('div', {
+            role: 'menu',
+            'aria-label': 'Profile scope',
+            style: { background: 'var(--popover, var(--background, Canvas))', border, borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.28)', minWidth: '14rem', padding: '0.35rem', position: 'absolute', right: 0, top: 'calc(100% + 0.35rem)', zIndex: 30 },
+            children: [
+              jsx('button', {
+                type: 'button', role: 'menuitemradio', 'aria-checked': scope == null,
+                onClick: () => { onChange(null); setOpen(false) },
+                style: itemStyle(scope == null),
+                children: `Serving profile${serving ? ` (${serving})` : ''}`
+              }),
+              jsx('button', {
+                type: 'button', role: 'menuitemradio', 'aria-checked': scope === 'all',
+                onClick: () => { onChange('all'); setOpen(false) },
+                style: itemStyle(scope === 'all'),
+                children: `All profiles${available.length ? ` (${available.length})` : ''}`
+              }),
+              available.length
+                ? jsx('div', { style: { borderTop: border, margin: '0.3rem 0.2rem' } })
+                : null,
+              ...available.map(name => jsxs('div', {
+                style: { alignItems: 'center', display: 'flex', gap: '0.1rem' },
+                children: [
+                  jsx('input', {
+                    type: 'checkbox',
+                    checked: isChecked(name),
+                    onChange: () => toggleProfile(name),
+                    'aria-label': `Include ${name} profile`,
+                    style: { accentColor: color.accent, cursor: 'pointer', margin: '0 0.2rem' }
+                  }),
+                  jsx('button', {
+                    type: 'button', role: 'menuitemradio', 'aria-checked': Array.isArray(scope) && scope.length === 1 && scope[0] === name,
+                    onClick: () => { onChange([name]); setOpen(false) },
+                    title: `Read only the ${name} profile`,
+                    style: itemStyle(Array.isArray(scope) && scope.length === 1 && scope[0] === name),
+                    children: name === serving ? `${name} · serving` : name
+                  })
+                ]
+              }, name)),
+              jsx('div', {
+                style: { borderTop: border, color: color.quaternary, fontSize: '0.6rem', lineHeight: 1.4, margin: '0.3rem 0.2rem 0', padding: '0.35rem 0.3rem 0.15rem' },
+                children: 'Applies to session telemetry pages. AI Usage reads account-wide quotas and is unaffected.'
+              })
+            ]
+          })
+        : null
+    ]
+  })
+}
+
+// ============================================================================
+// RULES TAB — instruction rules graded against recorded turns
+// ============================================================================
+// Self-contained: this block, the tab entry, the RULES_STORAGE_KEY state in
+// SessionLensPage, and the /digest rules parameter are the only touch points.
+
+const RULES_STORAGE_KEY = 'rules'
+const RULES_MIN_SAMPLES_KEY = 'rulesMinSamples'
+
+function newRuleId() {
+  return `rule-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+}
+
+function ruleFieldDefault(field) {
+  if (field.kind === 'bool') return Boolean(field.default)
+  if (field.kind === 'number') return field.default ?? 1
+  if (field.kind === 'select') return field.default ?? (field.options?.[0]?.[0] || '')
+  return field.default ?? ''
+}
+
+function ruleListText(value) {
+  return Array.isArray(value) ? value.join('\n') : String(value || '')
+}
+
+function ruleListItems(value) {
+  return (Array.isArray(value) ? value : String(value || '').split(/[\r\n,]+/)).map(item => String(item).trim()).filter(Boolean)
+}
+
+function catalogEntry(catalog, side, kind) {
+  const list = side === 'when' ? catalog?.conditions : catalog?.expectations
+  return (list || []).find(item => item.kind === kind) || null
+}
+
+function clauseDefaults(entry) {
+  const params = {}
+  for (const field of entry?.fields || []) params[field.key] = ruleFieldDefault(field)
+  return { kind: entry?.kind, params, negate: false }
+}
+
+// Mirrors the backend's sentence grammar: {field}, {field?text}, select labels, quoted lists.
+function renderSentence(entry, params) {
+  if (!entry) return ''
+  const fields = Object.fromEntries((entry.fields || []).map(field => [field.key, field]))
+  return entry.sentence.replace(/\{([a-z_]+)(\?([^}]*))?\}/g, (_match, key, conditional, text) => {
+    const value = params?.[key]
+    if (conditional !== undefined) return value ? text : ''
+    const field = fields[key] || {}
+    if (field.kind === 'list') {
+      const items = ruleListItems(value)
+      return items.length ? items.map(item => `“${item}”`).join(', ') : '…'
+    }
+    if (field.kind === 'select') {
+      const option = (field.options || []).find(([option]) => option === value)
+      return option ? option[1] : String(value || '…')
+    }
+    if (field.kind === 'bool') return value ? 'yes' : 'no'
+    const textValue = String(value ?? '').trim()
+    if (key === 'tool' && textValue === '*') return 'any tool'
+    return textValue || '…'
+  }).replace(/\s{2,}/g, ' ').trim()
+}
+
+function clauseSentence(catalog, side, clause) {
+  const entry = catalogEntry(catalog, side, clause?.kind)
+  const text = entry ? renderSentence(entry, clause.params) : String(clause?.kind || '')
+  return clause?.negate ? `not (${text})` : text
+}
+
+function ruleSentence(rule, catalog) {
+  if (!catalog) return rule?.name || ''
+  const conditions = (rule?.when?.conditions || []).filter(clause => clause.kind !== 'has_reply')
+  const thenText = (rule?.then || []).map(clause => clauseSentence(catalog, 'then', clause)).join(' and ') || '…'
+  if (!conditions.length) return `Every reply must ${thenText}`
+  const joiner = rule?.when?.match === 'any' ? ' or ' : ' and '
+  return `When ${conditions.map(clause => clauseSentence(catalog, 'when', clause)).join(joiner)}, ${thenText}`
+}
+
+// Presets compile to WHEN/THEN exactly as the backend does (see _preset_compile).
+function compilePreset(preset, params, catalog) {
+  const exposed = preset.map || {}
+  const clause = spec => {
+    const entry = catalogEntry(catalog, 'when', spec.kind) || catalogEntry(catalog, 'then', spec.kind)
+    const values = {}
+    for (const field of entry?.fields || []) {
+      const key = field.key
+      if (spec[key] !== undefined && key !== 'kind' && key !== 'copy') values[key] = spec[key]
+      else if (Object.values(exposed).includes(key)) {
+        const source = Object.keys(exposed).find(src => exposed[src] === key) || key
+        if (params[source] !== undefined) values[key] = params[source]
+      }
+      if (values[key] === undefined && spec.copy && key === 'tool') values[key] = params[spec.copy]
+      if (values[key] === undefined) values[key] = ruleFieldDefault(field)
+    }
+    return { kind: spec.kind, params: values, negate: false }
+  }
+  return { when: { match: 'all', conditions: (preset.when || []).map(clause) }, then: (preset.then || []).map(clause) }
+}
+
+// Rules saved by the template stage carry `type` + `params` and no `then`.
+function migrateRule(rule, catalog) {
+  if (!rule || Array.isArray(rule.then) || !catalog) return rule
+  const preset = (catalog.presets || []).find(item => item.type === rule.type)
+  if (!preset) return rule
+  const compiled = compilePreset(preset, rule.params || {}, catalog)
+  return { ...rule, when: compiled.when, then: compiled.then, params: undefined }
+}
+
+function clauseIsComplete(catalog, side, clause) {
+  const entry = catalogEntry(catalog, side, clause?.kind)
+  if (!entry) return false
+  return entry.fields.every(field => {
+    if (!field.required) return true
+    const value = clause.params?.[field.key]
+    if (field.kind === 'list') return ruleListItems(value).length > 0
+    return String(value ?? '').trim().length > 0
+  })
+}
+
+function ruleIsComplete(rule, catalog) {
+  if (!catalog || !Array.isArray(rule?.then) || !rule.then.length) return false
+  return (rule.when?.conditions || []).every(clause => clauseIsComplete(catalog, 'when', clause))
+    && rule.then.every(clause => clauseIsComplete(catalog, 'then', clause))
+}
+
+function ruleSummary(rule, catalog) {
+  return ruleSentence(rule, catalog)
+}
+
+function enabledRulesParam(rules) {
+  const enabled = (rules || []).filter(rule => rule.enabled !== false)
+  return enabled.length ? JSON.stringify(enabled) : ''
+}
+
+const TOOL_NAMES_LIST_ID = 'session-lens-tool-names'
+const TOOL_FIELD_KEYS = new Set(['tool', 'before'])
+
+// The datalist behind every tool field: family globs first, then every known
+// tool, most used first, each labelled with its toolset and recorded calls.
+function ToolNamesDatalist({ directory }) {
+  const globs = directory?.globs || []
+  const tools = directory?.tools || []
+  return jsx('datalist', {
+    id: TOOL_NAMES_LIST_ID,
+    children: [
+      ...globs.map(item => jsx('option', { value: item.name, label: `${item.name} · ${item.members} tools` }, `glob-${item.name}`)),
+      ...tools.map(item => jsx('option', {
+        value: item.name,
+        label: `${item.name} · ${item.group}${item.recorded_calls ? ` · ${formatCount(item.recorded_calls)} calls` : ' · never recorded'}`
+      }, item.name))
+    ]
+  })
+}
+
+function toolNameKnown(directory, value) {
+  const text = String(value || '').trim()
+  if (!text || /[*?[]/.test(text) || !directory) return true
+  return (directory.tools || []).some(item => item.name === text)
+}
+
+function RuleField({ field, value, onChange, compact, directory }) {
+  const label = jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: field.label })
+  const isTool = TOOL_FIELD_KEYS.has(field.key) && (field.kind || 'text') === 'text'
+  const unknown = isTool && directory && !toolNameKnown(directory, value)
+  const hint = unknown
+    ? jsx('div', { style: { color: color.warning, fontSize: '0.625rem', marginTop: '0.2rem' }, title: 'Not in Duckwork’ tool registry and never recorded in this scope — fine for a tool you have not installed yet', children: 'not seen in Duckwork' })
+    : field.hint && !compact ? jsx('div', { style: { color: color.quaternary, fontSize: '0.625rem', marginTop: '0.2rem' }, children: field.hint }) : null
+  if (field.kind === 'bool') {
+    return jsxs('label', {
+      title: field.hint,
+      style: { alignItems: 'center', display: 'flex', gap: '0.45rem', fontSize: '0.6875rem' },
+      children: [
+        jsx('input', { type: 'checkbox', checked: Boolean(value), onChange: event => onChange(event.target.checked) }),
+        jsxs('span', { children: [field.label, hint] })
+      ]
+    })
+  }
+  if (field.kind === 'select') {
+    return jsx(NativeSelect, {
+      label: field.label,
+      value: value ?? '',
+      onChange,
+      children: (field.options || []).map(([option, text]) => jsx('option', { value: option, children: text }, option))
+    })
+  }
+  if (field.kind === 'list') {
+    return jsxs('label', {
+      title: field.hint,
+      style: { display: 'grid', gap: '0.25rem', minWidth: '12rem' },
+      children: [
+        label,
+        jsx(Textarea, { value: ruleListText(value), placeholder: field.placeholder, rows: 2, onChange: event => onChange(event.target.value), style: { fontFamily: 'inherit', fontSize: '0.75rem' } }),
+        hint
+      ]
+    })
+  }
+  return jsxs('label', {
+    title: field.hint,
+    style: { display: 'grid', gap: '0.25rem', minWidth: field.kind === 'number' ? '5rem' : '10rem' },
+    children: [
+      label,
+      jsx(Input, {
+        type: field.kind === 'number' ? 'number' : 'text',
+        value: value ?? '',
+        placeholder: field.placeholder,
+        min: field.kind === 'number' ? 0 : undefined,
+        list: isTool ? TOOL_NAMES_LIST_ID : undefined,
+        autoComplete: isTool ? 'off' : undefined,
+        title: isTool ? 'Pick a tool Duckwork knows, or type a glob such as browser_*' : undefined,
+        onChange: event => onChange(field.kind === 'number' ? Number(event.target.value) : event.target.value)
+      }),
+      hint
+    ]
+  })
+}
+
+function ClauseRow({ catalog, side, clause, onChange, onRemove, directory }) {
+  const list = side === 'when' ? catalog.conditions : catalog.expectations
+  const entry = catalogEntry(catalog, side, clause.kind)
+  return jsxs('div', {
+    style: { alignItems: 'flex-start', background: color.surface, border, borderRadius: '5px', display: 'flex', flexWrap: 'wrap', gap: '0.6rem', padding: '0.5rem 0.6rem' },
+    children: [
+      jsx(NativeSelect, {
+        label: side === 'when' ? 'If' : 'Must',
+        value: clause.kind,
+        onChange: kind => onChange(clauseDefaults(catalogEntry(catalog, side, kind))),
+        children: list.map(item => jsx('option', { value: item.kind, children: item.label }, item.kind))
+      }),
+      ...(entry?.fields || []).map(field => jsx(RuleField, {
+        field,
+        compact: true,
+        directory,
+        value: clause.params?.[field.key],
+        onChange: value => onChange({ ...clause, params: { ...clause.params, [field.key]: value } })
+      }, field.key)),
+      jsxs('label', {
+        title: side === 'when' ? 'Count the turn only when this condition does NOT hold' : 'The model must NOT do this',
+        style: { alignItems: 'center', color: color.tertiary, display: 'flex', fontSize: '0.6875rem', gap: '0.3rem', marginLeft: 'auto', paddingTop: '1.1rem' },
+        children: [jsx('input', { type: 'checkbox', checked: Boolean(clause.negate), onChange: event => onChange({ ...clause, negate: event.target.checked }) }), 'not']
+      }),
+      jsx(Button, { variant: 'outline', size: 'xs', onClick: onRemove, title: 'Remove this clause', style: { marginTop: '0.9rem' }, children: jsx(Codicon, { name: 'close' }) })
+    ]
+  })
+}
+
+function RuleEditor({ catalog, availableProfiles, initial, onSave, onCancel, directory }) {
+  const [draft, setDraft] = useState(() => {
+    const migrated = migrateRule(initial, catalog)
+    if (migrated && Array.isArray(migrated.then)) return { ...migrated, when: migrated.when || { match: 'all', conditions: [] } }
+    return { id: newRuleId(), name: '', type: 'custom', when: { match: 'all', conditions: [] }, then: [], profile: null, enabled: true }
+  })
+  const [presetType, setPresetType] = useState(initial?.type && initial.type !== 'custom' ? initial.type : '')
+  const complete = ruleIsComplete(draft, catalog)
+  const applyPreset = type => {
+    setPresetType(type)
+    const preset = (catalog.presets || []).find(item => item.type === type)
+    if (!preset) {
+      setDraft(current => ({ ...current, type: 'custom' }))
+      return
+    }
+    const compiled = compilePreset(preset, {}, catalog)
+    setDraft(current => ({ ...current, type, name: current.name || preset.label, when: compiled.when, then: compiled.then }))
+  }
+  const setConditions = conditions => setDraft(current => ({ ...current, when: { ...current.when, conditions } }))
+  const setThen = then => setDraft(current => ({ ...current, then }))
+  const conditions = draft.when?.conditions || []
+  const save = () => {
+    if (!complete) return
+    const normaliseClause = (side, clause) => {
+      const entry = catalogEntry(catalog, side, clause.kind)
+      const params = { ...clause.params }
+      for (const field of entry?.fields || []) if (field.kind === 'list') params[field.key] = ruleListItems(params[field.key])
+      return { kind: clause.kind, params, negate: Boolean(clause.negate) }
+    }
+    onSave({
+      id: draft.id,
+      name: draft.name.trim() || ruleSentence(draft, catalog).slice(0, 80),
+      type: draft.type || 'custom',
+      when: { match: draft.when?.match === 'any' ? 'any' : 'all', conditions: conditions.map(clause => normaliseClause('when', clause)) },
+      then: draft.then.map(clause => normaliseClause('then', clause)),
+      profile: draft.profile || null,
+      enabled: draft.enabled !== false
+    })
+  }
+  const sectionTitle = (text, hint) => jsxs('div', {
+    style: { alignItems: 'baseline', display: 'flex', gap: '0.5rem' },
+    children: [
+      jsx('span', { style: { color: color.primary, fontSize: '0.75rem', fontWeight: 650 }, children: text }),
+      hint ? jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: hint }) : null
+    ]
+  })
+  return jsxs('div', {
+    style: { background: color.surfaceRaised, border, borderRadius: '6px', display: 'grid', gap: '0.8rem', padding: '0.85rem 0.95rem' },
+    children: [
+      jsxs('div', {
+        style: { display: 'grid', gap: '0.7rem', gridTemplateColumns: 'repeat(auto-fit, minmax(14rem, 1fr))' },
+        children: [
+          jsx(NativeSelect, {
+            label: 'Preset',
+            value: presetType,
+            onChange: applyPreset,
+            children: [
+              jsx('option', { value: '', children: 'Blank rule' }, 'blank'),
+              ...(catalog.presets || []).map(item => jsx('option', { value: item.type, children: item.label }, item.type))
+            ]
+          }),
+          jsx(NativeSelect, {
+            label: 'Profile',
+            value: draft.profile || '',
+            onChange: value => setDraft(current => ({ ...current, profile: value || null })),
+            children: [
+              jsx('option', { value: '', children: 'Any profile in scope' }, 'any'),
+              ...availableProfiles.map(name => jsx('option', { value: name, children: name }, name))
+            ]
+          }),
+          jsxs('label', {
+            style: { display: 'grid', gap: '0.25rem' },
+            children: [
+              jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'Name' }),
+              jsx(Input, { value: draft.name, placeholder: 'Short name for the scoreboard', onChange: event => setDraft(current => ({ ...current, name: event.target.value })) })
+            ]
+          })
+        ]
+      }),
+      jsxs('div', {
+        style: { display: 'grid', gap: '0.45rem' },
+        children: [
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', gap: '0.6rem' },
+            children: [
+              sectionTitle('When', conditions.length ? null : 'no conditions — every reply counts'),
+              conditions.length > 1
+                ? jsx(NativeSelect, {
+                    label: 'Match',
+                    value: draft.when?.match === 'any' ? 'any' : 'all',
+                    onChange: match => setDraft(current => ({ ...current, when: { ...current.when, match } })),
+                    children: [jsx('option', { value: 'all', children: 'all conditions' }, 'all'), jsx('option', { value: 'any', children: 'any condition' }, 'any')]
+                  })
+                : null
+            ]
+          }),
+          ...conditions.map((clause, index) => jsx(ClauseRow, {
+            catalog,
+            side: 'when',
+            directory,
+            clause,
+            onChange: next => setConditions(conditions.map((item, position) => (position === index ? next : item))),
+            onRemove: () => setConditions(conditions.filter((_item, position) => position !== index))
+          }, `when-${index}`)),
+          jsx('div', {
+            children: jsx(Button, {
+              variant: 'outline', size: 'xs',
+              disabled: conditions.length >= (catalog.max_clauses || 12),
+              onClick: () => setConditions([...conditions, clauseDefaults(catalog.conditions[1] || catalog.conditions[0])]),
+              children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'add' }), 'Add condition'] })
+            })
+          })
+        ]
+      }),
+      jsxs('div', {
+        style: { display: 'grid', gap: '0.45rem' },
+        children: [
+          sectionTitle('Then the model must', draft.then.length ? null : 'add at least one expectation'),
+          ...draft.then.map((clause, index) => jsx(ClauseRow, {
+            catalog,
+            side: 'then',
+            directory,
+            clause,
+            onChange: next => setThen(draft.then.map((item, position) => (position === index ? next : item))),
+            onRemove: () => setThen(draft.then.filter((_item, position) => position !== index))
+          }, `then-${index}`)),
+          jsx('div', {
+            children: jsx(Button, {
+              variant: 'outline', size: 'xs',
+              disabled: draft.then.length >= (catalog.max_clauses || 12),
+              onClick: () => setThen([...draft.then, clauseDefaults(catalog.expectations[0])]),
+              children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'add' }), 'Add expectation'] })
+            })
+          })
+        ]
+      }),
+      jsxs('div', {
+        style: { alignItems: 'center', borderTop: border, display: 'flex', gap: '0.75rem', paddingTop: '0.7rem' },
+        children: [
+          jsx('div', { style: { color: complete ? color.secondary : color.quaternary, flex: 1, fontSize: '0.75rem', fontStyle: 'italic', minWidth: 0 }, children: ruleSentence(draft, catalog) }),
+          jsx(Button, { variant: 'outline', size: 'xs', onClick: onCancel, children: 'Cancel' }),
+          jsx(Button, { variant: 'secondary', size: 'xs', disabled: !complete, onClick: save, title: complete ? 'Save this rule' : 'Fill in the required fields and add at least one expectation', children: initial ? 'Save rule' : 'Add rule' })
+        ]
+      })
+    ]
+  })
+}
+
+function RuleModelsTable({ models, minSamples, onDrill }) {
+  return jsx(SimpleTable, {
+    columns: [
+      { key: 'model', label: 'Model' },
+      { key: 'applicable', label: 'Turns checked', align: 'right', render: row => formatCount(row.applicable) },
+      { key: 'passed', label: 'Passed', align: 'right', render: row => formatCount(row.passed) },
+      { key: 'failed', label: 'Failed', align: 'right', render: row => row.failed ? jsx(Pill, { tone: 'danger', children: formatCount(row.failed) }) : '0' },
+      { key: 'pass_rate', label: 'Pass rate', align: 'right', render: row => row.pass_rate == null ? '—' : `${(Number(row.pass_rate) * 100).toFixed(0)}%` },
+      {
+        key: 'failure_rate_upper_bound_95',
+        label: 'Risk ≤ (95%)',
+        align: 'right',
+        render: row => row.failure_rate_upper_bound_95 == null
+          ? '—'
+          : jsx('span', { style: tabular, title: 'Upper Wilson bound of the failure rate at 95% confidence — the ranking key', children: `${(Number(row.failure_rate_upper_bound_95) * 100).toFixed(1)}%` })
+      },
+      {
+        key: 'rank',
+        label: 'Rank',
+        align: 'right',
+        sortValue: row => row.rank ?? 999,
+        render: row => row.rank
+          ? jsx(Pill, { tone: row.rank === 1 ? 'accent' : 'neutral', children: `#${row.rank}` })
+          : jsx('span', { style: { color: color.quaternary }, title: `Fewer than ${minSamples} applicable turns — not ranked`, children: 'below floor' })
+      }
+    ],
+    rows: models || [],
+    emptyTitle: 'No applicable turns',
+    emptyDescription: 'No recorded turn in this period met the rule’s conditions.'
+  })
+}
+
+function RuleExamples({ models, onDrill }) {
+  const examples = []
+  for (const model of models || []) {
+    for (const example of model.examples || []) examples.push({ ...example, model: model.model })
+  }
+  if (!examples.length) return null
+  examples.sort((left, right) => Number(right.timestamp || 0) - Number(left.timestamp || 0))
+  return jsxs('div', {
+    style: { display: 'grid', gap: '0.3rem' },
+    children: [
+      jsx('div', { style: { color: color.tertiary, fontSize: '0.6875rem', fontWeight: 600 }, children: `Failing turns (${examples.length} shown)` }),
+      ...examples.slice(0, 12).map((example, index) => jsxs('div', {
+        style: { alignItems: 'center', border, borderRadius: '5px', display: 'flex', fontSize: '0.6875rem', gap: '0.6rem', padding: '0.35rem 0.55rem' },
+        children: [
+          jsx('span', { style: { ...tabular, color: color.quaternary, flexShrink: 0 }, children: formatShortDate(example.timestamp) }),
+          jsx('span', { style: { color: color.secondary, flexShrink: 0 }, children: example.model }),
+          jsx('span', { style: { color: color.primary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, title: example.title, children: `${example.title} · turn ${example.turn}` }),
+          jsx('span', { style: { color: color.danger, flexShrink: 0 }, children: example.reason }),
+          onDrill
+            ? jsx(Button, { variant: 'outline', size: 'xs', onClick: () => onDrill({ search: example.search, failuresOnly: false }), children: 'Open' })
+            : null
+        ]
+      }, `${example.session_id}-${example.turn}-${index}`))
+    ]
+  })
+}
+
+function RulesView({ ctx, period, onDrill, rules, onRulesChange, availableProfiles }) {
+  const [editing, setEditing] = useState(null)
+  const [minSamples, setMinSamples] = useState(() => {
+    const stored = Number(ctx.storage.get(RULES_MIN_SAMPLES_KEY))
+    return Number.isFinite(stored) && stored >= 1 ? stored : 5
+  })
+  useEffect(() => { ctx.storage.set(RULES_MIN_SAMPLES_KEY, minSamples) }, [ctx, minSamples])
+  const templatesQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'rules-templates', activeProfilesParam],
+    queryFn: () => pluginRest(ctx, apiPath('/rules/templates')),
+    staleTime: Infinity
+  })
+  const catalog = templatesQuery.data?.conditions ? templatesQuery.data : null
+  const toolNamesQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'tool-names', activeProfilesParam],
+    queryFn: () => pluginRest(ctx, apiPath('/tool-names')),
+    staleTime: 300_000
+  })
+  const directory = toolNamesQuery.data?.tools ? toolNamesQuery.data : null
+  useEffect(() => {
+    // Rules saved by the template stage migrate to WHEN/THEN once the catalog is known.
+    if (!catalog || !rules.some(rule => !Array.isArray(rule.then))) return
+    onRulesChange(rules.map(rule => migrateRule(rule, catalog)))
+  }, [catalog, rules, onRulesChange])
+  const rulesParam = enabledRulesParam(rules)
+  const evalQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'rules', activeProfilesParam, period.days, period.start_at, period.end_at, rulesParam, minSamples],
+    queryFn: () => pluginRest(ctx, apiPath('/rules', { ...period, rules: rulesParam, min_samples: minSamples })),
+    enabled: Boolean(rulesParam),
+    placeholderData: previous => previous,
+    refetchInterval: 120_000
+  })
+  const fileInput = useRef(null)
+  const importRules = async event => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const parsed = JSON.parse(await file.text())
+      const list = Array.isArray(parsed) ? parsed : parsed?.rules
+      if (!Array.isArray(list)) throw new Error('expected a JSON array of rules')
+      const known = new Set(rules.map(rule => rule.id))
+      const incoming = list
+        .filter(rule => rule && typeof rule === 'object' && typeof rule.type === 'string')
+        .map(rule => ({ ...rule, id: known.has(rule.id) ? newRuleId() : (rule.id || newRuleId()), enabled: rule.enabled !== false }))
+      onRulesChange([...rules, ...incoming])
+      notifyHost('success', `Imported ${incoming.length} rule${incoming.length === 1 ? '' : 's'}.`)
+    } catch (error) {
+      notifyHost('error', `Import failed: ${error?.message || error}`)
+    }
+  }
+  const saveRule = rule => {
+    const exists = rules.some(item => item.id === rule.id)
+    onRulesChange(exists ? rules.map(item => (item.id === rule.id ? rule : item)) : [...rules, rule])
+    setEditing(null)
+  }
+  const result = evalQuery.data
+  const exportItems = [
+    jsonExportItem('rules-json', 'Rules (JSON)', 'Your rule definitions — import them on another machine or profile', 'rules', null, { rules }),
+    {
+      id: 'rules-scores-csv',
+      label: 'Scoreboard (CSV)',
+      hint: 'One row per rule and model: turns checked, passed, failed, pass rate, risk bound, rank',
+      filename: exportFilename('rule-scores', period, 'csv'),
+      mime: 'text/csv;charset=utf-8',
+      build: () => toCsv(
+        [
+          { key: 'rule', label: 'Rule' },
+          { key: 'model', label: 'Model' },
+          { key: 'applicable', label: 'Turns checked' },
+          { key: 'passed', label: 'Passed' },
+          { key: 'failed', label: 'Failed' },
+          { key: 'pass_rate', label: 'Pass rate' },
+          { key: 'failure_rate_upper_bound_95', label: 'Risk bound (95%)' },
+          { key: 'rank', label: 'Rank' }
+        ],
+        (result?.rules || []).flatMap(rule => (rule.models || []).map(model => ({ rule: rule.name, ...model })))
+      )
+    }
+  ]
+  return jsx('div', {
+    style: { flex: 1, minHeight: 0, overflow: 'auto', padding: '1rem' },
+    children: jsxs('div', {
+      style: { display: 'grid', gap: '1.25rem', margin: '0 auto', maxWidth: '84rem' },
+      children: [
+        jsx(SectionHeading, {
+          title: 'Instruction rules',
+          description: 'Restate an instruction you give your agent (in SOUL.md, for example) as WHEN conditions and THEN expectations, and Session Lens grades every recorded turn in the selected period against it, per model. Start from a preset or build the rule clause by clause. Session Lens never reads SOUL.md and never interprets it: only the rules you enter here are checked. Verdicts come from code, not from a judge, so a check is offered only if it leaves a trace in the record.',
+          action: jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flexShrink: 0, gap: '0.5rem' },
+            children: [
+              jsx('input', { ref: fileInput, type: 'file', accept: 'application/json,.json', hidden: true, onChange: importRules }),
+              jsx(Button, { variant: 'outline', size: 'xs', onClick: () => fileInput.current?.click(), title: 'Import rules from a JSON file exported here', children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'cloud-upload' }), 'Import'] }) }),
+              jsx(ExportMenu, { title: 'Export your rules or the scoreboard', items: exportItems }),
+              jsx(Button, { variant: 'secondary', size: 'xs', disabled: !catalog || Boolean(editing), onClick: () => setEditing({ mode: 'new' }), children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'add' }), 'Add rule'] }) })
+            ]
+          })
+        }),
+        templatesQuery.isError
+          ? jsx(ErrorBlock, { error: templatesQuery.error, onRetry: templatesQuery.refetch, title: 'Rule catalog unavailable' })
+          : null,
+        jsx(ToolNamesDatalist, { directory }),
+        editing && catalog
+          ? jsx(RuleEditor, {
+              catalog,
+              directory,
+              availableProfiles,
+              initial: editing.mode === 'edit' ? editing.rule : null,
+              onSave: saveRule,
+              onCancel: () => setEditing(null)
+            })
+          : null,
+        rules.length
+          ? jsx('div', {
+              style: { border, borderRadius: '6px', display: 'grid' },
+              children: rules.map((rule, index) => jsxs('div', {
+                style: { alignItems: 'center', borderTop: index ? border : 'none', display: 'flex', gap: '0.6rem', opacity: rule.enabled === false ? 0.6 : 1, padding: '0.5rem 0.7rem' },
+                children: [
+                  jsx('button', {
+                    type: 'button',
+                    role: 'switch',
+                    'aria-checked': rule.enabled !== false,
+                    title: rule.enabled === false ? 'Enable this rule' : 'Disable this rule (kept, not graded)',
+                    onClick: () => onRulesChange(rules.map(item => (item.id === rule.id ? { ...item, enabled: item.enabled === false } : item))),
+                    style: { background: 'transparent', border: 'none', color: rule.enabled === false ? color.quaternary : color.accent, cursor: 'pointer', padding: 0 },
+                    children: jsx(Codicon, { name: rule.enabled === false ? 'circle-large-outline' : 'pass-filled', size: '0.95rem' })
+                  }),
+                  jsxs('div', {
+                    style: { flex: 1, minWidth: 0 },
+                    children: [
+                      jsxs('div', {
+                        style: { alignItems: 'center', display: 'flex', gap: '0.4rem' },
+                        children: [
+                          jsx('span', { style: { color: color.primary, fontSize: '0.75rem', fontWeight: 600 }, children: rule.name || rule.type }),
+                          rule.profile ? jsx(Pill, { tone: 'accent', title: 'Only turns from this profile are graded', children: rule.profile }) : null,
+                          catalog && !ruleIsComplete(rule, catalog) ? jsx(Pill, { tone: 'danger', children: 'incomplete' }) : null
+                        ]
+                      }),
+                      jsx('div', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: ruleSummary(rule, catalog) })
+                    ]
+                  }),
+                  jsx(Button, { variant: 'outline', size: 'xs', disabled: Boolean(editing), onClick: () => setEditing({ mode: 'edit', rule }), children: 'Edit' }),
+                  jsx(Button, { variant: 'outline', size: 'xs', onClick: () => onRulesChange(rules.filter(item => item.id !== rule.id)), title: 'Delete this rule', children: jsx(Codicon, { name: 'trash' }) })
+                ]
+              }, rule.id))
+            })
+          : jsx(EmptyState, {
+              title: 'No rules yet',
+              description: 'Session Lens can check whether models followed your instructions. Add a rule to start — pick a preset such as “Every reply must call a tool”, or build one: when the user says “important”, the model must call memory.'
+            }),
+        rulesParam
+          ? jsxs('section', {
+              style: { display: 'grid', gap: '1rem' },
+              children: [
+                jsx(SectionHeading, {
+                  title: 'Scoreboard',
+                  description: result
+                    ? `${formatCount(result.coverage?.sessions)} sessions · ${formatCount(result.coverage?.turns)} turns in the selected period${result.coverage?.sessions_truncated ? ' (newest 600 sessions only)' : ''} · grouped by the session’s model · ranked by the 95% Wilson upper failure bound.`
+                    : 'Grading the selected period…',
+                  action: jsxs('label', {
+                    style: { alignItems: 'center', color: color.tertiary, display: 'inline-flex', flexShrink: 0, fontSize: '0.6875rem', gap: '0.4rem' },
+                    title: 'Models with fewer applicable turns than this are shown but not ranked',
+                    children: [
+                      'Sample floor',
+                      jsx(Input, { type: 'number', min: 1, max: 200, value: minSamples, onChange: event => setMinSamples(Math.max(1, Math.min(200, Number(event.target.value) || 1))), style: { width: '4.5rem' } })
+                    ]
+                  })
+                }),
+                evalQuery.isError
+                  ? jsx(ErrorBlock, { error: evalQuery.error, onRetry: evalQuery.refetch, title: 'Rule grading unavailable' })
+                  : !result
+                    ? jsx(LoadingBlock, { rows: 4 })
+                    : jsxs(Fragment, {
+                        children: [
+                          jsxs('div', {
+                            children: [
+                              jsx('div', { style: { color: color.secondary, fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.4rem' }, children: 'All rules together' }),
+                              jsx(SimpleTable, {
+                                columns: [
+                                  { key: 'model', label: 'Model' },
+                                  { key: 'rules', label: 'Rules', align: 'right', render: row => formatCount(row.rules) },
+                                  { key: 'applicable', label: 'Turns checked', align: 'right', render: row => formatCount(row.applicable) },
+                                  { key: 'failed', label: 'Failed', align: 'right', render: row => row.failed ? jsx(Pill, { tone: 'danger', children: formatCount(row.failed) }) : '0' },
+                                  { key: 'pass_rate', label: 'Pass rate', align: 'right', render: row => row.pass_rate == null ? '—' : `${(Number(row.pass_rate) * 100).toFixed(0)}%` },
+                                  { key: 'failure_rate_upper_bound_95', label: 'Risk ≤ (95%)', align: 'right', render: row => row.failure_rate_upper_bound_95 == null ? '—' : jsx('span', { style: tabular, children: `${(Number(row.failure_rate_upper_bound_95) * 100).toFixed(1)}%` }) },
+                                  { key: 'rank', label: 'Rank', align: 'right', sortValue: row => row.rank ?? 999, render: row => row.rank ? jsx(Pill, { tone: row.rank === 1 ? 'accent' : 'neutral', children: `#${row.rank}` }) : jsx('span', { style: { color: color.quaternary }, children: 'below floor' }) }
+                                ],
+                                rows: result.overall || [],
+                                emptyTitle: 'No applicable turns',
+                                emptyDescription: 'No recorded turn in this period met any enabled rule’s conditions.'
+                              })
+                            ]
+                          }),
+                          ...(result.rules || []).map(rule => jsxs('div', {
+                            style: { display: 'grid', gap: '0.6rem' },
+                            children: [
+                              jsxs('div', {
+                                children: [
+                                  jsxs('div', {
+                                    style: { alignItems: 'center', display: 'flex', gap: '0.4rem' },
+                                    children: [
+                                      jsx('span', { style: { color: color.secondary, fontSize: '0.75rem', fontWeight: 600 }, children: rule.name }),
+                                      rule.profile ? jsx(Pill, { tone: 'accent', children: rule.profile }) : null,
+                                      jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: rule.pass_rate == null ? 'no applicable turns' : `${formatCount(rule.applicable - rule.failed)} of ${formatCount(rule.applicable)} turns passed` })
+                                    ]
+                                  }),
+                                  jsx('div', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: rule.sentence })
+                                ]
+                              }),
+                              jsx(RuleModelsTable, { models: rule.models, minSamples, onDrill }),
+                              jsx(RuleExamples, { models: rule.models, onDrill })
+                            ]
+                          }, rule.id)),
+                          jsxs('div', {
+                            style: { alignItems: 'flex-start', borderTop: border, color: color.tertiary, display: 'flex', fontSize: '0.6875rem', gap: '0.5rem', lineHeight: 1.5, paddingTop: '0.75rem' },
+                            children: [
+                              jsx(Codicon, { name: 'info', size: '0.75rem', style: { marginTop: '0.15rem' } }),
+                              jsx('span', { children: result.definition })
+                            ]
+                          })
+                        ]
+                      })
+              ]
+            })
+          : null
+      ]
+    })
+  })
+}
+
+function SessionLensPage({ ctx }) {
+  const viewport = useValue(host.state.viewport)
+  const queryClient = useQueryClient()
+  const [tab, setTab] = useState(() => ctx.storage.get('activeTab', 'sessions'))
+  const [rules, setRules] = useState(() => {
+    const stored = ctx.storage.get(RULES_STORAGE_KEY)
+    return Array.isArray(stored) ? stored.filter(rule => rule && typeof rule === 'object' && typeof rule.type === 'string') : []
+  })
+  useEffect(() => {
+    ctx.storage.set(RULES_STORAGE_KEY, rules)
+    activeRulesParam = enabledRulesParam(rules)
+  }, [ctx, rules])
+  const [drill, setDrill] = useState(null)
+  const [aiManualRefreshing, setAiManualRefreshing] = useState(false)
+  const [aiRefreshError, setAiRefreshError] = useState('')
+  const [daysText, setDaysText] = useState(() => {
+    const stored = String(ctx.storage.get('timeRange', ctx.storage.get('days', 30)))
+    return timeOptions.some(option => option.id === stored) ? stored : '30'
+  })
+  const [customStart, setCustomStart] = useState(() => normaliseDateInput(ctx.storage.get('customStart'), dateDaysAgo(29)))
+  const [customEnd, setCustomEnd] = useState(() => normaliseDateInput(ctx.storage.get('customEnd'), dateDaysAgo(0)))
+  const period = useMemo(() => periodParams(daysText, customStart, customEnd), [daysText, customStart, customEnd])
+  const overviewQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'overview', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/overview', period)),
+    refetchInterval: 60_000
+  })
+  const aiUsageQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'ai-usage', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/ai-usage', period)),
+    enabled: tab === 'ai-usage' || tab === 'ai-models',
+    refetchInterval: tab === 'ai-usage' || tab === 'ai-models' ? 300_000 : false
+  })
+  const servicesQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'services'],
+    queryFn: () => pluginRest(ctx, '/services'),
+    enabled: tab === 'ai-usage',
+    refetchInterval: tab === 'ai-usage' ? 300_000 : false
+  })
+  const aiModelsQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'ai-models', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/ai-models', period)),
+    enabled: tab === 'ai-models',
+    refetchInterval: tab === 'ai-models' ? 300_000 : false
+  })
+  // Client-side burn history: each FRESH /ai-usage reading appends one point
+  // per quota window, persisted in ctx.storage. Cached responses repeat the
+  // same reading, so they are never recorded — duplicates would flatten the
+  // burn slope the sparkline and forecast are computed from.
+  const [balanceLedger, setBalanceLedger] = useState(() => {
+    const stored = ctx.storage.get('balanceLedger')
+    return stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {}
+  })
+  const recordBalances = payload => {
+    if (!payload || payload.cached) return
+    setBalanceLedger(current => {
+      let next = current
+      for (const card of payload.providers || payload.cards || []) {
+        if (card.status !== 'ok' || card.account_extra) continue
+        const t = Math.round(Number(card.fetched_at) * 1000) || Math.round(Number(payload.generated_at) * 1000) || Date.now()
+        for (const window of card.windows || []) {
+          if (window.kind !== 'balance' || !window.unit) continue
+          next = recordBalanceReading(next, card.provider, window.unit, Number(window.remaining), t)
+        }
+      }
+      return next
+    })
+  }
+  useEffect(() => { recordBalances(aiUsageQuery.data) }, [aiUsageQuery.data])
+  useEffect(() => { recordBalances(servicesQuery.data) }, [servicesQuery.data])
+  useEffect(() => {
+    ctx.storage.set('balanceLedger', balanceLedger)
+  }, [ctx, balanceLedger])
+  const balancesParam = balancesParamFrom(balanceLedger)
+  activeBalancesParam = balancesParam
+  const balancesInitRef = useRef(false)
+  useEffect(() => {
+    if (!balancesInitRef.current) {
+      balancesInitRef.current = true
+      return
+    }
+    queryClient.invalidateQueries({ queryKey: [PLUGIN_ID, 'budgets'] })
+  }, [balancesParam])
+  const [usageHistory, setUsageHistory] = useState(() => {
+    const stored = ctx.storage.get('usageHistory')
+    return stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {}
+  })
+  useEffect(() => {
+    const data = aiUsageQuery.data
+    if (!data || data.cached) return
+    setUsageHistory(current => {
+      const next = { ...current }
+      let changed = false
+      for (const provider of data.providers || []) {
+        if (provider.status !== 'ok') continue
+        // Per-provider fetch time: a single-card refresh re-serves the other
+        // cards' old readings, and re-stamping those would flatten their slopes.
+        const t = Math.round(Number(provider.fetched_at) * 1000)
+          || Math.round(Number(data.generated_at) * 1000)
+          || Date.now()
+        for (const window of provider.windows || []) {
+          const pct = Number(window.percentage_used)
+          if (!Number.isFinite(pct)) continue
+          const key = `${provider.provider}:${window.id}`
+          let series = Array.isArray(next[key]) ? next[key] : []
+          const last = series[series.length - 1]
+          if (last && t - last[0] < 60_000) continue
+          if (last && pct < last[1] - 1) series = []
+          next[key] = [...series.filter(point => t - point[0] < 48 * 3_600_000), [t, pct]].slice(-288)
+          changed = true
+        }
+      }
+      if (!changed) return current
+      const keys = Object.keys(next)
+      if (keys.length > 40) {
+        for (const key of keys
+          .sort((a, b) => (next[a][next[a].length - 1]?.[0] || 0) - (next[b][next[b].length - 1]?.[0] || 0))
+          .slice(0, keys.length - 40)) delete next[key]
+      }
+      return next
+    })
+  }, [aiUsageQuery.data])
+  useEffect(() => {
+    ctx.storage.set('usageHistory', usageHistory)
+  }, [ctx, usageHistory])
+
+  useEffect(() => {
+    ctx.storage.set('activeTab', tab)
+  }, [ctx, tab])
+  useEffect(() => {
+    ctx.storage.set('timeRange', daysText)
+    if (daysText !== 'custom') ctx.storage.set('days', Number(daysText) || 0)
+  }, [ctx, daysText])
+  useEffect(() => {
+    ctx.storage.set('customStart', customStart)
+  }, [ctx, customStart])
+  useEffect(() => {
+    ctx.storage.set('customEnd', customEnd)
+  }, [ctx, customEnd])
+
+  const pluginFetching = usePluginFetching(queryClient)
+  const refresh = async () => {
+    if (tab !== 'ai-usage' && tab !== 'ai-models') {
+      queryClient.invalidateQueries({ queryKey: [PLUGIN_ID] })
+      return
+    }
+    setAiManualRefreshing(true)
+    setAiRefreshError('')
+    const refreshErrors = []
+    if (tab === 'ai-models') {
+      try {
+        const data = await pluginRest(ctx, apiPath('/ai-models', { ...period, fresh: true }))
+        queryClient.setQueryData(
+          [PLUGIN_ID, 'ai-models', period.days, period.start_at, period.end_at],
+          data
+        )
+      } catch (error) {
+        refreshErrors.push(`Model analytics: ${error?.message || String(error || 'refresh failed')}`)
+      }
+    }
+    try {
+      const data = await pluginRest(ctx, apiPath('/ai-usage', { ...period, fresh: true }))
+      queryClient.setQueryData([PLUGIN_ID, 'ai-usage', activeProfilesParam, period.days, period.start_at, period.end_at], data)
+    } catch (error) {
+      refreshErrors.push(`OAuth quotas: ${error?.message || String(error || 'the backend did not return data')}`)
+    }
+    if (tab === 'ai-usage') {
+      try {
+        const data = await pluginRest(ctx, '/services?fresh=true')
+        queryClient.setQueryData([PLUGIN_ID, 'services'], data)
+        queryClient.invalidateQueries({ queryKey: [PLUGIN_ID, 'budgets'] })
+      } catch (error) {
+        refreshErrors.push(`Services: ${error?.message || String(error || 'refresh failed')}`)
+      }
+    }
+    if (refreshErrors.length) setAiRefreshError(refreshErrors.join(' · '))
+    setAiManualRefreshing(false)
+  }
+  const updateCustomStart = value => {
+    if (!value) return
+    setCustomStart(value)
+    if (value > customEnd) setCustomEnd(value)
+  }
+  const updateCustomEnd = value => {
+    if (!value) return
+    setCustomEnd(value)
+    if (value < customStart) setCustomStart(value)
+  }
+  const healthQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'health'],
+    queryFn: () => pluginRest(ctx, '/health'),
+    refetchInterval: 120_000
+  })
+  const servingProfile = healthQuery.data?.profile_name
+  const [profileScope, setProfileScope] = useState(() => {
+    const stored = ctx.storage.get('profileScope')
+    if (stored === 'all') return 'all'
+    if (Array.isArray(stored)) {
+      const names = stored.filter(item => typeof item === 'string' && item).slice(0, 20)
+      return names.length ? names : null
+    }
+    return null
+  })
+  const profilesParam = profileScope === 'all'
+    ? 'all'
+    : Array.isArray(profileScope) && profileScope.length ? profileScope.join(',') : ''
+  // Assigned during render so every queryFn issued this pass already carries
+  // the scope. Every scoped query also keys on it, so each scope keeps its
+  // own cache: switching back shows that scope's data at once, and a scope
+  // never flashes another scope's numbers while its own are fetched.
+  activeProfilesParam = profilesParam
+  const profileListQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'profile-names'],
+    queryFn: () => pluginRest(ctx, apiPath('/profiles', { days: 30 })),
+    staleTime: 300_000
+  })
+  const availableProfiles = (profileListQuery.data?.profiles || [])
+    .map(item => item?.name)
+    .filter(Boolean)
+  const scopeInitRef = useRef(false)
+  useEffect(() => {
+    ctx.storage.set('profileScope', profileScope)
+    if (!scopeInitRef.current) {
+      scopeInitRef.current = true
+      return
+    }
+    queryClient.invalidateQueries({ queryKey: [PLUGIN_ID] })
+  }, [profilesParam])
+  // Same query key as SessionsView's attention banner, so the two share one
+  // request; this page-level copy keeps quota notes visible on every tab.
+  const pageAttentionQuery = useQuery({
+    queryKey: [PLUGIN_ID, 'attention', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/attention', period)),
+    refetchInterval: 120_000
+  })
+  const [quotaDismissed, setQuotaDismissed] = useState(() => {
+    const stored = ctx.storage.get('quotaAlertsDismissed')
+    return Array.isArray(stored) ? stored.filter(item => typeof item === 'string').slice(0, 40) : []
+  })
+  useEffect(() => {
+    ctx.storage.set('quotaAlertsDismissed', quotaDismissed)
+  }, [ctx, quotaDismissed])
+  // Monthly caps are the user's own numbers: they live in plugin storage on
+  // this desktop and travel to the backend as a query parameter, so the
+  // Python side stays write-free.
+  const [budgets, setBudgets] = useState(() => {
+    const stored = ctx.storage.get('budgets')
+    const clean = {}
+    if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
+      for (const [key, value] of Object.entries(stored)) {
+        if (/^[a-z0-9_.-]{1,40}$/.test(key) && Number.isFinite(Number(value)) && Number(value) > 0) clean[key] = Number(value)
+      }
+    }
+    return clean
+  })
+  const budgetsParam = Object.entries(budgets)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}:${value}`)
+    .join(',')
+  activeBudgetsParam = budgetsParam
+  const budgetsInitRef = useRef(false)
+  useEffect(() => {
+    ctx.storage.set('budgets', budgets)
+    if (!budgetsInitRef.current) {
+      budgetsInitRef.current = true
+      return
+    }
+    queryClient.invalidateQueries({ queryKey: [PLUGIN_ID, 'attention', activeProfilesParam] })
+    queryClient.invalidateQueries({ queryKey: [PLUGIN_ID, 'budgets'] })
+  }, [budgetsParam])
+  const updateBudget = (id, cap) => {
+    setBudgets(current => {
+      const next = { ...current }
+      if (cap == null) delete next[id]
+      else next[id] = cap
+      return next
+    })
+  }
+  const drillToSessions = filters => {
+    setDrill({ ...filters, key: Date.now() })
+    setTab('sessions')
+  }
+  const openSessionById = id => drillToSessions({ search: String(id || '') })
+  // Runaway watch: the alert rates are the user's own numbers, kept on this
+  // desktop and sent with /attention and /watch like the budget caps.
+  const [watchRates, setWatchRates] = useState(() => {
+    const stored = ctx.storage.get('watchRates')
+    const clean = { cash: WATCH_DEFAULT_RATES.cash, list: WATCH_DEFAULT_RATES.list }
+    if (stored && typeof stored === 'object') {
+      for (const key of ['cash', 'list']) {
+        const value = Number(stored[key])
+        if (Number.isFinite(value) && value > 0) clean[key] = value
+      }
+    }
+    return clean
+  })
+  const watchParam = `cash:${watchRates.cash},list:${watchRates.list}`
+  activeWatchParam = watchParam
+  const watchInitRef = useRef(false)
+  useEffect(() => {
+    ctx.storage.set('watchRates', watchRates)
+    if (!watchInitRef.current) {
+      watchInitRef.current = true
+      return
+    }
+    queryClient.invalidateQueries({ queryKey: [PLUGIN_ID, 'attention', activeProfilesParam] })
+    queryClient.invalidateQueries({ queryKey: [PLUGIN_ID, 'watch'] })
+  }, [watchParam])
+  const [watchNotify, setWatchNotify] = useState(() => ctx.storage.get('watchNotify', true) !== false)
+  useEffect(() => {
+    ctx.storage.set('watchNotify', watchNotify)
+  }, [ctx, watchNotify])
+  // One desktop notification per session per day, the first time it crosses
+  // an alert rate. Duckwork shows plugin notifications only while the user is
+  // away from the app, and the in-app strip carries the same note.
+  const runawayNotes = pageAttentionQuery.data?.runaway || []
+  const runawayKey = runawayNotes.map(note => note.id).join('|')
+  useEffect(() => {
+    if (!runawayNotes.length || !watchNotify) return
+    const notified = new Set(ctx.storage.get('watchNotified', []) || [])
+    let changed = false
+    for (const note of runawayNotes) {
+      if (notified.has(note.id)) continue
+      notified.add(note.id)
+      changed = true
+      try {
+        ctx.os?.notify?.({
+          title: 'A Duckwork session is burning fast',
+          body: `${note.provider_label}: ${note.reason}`,
+          onActivate: () => openSessionById(note.session_id)
+        })
+      } catch {
+        // Notifications are best effort; the strip still shows the note.
+      }
+    }
+    if (changed) ctx.storage.set('watchNotified', [...notified].slice(-60))
+  }, [runawayKey, watchNotify])
+  let content = jsx(SessionsView, { ctx, period, narrow: Boolean(viewport?.narrow), drill })
+  if (tab === 'overview') {
+    content = jsx(OverviewView, {
+      query: overviewQuery,
+      ctx,
+      period,
+      watch: { rates: watchRates, onRatesChange: setWatchRates, notify: watchNotify, onNotifyChange: setWatchNotify, onOpenSession: openSessionById }
+    })
+  }
+  if (tab === 'operations') content = jsx(OperationsView, { ctx, period, onDrill: drillToSessions })
+  if (tab === 'tools') content = jsx(ToolsView, { ctx, period, onOpenSession: openSessionById })
+  if (tab === 'rules') content = jsx(RulesView, { ctx, period, onDrill: drillToSessions, rules, onRulesChange: setRules, availableProfiles })
+  if (tab === 'system') content = jsx(SystemView, { ctx })
+  if (tab === 'fleet') {
+    content = jsx(FleetView, {
+      ctx,
+      onOpenProfile: name => {
+        setProfileScope([name])
+        setTab('sessions')
+      }
+    })
+  }
+  const refreshProvider = async provider => {
+    try {
+      const data = await pluginRest(ctx, apiPath('/ai-usage', { ...period, fresh: true, provider }))
+      queryClient.setQueryData([PLUGIN_ID, 'ai-usage', activeProfilesParam, period.days, period.start_at, period.end_at], data)
+    } catch (error) {
+      setAiRefreshError(`${provider}: ${error?.message || String(error || 'refresh failed')}`)
+    }
+  }
+  const refreshService = async service => {
+    try {
+      const data = await pluginRest(ctx, `/services?fresh=true&service=${encodeURIComponent(service)}`)
+      queryClient.setQueryData([PLUGIN_ID, 'services'], data)
+      queryClient.invalidateQueries({ queryKey: [PLUGIN_ID, 'budgets'] })
+    } catch (error) {
+      setAiRefreshError(`${service}: ${error?.message || String(error || 'refresh failed')}`)
+    }
+  }
+  if (tab === 'ai-usage') content = jsx(AIUsageView, {
+    period,
+    ctx,
+    budgets,
+    onBudgetsChange: updateBudget,
+    query: aiUsageQuery,
+    servicesQuery,
+    narrow: Boolean(viewport?.narrow),
+    refreshError: aiRefreshError,
+    history: usageHistory,
+    ledger: balanceLedger,
+    onRefreshProvider: refreshProvider,
+    onRefreshService: refreshService,
+    onDrill: drillToSessions
+  })
+  if (tab === 'ai-models') content = jsx(AIModelsView, {
+    ctx,
+    period,
+    onDrill: drillToSessions,
+    query: aiModelsQuery,
+    quotaQuery: aiUsageQuery,
+    narrow: Boolean(viewport?.narrow),
+    refreshError: aiRefreshError
+  })
+
+  return jsxs('div', {
+    style: { color: color.primary, display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, minWidth: 0 },
+    children: [
+      jsxs('header', {
+        style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.75rem 1rem', justifyContent: 'space-between', padding: '0.75rem 1rem' },
+        children: [
+          jsxs('div', {
+            style: { minWidth: 0 },
+            children: [
+              jsx('h1', {
+                style: { fontSize: '1.0625rem', fontWeight: 680, letterSpacing: '-0.015em', lineHeight: 1.3, margin: 0 },
+                children: 'Session Lens'
+              }),
+              jsx('p', {
+                style: { color: color.tertiary, fontSize: '0.6875rem', lineHeight: 1.4, margin: '0.12rem 0 0' },
+                children: 'Session evidence, account usage, runtime health, and work orchestration—grounded in Duckwork records.'
+              })
+            ]
+          }),
+          jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flex: '1 1 auto', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-end' },
+            children: [
+              jsx(ProfileScopePicker, {
+                serving: servingProfile,
+                available: availableProfiles,
+                scope: profileScope,
+                onChange: setProfileScope
+              }),
+              tab === 'ai-usage'
+                ? jsx(Pill, {
+                    tone: 'accent',
+                    title: 'Account readings are live from each provider; the period below governs only the local "recorded locally" figures.',
+                    children: jsxs(Fragment, { children: [jsx(Codicon, { name: 'pulse', size: '0.65rem' }), 'Live account quotas'] })
+                  })
+                : null,
+              jsx(SegmentedControl, { options: timeOptions, value: daysText, onChange: setDaysText }),
+              daysText === 'custom'
+                ? jsxs('div', {
+                    'aria-label': 'Custom date range',
+                    style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: '0.45rem' },
+                    children: [
+                      jsx(DateField, { label: 'Start', value: customStart, onChange: updateCustomStart }),
+                      jsx(DateField, { label: 'End', value: customEnd, onChange: updateCustomEnd })
+                    ]
+                  })
+                : null,
+              jsx(Button, {
+                variant: 'outline',
+                size: 'icon-xs',
+                onClick: refresh,
+                'aria-label': 'Refresh Session Lens',
+                title: 'Refresh Session Lens',
+                disabled: aiManualRefreshing,
+                children: aiManualRefreshing || pluginFetching
+                  ? jsx(SpinIcon, {})
+                  : jsx(Codicon, { name: 'refresh' })
+              })
+            ]
+          })
+        ]
+      }),
+      tab === 'ai-usage'
+        ? jsx(AIUsageStatStrip, { data: aiUsageQuery.data })
+        : tab === 'ai-models'
+          ? jsx(AIModelsStatStrip, { data: aiModelsQuery.data })
+          : jsx(StatStrip, { overview: overviewQuery.data }),
+      jsx('nav', {
+        'aria-label': 'Session Lens views',
+        style: { borderBottom: border, display: 'flex', overflowX: 'auto', padding: '0 0.65rem' },
+        children: pageTabs.map(item =>
+          jsx('button', {
+            type: 'button',
+            onClick: () => setTab(item.id),
+            'aria-current': tab === item.id ? 'page' : undefined,
+            style: {
+              alignItems: 'center',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: tab === item.id ? `2px solid ${color.accent}` : '2px solid transparent',
+              color: tab === item.id ? color.primary : color.tertiary,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              fontSize: '0.75rem',
+              fontWeight: tab === item.id ? 650 : 500,
+              gap: '0.35rem',
+              padding: '0.62rem 0.7rem',
+              whiteSpace: 'nowrap'
+            },
+            children: jsxs(Fragment, { children: [jsx(Codicon, { name: item.codicon, size: '0.75rem' }), item.label] })
+          }, item.id)
+        )
+      }),
+      tab !== 'ai-usage'
+        ? jsx(QuotaAlertStrip, {
+            notes: [...(pageAttentionQuery.data?.runaway || []), ...(pageAttentionQuery.data?.quotas || []), ...(pageAttentionQuery.data?.budgets || [])],
+            dismissedIds: quotaDismissed,
+            onDismiss: id => setQuotaDismissed(current => [...new Set([...current, id])].slice(-40)),
+            onOpen: note => (note?.kind === 'runaway' ? openSessionById(note.session_id) : setTab('ai-usage'))
+          })
+        : null,
+      jsx('div', { style: { display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }, children: content })
+    ]
+  })
+}
+
+// ============================================================================
+// AI MODELS
+// ============================================================================
+
+function formatModelCost(model) {
+  if (model.cost_kind === 'subscription') return 'sub.'
+  if (model.cost_kind === 'mixed') return model.cost_usd > 0 ? `${formatCost(model.cost_usd, 'actual')} + sub.` : 'sub.'
+  if (model.cost_kind === 'free') return '$0.00'
+  if (model.cost_kind === 'actual' || model.cost_kind === 'estimated') return formatCost(model.cost_usd, model.cost_kind)
+  if (Number(model.sessions) === 0 && (model.routes || []).some(route => route.subscription)) return 'sub.'
+  return '—'
+}
+
+function distinctValues(values) {
+  return [...new Set((values || []).filter(value => value !== null && value !== undefined && String(value).trim() !== ''))]
+}
+
+function quotaWindowDurationSeconds(label) {
+  const text = String(label || '').toLowerCase()
+  if (text.includes('week')) return 7 * 86400
+  if (text.includes('month')) return 30 * 86400
+  if (text.includes('day')) return 86400
+  const hourMatch = text.match(/(\d+(?:\.\d+)?)\s*[- ]?hour|\((\d+(?:\.\d+)?)h\)/)
+  if (hourMatch) return Number(hourMatch[1] || hourMatch[2]) * 3600
+  if (text.includes('session')) return 5 * 3600
+  return null
+}
+
+function modelQuota(model, quotaData, allModels) {
+  const routes = model.routes || []
+  const oauthInventoryRoutes = routes.filter(route => route.oauth && route.subscription)
+  if (!oauthInventoryRoutes.length) return { kind: 'pay_go' }
+  const periodRoutes = routes.filter(route => Number(route.requests) > 0)
+  if (!periodRoutes.length) {
+    return { kind: 'subscription', available: false, inactive: true, route: oauthInventoryRoutes[0] }
+  }
+  const oauthRoutes = periodRoutes.filter(route => route.oauth && route.subscription)
+  if (!oauthRoutes.length) return { kind: 'pay_go' }
+  const route = oauthRoutes[0]
+  const provider = (quotaData?.providers || []).find(item => item.provider === route.quota_provider)
+  const windows = (provider?.windows || []).filter(window =>
+    window.kind === 'quota' && window.percentage_used !== null && window.percentage_used !== undefined
+  )
+  const window = windows.find(item => /week/i.test(item.label)) || windows[0]
+  if (!window || !['ok', 'stale'].includes(provider?.status)) {
+    return { kind: 'subscription', available: false, provider, route }
+  }
+  const burn = Math.max(0, Math.min(100, Number(window.percentage_used) || 0))
+  const duration = quotaWindowDurationSeconds(window.label)
+  const reset = timestampDate(window.reset_at)
+  let elapsed = null
+  if (duration && reset) {
+    const startedAt = reset.getTime() - duration * 1000
+    elapsed = Math.max(0, Math.min(100, ((Date.now() - startedAt) / (duration * 1000)) * 100))
+  }
+  const earlyPeriod = elapsed !== null && elapsed < 10
+  let tone = 'neutral'
+  if (elapsed !== null && !earlyPeriod) tone = burn <= elapsed ? 'success' : burn - elapsed <= 10 ? 'warning' : 'danger'
+  const providerRequests = (allModels || []).reduce((sum, candidate) =>
+    sum + (candidate.routes || [])
+      .filter(item => item.quota_provider === route.quota_provider && item.oauth && item.subscription)
+      .reduce((routeSum, item) => routeSum + (Number(item.requests) || 0), 0), 0)
+  const modelRequests = oauthRoutes
+    .filter(item => item.quota_provider === route.quota_provider)
+    .reduce((sum, item) => sum + (Number(item.requests) || 0), 0)
+  const completedTasks = Number(model.work_reliability?.completed_tasks) || 0
+  const capPerCompletedTask = providerRequests > 0 && completedTasks >= 10
+    ? burn * (modelRequests / providerRequests) / completedTasks
+    : null
+  return {
+    kind: 'subscription',
+    available: true,
+    burn,
+    elapsed,
+    earlyPeriod,
+    tone,
+    window,
+    provider,
+    route,
+    capPerCompletedTask,
+    exhaustAt: window.forecast?.exhaust_at || null
+  }
+}
+
+function formatLogWindow(coverage) {
+  if (!coverage?.log_start_at) return null
+  return `${formatShortDate(coverage.log_start_at)} – ${formatShortDate(coverage.log_end_at)}`
+}
+
+function RateValue({ value, numerator, label, sampleCount = 0, sampleThreshold = 20, sampleNoun = 'samples', unavailableReason }) {
+  if (unavailableReason) {
+    return jsx('span', {
+      title: unavailableReason,
+      style: { ...tabular, color: color.tertiary, fontWeight: 400 },
+      children: '–'
+    })
+  }
+  const samples = Math.max(0, Number(sampleCount) || 0)
+  const available = value !== null && value !== undefined && samples > 0
+  if (!available) {
+    return jsx('span', {
+      title: `${label} is unavailable; ${formatCount(samples)} ${sampleNoun}`,
+      style: { ...tabular, color: color.tertiary, fontWeight: 400 },
+      children: '–'
+    })
+  }
+  const lowSample = samples < sampleThreshold
+  if (lowSample) {
+    const count = numerator === null || numerator === undefined
+      ? Math.round(Number(value) * samples)
+      : Math.max(0, Number(numerator) || 0)
+    return jsxs('span', {
+      title: `${label}: ${formatCount(count)} of ${formatCount(samples)} ${sampleNoun}; below the ${formatCount(sampleThreshold)}-sample floor, so no percentage is shown`,
+      style: { display: 'grid', gap: '0.08rem', justifyItems: 'end' },
+      children: [
+        jsx('span', { style: { ...tabular, color: color.tertiary, fontWeight: 500 }, children: `${formatCount(count)}/${formatCount(samples)}` }),
+        jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: sampleNoun })
+      ]
+    })
+  }
+  const shownCount = numerator === null || numerator === undefined
+    ? Math.round(Number(value) * samples)
+    : Math.max(0, Number(numerator) || 0)
+  return jsxs('span', {
+    title: `${label}: ${formatCount(shownCount)} of ${formatCount(samples)} ${sampleNoun} (${(Number(value) * 100).toFixed(1)}%)`,
+    style: { display: 'grid', gap: '0.08rem', justifyItems: 'end' },
+    children: [
+      jsx('span', { style: { ...tabular, color: toneColor(metricTone(value)), fontWeight: 650 }, children: `${(Number(value) * 100).toFixed(1)}%` }),
+      jsx('span', { style: { ...tabular, color: color.quaternary, fontSize: '0.625rem', whiteSpace: 'nowrap' }, children: `${formatCount(shownCount)} of ${formatCount(samples)} ${sampleNoun}` })
+    ]
+  })
+}
+
+function periodScopeLabel(period) {
+  if (!period) return null
+  if (period.start_at) return 'custom range'
+  const days = Number(period.days) || 0
+  return days > 0 ? `${days}d` : 'all time'
+}
+
+function quotaWindowName(label) {
+  const text = String(label || '')
+  if (/week/i.test(text)) return 'weekly cap'
+  if (/month/i.test(text)) return 'monthly cap'
+  if (/day/i.test(text)) return 'daily cap'
+  return text || 'cap'
+}
+
+function QuotaBurn({ quota }) {
+  if (quota.kind === 'pay_go') {
+    return jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'pay-go' })
+  }
+  if (!quota.available) {
+    return jsx('span', {
+      title: quota.inactive
+        ? 'This OAuth subscription model has no recorded use in the selected period.'
+        : 'This is an OAuth subscription route, but no account quota window is available.',
+      style: { color: color.tertiary, fontSize: '0.6875rem' },
+      children: quota.inactive ? 'sub. · no use' : 'sub. · —'
+    })
+  }
+  const paceLabel = quota.earlyPeriod ? 'early in period' : quota.tone === 'success' ? 'on pace' : quota.tone === 'warning' ? 'watch' : quota.tone === 'danger' ? 'over pace' : ''
+  const windowName = quotaWindowName(quota.window.label)
+  const label = quota.elapsed === null
+    ? `${Math.round(quota.burn)}% of ${windowName} used`
+    : `${Math.round(quota.burn)}% of ${windowName} · ${Math.round(quota.elapsed)}% elapsed${paceLabel ? ` · ${paceLabel}` : ''}`
+  const forecast = quota.exhaustAt ? `at this pace, empty ~${formatShortDate(quota.exhaustAt)}` : null
+  return jsxs('div', {
+    title: `${quota.window.label}: ${label}.${forecast ? ` At the current burn rate this window runs out around ${formatDate(quota.exhaustAt)}, before it resets.` : ''} The tick marks billing-period elapsed time; this quota is shared at provider-account level.`,
+    style: { display: 'grid', gap: '0.28rem', minWidth: '8.5rem' },
+    children: [
+      jsx('span', { style: { ...tabular, color: toneColor(quota.tone), fontSize: '0.6875rem', fontWeight: 650 }, children: label }),
+      forecast
+        ? jsx('span', { style: { ...tabular, color: toneColor(quota.tone), fontSize: '0.625rem' }, children: forecast })
+        : null,
+      jsxs('div', {
+        role: 'progressbar',
+        'aria-label': `${quota.window.label} quota burn`,
+        'aria-valuemin': 0,
+        'aria-valuemax': 100,
+        'aria-valuenow': Math.round(quota.burn),
+        style: { background: color.surfaceRaised, borderRadius: '999px', height: '0.36rem', overflow: 'hidden', position: 'relative' },
+        children: [
+          jsx('div', {
+            style: {
+              background: toneColor(quota.tone),
+              borderRadius: '999px',
+              height: '100%',
+              width: `${quota.burn}%`
+            }
+          }),
+          quota.elapsed !== null
+            ? jsx('span', {
+                'aria-hidden': true,
+                style: {
+                  background: color.primary,
+                  height: '100%',
+                  left: `calc(${quota.elapsed}% - 0.5px)`,
+                  opacity: 0.8,
+                  position: 'absolute',
+                  top: 0,
+                  width: '1px'
+                }
+              })
+            : null
+        ]
+      })
+    ]
+  })
+}
+
+function TrendBars({ rows }) {
+  const values = (rows || []).map(row => Number(row.requests) || 0)
+  const max = Math.max(...values, 1)
+  const description = (rows || []).map(row => `${row.day}: ${formatCount(row.requests)}`).join(', ')
+  return jsx('div', {
+    role: 'img',
+    'aria-label': `Requests per day over the last seven days. ${description || 'No requests recorded.'}`,
+    title: description ? `Requests per day, last 7 days — ${description}` : 'No requests recorded in the last seven days.',
+    style: { alignItems: 'end', display: 'flex', gap: '0.16rem', height: '1.45rem', justifyContent: 'flex-end', minWidth: '3.5rem' },
+    children: (rows || []).map(row => {
+      const value = Number(row.requests) || 0
+      const height = value ? Math.max(3, (value / max) * 22) : 2
+      return jsx('span', {
+        style: {
+          background: value ? color.accent : color.stroke,
+          borderRadius: '1px 1px 0 0',
+          display: 'block',
+          height: `${height}px`,
+          opacity: value ? 0.82 : 0.7,
+          width: '0.28rem'
+        }
+      }, row.day)
+    })
+  })
+}
+
+function modelVerdict(model, sampleThreshold) {
+  const failures = model.failures || {}
+  const reliability = model.work_reliability || {}
+  const threshold = Math.max(1, Number(sampleThreshold) || 20)
+  const parts = []
+  const failureSamples = Number(failures.samples) || 0
+  const failureRate = failures.rate
+  if (Number(model.requests) === 0) {
+    parts.push('No recorded calls in this period.')
+  } else if (!failureSamples) {
+    parts.push('API health unmeasured — no bounded-log coverage.')
+  } else if (failureSamples < threshold) {
+    parts.push(`API log sample thin — ${formatCount(failures.observed_failures)}/${formatCount(failureSamples)} logged calls failed.`)
+  } else if (failureRate !== null && failureRate !== undefined && failureRate > 0.05) {
+    parts.push(`API unstable — ${(failureRate * 100).toFixed(1)}% of ${formatCount(failureSamples)} logged calls failed.`)
+  } else {
+    parts.push('API steady.')
+  }
+  const eligible = Number(reliability.eligible_tasks) || 0
+  const gate = Math.max(1, Number(reliability.sample_threshold) || threshold)
+  const bound = reliability.failure_rate_upper_bound_95
+  const boundText = bound === null || bound === undefined ? null : formatPercent(bound)
+  if (Number(reliability.rank) > 0 && Number(reliability.ranked_models) > 0) {
+    parts.push(`Ranked #${formatCount(reliability.rank)} of ${formatCount(reliability.ranked_models)} — task failure rate at most ${boundText || '—'} (95% confidence).`)
+  } else if (eligible > 0) {
+    parts.push(`Too little finished work to rank — ${formatCount(eligible)} of the ${formatCount(gate)} tasks needed.`)
+  } else {
+    parts.push('No scored work evidence yet.')
+  }
+  return parts.join(' ')
+}
+
+function WorkEvidenceCell({ model }) {
+  const reliability = model.work_reliability || {}
+  const eligible = Number(reliability.eligible_tasks) || 0
+  const gate = Math.max(1, Number(reliability.sample_threshold) || 20)
+  const bound = reliability.failure_rate_upper_bound_95
+  const ranked = Number(reliability.rank) > 0 && Number(reliability.ranked_models) > 0
+  const progress = Math.max(0, Math.min(100, (eligible / gate) * 100))
+  const headline = ranked ? `#${formatCount(reliability.rank)} of ${formatCount(reliability.ranked_models)}` : `${formatCount(eligible)} of ${formatCount(gate)} tasks`
+  const riskText = ranked && bound !== null && bound !== undefined
+    ? `${formatCount(eligible)} tasks · task failure ≤ ${formatPercent(bound)}`
+    : eligible > 0
+      ? `toward the ${formatCount(gate)}-task floor`
+      : 'no scored work'
+  return jsxs('div', {
+    title: ranked
+      ? `Ranked by the lowest 95%-confidence upper bound on the failure rate (Wilson score) across ${formatCount(reliability.ranked_models)} comparable models; ${formatCount(eligible)} eligible main-role tasks, task failure rate at most ${formatPercent(bound)}. This is a ceiling on task failures, separate from the observed API fail rate. The bar shows eligible tasks against the ${formatCount(gate)}-task floor.`
+      : `${formatCount(eligible)} eligible main-role tasks of the ${formatCount(gate)} required before ranking. The bar shows progress toward that floor; a failure bound is shown once the floor is reached.`,
+    style: { display: 'grid', gap: '0.28rem', minWidth: '7.5rem' },
+    children: [
+      jsx('span', { style: { ...tabular, color: ranked ? color.primary : color.tertiary, fontSize: '0.6875rem', fontWeight: ranked ? 650 : 500 }, children: headline }),
+      jsx('div', {
+        role: 'progressbar',
+        'aria-label': 'Eligible tasks toward the ranking gate',
+        'aria-valuemin': 0,
+        'aria-valuemax': 100,
+        'aria-valuenow': Math.round(progress),
+        style: { background: color.surfaceRaised, borderRadius: '999px', height: '0.32rem', overflow: 'hidden' },
+        children: jsx('div', {
+          style: { background: ranked ? color.success : color.accent, borderRadius: '999px', height: '100%', opacity: ranked ? 0.9 : 0.7, width: `${progress}%` }
+        })
+      }),
+      jsx('span', { style: { ...tabular, color: color.quaternary, fontSize: '0.625rem' }, children: riskText })
+    ]
+  })
+}
+
+function LayerPane({ title, meta, children }) {
+  return jsxs('section', {
+    style: { border, borderRadius: '6px', display: 'grid', gap: '0.65rem', gridTemplateRows: 'auto 1fr', minWidth: 0, padding: '0.75rem 0.85rem' },
+    children: [
+      jsxs('div', {
+        style: { alignItems: 'baseline', display: 'flex', flexWrap: 'wrap', gap: '0.3rem 0.75rem', justifyContent: 'space-between' },
+        children: [
+          jsx('h3', { style: { color: color.primary, fontSize: '0.8125rem', fontWeight: 650, margin: 0 }, children: title }),
+          jsx('span', { style: { ...tabular, color: color.quaternary, fontSize: '0.625rem' }, children: meta })
+        ]
+      }),
+      jsx('div', { style: { display: 'grid', gap: '0.7rem', minWidth: 0 }, children })
+    ]
+  })
+}
+
+function EvidenceLink({ onClick, title, children, style }) {
+  return jsx('button', {
+    type: 'button',
+    onClick,
+    title,
+    style: {
+      background: 'transparent',
+      border: 'none',
+      color: color.accent,
+      cursor: 'pointer',
+      font: 'inherit',
+      outlineColor: color.accent,
+      padding: 0,
+      textAlign: 'right',
+      textDecoration: 'underline',
+      textUnderlineOffset: '2px',
+      ...style
+    },
+    children
+  })
+}
+
+function ApiLayerPane({ model, coverage, onDrill }) {
+  const failures = model.failures || {}
+  const logSamples = Number(failures.samples) || 0
+  const window = formatLogWindow(coverage)
+  const mixRows = [...(model.task_types || []), ...(model.auxiliary_tasks || []).map(row => ({ ...row, auxiliary: true }))]
+  const totalMixCalls = mixRows.reduce((sum, row) => sum + (Number(row.requests) || 0), 0)
+  const toolCalls = Number(failures.tool_calls) || 0
+  const toolFailures = Number(failures.tool_failures) || 0
+  const latency = model.latency || {}
+  const requests = Number(model.requests) || 0
+  const coverageShare = requests > 0 ? Math.min(100, Math.round((logSamples / requests) * 100)) : null
+  const coverageText = requests > 0
+    ? `logs cover ${formatCount(logSamples)} of ${formatCount(requests)} calls${coverageShare !== null ? ` (${coverageShare}%)` : ''}`
+    : 'no calls in period'
+  return jsxs(LayerPane, {
+    title: 'API layer',
+    meta: `${coverageText} · ${window || 'log window unavailable'}`,
+    children: [
+      jsxs('div', {
+        style: { display: 'grid', gap: '0.45rem' },
+        children: [
+          jsx('div', { style: { color: color.quaternary, fontSize: '0.625rem', fontWeight: 600 }, children: 'Request mix by session type (calls)' }),
+          mixRows.length
+            ? mixRows.map(row => {
+                const calls = Number(row.requests) || 0
+                const share = totalMixCalls ? (calls / totalMixCalls) * 100 : 0
+                return jsxs('div', {
+                  style: { display: 'grid', gap: '0.2rem' },
+                  children: [
+                    jsxs('div', {
+                      style: { alignItems: 'baseline', display: 'flex', gap: '0.75rem', justifyContent: 'space-between' },
+                      children: [
+                        jsx('span', { style: { color: color.secondary, fontSize: '0.6875rem', fontWeight: 600 }, children: row.auxiliary ? `${row.task_type} (auxiliary)` : row.task_type }),
+                        jsx('span', { style: { ...tabular, color: color.tertiary, fontSize: '0.625rem' }, children: `${formatCount(calls)} calls · ${share.toFixed(0)}%` })
+                      ]
+                    }),
+                    jsx('div', {
+                      style: { background: color.surfaceRaised, borderRadius: '999px', height: '0.28rem', overflow: 'hidden' },
+                      children: jsx('div', { style: { background: color.accent, borderRadius: '999px', height: '100%', opacity: 0.75, width: `${share}%` } })
+                    })
+                  ]
+                }, `${row.task_type}-${row.auxiliary ? 'aux' : 'main'}`)
+              })
+            : jsx('span', { style: { color: color.quaternary, fontSize: '0.6875rem' }, children: 'No recorded calls in this period.' })
+        ]
+      }),
+      jsx('div', {
+        style: { borderTop: border, display: 'grid', gridTemplateColumns: 'repeat(3, minmax(5.5rem, 1fr))' },
+        children: [
+          ['Rate limits', failures.rate_limits],
+          ['Timeouts', failures.timeouts],
+          ['API errors', failures.errors]
+        ].map(([label, value]) => jsxs('div', {
+          style: { borderBottom: border, padding: '0.5rem 0.45rem' },
+          children: [
+            jsx('div', { style: { color: color.quaternary, fontSize: '0.625rem' }, children: label }),
+            jsxs('div', {
+              style: { alignItems: 'baseline', display: 'flex', flexWrap: 'wrap', gap: '0.15rem 0.35rem', marginTop: '0.12rem' },
+              children: [
+                jsx('span', { style: { ...tabular, color: Number(value) > 0 ? color.danger : color.primary, fontSize: '0.8125rem', fontWeight: 650 }, children: formatCount(value) }),
+                jsx('span', { style: { ...tabular, color: color.quaternary, fontSize: '0.625rem' }, children: `of ${formatCount(logSamples)} logged` })
+              ]
+            })
+          ]
+        }, label))
+      }),
+      jsxs('div', {
+        style: { alignItems: 'baseline', display: 'flex', gap: '0.75rem', justifyContent: 'space-between' },
+        children: [
+          jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'Tool failures (session records)' }),
+          (() => {
+            const label = toolCalls > 0
+              ? `${formatCount(toolFailures)} of ${formatCount(toolCalls)} tool calls · ${((toolFailures / toolCalls) * 100).toFixed(1)}%`
+              : formatCount(toolFailures)
+            const valueStyle = { ...tabular, color: toolFailures > 0 ? color.danger : color.primary, fontSize: '0.75rem', fontWeight: 650 }
+            return onDrill && toolFailures > 0
+              ? jsx(EvidenceLink, {
+                  onClick: () => onDrill({ search: model.model_id, failuresOnly: true }),
+                  title: 'Open the Sessions view filtered to this model with failures only',
+                  style: valueStyle,
+                  children: label
+                })
+              : jsx('span', { style: valueStyle, children: label })
+          })()
+        ]
+      }),
+      jsxs('div', {
+        style: { alignItems: 'baseline', display: 'flex', gap: '0.75rem', justifyContent: 'space-between' },
+        children: [
+          jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: 'Total latency' }),
+          jsx('span', { style: { ...tabular, color: color.primary, fontSize: '0.75rem', fontWeight: 650 }, children: `p50 ${formatSeconds(latency.total_p50_seconds)} · p95 ${formatSeconds(latency.total_p95_seconds)} · ${formatCount(latency.samples)} samples` })
+        ]
+      })
+    ]
+  })
+}
+
+function WorkLedgerRow({ row, acceptance }) {
+  const eligible = Number(row.eligible_tasks) || 0
+  const completed = Number(row.completed_tasks) || 0
+  const clean = Number(row.clean_completions) || 0
+  const recovered = Number(row.recovered_tasks) || 0
+  const excluded = Number(row.excluded_tasks) || 0
+  const unknown = Number(row.unknown_tasks) || 0
+  const switched = Number(row.switched_away_tasks) || 0
+  const ineligible = excluded + unknown + switched
+  const reasons = (row.ineligible_reasons || []).map(item => `${formatCount(item.count)} ${item.label}`)
+  const reasonText = reasons.join(', ')
+  const note = row.label === 'Orchestration'
+    ? 'not scored by design'
+    : ineligible > 0
+      ? `${formatCount(ineligible)} not eligible${reasonText ? `: ${reasonText}` : ''}`
+      : 'no eligible tasks'
+  const recoverySamples = (Number(row.recovered_tasks) || 0) + (Number(row.unrecovered_failures) || 0)
+  const acceptanceText = acceptance && Number(acceptance.eligible_sessions) > 0
+    ? `${acceptance.acceptance_basis}; ${formatCount(acceptance.accepted_sessions)}/${formatCount(acceptance.eligible_sessions)} accepted first attempt`
+    : acceptance?.acceptance_basis
+  const title = [
+    ineligible > 0 && row.label !== 'Orchestration' ? `Not eligible: ${reasonText || formatCount(ineligible)}.` : null,
+    eligible > 0 && recoverySamples === 0 ? 'Recovered is blank because no API failure occurred in these tasks.' : null,
+    acceptanceText ? `Acceptance: ${acceptanceText}.` : null
+  ].filter(Boolean).join(' ')
+  const numberCell = (value, key, extraTitle) => jsx('td', {
+    title: extraTitle,
+    style: { ...tabular, borderBottom: border, color: eligible > 0 ? color.primary : color.tertiary, fontSize: '0.6875rem', padding: '0.34rem 0.3rem', textAlign: 'right' },
+    children: value
+  }, key)
+  return jsxs('tr', {
+    title: title || undefined,
+    children: [
+      jsx('td', { style: { borderBottom: border, color: color.secondary, fontSize: '0.6875rem', fontWeight: 600, padding: '0.34rem 0.3rem 0.34rem 0' }, children: row.label }, 'task'),
+      eligible > 0
+        ? [
+            numberCell(formatCount(eligible), 'eligible'),
+            numberCell(formatCount(completed), 'completed'),
+            numberCell(formatCount(clean), 'clean'),
+            numberCell(
+              recoverySamples > 0 ? formatCount(recovered) : '—',
+              'recovered',
+              recoverySamples > 0 ? `${formatCount(recovered)} of ${formatCount(recoverySamples)} tasks that hit an API failure went on to complete` : 'No API failure occurred in these tasks'
+            ),
+            ineligible > 0
+              ? jsx('td', {
+                  style: { borderBottom: border, color: color.quaternary, fontSize: '0.625rem', fontStyle: 'italic', padding: '0.34rem 0.3rem', textAlign: 'right', whiteSpace: 'nowrap' },
+                  children: `+${formatCount(ineligible)} not eligible`
+                }, 'note')
+              : jsx('td', { style: { borderBottom: border, padding: '0.34rem 0.3rem' } }, 'note')
+          ]
+        : jsx('td', {
+            colSpan: 5,
+            style: { borderBottom: border, color: color.quaternary, fontSize: '0.625rem', fontStyle: 'italic', padding: '0.34rem 0.3rem', textAlign: 'right' },
+            children: note
+          }, 'note')
+    ]
+  }, row.label)
+}
+
+function WorkLedgerPane({ model, quota, onDrill }) {
+  const reliability = model.work_reliability || {}
+  const eligible = Number(reliability.eligible_tasks) || 0
+  const bound = reliability.failure_rate_upper_bound_95
+  const ranked = Number(reliability.rank) > 0 && Number(reliability.ranked_models) > 0
+  const unrecovered = Number(reliability.unrecovered_failures) || 0
+  const recovered = Number(reliability.recovered_tasks) || 0
+  const completedTasks = Number(reliability.completed_tasks) || 0
+  const acceptanceByType = new Map((model.task_types || []).map(row => [row.task_type, row]))
+  const hasEnoughCompletedTasks = completedTasks >= 10
+  const costPerCompleted = !hasEnoughCompletedTasks
+    ? `insufficient data (${formatCount(completedTasks)} of 10 completed tasks)`
+    : quota.kind === 'subscription'
+      ? (quota.capPerCompletedTask === null || quota.capPerCompletedTask === undefined ? '—' : `~${quota.capPerCompletedTask.toFixed(2)}% of cap`)
+      : ['actual', 'estimated', 'free', 'mixed'].includes(model.cost_kind)
+        ? formatCost((Number(model.cost_usd) || 0) / completedTasks, 'actual')
+        : '—'
+  const costTitle = hasEnoughCompletedTasks && quota.kind !== 'subscription'
+    ? `${formatCost(model.cost_usd, 'actual')} recorded for this model in the period ÷ ${formatCount(completedTasks)} tasks the ledger counts as completed`
+    : undefined
+  const headerCell = label => jsx('th', {
+    scope: 'col',
+    style: { borderBottom: border, color: color.quaternary, fontSize: '0.625rem', fontWeight: 600, padding: '0 0.3rem 0.3rem', textAlign: label === 'Task' ? 'left' : 'right', whiteSpace: 'nowrap' },
+    children: label
+  })
+  return jsxs(LayerPane, {
+    title: 'Work ledger',
+    meta: onDrill && eligible > 0
+      ? jsx(EvidenceLink, {
+          onClick: () => onDrill({ search: model.model_id }),
+          title: "Open the Sessions view filtered to this model's sessions",
+          style: { ...tabular, fontSize: '0.625rem' },
+          children: `${formatCount(eligible)} eligible tasks`
+        })
+      : `${formatCount(eligible)} eligible tasks`,
+    children: [
+      ranked
+        ? jsxs('div', {
+            style: { alignItems: 'baseline', display: 'flex', flexWrap: 'wrap', gap: '0.3rem 0.75rem', justifyContent: 'space-between' },
+            children: [
+              jsx('span', { style: { color: color.primary, fontSize: '0.6875rem', fontWeight: 650 }, children: `Reliability rank #${formatCount(reliability.rank)} of ${formatCount(reliability.ranked_models)} comparable models` }),
+              jsx('span', {
+                title: `${formatCount(unrecovered)} unrecovered failures in ${formatCount(eligible)} eligible tasks. With 95% confidence the real task failure rate is no higher than ${formatPercent(bound)} (Wilson score upper bound); models rank by this bound. It is a ceiling from the sample size, not an observed rate, and it is separate from the API fail rate in the row above.`,
+                style: { ...tabular, color: toneColor(metricTone(bound)), fontSize: '0.6875rem', fontWeight: 650 },
+                children: `task failure rate at most ${formatPercent(bound)} (95% confidence)`
+              })
+            ]
+          })
+        : null,
+      eligible > 0
+        ? jsx('span', {
+            style: { ...tabular, color: color.tertiary, fontSize: '0.625rem' },
+            children: unrecovered === 0 && recovered === 0
+              ? `No task failed and no API failure occurred across ${formatCount(eligible)} eligible tasks.`
+              : `${formatCount(unrecovered)} of ${formatCount(eligible)} tasks ended on an unrecovered API failure · ${formatCount(recovered)} recovered after an API failure`
+          })
+        : null,
+      jsx('div', {
+        style: { overflowX: 'auto' },
+        children: jsxs('table', {
+          style: { borderCollapse: 'collapse', minWidth: '17rem', width: '100%' },
+          children: [
+            jsx('thead', {
+              children: jsx('tr', { children: ['Task', 'Eligible', 'Completed', 'Clean', 'Recovered', ''].map((label, index) => headerCell(label, index)) })
+            }),
+            jsx('tbody', {
+              children: (reliability.by_task_type || []).map(row => jsx(WorkLedgerRow, { row, acceptance: acceptanceByType.get(row.label) }, row.label))
+            })
+          ]
+        })
+      }),
+      model.auxiliary_tasks?.length
+        ? jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', fontStyle: 'italic' }, children: 'Auxiliary jobs are not scored by design.' })
+        : null,
+      reliability.by_route?.length > 1
+        ? jsxs('div', {
+            style: { display: 'grid', gap: '0.3rem' },
+            children: [
+              jsx('div', { style: { color: color.quaternary, fontSize: '0.625rem', fontWeight: 600 }, children: 'By route' }),
+              ...reliability.by_route.map(row => {
+                const routeEligible = Number(row.eligible_tasks) || 0
+                return jsxs('div', {
+                  style: { alignItems: 'baseline', display: 'flex', gap: '0.75rem', justifyContent: 'space-between' },
+                  children: [
+                    jsx('span', { style: { color: color.secondary, fontSize: '0.6875rem', minWidth: 0, overflowWrap: 'anywhere' }, children: row.label }),
+                    jsx('span', {
+                      style: { ...tabular, color: color.tertiary, flexShrink: 0, fontSize: '0.625rem' },
+                      children: routeEligible > 0
+                        ? `${formatCount(row.completed_tasks)}/${formatCount(routeEligible)} completed · ${formatCount(row.unrecovered_failures)} unrecovered`
+                        : 'no eligible tasks'
+                    })
+                  ]
+                }, row.label)
+              })
+            ]
+          })
+        : null,
+      jsxs('div', {
+        style: { alignItems: 'baseline', borderTop: border, display: 'flex', gap: '0.75rem', justifyContent: 'space-between', paddingTop: '0.55rem' },
+        children: [
+          jsx('span', { title: costTitle, style: { color: color.tertiary, fontSize: '0.6875rem' }, children: quota.kind === 'subscription' ? 'Cap per completed task' : 'Cost per completed task' }),
+          jsx('span', { title: costTitle, style: { ...tabular, color: color.primary, fontSize: '0.75rem', fontWeight: 650 }, children: costPerCompleted })
+        ]
+      }),
+      hasEnoughCompletedTasks && quota.kind === 'subscription' && quota.capPerCompletedTask !== null && quota.capPerCompletedTask !== undefined
+        ? jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', lineHeight: 1.45 }, children: 'Estimate allocated by this model’s share of recorded OAuth requests in the selected period, divided by the tasks the ledger counts as completed; provider quota is account-level.' })
+        : null
+    ]
+  })
+}
+
+function ModelExpanded({ model, quota, coverage, narrow, onDrill }) {
+  const reliability = model.work_reliability || {}
+  const eligible = Number(reliability.eligible_tasks) || 0
+  const gate = Math.max(1, Number(reliability.sample_threshold) || Number(coverage?.rate_sample_threshold) || 20)
+  const bound = reliability.failure_rate_upper_bound_95
+  const rankEligible = Boolean(reliability.rank_eligible)
+  const quotaInsight = quota.available && !quota.earlyPeriod && quota.elapsed !== null && quota.burn > quota.elapsed
+    ? `${quota.window.label} is burning ${Math.round(quota.burn - quota.elapsed)} percentage points faster than the billing period is elapsing.`
+    : null
+  const insight = quotaInsight || model.insight
+  const routeLabels = distinctValues((model.routes || []).map(route => route.label))
+  const routeMappingNote = model.route_mapping_source === 'unmapped'
+    ? `add a model-id glob under ${coverage?.route_mapping_config_path || 'plugins.entries.session-lens.settings.model_route_mappings'}`
+    : model.route_mapping_source === 'historical'
+      ? `mapping inferred from recorded routes using ${model.route_mapping_pattern}`
+      : model.route_mapping_source === 'config'
+        ? `mapping matched config pattern ${model.route_mapping_pattern}`
+        : null
+  const window = formatLogWindow(coverage)
+  const banner = !rankEligible
+    ? eligible > 0
+      ? {
+          tone: 'warning',
+          text: `Not rankable yet — ${formatCount(eligible)} of ${formatCount(gate)} eligible tasks. A failure rate is shown once ${formatCount(gate)} tasks are scored; fewer would make any percentage misleading.`
+        }
+      : {
+          tone: 'neutral',
+          text: 'No scored work evidence in this period — the API layer below is the only signal.'
+        }
+    : null
+  const provenance = distinctValues([
+    `Routes: ${routeLabels.join(' · ') || 'Unknown'}${routeMappingNote ? ` (${routeMappingNote})` : ''}.`,
+    `Log window: ${window || 'unavailable'}. API fail rate counts API errors, timeouts, and rate limits from bounded local Duckwork logs, per call; the ledger's task failure rate is a 95%-confidence ceiling per finished task, so the two are different units. Time-to-first-token is not recorded, so latency is total response time.`,
+    `Work ledger: scores finished main-role tasks — completed, or closed by a Desktop reset or reap with no failure end reason — and terminal model/API failures. A closed session whose last logged API event is a failure counts as unrecovered. Open, cancelled, orchestration, auxiliary, ambiguous, and uncovered runs are excluded with the reason shown per task type; missing evidence is never treated as success. Ranking needs ${formatCount(gate)} eligible tasks and orders by the lowest 95%-confidence upper bound on the failure rate (Wilson score).`,
+    'Classification assigns one primary type per session in this order: Orchestration, Coding, Writing, Analysis, General. Acceptance: General/Analysis use the eligible-closed-session proxy; Coding requires a resolved code save or commit; Writing a resolved non-code artifact write. Retry/switch counts rewinds, near-identical resends to the same model within five minutes, and same-role model changes.'
+  ])
+  return jsxs('div', {
+    style: {
+      background: 'transparent',
+      borderTop: border,
+      boxSizing: 'border-box',
+      display: 'grid',
+      gap: '0.85rem',
+      padding: '0.9rem 1rem',
+      position: 'static',
+      width: '100%'
+    },
+    children: [
+      banner
+        ? jsxs('div', {
+            role: banner.tone === 'warning' ? 'status' : undefined,
+            style: {
+              alignItems: 'flex-start',
+              background: banner.tone === 'warning' ? color.warningSoft : color.surfaceRaised,
+              borderRadius: '5px',
+              color: banner.tone === 'warning' ? color.warning : color.secondary,
+              display: 'flex',
+              fontSize: '0.6875rem',
+              fontWeight: banner.tone === 'warning' ? 600 : 400,
+              gap: '0.45rem',
+              lineHeight: 1.5,
+              padding: '0.5rem 0.6rem'
+            },
+            children: [jsx(Codicon, { name: banner.tone === 'warning' ? 'warning' : 'info', size: '0.72rem', style: { marginTop: '0.15rem' } }), jsx('span', { children: banner.text })]
+          })
+        : null,
+      jsxs('div', {
+        style: { display: 'grid', gap: '0.85rem', gridTemplateColumns: narrow ? '1fr' : 'minmax(19rem, 1fr) minmax(19rem, 1fr)' },
+        children: [
+          jsx(ApiLayerPane, { model, coverage, onDrill }),
+          jsx(WorkLedgerPane, { model, quota, onDrill })
+        ]
+      }),
+      insight
+        ? jsxs('div', {
+            style: {
+              alignItems: 'flex-start',
+              background: quotaInsight ? (quota.tone === 'danger' ? color.dangerSoft : color.warningSoft) : color.surfaceRaised,
+              borderRadius: '5px',
+              color: quotaInsight ? toneColor(quota.tone) : color.secondary,
+              display: 'flex',
+              fontSize: '0.6875rem',
+              gap: '0.45rem',
+              lineHeight: 1.5,
+              padding: '0.5rem 0.6rem'
+            },
+            children: [jsx(Codicon, { name: 'lightbulb', size: '0.72rem', style: { marginTop: '0.15rem' } }), jsx('span', { children: insight })]
+          })
+        : null,
+      jsxs('details', {
+        style: { borderTop: border, paddingTop: '0.5rem' },
+        children: [
+          jsx('summary', {
+            style: { color: color.quaternary, cursor: 'pointer', fontSize: '0.625rem', fontWeight: 600, outlineColor: color.accent, userSelect: 'none' },
+            children: 'How these numbers are computed'
+          }),
+          jsx('ul', {
+            style: { color: color.quaternary, display: 'grid', fontSize: '0.625rem', gap: '0.25rem', lineHeight: 1.45, margin: '0.4rem 0 0', paddingLeft: '1rem' },
+            children: provenance.map(note => jsx('li', { children: note }, note))
+          })
+        ]
+      })
+    ]
+  })
+}
+
+function routingSummary(models, threshold) {
+  return ['Coding', 'Writing', 'Analysis', 'General'].map(taskType => {
+    const candidates = []
+    for (const model of models || []) {
+      const row = (model.work_reliability?.by_task_type || []).find(item => item.label === taskType)
+      if (!row || !Number(row.eligible_tasks)) continue
+      candidates.push({ model, row })
+    }
+    candidates.sort((left, right) => {
+      const leftGated = Number(left.row.eligible_tasks) >= threshold ? 0 : 1
+      const rightGated = Number(right.row.eligible_tasks) >= threshold ? 0 : 1
+      if (leftGated !== rightGated) return leftGated - rightGated
+      const leftBound = left.row.failure_rate_upper_bound_95 ?? 1
+      const rightBound = right.row.failure_rate_upper_bound_95 ?? 1
+      if (leftBound !== rightBound) return leftBound - rightBound
+      return Number(right.row.eligible_tasks) - Number(left.row.eligible_tasks)
+    })
+    return { taskType, best: candidates[0] || null }
+  })
+}
+
+function RoutingSummary({ models, coverage, onDrill }) {
+  const threshold = Math.max(1, Number(coverage?.rate_sample_threshold) || 20)
+  const rows = routingSummary(models, threshold)
+  if (!rows.some(row => row.best)) return null
+  const anyGatePassed = rows.some(row => row.best && Number(row.best.row.eligible_tasks) >= threshold)
+  return jsxs('section', {
+    style: { border, borderRadius: '6px', display: 'grid', gap: '0.6rem', padding: '0.75rem 0.85rem' },
+    children: [
+      jsxs('div', {
+        style: { alignItems: 'baseline', display: 'flex', flexWrap: 'wrap', gap: '0.3rem 0.75rem', justifyContent: 'space-between' },
+        children: [
+          jsx('h3', { style: { color: color.primary, fontSize: '0.8125rem', fontWeight: 650, margin: 0 }, children: 'Best current evidence by task type' }),
+          jsx('span', {
+            style: { color: color.quaternary, fontSize: '0.625rem' },
+            children: anyGatePassed
+              ? `Ranked by the lowest 95%-confidence failure bound per task type, among models with ${formatCount(threshold)}+ scored tasks of that type.`
+              : `Provisional — no model has ${formatCount(threshold)} eligible tasks in any single type yet.`
+          })
+        ]
+      }),
+      jsx('div', {
+        style: { display: 'grid', gap: '0.6rem', gridTemplateColumns: 'repeat(auto-fit, minmax(11rem, 1fr))' },
+        children: rows.map(({ taskType, best }) => {
+          const eligible = best ? Number(best.row.eligible_tasks) || 0 : 0
+          const completed = best ? Number(best.row.completed_tasks) || 0 : 0
+          const bound = best ? best.row.failure_rate_upper_bound_95 : null
+          const gated = Boolean(best) && eligible >= threshold
+          const name = best ? best.model.display_name : null
+          if (!gated) {
+            // Below the floor no model is "best": say so, and name the leading candidate
+            // as a fraction only, never with a percentage.
+            return jsxs('div', {
+              style: { display: 'grid', gap: '0.15rem', minWidth: 0 },
+              children: [
+                jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', fontWeight: 600 }, children: taskType }),
+                jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem', fontStyle: 'italic' }, children: 'no rankable evidence yet' }),
+                best
+                  ? jsx('span', {
+                      title: `${name}: ${formatCount(completed)} of ${formatCount(eligible)} ${taskType.toLowerCase()} tasks completed; ${formatCount(threshold)} are needed before a failure bound is shown.`,
+                      style: { ...tabular, color: color.quaternary, fontSize: '0.625rem' },
+                      children: `leading so far: ${name} · ${formatCount(completed)}/${formatCount(eligible)} completed, below the ${formatCount(threshold)}-task floor`
+                    })
+                  : null
+              ]
+            }, taskType)
+          }
+          const evidence = `${formatCount(completed)}/${formatCount(eligible)} completed${bound !== null && bound !== undefined ? ` · task failure at most ${formatPercent(bound)}` : ''}`
+          return jsxs('div', {
+            style: { display: 'grid', gap: '0.15rem', minWidth: 0 },
+            children: [
+              jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', fontWeight: 600 }, children: taskType }),
+              onDrill
+                ? jsx(EvidenceLink, {
+                    onClick: () => onDrill({ search: best.model.model_id }),
+                    title: `Open the Sessions view filtered to ${name}`,
+                    style: { fontSize: '0.75rem', fontWeight: 650, textAlign: 'left' },
+                    children: name
+                  })
+                : jsx('span', { style: { color: color.primary, fontSize: '0.75rem', fontWeight: 650 }, children: name }),
+              jsx('span', { title: bound !== null && bound !== undefined ? `With 95% confidence the failure rate for ${taskType.toLowerCase()} tasks is no higher than ${formatPercent(bound)}.` : undefined, style: { ...tabular, color: color.secondary, fontSize: '0.625rem' }, children: evidence })
+            ]
+          }, taskType)
+        })
+      })
+    ]
+  })
+}
+
+function AIModelsTable({ models, quotaData, coverage, narrow, onDrill, period, compare = null, onToggleCompare }) {
+  // Default to reliability rank: lowest failure bound first, unranked rows after the ranked ones.
+  const [sortState, setSortState] = useState({ key: 'work', direction: 'asc' })
+  const periodScope = periodScopeLabel(period)
+  const [expanded, setExpanded] = useState(() => new Set())
+  const rateSampleThreshold = Math.max(1, Number(coverage?.rate_sample_threshold) || 20)
+  const rows = useMemo(() => (models || []).map((model, index) => ({
+    model,
+    index,
+    quota: modelQuota(model, quotaData, models)
+  })), [models, quotaData])
+  const columns = [
+    { key: 'model', label: 'Model', value: item => item.model.display_name },
+    { key: 'route', label: 'Route', value: item => item.model.route_label || '' },
+    { key: 'requests', label: 'Requests', align: 'right', value: item => item.model.requests },
+    { key: 'total_tokens', label: 'Tokens in / out / cache', align: 'right', value: item => item.model.total_tokens },
+    { key: 'cost', label: 'Cost · quota', value: item => ['actual', 'estimated', 'free', 'mixed'].includes(item.model.cost_kind) ? item.model.cost_usd : null },
+    { key: 'failure', label: 'API fail rate', align: 'right', value: item => Number(item.model.requests) > 0 ? item.model.failures?.rate : null, sample: item => item.model.failures?.samples },
+    { key: 'retry', label: 'Retry / switch', align: 'right', value: item => item.model.retry_switch_rate, sample: item => item.model.retry_switch_samples },
+    { key: 'work', label: 'Work evidence', value: item => item.model.work_reliability?.failure_rate_upper_bound_95 ?? null, sample: item => item.model.work_reliability?.eligible_tasks },
+    { key: 'latency', label: 'Total latency', align: 'right', value: item => Number(item.model.requests) > 0 ? item.model.latency?.total_p50_seconds : null },
+    { key: 'trend', label: 'Trend (7d requests)', align: 'right', value: item => (item.model.trend || []).reduce((sum, row) => sum + (Number(row.requests) || 0), 0) }
+  ]
+  const sortedRows = useMemo(() => {
+    const column = columns.find(item => item.key === sortState.key) || columns[3]
+    const direction = sortState.direction === 'desc' ? -1 : 1
+    return [...rows].sort((left, right) => {
+      const leftValue = column.value(left)
+      const rightValue = column.value(right)
+      if (column.sample) {
+        const leftAdequate = leftValue !== null && leftValue !== undefined && Number(column.sample(left) || 0) >= rateSampleThreshold
+        const rightAdequate = rightValue !== null && rightValue !== undefined && Number(column.sample(right) || 0) >= rateSampleThreshold
+        if (leftAdequate !== rightAdequate) return leftAdequate ? -1 : 1
+        if (!leftAdequate) return left.index - right.index
+      }
+      if (leftValue === null || leftValue === undefined) return rightValue === null || rightValue === undefined ? left.index - right.index : 1
+      if (rightValue === null || rightValue === undefined) return -1
+      const comparison = typeof leftValue === 'number' && typeof rightValue === 'number'
+        ? leftValue - rightValue
+        : String(leftValue).localeCompare(String(rightValue), undefined, { numeric: true, sensitivity: 'base' })
+      return comparison === 0 ? left.index - right.index : comparison * direction
+    })
+  }, [rows, sortState, rateSampleThreshold])
+  const toggle = modelId => setExpanded(current => {
+    const next = new Set(current)
+    if (next.has(modelId)) next.delete(modelId)
+    else next.add(modelId)
+    return next
+  })
+
+  if (!models?.length) {
+    return jsx(EmptyState, { title: 'No recorded models yet', description: 'Models appear automatically as soon as Duckwork records a session with a model ID.' })
+  }
+  return jsx('div', {
+    style: { border, borderRadius: '6px', overflowX: 'auto' },
+    children: jsx('table', {
+      style: { borderCollapse: 'collapse', fontSize: '0.75rem', minWidth: '94rem', width: '100%' },
+      children: [
+        jsx('thead', {
+          children: jsx('tr', {
+            children: [
+              compare ? jsx('th', { scope: 'col', title: `Tick up to ${COMPARE_LIMIT} models to compare`, style: { background: color.surface, borderBottom: border, color: color.tertiary, fontSize: '0.6875rem', fontWeight: 600, padding: '0.5rem 0.4rem 0.5rem 0.65rem', whiteSpace: 'nowrap' }, children: 'Compare' }, 'compare') : null,
+              ...columns.map(column => jsx('th', {
+              scope: 'col',
+              'aria-sort': sortState.key === column.key ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : 'none',
+              style: { background: color.surface, borderBottom: border, padding: 0, whiteSpace: 'nowrap' },
+              children: jsx('button', {
+                type: 'button',
+                onClick: () => setSortState(current => ({
+                  key: column.key,
+                  direction: current.key === column.key && current.direction === 'desc' ? 'asc' : 'desc'
+                })),
+                'aria-label': `Sort by ${column.label}`,
+                title: `Sort by ${column.label}`,
+                style: {
+                  alignItems: 'center',
+                  background: 'transparent',
+                  border: 'none',
+                  color: sortState.key === column.key ? color.primary : color.tertiary,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  font: 'inherit',
+                  fontSize: '0.6875rem',
+                  fontWeight: sortState.key === column.key ? 650 : 600,
+                  gap: '0.3rem',
+                  justifyContent: column.align === 'right' ? 'flex-end' : 'flex-start',
+                  outlineColor: color.accent,
+                  padding: '0.5rem 0.65rem',
+                  width: '100%'
+                },
+                children: [
+                  jsx('span', { children: column.label }),
+                  jsx(Codicon, { name: sortState.key === column.key ? (sortState.direction === 'asc' ? 'arrow-small-up' : 'arrow-small-down') : 'arrow-swap', size: '0.7rem', style: { color: sortState.key === column.key ? color.accent : color.quaternary } })
+                ]
+              })
+            }, column.key))
+            ].filter(Boolean)
+          })
+        }),
+        jsx('tbody', {
+          children: sortedRows.flatMap(item => {
+            const model = item.model
+            const isExpanded = expanded.has(model.model_id)
+            const detailId = `model-detail-${item.index}`
+            const verdict = modelVerdict(model, rateSampleThreshold)
+            const ticked = Boolean(compare?.includes(model.model_id))
+            const cells = [
+              compare
+                ? jsx('td', {
+                    onClick: event => event.stopPropagation(),
+                    style: { borderBottom: isExpanded ? 'none' : border, padding: '0.66rem 0.4rem 0.62rem 0.65rem', verticalAlign: 'top' },
+                    children: jsx('input', {
+                      type: 'checkbox',
+                      checked: ticked,
+                      disabled: !ticked && compare.length >= COMPARE_LIMIT,
+                      onChange: () => onToggleCompare(model.model_id),
+                      'aria-label': `Compare ${model.display_name}`,
+                      title: !ticked && compare.length >= COMPARE_LIMIT ? `Up to ${COMPARE_LIMIT} models` : `Compare ${model.display_name}`,
+                      style: { accentColor: color.accent, cursor: 'pointer', margin: 0 }
+                    })
+                  }, 'compare')
+                : null,
+              jsx('td', {
+                style: { borderBottom: isExpanded ? 'none' : border, minWidth: '17rem', padding: 0, verticalAlign: 'top' },
+                children: jsx('button', {
+                  type: 'button',
+                  onClick: event => {
+                    event.stopPropagation()
+                    toggle(model.model_id)
+                  },
+                  'aria-expanded': isExpanded,
+                  'aria-controls': detailId,
+                  style: { alignItems: 'flex-start', background: 'transparent', border: 'none', color: color.primary, cursor: 'pointer', display: 'flex', gap: '0.48rem', outlineColor: color.accent, padding: '0.62rem 0.65rem', textAlign: 'left', width: '100%' },
+                  children: [
+                    jsx(Codicon, { name: isExpanded ? 'chevron-down' : 'chevron-right', size: '0.72rem', style: { color: color.quaternary, marginTop: '0.16rem' } }),
+                    jsxs('span', {
+                      style: { display: 'grid', gap: '0.12rem', minWidth: 0 },
+                      children: [
+                        jsx('span', { style: { fontWeight: 650, overflowWrap: 'anywhere' }, children: model.display_name }),
+                        jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: `${model.provider_label} · ${formatRelativeTime(model.last_used_at)}` }),
+                        jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', lineHeight: 1.4, maxWidth: '22rem', whiteSpace: 'normal' }, children: verdict })
+                      ]
+                    })
+                  ]
+                })
+              }, 'model'),
+              jsx('td', { title: model.route_mapping_source === 'unmapped' ? `Add a model-id glob under ${coverage?.route_mapping_config_path || 'plugins.entries.session-lens.settings.model_route_mappings'}.` : model.route_mapping_source === 'historical' ? `Inferred from recorded routes using ${model.route_mapping_pattern}.` : model.route_mapping_source === 'config' ? `Mapped by config pattern ${model.route_mapping_pattern}.` : undefined, style: { borderBottom: isExpanded ? 'none' : border, color: color.secondary, minWidth: '9rem', padding: '0.62rem 0.65rem', verticalAlign: 'top' }, children: jsxs('span', { children: [model.route_label || 'Unmapped (edit in config)', model.route_count > 1 ? jsx('span', { style: { color: color.quaternary, display: 'block', fontSize: '0.625rem', marginTop: '0.12rem' }, children: `+${model.route_count - 1} more` }) : null] }) }, 'route'),
+              jsx('td', { style: { ...tabular, borderBottom: isExpanded ? 'none' : border, padding: '0.62rem 0.65rem', textAlign: 'right', verticalAlign: 'top' }, children: formatCount(model.requests) }, 'requests'),
+              jsx('td', { title: `${formatCount(model.input_tokens)} input · ${formatCount(model.output_tokens)} output · ${model.cache_tokens === null || model.cache_tokens === undefined ? 'cache unavailable' : `${formatCount(model.cache_tokens)} cache (reads + writes the provider reported, counted separately from input)`}.${model.cache_coverage === 'partial' ? ' Cached-token coverage is partial across routes.' : model.cache_coverage === 'unavailable' ? ' This route has not demonstrated cached-token reporting in the selected period.' : ''}`, style: { ...tabular, borderBottom: isExpanded ? 'none' : border, minWidth: '11rem', padding: '0.62rem 0.65rem', textAlign: 'right', verticalAlign: 'top' }, children: `${formatCount(model.input_tokens)} / ${formatCount(model.output_tokens)} / ${model.cache_tokens === null || model.cache_tokens === undefined ? '–' : formatCount(model.cache_tokens)}` }, 'tokens'),
+              jsx('td', {
+                title: item.quota.kind === 'pay_go'
+                  ? `Recorded cost for this model over the selected period (${periodScope || 'period'}). Duckwork records the provider's actual cost when reported and a token-price estimate otherwise.`
+                  : undefined,
+                style: { borderBottom: isExpanded ? 'none' : border, minWidth: '9.5rem', padding: '0.58rem 0.65rem', verticalAlign: 'top' },
+                children: jsxs('div', {
+                  style: { display: 'grid', gap: '0.3rem' },
+                  children: [
+                    jsxs('span', {
+                      style: { ...tabular, fontWeight: 600 },
+                      children: [
+                        formatModelCost(model),
+                        item.quota.kind === 'pay_go' && periodScope && ['actual', 'estimated', 'free', 'mixed'].includes(model.cost_kind)
+                          ? jsx('span', { style: { color: color.quaternary, fontSize: '0.625rem', fontWeight: 500, marginLeft: '0.3rem' }, children: `· ${periodScope}` })
+                          : null
+                      ]
+                    }),
+                    jsx(QuotaBurn, { quota: item.quota })
+                  ]
+                })
+              }, 'cost'),
+              jsx('td', { style: { borderBottom: isExpanded ? 'none' : border, padding: '0.62rem 0.65rem', textAlign: 'right', verticalAlign: 'top' }, children: jsx(RateValue, { value: model.failures?.rate, numerator: model.failures?.observed_failures, sampleCount: model.failures?.samples, sampleThreshold: rateSampleThreshold, sampleNoun: 'logged calls', unavailableReason: Number(model.requests) === 0 ? 'activity outside selected period; see the provenance note in the expanded card' : undefined, label: 'API attempt failure rate: errors, timeouts, or rate-limit responses' }) }, 'failure'),
+              jsx('td', { style: { borderBottom: isExpanded ? 'none' : border, padding: '0.62rem 0.65rem', textAlign: 'right', verticalAlign: 'top' }, children: jsx(RateValue, { value: model.retry_switch_rate, numerator: model.retry_switch_sessions, sampleCount: model.retry_switch_samples, sampleThreshold: rateSampleThreshold, sampleNoun: 'sessions', label: 'Rewind, same-model prompt resend, or same-role model-switch session rate' }) }, 'retry'),
+              jsx('td', { style: { borderBottom: isExpanded ? 'none' : border, padding: '0.58rem 0.65rem', verticalAlign: 'top' }, children: jsx(WorkEvidenceCell, { model }) }, 'work'),
+              jsx('td', { title: Number(model.requests) === 0 ? 'activity outside selected period; see the provenance note in the expanded card' : `p95 ${formatSeconds(model.latency?.total_p95_seconds)} · ${model.latency?.samples || 0} bounded-log samples. Duckwork does not record time-to-first-token.`, style: { ...tabular, borderBottom: isExpanded ? 'none' : border, minWidth: '6rem', padding: '0.62rem 0.65rem', textAlign: 'right', verticalAlign: 'top' }, children: Number(model.requests) === 0 ? '–' : formatSeconds(model.latency?.total_p50_seconds) }, 'latency'),
+              jsx('td', { style: { borderBottom: isExpanded ? 'none' : border, padding: '0.54rem 0.65rem', verticalAlign: 'top' }, children: jsx(TrendBars, { rows: model.trend }) }, 'trend')
+            ].filter(Boolean)
+            const detail = isExpanded
+              ? jsx('tr', {
+                  children: jsx('td', {
+                    id: detailId,
+                    colSpan: columns.length + (compare ? 1 : 0),
+                    style: { borderBottom: border, padding: 0 },
+                    children: jsx(ModelExpanded, { model, quota: item.quota, coverage, narrow, onDrill })
+                  })
+                }, `${model.model_id}-detail`)
+              : null
+            return [jsx('tr', {
+              onClick: () => toggle(model.model_id),
+              title: `${isExpanded ? 'Collapse' : 'Expand'} ${model.display_name}`,
+              style: { cursor: 'pointer' },
+              children: cells
+            }, model.model_id), detail].filter(Boolean)
+          })
+        })
+      ]
+    })
+  })
+}
+
+function AIModelsStatStrip({ data }) {
+  const summary = data?.summary || {}
+  return jsx('div', {
+    style: { borderBottom: border, borderTop: border, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(8rem, 1fr))', overflowX: 'auto' },
+    children: [
+      jsx(Metric, { label: 'Model inventory', value: data ? formatCount(summary.inventory_models ?? summary.models) : '—', detail: data ? `${formatCount(summary.active_models)} active in this period` : null }, 'models'),
+      jsx(Metric, { label: 'Requests', value: data ? formatCount(summary.requests) : '—', detail: data ? 'Successful calls recorded by Duckwork' : null }, 'requests'),
+      jsx(Metric, { label: 'Tokens', value: data ? formatCount(summary.total_tokens) : '—', detail: data ? 'Input + output + recorded cache, including auxiliary jobs' : null }, 'tokens'),
+      jsx(Metric, { label: 'Known API cost', value: data ? formatCost(summary.cost_usd, 'actual') : '—', detail: data ? (Number(summary.subscription_models) > 0 ? `Metered routes only; excludes ${formatCount(summary.subscription_models)} subscription model${Number(summary.subscription_models) === 1 ? '' : 's'}` : 'Metered routes only; no subscription models active') : null }, 'cost')
+    ]
+  })
+}
+
+function savingsVerdictPill(verdict) {
+  if (verdict === 'as reliable or better') return { tone: 'accent', label: 'As reliable or better' }
+  if (verdict === 'less reliable') return { tone: 'danger', label: 'Less reliable' }
+  return { tone: 'neutral', label: 'Current model unproven' }
+}
+
+// Proven savings lead; savings whose current model has no reliability record
+// yet are counted separately so the headline is not an optimistic sum.
+function savingsHeadline(totals) {
+  const spend = formatCost(totals.cash_usd, 'estimated')
+  const proven = Number(totals.proven_saving_usd ?? 0)
+  const unproven = Number(totals.unproven_saving_usd ?? 0)
+  if (totals.proven_saving_usd == null && totals.unproven_saving_usd == null) {
+    return `Up to ${formatCost(totals.best_saving_usd, 'estimated')} of this period's ${spend} conversation spend could have run on a cheaper route.`
+  }
+  const parts = []
+  if (proven > 0) parts.push(`${formatCost(proven, 'estimated')} of this period's ${spend} conversation spend could have run on a route at least as reliable.`)
+  else parts.push(`No route proven as reliable would have cut this period's ${spend} conversation spend.`)
+  if (unproven > 0) parts.push(`Another ${formatCost(unproven, 'estimated')} could be saved on routes where the current model has no reliability record yet, so the two cannot be compared.`)
+  return parts.join(' ')
+}
+
+// The same conversation work priced on the routes this install already
+// runs, beside their measured task failure bound. Loaded after AI Models so
+// it reuses that payload's evidence (and its cache).
+function SavingsSection({ ctx, period, enabled }) {
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'savings', activeProfilesParam, period.days, period.start_at, period.end_at],
+    queryFn: () => pluginRest(ctx, apiPath('/savings', period)),
+    enabled: Boolean(enabled),
+    staleTime: 120_000
+  })
+  if (!enabled || query.isError || !query.data) return null
+  const data = query.data
+  const rows = []
+  for (const model of data.models || []) {
+    for (const alternative of model.alternatives || []) rows.push({ ...alternative, current: model })
+  }
+  return jsxs('section', {
+    children: [
+      jsx(SectionHeading, {
+        title: 'Cheaper routes with evidence',
+        description: rows.length
+          ? `${savingsHeadline(data.totals)} ${data.definition}`
+          : `No cheaper route with enough evidence for this period's ${formatCost(data.totals?.cash_usd, 'estimated')} of conversation spend. ${data.definition}`
+      }),
+      rows.length
+        ? jsx(SimpleTable, {
+            columns: [
+              { key: 'current', label: 'Now', render: row => jsxs('div', { style: { display: 'grid', gap: '0.1rem' }, children: [jsx('span', { style: { fontWeight: 600 }, children: row.current.model }), jsx('span', { style: { color: color.tertiary, fontSize: '0.625rem' }, children: `${formatCost(row.current.cash_usd, 'estimated')} · ${formatCount(row.current.calls)} calls${row.current.failure_upper_bound != null ? ` · fails ≤ ${(row.current.failure_upper_bound * 100).toFixed(1)}%` : ''}` })] }) },
+              { key: 'model', label: 'Instead', render: row => jsxs('div', { style: { display: 'grid', gap: '0.1rem' }, children: [jsx('span', { style: { fontWeight: 600 }, children: row.model }), jsx('span', { style: { color: color.tertiary, fontSize: '0.625rem' }, children: `${row.route_label || ''}${row.subscription ? ' · uses plan quota' : ''}` })] }) },
+              { key: 'cost_usd', label: 'Would cost', align: 'right', render: row => jsx('span', { style: tabular, children: formatCost(row.cost_usd, 'estimated') }) },
+              { key: 'saving_usd', label: 'Saving', align: 'right', render: row => jsx('span', { style: { ...tabular, color: color.primary, fontWeight: 600 }, children: `${formatCost(row.saving_usd, 'estimated')} (${(row.saving_share * 100).toFixed(0)}%)` }) },
+              { key: 'failure_upper_bound', label: 'Fails at most', align: 'right', render: row => jsx('span', { style: tabular, title: `95% upper bound from ${formatCount(row.eligible_tasks)} scored tasks`, children: `${(row.failure_upper_bound * 100).toFixed(1)}%` }) },
+              { key: 'verdict', label: 'Evidence', render: row => { const pill = savingsVerdictPill(row.verdict); return jsx(Pill, { tone: pill.tone, children: pill.label }) } }
+            ],
+            rows
+          })
+        : null
+    ]
+  })
+}
+
+const COMPARE_LIMIT = 5
+const COMPARE_LEADER_LABELS = { cost: 'Cheapest', reliability: 'Most reliable', speed: 'Fastest', cache: 'Best cache' }
+
+function compareShares(items) {
+  if (!items?.length) return '—'
+  return items.map(item => `${item.name} ${Math.round(Number(item.share) * 100)}%`).join(' · ')
+}
+
+function CompareLeader({ kind }) {
+  return jsx('span', { style: { display: 'block', marginTop: '0.2rem' }, children: jsx(Pill, { tone: 'accent', children: COMPARE_LEADER_LABELS[kind] }) })
+}
+
+// Up to five models side by side. Each measure names its own leader instead
+// of one overall winner: the models did different work, and the panel says so.
+function CompareSection({ ctx, period, selected, models, onRemove, onClear }) {
+  const known = new Set((models || []).map(model => model.model_id))
+  const picked = selected.filter(id => known.has(id))
+  const [reference, setReference] = useState('combined')
+  const [baseline, setBaseline] = useState('')
+  const query = useQuery({
+    queryKey: [PLUGIN_ID, 'compare', activeProfilesParam, period.days, period.start_at, period.end_at, picked.join('|')],
+    queryFn: () => pluginRest(ctx, apiPath('/models/compare', { ...period, models: picked.join('|') })),
+    enabled: picked.length >= 2,
+    staleTime: 120_000
+  })
+  if (!picked.length) return null
+  const heading = jsx(SectionHeading, {
+    title: 'Compare models',
+    description: picked.length < 2
+      ? `Tick at least one more model in the table below to compare (up to ${COMPARE_LIMIT}).`
+      : `${picked.length} of ${COMPARE_LIMIT} models. Each measure names its own leader; the workload rows show what each model was actually doing.`,
+    action: jsx('button', {
+      type: 'button',
+      onClick: onClear,
+      style: { background: 'transparent', border, borderRadius: '4px', color: color.secondary, cursor: 'pointer', font: 'inherit', fontSize: '0.6875rem', padding: '0.25rem 0.6rem' },
+      children: 'Clear'
+    })
+  })
+  if (picked.length < 2) return jsx('section', { children: heading })
+  if (query.isError) return jsxs('section', { children: [heading, jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'The comparison is unavailable' })] })
+  if (!query.data) return jsxs('section', { children: [heading, jsx(LoadingBlock, { rows: 6 })] })
+  const data = query.data
+  const columns = data.models || []
+  const leaders = data.leaders || {}
+  const ref = (data.references || []).includes(reference) ? reference : 'combined'
+  const nameOf = id => columns.find(model => model.model_id === id)?.display_name || id
+  const proven = columns.filter(model => model.reliability?.proven)
+  const base = proven.find(model => model.model_id === baseline) || proven[0]
+  const pick = base ? data.picks?.[base.model_id] : undefined
+  const cell = (children, extra = {}) => ({ children, style: { ...tabular, borderBottom: border, padding: '0.5rem 0.65rem', verticalAlign: 'top', ...extra } })
+  const sameWork = model => {
+    const item = model.same_work?.[ref]
+    if (!item || item.cost_usd === null || item.cost_usd === undefined) return jsx('span', { style: { color: color.tertiary }, children: 'No price in Duckwork' })
+    if (item.included) return jsxs('span', { children: [`${formatCost(item.cost_usd, 'estimated')} list`, jsx('span', { style: { color: color.tertiary, display: 'block', fontSize: '0.625rem' }, children: 'included in your plan · uses quota' })] })
+    return formatCost(item.cost_usd, 'estimated')
+  }
+  const rows = [
+    {
+      label: 'Route',
+      render: model => jsxs('span', { children: [model.route_label || '—', model.subscription ? jsx('span', { style: { color: color.tertiary, display: 'block', fontSize: '0.625rem' }, children: 'subscription' }) : null] })
+    },
+    {
+      label: 'Cost for the same work',
+      hint: ref === 'combined' ? 'all selected models’ work combined' : `${nameOf(ref)}’s work`,
+      render: model => jsxs('span', { children: [sameWork(model), leaders.cost?.[ref] === model.model_id ? jsx(CompareLeader, { kind: 'cost' }) : null] })
+    },
+    { label: 'Recorded spend', hint: 'what it actually cost in this period', render: model => model.subscription && !model.cash_usd ? 'Included' : formatCost(model.cash_usd, 'estimated') },
+    {
+      label: 'Work reliability',
+      hint: `fails at most (95% bound), from ${data.sample_floor}+ tasks`,
+      render: model => model.reliability?.proven
+        ? jsxs('span', { children: [`≤ ${formatPercent(model.reliability.failure_upper_bound)}`, jsx('span', { style: { color: color.tertiary, display: 'block', fontSize: '0.625rem' }, children: `${formatCount(model.reliability.eligible_tasks)} tasks` }), leaders.reliability === model.model_id ? jsx(CompareLeader, { kind: 'reliability' }) : null] })
+        : jsx('span', { style: { color: color.tertiary }, children: `Not enough data (${formatCount(model.reliability?.eligible_tasks || 0)} tasks)` })
+    },
+    {
+      label: 'Speed',
+      hint: 'median total time per call (p95)',
+      render: model => model.latency?.p50_seconds
+        ? jsxs('span', { children: [`${formatSeconds(model.latency.p50_seconds)} (${formatSeconds(model.latency.p95_seconds)})`, leaders.speed === model.model_id ? jsx(CompareLeader, { kind: 'speed' }) : null] })
+        : jsx('span', { style: { color: color.tertiary }, children: 'No logged calls' })
+    },
+    {
+      label: 'Cache hit rate',
+      hint: 'prompt read from cache',
+      render: model => model.cache_hit_rate === null || model.cache_hit_rate === undefined
+        ? '—'
+        : jsxs('span', { children: [formatPercent(model.cache_hit_rate), leaders.cache === model.model_id ? jsx(CompareLeader, { kind: 'cache' }) : null] })
+    },
+    { label: 'Context per call', hint: 'prompt tokens sent each call', render: model => model.workload?.context_per_call ? formatCount(model.workload.context_per_call) : '—' },
+    { label: 'Output per call', render: model => model.workload?.output_per_call ? formatCount(model.workload.output_per_call) : '—' },
+    { label: 'Calls · sessions', render: model => `${formatCount(model.workload?.calls)} · ${formatCount(model.workload?.sessions)}` },
+    { label: 'Where it ran', render: model => compareShares(model.workload?.sources) },
+    { label: 'What it did', render: model => compareShares(model.workload?.task_types) }
+  ]
+  return jsxs('section', {
+    style: { display: 'grid', gap: '0.6rem' },
+    children: [
+      heading,
+      jsx(NativeSelect, {
+        label: 'Price the same work as',
+        value: ref,
+        onChange: setReference,
+        children: (data.references || []).map(key => jsx('option', { value: key, children: key === 'combined' ? 'All selected models combined' : `${nameOf(key)}’s work` }, key))
+      }),
+      jsx('div', {
+        style: { border, borderRadius: '6px', overflowX: 'auto' },
+        children: jsx('table', {
+          style: { borderCollapse: 'collapse', fontSize: '0.75rem', minWidth: `${12 + columns.length * 11}rem`, width: '100%' },
+          children: [
+            jsx('thead', {
+              children: jsx('tr', {
+                children: [
+                  jsx('th', { scope: 'col', style: { background: color.surface, borderBottom: border, color: color.tertiary, fontSize: '0.6875rem', fontWeight: 600, padding: '0.5rem 0.65rem', textAlign: 'left' }, children: 'Measure' }, 'measure'),
+                  ...columns.map(model => jsx('th', {
+                    scope: 'col',
+                    style: { background: color.surface, borderBottom: border, padding: '0.45rem 0.65rem', textAlign: 'left', verticalAlign: 'top' },
+                    children: jsxs('span', {
+                      style: { alignItems: 'flex-start', display: 'flex', gap: '0.4rem', justifyContent: 'space-between' },
+                      children: [
+                        jsx('span', { style: { color: color.primary, fontWeight: 650, overflowWrap: 'anywhere' }, children: model.display_name }),
+                        jsx('button', {
+                          type: 'button',
+                          onClick: () => onRemove(model.model_id),
+                          'aria-label': `Remove ${model.display_name} from the comparison`,
+                          title: 'Remove from the comparison',
+                          style: { background: 'transparent', border: 'none', color: color.tertiary, cursor: 'pointer', padding: 0 },
+                          children: jsx(Codicon, { name: 'close', size: '0.7rem' })
+                        })
+                      ]
+                    })
+                  }, model.model_id))
+                ]
+              })
+            }),
+            jsx('tbody', {
+              children: rows.map(row => jsx('tr', {
+                children: [
+                  jsx('th', {
+                    scope: 'row',
+                    style: { borderBottom: border, color: color.secondary, fontWeight: 600, padding: '0.5rem 0.65rem', textAlign: 'left', verticalAlign: 'top', whiteSpace: 'nowrap' },
+                    children: jsxs('span', { children: [row.label, row.hint ? jsx('span', { style: { color: color.quaternary, display: 'block', fontSize: '0.625rem', fontWeight: 500 }, children: row.hint }) : null] })
+                  }),
+                  ...columns.map(model => jsx('td', cell(row.render(model)), model.model_id))
+                ]
+              }, row.label))
+            })
+          ]
+        })
+      }),
+      data.warnings?.length
+        ? jsx('div', {
+            role: 'status',
+            style: { background: color.warningSoft, borderRadius: '5px', color: color.warning, display: 'grid', fontSize: '0.6875rem', gap: '0.25rem', lineHeight: 1.5, padding: '0.5rem 0.65rem' },
+            children: data.warnings.map(warning => jsx('span', { children: warning }, warning))
+          })
+        : null,
+      proven.length
+        ? jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flexWrap: 'wrap', fontSize: '0.75rem', gap: '0.5rem' },
+            children: [
+              jsx(NativeSelect, {
+                label: 'Cheapest model that is at least as reliable as',
+                value: base.model_id,
+                onChange: setBaseline,
+                children: proven.map(model => jsx('option', { value: model.model_id, children: model.display_name }, model.model_id))
+              }),
+              jsx('span', {
+                style: { color: color.primary },
+                children: pick
+                  ? `${nameOf(pick.model_id)}: ${pick.uses_plan_quota ? 'included in your plan (uses quota)' : formatCost(pick.cost_usd, 'estimated')} for ${base.display_name}’s work, against ${formatCost(pick.baseline_cost_usd, 'estimated')} now.`
+                  : `Nothing cheaper here is as reliable as ${base.display_name}.`
+              })
+            ]
+          })
+        : jsx('span', { style: { color: color.tertiary, fontSize: '0.6875rem' }, children: `A cheaper-and-as-reliable pick needs a model with at least ${data.sample_floor} scored tasks.` }),
+      jsx('p', { style: { color: color.tertiary, fontSize: '0.6875rem', lineHeight: 1.5, margin: 0 }, children: data.definition })
+    ]
+  })
+}
+
+function AIModelsView({ query, quotaQuery, narrow, refreshError, onDrill, period, ctx }) {
+  const [compare, setCompare] = useState([])
+  const toggleCompare = modelId => setCompare(current => current.includes(modelId)
+    ? current.filter(id => id !== modelId)
+    : current.length >= COMPARE_LIMIT ? current : [...current, modelId])
+  if (queryPending(query)) return jsx(LoadingBlock, { rows: 9 })
+  if (query.isError) return jsx(ErrorBlock, { error: query.error, onRetry: query.refetch, title: 'AI model analytics are unavailable' })
+  const data = query.data
+  const window = formatLogWindow(data.coverage)
+  const toolCalls = Number(data.coverage?.recorded_tool_calls) || 0
+  return jsx('div', {
+    style: { flex: 1, minHeight: 0, overflow: 'auto', padding: '1rem' },
+    children: jsxs('div', {
+      style: { display: 'grid', gap: '1rem', margin: '0 auto', maxWidth: '100rem' },
+      children: [
+        jsx(SectionHeading, {
+          title: 'Model performance and efficiency',
+          description: 'Each row states a verdict from two separate evidence layers: the API layer (logged calls) and the work ledger (eligible finished tasks). Rows sort by reliability rank; click a row for the full evidence card, or tick up to five models to compare them side by side.',
+          action: jsxs('div', {
+            style: { alignItems: 'center', display: 'flex', flexShrink: 0, gap: '0.5rem' },
+            children: [
+              window
+                ? jsx('span', {
+                    title: 'Fail rate and latency come from bounded local Duckwork agent logs covering this window; samples can exceed the period’s recorded requests when the log window is wider.',
+                    style: { ...tabular, background: color.surfaceRaised, border, borderRadius: '999px', color: color.tertiary, flexShrink: 0, fontSize: '0.625rem', padding: '0.22rem 0.6rem', whiteSpace: 'nowrap' },
+                    children: `logs ${window}`
+                  })
+                : null,
+              jsx(ExportMenu, {
+                title: 'Export the model table for the selected period',
+                items: [
+                  {
+                    id: 'models-csv',
+                    label: 'Models (CSV)',
+                    hint: 'One row per model: requests, tokens, cost, API and work reliability, latency',
+                    filename: exportFilename('models', period, 'csv'),
+                    mime: 'text/csv;charset=utf-8',
+                    build: () => toCsv(MODEL_EXPORT_COLUMNS, data.models || [])
+                  },
+                  jsonExportItem('models-json', 'Models payload (JSON)', 'Every evidence field behind the cards, plus coverage', 'models', period, data)
+                ]
+              })
+            ]
+          })
+        }),
+        refreshError
+          ? jsx('div', { role: 'alert', style: { background: color.dangerSoft, borderRadius: '5px', color: color.danger, fontSize: '0.6875rem', padding: '0.5rem 0.6rem' }, children: `Manual refresh failed: ${refreshError}` })
+          : null,
+        quotaQuery?.isError
+          ? jsx('div', { role: 'status', style: { background: color.warningSoft, borderRadius: '5px', color: color.warning, fontSize: '0.6875rem', padding: '0.5rem 0.6rem' }, children: 'OAuth quota burn is temporarily unavailable; recorded model analytics remain visible.' })
+          : null,
+        jsx(RoutingSummary, { models: data.models, coverage: data.coverage, onDrill }),
+        ctx ? jsx(CompareSection, { ctx, period, selected: compare, models: data.models, onRemove: toggleCompare, onClear: () => setCompare([]) }) : null,
+        jsx(AIModelsTable, { models: data.models, quotaData: quotaQuery?.data, coverage: data.coverage, narrow, onDrill, period, compare: ctx ? compare : null, onToggleCompare: toggleCompare }),
+        ctx ? jsx(SavingsSection, { ctx, period, enabled: Boolean(data) }) : null,
+        jsxs('div', {
+          style: { alignItems: 'flex-start', borderTop: border, color: color.tertiary, display: 'flex', fontSize: '0.6875rem', gap: '0.5rem', lineHeight: 1.5, paddingTop: '0.75rem' },
+          children: [
+            jsx(Codicon, { name: 'info', size: '0.75rem', style: { marginTop: '0.15rem' } }),
+            jsx('span', {
+              children: `Requests, tokens, routes, and cost come from Duckwork session accounting; API-layer rates come from bounded local logs${window ? ` (${window})` : ''}; the work ledger scores eligible finished main-role tasks and ranks by the 95% Wilson upper failure bound after an n=${formatCount(data.coverage?.rate_sample_threshold || 20)} floor. This period recorded ${formatCount(data.coverage?.recorded_failure_events)} failure events, including ${formatCount(data.coverage?.recorded_tool_failures)}${toolCalls ? ` of ${formatCount(toolCalls)}` : ''} tool-call failures (${formatCount(data.coverage?.attributed_tool_failures)} attributed to a model). Full metric definitions live in each card's provenance block.`
+            })
+          ]
+        })
+      ]
+    })
+  })
+}
+
+export default {
+  id: PLUGIN_ID,
+  name: 'Duckwork Session Lens',
+  description: 'Native read-only session telemetry, account usage, trace, runtime health, profiles, and schedules.',
+  defaultEnabled: true,
+  register(ctx) {
+    ctx.registerMany([
+      {
+        id: 'page',
+        area: ROUTES_AREA,
+        data: { path: ROUTE },
+        render: () => jsx(SessionLensPage, { ctx })
+      },
+      {
+        id: 'nav',
+        area: SIDEBAR_NAV_AREA,
+        order: 55,
+        data: { path: ROUTE, label: 'Session Lens', codicon: 'graph-line' }
+      },
+      {
+        id: 'open',
+        area: PALETTE_AREA,
+        data: {
+          id: 'session-lens.open',
+          label: 'Session Lens: Open telemetry',
+          keywords: ['sessions', 'models', 'tokens', 'cost', 'usage', 'quota', 'codex', 'grok', 'fordex', 'openrouter', 'tools', 'skills', 'failures', 'latency', 'telemetry', 'profiles', 'gateway', 'schedules'],
+          run: () => host.navigate(ROUTE)
+        }
+      }
+    ])
+  }
+}

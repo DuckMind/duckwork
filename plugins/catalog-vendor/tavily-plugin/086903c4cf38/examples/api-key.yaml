@@ -1,0 +1,10 @@
+# Alternative to OAuth. Set TAVILY_API_KEY through Duckwork's profile settings.
+# Replace any existing mcp_servers.tavily entry, including auth and headers.
+mcp_servers:
+  tavily:
+    url: https://mcp.tavily.com/mcp/
+    timeout: 900
+    strict_redirect_headers: true
+    headers:
+      Authorization: "Bearer ${TAVILY_API_KEY}"
+      X-Client-Name: "duckwork plugin"

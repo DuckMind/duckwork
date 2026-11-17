@@ -1,0 +1,134 @@
+name: Security scans
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+  ACTIONLINT_IMAGE: docker.io/rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+  SHELLCHECK_IMAGE: docker.io/koalaman/shellcheck:v0.11.0@sha256:61862eba1fcf09a484ebcc6feea46f1782532571a34ed51fedf90dd25f925a8d
+
+jobs:
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Gitleaks
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/repo" \
+            -w /repo \
+            "${GITLEAKS_IMAGE}" \
+            detect --source=/repo --config=/repo/.gitleaks.toml --redact --verbose
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run actionlint
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/repo" \
+            -w /repo \
+            "${ACTIONLINT_IMAGE}" \
+            -color
+
+      - name: Run ShellCheck when shell scripts exist
+        run: |
+          set -euo pipefail
+          mapfile -t scripts < <(git ls-files '*.sh' '*.bash')
+          if [ "${#scripts[@]}" -eq 0 ]; then
+            echo "No tracked shell scripts found; skipping ShellCheck."
+            exit 0
+          fi
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/mnt" \
+            -w /mnt \
+            "${SHELLCHECK_IMAGE}" \
+            -x "${scripts[@]}"
+
+  python-security:
+    name: Python static/security checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-security.txt
+
+      - name: Install scanners
+        run: python -m pip install --requirement requirements-security.txt
+
+      - name: Run Semgrep
+        run: semgrep scan --config p/ci --config p/secrets --error --metrics=off .
+
+      - name: Run zizmor
+        run: zizmor .github/workflows
+
+      - name: Detect Python dependencies
+        id: python-deps
+        run: |
+          python - "$RUNNER_TEMP/project-dependencies.txt" <<'PY' >> "$GITHUB_OUTPUT"
+          import glob
+          import sys
+          import tomllib
+          from pathlib import Path
+
+          requirements_present = bool(glob.glob("requirements*.txt"))
+          dependencies = []
+          pyproject = Path("pyproject.toml")
+          if pyproject.exists():
+              data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+              project = data.get("project", {})
+              dependencies.extend(project.get("dependencies", []))
+              for group in project.get("optional-dependencies", {}).values():
+                  dependencies.extend(group)
+
+          dependency_file = Path(sys.argv[1])
+          dependency_file.write_text("\n".join(dependencies), encoding="utf-8")
+          present = requirements_present or bool(dependencies)
+          print(f"present={str(present).lower()}")
+          PY
+
+      - name: Run pip-audit
+        if: steps.python-deps.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          # Audit project manifests explicitly. The ambient environment also
+          # contains the security scanners and is not the project's dependency set.
+          if compgen -G 'requirements*.txt' > /dev/null; then
+            for requirements_file in requirements*.txt; do
+              pip-audit --progress-spinner off -r "${requirements_file}"
+            done
+          fi
+          if [[ -s "${RUNNER_TEMP}/project-dependencies.txt" ]]; then
+            pip-audit --progress-spinner off -r "${RUNNER_TEMP}/project-dependencies.txt"
+          fi

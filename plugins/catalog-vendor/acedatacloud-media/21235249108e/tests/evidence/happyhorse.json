@@ -1,0 +1,36 @@
+{
+  "duckwork_version": "0.21.6",
+  "duckwork_sha": "818c13be1dc4fd28987e1e881a9408224afd4535",
+  "tested_at": "2026-10-08T17:53:40.794552+00:00",
+  "operation": "acedata_happyhorse_generate",
+  "invocation": "Duckwork registered tool dispatcher",
+  "generation_attempts": 1,
+  "status": "succeeded",
+  "task_id": "f3c0a615-5276-4ac7-b3f7-c21f7df596e1",
+  "media_verification": [
+    {
+      "content_type": "video/mp4",
+      "bytes": 651214,
+      "sha256": "75410c08c242e36b65be615e04479b59f765fadc8779a28f32fb6efeda39dc66",
+      "duration": "3.162667",
+      "streams": [
+        {
+          "codec_type": "video",
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720
+        },
+        {
+          "codec_type": "audio",
+          "codec_name": "aac",
+          "sample_rate": "24000"
+        }
+      ],
+      "decoded": true
+    }
+  ],
+  "runtime_client_sha256": "662dd5d6d48c53dbf0ea527732080c37fde0d7dfdcc16fa93b7bd81cafca91db",
+  "limitations": "Primary operation only. Other options are schema-validated but not all combinations were sent to the paid API. Catalog distribution is a separate verification step.",
+  "validation_context": "Historical standalone source before consolidation; unchanged service schema and transport. Consolidated regression is recorded separately.",
+  "media_note": "Historical decoded media digests retained; temporary URLs omitted. The local validation artifacts retain actual responses."
+}

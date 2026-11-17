@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-frihet"
+version = "0.2.1"
+description = "Official Duckwork Agent plugin for Frihet — install, configure, diagnose, and operate the Frihet MCP from inside Duckwork."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Frihet-io" }]
+keywords = ["duckwork", "duckwork-agent", "plugin", "frihet", "erp", "mcp"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Framework :: Duckwork Agent",
+]
+
+dependencies = [
+    # PyYAML is required by frihet.mcp_server_block_present() to parse
+    # the user's ``~/.duckwork/config.yaml`` and decide whether the
+    # ``mcp_servers.frihet`` block is ``configured``, ``missing`` or
+    # ``unknown``. Without PyYAML the function silently returns
+    # ``unknown`` even when a valid block is present, which causes 5
+    # tests in tests/test_frihet.py to fail. PyYAML is stdlib-sized
+    # (~150 KB) and is already an implicit dependency of Duckwork itself
+    # (Duckwork reads the same config.yaml), so adding it does not
+    # expand the install footprint meaningfully.
+    "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-mock>=3.12"]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+Source = "https://github.com/DuckMind/duckwork"
+Canonical_MCP = "https://mcp.frihet.io/mcp"
+
+[tool.setuptools]
+py-modules = ["frihet"]
+
+[tool.setuptools.package-data]
+"frihet" = ["skills/frihet/SKILL.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,305 @@
+{
+  "corpusVersion": "1",
+  "domain": "bench.local",
+  "pageSize": 20,
+  "catalogSha": "395eb6372cea865141b67f984b8f44ae6cb793527540ae282c832d64210544ed",
+  "codeSha": "15ece10d969d31470d4da21c74da10ce606e8240aea9ebe734dcdc843303149e",
+  "digest": "45204a4d1f92c3681b6fd9abb273b7c7de671b7842214f1c6ef330e965dba918",
+  "outcomes": [
+    {
+      "group": "en",
+      "q": "count the words and lines in a text file",
+      "kind": null,
+      "gold": [
+        "script:scripts:word_count"
+      ],
+      "rank": 1,
+      "matched": 9,
+      "total": 9,
+      "bytes": 7190,
+      "top": "script:scripts:word_count"
+    },
+    {
+      "group": "en",
+      "q": "convert a csv file into json records",
+      "kind": null,
+      "gold": [
+        "script:scripts:csv_to_json"
+      ],
+      "rank": 1,
+      "matched": 5,
+      "total": 5,
+      "bytes": 4109,
+      "top": "script:scripts:csv_to_json"
+    },
+    {
+      "group": "en",
+      "q": "validate that a file is well formed json",
+      "kind": null,
+      "gold": [
+        "script:scripts:json_validate"
+      ],
+      "rank": 1,
+      "matched": 3,
+      "total": 3,
+      "bytes": 2425,
+      "top": "script:scripts:json_validate"
+    },
+    {
+      "group": "en",
+      "q": "send an http request and print the status code",
+      "kind": null,
+      "gold": [
+        "script:scripts:http_probe"
+      ],
+      "rank": 1,
+      "matched": 2,
+      "total": 2,
+      "bytes": 1733,
+      "top": "script:scripts:http_probe"
+    },
+    {
+      "group": "en",
+      "q": "show the current git branch and latest commit",
+      "kind": null,
+      "gold": [
+        "script:scripts:git_summary.sh"
+      ],
+      "rank": 1,
+      "matched": 2,
+      "total": 2,
+      "bytes": 1742,
+      "top": "script:scripts:git_summary.sh"
+    },
+    {
+      "group": "en",
+      "q": "extract plain text and tables from a pdf",
+      "kind": null,
+      "gold": [
+        "skill:skills:pdf-extract"
+      ],
+      "rank": 1,
+      "matched": 4,
+      "total": 4,
+      "bytes": 3279,
+      "top": "skill:skills:pdf-extract"
+    },
+    {
+      "group": "en",
+      "q": "summarize a long document into key points",
+      "kind": null,
+      "gold": [
+        "skill:skills:summarize-text"
+      ],
+      "rank": 1,
+      "matched": 3,
+      "total": 3,
+      "bytes": 2398,
+      "top": "skill:skills:summarize-text"
+    },
+    {
+      "group": "en",
+      "q": "translate text between two languages",
+      "kind": null,
+      "gold": [
+        "skill:skills:translate-text"
+      ],
+      "rank": 1,
+      "matched": 5,
+      "total": 5,
+      "bytes": 4154,
+      "top": "skill:skills:translate-text"
+    },
+    {
+      "group": "en",
+      "q": "pack files into an archive",
+      "kind": null,
+      "gold": [
+        "cli:archive-pack"
+      ],
+      "rank": 1,
+      "matched": 5,
+      "total": 5,
+      "bytes": 3972,
+      "top": "cli:archive-pack"
+    },
+    {
+      "group": "en",
+      "q": "lint a markdown document",
+      "kind": null,
+      "gold": [
+        "cli:markdown-lint"
+      ],
+      "rank": 1,
+      "matched": 3,
+      "total": 3,
+      "bytes": 2419,
+      "top": "cli:markdown-lint"
+    },
+    {
+      "group": "en",
+      "q": "weather forecast for a city",
+      "kind": null,
+      "gold": [
+        "mcp:weather-lookup"
+      ],
+      "rank": 1,
+      "matched": 1,
+      "total": 1,
+      "bytes": 919,
+      "top": "mcp:weather-lookup"
+    },
+    {
+      "group": "en",
+      "q": "convert a value between measurement units",
+      "kind": null,
+      "gold": [
+        "mcp:unit-converter"
+      ],
+      "rank": 1,
+      "matched": 3,
+      "total": 3,
+      "bytes": 2569,
+      "top": "mcp:unit-converter"
+    },
+    {
+      "group": "en",
+      "q": "list and create calendar events",
+      "kind": null,
+      "gold": [
+        "mcp:calendar-events"
+      ],
+      "rank": 1,
+      "matched": 3,
+      "total": 3,
+      "bytes": 2456,
+      "top": "mcp:calendar-events"
+    },
+    {
+      "group": "en",
+      "q": "work with json data",
+      "kind": null,
+      "gold": [
+        "script:scripts:csv_to_json",
+        "script:scripts:json_validate"
+      ],
+      "rank": 1,
+      "matched": 2,
+      "total": 2,
+      "bytes": 1668,
+      "top": "script:scripts:json_validate"
+    },
+    {
+      "group": "en",
+      "q": "summarize or translate a long document",
+      "kind": null,
+      "gold": [
+        "skill:skills:summarize-text",
+        "skill:skills:translate-text"
+      ],
+      "rank": 1,
+      "matched": 3,
+      "total": 3,
+      "bytes": 2540,
+      "top": "skill:skills:summarize-text"
+    },
+    {
+      "group": "ru",
+      "q": "подсчитать слова и строки в файле",
+      "kind": "cyrillic-blind",
+      "gold": [
+        "script:scripts:word_count"
+      ],
+      "rank": 0,
+      "matched": 0,
+      "total": 13,
+      "bytes": 10587,
+      "top": null
+    },
+    {
+      "group": "ru",
+      "q": "погода и прогноз в городе",
+      "kind": "cyrillic-blind",
+      "gold": [
+        "mcp:weather-lookup"
+      ],
+      "rank": 0,
+      "matched": 0,
+      "total": 13,
+      "bytes": 10572,
+      "top": null
+    },
+    {
+      "group": "ru",
+      "q": "конвертировать csv в json",
+      "kind": "latin-rescue",
+      "gold": [
+        "script:scripts:csv_to_json"
+      ],
+      "rank": 1,
+      "matched": 2,
+      "total": 2,
+      "bytes": 1690,
+      "top": "script:scripts:csv_to_json"
+    },
+    {
+      "group": "ru",
+      "q": "валидировать json файл",
+      "kind": "latin-rescue",
+      "gold": [
+        "script:scripts:json_validate"
+      ],
+      "rank": 1,
+      "matched": 2,
+      "total": 2,
+      "bytes": 1689,
+      "top": "script:scripts:json_validate"
+    },
+    {
+      "group": "ru",
+      "q": "извлечь текст из pdf",
+      "kind": "latin-rescue",
+      "gold": [
+        "skill:skills:pdf-extract"
+      ],
+      "rank": 1,
+      "matched": 1,
+      "total": 1,
+      "bytes": 860,
+      "top": "skill:skills:pdf-extract"
+    },
+    {
+      "group": "negative",
+      "q": "play a synthwave audio track",
+      "kind": null,
+      "gold": [],
+      "rank": 0,
+      "matched": 0,
+      "total": 0,
+      "bytes": 85,
+      "top": null
+    },
+    {
+      "group": "negative",
+      "q": "deploy a kubernetes helm chart",
+      "kind": null,
+      "gold": [],
+      "rank": 0,
+      "matched": 0,
+      "total": 0,
+      "bytes": 87,
+      "top": null
+    },
+    {
+      "group": "negative",
+      "q": "mix a multitrack drum recording",
+      "kind": null,
+      "gold": [],
+      "rank": 0,
+      "matched": 0,
+      "total": 0,
+      "bytes": 88,
+      "top": null
+    }
+  ]
+}

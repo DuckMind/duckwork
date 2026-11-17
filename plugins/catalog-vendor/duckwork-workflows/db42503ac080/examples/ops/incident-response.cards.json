@@ -1,0 +1,22 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why it works",
+      "items": [
+        "Full incident lifecycle: alert -> verdict branch -> machine recovery probe -> merge-gated close",
+        "Human escalation carries the whole packet; machine probes poll, humans decide",
+        "Close is gated on the merge \u2014 no self-declared resolution"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Contract",
+      "items": [
+        "{{nodes}} nodes across {{gates}} gates, {{branches}} branches \u2014 adapt the run_context seeds and sweep-adapter to your stack",
+        "Validates but is not smoke-run: real lanes need your stack",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ]
+    }
+  ]
+}

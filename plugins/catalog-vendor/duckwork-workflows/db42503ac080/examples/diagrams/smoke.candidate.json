@@ -1,0 +1,100 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Provider smoke test, shortest legal path: agent -> fan-out -> agent",
+        "Fastest path to prove a route answers before trusting a real graph with it",
+        "Fan-out children ride the same seat defaults as the parent"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "3 nodes, 1 fan-out: seed -> lanes -> final",
+        "No gates, no schemas: pure spawn-and-commit sanity shape",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "one",
+      "id": "one-fan",
+      "to": "fan",
+      "variant": "default"
+    },
+    {
+      "from": "fan",
+      "id": "fan-two",
+      "to": "two",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/smoke.html",
+    "quality_profile": "standard",
+    "subtitle": "agent -> 2-way fan-out -> agent; provider smoke test",
+    "title": "smoke"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "one",
+      "label": "One",
+      "lane": "work",
+      "sublabel": "reply with exactly",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "fan",
+      "label": "Fan",
+      "lane": "work",
+      "tag": "fan-out 2",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "two",
+      "label": "Two",
+      "lane": "work",
+      "sublabel": "say hello in 3",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 1
+    },
+    {
+      "fromCol": 2,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 2
+    }
+  ],
+  "schema_version": 2
+}

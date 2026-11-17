@@ -1,0 +1,492 @@
+[
+  {
+    "file": "001_business_email.txt",
+    "surface": "business_email",
+    "topic": "精密部品メーカーから機械メーカーへ、試作打ち合わせの日程調整",
+    "chars": 526,
+    "tells": [
+      "定型の前置きと締め",
+      "太字見出し＋箇条書き",
+      "「お気軽に」の重複",
+      "中身のない明るい見通し"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "002_business_email.txt",
+    "surface": "business_email",
+    "topic": "ホームセンター本部から各店舗へ、売場コンテストの写真提出依頼",
+    "chars": 368,
+    "tells": [
+      "「〜となっております」",
+      "定型の締め「お気軽にお問い合わせください」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "003_business_email.txt",
+    "surface": "business_email",
+    "topic": "物流会社から荷主へ、配送遅延のお詫び",
+    "chars": 537,
+    "tells": [
+      "過剰に重い定型の前置き",
+      "太字の見出し",
+      "「——」",
+      "3点の対策の型",
+      "「全社一丸」の決意表明",
+      "「いたします」の連続"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "004_business_email.txt",
+    "surface": "business_email",
+    "topic": "医療機器メーカーから病院へ、展示会来場のお礼",
+    "chars": 341,
+    "tells": [
+      "締めの定型（貴重なお時間を割いて・末永いお付き合い）"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "005_business_email.txt",
+    "surface": "business_email",
+    "topic": "システム保守会社から食品会社へ、月次運用報告",
+    "chars": 530,
+    "tells": [
+      "Markdown見出し＋絵文字",
+      "太字ラベルの箇条書き",
+      "「総じて」の感想の総括",
+      "おもねり",
+      "中身のない今後の取り組み"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "006_business_email.txt",
+    "surface": "business_email",
+    "topic": "印刷会社から設計事務所へ、パンフレットの見積送付",
+    "chars": 344,
+    "tells": [
+      "太字見出し＋箇条書き",
+      "「ぜひご検討いただけますと幸いです」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "007_business_email.txt",
+    "surface": "business_email",
+    "topic": "学校法人から大学教員へ、教職員研修の講演依頼",
+    "chars": 533,
+    "tells": [
+      "相手へのおもねり",
+      "「単なる〜ではありません。〜です」",
+      "「〜することができる」の直訳調",
+      "根拠のない確信",
+      "太字の概要"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "008_business_email.txt",
+    "surface": "business_email",
+    "topic": "税理士事務所から工務店へ、年末調整書類の提出依頼",
+    "chars": 355,
+    "tells": [
+      "定型の締め「ご不明な点がございましたら、お気軽に」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "009_business_email.txt",
+    "surface": "business_email",
+    "topic": "飲食チェーン本部から青果卸へ、納品スケジュール変更のお願い",
+    "chars": 479,
+    "tells": [
+      "「重要なポイントは以下の3点です」",
+      "太字ラベルの番号リスト",
+      "同じ文末「ためです。」の連続",
+      "「両社にとってより良い関係」の空疎な前向き表現"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "010_business_email.txt",
+    "surface": "business_email",
+    "topic": "学習支援NPOから寄付者へ、上半期の活動報告とお礼",
+    "chars": 379,
+    "tells": [
+      "締めの「温かいご支援のおかげで」「未来のために」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "011_external.txt",
+    "surface": "external",
+    "topic": "IT企業のプレスリリース、AI請求書処理機能の提供開始",
+    "chars": 780,
+    "tells": [
+      "誇張した宣伝語（革新的・シームレス・最先端・圧倒的）",
+      "一般論の書き出し「近年、」",
+      "太字の特長リスト",
+      "中身のない今後の展望"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "012_external.txt",
+    "surface": "external",
+    "topic": "自治体向け窓口予約システムのサービス案内",
+    "chars": 504,
+    "tells": [
+      "一般論の書き出し「近年、〜が求められています」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "013_external.txt",
+    "surface": "external",
+    "topic": "運送会社の採用ページ",
+    "chars": 595,
+    "tells": [
+      "問いかけの見出し「一緒に未来を創りませんか？」",
+      "「——」",
+      "Markdown見出し＋絵文字",
+      "「〜ではありません。〜です」",
+      "一人ひとりに寄り添う等の定型",
+      "感嘆の締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "014_external.txt",
+    "surface": "external",
+    "topic": "そば店の秋の限定メニューのお知らせ",
+    "chars": 389,
+    "tells": [
+      "締めの定型「心ゆくまでお届けします。ぜひこの機会に」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "015_external.txt",
+    "surface": "external",
+    "topic": "内科クリニックのオンライン診療開始のお知らせ",
+    "chars": 620,
+    "tells": [
+      "「一人ひとりに寄り添った」「安心・安全」の定型",
+      "数の宣言「3つの特長」",
+      "✅絵文字＋太字",
+      "共感の一般論",
+      "中身のない決意の締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "016_external.txt",
+    "surface": "external",
+    "topic": "製麺会社の工場見学再開のお知らせ",
+    "chars": 445,
+    "tells": [
+      "締めの「今後も〜に貢献してまいります」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "017_external.txt",
+    "surface": "external",
+    "topic": "学習塾の新コース開講案内",
+    "chars": 571,
+    "tells": [
+      "「変化の激しいこの時代」の一般論",
+      "問いかけの書き出し",
+      "「単に〜だけではありません」",
+      "「——」",
+      "「それこそが〜真に求められる」",
+      "感嘆符の締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "018_external.txt",
+    "surface": "external",
+    "topic": "社会保険労務士事務所の給与計算代行サービス案内",
+    "chars": 481,
+    "tells": [
+      "太字ラベル付きの箇条書き"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "019_external.txt",
+    "surface": "external",
+    "topic": "環境NPOの森のクリーン活動イベント告知",
+    "chars": 559,
+    "tells": [
+      "「——」の多用",
+      "「〜だけではありません」",
+      "「一人ひとりの小さな行動が〜」の定型",
+      "参加者の声を使った感想の総括",
+      "情緒的な締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "020_external.txt",
+    "surface": "external",
+    "topic": "スーパーのポイントカード制度変更のお知らせ",
+    "chars": 493,
+    "tells": [
+      "「お客様の声にお応えし」「より一層」の定型"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "021_sns.txt",
+    "surface": "sns",
+    "topic": "エンジニアのX投稿、Gitコミットメッセージの書き方",
+    "chars": 172,
+    "tells": [
+      "【保存版】の煽り",
+      "「結論：」",
+      "数の宣言「ポイントは3つ」",
+      "✅絵文字の箇条書き",
+      "「劇的に変わります」の誇張",
+      "ハッシュタグ"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "022_sns.txt",
+    "surface": "sns",
+    "topic": "広報担当のnote、社内報Web化から半年の気づき",
+    "chars": 174,
+    "tells": [
+      "締めの「いかがでしたか？」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "023_sns.txt",
+    "surface": "sns",
+    "topic": "ラーメン店主のX投稿、スープへのこだわり",
+    "chars": 183,
+    "tells": [
+      "「単なる〜ではありません。〜です」",
+      "「——それこそが」",
+      "絵文字",
+      "ハッシュタグの羅列",
+      "定型の締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "024_sns.txt",
+    "surface": "sns",
+    "topic": "人事担当のX投稿、面接方法の見直し",
+    "chars": 136,
+    "tells": [
+      "一般論の書き出し「働き方が多様化する今」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "025_sns.txt",
+    "surface": "sns",
+    "topic": "小学校教員のnote、宿題を選択制にした話",
+    "chars": 199,
+    "tells": [
+      "問いかけの書き出し",
+      "「結論から言うと」",
+      "「〜ではなく〜」の対比",
+      "「大切なのは」",
+      "「〜なのではないでしょうか」の締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "026_sns.txt",
+    "surface": "sns",
+    "topic": "倉庫管理者のX投稿、通路幅の見直し",
+    "chars": 129,
+    "tells": [
+      "中身のない明るい締め「物流の未来は明るい！」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "027_sns.txt",
+    "surface": "sns",
+    "topic": "いちご農家のX投稿、就農5年の学び",
+    "chars": 193,
+    "tells": [
+      "数の宣言「3つシェアします」",
+      "「本当に大切なこと」",
+      "丸数字の箇条書き",
+      "「——」",
+      "中身のない明るい見通し",
+      "絵文字とハッシュタグ"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "028_sns.txt",
+    "surface": "sns",
+    "topic": "不動産仲介のX投稿、内見で日当たりを見るコツ",
+    "chars": 116,
+    "tells": [
+      "締めの「ぜひ参考にしてみてください」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "029_tech_doc.txt",
+    "surface": "tech_doc",
+    "topic": "タスク自動化OSSのREADME",
+    "chars": 625,
+    "tells": [
+      "絵文字付きの見出し",
+      "「強力かつ柔軟な」「シームレス」の宣伝語",
+      "太字ラベルの特長リスト",
+      "「劇的に変わります！」",
+      "「大歓迎です！」の定型"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "030_tech_doc.txt",
+    "surface": "tech_doc",
+    "topic": "EC在庫連携バッチ停止の障害報告",
+    "chars": 509,
+    "tells": [
+      "締めの「今後も安定したサービス提供に努めてまいります」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "031_tech_doc.txt",
+    "surface": "tech_doc",
+    "topic": "ユーザー検索API高速化のPR説明",
+    "chars": 576,
+    "tells": [
+      "絵文字付きの見出し",
+      "「包括的な」「根本的に」の大げさな語",
+      "太字ラベルの箇条書き",
+      "「劇的に」「シームレス」「より堅牢」の効果の誇張",
+      "根拠のない期待効果",
+      "🙏の締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "032_tech_doc.txt",
+    "surface": "tech_doc",
+    "topic": "美容室予約アプリのリマインダー送信方式の設計メモ",
+    "chars": 503,
+    "tells": [
+      "直訳調「この方式は、〜を可能にします」（です・ます混入）"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "033_tech_doc.txt",
+    "surface": "tech_doc",
+    "topic": "新入社員向け開発環境セットアップ手順書",
+    "chars": 784,
+    "tells": [
+      "「ステップバイステップで詳しく解説します」の前置き",
+      "絵文字",
+      "「⚠️ 注意」の空疎な助言",
+      "「お疲れさまでした！」「一緒に素晴らしいプロダクトを」の締め",
+      "太字の多用"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "034_tech_doc.txt",
+    "surface": "tech_doc",
+    "topic": "EC開発のREADME、匿名化ダンプでのローカル確認",
+    "chars": 401,
+    "tells": [
+      "締めの「誰でも簡単に〜することができます」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "035_tech_doc.txt",
+    "surface": "tech_doc",
+    "topic": "会員ポータルのログイン不具合の障害報告書",
+    "chars": 708,
+    "tells": [
+      "番号付きの見出し構成",
+      "「多大なるご迷惑」の定型",
+      "「迅速に」「真摯に」",
+      "数の宣言「3つの再発防止策」",
+      "太字ラベル",
+      "「〜と言えるでしょう」の感想の総括",
+      "中身のない決意"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "036_tech_doc.txt",
+    "surface": "tech_doc",
+    "topic": "在庫一覧CSV出力の文字化け修正のPR説明",
+    "chars": 504,
+    "tells": [
+      "1文だけの太字強調",
+      "🙏の締め"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "037_chat.txt",
+    "surface": "chat",
+    "topic": "料理の質問への返答、ジューシーな唐揚げの作り方",
+    "chars": 418,
+    "tells": [
+      "「素晴らしい質問ですね！」のおもねり",
+      "数の宣言「3つのポイント」",
+      "見出し＋絵文字",
+      "太字の番号見出し",
+      "「ワンランク上」の定型",
+      "「ぜひ試してみてください！😊」の締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "038_chat.txt",
+    "surface": "chat",
+    "topic": "旅行の質問への返答、尾道を半日で回る順路",
+    "chars": 275,
+    "tells": [
+      "締めの「楽しんできてくださいね！」"
+    ],
+    "strength": "weak"
+  },
+  {
+    "file": "039_chat.txt",
+    "surface": "chat",
+    "topic": "勉強の質問への返答、英単語の覚え方",
+    "chars": 410,
+    "tells": [
+      "「とても良い質問です！」のおもねり",
+      "数の宣言「5つのコツ」",
+      "見出し＋絵文字",
+      "太字ラベルの番号リスト",
+      "「まとめ」の総括",
+      "「焦らず一歩ずつ」「心から応援しています！」の締め"
+    ],
+    "strength": "strong"
+  },
+  {
+    "file": "040_chat.txt",
+    "surface": "chat",
+    "topic": "仕事の質問への返答、読まれない議事録の直し方",
+    "chars": 272,
+    "tells": [
+      "共感の書き出し「悩ましいですよね」"
+    ],
+    "strength": "weak"
+  }
+]

@@ -1,0 +1,76 @@
+{
+  "service": "veo",
+  "title": "Ace Data Cloud Veo",
+  "kind": "video",
+  "description": "Veo 3.1 Fast text-to-video and image-to-video through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_veo",
+  "generate_path": "/veo/videos",
+  "task_path": "/veo/tasks",
+  "defaults": {
+    "model": "veo31-fast",
+    "action": "text2video",
+    "aspect_ratio": "16:9"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "prompt"
+    ],
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "model": {
+        "type": "string",
+        "enum": [
+          "veo31-fast"
+        ]
+      },
+      "aspect_ratio": {
+        "enum": [
+          "16:9",
+          "9:16"
+        ],
+        "type": "string",
+        "maxLength": 4000
+      },
+      "image_urls": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "minItems": 1,
+        "maxItems": 2
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_veo_generate",
+  "tools": [
+    "acedatacloud_veo_generate",
+    "acedatacloud_veo_task"
+  ],
+  "toolset": "acedatacloud-veo"
+}

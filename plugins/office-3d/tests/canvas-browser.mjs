@@ -73,6 +73,7 @@ async function runPage(browser, dir, page, key) {
   tab.on('pageerror', error => pageErrors.push(String(error)))
   try {
     await tab.goto(`http://127.0.0.1:${server.address().port}/${page}`)
+    if (pageErrors.length) throw new Error(pageErrors.join('; '))
     // Every page publishes window.__results once it has a verdict; a failing page
     // sets the verdict false and drops the thrown message into `errors`.
     await tab.waitForFunction(k => {

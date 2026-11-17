@@ -1,0 +1,54 @@
+{
+  "name": "proofable-mcp",
+  "version": "0.1.7",
+  "description": "Context and control for any AI. Agent identity, scoped access, and proof across tools.",
+  "author": {
+    "name": "Proofable",
+    "url": "https://proofable.me"
+  },
+  "homepage": "https://docs.proofable.me/mcp/setup",
+  "repository": "https://github.com/proofable/mcp",
+  "license": "Apache-2.0",
+  "keywords": [
+    "proofable",
+    "mcp",
+    "ai-agents",
+    "agent-permissions",
+    "agent-identity",
+    "authorization",
+    "identity-verification",
+    "proof-of-human",
+    "reusable-proof",
+    "oauth",
+    "security",
+    "claude-code",
+    "cursor",
+    "codex",
+    "vscode"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Proofable",
+    "shortDescription": "Context and control for any AI",
+    "longDescription": "Context and control for any AI. Bring the same agent identity, trusted context, scoped access, tools, and proof to the AI clients you use.",
+    "developerName": "Proofable",
+    "websiteURL": "https://proofable.me",
+    "supportURL": "https://proofable.me/contact",
+    "privacyPolicyURL": "https://proofable.me/privacy",
+    "termsOfServiceURL": "https://proofable.me/terms",
+    "defaultPrompt": [
+      "Show my Proofable profile and the proofs I can reuse.",
+      "Check whether I already have the proof needed for this task.",
+      "Show what my agents can do and where their limits apply."
+    ],
+    "category": "Security",
+    "capabilities": [
+      "code",
+      "search"
+    ],
+    "brandColor": "#2F5097",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg",
+    "screenshots": []
+  }
+}

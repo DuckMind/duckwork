@@ -1,0 +1,6150 @@
+"""FastAPI routes and synchronous read-only payload builders."""
+
+from __future__ import annotations
+
+import bisect
+
+from ._common import *
+from ._logparse import *
+from ._classify import *
+from ._reliability import *
+from ._adapters import *
+from ._providers import *
+from ._services import *
+from ._rules import *
+from ._watch import *
+from ._anatomy import *
+from ._chains import *
+from ._savings import *
+from ._compare import *
+
+router = APIRouter()
+
+def _parse_profiles_param(raw: str) -> Optional[List[str]]:
+    """Resolve a ?profiles= value to profile names, or None for the serving one.
+
+    "" -> None (serving profile), "all" -> every discovered profile, a
+    comma-list -> the intersection with discovered profiles. Unknown names
+    are ignored; an empty result falls back to the serving profile.
+    """
+    text = str(raw or "").strip()
+    if not text:
+        return None
+    available = _discovered_profiles()
+    if text.lower() == "all":
+        return available or None
+    wanted = {part.strip() for part in text.split(",") if part.strip()}
+    chosen = [name for name in available if name in wanted]
+    return chosen or None
+
+
+def _route_budget_message(limit: float, elapsed: float, names: Optional[List[str]]) -> str:
+    scope = f" across {len(names)} profiles" if names and len(names) > 1 else ""
+    return (
+        f"Session Lens stopped building this view after {elapsed:.0f} s{scope} so Duckwork stays "
+        f"responsive (budget {limit:g} s). Try a shorter period or a single profile, or raise "
+        "route_budget_seconds in the plugin settings; 0 disables the budget."
+    )
+
+
+def _scoped_call(profiles_param: str, fn: Any, *args: Any, budgeted: bool = True, **kwargs: Any) -> Any:
+    """Run one payload builder under the requested profile scope and the route time budget.
+
+    `budgeted=False` keeps the scope but skips the deadline: the usage route
+    spends most of its time waiting on providers, which the budget must not
+    cut short — its local reads are small.
+    """
+    names = _parse_profiles_param(profiles_param)
+    _set_profile_scope(names)
+    budget = _route_budget_seconds(_plugin_settings()) if budgeted else 0.0
+    try:
+        with _route_budget_scope(budget):
+            try:
+                return fn(*args, **kwargs)
+            except RouteBudgetExceeded as exc:
+                raise HTTPException(
+                    status_code=503, detail=_route_budget_message(exc.limit, exc.elapsed, names)
+                ) from None
+            except Exception as exc:
+                if _route_budget_interrupted(exc):
+                    raise HTTPException(
+                        status_code=503,
+                        detail=_route_budget_message(budget, _route_budget_elapsed(), names),
+                    ) from None
+                raise
+    finally:
+        _set_profile_scope(None)
+
+
+def _fts_query(raw: str) -> str:
+    tokens = re.findall(r"[^\W_][\w./\\:-]*", raw, flags=re.UNICODE)
+    safe = []
+    for token in tokens[:16]:
+        cleaned = token.replace('"', "").strip("*:-")
+        if cleaned:
+            safe.append(f'"{cleaned}"*')
+    return " ".join(safe)
+
+
+def _search_hits(db: Any, query: str) -> Dict[str, Dict[str, Any]]:
+    """session id -> the first full-text hit: its snippet (Duckwork marks the term >>>like this<<<) and role."""
+    fts = _fts_query(query)
+    if not fts:
+        return {}
+    try:
+        matches = db.search_messages(
+            query=fts,
+            limit=MAX_SEARCH_MATCHES,
+            fields=("session_id", "snippet", "role"),
+        )
+    except Exception:
+        return {}
+    snippets: Dict[str, Dict[str, Any]] = {}
+    for match in matches:
+        session_id = str(match.get("session_id") or "")
+        if session_id and session_id not in snippets:
+            snippets[session_id] = {
+                "snippet": _clean_text(match.get("snippet"), 260),
+                "role": str(match.get("role") or "").lower() or None,
+            }
+    return snippets
+
+
+# Where a search term was found, strongest first: a session whose own
+# details carry the term outranks one that only mentions it in passing.
+_SEARCH_DETAIL_MATCHES = (("title", "title"), ("cwd", "folder"), ("model", "model"), ("id", "id"), ("source", "source"))
+_SEARCH_ROLE_MATCHES = {"tool": "tool result", "assistant": "agent reply", "user": "user message"}
+
+
+def _search_match(material: Mapping[str, Any], free_text: str, hit: Any) -> Optional[str]:
+    term = free_text.lower()
+    for column, label in _SEARCH_DETAIL_MATCHES:
+        if term in str(material.get(column) or "").lower():
+            return label
+    role = hit.get("role") if isinstance(hit, Mapping) else None
+    return _SEARCH_ROLE_MATCHES.get(str(role or ""), "message")
+
+
+_SEARCH_FIELDS = {
+    "model": "model",
+    "project": "project",
+    "path": "project",
+    "cwd": "project",
+    "repo": "project",
+    "source": "source",
+    "agent": "source",
+    "branch": "branch",
+    "provider": "provider",
+    "profile": "profile",
+    "id": "id",
+    "title": "title",
+    "failed": "failed",
+    "failures": "failed",
+    "tokens": "tokens",
+    "cost": "cost",
+}
+
+_SEARCH_FIELD_COLUMNS = {
+    "model": ("model",),
+    "project": ("cwd", "git_repo_root"),
+    "source": ("source", "display_name"),
+    "branch": ("git_branch",),
+    "provider": ("billing_provider", "model"),
+    "profile": ("profile_name",),
+    "id": ("id",),
+    "title": ("title",),
+}
+
+_SEARCH_TOKEN_RE = re.compile(r'(?:(\w+):)?("([^"]*)"|\S+)')
+
+_SEARCH_AMOUNT_RE = re.compile(r"(>=|<=|>|<)?(\d+(?:\.\d+)?)([km]?)")
+
+
+def _search_amount(raw: str) -> Optional[Tuple[str, float]]:
+    match = _SEARCH_AMOUNT_RE.fullmatch(str(raw or "").strip().lower())
+    if not match:
+        return None
+    scale = {"": 1.0, "k": 1_000.0, "m": 1_000_000.0}[match.group(3)]
+    return match.group(1) or ">=", float(match.group(2)) * scale
+
+
+def _parse_session_query(raw: str) -> Tuple[str, List[Tuple[str, Any]]]:
+    """Split a sessions search string into free text and field predicates.
+
+    Unknown fields fall back to plain text, so a Windows path like C:\\work
+    or a casual "note: fix" search never errors or silently matches nothing.
+    """
+    free: List[str] = []
+    terms: List[Tuple[str, Any]] = []
+    for match in _SEARCH_TOKEN_RE.finditer(str(raw or "")):
+        field = (match.group(1) or "").lower()
+        value = match.group(3) if match.group(3) is not None else (match.group(2) or "")
+        key = _SEARCH_FIELDS.get(field) if field else None
+        if key is None:
+            free.append(value if field == "" and match.group(3) is not None else match.group(0))
+            continue
+        if key in ("tokens", "cost"):
+            amount = _search_amount(value)
+            if amount is None:
+                free.append(match.group(0))
+            else:
+                terms.append((key, amount))
+        elif key == "failed":
+            flag = value.strip().lower()
+            if flag in ("yes", "true", "1"):
+                terms.append((key, True))
+            elif flag in ("no", "false", "0"):
+                terms.append((key, False))
+            else:
+                free.append(match.group(0))
+        else:
+            cleaned = value.strip().lower()
+            if cleaned:
+                terms.append((key, cleaned))
+    return " ".join(part for part in free if part).strip(), terms
+
+
+def _session_matches_terms(material: Mapping[str, Any], terms: List[Tuple[str, Any]]) -> bool:
+    for key, value in terms:
+        if key == "failed":
+            if bool(material.get("failure_count")) != value:
+                return False
+        elif key in ("tokens", "cost"):
+            op, threshold = value
+            if key == "tokens":
+                amount = float(
+                    sum(
+                        _integer(material.get(column))
+                        for column in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
+                    )
+                )
+            else:
+                actual = material.get("actual_cost_usd")
+                amount = _number(actual if actual is not None else material.get("estimated_cost_usd"), -1.0)
+            if op == ">" and not amount > threshold:
+                return False
+            if op == ">=" and not amount >= threshold:
+                return False
+            if op == "<" and not amount < threshold:
+                return False
+            if op == "<=" and not amount <= threshold:
+                return False
+        else:
+            columns = _SEARCH_FIELD_COLUMNS[key]
+            if not any(value in str(material.get(column) or "").lower() for column in columns):
+                return False
+    return True
+
+
+def _list_sessions_sync(
+    *,
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+    query: str,
+    sort: str,
+    failures_only: bool,
+    include_archived: bool,
+    limit: int,
+    offset: int,
+) -> Dict[str, Any]:
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    period_sql, period_params = _period_sql("s.started_at", period_start, period_end)
+    free_text, field_terms = _parse_session_query(query)
+    with _database() as db:
+        snippets = _search_hits(db, free_text) if free_text else {}
+        params: List[Any] = list(period_params)
+        where = [period_sql]
+        if not include_archived:
+            where.append("coalesce(s.archived, 0) = 0")
+        from_where = f"""
+            FROM ({_accounted_sessions_sql(_db_connection(db))}) s
+            WHERE {' AND '.join(where)}
+        """
+        select_sql = """
+            SELECT s.id, s.source, s.display_name, s.model, s.started_at, s.ended_at,
+                   s.end_reason, s.parent_session_id,
+                   s.message_count, s.tool_call_count, s.input_tokens, s.output_tokens,
+                   s.cache_read_tokens, s.cache_write_tokens, s.reasoning_tokens,
+                   s.cwd, s.git_branch, s.git_repo_root, s.billing_provider,
+                   s.billing_mode, s.estimated_cost_usd, s.actual_cost_usd,
+                   s.cost_status, s.cost_source, s.title, s.last_activity_at,
+                   s.last_activity_description, s.api_call_count, s.profile_name,
+                   s.archived, s.pinned, s.hidden
+            """
+        if getattr(db, "union_profiles", None):
+            select_sql = select_sql.rstrip() + ", s.__profile "
+        connection = _db_connection(db)
+        if free_text:
+            like = f"%{free_text.lower()}%"
+            text_filters = [
+                "lower(s.id) LIKE ?",
+                "lower(coalesce(s.title, '')) LIKE ?",
+                "lower(coalesce(s.model, '')) LIKE ?",
+                "lower(coalesce(s.cwd, '')) LIKE ?",
+                "lower(coalesce(s.source, '')) LIKE ?",
+            ]
+            rows_by_id = {
+                str(row["id"]): row
+                for row in connection.execute(
+                    select_sql + from_where + " AND (" + " OR ".join(text_filters) + ")",
+                    tuple(params + [like] * len(text_filters)),
+                ).fetchall()
+            }
+            snippet_ids = list(snippets)
+            for chunk_start in range(0, len(snippet_ids), 900):
+                chunk = snippet_ids[chunk_start : chunk_start + 900]
+                placeholders = ",".join("?" for _ in chunk)
+                for row in connection.execute(
+                    select_sql + from_where + f" AND s.id IN ({placeholders})",
+                    tuple(params + chunk),
+                ).fetchall():
+                    rows_by_id[str(row["id"])] = row
+            rows = list(rows_by_id.values())
+        else:
+            rows = connection.execute(select_sql + from_where, tuple(params)).fetchall()
+        failure_counts = _confirmed_failure_counts(
+            _db_connection(db), " AND ".join(where), params
+        )
+        materials = []
+        for row in rows:
+            material = _row_dict(row)
+            material["failure_count"] = failure_counts.get(str(material.get("id")), 0)
+            if failures_only and not material["failure_count"]:
+                continue
+            if field_terms and not _session_matches_terms(material, field_terms):
+                continue
+            materials.append(material)
+
+        if free_text:
+            for material in materials:
+                material["_search_match"] = _search_match(material, free_text, snippets.get(str(material.get("id"))))
+
+        def sort_key(material: Mapping[str, Any]) -> Tuple[Any, ...]:
+            started = _number(material.get("started_at"), 0)
+            recent = _number(material.get("last_activity_at"), started)
+            # With a search, sessions whose own details match come first.
+            strong = (int(material.get("_search_match") in dict(_SEARCH_DETAIL_MATCHES).values()),) if free_text else ()
+            if sort == "recent":
+                return (*strong, recent)
+            if sort == "cost":
+                # The cost the card shows: subscription use counts as its cash part.
+                cost = _cost_view(material).get("display_cost_usd")
+                return (*strong, _number(cost, -1) if cost is not None else -1, started)
+            if sort == "tokens":
+                return (
+                    *strong,
+                    sum(
+                        _integer(material.get(key))
+                        for key in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
+                    ),
+                    started,
+                )
+            if sort == "tools":
+                return (*strong, _integer(material.get("tool_call_count")), started)
+            return (*strong, _integer(material.get("failure_count")), recent)
+
+        materials.sort(key=sort_key, reverse=True)
+        total = len(materials)
+        scope_names = _get_profile_scope()
+        single_profile = scope_names[0] if scope_names and len(scope_names) == 1 else None
+        sessions = []
+        for material in materials[offset : offset + limit]:
+            item = _session_payload(material)
+            hit = snippets.get(str(item.get("id")))
+            item["search_snippet"] = hit.get("snippet") if isinstance(hit, Mapping) else hit
+            item["search_match"] = material.get("_search_match")
+            item["profile"] = (
+                str(material.get("__profile") or "")
+                or single_profile
+                or (None if scope_names else _serving_profile_name())
+            )
+            sessions.append(item)
+        return {
+            "sessions": sessions,
+            "pagination": {
+                "total": int(total),
+                "limit": limit,
+                "offset": offset,
+                "returned": len(sessions),
+                "has_more": offset + len(sessions) < total,
+            },
+            "filters": {
+                "days": days,
+                "start_at": period_start or None,
+                "end_at": period_end,
+                "query": query,
+                "sort": sort,
+                "failures_only": failures_only,
+                "include_archived": include_archived,
+            },
+            "generated_at": time.time(),
+        }
+
+
+def _serving_profile_name() -> str:
+    """Name the Duckwork profile this backend reads, derived from its home path."""
+    try:
+        home = _duckwork_home().resolve()
+    except Exception:
+        return "unknown"
+    parts = [part.lower() for part in home.parts]
+    if "profiles" in parts:
+        index = parts.index("profiles")
+        if index + 1 < len(home.parts):
+            return home.parts[index + 1]
+    return "default"
+
+
+@router.get("/health")
+async def health() -> Dict[str, Any]:
+    def read() -> Dict[str, Any]:
+        with _database() as db:
+            version_row = _db_connection(db).execute("SELECT version FROM schema_version").fetchone()
+            _db_connection(db).execute("SELECT 1 FROM sessions LIMIT 1").fetchone()
+            return {
+                "ok": True,
+                "plugin_version": PLUGIN_VERSION,
+                "schema_version": _integer(version_row[0] if version_row else 0),
+                "read_only": bool(getattr(db, "read_only", False)),
+                "profile_name": _serving_profile_name(),
+            }
+
+    return await asyncio.to_thread(read)
+
+
+@router.get("/sessions")
+async def sessions(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    q: str = Query("", max_length=240),
+    sort: str = Query("failures"),
+    failures_only: bool = False,
+    include_archived: bool = False,
+    limit: int = Query(50, ge=1, le=MAX_SESSION_PAGE),
+    offset: int = Query(0, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(
+        _scoped_call,
+        profiles,
+        _list_sessions_sync,
+        days=days,
+        start_at=start_at,
+        end_at=end_at,
+        query=q.strip(),
+        sort=sort,
+        failures_only=failures_only,
+        include_archived=include_archived,
+        limit=limit,
+        offset=offset,
+    )
+
+
+def _session_detail_sync(session_id: str) -> Dict[str, Any]:
+    with _database() as db:
+        sid = db.resolve_session_id(session_id)
+        if not sid:
+            raise HTTPException(status_code=404, detail="Session not found")
+        row = _db_connection(db).execute(
+            f"SELECT s.* FROM ({_accounted_sessions_sql(_db_connection(db))}) s WHERE s.id = ?",
+            (sid,),
+        ).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        session_material = _row_dict(row)
+        session_material["failure_count"] = _confirmed_failure_counts(
+            _db_connection(db), "s.id = ?", (sid,)
+        ).get(str(sid), 0)
+
+        usage_rows = [
+            _row_dict(item)
+            for item in _db_connection(db).execute(
+                """
+                SELECT model, billing_provider, billing_mode, task, api_call_count,
+                       input_tokens, output_tokens, cache_read_tokens,
+                       cache_write_tokens, reasoning_tokens, estimated_cost_usd,
+                       actual_cost_usd, cost_status, cost_source, first_seen, last_seen
+                FROM session_model_usage
+                WHERE session_id = ?
+                ORDER BY (input_tokens + output_tokens + cache_read_tokens + cache_write_tokens) DESC
+                """,
+                (sid,),
+            ).fetchall()
+        ]
+        for usage in usage_rows:
+            usage["total_tokens"] = sum(
+                _integer(usage.get(key))
+                for key in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
+            )
+            usage.update(_cost_view(usage))
+
+        event_rows = _db_connection(db).execute(
+            """
+            SELECT id, session_id, role, tool_call_id, tool_calls, tool_name,
+                   effect_disposition, timestamp, finish_reason, content
+            FROM messages
+            WHERE session_id = ? AND coalesce(active, 1) = 1
+              AND (tool_calls IS NOT NULL OR role = 'tool' OR finish_reason IN ('error','agent_error','content_filter'))
+            ORDER BY id DESC LIMIT ?
+            """,
+            (sid, MAX_ANALYSIS_EVENTS),
+        ).fetchall()
+        analysis = _analyze_events(reversed([_row_dict(item) for item in event_rows]))
+
+        role_counts = {
+            role: count
+            for role, count in _db_connection(db).execute(
+                "SELECT role, COUNT(*) FROM messages WHERE session_id = ? AND coalesce(active,1)=1 GROUP BY role",
+                (sid,),
+            ).fetchall()
+        }
+        delegations = [
+            {
+                "delegation_id": item["delegation_id"],
+                "state": item["state"],
+                "dispatched_at": item["dispatched_at"],
+                "completed_at": item["completed_at"],
+                "updated_at": item["updated_at"],
+                "delivery_state": item["delivery_state"],
+                "parent_session_id": item["parent_session_id"],
+            }
+            for item in _db_connection(db).execute(
+                """
+                SELECT delegation_id, state, dispatched_at, completed_at, updated_at,
+                       delivery_state, parent_session_id
+                FROM async_delegations
+                WHERE origin_session = ? OR parent_session_id = ?
+                ORDER BY dispatched_at DESC LIMIT 200
+                """,
+                (sid, sid),
+            ).fetchall()
+        ]
+
+        return {
+            "session": _session_payload(session_material),
+            "models": usage_rows,
+            "message_roles": role_counts,
+            "tools": analysis["events"],
+            "failures": analysis["failures"],
+            "files": analysis["files"],
+            "skills": analysis["skills"],
+            "delegations": delegations,
+            "analysis": {
+                "event_limit": MAX_ANALYSIS_EVENTS,
+                "events_analyzed": len(event_rows),
+                "truncated": len(event_rows) >= MAX_ANALYSIS_EVENTS,
+                "failure_detection": "recorded error state plus conservative tool-result signatures",
+                "file_detection": "recorded tool path arguments and bounded command-path extraction",
+            },
+            "generated_at": time.time(),
+        }
+
+
+@router.get("/sessions/{session_id}")
+async def session_detail(session_id: str, profiles: str = Query("")) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _session_detail_sync, session_id)
+
+
+# ── Ask Duckwork: a session-grounded failure-analysis prompt ──────────────────
+# Builds the text a user pastes into a new Duckwork chat. It reuses the detail
+# payload (bounded, secret-redacted snippets) and adds nothing the Failures
+# tab does not already show: no user or assistant message content, no file
+# contents. The plugin never sends it anywhere; the desktop copies it to the
+# clipboard and opens a fresh chat.
+_ANALYSIS_PROMPT_MAX_CHARS = 12_000
+_ANALYSIS_PROMPT_MAX_GROUPS = 12
+_ANALYSIS_PROMPT_SIGNATURE_CHARS = 96
+_ANALYSIS_PROMPT_HEADLINE_CHARS = 120
+_ANALYSIS_PROMPT_ARGUMENT_CHARS = 240
+# (examples per group, characters per example snippet), tried in order until
+# the rendered prompt fits the budget.
+_ANALYSIS_PROMPT_BUDGET_STEPS = ((3, 400), (2, 400), (1, 400), (1, 200), (1, 120), (0, 0))
+_ANALYSIS_PROMPT_DIGITS_RE = re.compile(r"\d+")
+_ANALYSIS_PROMPT_SPACE_RE = re.compile(r"\s+")
+
+
+_ANALYSIS_PROMPT_JSON_ERROR_RE = re.compile(r'"(?:error|message|detail)"\s*:\s*"((?:[^"\\]|\\.)*)')
+_ANALYSIS_PROMPT_WRAPPER_RE = re.compile(r"^<untrusted_tool_result\b[^>]*>$")
+_ANALYSIS_PROMPT_WORD_RE = re.compile(r"[A-Za-z0-9]")
+_ANALYSIS_PROMPT_BOILERPLATE_PREFIXES = ("The following content was retrieved from an external source",)
+
+
+def _analysis_unescape_json(fragment: str) -> str:
+    """Decode a JSON string body that may have been cut mid-escape by snippet bounding."""
+    try:
+        return json.loads('"' + fragment + '"', strict=False)
+    except ValueError:
+        trimmed = fragment.rstrip(chr(92))
+        return trimmed.replace(chr(92) + "n", " ").replace(chr(92) + "t", " ").replace(chr(92) + '"', '"')
+
+
+def _analysis_first_line(text: Any, depth: int = 0) -> str:
+    """The line that best names a failure: a JSON error string when the result
+    is JSON (one level of nesting unwrapped), otherwise the first meaningful line
+    after Duckwork' untrusted-content wrapper."""
+    body_lines: List[str] = []
+    for line in str(text or "").splitlines():
+        stripped = _ANALYSIS_PROMPT_SPACE_RE.sub(" ", line).strip()
+        if not stripped or _ANALYSIS_PROMPT_WRAPPER_RE.match(stripped):
+            continue
+        if stripped.startswith(_ANALYSIS_PROMPT_BOILERPLATE_PREFIXES):
+            continue
+        body_lines.append(stripped)
+    body = "\n".join(body_lines)
+    if body.startswith("{"):
+        match = _ANALYSIS_PROMPT_JSON_ERROR_RE.search(body[:2000])
+        if match and match.group(1).strip():
+            decoded = _analysis_unescape_json(match.group(1))
+            if decoded.lstrip().startswith("{") and depth < 1:
+                nested = _analysis_first_line(decoded, depth + 1)
+                if nested:
+                    return nested
+            for line in decoded.splitlines():
+                candidate = _ANALYSIS_PROMPT_SPACE_RE.sub(" ", line).strip()
+                if candidate and _ANALYSIS_PROMPT_WORD_RE.search(candidate):
+                    return candidate
+    for stripped in body_lines:
+        if _ANALYSIS_PROMPT_WORD_RE.search(stripped):
+            return stripped
+    return ""
+
+
+def _analysis_signature(name: Any, snippet: Any) -> str:
+    """Group key: tool name plus the first snippet line with numbers neutralised."""
+    line = _ANALYSIS_PROMPT_DIGITS_RE.sub("#", _analysis_first_line(snippet).lower())
+    return f"{str(name or 'unknown tool').strip().lower()}{line[:_ANALYSIS_PROMPT_SIGNATURE_CHARS]}"
+
+
+def _analysis_failure_groups(failures: Iterable[Mapping[str, Any]]) -> List[Dict[str, Any]]:
+    groups: Dict[str, Dict[str, Any]] = {}
+    for event in failures:
+        key = _analysis_signature(event.get("name"), event.get("result_snippet"))
+        timestamp = _number(event.get("timestamp"), 0) or None
+        group = groups.get(key)
+        if group is None:
+            headline = _analysis_first_line(event.get("result_snippet"))
+            group = groups[key] = {
+                "tool": str(event.get("name") or "unknown tool"),
+                "headline": headline[:_ANALYSIS_PROMPT_HEADLINE_CHARS] or "no result text recorded",
+                "count": 0,
+                "first_at": timestamp,
+                "last_at": timestamp,
+                "examples": [],
+            }
+        group["count"] += 1
+        if timestamp:
+            group["first_at"] = timestamp if group["first_at"] is None else min(group["first_at"], timestamp)
+            group["last_at"] = timestamp if group["last_at"] is None else max(group["last_at"], timestamp)
+        group["examples"].append(
+            {
+                "timestamp": timestamp,
+                "argument_summary": str(event.get("argument_summary") or "")[:_ANALYSIS_PROMPT_ARGUMENT_CHARS],
+                "result_snippet": str(event.get("result_snippet") or ""),
+            }
+        )
+    ordered = sorted(groups.values(), key=lambda item: (-item["count"], -(item["last_at"] or 0), item["tool"]))
+    for group in ordered:
+        # Detail failures arrive newest first; keep the most recent examples.
+        group["examples"] = group["examples"][:3]
+    return ordered
+
+
+def _analysis_stamp(timestamp: Any) -> str:
+    value = _number(timestamp, 0)
+    if not value:
+        return "time not recorded"
+    return dt.datetime.fromtimestamp(value).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _analysis_duration(seconds: Any) -> str:
+    value = _number(seconds, 0)
+    if value <= 0:
+        return "unknown"
+    total = int(value)
+    hours, rest = divmod(total, 3600)
+    minutes, secs = divmod(rest, 60)
+    if hours:
+        return f"{hours}h {minutes:02d}m"
+    if minutes:
+        return f"{minutes}m {secs:02d}s"
+    return f"{secs}s"
+
+
+def _analysis_cost(session: Mapping[str, Any]) -> str:
+    kind = str(session.get("cost_kind") or "unpriced")
+    value = session.get("display_cost_usd")
+    if kind in {"actual", "estimated"} and value is not None:
+        return f"${_number(value):.2f} ({kind})"
+    return kind
+
+
+def _analysis_fence(text: str) -> str:
+    fence = "```"
+    while fence in text:
+        fence += "`"
+    return fence
+
+
+def _render_analysis_prompt(
+    detail: Mapping[str, Any],
+    groups: List[Dict[str, Any]],
+    example_limit: int,
+    snippet_chars: int,
+) -> str:
+    session = detail.get("session") or {}
+    failures = detail.get("failures") or []
+    shown_groups = groups[:_ANALYSIS_PROMPT_MAX_GROUPS]
+    omitted_groups = len(groups) - len(shown_groups)
+    outcome = str(session.get("outcome_label") or session.get("outcome") or "closed")
+    end_reason = session.get("end_reason")
+
+    lines: List[str] = [
+        "You are helping a Duckwork Agent user understand why tool calls failed in one of their sessions.",
+        "Work only from the evidence below. It was extracted by the Session Lens plugin from Duckwork' own records, "
+        "then bounded and secret-redacted, so some detail is missing on purpose. Do not invent tool behaviour, "
+        "file contents, or error text that is not shown.",
+        "",
+        "Answer in this order, briefly:",
+        "1. For each failure group: what happened, the most likely cause with the evidence line that supports it, "
+        "and how confident you are.",
+        "2. The three actions most likely to prevent these failures next time, most valuable first, each concrete "
+        "enough to act on today (a prompt change, a tool or MCP setting, a model or provider change, a retry rule, "
+        "or a task split).",
+        "3. What cannot be determined from this evidence, and exactly which extra evidence would settle it.",
+        "If a failure looks harmless or expected (a search that found nothing, a file that did not exist yet), "
+        "say so instead of inventing a problem.",
+        "",
+        "## Session",
+        f"- Title: {session.get('title') or 'Untitled session'}",
+        f"- Duckwork session id: {session.get('id') or 'unknown'}",
+        f"- Started: {_analysis_stamp(session.get('started_at'))} · Duration: {_analysis_duration(session.get('duration_seconds'))}"
+        f" · Outcome: {outcome}" + (f" (end reason: {end_reason})" if end_reason else " (no end reason recorded)"),
+        f"- Source: {session.get('source') or 'not recorded'} · Working directory: {session.get('cwd') or 'not recorded'}",
+        f"- Main model: {session.get('model') or 'not recorded'}",
+        f"- Messages: {_integer(session.get('message_count'))} · Tool calls: {_integer(session.get('tool_call_count'))}"
+        f" · Confirmed failures: {_integer(session.get('failure_count'))} ({len(failures)} shown below from the bounded event scan)",
+        f"- Tokens: {_integer(session.get('total_tokens')):,} · Cost: {_analysis_cost(session)}",
+    ]
+
+    models = detail.get("models") or []
+    if models:
+        lines += ["", "## Model usage", "| Model | Task | Calls | Tokens |", "| --- | --- | ---: | ---: |"]
+        for usage in models[:12]:
+            lines.append(
+                f"| {usage.get('model') or 'unknown'} | {usage.get('task') or 'main'} | "
+                f"{_integer(usage.get('api_call_count'))} | {_integer(usage.get('total_tokens')):,} |"
+            )
+
+    skills = [item.get("name") for item in detail.get("skills") or [] if item.get("name")]
+    delegations = detail.get("delegations") or []
+    if skills or delegations:
+        lines += ["", "## Context"]
+        if skills:
+            lines.append(f"- Skills invoked: {', '.join(str(name) for name in skills[:10])}")
+        if delegations:
+            lines.append(f"- Delegated work: {len(delegations)} async delegation(s) linked to this session")
+
+    lines += ["", "## Failure groups (most frequent first)"]
+    if not shown_groups:
+        lines.append("No failures fell inside the bounded event scan, so there is nothing to group.")
+    for index, group in enumerate(shown_groups, start=1):
+        when = (
+            f"once, at {_analysis_stamp(group['last_at'])}"
+            if group["count"] == 1
+            else (
+                f"{group['count']} times, all recorded at {_analysis_stamp(group['last_at'])}"
+                if _analysis_stamp(group["first_at"]) == _analysis_stamp(group["last_at"])
+                else f"{group['count']} times, first {_analysis_stamp(group['first_at'])}, last {_analysis_stamp(group['last_at'])}"
+            )
+        )
+        lines += ["", f"### {index}. {group['tool']} — {group['headline']}", f"Seen {when}."]
+        for example_index, example in enumerate(group["examples"][:example_limit], start=1):
+            lines.append(f"Example {example_index} ({_analysis_stamp(example['timestamp'])}):")
+            if example["argument_summary"]:
+                lines.append(f"Arguments: {example['argument_summary']}")
+            snippet = example["result_snippet"][:snippet_chars].rstrip()
+            if snippet:
+                fence = _analysis_fence(snippet)
+                truncated = len(example["result_snippet"]) > snippet_chars
+                lines += ["Result:", fence, snippet + (" …" if truncated else ""), fence]
+        if example_limit == 0:
+            lines.append("(examples omitted to keep this prompt short; ask the user for the Failures tab snippet if needed)")
+    if omitted_groups > 0:
+        lines.append(f"\n{omitted_groups} further failure group(s) omitted to keep this prompt short.")
+
+    analysis = detail.get("analysis") or {}
+    lines += [
+        "",
+        "## How this evidence was produced",
+        "- Failure detection: recorded Duckwork error state plus conservative tool-result signatures; the signatures "
+        "match English error text only, so failures reported in other languages may be under-counted.",
+        "- Result snippets are bounded and secret-redacted; user and assistant message text is deliberately not included.",
+    ]
+    if analysis.get("truncated"):
+        lines.append(
+            f"- The event scan reached its {_integer(analysis.get('event_limit')):,}-event safety limit, "
+            "so older tool calls in this session are not represented."
+        )
+    return "\n".join(lines).strip() + "\n"
+
+
+def _build_analysis_prompt(detail: Mapping[str, Any]) -> Dict[str, Any]:
+    failures = list(detail.get("failures") or [])
+    groups = _analysis_failure_groups(failures)
+    example_limit, snippet_chars = _ANALYSIS_PROMPT_BUDGET_STEPS[-1]
+    text = ""
+    for example_limit, snippet_chars in _ANALYSIS_PROMPT_BUDGET_STEPS:
+        text = _render_analysis_prompt(detail, groups, example_limit, snippet_chars)
+        if len(text) <= _ANALYSIS_PROMPT_MAX_CHARS:
+            break
+    session = detail.get("session") or {}
+    return {
+        "session_id": session.get("id"),
+        "prompt": text,
+        "characters": len(text),
+        "failures_shown": len(failures),
+        "failures_total": _integer(session.get("failure_count")),
+        "failure_groups": len(groups),
+        "groups_included": min(len(groups), _ANALYSIS_PROMPT_MAX_GROUPS),
+        "examples_per_group": example_limit,
+        "snippet_chars": snippet_chars,
+        "max_chars": _ANALYSIS_PROMPT_MAX_CHARS,
+        "generated_at": time.time(),
+    }
+
+
+def _analysis_prompt_sync(session_id: str) -> Dict[str, Any]:
+    return _build_analysis_prompt(_session_detail_sync(session_id))
+
+
+@router.get("/sessions/{session_id}/analysis-prompt")
+async def session_analysis_prompt(session_id: str, profiles: str = Query("")) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _analysis_prompt_sync, session_id)
+
+
+def _trace_sync(session_id: str, limit: int, offset: int) -> Dict[str, Any]:
+    with _database() as db:
+        sid = db.resolve_session_id(session_id)
+        if not sid:
+            raise HTTPException(status_code=404, detail="Session not found")
+        total = _db_connection(db).execute(
+            """
+            SELECT COUNT(*) FROM messages
+            WHERE session_id=? AND coalesce(active,1)=1 AND role!='system'
+            """,
+            (sid,),
+        ).fetchone()[0]
+        rows = _db_connection(db).execute(
+            """
+            SELECT id, role, content, tool_call_id, tool_calls, tool_name,
+                   effect_disposition, timestamp, token_count, finish_reason,
+                   reasoning_content, compacted, display_kind
+            FROM messages
+            WHERE session_id=? AND coalesce(active,1)=1 AND role!='system'
+            ORDER BY id ASC LIMIT ? OFFSET ?
+            """,
+            (sid, limit, offset),
+        ).fetchall()
+
+    events: List[Dict[str, Any]] = []
+    for raw in rows:
+        row = _row_dict(raw)
+        role = str(row.get("role") or "unknown").lower()
+        base = {
+            "message_id": row.get("id"),
+            "timestamp": row.get("timestamp"),
+            "finish_reason": row.get("finish_reason"),
+            "token_count": _integer(row.get("token_count")),
+            "compacted": bool(row.get("compacted")),
+            "display_kind": row.get("display_kind"),
+        }
+        reasoning = _clean_content(row.get("reasoning_content"))
+        if role == "assistant" and reasoning:
+            events.append({**base, "id": f"{row.get('id')}:reasoning", "kind": "reasoning", "content": reasoning})
+
+        raw_content = str(row.get("content") or "")
+        schedule_scaffolding = role == "user" and raw_content.lstrip().startswith(
+            "[IMPORTANT: You are running as a scheduled cron job."
+        )
+        content = "" if schedule_scaffolding else _clean_content(raw_content)
+        if content:
+            kind = "tool_result" if role == "tool" else role
+            event = {**base, "id": f"{row.get('id')}:{kind}", "kind": kind, "content": content}
+            if role == "tool":
+                failed = _is_failure(
+                    role=role,
+                    content=row.get("content"),
+                    finish_reason=row.get("finish_reason"),
+                    effect_disposition=row.get("effect_disposition"),
+                )
+                event.update(
+                    {
+                        "tool_name": row.get("tool_name") or "tool",
+                        "tool_call_id": row.get("tool_call_id"),
+                        "status": "failed" if failed else "completed",
+                    }
+                )
+            events.append(event)
+
+        for index, call in enumerate(_iter_tool_calls(row.get("tool_calls"))):
+            events.append(
+                {
+                    **base,
+                    "id": f"{row.get('id')}:tool:{index}",
+                    "kind": "tool_call",
+                    "tool_name": call["name"],
+                    "tool_call_id": call.get("call_id"),
+                    "content": _argument_summary(call["arguments"]),
+                }
+            )
+
+    return {
+        "session_id": sid,
+        "events": events,
+        "pagination": {
+            "total_messages": int(total),
+            "limit": limit,
+            "offset": offset,
+            "returned_messages": len(rows),
+            "has_more": offset + len(rows) < total,
+        },
+        "privacy": {
+            "system_prompts_included": False,
+            "schedule_prompts_included": False,
+            "content_redacted": True,
+            "content_limit_chars": MAX_TRACE_CONTENT_CHARS,
+        },
+        "generated_at": time.time(),
+    }
+
+
+@router.get("/sessions/{session_id}/anatomy")
+async def session_anatomy(session_id: str, profiles: str = Query("")) -> Dict[str, Any]:
+    """Why this session cost what it did: context per call, cost split, tool context, helper tasks."""
+    return await asyncio.to_thread(_scoped_call, profiles, _session_anatomy_sync, session_id)
+
+
+@router.get("/sessions/{session_id}/chain")
+async def session_chain(session_id: str, profiles: str = Query("")) -> Dict[str, Any]:
+    """The conversation this session belongs to, across every session it was split into."""
+    return await asyncio.to_thread(_scoped_call, profiles, _session_chain_sync, session_id)
+
+
+@router.get("/chains")
+async def chains(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _chains_sync, days, start_at, end_at)
+
+
+@router.get("/helper-tasks")
+async def helper_tasks(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _helper_tasks_sync, days, start_at, end_at)
+
+
+@router.get("/sessions/{session_id}/trace")
+async def session_trace(
+    session_id: str,
+    limit: int = Query(100, ge=1, le=MAX_TRACE_PAGE),
+    offset: int = Query(0, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _trace_sync, session_id, limit, offset)
+
+
+def _quota_window_duration_seconds(label: Any) -> Optional[float]:
+    text = str(label or "").lower()
+    if "week" in text:
+        return 7 * 86400.0
+    if "month" in text:
+        return 30 * 86400.0
+    if "day" in text:
+        return 86400.0
+    match = re.search(r"(\d+(?:\.\d+)?)\s*[- ]?hour|\((\d+(?:\.\d+)?)h\)", text)
+    if match:
+        return float(match.group(1) or match.group(2)) * 3600.0
+    # Anthropic's "Current session" and Codex's "Session" are five-hour
+    # rolling windows whose labels carry no number.
+    if "session" in text:
+        return 5 * 3600.0
+    return None
+
+
+# A run-out forecast is shown only when it would change what the reader does:
+# the window must be at least this far along (a fresh window says nothing
+# yet), usage must run ahead of time, and the projected run-out must land at
+# least this share of the window before the reset — a forecast that says
+# "empty six minutes before it resets anyway" is noise, not a warning.
+QUOTA_FORECAST_MIN_ELAPSED_PERCENT = 10.0
+QUOTA_FORECAST_MIN_MARGIN_FRACTION = 0.10
+
+
+def _quota_forecast(label: Any, reset_at: Any, used_percent: Any) -> Optional[Dict[str, Any]]:
+    """Linear run-out forecast for one quota window, or None when none is warranted.
+
+    The single source of truth for every forecast Session Lens shows: the
+    card line, the attention strip, the header counter, the AI Models quota
+    cell, and the digest all read this. The basis names the two numbers the
+    extrapolation rests on so the reader can judge it.
+    """
+    duration = _quota_window_duration_seconds(label)
+    reset_epoch = _usage_reset_epoch(reset_at)
+    used = _number(used_percent)
+    if not duration or not reset_epoch or used <= 0:
+        return None
+    started_at = reset_epoch - duration
+    elapsed = time.time() - started_at
+    if elapsed <= 0:
+        return None
+    elapsed_percent = (elapsed / duration) * 100
+    if elapsed_percent < QUOTA_FORECAST_MIN_ELAPSED_PERCENT or used <= elapsed_percent:
+        return None
+    exhaust_at = started_at + elapsed * (100 / used)
+    margin = reset_epoch - exhaust_at
+    if margin < duration * QUOTA_FORECAST_MIN_MARGIN_FRACTION:
+        return None
+    return {
+        "exhaust_at": exhaust_at,
+        "used_percent": round(used, 1),
+        "elapsed_percent": round(elapsed_percent, 1),
+        "margin_seconds": round(margin),
+        "basis": f"{used:.0f}% used with {elapsed_percent:.0f}% of the window elapsed",
+    }
+
+
+def _quota_exhaust_at(label: Any, reset_at: Any, used_percent: Any) -> Optional[float]:
+    """Run-out time from _quota_forecast, for callers that need only the moment."""
+    forecast = _quota_forecast(label, reset_at, used_percent)
+    return forecast["exhaust_at"] if forecast else None
+
+
+def _digest_period_totals(
+    connection: sqlite3.Connection,
+    period_start: float,
+    period_end: Optional[float],
+) -> Dict[str, Any]:
+    session_sql, session_params = _period_sql("started_at", period_start, period_end)
+    row = _row_dict(
+        connection.execute(
+            f"""
+            SELECT COUNT(*) AS sessions,
+                   coalesce(SUM(input_tokens + output_tokens + cache_read_tokens + cache_write_tokens),0) AS total_tokens,
+                   coalesce(SUM(CASE WHEN coalesce(actual_cost_usd,0) > 0 THEN actual_cost_usd
+                                     WHEN coalesce(estimated_cost_usd,0) > 0 THEN estimated_cost_usd
+                                     ELSE 0 END),0) AS recorded_cost_usd
+            FROM ({_accounted_sessions_sql(connection)}) sessions
+            WHERE {session_sql}
+            """,
+            tuple(session_params),
+        ).fetchone()
+    )
+    joined_sql, joined_params = _period_sql("s.started_at", period_start, period_end)
+    tool_calls = connection.execute(
+        f"""
+        SELECT COUNT(*) FROM messages m JOIN sessions s ON s.id=m.session_id{_same_profile(connection, "s", "m")}
+        WHERE {joined_sql}
+          AND coalesce(m.active,1)=1 AND m.role='tool'
+        """,
+        tuple(joined_params),
+    ).fetchone()[0]
+    failure_rows = _confirmed_failure_rows(
+        connection, joined_sql, joined_params
+    )
+    tool_failures = sum(1 for item in failure_rows if str(item.get("role") or "").lower() == "tool")
+    return {
+        "sessions": _integer(row.get("sessions")),
+        "total_tokens": _integer(row.get("total_tokens")),
+        "recorded_cost_usd": round(_number(row.get("recorded_cost_usd")), 4),
+        "failure_events": len(failure_rows),
+        "tool_calls": _integer(tool_calls),
+        "tool_failures": tool_failures,
+    }
+
+
+def _digest_tokens_label(value: Any) -> str:
+    number = _number(value)
+    if number >= 1_000_000_000:
+        return f"{number / 1_000_000_000:.1f}B"
+    if number >= 1_000_000:
+        return f"{number / 1_000_000:.1f}M"
+    if number >= 1_000:
+        return f"{number / 1_000:.1f}k"
+    return f"{number:.0f}"
+
+
+def _digest_delta_label(current: Any, previous: Any, formatter) -> str:
+    if previous is None:
+        return formatter(current)
+    delta = _number(current) - _number(previous)
+    sign = "+" if delta >= 0 else "-"
+    return f"{formatter(current)} ({sign}{formatter(abs(delta))} vs prior period)"
+
+
+def _digest_money(value: Any) -> str:
+    return f"${_number(value):,.2f}"
+
+
+def _digest_count(value: Any, unit: Any, *, with_unit: bool = True) -> str:
+    """Format a window figure in its own unit: money as dollars, otherwise a count."""
+    number = _number(value)
+    unit_text = str(unit or "").strip()
+    if unit_text.lower() in {"usd", "$"}:
+        return _digest_money(number)
+    text = f"{number:,.0f}" if float(number).is_integer() else f"{number:,.2f}"
+    return f"{text} {unit_text}".strip() if with_unit else text
+
+
+def _digest_attribution_summary(attribution: Any) -> Optional[Dict[str, Any]]:
+    """Compact form of a window's attribution block for the digest payload."""
+    if not isinstance(attribution, Mapping) or _integer(attribution.get("tokens")) <= 0:
+        return None
+
+    def top(items: Any, limit: int) -> List[Dict[str, Any]]:
+        output: List[Dict[str, Any]] = []
+        for item in list(items or [])[:limit]:
+            if not isinstance(item, Mapping):
+                continue
+            output.append(
+                {
+                    "label": _clean_text(item.get("label"), 120),
+                    "share_percent": _number(item.get("share_percent")),
+                    "other": bool(item.get("other")),
+                }
+            )
+        return output
+
+    summary: Dict[str, Any] = {
+        "basis": attribution.get("basis"),
+        "sessions": _integer(attribution.get("sessions")),
+        "tokens": _integer(attribution.get("tokens")),
+        "local_cost_usd": round(_number(attribution.get("cost_usd")), 4),
+        "top_projects": top(attribution.get("by_project"), 4),
+        "top_models": top(attribution.get("by_model"), 2),
+    }
+    explained = attribution.get("explained")
+    if isinstance(explained, Mapping):
+        summary["explained"] = {
+            "account_used": _number(explained.get("account_used")),
+            "unit": explained.get("unit"),
+            "local_cost_usd": _number(explained.get("local_cost_usd")),
+            "percent": _number(explained.get("percent")),
+        }
+    return summary
+
+
+def _digest_attribution_line(summary: Optional[Mapping[str, Any]]) -> Optional[str]:
+    """One markdown sub-line naming what local records say consumed a window."""
+    if not summary:
+        return None
+    parts: List[str] = []
+    projects = [
+        item
+        for item in summary.get("top_projects", [])
+        if not item.get("other") and _number(item.get("share_percent")) >= 0.5
+    ]
+    if projects:
+        parts.append(
+            "local share: "
+            + ", ".join(f"{item['label']} {_number(item['share_percent']):.0f}%" for item in projects)
+        )
+    models = [item for item in summary.get("top_models", []) if not item.get("other")]
+    if models:
+        parts.append(f"top model {models[0]['label']}")
+    explained = summary.get("explained")
+    if isinstance(explained, Mapping):
+        parts.append(
+            f"local sessions explain {_digest_money(explained.get('local_cost_usd'))} of "
+            f"{_digest_count(explained.get('account_used'), explained.get('unit'))} "
+            f"({_number(explained.get('percent')):.0f}%); the rest came from other machines, tools, or profiles"
+        )
+    if not parts:
+        return None
+    line = " · ".join(parts)
+    if summary.get("basis") == "trailing_7d":
+        line += " (trailing 7 days — window span not readable)"
+    return line
+
+
+def _digest_budget_entry_label(entry: Mapping[str, Any]) -> str:
+    source = {
+        "account": "account figure",
+        "mixed": "account figures plus local records",
+    }.get(str(entry.get("spend_source") or ""), "local records")
+    text = f"{entry.get('label')}: {_digest_money(entry.get('spend_usd'))} month to date ({source}"
+    text += ", stale)" if entry.get("account_stale") else ")"
+    text += f", projected {_digest_money(entry.get('projected_usd'))} by month end"
+    cap = entry.get("cap_usd")
+    status = entry.get("status")
+    if cap:
+        text += f" — cap {_digest_money(cap)}: "
+        if status == "over":
+            text += f"over cap ({_number(entry.get('percent_of_cap')):.0f}% used)"
+        elif status == "at_risk":
+            when = entry.get("cross_at")
+            text += "on pace to exceed"
+            if when:
+                text += f" ~{dt.datetime.fromtimestamp(_number(when)).strftime('%b %d')}"
+        else:
+            text += f"within cap ({_number(entry.get('percent_of_cap')):.0f}% used)"
+    else:
+        text += " — no cap set"
+    return text
+
+
+def _digest_budget_lines(payload: Optional[Mapping[str, Any]]) -> List[str]:
+    if not payload:
+        return []
+    entries = [item for item in (payload.get("entries") or []) if isinstance(item, Mapping)]
+    total = payload.get("total") if isinstance(payload.get("total"), Mapping) else None
+    if not entries and not (total and (_number(total.get("spend_usd")) > 0 or total.get("cap_usd"))):
+        return []
+    month = payload.get("month") if isinstance(payload.get("month"), Mapping) else {}
+    header = "## Monthly spend"
+    if month.get("start"):
+        header += f" — {dt.datetime.fromtimestamp(_number(month.get('start'))).strftime('%B %Y')}"
+        header += f" ({_number(month.get('days_remaining')):.0f} days left)"
+    lines = [header]
+    for entry in entries:
+        lines.append("- " + _digest_budget_entry_label(entry))
+    if total:
+        lines.append("- " + _digest_budget_entry_label(total))
+    return lines
+
+
+def _digest_window_reading(window: Mapping[str, Any]) -> Optional[str]:
+    """A service window as one phrase: '4,512 credits remaining of 5,000, resets Sep 30'."""
+    unit = window.get("unit")
+    remaining = window.get("remaining")
+    used = window.get("used")
+    limit = window.get("limit")
+    percent = window.get("percentage_used")
+    detail = _clean_text(window.get("detail"), 240)
+    if remaining is not None:
+        text = f"{_digest_count(remaining, unit)} remaining"
+        if limit is not None and _number(remaining) <= _number(limit):
+            text += f" of {_digest_count(limit, unit, with_unit=False)}"
+        elif detail:
+            # A balance above the plan figure (top-ups): let the adapter's
+            # own wording explain it rather than printing "10,752 of 1,000".
+            text += f" ({detail})"
+    elif used is not None:
+        text = f"{_digest_count(used, unit)} used"
+        if limit is not None:
+            text += f" of {_digest_count(limit, unit, with_unit=False)}"
+    elif percent is not None:
+        text = f"{_number(percent):.0f}% used"
+    else:
+        return None
+    label = str(window.get("label") or "").strip()
+    if label and label.lower() != str(unit or "").strip().lower():
+        text = f"{label}: {text}"
+    reset_epoch = _usage_reset_epoch(window.get("reset_at"))
+    if reset_epoch:
+        text += f", resets {dt.datetime.fromtimestamp(reset_epoch).strftime('%b %d')}"
+    return text
+
+
+def _digest_service_rows(payload: Optional[Mapping[str, Any]]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for card in (payload or {}).get("cards") or []:
+        if not isinstance(card, Mapping):
+            continue
+        status = str(card.get("status") or "")
+        if status == "not_configured":
+            continue
+        readings = [
+            reading
+            for reading in (_digest_window_reading(window) for window in card.get("windows") or [] if isinstance(window, Mapping))
+            if reading
+        ]
+        if not readings and status in {"ok", "stale"}:
+            details = [str(item) for item in (card.get("details") or []) if str(item or "").strip()]
+            if details:
+                readings.append(details[0])
+        rows.append(
+            {
+                "provider": card.get("provider"),
+                "label": card.get("label") or card.get("provider"),
+                "status": status,
+                "stale": bool(card.get("stale")),
+                "plan": card.get("plan"),
+                "message": card.get("message"),
+                "readings": readings,
+            }
+        )
+    return rows
+
+
+def _digest_service_lines(rows: List[Mapping[str, Any]], summary: Optional[Mapping[str, Any]]) -> List[str]:
+    if not rows and not summary:
+        return []
+    lines = ["## Service balances"]
+    for row in rows:
+        status = str(row.get("status") or "")
+        if status in {"ok", "stale"}:
+            text = " · ".join(row.get("readings") or []) or "connected, no balance reported"
+            if row.get("plan"):
+                text += f" · plan {row['plan']}"
+            if status == "stale" or row.get("stale"):
+                text += " (stale reading)"
+        else:
+            reason = row.get("message") or status.replace("_", " ")
+            text = f"needs attention — {reason}"
+        lines.append(f"- {row.get('label')}: {text}")
+    if summary:
+        lines.append(
+            f"- {_integer(summary.get('configured'))} configured · {_integer(summary.get('monitored'))} monitored · "
+            f"{_integer(summary.get('attention'))} need attention · "
+            f"{_integer(summary.get('unreadable'))} without a readable usage API"
+        )
+    return lines
+
+
+def _digest_sync(
+    days: int = 7,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+    budgets: str = "",
+    rules: str = "",
+    balances: str = "",
+) -> Dict[str, Any]:
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    now = time.time()
+    effective_end = period_end if period_end is not None else now
+    previous_bounds: Optional[Tuple[float, float]] = None
+    if period_start > 0 and effective_end > period_start:
+        span = effective_end - period_start
+        if period_start - span > 0:
+            previous_bounds = (period_start - span, period_start)
+
+    with _database() as db:
+        connection = _db_connection(db)
+        totals = _digest_period_totals(connection, period_start, period_end)
+        previous = (
+            _digest_period_totals(connection, previous_bounds[0], previous_bounds[1])
+            if previous_bounds
+            else None
+        )
+        prev_requests_by_model: Dict[str, int] = {}
+        if previous_bounds:
+            prev_sql, prev_params = _period_sql("s.started_at", previous_bounds[0], previous_bounds[1])
+            for model_row in connection.execute(
+                f"""
+                SELECT u.model, coalesce(SUM(u.api_call_count),0) AS requests
+                FROM session_model_usage u JOIN sessions s ON s.id=u.session_id{_same_profile(connection, "s", "u")}
+                WHERE {prev_sql}
+                GROUP BY u.model
+                """,
+                tuple(prev_params),
+            ).fetchall():
+                material = _row_dict(model_row)
+                prev_requests_by_model[str(material.get("model") or "")] = _integer(material.get("requests"))
+
+    models_payload = _ai_models_sync(days, start_at, end_at)
+    model_rows: List[Dict[str, Any]] = []
+    for model in models_payload.get("models", []):
+        if _integer(model.get("requests")) <= 0:
+            continue
+        reliability = model.get("work_reliability") or {}
+        model_rows.append(
+            {
+                "model_id": model.get("model_id"),
+                "display_name": model.get("display_name"),
+                "requests": _integer(model.get("requests")),
+                "previous_requests": prev_requests_by_model.get(str(model.get("model_id") or "")) if previous_bounds else None,
+                "total_tokens": _integer(model.get("total_tokens")),
+                "cost_usd": round(_number(model.get("cost_usd")), 4),
+                "cost_kind": model.get("cost_kind"),
+                "failure_rate": (model.get("failures") or {}).get("rate"),
+                "failure_samples": _integer((model.get("failures") or {}).get("samples")),
+                "eligible_tasks": _integer(reliability.get("eligible_tasks")),
+                "rank": reliability.get("rank"),
+                "failure_rate_upper_bound_95": reliability.get("failure_rate_upper_bound_95"),
+            }
+        )
+    model_rows.sort(key=lambda item: item["requests"], reverse=True)
+    model_rows = model_rows[:8]
+
+    # Budgets are computed once below; attention runs without them so the
+    # local spend scan is not repeated for the same notes.
+    attention = _attention_sync(days, start_at, end_at)
+    attention_rows = attention.get("sessions", [])[:8]
+
+    quota_rows: List[Dict[str, Any]] = []
+    spend_windows: List[Dict[str, Any]] = []
+    try:
+        usage_payload = _ai_usage_sync()
+    except Exception:
+        usage_payload = {"providers": []}
+    for provider in usage_payload.get("providers", []):
+        if provider.get("status") not in {"ok", "stale"}:
+            continue
+        provider_label = provider.get("label") or provider.get("provider")
+        for window in provider.get("windows", []):
+            attribution = _digest_attribution_summary(window.get("attribution"))
+            used = window.get("percentage_used")
+            unit = str(window.get("unit") or "").strip().lower()
+            money_used = _number(window.get("used")) if unit in _USAGE_MONEY_UNITS else 0.0
+            if window.get("kind") == "quota" and used is not None:
+                duration = _quota_window_duration_seconds(window.get("label"))
+                reset_epoch = _usage_reset_epoch(window.get("reset_at"))
+                elapsed_percent = None
+                if duration and reset_epoch:
+                    elapsed_percent = max(0.0, min(100.0, ((now - (reset_epoch - duration)) / duration) * 100))
+                exhaust_at = _quota_exhaust_at(window.get("label"), window.get("reset_at"), used)
+                quota_rows.append(
+                    {
+                        "provider": provider.get("provider"),
+                        "provider_label": provider_label,
+                        "label": window.get("label"),
+                        "percentage_used": _number(used),
+                        "elapsed_percent": elapsed_percent,
+                        "over_pace": bool(
+                            elapsed_percent is not None
+                            and elapsed_percent >= 10
+                            and _number(used) > elapsed_percent
+                        ),
+                        "reset_at": window.get("reset_at"),
+                        "exhaust_at": exhaust_at,
+                        "attribution": attribution,
+                    }
+                )
+            elif money_used > 0:
+                spend_windows.append(
+                    {
+                        "provider": provider.get("provider"),
+                        "provider_label": provider_label,
+                        "label": window.get("label"),
+                        "used": money_used,
+                        "limit": window.get("limit"),
+                        "unit": window.get("unit"),
+                        "reset_at": window.get("reset_at"),
+                        "attribution": attribution,
+                    }
+                )
+
+    # Services before budgets: the budgets reader takes service account spend
+    # (Monid's ledger) from the services cache, which this call warms.
+    try:
+        services_payload = _services_sync()
+    except Exception:
+        services_payload = None
+    service_rows = _digest_service_rows(services_payload)
+    services_summary = (services_payload or {}).get("summary") if isinstance(services_payload, Mapping) else None
+    try:
+        budgets_payload: Optional[Dict[str, Any]] = _budgets_sync(
+            _parse_budgets_param(budgets), _parse_balances_param(balances)
+        )
+    except Exception:
+        budgets_payload = None
+    rules_payload: Optional[Dict[str, Any]] = None
+    parsed_rules = _parse_rules_param(rules)
+    if parsed_rules:
+        try:
+            rules_payload = _rules_evaluate_sync(parsed_rules, days, start_at, end_at)
+        except Exception:
+            rules_payload = None
+
+    def cost_label(value: Any) -> str:
+        return f"${_number(value):.2f}"
+
+    period_label = (
+        f"{dt.datetime.fromtimestamp(period_start).strftime('%b %d')} – "
+        f"{dt.datetime.fromtimestamp(effective_end).strftime('%b %d, %Y')}"
+        if period_start
+        else "all recorded history"
+    )
+    lines = [f"# Session Lens digest — {period_label}", ""]
+    lines.append("## Totals" + (" (vs prior period)" if previous else ""))
+    lines.append(
+        "- Sessions: "
+        + _digest_delta_label(totals["sessions"], previous["sessions"] if previous else None, lambda v: f"{_integer(v)}")
+    )
+    lines.append(
+        "- Tokens: "
+        + _digest_delta_label(totals["total_tokens"], previous["total_tokens"] if previous else None, _digest_tokens_label)
+    )
+    lines.append(
+        "- Recorded cost: "
+        + _digest_delta_label(totals["recorded_cost_usd"], previous["recorded_cost_usd"] if previous else None, cost_label)
+    )
+    lines.append(
+        f"- Failure events: {totals['failure_events']}"
+        + (f" (prior {previous['failure_events']})" if previous else "")
+        + f" · Tool failures: {totals['tool_failures']} of {totals['tool_calls']} tool calls"
+    )
+    lines.append("")
+    if attention_rows:
+        lines.append("## Needs attention")
+        for item in attention_rows:
+            title = item.get("title") or item.get("id")
+            lines.append(f"- {title} — {item.get('reason')}")
+        remaining = _integer(attention.get("totals", {}).get("flagged")) - len(attention_rows)
+        if remaining > 0:
+            lines.append(f"- …and {remaining} more flagged sessions.")
+        lines.append("")
+    if model_rows:
+        lines.append("## Models by recorded requests")
+        for item in model_rows:
+            parts = [f"{item['requests']} requests"]
+            if item.get("previous_requests") is not None:
+                parts.append(f"prior {item['previous_requests']}")
+            parts.append(f"{_digest_tokens_label(item['total_tokens'])} tokens")
+            if item.get("rank"):
+                parts.append(f"reliability rank #{item['rank']}")
+            elif item.get("eligible_tasks"):
+                bound = item.get("failure_rate_upper_bound_95")
+                parts.append(
+                    f"{item['eligible_tasks']} eligible tasks"
+                    + (f", risk ≤ {_number(bound) * 100:.1f}%" if bound is not None else "")
+                )
+            lines.append(f"- {item['display_name']}: " + " · ".join(parts))
+        lines.append("")
+    budget_lines = _digest_budget_lines(budgets_payload)
+    if budget_lines:
+        lines.extend(budget_lines)
+        lines.append("")
+    if quota_rows:
+        lines.append("## Quota windows")
+        for item in quota_rows:
+            pace = ""
+            if item["elapsed_percent"] is not None:
+                pace = f" at {item['elapsed_percent']:.0f}% elapsed"
+                pace += " — over pace" if item["over_pace"] else " — on pace"
+            line = f"- {item['provider_label']} {item['label']}: {item['percentage_used']:.0f}% used{pace}"
+            if item.get("exhaust_at"):
+                line += f"; at this pace empty ~{dt.datetime.fromtimestamp(item['exhaust_at']).strftime('%a %b %d, %H:%M')}"
+            lines.append(line)
+            attribution_line = _digest_attribution_line(item.get("attribution"))
+            if attribution_line:
+                lines.append(f"  - {attribution_line}")
+        lines.append("")
+    if spend_windows:
+        lines.append("## Spend windows")
+        for item in spend_windows:
+            line = f"- {item['provider_label']} {item['label']}: {_digest_count(item['used'], item.get('unit'))} used"
+            if item.get("limit") is not None:
+                line += f" of {_digest_count(item['limit'], item.get('unit'))}"
+            reset_epoch = _usage_reset_epoch(item.get("reset_at"))
+            if reset_epoch:
+                line += f", resets {dt.datetime.fromtimestamp(reset_epoch).strftime('%b %d')}"
+            lines.append(line)
+            attribution_line = _digest_attribution_line(item.get("attribution"))
+            if attribution_line:
+                lines.append(f"  - {attribution_line}")
+        lines.append("")
+    service_lines = _digest_service_lines(service_rows, services_summary)
+    if service_lines:
+        lines.extend(service_lines)
+        lines.append("")
+    rules_lines = _digest_rules_lines(rules_payload)
+    if rules_lines:
+        lines.extend(rules_lines)
+        lines.append("")
+
+    return {
+        "period_days": days,
+        "period": _period_payload(days, period_start, period_end),
+        "previous_period": (
+            {"start_at": previous_bounds[0], "end_at": previous_bounds[1]} if previous_bounds else None
+        ),
+        "totals": totals,
+        "previous_totals": previous,
+        "attention": {"sessions": attention_rows, "totals": attention.get("totals")},
+        "models": model_rows,
+        "quota_windows": quota_rows,
+        "spend_windows": spend_windows,
+        "budgets": (
+            {key: budgets_payload.get(key) for key in ("month", "entries", "total", "notes")}
+            if budgets_payload
+            else None
+        ),
+        "services": {"summary": services_summary, "rows": service_rows} if services_payload is not None else None,
+        "rules": (
+            {key: rules_payload.get(key) for key in ("rules", "overall", "coverage")}
+            if rules_payload
+            else None
+        ),
+        "markdown": "\n".join(lines).rstrip() + "\n",
+        "generated_at": now,
+    }
+
+
+@router.get("/digest")
+async def digest(
+    days: int = Query(7, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+    budgets: str = Query(""),
+    rules: str = Query("", max_length=RULES_MAX_PARAM_CHARS),
+    balances: str = Query("", max_length=8000),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(
+        _scoped_call, profiles, _digest_sync, days, start_at, end_at, budgets=budgets, rules=rules, balances=balances
+    )
+
+
+@router.get("/rules/templates")
+async def rules_templates() -> Dict[str, Any]:
+    return _rules_catalog()
+
+
+@router.get("/tool-names")
+async def tool_names(profiles: str = Query("")) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _tool_names_sync)
+
+
+@router.get("/rules")
+async def rules_route(
+    rules: str = Query("", max_length=RULES_MAX_PARAM_CHARS),
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    min_samples: int = Query(RULES_DEFAULT_MIN_SAMPLES, ge=1, le=200),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    parsed = _parse_rules_param(rules)
+    return await asyncio.to_thread(_scoped_call, profiles, _rules_evaluate_sync, parsed, days, start_at, end_at, min_samples)
+
+
+def _path_basename(path: Any) -> str:
+    text = str(path or "").replace("\\", "/").rstrip("/")
+    if not text:
+        return ""
+    return text.split("/")[-1] or text
+
+
+def _projects_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Roll session accounting up by repo, then working directory, then source."""
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    session_sql, session_params = _period_sql("started_at", period_start, period_end)
+    joined_sql, joined_params = _period_sql("s.started_at", period_start, period_end)
+    with _database() as db:
+        connection = _db_connection(db)
+        # Several profiles share one table here, and a bot profile's sessions
+        # would otherwise merge into another profile's "desktop · no recorded
+        # directory" row; name the profile so each keeps its own rows.
+        profile_column = ", __profile AS profile" if getattr(db, "union_profiles", None) else ""
+        rows = [
+            _row_dict(row)
+            for row in connection.execute(
+                f"""
+                SELECT id, source, model, git_repo_root, cwd, started_at,
+                       last_activity_at, input_tokens, output_tokens,
+                       cache_read_tokens, cache_write_tokens,
+                       estimated_cost_usd, actual_cost_usd, cost_status{profile_column}
+                FROM ({_accounted_sessions_sql(_db_connection(db))}) sessions
+                WHERE {session_sql}
+                """,
+                tuple(session_params),
+            ).fetchall()
+        ]
+        failure_counts = _confirmed_failure_counts(
+            connection, joined_sql, joined_params
+        )
+
+    groups: Dict[str, Dict[str, Any]] = {}
+    with_directory = 0
+    for session in rows:
+        repo = str(session.get("git_repo_root") or "").strip()
+        cwd = str(session.get("cwd") or "").strip()
+        source = str(session.get("source") or "unknown").strip() or "unknown"
+        if repo:
+            kind, path = "repo", repo
+            label = _path_basename(repo) or repo
+        elif cwd:
+            kind, path = "directory", cwd
+            label = _path_basename(cwd) or cwd
+        else:
+            kind, path = "source", ""
+            label = f"{source} · no recorded directory"
+        if kind != "source":
+            with_directory += 1
+        profile = str(session.get("profile") or "").strip()
+        if profile:
+            label = f"{profile} · {label}"
+        key = f"{profile.lower()}|{kind}|{(path or label).lower()}"
+        group = groups.setdefault(
+            key,
+            {
+                "kind": kind,
+                "label": label,
+                "path": path or None,
+                "profile": profile or None,
+                "sessions": 0,
+                "total_tokens": 0,
+                "recorded_cost_usd": 0.0,
+                "unpriced_sessions": 0,
+                "failure_events": 0,
+                "last_activity_at": None,
+                "models_map": Counter(),
+            },
+        )
+        group["sessions"] += 1
+        group["total_tokens"] += sum(
+            _integer(session.get(field))
+            for field in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
+        )
+        actual = _number(session.get("actual_cost_usd"))
+        estimated = _number(session.get("estimated_cost_usd"))
+        status = str(session.get("cost_status") or "").strip().lower()
+        if actual > 0:
+            group["recorded_cost_usd"] += actual
+        elif estimated > 0:
+            group["recorded_cost_usd"] += estimated
+        elif status not in {"included", "subscription", "free"}:
+            group["unpriced_sessions"] += 1
+        group["failure_events"] += failure_counts.get(str(session.get("id")), 0)
+        group["last_activity_at"] = max(
+            _number(group.get("last_activity_at"), 0),
+            _number(session.get("last_activity_at") or session.get("started_at"), 0),
+        ) or None
+        model = str(session.get("model") or "").strip()
+        if model:
+            group["models_map"][model] += 1
+
+    projects: List[Dict[str, Any]] = []
+    for group in groups.values():
+        models = group.pop("models_map")
+        group["recorded_cost_usd"] = round(group["recorded_cost_usd"], 4)
+        group["models"] = [
+            {"model": model, "sessions": count} for model, count in models.most_common(3)
+        ]
+        projects.append(group)
+    projects.sort(
+        key=lambda item: (-_number(item.get("recorded_cost_usd")), -_integer(item.get("total_tokens")))
+    )
+    truncated = len(projects) > 50
+    return {
+        "period_days": days,
+        "period": _period_payload(days, period_start, period_end),
+        "projects": projects[:50],
+        "totals": {
+            "groups": len(projects),
+            "sessions": len(rows),
+            "sessions_with_directory": with_directory,
+            "sessions_without_directory": len(rows) - with_directory,
+            "truncated": truncated,
+        },
+        "generated_at": time.time(),
+    }
+
+
+@router.get("/projects")
+async def projects(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _projects_sync, days, start_at, end_at)
+
+
+_AGENT_RUNS_PER_JOB = 10
+_AGENT_MAX_JOBS = 30
+
+
+def _agent_job_label(title: Any) -> str:
+    text = _clean_text(title, 120)
+    if not text:
+        return "(untitled cron job)"
+    return text.rsplit(" · ", 1)[0].strip() or text
+
+
+def _agent_runs_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Group cron sessions into per-job run histories."""
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    session_sql, session_params = _period_sql("started_at", period_start, period_end)
+    with _database() as db:
+        connection = _db_connection(db)
+        rows = [
+            _row_dict(row)
+            for row in connection.execute(
+                f"""
+                SELECT id, title, model, profile_name, started_at, ended_at,
+                       end_reason, last_activity_at, input_tokens, output_tokens,
+                       cache_read_tokens, cache_write_tokens,
+                       estimated_cost_usd, actual_cost_usd, cost_status, cost_source
+                FROM ({_accounted_sessions_sql(_db_connection(db))}) sessions
+                WHERE {session_sql} AND source='cron'
+                ORDER BY started_at DESC
+                """,
+                tuple(session_params),
+            ).fetchall()
+        ]
+
+    jobs: Dict[str, Dict[str, Any]] = {}
+    for session in rows:
+        label = _agent_job_label(session.get("title"))
+        job = jobs.setdefault(
+            label.lower(),
+            {
+                "label": label,
+                "profile": session.get("profile_name"),
+                "runs": [],
+                "runs_recorded": 0,
+                "failed_runs": 0,
+                "completed_runs": 0,
+                "duration_seconds_sum": 0.0,
+                "duration_samples": 0,
+                "cost_sum": 0.0,
+                "tokens_sum": 0,
+            },
+        )
+        outcome = _session_outcome(session)["outcome"]
+        started = _number(session.get("started_at"), 0)
+        ended = _number(session.get("ended_at")) if session.get("ended_at") is not None else None
+        duration = max(0.0, ended - started) if ended and started else None
+        cost_view = _cost_view(session)
+        total_tokens = sum(
+            _integer(session.get(field))
+            for field in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
+        )
+        job["runs_recorded"] += 1
+        if outcome == "failed":
+            job["failed_runs"] += 1
+        if outcome == "completed":
+            job["completed_runs"] += 1
+        if duration is not None:
+            job["duration_seconds_sum"] += duration
+            job["duration_samples"] += 1
+        job["cost_sum"] += max(0.0, _number(cost_view.get("display_cost_usd")))
+        job["tokens_sum"] += total_tokens
+        if len(job["runs"]) < _AGENT_RUNS_PER_JOB:
+            job["runs"].append(
+                {
+                    "session_id": str(session.get("id")),
+                    "started_at": session.get("started_at"),
+                    "outcome": outcome,
+                    "duration_seconds": duration,
+                    "total_tokens": total_tokens,
+                    "display_cost_usd": cost_view.get("display_cost_usd"),
+                    "cost_kind": cost_view.get("cost_kind"),
+                }
+            )
+
+    job_rows: List[Dict[str, Any]] = []
+    for job in jobs.values():
+        runs = job["runs"]
+        streak = 0
+        streak_outcome = runs[0]["outcome"] if runs else None
+        for run in runs:
+            if run["outcome"] == streak_outcome:
+                streak += 1
+            else:
+                break
+        job_rows.append(
+            {
+                "label": job["label"],
+                "profile": job["profile"],
+                "runs": runs,
+                "runs_recorded": job["runs_recorded"],
+                "failed_runs": job["failed_runs"],
+                "completed_runs": job["completed_runs"],
+                "avg_duration_seconds": (
+                    job["duration_seconds_sum"] / job["duration_samples"]
+                    if job["duration_samples"]
+                    else None
+                ),
+                "avg_cost_usd": (
+                    round(job["cost_sum"] / job["runs_recorded"], 4) if job["runs_recorded"] else None
+                ),
+                "total_tokens": job["tokens_sum"],
+                "last_run_at": runs[0]["started_at"] if runs else None,
+                "last_outcome": streak_outcome,
+                "current_streak": streak,
+            }
+        )
+    job_rows.sort(key=lambda item: -_number(item.get("last_run_at"), 0))
+    truncated = len(job_rows) > _AGENT_MAX_JOBS
+    return {
+        "period_days": days,
+        "period": _period_payload(days, period_start, period_end),
+        "jobs": job_rows[:_AGENT_MAX_JOBS],
+        "totals": {
+            "jobs": len(job_rows),
+            "runs": len(rows),
+            "failed_runs": sum(item["failed_runs"] for item in job_rows),
+            "truncated": truncated,
+        },
+        "generated_at": time.time(),
+    }
+
+
+@router.get("/agent-runs")
+async def agent_runs(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _agent_runs_sync, days, start_at, end_at)
+
+
+def _compression_sync() -> Dict[str, Any]:
+    """Summarize recorded context-compression distress across all sessions."""
+    now = time.time()
+    with _database() as db:
+        connection = _db_connection(db)
+        columns = _table_columns(connection, "sessions")
+        streak_expr = (
+            "coalesce(compression_fallback_streak,0)"
+            if "compression_fallback_streak" in columns
+            else "0"
+        )
+        ineffective_expr = (
+            "coalesce(compression_ineffective_count,0)"
+            if "compression_ineffective_count" in columns
+            else "0"
+        )
+        error_expr = (
+            "compression_failure_error" if "compression_failure_error" in columns else "NULL"
+        )
+        cooldown_expr = (
+            "coalesce(compression_failure_cooldown_until,0)"
+            if "compression_failure_cooldown_until" in columns
+            else "0"
+        )
+        summary = _row_dict(
+            connection.execute(
+                f"""
+                SELECT COUNT(*) AS sessions,
+                       SUM(CASE WHEN {streak_expr} > 0 THEN 1 ELSE 0 END) AS fallback_sessions,
+                       SUM(CASE WHEN {ineffective_expr} > 0 THEN 1 ELSE 0 END) AS ineffective_sessions,
+                       SUM(CASE WHEN {error_expr} IS NOT NULL THEN 1 ELSE 0 END) AS failed_sessions,
+                       SUM(CASE WHEN {cooldown_expr} > ? THEN 1 ELSE 0 END) AS cooldown_sessions
+                FROM sessions
+                """,
+                (now,),
+            ).fetchone()
+        )
+        offenders = [
+            _row_dict(row)
+            for row in connection.execute(
+                f"""
+                SELECT id, title, model, started_at,
+                       {streak_expr} AS fallback_streak,
+                       {ineffective_expr} AS ineffective_count,
+                       {error_expr} AS failure_error,
+                       {cooldown_expr} AS cooldown_until
+                FROM sessions
+                  WHERE ({streak_expr} > 0 OR {ineffective_expr} > 0 OR {error_expr} IS NOT NULL)
+                ORDER BY {streak_expr} + {ineffective_expr} DESC
+                LIMIT 5
+                """
+            ).fetchall()
+        ]
+    return {
+        "sessions": _integer(summary.get("sessions")),
+        "fallback_sessions": _integer(summary.get("fallback_sessions")),
+        "ineffective_sessions": _integer(summary.get("ineffective_sessions")),
+        "failed_sessions": _integer(summary.get("failed_sessions")),
+        "cooldown_sessions": _integer(summary.get("cooldown_sessions")),
+        "offenders": [
+            {
+                "id": str(item.get("id")),
+                "title": _clean_text(item.get("title"), 120) or str(item.get("id")),
+                "model": item.get("model"),
+                "started_at": item.get("started_at"),
+                "fallback_streak": _integer(item.get("fallback_streak")),
+                "ineffective_count": _integer(item.get("ineffective_count")),
+                "failure_error": _clean_text(item.get("failure_error"), 200) or None,
+                "in_cooldown": _number(item.get("cooldown_until")) > now,
+            }
+            for item in offenders
+        ],
+        "generated_at": now,
+    }
+
+
+@router.get("/compression")
+async def compression(profiles: str = Query("")) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _compression_sync)
+
+
+ATTENTION_OPEN_HOURS = 24
+ATTENTION_MIN_TOKENS = 5_000_000
+_ATTENTION_REAPED_END_REASONS = {"startup_orphan_reap", "max_runtime", "timeout"}
+_ATTENTION_MAX_SESSIONS = 20
+QUOTA_ATTENTION_PERCENT = 90
+QUOTA_ATTENTION_MAX_CACHE_AGE_SECONDS = 3600
+
+
+def _ai_usage_cached_payload(max_age_seconds: float = QUOTA_ATTENTION_MAX_CACHE_AGE_SECONDS) -> Optional[Dict[str, Any]]:
+    """Return a recent cached /ai-usage payload WITHOUT triggering collection.
+
+    Quota attention notes must never cause outbound provider requests on
+    their own — the plugin only phones providers when the user opens the AI
+    pages. No cache (or one too old) simply means no quota notes.
+    """
+    with _ai_usage_cache_lock:
+        entry = _ai_usage_cache_entry()
+        if entry and time.time() - entry[0] < max_age_seconds:
+            return copy.deepcopy(entry[1])
+    return None
+
+
+def _quota_attention_notes() -> List[Dict[str, Any]]:
+    """Account-quota warnings derived from the cached provider readings."""
+    payload = _ai_usage_cached_payload()
+    if not payload:
+        return []
+    notes: List[Dict[str, Any]] = []
+    for provider in payload.get("providers", []):
+        if provider.get("status") not in {"ok", "stale"}:
+            continue
+        for window in provider.get("windows", []):
+            if window.get("kind") != "quota":
+                continue
+            used = _number(window.get("percentage_used"), None)
+            if used is None:
+                continue
+            forecast = _quota_forecast(window.get("label"), window.get("reset_at"), used)
+            exhaust_at = forecast["exhaust_at"] if forecast else None
+            if used >= QUOTA_ATTENTION_PERCENT:
+                severity = "danger"
+                reason = f"{round(used)}% of the window is used"
+            elif forecast:
+                severity = "warning"
+                reason = f"on pace to run out before the reset ({forecast['basis']})"
+            else:
+                continue
+            notes.append(
+                {
+                    "id": f"quota:{provider.get('provider')}:{window.get('id')}:{window.get('reset_at') or ''}",
+                    "provider": provider.get("provider"),
+                    "provider_label": provider.get("label"),
+                    "window_label": window.get("label"),
+                    "severity": severity,
+                    "percent_used": round(used, 1),
+                    "exhaust_at": exhaust_at,
+                    "basis": forecast["basis"] if forecast else None,
+                    "reset_at": window.get("reset_at"),
+                    "reason": reason,
+                    "as_of": payload.get("generated_at"),
+                    "stale": bool(provider.get("stale")),
+                }
+            )
+    notes.sort(key=lambda item: (0 if item["severity"] == "danger" else 1, -item["percent_used"]))
+    return notes
+
+
+def _attention_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+    budgets: str = "",
+    balances: str = "",
+    watch: str = "",
+) -> Dict[str, Any]:
+    """Flag sessions that look like runaway or orphaned work.
+
+    Open sessions are flagged regardless of the selected period: an old
+    session that never closed matters whenever it is noticed. Reaped or
+    expired sessions honor the period so history stays browsable.
+    """
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    now = time.time()
+    reaped_placeholders = ",".join("?" for _ in _ATTENTION_REAPED_END_REASONS)
+    with _database() as db:
+        rows = [
+            _row_dict(row)
+            for row in _db_connection(db).execute(
+                f"""
+                SELECT id, title, source, model, started_at, ended_at,
+                       last_activity_at, end_reason, message_count,
+                       input_tokens, output_tokens, cache_read_tokens,
+                       cache_write_tokens, estimated_cost_usd, actual_cost_usd,
+                       cost_status, cost_source
+                FROM ({_accounted_sessions_sql(_db_connection(db))}) sessions
+                  WHERE (
+                    ended_at IS NULL
+                    OR lower(coalesce(end_reason,'')) IN ({reaped_placeholders})
+                  )
+                """,
+                tuple(sorted(_ATTENTION_REAPED_END_REASONS)),
+            ).fetchall()
+        ]
+
+    flagged: List[Dict[str, Any]] = []
+    open_flagged = 0
+    reaped_flagged = 0
+    for session in rows:
+        started = _number(session.get("started_at"), 0)
+        last_activity = _number(session.get("last_activity_at"), started)
+        total_tokens = sum(
+            _integer(session.get(key))
+            for key in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
+        )
+        cost_view = _cost_view(session)
+        if session.get("ended_at") is None:
+            open_hours = (now - started) / 3600 if started else 0
+            if open_hours < ATTENTION_OPEN_HOURS:
+                continue
+            recently_active = now - last_activity < 3600
+            if recently_active:
+                severity = "danger"
+                reason = (
+                    f"Open for {open_hours / 24:.1f} days and still active in the last hour; "
+                    "it may be running unattended."
+                )
+            elif total_tokens >= ATTENTION_MIN_TOKENS:
+                severity = "warning"
+                idle_hours = (now - last_activity) / 3600
+                reason = (
+                    f"Open for {open_hours / 24:.1f} days with {total_tokens / 1_000_000:.1f}M tokens, "
+                    f"idle for {idle_hours / 24:.1f} days; it never closed."
+                )
+            else:
+                continue
+            open_flagged += 1
+        else:
+            ended = _number(session.get("ended_at"), 0)
+            if ended < period_start or (period_end is not None and ended >= period_end):
+                continue
+            if total_tokens < ATTENTION_MIN_TOKENS:
+                continue
+            severity = "warning"
+            run_hours = max(0.0, (ended - started) / 3600) if started else 0.0
+            reason = (
+                f"Ended by {session.get('end_reason')} after {run_hours / 24:.1f} days "
+                f"with {total_tokens / 1_000_000:.1f}M tokens; nobody closed it deliberately."
+            )
+            reaped_flagged += 1
+        flagged.append(
+            {
+                "id": str(session.get("id")),
+                "title": _clean_text(session.get("title"), 120),
+                "source": session.get("source"),
+                "model": session.get("model"),
+                "started_at": session.get("started_at"),
+                "ended_at": session.get("ended_at"),
+                "last_activity_at": session.get("last_activity_at"),
+                "end_reason": session.get("end_reason"),
+                "total_tokens": total_tokens,
+                "display_cost_usd": cost_view.get("display_cost_usd"),
+                "cost_kind": cost_view.get("cost_kind"),
+                "severity": severity,
+                "reason": reason,
+            }
+        )
+
+    flagged.sort(
+        key=lambda item: (
+            0 if item["severity"] == "danger" else 1,
+            -_integer(item.get("total_tokens")),
+        )
+    )
+    truncated = len(flagged) > _ATTENTION_MAX_SESSIONS
+    return {
+        "sessions": flagged[:_ATTENTION_MAX_SESSIONS],
+        "quotas": _quota_attention_notes(),
+        "budgets": _budget_attention_notes(budgets, balances),
+        "runaway": _watch_attention_notes(_parse_watch_param(watch)),
+        "totals": {
+            "flagged": len(flagged),
+            "open_sessions": open_flagged,
+            "reaped_sessions": reaped_flagged,
+            "truncated": truncated,
+        },
+        "thresholds": {
+            "open_hours": ATTENTION_OPEN_HOURS,
+            "min_tokens": ATTENTION_MIN_TOKENS,
+            "reaped_end_reasons": sorted(_ATTENTION_REAPED_END_REASONS),
+        },
+        "generated_at": now,
+    }
+
+
+@router.get("/attention")
+async def attention(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+    budgets: str = Query(""),
+    balances: str = Query("", max_length=8000),
+    watch: str = Query("", max_length=200),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(
+        _scoped_call, profiles, _attention_sync, days, start_at, end_at, budgets=budgets, balances=balances, watch=watch
+    )
+
+
+@router.get("/watch")
+async def watch_route(profiles: str = Query(""), watch: str = Query("", max_length=200)) -> Dict[str, Any]:
+    """Sessions calling a model in the last hour, with their burn, flagged past the alert rates."""
+    return await asyncio.to_thread(_scoped_call, profiles, _watch_sync, _parse_watch_param(watch))
+
+
+@router.get("/telemetry")
+async def telemetry(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    session_id: str = Query("", max_length=240),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(
+        _scoped_call,
+        profiles,
+        _telemetry_sync,
+        days,
+        session_id.strip(),
+        start_at,
+        end_at,
+    )
+
+
+def _overview_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    session_period_sql, session_period_params = _period_sql(
+        "started_at", period_start, period_end
+    )
+    joined_period_sql, joined_period_params = _period_sql(
+        "s.started_at", period_start, period_end
+    )
+    with _database() as db:
+        totals_row = _db_connection(db).execute(
+            f"""
+            SELECT COUNT(*) AS sessions,
+                   coalesce(SUM(message_count),0) AS messages,
+                   coalesce(SUM(tool_call_count),0) AS tool_calls,
+                   coalesce(SUM(input_tokens),0) AS input_tokens,
+                   coalesce(SUM(output_tokens),0) AS output_tokens,
+                   coalesce(SUM(cache_read_tokens),0) AS cache_read_tokens,
+                   coalesce(SUM(cache_write_tokens),0) AS cache_write_tokens,
+                   coalesce(SUM(reasoning_tokens),0) AS reasoning_tokens,
+                   coalesce(SUM(api_call_count),0) AS api_calls,
+                   coalesce(SUM(CASE
+                       WHEN actual_cost_usd IS NOT NULL AND actual_cost_usd > 0 THEN actual_cost_usd
+                       WHEN lower(coalesce(cost_status,'')) IN ('included','subscription','free') THEN 0
+                       WHEN estimated_cost_usd IS NOT NULL AND estimated_cost_usd > 0 THEN estimated_cost_usd
+                       ELSE 0 END),0) AS display_cost_usd,
+                   coalesce(SUM(CASE WHEN actual_cost_usd > 0 THEN 1 ELSE 0 END),0) AS actual_cost_sessions,
+                   coalesce(SUM(CASE WHEN coalesce(actual_cost_usd,0) <= 0 AND estimated_cost_usd > 0 THEN 1 ELSE 0 END),0) AS estimated_cost_sessions,
+                   coalesce(SUM(CASE WHEN lower(coalesce(cost_status,'')) IN ('included','subscription','free') THEN 1 ELSE 0 END),0) AS included_cost_sessions,
+                    coalesce(SUM(CASE WHEN coalesce(actual_cost_usd,0) <= 0 AND coalesce(estimated_cost_usd,0) <= 0 AND lower(coalesce(cost_status,'')) NOT IN ('included','subscription','free') THEN 1 ELSE 0 END),0) AS unpriced_sessions
+            FROM ({_accounted_sessions_sql(_db_connection(db))}) sessions
+            WHERE {session_period_sql}
+            """,
+            tuple(session_period_params),
+        ).fetchone()
+        totals = _row_dict(totals_row)
+        totals["failures"] = sum(
+            _confirmed_failure_counts(
+                _db_connection(db),
+                joined_period_sql,
+                joined_period_params,
+            ).values()
+        )
+        totals["total_tokens"] = sum(
+            _integer(totals.get(key))
+            for key in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens")
+        )
+        priced_sessions = _integer(totals.get("actual_cost_sessions")) + _integer(
+            totals.get("estimated_cost_sessions")
+        )
+        included_sessions = _integer(totals.get("included_cost_sessions"))
+        unpriced_sessions = _integer(totals.get("unpriced_sessions"))
+        totals["cost_kind"] = (
+            "estimated"
+            if priced_sessions > 0
+            else ("included" if included_sessions > 0 and unpriced_sessions == 0 else "unpriced")
+        )
+
+        daily = [
+            _row_dict(row)
+            for row in _db_connection(db).execute(
+                f"""
+                SELECT date(coalesce(last_activity_at, ended_at, started_at), 'unixepoch', 'localtime') AS day,
+                       COUNT(*) AS sessions,
+                       coalesce(SUM(input_tokens + output_tokens + cache_read_tokens + cache_write_tokens),0) AS total_tokens,
+                       coalesce(SUM(tool_call_count),0) AS tool_calls,
+                       coalesce(SUM(CASE
+                           WHEN actual_cost_usd > 0 THEN actual_cost_usd
+                           WHEN estimated_cost_usd > 0 THEN estimated_cost_usd
+                           ELSE 0 END),0) AS cost_usd
+                FROM ({_accounted_sessions_sql(_db_connection(db))}) sessions
+                WHERE {session_period_sql}
+                GROUP BY day ORDER BY day
+                """,
+                tuple(session_period_params),
+            ).fetchall()
+        ]
+        models = [
+            _row_dict(row)
+            for row in _db_connection(db).execute(
+                f"""
+                SELECT u.model, u.billing_provider, COUNT(DISTINCT u.session_id) AS sessions,
+                       SUM(u.api_call_count) AS api_calls,
+                       SUM(u.input_tokens) AS input_tokens,
+                       SUM(u.output_tokens) AS output_tokens,
+                       SUM(u.cache_read_tokens) AS cache_read_tokens,
+                       SUM(u.cache_write_tokens) AS cache_write_tokens,
+                       SUM(u.reasoning_tokens) AS reasoning_tokens,
+                       SUM(u.input_tokens + u.output_tokens + u.cache_read_tokens + u.cache_write_tokens) AS total_tokens,
+                       SUM(CASE WHEN u.actual_cost_usd > 0 THEN u.actual_cost_usd ELSE u.estimated_cost_usd END) AS cost_usd,
+                       SUM(CASE WHEN lower(coalesce(u.cost_status,'')) IN ('included','subscription','free') THEN 1 ELSE 0 END) AS included_rows
+                FROM session_model_usage u
+                JOIN sessions s ON s.id = u.session_id{_same_profile(db, "s", "u")}
+                WHERE {joined_period_sql}
+                GROUP BY u.model, u.billing_provider
+                ORDER BY total_tokens DESC LIMIT 30
+                """,
+                tuple(joined_period_params),
+            ).fetchall()
+        ]
+        for model in models:
+            model["cost_kind"] = (
+                "estimated"
+                if _number(model.get("cost_usd")) > 0
+                else ("included" if _integer(model.get("included_rows")) > 0 else "unpriced")
+            )
+        sources = [
+            _row_dict(row)
+            for row in _db_connection(db).execute(
+                f"""
+                SELECT coalesce(source,'unknown') AS source, COUNT(*) AS sessions,
+                       SUM(input_tokens + output_tokens + cache_read_tokens + cache_write_tokens) AS total_tokens,
+                       SUM(tool_call_count) AS tool_calls
+                FROM ({_accounted_sessions_sql(_db_connection(db))}) sessions
+                WHERE {session_period_sql}
+                GROUP BY source ORDER BY sessions DESC
+                """,
+                tuple(session_period_params),
+            ).fetchall()
+        ]
+        outcome_counts: Counter[str] = Counter()
+        for row in _db_connection(db).execute(
+            f"""
+            SELECT end_reason, ended_at, last_activity_at, started_at
+            FROM sessions
+            WHERE {session_period_sql}
+            """,
+            tuple(session_period_params),
+        ).fetchall():
+            outcome_counts[_session_outcome(_row_dict(row))["outcome"]] += 1
+        return {
+            "period_days": days,
+            "period": _period_payload(days, period_start, period_end),
+            "totals": totals,
+            "daily": daily,
+            "models": models,
+            "sources": sources,
+            "outcomes": [
+                {"outcome": name, "sessions": count}
+                for name, count in sorted(outcome_counts.items(), key=lambda item: item[1], reverse=True)
+            ],
+            "generated_at": time.time(),
+        }
+
+
+@router.get("/overview")
+async def overview(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _overview_sync, days, start_at, end_at)
+
+
+_MODEL_ROUTE_META: Dict[str, Dict[str, Any]] = {
+    "openai-codex": {"label": "OpenAI OAuth", "provider": "OpenAI", "oauth": True, "quota_provider": "codex"},
+    "xai-oauth": {"label": "SuperGrok OAuth", "provider": "xAI", "oauth": True, "quota_provider": "grok"},
+    "anthropic-oauth": {"label": "Anthropic OAuth", "provider": "Anthropic", "oauth": True, "quota_provider": "anthropic"},
+    "openrouter": {"label": "OpenRouter API", "provider": "OpenRouter"},
+    "fordex": {"label": "Fordex Portal", "provider": "Fordex", "quota_provider": "fordex"},
+    "deepseek": {"label": "DeepSeek API", "provider": "DeepSeek"},
+    "nvidia": {"label": "NVIDIA NIM API", "provider": "NVIDIA"},
+    "opencode": {"label": "OpenCode Zen API", "provider": "OpenCode"},
+    "kimi-coding": {"label": "Kimi Code Plan API", "provider": "Kimi", "quota_provider": "kimi"},
+    "kimi-coding-cn": {"label": "Kimi Code Plan API", "provider": "Kimi", "quota_provider": "kimi"},
+    "zai": {"label": "Z.AI API", "provider": "Z.AI", "quota_provider": "zai"},
+    "zai-coding": {"label": "Z.AI Coding Plan API", "provider": "Z.AI", "quota_provider": "zai"},
+    "alibaba": {"label": "Qwen Cloud API", "provider": "Qwen"},
+    "alibaba-coding-plan": {"label": "Qwen Coding Plan API", "provider": "Qwen"},
+    "qwen-oauth": {"label": "Qwen OAuth", "provider": "Qwen", "oauth": True},
+}
+
+_MODEL_ORIGIN_NAMES = {
+    "anthropic": "Anthropic",
+    "deepseek": "DeepSeek",
+    "google": "Google",
+    "meta-llama": "Meta",
+    "mistralai": "Mistral AI",
+    "moonshotai": "Moonshot AI",
+    "nvidia": "NVIDIA",
+    "openai": "OpenAI",
+    "qwen": "Qwen",
+    "x-ai": "xAI",
+    "z-ai": "Z.AI",
+}
+
+
+def _rate_sample_threshold(settings: Optional[Mapping[str, Any]] = None) -> int:
+    value = (settings if settings is not None else _plugin_settings()).get(
+        "rate_sample_threshold", DEFAULT_RATE_SAMPLE_THRESHOLD
+    )
+    return max(1, min(10000, _integer(value, DEFAULT_RATE_SAMPLE_THRESHOLD)))
+
+
+def _configured_route_mappings(settings: Optional[Mapping[str, Any]] = None) -> Dict[str, str]:
+    raw = (settings if settings is not None else _plugin_settings()).get("model_route_mappings", {})
+    if not isinstance(raw, Mapping):
+        return {}
+    mappings: Dict[str, str] = {}
+    for pattern, label in list(raw.items())[:MAX_ROUTE_MAPPINGS]:
+        clean_pattern = _clean_text(pattern, 240).strip()
+        clean_label = _clean_text(label, 120).strip()
+        if clean_pattern and clean_label:
+            mappings[clean_pattern] = clean_label
+    return mappings
+
+
+def _table_columns(connection: Any, table: str) -> set[str]:
+    try:
+        return {str(row[1]) for row in connection.execute(f"PRAGMA table_info({table})").fetchall()}
+    except sqlite3.OperationalError:
+        return set()
+
+
+def _humanize_identifier(value: Any) -> str:
+    text = _clean_text(value, 160).strip(" /_-.")
+    if not text:
+        return "Unknown"
+    words = re.split(r"[-_\s]+", text)
+    acronyms = {
+        "ai": "AI",
+        "api": "API",
+        "codex": "Codex",
+        "glm": "GLM",
+        "gpt": "GPT",
+        "nim": "NIM",
+        "oauth": "OAuth",
+        "xai": "xAI",
+    }
+    return " ".join(acronyms.get(word.lower(), word if any(char.isupper() for char in word) else word.title()) for word in words)
+
+
+def _model_display_name(model_id: str) -> str:
+    leaf = str(model_id or "unknown").rsplit("/", 1)[-1]
+    return _humanize_identifier(leaf)
+
+
+def _model_origin_label(model_id: str, billing_provider: str) -> str:
+    model = str(model_id or "").lower()
+    if "/" in model:
+        namespace = model.split("/", 1)[0]
+        return _MODEL_ORIGIN_NAMES.get(namespace, _humanize_identifier(namespace))
+    family_names = (
+        (("claude",), "Anthropic"),
+        (("gpt", "o1", "o3", "o4", "codex"), "OpenAI"),
+        (("grok",), "xAI"),
+        (("kimi", "k2", "k3"), "Kimi"),
+        (("glm",), "Z.AI"),
+        (("deepseek",), "DeepSeek"),
+        (("qwen",), "Qwen"),
+        (("gemini",), "Google"),
+    )
+    for prefixes, label in family_names:
+        if model.startswith(prefixes):
+            return label
+    provider_key = str(billing_provider or "").strip().lower()
+    meta = _MODEL_ROUTE_META.get(provider_key)
+    return str(meta.get("provider")) if meta else _humanize_identifier(provider_key or "unknown")
+
+
+def _route_descriptor(provider: Any, base_url: Any, billing_mode: Any) -> Dict[str, Any]:
+    provider_key = str(provider or "").strip().lower() or "unknown"
+    mode = str(billing_mode or "").strip().lower()
+    meta = dict(_MODEL_ROUTE_META.get(provider_key) or {})
+    oauth = bool(meta.get("oauth")) or "oauth" in provider_key or "oauth" in mode
+    mode_subscription = any(marker in mode for marker in ("subscription", "included"))
+    if provider_key == "anthropic" and mode_subscription:
+        meta = {"label": "Anthropic OAuth", "provider": "Anthropic", "quota_provider": "anthropic"}
+        oauth = True
+    plan_route = _is_subscription_route(provider_key, base_url)
+    if plan_route and not meta:
+        # A model-provider plugin driving a flat-rate plan (Claude Pro/Max through
+        # Claude Code): no cash per call, and its use burns the Claude windows.
+        meta = {"label": "Claude subscription (plugin)", "provider": "Anthropic", "quota_provider": "anthropic"}
+    subscription = (oauth and provider_key not in {"fordex"}) or plan_route
+    provider_label = str(meta.get("provider") or _humanize_identifier(provider_key))
+    route_label = str(meta.get("label") or f"{provider_label} {'OAuth' if oauth else 'API'}")
+    parsed = urlparse(str(base_url or ""))
+    return {
+        "key": "\u001f".join((provider_key, parsed.hostname or "", mode)),
+        "provider": provider_key,
+        "provider_label": provider_label,
+        "label": route_label,
+        "host": (parsed.hostname or "")[:160] or None,
+        "billing_mode": mode or None,
+        "oauth": oauth,
+        "subscription": subscription,
+        "quota_provider": meta.get("quota_provider"),
+    }
+
+
+def _route_needs_mapping(route: Mapping[str, Any]) -> bool:
+    return str(route.get("provider") or "").lower() in {"", "unknown"} or str(
+        route.get("label") or ""
+    ).lower() in {"unknown", "unknown api", "unknown route"}
+
+
+def _model_family_glob(model_id: str) -> Optional[str]:
+    match = re.match(r"^(?P<prefix>.*?-\d+(?:\.\d+)?)(?:-|$)", str(model_id or ""), re.IGNORECASE)
+    return f"{match.group('prefix')}-*" if match else None
+
+
+def _historical_route_mappings(models: Mapping[str, Mapping[str, Any]]) -> Dict[str, str]:
+    exact: Dict[str, str] = {}
+    family_labels: Dict[str, set[str]] = defaultdict(set)
+    for model_id, model in models.items():
+        labels = {
+            str(route.get("label") or "").strip()
+            for route in (model.get("routes_map") or {}).values()
+            if not _route_needs_mapping(route) and str(route.get("label") or "").strip()
+        }
+        if len(labels) != 1:
+            continue
+        label = next(iter(labels))
+        exact[model_id] = label
+        family = _model_family_glob(model_id)
+        if family:
+            family_labels[family].add(label)
+    for family, labels in family_labels.items():
+        if len(labels) == 1:
+            exact.setdefault(family, next(iter(labels)))
+    return exact
+
+
+def _apply_route_mapping(
+    model_id: str,
+    route: Mapping[str, Any],
+    configured: Mapping[str, str],
+    historical: Mapping[str, str],
+) -> Dict[str, Any]:
+    resolved = dict(route)
+    if not _route_needs_mapping(resolved):
+        resolved["mapping_source"] = "recorded"
+        return resolved
+    model_key = str(model_id or "").lower()
+    for source, mappings in (("config", configured), ("historical", historical)):
+        for pattern, label in mappings.items():
+            if fnmatch.fnmatchcase(model_key, str(pattern).lower()):
+                resolved["label"] = label
+                resolved["mapping_pattern"] = pattern
+                resolved["mapping_source"] = source
+                for provider_key, meta in _MODEL_ROUTE_META.items():
+                    if str(meta.get("label") or "").casefold() != str(label).casefold():
+                        continue
+                    semantics = _route_descriptor(provider_key, "", "")
+                    for field in ("provider", "provider_label", "oauth", "subscription", "quota_provider"):
+                        resolved[field] = semantics.get(field)
+                    break
+                return resolved
+    resolved["label"] = "Unmapped (edit in config)"
+    resolved["mapping_source"] = "unmapped"
+    return resolved
+
+
+def _auxiliary_task_label(task: str) -> str:
+    labels = {
+        "approval": "Approval",
+        "background_review": "Review",
+        "compression": "Compression",
+        "title_generation": "Title",
+        "vision": "Vision",
+        "web_extract": "Web extract",
+    }
+    normalised = str(task or "").strip().lower()
+    label = labels.get(normalised, _humanize_identifier(normalised))
+    return f"{label} job" if label in _SESSION_TASK_TYPE_SET else label
+
+# Session outcomes the work ledger treats as finished work. "closed" covers Duckwork Desktop's
+# normal end reasons (session_reset when a new chat starts, *_orphan_reap after a restart),
+# which carry no failure signal; the ledger then reads the bounded logs for the real ending.
+_WORK_LEDGER_FINISHED_OUTCOMES = frozenset({"completed", "closed", "failed"})
+_WORK_LEDGER_OUTCOME_REASONS = {
+    "open": "still open",
+    "running": "still running",
+    "cancelled": "cancelled",
+}
+
+
+def _merge_routes_by_label(routes: Iterable[Mapping[str, Any]]) -> List[Dict[str, Any]]:
+    """Fold route rows that resolve to the same label (same provider, different host or
+    billing mode) into one row so the table's route count matches the provenance line."""
+    merged: Dict[str, Dict[str, Any]] = {}
+    for route in routes:
+        label = str(route.get("label") or "")
+        existing = merged.get(label)
+        if existing is None:
+            merged[label] = dict(route)
+            continue
+        for field in ("requests", "input_tokens", "output_tokens", "cache_tokens"):
+            existing[field] = _integer(existing.get(field)) + _integer(route.get(field))
+        existing["cost_usd"] = _number(existing.get("cost_usd")) + _number(route.get("cost_usd"))
+        existing["last_used_at"] = max(
+            _number(existing.get("last_used_at"), 0), _number(route.get("last_used_at"), 0)
+        ) or None
+        existing["oauth"] = bool(existing.get("oauth") or route.get("oauth"))
+        existing["subscription"] = bool(existing.get("subscription") or route.get("subscription"))
+        if not existing.get("host") and route.get("host"):
+            existing["host"] = route.get("host")
+    return sorted(merged.values(), key=lambda item: _number(item.get("last_used_at")), reverse=True)
+
+
+def _latency_comparison_insight(model: Mapping[str, Any], peers: Iterable[Mapping[str, Any]]) -> Optional[str]:
+    """Say how a slow model compares with the other models that have logged latency, or nothing.
+
+    A bare "median latency is 10.3s" restates the card; the insight earns its place only
+    when the model is markedly slower than its peers in the same period."""
+    own = _number((model.get("latency") or {}).get("total_p50_seconds"), 0)
+    if own <= 0:
+        return None
+    peer_medians = [
+        _number((peer.get("latency") or {}).get("total_p50_seconds"), 0)
+        for peer in peers
+        if peer is not model
+        and _integer((peer.get("latency") or {}).get("samples")) > 0
+        and _number((peer.get("latency") or {}).get("total_p50_seconds"), 0) > 0
+    ]
+    if not peer_medians:
+        return None
+    peer_median = _percentile(peer_medians, 0.5)
+    if not peer_median or own < peer_median * 1.5:
+        return None
+    ratio = own / peer_median
+    return (
+        f"Median response latency of {own:.1f}s is {ratio:.1f}× the {peer_median:.1f}s median of the "
+        f"{len(peer_medians)} other model{'s' if len(peer_medians) != 1 else ''} with logged calls this period."
+    )
+
+
+def _ai_models_payload_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+    *,
+    settings: Optional[Mapping[str, Any]] = None,
+) -> Dict[str, Any]:
+    settings = dict(settings or {})
+    rate_sample_threshold = _rate_sample_threshold(settings)
+    configured_route_mappings = _configured_route_mappings(settings)
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    period_sql, period_params = _period_sql("s.started_at", period_start, period_end)
+    now = time.time()
+    trend_end = max(period_start, (period_end if period_end is not None else now) - 0.001)
+    trend_end_day = dt.datetime.fromtimestamp(trend_end).date()
+    trend_days = [(trend_end_day - dt.timedelta(days=offset)).isoformat() for offset in range(6, -1, -1)]
+
+    with _database() as db:
+        connection = _db_connection(db)
+        session_columns = _table_columns(connection, "sessions")
+        usage_columns = _table_columns(connection, "session_model_usage")
+        rewind_expr = "coalesce(s.rewind_count,0)" if "rewind_count" in session_columns else "0"
+        session_rows = [
+            _row_dict(row)
+            for row in connection.execute(
+                f"""
+                SELECT s.id, s.source, s.model, s.started_at, s.ended_at, s.end_reason,
+                       s.last_activity_at, s.input_tokens, s.output_tokens,
+                       s.cache_read_tokens, s.cache_write_tokens, s.reasoning_tokens,
+                       s.api_call_count, s.billing_provider, s.billing_base_url,
+                       s.billing_mode, s.estimated_cost_usd, s.actual_cost_usd,
+                       s.cost_status, s.cost_source, s.message_count,
+                       {rewind_expr} AS rewind_count
+                FROM ({_accounted_sessions_sql(_db_connection(db))}) s
+                WHERE {period_sql}
+                """,
+                tuple(period_params),
+            ).fetchall()
+        ]
+        sessions_by_id = {str(row["id"]): row for row in session_rows}
+
+        usage_rows: List[Dict[str, Any]] = []
+        inventory_rows: List[Dict[str, Any]] = []
+        if usage_columns:
+            base_url_expr = "u.billing_base_url" if "billing_base_url" in usage_columns else "''"
+            task_expr = "u.task" if "task" in usage_columns else "''"
+            usage_rows = [
+                _row_dict(row)
+                for row in connection.execute(
+                    f"""
+                    SELECT u.session_id, u.model, u.billing_provider,
+                           {base_url_expr} AS billing_base_url, u.billing_mode,
+                           {task_expr} AS task, u.api_call_count, u.input_tokens,
+                           u.output_tokens, u.cache_read_tokens, u.cache_write_tokens,
+                           u.reasoning_tokens, u.estimated_cost_usd, u.actual_cost_usd,
+                           u.cost_status, u.cost_source, u.first_seen, u.last_seen
+                    FROM session_model_usage u
+                    JOIN sessions s ON s.id=u.session_id{_same_profile(connection, "s", "u")}
+                    WHERE {period_sql}
+                    """,
+                    tuple(period_params),
+                ).fetchall()
+            ]
+            inventory_rows = [
+                _row_dict(row)
+                for row in connection.execute(
+                    f"""
+                    SELECT u.model, u.billing_provider,
+                           {base_url_expr} AS billing_base_url, u.billing_mode,
+                           MAX(coalesce(u.last_seen, s.last_activity_at, s.started_at)) AS last_seen
+                    FROM session_model_usage u
+                    JOIN sessions s ON s.id=u.session_id{_same_profile(connection, "s", "u")}
+                    GROUP BY u.model, u.billing_provider, {base_url_expr}, u.billing_mode
+                    """
+                ).fetchall()
+            ]
+
+        inventoried_models = {str(row.get("model") or "unknown") for row in inventory_rows}
+        session_inventory_rows = [
+            _row_dict(row)
+            for row in connection.execute(
+                """
+                SELECT model, billing_provider, billing_base_url, billing_mode,
+                       MAX(coalesce(last_activity_at, started_at)) AS last_seen
+                FROM sessions
+                WHERE model IS NOT NULL AND trim(model) != ''
+                GROUP BY model, billing_provider, billing_base_url, billing_mode
+                """
+            ).fetchall()
+        ]
+        for session in session_inventory_rows:
+            model_id = str(session.get("model") or "").strip()
+            if not model_id or model_id in inventoried_models:
+                continue
+            inventory_rows.append(
+                {
+                    "model": model_id,
+                    "billing_provider": session.get("billing_provider") or "",
+                    "billing_base_url": session.get("billing_base_url") or "",
+                    "billing_mode": session.get("billing_mode") or "",
+                    "last_seen": session.get("last_seen"),
+                }
+            )
+            inventoried_models.add(model_id)
+
+        accounted_sessions = {str(row.get("session_id")) for row in usage_rows}
+        for session in session_rows:
+            session_id = str(session.get("id"))
+            if session_id in accounted_sessions or not session.get("model"):
+                continue
+            usage_rows.append(
+                {
+                    "session_id": session_id,
+                    "model": session.get("model") or "unknown",
+                    "billing_provider": session.get("billing_provider") or "",
+                    "billing_base_url": session.get("billing_base_url") or "",
+                    "billing_mode": session.get("billing_mode") or "",
+                    "task": "",
+                    "api_call_count": session.get("api_call_count") or 0,
+                    "input_tokens": session.get("input_tokens") or 0,
+                    "output_tokens": session.get("output_tokens") or 0,
+                    "cache_read_tokens": session.get("cache_read_tokens") or 0,
+                    "cache_write_tokens": session.get("cache_write_tokens") or 0,
+                    "reasoning_tokens": session.get("reasoning_tokens") or 0,
+                    "estimated_cost_usd": session.get("estimated_cost_usd") or 0,
+                    "actual_cost_usd": session.get("actual_cost_usd") or 0,
+                    "cost_status": session.get("cost_status"),
+                    "cost_source": session.get("cost_source"),
+                    "first_seen": session.get("started_at"),
+                    "last_seen": session.get("last_activity_at") or session.get("started_at"),
+                    "fallback": True,
+                }
+            )
+
+        confirmed_failure_rows = (
+            _confirmed_failure_rows(
+                connection,
+                period_sql,
+                period_params,
+            )
+            if session_rows
+            else []
+        )
+        failure_counts: Counter[str] = Counter(
+            str(row.get("session_id") or "") for row in confirmed_failure_rows
+        )
+
+        message_rows_by_session: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+        tool_failure_rows = [
+            row
+            for row in confirmed_failure_rows
+            if str(row.get("role") or "").lower() == "tool"
+        ]
+        tool_call_rows = (
+            [
+                _row_dict(row)
+                for row in connection.execute(
+                    f"""
+                    SELECT m.session_id, m.timestamp
+                    FROM messages m
+                    JOIN sessions s ON s.id=m.session_id{_same_profile(connection, "s", "m")}
+                    WHERE {period_sql}
+                      AND coalesce(m.active,1)=1 AND m.role='tool'
+                    """,
+                    tuple(period_params),
+                ).fetchall()
+            ]
+            if session_rows
+            else []
+        )
+        cached_facts_by_session: Dict[str, Dict[str, Any]] = {}
+        classification_session_ids: List[str] = []
+        for session_id, session in sessions_by_id.items():
+            cached = _cached_classification_facts(session)
+            if cached is None:
+                classification_session_ids.append(session_id)
+            else:
+                cached_facts_by_session[session_id] = cached
+        for chunk_start in range(0, len(classification_session_ids), 900):
+            chunk = classification_session_ids[chunk_start : chunk_start + 900]
+            placeholders = ",".join("?" for _ in chunk)
+            for row in connection.execute(
+                f"""
+                SELECT m.id, m.session_id, m.role, m.content, m.tool_call_id,
+                       m.tool_calls, m.tool_name, m.effect_disposition,
+                       m.timestamp, m.finish_reason
+                FROM messages m
+                WHERE m.session_id IN ({placeholders})
+                  AND coalesce(m.active,1)=1
+                  AND (m.role IN ('user','tool') OR m.tool_calls IS NOT NULL)
+                ORDER BY m.timestamp ASC, m.id ASC
+                """,
+                tuple(chunk),
+            ).fetchall():
+                material = _row_dict(row)
+                message_rows_by_session[str(material.get("session_id") or "")].append(material)
+
+    role_models_by_session: Dict[str, Dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    usage_by_session: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    cache_reporting_providers: set[str] = set()
+    for usage in usage_rows:
+        session_id = str(usage.get("session_id") or "")
+        usage_by_session[session_id].append(usage)
+        role_models_by_session[session_id][_task_role(usage.get("task"))].add(
+            str(usage.get("model") or "unknown")
+        )
+        if _integer(usage.get("cache_read_tokens")) or _integer(usage.get("cache_write_tokens")):
+            cache_reporting_providers.add(str(usage.get("billing_provider") or "").strip().lower())
+
+    retry_switch_models_by_session: Dict[str, set[str]] = defaultdict(set)
+    for session_id in classification_session_ids:
+        _check_route_budget()
+        cached_facts_by_session[session_id] = _classification_facts(
+            sessions_by_id.get(session_id, {}),
+            message_rows_by_session.get(session_id, []),
+        )
+    for session_id, roles in role_models_by_session.items():
+        for role, role_models in roles.items():
+            if len(role_models) > 1:
+                retry_switch_models_by_session[session_id].update(role_models)
+        main_models = roles.get("main", set())
+        session = sessions_by_id.get(session_id, {})
+        if _integer(session.get("rewind_count")) > 0:
+            retry_switch_models_by_session[session_id].update(main_models)
+        elif len(main_models) == 1 and cached_facts_by_session.get(session_id, {}).get(
+            "near_identical_prompt_retry"
+        ):
+            retry_switch_models_by_session[session_id].update(main_models)
+
+    session_facts: Dict[str, Dict[str, Any]] = {}
+    for session_id, session in sessions_by_id.items():
+        cached_facts = cached_facts_by_session.get(session_id, {})
+        outcome = str(cached_facts.get("outcome") or "unknown")
+        closed = session.get("ended_at") is not None and outcome not in {"open", "running"}
+        resolved = closed and outcome not in {"failed", "cancelled"}
+        eligible_proxy = resolved
+        proxy_accepted = (
+            eligible_proxy
+            and not retry_switch_models_by_session.get(session_id)
+            and failure_counts.get(session_id, 0) == 0
+        )
+        session_facts[session_id] = {
+            "outcome": outcome,
+            "closed": closed,
+            "resolved": resolved,
+            "eligible_proxy": eligible_proxy,
+            "proxy_accepted": proxy_accepted,
+            "coding_change": cached_facts.get("coding_change"),
+            "writing_change": cached_facts.get("writing_change"),
+            "task_type": cached_facts.get("task_type", "General"),
+        }
+
+    tool_failures_by_model: Counter[str] = Counter()
+    unattributed_tool_failures = 0
+    for failure in tool_failure_rows:
+        session_id = str(failure.get("session_id") or "")
+        model_id = _model_for_session_event(
+            usage_by_session.get(session_id, []),
+            _number(failure.get("timestamp")),
+        )
+        if model_id:
+            tool_failures_by_model[model_id] += 1
+        else:
+            unattributed_tool_failures += 1
+
+    tool_calls_by_model: Counter[str] = Counter()
+    unattributed_tool_calls = 0
+    for call in tool_call_rows:
+        session_id = str(call.get("session_id") or "")
+        model_id = _model_for_session_event(
+            usage_by_session.get(session_id, []),
+            _number(call.get("timestamp")),
+        )
+        if model_id:
+            tool_calls_by_model[model_id] += 1
+        else:
+            unattributed_tool_calls += 1
+
+    models: Dict[str, Dict[str, Any]] = {}
+    for usage in usage_rows:
+        model_id = str(usage.get("model") or "unknown")
+        session_id = str(usage.get("session_id") or "")
+        session = sessions_by_id.get(session_id, {})
+        provider_key = str(usage.get("billing_provider") or "").strip().lower()
+        route = _route_descriptor(provider_key, usage.get("billing_base_url"), usage.get("billing_mode"))
+        task_name = str(usage.get("task") or "").strip()
+        auxiliary = bool(task_name)
+        task_type = _auxiliary_task_label(task_name) if auxiliary else session_facts.get(session_id, {}).get("task_type", "General")
+        input_tokens = _integer(usage.get("input_tokens"))
+        output_tokens = _integer(usage.get("output_tokens"))
+        cache_tokens = _integer(usage.get("cache_read_tokens")) + _integer(usage.get("cache_write_tokens"))
+        requests = _integer(usage.get("api_call_count"))
+        cost_view = _cost_view(usage)
+        row_cost = max(0.0, _number(cost_view.get("display_cost_usd")))
+        row_cost_kind = str(cost_view.get("cost_kind") or "unpriced")
+        last_used = _number(usage.get("last_seen") or session.get("last_activity_at") or session.get("started_at"), 0)
+
+        model = models.setdefault(
+            model_id,
+            {
+                "model_id": model_id,
+                "display_name": _model_display_name(model_id),
+                "provider_label": "",
+                "last_used_at": None,
+                "requests": 0,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "cache_tokens_raw": 0,
+                "reasoning_tokens": 0,
+                "total_tokens": 0,
+                "cost_usd": 0.0,
+                "actual_cost": False,
+                "estimated_cost": False,
+                "included_cost": False,
+                "free_api_cost": False,
+                "sessions_set": set(),
+                "acceptance_sessions_set": set(),
+                "accepted_sessions_set": set(),
+                "retry_sessions_set": set(),
+                "routes_map": {},
+                "task_types_map": {},
+                "auxiliary_tasks_map": {},
+                "trend_map": {day: 0 for day in trend_days},
+            },
+        )
+        model["last_used_at"] = max(_number(model.get("last_used_at"), 0), last_used) or None
+        model["requests"] += requests
+        model["input_tokens"] += input_tokens
+        model["output_tokens"] += output_tokens
+        model["cache_tokens_raw"] += cache_tokens
+        model["reasoning_tokens"] += _integer(usage.get("reasoning_tokens"))
+        model["total_tokens"] += input_tokens + output_tokens + cache_tokens
+        model["cost_usd"] += row_cost
+        model["actual_cost"] = bool(model["actual_cost"] or row_cost_kind == "actual")
+        model["estimated_cost"] = bool(model["estimated_cost"] or row_cost_kind == "estimated")
+        model["included_cost"] = bool(model["included_cost"] or route["subscription"])
+        model["free_api_cost"] = bool(
+            model["free_api_cost"]
+            or (not route["subscription"] and row_cost_kind == "included")
+        )
+        model["sessions_set"].add(session_id)
+        facts = session_facts.get(session_id, {})
+        acceptance_valid, accepted = _acceptance_for_task(task_type, facts)
+        if acceptance_valid:
+            model["acceptance_sessions_set"].add(session_id)
+        if accepted:
+            model["accepted_sessions_set"].add(session_id)
+        if model_id in retry_switch_models_by_session.get(session_id, set()):
+            model["retry_sessions_set"].add(session_id)
+
+        route_row = model["routes_map"].setdefault(
+            route["key"],
+            {**route, "requests": 0, "input_tokens": 0, "output_tokens": 0, "cache_tokens": 0, "cost_usd": 0.0, "last_used_at": None},
+        )
+        route_row["requests"] += requests
+        route_row["input_tokens"] += input_tokens
+        route_row["output_tokens"] += output_tokens
+        route_row["cache_tokens"] += cache_tokens
+        route_row["cost_usd"] += row_cost
+        route_row["last_used_at"] = max(_number(route_row.get("last_used_at"), 0), last_used) or None
+
+        task_map = model["auxiliary_tasks_map"] if auxiliary else model["task_types_map"]
+        task = task_map.setdefault(
+            task_type,
+            {
+                "task_type": task_type,
+                "requests": 0,
+                "sessions_set": set(),
+                "eligible_sessions_set": set(),
+                "accepted_sessions_set": set(),
+            },
+        )
+        task["requests"] += requests
+        task["sessions_set"].add(session_id)
+        if acceptance_valid:
+            task["eligible_sessions_set"].add(session_id)
+        if accepted:
+            task["accepted_sessions_set"].add(session_id)
+
+        if last_used:
+            day = dt.datetime.fromtimestamp(last_used).date().isoformat()
+            if day in model["trend_map"]:
+                model["trend_map"][day] += requests
+
+    for inventory in inventory_rows:
+        model_id = str(inventory.get("model") or "unknown")
+        route = _route_descriptor(
+            inventory.get("billing_provider"),
+            inventory.get("billing_base_url"),
+            inventory.get("billing_mode"),
+        )
+        last_used = _number(inventory.get("last_seen"), 0)
+        model = models.setdefault(
+            model_id,
+            {
+                "model_id": model_id,
+                "display_name": _model_display_name(model_id),
+                "provider_label": "",
+                "last_used_at": None,
+                "requests": 0,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "cache_tokens_raw": 0,
+                "reasoning_tokens": 0,
+                "total_tokens": 0,
+                "cost_usd": 0.0,
+                "actual_cost": False,
+                "estimated_cost": False,
+                "included_cost": False,
+                "free_api_cost": False,
+                "sessions_set": set(),
+                "acceptance_sessions_set": set(),
+                "accepted_sessions_set": set(),
+                "retry_sessions_set": set(),
+                "routes_map": {},
+                "task_types_map": {},
+                "auxiliary_tasks_map": {},
+                "trend_map": {day: 0 for day in trend_days},
+            },
+        )
+        model["last_used_at"] = max(_number(model.get("last_used_at"), 0), last_used) or None
+        route_row = model["routes_map"].setdefault(
+            route["key"],
+            {**route, "requests": 0, "input_tokens": 0, "output_tokens": 0, "cache_tokens": 0, "cost_usd": 0.0, "last_used_at": None},
+        )
+        route_row["last_used_at"] = max(_number(route_row.get("last_used_at"), 0), last_used) or None
+
+    historical_route_mappings = _historical_route_mappings(models)
+    runtime = _runtime_events()
+    known_models = set(models)
+    latency_by_model: Dict[str, List[float]] = defaultdict(list)
+    successes_by_model: Counter[str] = Counter()
+    failures_by_model: Dict[str, Counter[str]] = defaultdict(Counter)
+    reliability_events_by_session_model: Dict[Tuple[str, str], List[Dict[str, Any]]] = defaultdict(list)
+    log_timestamps = [
+        _number(timestamp)
+        for timestamp in runtime.get("timestamps", [])
+        if _number(timestamp) >= period_start
+        and (period_end is None or _number(timestamp) < period_end)
+    ]
+    for event in runtime.get("api", []):
+        timestamp = _number(event.get("timestamp"), 0)
+        if timestamp < period_start or (period_end is not None and timestamp >= period_end):
+            continue
+        model_id = _model_match(event.get("model"), known_models)
+        if not model_id:
+            continue
+        successes_by_model[model_id] += 1
+        latency_by_model[model_id].append(_number(event.get("latency_seconds")))
+        session_id = str(event.get("session_id") or "")
+        if session_id:
+            reliability_events_by_session_model[(session_id, model_id)].append(
+                {"timestamp": timestamp, "status": "success"}
+            )
+
+    unattributed_failures = 0
+    for event in runtime.get("errors", []):
+        timestamp = _number(event.get("timestamp"), 0)
+        if timestamp < period_start or (period_end is not None and timestamp >= period_end):
+            continue
+        session_id = str(event.get("session_id") or "")
+        candidates = [row for row in usage_by_session.get(session_id, []) if not str(row.get("task") or "").strip()]
+        model_id: Optional[str] = _model_match(event.get("model"), known_models)
+        if len({str(row.get("model") or "unknown") for row in candidates}) == 1 and candidates:
+            model_id = model_id or str(candidates[0].get("model") or "unknown")
+        elif candidates and not model_id:
+            model_id = _model_for_session_event(candidates, timestamp)
+        if model_id not in known_models:
+            unattributed_failures += 1
+            continue
+        failures_by_model[model_id][str(event.get("category") or "error")] += 1
+        if session_id:
+            reliability_events_by_session_model[(session_id, model_id)].append(
+                {
+                    "timestamp": timestamp,
+                    "status": "failure",
+                    "category": str(event.get("category") or "error"),
+                }
+            )
+
+    work_runs_by_model: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for session_id, session in sessions_by_id.items():
+        main_usage = [
+            row
+            for row in usage_by_session.get(session_id, [])
+            if _task_role(row.get("task")) == "main"
+        ]
+        if not main_usage:
+            continue
+
+        usage_by_model: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+        for usage in main_usage:
+            usage_by_model[str(usage.get("model") or "unknown")].append(usage)
+
+        last_seen_by_model = {
+            model_id: max(
+                _number(row.get("last_seen") or row.get("first_seen"), 0)
+                for row in rows
+            )
+            for model_id, rows in usage_by_model.items()
+        }
+        latest_seen = max(last_seen_by_model.values(), default=0)
+        final_model_candidates = {
+            model_id
+            for model_id, last_seen in last_seen_by_model.items()
+            if last_seen == latest_seen
+        }
+        recorded_session_model = str(session.get("model") or "").strip()
+        if len(final_model_candidates) > 1 and recorded_session_model in final_model_candidates:
+            final_model_candidates = {recorded_session_model}
+        final_model = next(iter(final_model_candidates)) if len(final_model_candidates) == 1 else None
+        facts = session_facts.get(session_id, {})
+        task_type = str(facts.get("task_type") or "General")
+        outcome = str(facts.get("outcome") or "open")
+
+        for model_id, model_usage_rows in usage_by_model.items():
+            latest_usage = max(
+                model_usage_rows,
+                key=lambda row: (
+                    _number(row.get("last_seen") or row.get("first_seen"), 0),
+                    _number(row.get("first_seen"), 0),
+                ),
+            )
+            route = _route_descriptor(
+                latest_usage.get("billing_provider"),
+                latest_usage.get("billing_base_url"),
+                latest_usage.get("billing_mode"),
+            )
+            first_seen = min(
+                (_number(row.get("first_seen"), 0) for row in model_usage_rows),
+                default=0,
+            )
+            last_seen = max(
+                (
+                    _number(row.get("last_seen") or row.get("first_seen"), 0)
+                    for row in model_usage_rows
+                ),
+                default=first_seen,
+            )
+            events = sorted(
+                (
+                    event
+                    for event in reliability_events_by_session_model.get((session_id, model_id), [])
+                    if (not first_seen or _number(event.get("timestamp")) >= first_seen - 300)
+                    and (not last_seen or _number(event.get("timestamp")) <= last_seen + 300)
+                ),
+                key=lambda event: _number(event.get("timestamp")),
+            )
+            last_failure = max(
+                (_number(event.get("timestamp")) for event in events if event.get("status") == "failure"),
+                default=0,
+            )
+            last_success = max(
+                (_number(event.get("timestamp")) for event in events if event.get("status") == "success"),
+                default=0,
+            )
+            reason_key = None
+            if task_type == "Orchestration":
+                status = "excluded"
+                reason = "orchestration ownership is not scored"
+                reason_key = "orchestration, not scored"
+            elif final_model is None:
+                status = "unknown"
+                reason = "final main-role model is ambiguous"
+                reason_key = "final model ambiguous"
+            elif model_id != final_model:
+                status = "switched_away"
+                reason = "same task role finished on another model"
+                reason_key = "finished on another model"
+            elif outcome not in _WORK_LEDGER_FINISHED_OUTCOMES:
+                status = "excluded"
+                reason = f"session outcome {outcome} is not eligible"
+                reason_key = _WORK_LEDGER_OUTCOME_REASONS.get(outcome, f"outcome {outcome}")
+            elif not events:
+                status = "unknown"
+                reason = "no attributable API event is available in bounded logs"
+                reason_key = "outside log coverage"
+            elif outcome in {"completed", "closed"}:
+                # A session that ended normally (explicit completion, or a Desktop reset/reap
+                # with no failure end reason) is finished work. A closed session whose last
+                # attributable API event is a failure was abandoned on that failure.
+                if outcome == "closed" and last_failure and last_failure >= last_success:
+                    status = "unrecovered"
+                    reason = "session closed with no successful API event after its last failure on the final model-role"
+                elif last_failure:
+                    status = "recovered"
+                    reason = "task completed after an observed API failure on the same final model-role"
+                elif model_id in retry_switch_models_by_session.get(session_id, set()):
+                    status = "completed"
+                    reason = "task completed with a rewind, resend, or same-role switch"
+                else:
+                    status = "clean"
+                    reason = "task completed without an observed API failure, retry, or same-role switch"
+            else:
+                if last_failure and last_failure >= last_success:
+                    status = "unrecovered"
+                    reason = "session failed with no later successful API event on the final model-role"
+                else:
+                    status = "unknown"
+                    reason = "failed session is not attributable to an unrecovered model/API event"
+                    reason_key = "failure not attributable"
+
+            work_runs_by_model[model_id].append(
+                {
+                    "session_id": session_id,
+                    "task_type": task_type,
+                    "route_key": route["key"],
+                    "status": status,
+                    "reason": reason,
+                    "reason_key": reason_key,
+                }
+            )
+
+    final_models: List[Dict[str, Any]] = []
+    for model_id, model in models.items():
+        mapped_routes = [
+            _apply_route_mapping(
+                model_id,
+                route,
+                configured_route_mappings,
+                historical_route_mappings,
+            )
+            for route in model.pop("routes_map").values()
+        ]
+        route_labels = {
+            str(route.get("key") or ""): str(route.get("label") or "Unmapped (edit in config)")
+            for route in mapped_routes
+        }
+        routes = _merge_routes_by_label(mapped_routes)
+        primary_route = routes[0] if routes else _route_descriptor("unknown", "", "")
+        work_reliability = _work_reliability_payload(
+            work_runs_by_model.get(model_id, []),
+            route_labels,
+            rate_sample_threshold,
+        )
+        route_providers = {str(route.get("provider") or "") for route in routes}
+        reporting_routes = route_providers & cache_reporting_providers
+        if model["cache_tokens_raw"] > 0 or reporting_routes:
+            cache_tokens: Optional[int] = _integer(model["cache_tokens_raw"])
+            cache_coverage = "recorded" if reporting_routes == route_providers else "partial"
+        else:
+            cache_tokens = None
+            cache_coverage = "unavailable"
+
+        included = bool(model.pop("included_cost")) or any(
+            bool(route.get("subscription")) for route in routes
+        )
+        free_api = bool(model.pop("free_api_cost"))
+        actual = bool(model.pop("actual_cost"))
+        estimated = bool(model.pop("estimated_cost"))
+        has_metered_cost = model["cost_usd"] > 0
+        if included and has_metered_cost:
+            cost_kind = "mixed"
+        elif included:
+            cost_kind = "subscription"
+        elif free_api and not has_metered_cost:
+            cost_kind = "free"
+        elif actual:
+            cost_kind = "actual"
+        elif estimated:
+            cost_kind = "estimated"
+        else:
+            cost_kind = "unpriced"
+
+        sessions_set = model.pop("sessions_set")
+        acceptance_sessions = model.pop("acceptance_sessions_set")
+        accepted_sessions = model.pop("accepted_sessions_set")
+        retry_sessions = model.pop("retry_sessions_set")
+        retry_switch_rate = len(retry_sessions) / len(sessions_set) if sessions_set else None
+        task_types = []
+        for task in model.pop("task_types_map").values():
+            eligible_sessions = task.pop("eligible_sessions_set")
+            accepted_task_sessions = task.pop("accepted_sessions_set")
+            task["sessions"] = len(task.pop("sessions_set"))
+            task["eligible_sessions"] = len(eligible_sessions)
+            task["accepted_sessions"] = len(accepted_task_sessions)
+            task["first_attempt_acceptance_rate"] = (
+                len(accepted_task_sessions) / len(eligible_sessions) if eligible_sessions else None
+            )
+            if task["task_type"] == "Coding":
+                task["acceptance_basis"] = "resolved session with a recorded successful code artifact save or commit"
+            elif task["task_type"] == "Writing":
+                task["acceptance_basis"] = "resolved session with a recorded successful non-code artifact write"
+            elif task["task_type"] in {"General", "Analysis"}:
+                task["acceptance_basis"] = "eligible closed session without a retry, same-role switch, or detected recorded failure"
+            else:
+                task["acceptance_basis"] = "unavailable for this task type"
+            task_types.append(task)
+        task_types.sort(key=lambda item: (item["requests"], item["sessions"]), reverse=True)
+
+        auxiliary_tasks = []
+        for task in model.pop("auxiliary_tasks_map").values():
+            task.pop("eligible_sessions_set")
+            task.pop("accepted_sessions_set")
+            task["sessions"] = len(task.pop("sessions_set"))
+            task["eligible_sessions"] = 0
+            task["accepted_sessions"] = 0
+            task["first_attempt_acceptance_rate"] = None
+            task["acceptance_basis"] = "auxiliary job; acceptance is not scored"
+            auxiliary_tasks.append(task)
+        auxiliary_tasks.sort(key=lambda item: (item["requests"], item["sessions"]), reverse=True)
+
+        failure_counts_by_type = failures_by_model.get(model_id, Counter())
+        observed_failures = sum(failure_counts_by_type.values())
+        observed_successes = successes_by_model.get(model_id, 0)
+        failure_samples = observed_successes + observed_failures
+        failure_rate = observed_failures / failure_samples if failure_samples else None
+        latencies = latency_by_model.get(model_id, [])
+        latency_p50 = _percentile(latencies, 0.50)
+        retry_switch_samples = len(sessions_set)
+        has_in_period_requests = _integer(model.get("requests")) > 0
+        if (
+            work_reliability["rank_eligible"]
+            and work_reliability["unrecovered_failure_rate"] is not None
+            and work_reliability["unrecovered_failure_rate"] > 0.05
+        ):
+            insight = (
+                f"{work_reliability['unrecovered_failure_rate'] * 100:.1f}% of eligible main-role tasks ended with "
+                "an unrecovered model/API failure."
+            )
+        elif (
+            has_in_period_requests
+            and failure_samples >= rate_sample_threshold
+            and failure_rate is not None
+            and failure_rate > 0.05
+        ):
+            insight = f"Observed API/request failures reached {failure_rate * 100:.1f}% in the bounded log window."
+        elif (
+            retry_switch_samples >= rate_sample_threshold
+            and retry_switch_rate is not None
+            and retry_switch_rate > 0.05
+        ):
+            insight = (
+                f"{retry_switch_rate * 100:.1f}% of recorded sessions used a rewind, resent a near-identical prompt "
+                "within five minutes, or switched models within the same task role."
+            )
+        else:
+            insight = None  # a latency comparison may fill this once every model is known
+
+        model.update(
+            {
+                "provider_label": _model_origin_label(model_id, primary_route.get("provider")),
+                "route_label": primary_route.get("label"),
+                "route_mapping_source": primary_route.get("mapping_source"),
+                "route_mapping_pattern": primary_route.get("mapping_pattern"),
+                "routes": routes,
+                "route_count": len(routes),
+                "cache_tokens": cache_tokens,
+                "cache_coverage": cache_coverage,
+                "cost_kind": cost_kind,
+                "sessions": len(sessions_set),
+                "acceptance_samples": len(acceptance_sessions),
+                "accepted_tasks": len(accepted_sessions),
+                "retry_switch_sessions": len(retry_sessions),
+                "retry_switch_samples": retry_switch_samples,
+                "retry_switch_rate": retry_switch_rate,
+                "work_reliability": work_reliability,
+                "task_types": task_types,
+                "auxiliary_tasks": auxiliary_tasks,
+                "failures": {
+                    "rate": failure_rate,
+                    "rate_limits": failure_counts_by_type.get("rate_limit", 0),
+                    "timeouts": failure_counts_by_type.get("timeout", 0),
+                    "errors": failure_counts_by_type.get("error", 0),
+                    "tool_failures": tool_failures_by_model.get(model_id, 0),
+                    "tool_calls": tool_calls_by_model.get(model_id, 0),
+                    "observed_successes": observed_successes,
+                    "observed_failures": observed_failures,
+                    "samples": failure_samples,
+                    "coverage": "bounded_logs" if observed_successes + observed_failures else "unavailable",
+                },
+                "latency": {
+                    "ttft_p50_seconds": None,
+                    "total_p50_seconds": latency_p50,
+                    "total_p95_seconds": _percentile(latencies, 0.95),
+                    "samples": len(latencies),
+                    "coverage": "bounded_logs" if latencies else "unavailable",
+                },
+                "trend": [{"day": day, "requests": model["trend_map"][day]} for day in trend_days],
+                "insight": insight,
+            }
+        )
+        model.pop("cache_tokens_raw", None)
+        model.pop("trend_map", None)
+        final_models.append(model)
+
+    comparable_models = sorted(
+        (
+            item
+            for item in final_models
+            if item.get("work_reliability", {}).get("rank_eligible")
+            and item.get("work_reliability", {}).get("failure_rate_upper_bound_95") is not None
+        ),
+        key=lambda item: (
+            _number(item["work_reliability"].get("failure_rate_upper_bound_95"), 1),
+            _number(item["work_reliability"].get("unrecovered_failure_rate"), 1),
+            -_integer(item["work_reliability"].get("eligible_tasks")),
+            str(item.get("display_name") or item.get("model_id") or "").lower(),
+        ),
+    )
+    for rank, item in enumerate(comparable_models, start=1):
+        item["work_reliability"]["rank"] = rank
+    for item in final_models:
+        item["work_reliability"]["ranked_models"] = len(comparable_models)
+        if item.get("insight") is None and _integer(item.get("requests")) > 0:
+            item["insight"] = _latency_comparison_insight(item, final_models)
+
+    final_models.sort(key=lambda item: item["total_tokens"], reverse=True)
+    active_models = sum(1 for item in final_models if _integer(item.get("sessions")) > 0)
+    known_cost_models = sum(
+        1
+        for item in final_models
+        if _integer(item.get("sessions")) > 0
+        and item["cost_kind"] in {"actual", "estimated", "free", "mixed"}
+    )
+    return {
+        "period_days": days,
+        "period": _period_payload(days, period_start, period_end),
+        "models": final_models,
+        "summary": {
+            "models": len(final_models),
+            "inventory_models": len(final_models),
+            "active_models": active_models,
+            "requests": sum(_integer(item.get("requests")) for item in final_models),
+            "total_tokens": sum(_integer(item.get("total_tokens")) for item in final_models),
+            "cost_usd": sum(_number(item.get("cost_usd")) for item in final_models),
+            "known_cost_models": known_cost_models,
+            "subscription_models": sum(
+                1
+                for item in final_models
+                if _integer(item.get("sessions")) > 0
+                and item["cost_kind"] in {"subscription", "mixed"}
+            ),
+            "reliability_ranked_models": len(comparable_models),
+        },
+        "coverage": {
+            "model_source": "all-time distinct model IDs from Duckwork session_model_usage with session-row fallback; metrics honor the selected period",
+            "task_types": (
+                "Session Lens classifies each session once as Orchestration, Coding, Writing, Analysis, or General, in that order, "
+                "from recorded tool calls, arguments, code-mutating commands, and artifact paths; sources are not task types and auxiliary jobs are separate"
+            ),
+            "first_attempt_acceptance": (
+                "General and Analysis use the eligible-closed-session proxy; Coding requires a resolved session plus a recorded successful "
+                "code artifact save or commit; Writing requires a resolved session plus a recorded successful non-code artifact write; "
+                "Orchestration and auxiliary jobs are unavailable"
+            ),
+            "retry_switch": (
+                "rewinds, near-identical prompts resent to the same model within five minutes, or model changes within the same task role; "
+                "different models on different roles are excluded"
+            ),
+            "failure_latency": (
+                "fail rate counts API/request errors, timeouts, and rate limits from bounded local Duckwork agent logs; "
+                "tool-call failures are counted separately from session records"
+            ),
+            "work_reliability": (
+                "main-role finished tasks (completed, or closed by a Desktop reset or reap with no failure end reason) are clean, recovered, or "
+                "completed with intervention; a task is unrecovered when it ended failed, or closed, with its last attributable bounded-log model "
+                "event still an API failure; orchestration, auxiliary, open, cancelled, ambiguous, and uncovered runs are excluded from rates with "
+                "the reason counted per task type, and comparable models rank by the 95% Wilson upper bound after the sample floor"
+            ),
+            "ttft_available": False,
+            "cache": "a zero is shown only when the route has demonstrated cache reporting in the selected period; otherwise unavailable is returned",
+            "log_start_at": min(log_timestamps) if log_timestamps else None,
+            "log_end_at": max(log_timestamps) if log_timestamps else None,
+            "unattributed_log_failures": unattributed_failures,
+            "recorded_failure_events": sum(failure_counts.values()),
+            "recorded_tool_failures": len(tool_failure_rows),
+            "attributed_tool_failures": sum(tool_failures_by_model.values()),
+            "unattributed_tool_failures": unattributed_tool_failures,
+            "recorded_tool_calls": len(tool_call_rows),
+            "attributed_tool_calls": sum(tool_calls_by_model.values()),
+            "unattributed_tool_calls": unattributed_tool_calls,
+            "rate_sample_threshold": rate_sample_threshold,
+            "configured_route_mappings": len(configured_route_mappings),
+            "historical_route_mappings": len(historical_route_mappings),
+            "route_mapping_config_path": "plugins.entries.session-lens.settings.model_route_mappings",
+        },
+        "generated_at": time.time(),
+    }
+
+
+def _ai_models_database_revision() -> Tuple[Any, ...]:
+    with _database() as db:
+        last_activity = _db_connection(db).execute(
+            "SELECT MAX(coalesce(last_activity_at, started_at)) FROM sessions"
+        ).fetchone()[0]
+
+    def signature(path: Path) -> Tuple[int, int]:
+        try:
+            stat = path.stat()
+            return (stat.st_mtime_ns, stat.st_size)
+        except OSError:
+            return (0, 0)
+
+    parts: List[Any] = [_number(last_activity, 0), _account_home_key()]
+    scope = _get_profile_scope()
+    parts.extend(scope or ())
+    for home in _scope_homes():
+        database_path = home / "state.db"
+        parts.extend(signature(database_path))
+        parts.extend(signature(Path(str(database_path) + "-wal")))
+    return tuple(parts)
+
+
+def _ai_models_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+    fresh: bool = False,
+) -> Dict[str, Any]:
+    settings = _plugin_settings()
+    _period_bounds(days, start_at, end_at)
+    settings_hash = hashlib.sha256(
+        json.dumps(settings, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()
+    cache_key = (
+        days,
+        _number(start_at) if start_at is not None else None,
+        _number(end_at) if end_at is not None else None,
+        *_ai_models_database_revision(),
+        settings_hash,
+    )
+    now = time.time()
+    with _ai_models_cache_lock:
+        if not fresh:
+            cached = _ai_models_cache.get(cache_key)
+            if cached and now - cached[0] < AI_MODELS_CACHE_TTL_SECONDS:
+                payload = copy.deepcopy(cached[1])
+                payload["cached"] = True
+                return payload
+
+    payload = _ai_models_payload_sync(
+        days,
+        start_at,
+        end_at,
+        settings=settings,
+    )
+    payload["cached"] = False
+    payload["cache_ttl_seconds"] = AI_MODELS_CACHE_TTL_SECONDS
+    with _ai_models_cache_lock:
+        for key, (cached_at, _) in list(_ai_models_cache.items()):
+            if now - cached_at >= AI_MODELS_CACHE_TTL_SECONDS:
+                _ai_models_cache.pop(key, None)
+        _ai_models_cache[cache_key] = (time.time(), copy.deepcopy(payload))
+    return payload
+
+
+def _savings_route_sync(days: int, start_at: Optional[float] = None, end_at: Optional[float] = None) -> Dict[str, Any]:
+    """Savings advice with the AI Models evidence for the same period (its cache serves a warm tab)."""
+    return _savings_sync(days, start_at, end_at, models_payload=_ai_models_sync(days, start_at, end_at))
+
+
+@router.get("/savings")
+async def savings(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _savings_route_sync, days, start_at, end_at)
+
+
+def _compare_route_sync(
+    models: str, days: int, start_at: Optional[float] = None, end_at: Optional[float] = None
+) -> Dict[str, Any]:
+    """Side-by-side comparison with the AI Models evidence for the same period (its cache serves a warm tab)."""
+    wanted = [item for item in models.split("|") if item.strip()]
+    if not wanted:
+        raise HTTPException(status_code=400, detail="Pick at least one model to compare")
+    return _compare_sync(wanted, days, start_at, end_at, models_payload=_ai_models_sync(days, start_at, end_at))
+
+
+@router.get("/models/compare")
+async def compare_models(
+    models: str = Query("", max_length=2000),
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _compare_route_sync, models, days, start_at, end_at)
+
+
+@router.get("/ai-models")
+async def ai_models(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    fresh: bool = False,
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _ai_models_sync, days, start_at, end_at, fresh)
+
+
+def _tool_group(name: str) -> Tuple[str, str, str]:
+    """(kind, group, short_name) for a recorded tool name.
+
+    Duckwork names MCP tools mcp__<server>__<tool> and connector tools (apps
+    linked through the Fordex portal) connectors__<app>__<tool>; the three
+    tool-search bridge tools form their own group; everything else is a
+    built-in agent tool.
+    """
+    text = str(name or "")
+    if text.startswith("mcp__"):
+        rest = text[len("mcp__"):]
+        server, sep, short = rest.partition("__")
+        if sep and server:
+            return ("mcp", server, short or rest)
+        return ("mcp", rest or "mcp", rest or text)
+    if text.startswith("connectors__"):
+        rest = text[len("connectors__"):]
+        app, sep, short = rest.partition("__")
+        if sep and app:
+            return ("connector", app, short)
+        return ("connector", rest or "connectors", rest or text)
+    if text in TOOL_BRIDGE_NAMES:
+        return ("builtin", "tool search", text)
+    return ("builtin", "built-in", text)
+
+
+_CONTEXT_PRICING_TTL_SECONDS = 3600.0
+_context_pricing_cache: Dict[Tuple[str, str, str], Tuple[float, Dict[str, Any]]] = {}
+_CONTEXT_SCAN_ROW_CAP = 200_000
+_CONTEXT_CHARS_PER_TOKEN = 4
+
+
+def _context_pricing(
+    model: Any, provider: Any, base_url: Any, billing_mode: Any, cost_status: Any
+) -> Dict[str, Any]:
+    """Per-token input and cache-read rates for a session's billing route.
+
+    kind: "priced" (rates known), "included" (OAuth subscription — tokens
+    count against a quota, never an invoice) or "unpriced". Rates come from
+    Duckwork' own pricing module so tool-context dollars reconcile with the
+    session costs Duckwork records; nothing is guessed when it has no entry.
+    """
+    route = _route_descriptor(provider, base_url, billing_mode)
+    status = str(cost_status or "").strip().lower()
+    if route["subscription"] or status in {"included", "subscription", "free"} or "included" in str(billing_mode or "").lower():
+        return {"kind": "included", "input_per_token": None, "cache_read_per_token": None, "source": None}
+    key = (str(model or ""), str(provider or ""), str(base_url or ""))
+    now = time.time()
+    cached = _context_pricing_cache.get(key)
+    if cached and now - cached[0] < _CONTEXT_PRICING_TTL_SECONDS:
+        return cached[1]
+    result: Dict[str, Any] = {"kind": "unpriced", "input_per_token": None, "cache_read_per_token": None, "source": None}
+    try:
+        from agent.usage_pricing import get_pricing_entry
+
+        entry = get_pricing_entry(key[0], key[1] or None, key[2] or None)
+    except Exception:
+        entry = None
+    if entry is not None and entry.input_cost_per_million is not None:
+        if str(getattr(entry, "pricing_version", "") or "") == "included-route":
+            result = {"kind": "included", "input_per_token": None, "cache_read_per_token": None, "source": None}
+        else:
+            cache_read = entry.cache_read_cost_per_million
+            result = {
+                "kind": "priced",
+                "input_per_token": float(entry.input_cost_per_million) / 1_000_000.0,
+                "cache_read_per_token": None if cache_read is None else float(cache_read) / 1_000_000.0,
+                "source": str(getattr(entry, "source", "") or "") or None,
+            }
+    _context_pricing_cache[key] = (now, result)
+    return result
+
+
+def _context_weight_by_tool(
+    connection: Any, period_sql: str, period_params: List[float]
+) -> Tuple[Dict[str, Dict[str, Any]], bool]:
+    """Chars each tool returned into model context, priced per session route.
+
+    Every recorded tool-result row entered context once (direct entry at the
+    input rate) and is re-sent on each later assistant call in the session
+    (carried, at the cache-read rate when the route has one). The carried
+    figure is an upper bound: Duckwork compaction eventually drops old results
+    from the prompt and that moment is not recorded.
+    """
+    assistant_rows = connection.execute(
+        f"""
+        SELECT m.session_id, m.id
+        FROM messages m JOIN sessions s ON s.id=m.session_id{_same_profile(connection, "s", "m")}
+        WHERE {period_sql} AND m.role='assistant'
+        ORDER BY m.id DESC LIMIT {_CONTEXT_SCAN_ROW_CAP + 1}
+        """,
+        tuple(period_params),
+    ).fetchall()
+    tool_rows = connection.execute(
+        f"""
+        SELECT m.session_id, m.id, m.tool_name, length(m.content) AS chars,
+               s.model, s.billing_provider, s.billing_base_url, s.billing_mode, s.cost_status
+        FROM messages m JOIN sessions s ON s.id=m.session_id{_same_profile(connection, "s", "m")}
+        WHERE {period_sql} AND m.role='tool'
+          AND m.tool_name IS NOT NULL AND m.content IS NOT NULL
+        ORDER BY m.id DESC LIMIT {_CONTEXT_SCAN_ROW_CAP + 1}
+        """,
+        tuple(period_params),
+    ).fetchall()
+    truncated = len(assistant_rows) > _CONTEXT_SCAN_ROW_CAP or len(tool_rows) > _CONTEXT_SCAN_ROW_CAP
+    assistant_ids: Dict[str, List[int]] = {}
+    for row in assistant_rows[:_CONTEXT_SCAN_ROW_CAP]:
+        assistant_ids.setdefault(str(row["session_id"]), []).append(_integer(row["id"]))
+    for ids in assistant_ids.values():
+        ids.sort()
+    pricing_by_session: Dict[str, Dict[str, Any]] = {}
+    weights: Dict[str, Dict[str, Any]] = {}
+    for row in tool_rows[:_CONTEXT_SCAN_ROW_CAP]:
+        session_id = str(row["session_id"])
+        name = str(row["tool_name"] or "")
+        chars = _integer(row["chars"])
+        if not name or chars <= 0:
+            continue
+        pricing = pricing_by_session.get(session_id)
+        if pricing is None:
+            pricing = _context_pricing(
+                row["model"], row["billing_provider"], row["billing_base_url"], row["billing_mode"], row["cost_status"]
+            )
+            pricing_by_session[session_id] = pricing
+        ids = assistant_ids.get(session_id) or []
+        later_calls = len(ids) - bisect.bisect_right(ids, _integer(row["id"]))
+        tokens = chars / _CONTEXT_CHARS_PER_TOKEN
+        weight = weights.setdefault(
+            name,
+            {
+                "chars": 0,
+                "priced_chars": 0,
+                "included_chars": 0,
+                "unpriced_chars": 0,
+                "direct_cost_usd": 0.0,
+                "carried_tokens": 0.0,
+                "carried_cost_usd": 0.0,
+                "rows": 0,
+            },
+        )
+        weight["chars"] += chars
+        weight["rows"] += 1
+        weight["carried_tokens"] += tokens * later_calls
+        kind = pricing["kind"]
+        if kind == "priced":
+            weight["priced_chars"] += chars
+            input_rate = _number(pricing.get("input_per_token"))
+            carry_rate = pricing.get("cache_read_per_token")
+            carry_rate = input_rate if carry_rate is None else _number(carry_rate)
+            weight["direct_cost_usd"] += tokens * input_rate
+            weight["carried_cost_usd"] += tokens * later_calls * carry_rate
+        elif kind == "included":
+            weight["included_chars"] += chars
+        else:
+            weight["unpriced_chars"] += chars
+    return weights, truncated
+
+
+def _context_weight_payload(weight: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    weight = weight or {}
+    chars = _integer(weight.get("chars"))
+    priced = _integer(weight.get("priced_chars"))
+    included = _integer(weight.get("included_chars"))
+    unpriced = _integer(weight.get("unpriced_chars"))
+    if chars <= 0:
+        kind = "none"
+    elif priced == chars:
+        kind = "priced"
+    elif included == chars:
+        kind = "included"
+    elif unpriced == chars:
+        kind = "unpriced"
+    else:
+        kind = "mixed"
+    return {
+        "context_chars": chars,
+        "context_tokens_estimate": chars // _CONTEXT_CHARS_PER_TOKEN,
+        "context_cost_usd": round(_number(weight.get("direct_cost_usd")), 4),
+        "carried_tokens_estimate": int(_number(weight.get("carried_tokens"))),
+        "carried_cost_usd": round(_number(weight.get("carried_cost_usd")), 4),
+        "context_pricing": kind,
+        "context_priced_share": round(priced / chars, 3) if chars else 0.0,
+        "context_included_share": round(included / chars, 3) if chars else 0.0,
+    }
+
+
+def _merge_context_weight(target: Dict[str, Any], weight: Optional[Mapping[str, Any]]) -> None:
+    if not weight:
+        return
+    for key in ("chars", "priced_chars", "included_chars", "unpriced_chars", "rows"):
+        target[key] = _integer(target.get(key)) + _integer(weight.get(key))
+    for key in ("direct_cost_usd", "carried_tokens", "carried_cost_usd"):
+        target[key] = _number(target.get(key)) + _number(weight.get(key))
+
+
+def _tools_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    period_sql, period_params = _period_sql("s.started_at", period_start, period_end)
+    with _database() as db:
+        # Match Duckwork Insights' double-count protection: calls may be
+        # represented on both the assistant envelope and the tool-result row,
+        # so take the higher count per tool rather than summing both sources.
+        # Parsing only the compact JSON envelope is cheap; only coarse failure
+        # candidates bring bounded result bodies into Python for confirmation.
+        assistant_rows = _db_connection(db).execute(
+            f"""
+            SELECT m.session_id, m.tool_calls, m.timestamp
+            FROM messages m
+            JOIN sessions s ON s.id=m.session_id{_same_profile(db, "s", "m")}
+            WHERE {period_sql}
+              AND coalesce(m.active,1)=1 AND m.role='assistant'
+              AND m.tool_calls IS NOT NULL
+            ORDER BY m.id DESC LIMIT 50001
+            """,
+            tuple(period_params),
+        ).fetchall()
+        truncated = len(assistant_rows) > 50000
+        assistant_rows = assistant_rows[:50000]
+        assistant: Dict[str, Dict[str, Any]] = {}
+        trend_end = period_end or time.time()
+        trend_start = trend_end - 7 * 86400
+        for index, row in enumerate(assistant_rows):
+            if index % 500 == 0:
+                _check_route_budget()
+            for call in _iter_tool_calls(row["tool_calls"]):
+                name = call["name"]
+                entry = assistant.setdefault(
+                    name,
+                    {"calls": 0, "sessions": set(), "last_used_at": None, "days": Counter()},
+                )
+                entry["calls"] += 1
+                entry["sessions"].add(row["session_id"])
+                timestamp = _number(row["timestamp"], 0)
+                if timestamp and (not entry["last_used_at"] or timestamp > entry["last_used_at"]):
+                    entry["last_used_at"] = timestamp
+                if timestamp and trend_start <= timestamp <= trend_end:
+                    entry["days"][dt.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")] += 1
+
+        result_rows = _db_connection(db).execute(
+            f"""
+            SELECT m.tool_name AS name, COUNT(*) AS calls,
+                   COUNT(DISTINCT m.session_id) AS sessions,
+                   MAX(m.timestamp) AS last_used_at
+            FROM messages m
+            JOIN sessions s ON s.id=m.session_id{_same_profile(db, "s", "m")}
+            WHERE {period_sql}
+              AND coalesce(m.active,1)=1 AND m.role='tool'
+              AND m.tool_name IS NOT NULL
+            GROUP BY m.tool_name
+            """,
+            tuple(period_params),
+        ).fetchall()
+        results = {row["name"]: _row_dict(row) for row in result_rows}
+        failures_by_tool: Counter[str] = Counter()
+        for failure in _confirmed_failure_rows(
+            _db_connection(db),
+            period_sql,
+            period_params,
+        ):
+            tool_name = str(failure.get("tool_name") or "").strip()
+            if tool_name:
+                failures_by_tool[tool_name] += 1
+
+        # Latency and output weight come from the bounded agent logs; their
+        # coverage window is narrower than session accounting, so these fields
+        # describe "recent behavior", not the whole period.
+        log_stats: Dict[str, Dict[str, Any]] = {}
+        for event in _runtime_events().get("tools", []):
+            timestamp = _number(event.get("timestamp"), 0)
+            if period_start and timestamp < period_start:
+                continue
+            if period_end and timestamp > period_end:
+                continue
+            name = str(event.get("tool") or "")
+            if not name:
+                continue
+            stat = log_stats.setdefault(name, {"events": 0, "failed": 0, "durations": []})
+            stat["events"] += 1
+            if str(event.get("status")) == "failed":
+                stat["failed"] += 1
+            duration = _number(event.get("duration_seconds"))
+            if duration is not None:
+                stat["durations"].append(duration)
+
+        # Context weight comes from the recorded tool-result rows themselves,
+        # so it honors the whole period; each row is priced at its session's
+        # billing route through Duckwork' pricing module.
+        weights, context_truncated = _context_weight_by_tool(_db_connection(db), period_sql, period_params)
+
+        tools = []
+        for name in set(assistant) | set(results):
+            assistant_entry = assistant.get(name, {})
+            result_entry = results.get(name, {})
+            calls = max(
+                _integer(assistant_entry.get("calls")),
+                _integer(result_entry.get("calls")),
+            )
+            failures = failures_by_tool.get(name, 0)
+            assistant_sessions = len(assistant_entry.get("sessions", set()))
+            result_sessions = _integer(result_entry.get("sessions"))
+            last_used_at = max(
+                _number(assistant_entry.get("last_used_at"), 0),
+                _number(result_entry.get("last_used_at"), 0),
+            ) or None
+            kind, group_name, short_name = _tool_group(name)
+            stat = log_stats.get(name) or {}
+            durations = stat.get("durations") or []
+            tools.append(
+                {
+                    "name": name,
+                    "kind": kind,
+                    "group": group_name,
+                    "short_name": short_name,
+                    "calls": calls,
+                    "failures": failures,
+                    "sessions": max(assistant_sessions, result_sessions),
+                    "last_used_at": last_used_at,
+                    "failure_rate": failures / calls if calls else 0,
+                    "latency_p50_seconds": _percentile(durations, 0.50),
+                    "latency_p95_seconds": _percentile(durations, 0.95),
+                    "log_calls": _integer(stat.get("events")),
+                    "log_failures": _integer(stat.get("failed")),
+                    **_context_weight_payload(weights.get(name)),
+                }
+            )
+        tools.sort(key=lambda item: (item["failures"], item["calls"], item["name"]), reverse=True)
+
+        groups_map: Dict[Tuple[str, str], Dict[str, Any]] = {}
+        for tool in tools:
+            key = (tool["kind"], tool["group"])
+            group = groups_map.setdefault(
+                key,
+                {
+                    "kind": tool["kind"],
+                    "name": tool["group"],
+                    "calls": 0,
+                    "failures": 0,
+                    "tool_count": 0,
+                    "session_ids": set(),
+                    "max_tool_sessions": 0,
+                    "durations": [],
+                    "weight": {},
+                    "log_calls": 0,
+                    "log_failures": 0,
+                    "last_used_at": None,
+                    "days": Counter(),
+                },
+            )
+            group["calls"] += tool["calls"]
+            group["failures"] += tool["failures"]
+            group["tool_count"] += 1
+            group["max_tool_sessions"] = max(group["max_tool_sessions"], tool["sessions"])
+            group["session_ids"] |= assistant.get(tool["name"], {}).get("sessions", set())
+            _merge_context_weight(group["weight"], weights.get(tool["name"]))
+            group["log_calls"] += tool["log_calls"]
+            group["log_failures"] += tool["log_failures"]
+            stat = log_stats.get(tool["name"])
+            if stat:
+                group["durations"].extend(stat.get("durations") or [])
+            group["days"].update(assistant.get(tool["name"], {}).get("days", Counter()))
+            if tool["last_used_at"] and (
+                not group["last_used_at"] or tool["last_used_at"] > group["last_used_at"]
+            ):
+                group["last_used_at"] = tool["last_used_at"]
+
+        day_keys = [
+            dt.datetime.fromtimestamp(trend_end - offset * 86400).strftime("%Y-%m-%d")
+            for offset in range(6, -1, -1)
+        ]
+        groups = []
+        for group in groups_map.values():
+            days_counter = group["days"]
+            durations = group["durations"]
+            groups.append(
+                {
+                    "kind": group["kind"],
+                    "name": group["name"],
+                    "tool_count": group["tool_count"],
+                    "calls": group["calls"],
+                    "failures": group["failures"],
+                    "failure_rate": group["failures"] / group["calls"] if group["calls"] else 0,
+                    "sessions": max(len(group["session_ids"]), group["max_tool_sessions"]),
+                    "latency_p50_seconds": _percentile(durations, 0.50),
+                    "latency_p95_seconds": _percentile(durations, 0.95),
+                    "log_calls": group["log_calls"],
+                    "log_failures": group["log_failures"],
+                    **_context_weight_payload(group["weight"]),
+                    "last_used_at": group["last_used_at"],
+                    "trend": [
+                        {"day": day, "requests": days_counter.get(day, 0)} for day in day_keys
+                    ],
+                }
+            )
+        _merge_mcp_inventory(groups, day_keys)
+        groups.sort(
+            key=lambda item: (item["calls"] > 0, item["failures"], item["calls"], item["name"]), reverse=True
+        )
+
+        return {
+            "period_days": days,
+            "period": _period_payload(days, period_start, period_end),
+            "tools": tools,
+            "groups": groups,
+            "totals": {
+                "calls": sum(item["calls"] for item in tools),
+                "failures": sum(item["failures"] for item in tools),
+                "distinct_tools": len(tools),
+                "mcp_servers": sum(1 for item in groups if item["kind"] == "mcp"),
+                "mcp_servers_unused": sum(1 for item in groups if item["kind"] == "mcp" and not item["calls"]),
+                "context_chars": sum(item["context_chars"] for item in groups),
+                "context_cost_usd": round(sum(item["context_cost_usd"] for item in groups), 4),
+                "carried_cost_usd": round(sum(item["carried_cost_usd"] for item in groups), 4),
+            },
+            "truncated": truncated,
+            "context_truncated": context_truncated,
+            "generated_at": time.time(),
+        }
+
+
+def _merge_mcp_inventory(groups: List[Dict[str, Any]], day_keys: List[str]) -> None:
+    """Give MCP groups their configuration, and list configured servers with no calls.
+
+    status: "used" (called in the period), "unused" (configured and on, no
+    calls), "disabled" (configured but switched off), "removed" (called in
+    the period, no longer in any scoped config.yaml).
+    """
+    try:
+        inventory = _mcp_inventory()
+    except Exception:
+        inventory = {}
+    for group in groups:
+        if group.get("kind") != "mcp":
+            continue
+        info = inventory.pop(str(group.get("name")), None)
+        group["status"] = "used" if info else "removed"
+        group["label"] = (info or {}).get("label") or group.get("name")
+        group["enabled"] = info.get("enabled") if info else None
+        group["available_tools"] = info.get("available_tools") if info else None
+        group["transport"] = info.get("transport") if info else None
+        group["host"] = info.get("host") if info else None
+    for key, info in sorted(inventory.items()):
+        groups.append(
+            {
+                "kind": "mcp",
+                "name": key,
+                "label": info.get("label") or key,
+                "status": "unused" if info.get("enabled") else "disabled",
+                "enabled": info.get("enabled"),
+                "available_tools": info.get("available_tools"),
+                "transport": info.get("transport"),
+                "host": info.get("host"),
+                "tool_count": 0,
+                "calls": 0,
+                "failures": 0,
+                "failure_rate": 0,
+                "sessions": 0,
+                "latency_p50_seconds": None,
+                "latency_p95_seconds": None,
+                "log_calls": 0,
+                "log_failures": 0,
+                **_context_weight_payload(None),
+                "last_used_at": None,
+                "trend": [{"day": day, "requests": 0} for day in day_keys],
+            }
+        )
+
+
+# ── Recurring failures ────────────────────────────────────────────────────
+# Failures grouped by what went wrong, across every session in the scope,
+# ranked by how often they recur: the agent's bad actors. The signature is
+# the tool plus the first meaningful line of its result with the parts that
+# differ between occurrences neutralised — URLs, paths, quoted values, long
+# ids, numbers — so the same fault in two repositories is one row. Every
+# pattern below is linear: no nested quantifier can backtrack on a hostile
+# token (the 0.34.3 file-path regex took the backend down that way).
+
+_RECURRING_URL_RE = re.compile(r"https?://\S+")
+_RECURRING_WIN_PATH_RE = re.compile(r"\b[a-z]:[\\/][^\s'\"]*")
+_RECURRING_POSIX_PATH_RE = re.compile(r"(?:(?<=\s)|^)~?/[^\s'\"]+")
+_RECURRING_QUOTED_RE = re.compile(r"(?<![a-z])'[^'\n]{1,200}'|\"[^\"\n]{1,200}\"|`[^`\n]{1,200}`")
+_RECURRING_HEX_RE = re.compile(r"\b[0-9a-f]{8,}(?:-[0-9a-f]{4,})*\b")
+_RECURRING_DIGITS_RE = re.compile(r"\d+")
+_RECURRING_SPACE_RE = re.compile(r"\s+")
+RECURRING_MAX_GROUPS = 40
+RECURRING_MAX_SESSIONS = 200
+
+
+_RECURRING_ERRORISH_RE = re.compile(
+    r"(?i)(error|exception|failed|failure|fatal|denied|not found|no such|cannot|can't|invalid|refus|timed out|blocked)"
+)
+
+
+def _recurring_pick_line(text: str) -> str:
+    """The most telling line of a multi-line result: the last error-like line, else the last line."""
+    lines = [line.strip() for line in str(text or "").splitlines() if line.strip()]
+    if not lines:
+        return ""
+    for line in reversed(lines[-60:]):
+        if _RECURRING_ERRORISH_RE.search(line):
+            return line
+    return lines[-1]
+
+
+def _recurring_headline(content: Any) -> str:
+    """What went wrong, in one line, for grouping.
+
+    Tool results are often JSON envelopes ({"output", "exit_code", "error"}) or
+    Python tracebacks, whose first line is identical for every failure; the
+    telling part is the error field, the failing output line with its exit
+    code, or the traceback's final exception line.
+    """
+    text = str(content or "").strip()
+    if text.startswith("{"):
+        try:
+            payload = json.loads(text)
+        except (TypeError, ValueError):
+            payload = None
+        if isinstance(payload, dict):
+            error = payload.get("error")
+            if isinstance(error, dict):
+                error = error.get("message") or error.get("detail") or json.dumps(error)[:300]
+            if error:
+                return _recurring_pick_line(str(error)) or str(error)[:300]
+            output = payload.get("output") or payload.get("stdout") or payload.get("stderr") or payload.get("result")
+            exit_code = payload.get("exit_code", payload.get("returncode"))
+            line = _recurring_pick_line(output if isinstance(output, str) else json.dumps(output)[:2000] if output else "")
+            if exit_code not in (None, 0) and line:
+                return f"exit {exit_code}: {line}"
+            if line:
+                return line
+    first = _analysis_first_line(content)
+    if first.lower().startswith("traceback"):
+        last = _recurring_pick_line(text)
+        if last:
+            return last
+    return first
+
+
+def _recurring_signature(tool: Any, content: Any) -> Tuple[str, str]:
+    """(group key, readable headline) for one confirmed failure."""
+    headline = _recurring_headline(content) or "no result text recorded"
+    text = headline.lower()
+    text = _RECURRING_URL_RE.sub("<url>", text)
+    text = _RECURRING_WIN_PATH_RE.sub("<path>", text)
+    text = _RECURRING_POSIX_PATH_RE.sub("<path>", text)
+    text = _RECURRING_QUOTED_RE.sub("'…'", text)
+    text = _RECURRING_HEX_RE.sub("<id>", text)
+    text = _RECURRING_DIGITS_RE.sub("#", text)
+    text = _RECURRING_SPACE_RE.sub(" ", text).strip()[:120]
+    name = str(tool or "unknown tool").strip()
+    return f"{name.lower()}|{text}", headline
+
+
+def _recurring_collect(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+    *,
+    with_samples: bool = False,
+) -> Dict[str, Any]:
+    """Group the scope's confirmed failures by signature.
+
+    With with_samples, each group also keeps references to the latest failure
+    of every distinct error line and of every session, which the
+    investigation prompt draws its examples from.
+    """
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    period_sql, period_params = _period_sql("s.started_at", period_start, period_end)
+    with _database() as db:
+        connection = _db_connection(db)
+        failures = _confirmed_failure_rows(connection, period_sql, period_params)
+        profiles: Dict[str, str] = {}
+        titles: Dict[str, str] = {}
+        if failures:
+            union = bool(getattr(db, "union_profiles", None))
+            profile_column = ", __profile" if union else ""
+            ids = sorted({str(row.get("session_id")) for row in failures})
+            for start in range(0, len(ids), 400):
+                chunk = ids[start : start + 400]
+                placeholders = ",".join("?" for _ in chunk)
+                for row in connection.execute(
+                    f"SELECT id, title{profile_column} FROM sessions WHERE id IN ({placeholders})", tuple(chunk)
+                ).fetchall():
+                    titles[str(row[0])] = str(row[1] or "")
+                    if union:
+                        profiles[str(row[0])] = str(row[2])
+    groups: Dict[str, Dict[str, Any]] = {}
+    for index, failure in enumerate(failures):
+        if index % 500 == 0:
+            _check_route_budget()
+        key, headline = _recurring_signature(failure.get("tool_name"), failure.get("content"))
+        timestamp = _number(failure.get("timestamp"), 0) or None
+        session_id = str(failure.get("session_id") or "")
+        group = groups.get(key)
+        if group is None:
+            group = groups[key] = {
+                "key": key,
+                "tool": str(failure.get("tool_name") or "unknown tool"),
+                "headline": _clean_text(headline, 200),
+                "count": 0,
+                "sessions": {},
+                "profiles": set(),
+                "days": Counter(),
+                "first_at": timestamp,
+                "last_at": timestamp,
+                "example": None,
+                "variants": {},
+                "latest_by_session": {},
+            }
+        group["count"] += 1
+        if session_id:
+            seen = group["sessions"].setdefault(session_id, [0, None])
+            seen[0] += 1
+            if timestamp and (seen[1] is None or timestamp > seen[1]):
+                seen[1] = timestamp
+        if profiles.get(session_id):
+            group["profiles"].add(profiles[session_id])
+        if timestamp:
+            group["days"][dt.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")] += 1
+            if group["first_at"] is None or timestamp < group["first_at"]:
+                group["first_at"] = timestamp
+            if group["last_at"] is None or timestamp >= group["last_at"]:
+                group["last_at"] = timestamp
+                group["example"] = {"session_id": session_id, "snippet": _clean_text(failure.get("content"), 280)}
+        if with_samples:
+            stamp = timestamp or 0
+            for bucket, bucket_key in ((group["variants"], headline), (group["latest_by_session"], session_id)):
+                current = bucket.get(bucket_key)
+                if current is None or stamp >= (_number(current.get("timestamp"), 0) or 0):
+                    bucket[bucket_key] = failure
+    ordered = sorted(groups.values(), key=lambda item: (-item["count"], -(item["last_at"] or 0), item["key"]))
+    return {
+        "groups": ordered,
+        "titles": titles,
+        "profiles": profiles,
+        "total": sum(group["count"] for group in ordered),
+        "period_start": period_start,
+        "period_end": period_end,
+    }
+
+
+def _recurring_pattern(group: Mapping[str, Any]) -> str:
+    if len(group["days"]) >= 3:
+        return "recurring"
+    if group["count"] >= 5:
+        return "burst"
+    if group["count"] == 1:
+        return "once"
+    return "occasional"
+
+
+def _recurring_affected(group: Mapping[str, Any], limit: int = RECURRING_MAX_SESSIONS) -> List[Tuple[str, List[Any]]]:
+    """(session id, [failures, last at]) pairs, most recent first."""
+    return sorted(group["sessions"].items(), key=lambda item: (-(item[1][1] or 0), -item[1][0], item[0]))[:limit]
+
+
+def _recurring_day_keys(period_end: Optional[float], now: float) -> List[str]:
+    trend_end = period_end or now
+    return [dt.datetime.fromtimestamp(trend_end - offset * 86400).strftime("%Y-%m-%d") for offset in range(13, -1, -1)]
+
+
+def _recurring_failures_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    now = time.time()
+    collected = _recurring_collect(days, start_at, end_at)
+    ordered = collected["groups"]
+    titles = collected["titles"]
+    profiles = collected["profiles"]
+    total = collected["total"]
+    period_start, period_end = collected["period_start"], collected["period_end"]
+    day_keys = _recurring_day_keys(period_end, now)
+    rows = []
+    cumulative = 0
+    for rank, group in enumerate(ordered[:RECURRING_MAX_GROUPS], start=1):
+        cumulative += group["count"]
+        rows.append(
+            {
+                "rank": rank,
+                "key": group["key"],
+                "tool": group["tool"],
+                "headline": group["headline"],
+                "signature": group["key"].split("|", 1)[1],
+                "count": group["count"],
+                "share": round(group["count"] / total, 4) if total else 0.0,
+                "cumulative_share": round(cumulative / total, 4) if total else 0.0,
+                "sessions": len(group["sessions"]),
+                "affected_sessions": [
+                    {
+                        "session_id": session_id,
+                        "title": _clean_text(titles.get(session_id), 120),
+                        "profile": profiles.get(session_id),
+                        "count": seen[0],
+                        "last_at": seen[1],
+                    }
+                    for session_id, seen in _recurring_affected(group)
+                ],
+                "profiles": sorted(group["profiles"]),
+                "days_seen": len(group["days"]),
+                "pattern": _recurring_pattern(group),
+                "still_happening": bool(group["last_at"] and now - group["last_at"] <= 86400),
+                "first_at": group["first_at"],
+                "last_at": group["last_at"],
+                "example": group["example"],
+                "trend": [{"day": day, "requests": group["days"].get(day, 0)} for day in day_keys],
+            }
+        )
+    top_five = sum(row["count"] for row in rows[:5])
+    return {
+        "groups": rows,
+        "totals": {
+            "failures": total,
+            "signatures": len(ordered),
+            "top5_share": round(top_five / total, 4) if total else 0.0,
+            "recurring": sum(1 for row in rows if row["pattern"] == "recurring"),
+            "still_happening": sum(1 for row in rows if row["still_happening"]),
+        },
+        "period_days": days,
+        "period": _period_payload(days, period_start, period_end),
+        "definition": (
+            "Confirmed tool failures grouped by tool and the first line of the error with paths, URLs, quoted "
+            "values, ids and numbers neutralised, so one fault is one row. Recurring = seen on three or more days; "
+            "burst = five or more on one or two days. Signatures read English error text."
+        ),
+        "generated_at": now,
+    }
+
+
+@router.get("/failures/recurring")
+async def recurring_failures(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _recurring_failures_sync, days, start_at, end_at)
+
+
+# ── Investigate a recurring failure ──────────────────────────────────────────
+# The same "prepare and hand over" contract as a session's Ask Duckwork prompt:
+# a bounded, secret-redacted prompt the user pastes into a Duckwork chat
+# themselves. Examples are the most recent distinct error lines, each with the
+# tool call that produced it, since the arguments usually carry the cause.
+RECURRING_PROMPT_ARGUMENT_CHARS = 500
+# (examples, characters per result, sessions listed), tried in order until the
+# rendered prompt fits _ANALYSIS_PROMPT_MAX_CHARS.
+RECURRING_PROMPT_BUDGET_STEPS = ((5, 900, 15), (4, 600, 12), (3, 400, 10), (2, 300, 8), (1, 200, 5), (1, 120, 3))
+# Duckwork appends its own loop-guard advice to repeated failures; it is not evidence.
+_RECURRING_LOOP_WARNING_RE = re.compile(r"\s*\[Tool loop warning:[^\]]*\]")
+
+
+def _recurring_pick_examples(group: Mapping[str, Any], limit: int) -> List[Mapping[str, Any]]:
+    """Up to limit failures: distinct error lines first, from different sessions where possible."""
+
+    def stamp(failure: Mapping[str, Any]) -> float:
+        return _number(failure.get("timestamp"), 0) or 0
+
+    variants = sorted(group.get("variants", {}).values(), key=stamp, reverse=True)
+    by_session = sorted(group.get("latest_by_session", {}).values(), key=stamp, reverse=True)
+    picked: List[Mapping[str, Any]] = []
+    used = set()
+    sessions = set()
+    passes = (
+        (variants, True),  # a new error line in a session not yet shown
+        (variants, False),  # a new error line anywhere
+        (by_session, True),  # the same line, in another session's call
+    )
+    for candidates, new_session_only in passes:
+        for failure in candidates:
+            if len(picked) >= limit:
+                break
+            marker = (str(failure.get("session_id")), failure.get("id"))
+            if marker in used or (new_session_only and marker[0] in sessions):
+                continue
+            picked.append(failure)
+            used.add(marker)
+            sessions.add(marker[0])
+    return sorted(picked, key=stamp, reverse=True)
+
+
+def _recurring_call_arguments(connection: sqlite3.Connection, failure: Mapping[str, Any]) -> str:
+    """The recorded arguments of the tool call whose result is this failure."""
+    session_id = failure.get("session_id")
+    message_id = failure.get("id")
+    tool_name = str(failure.get("tool_name") or "")
+    if session_id is None or message_id is None:
+        return "Arguments not recorded"
+    row = connection.execute(
+        "SELECT tool_call_id FROM messages WHERE session_id=? AND id=?", (session_id, message_id)
+    ).fetchone()
+    call_id = str(row[0] or "") if row else ""
+    candidates = connection.execute(
+        """
+        SELECT tool_calls FROM messages
+        WHERE session_id=? AND id<? AND role='assistant' AND coalesce(tool_calls,'')!=''
+        ORDER BY id DESC LIMIT 12
+        """,
+        (session_id, message_id),
+    ).fetchall()
+    by_id = None
+    by_name = None
+    for (raw,) in candidates:
+        for call in _iter_tool_calls(raw):
+            same_id = bool(call_id) and str(call.get("call_id") or "") == call_id
+            if same_id and call["name"] == tool_name:
+                return _argument_summary(call["arguments"])
+            if same_id and by_id is None:
+                by_id = call
+            if not call_id and by_name is None and call["name"] == tool_name:
+                by_name = call
+    match = by_id or by_name
+    return _argument_summary(match["arguments"]) if match else "Arguments not recorded"
+
+
+def _recurring_period_phrase(days: int, period_start: Optional[float], period_end: Optional[float]) -> str:
+    if period_end is not None:
+        return f"{_analysis_stamp(period_start)} to {_analysis_stamp(period_end)}"
+    if not days:
+        return "all recorded history"
+    return f"the last {days} day{'s' if days != 1 else ''}"
+
+
+def _render_recurring_prompt(
+    group: Mapping[str, Any],
+    examples: List[Mapping[str, Any]],
+    affected: List[Tuple[str, List[Any]]],
+    context: Mapping[str, Any],
+    snippet_chars: int,
+) -> str:
+    titles = context["titles"]
+    profiles = context["profiles"]
+    days_seen = len(group["days"])
+    pattern = _recurring_pattern(group)
+    pattern_text = {
+        "recurring": f"recurring — seen on {days_seen} different days",
+        "burst": f"a burst — {group['count']} times on {days_seen} day{'s' if days_seen != 1 else ''}",
+        "once": "a single occurrence",
+        "occasional": f"occasional — {days_seen} day{'s' if days_seen != 1 else ''}",
+    }[pattern]
+    still = bool(group["last_at"] and context["now"] - group["last_at"] <= 86400)
+    trend = " ".join(str(group["days"].get(day, 0)) for day in context["day_keys"])
+
+    def session_label(session_id: str) -> str:
+        title = _clean_text(titles.get(session_id), 120)
+        profile = profiles.get(session_id)
+        where = f"{session_id}{', profile ' + profile if profile else ''}"
+        return f"\"{title}\" ({where})" if title else f"session {where}"
+
+    lines: List[str] = [
+        "You are helping a Duckwork Agent user find out why one tool failure keeps happening across their sessions, "
+        "and how to stop it.",
+        "The evidence below was extracted by the Session Lens plugin from Duckwork' own records, then bounded and "
+        "secret-redacted, so some detail is missing on purpose. Do not invent tool behaviour, file contents, or "
+        "error text that is not shown. You may use your session search tool to read the listed sessions for more "
+        "context.",
+        "Investigate only: do not change files, settings, memory, skills or configuration while answering. Propose "
+        "each change and wait for the user to approve it.",
+        "",
+        "Answer in this order, briefly:",
+        "1. What is going wrong and the most likely root cause, quoting the evidence line that supports it, with "
+        "your confidence. Say whether it comes from how the agent calls the tool (a habit), the environment (a "
+        "missing path, program, permission or network), configuration (a timeout, a tool or MCP setting), or the "
+        "tool itself.",
+        "2. The fix most likely to stop it, concrete enough to apply today — for example a memory or skill note, a "
+        "config value, an install step, or a change to how the tool is called — and exactly where it goes. If the "
+        "cause is uncertain, give at most two alternatives, most likely first.",
+        "3. How the user can confirm the fix worked: what should stop appearing, and where.",
+        "4. What this evidence cannot settle, and which extra evidence would.",
+        "If the failure looks harmless or expected (a search that found nothing, a file that did not exist yet), "
+        "say so instead of inventing a problem.",
+        "",
+        "## The failure",
+        f"- Tool: {group['tool']}",
+        f"- Error: {group['headline']}",
+        f"- Signature (paths, URLs, quoted values, ids and numbers neutralised): {group['key'].split('|', 1)[1]}",
+        f"- Seen {group['count']:,} time{'s' if group['count'] != 1 else ''} in {len(group['sessions']):,} "
+        f"session{'s' if len(group['sessions']) != 1 else ''} during {context['period_phrase']}; "
+        f"{len(group['variants']):,} distinct error line{'s' if len(group['variants']) != 1 else ''} before neutralising.",
+        f"- First {_analysis_stamp(group['first_at'])} · last {_analysis_stamp(group['last_at'])}"
+        f" · {'still happening (within the last 24 hours)' if still else 'not seen in the last 24 hours'}",
+        f"- Pattern: {pattern_text}",
+        f"- Daily count, last 14 days (oldest first): {trend}",
+    ]
+    if group["profiles"]:
+        lines.append(f"- Profiles: {', '.join(sorted(group['profiles']))}")
+
+    lines += ["", "## Examples (most recent distinct cases, each with the call that produced it)"]
+    if not examples:
+        lines.append("Examples omitted to keep this prompt short.")
+    for index, failure in enumerate(examples, start=1):
+        session_id = str(failure.get("session_id") or "")
+        lines += [
+            "",
+            f"### Example {index} — {_analysis_stamp(failure.get('timestamp'))} in {session_label(session_id)}",
+            f"Call: {failure.get('_arguments') or 'Arguments not recorded'}",
+        ]
+        full = _clean_content(_RECURRING_LOOP_WARNING_RE.sub("", str(failure.get("content") or "")))
+        snippet = full[:snippet_chars].rstrip()
+        if snippet:
+            fence = _analysis_fence(snippet)
+            lines += ["Result:", fence, snippet + (" …" if len(full) > snippet_chars else ""), fence]
+
+    lines += ["", "## Sessions affected (most recent first)"]
+    for session_id, seen in affected:
+        lines.append(
+            f"- {session_label(session_id)} — {seen[0]:,} time{'s' if seen[0] != 1 else ''}, last {_analysis_stamp(seen[1])}"
+        )
+    hidden = len(group["sessions"]) - len(affected)
+    if hidden > 0:
+        lines.append(f"- … and {hidden:,} more session{'s' if hidden != 1 else ''}")
+
+    lines += [
+        "",
+        "## How this evidence was produced",
+        "- Failure detection: recorded Duckwork error state plus conservative tool-result signatures; the signatures "
+        "match English error text only, so failures reported in other languages may be under-counted.",
+        "- Failures are grouped by tool and the telling error line with paths, URLs, quoted values, ids and numbers "
+        "neutralised, so the same fault on different paths is one group.",
+        "- Call arguments and results are bounded and secret-redacted; user and assistant message text is "
+        "deliberately not included.",
+    ]
+    return "\n".join(lines).strip() + "\n"
+
+
+def _recurring_prompt_sync(
+    key: str,
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    now = time.time()
+    collected = _recurring_collect(days, start_at, end_at, with_samples=True)
+    group = next((item for item in collected["groups"] if item["key"] == key), None)
+    if group is None:
+        raise HTTPException(status_code=404, detail="That failure is not in the selected period any more")
+    most_examples = RECURRING_PROMPT_BUDGET_STEPS[0][0]
+    examples = [dict(failure) for failure in _recurring_pick_examples(group, most_examples)]
+    with _database() as db:
+        connection = _db_connection(db)
+        for failure in examples:
+            failure["_arguments"] = _clean_text(
+                _recurring_call_arguments(connection, failure), RECURRING_PROMPT_ARGUMENT_CHARS
+            )
+    context = {
+        "titles": collected["titles"],
+        "profiles": collected["profiles"],
+        "now": now,
+        "day_keys": _recurring_day_keys(collected["period_end"], now),
+        "period_phrase": _recurring_period_phrase(days, collected["period_start"], collected["period_end"]),
+    }
+    text = ""
+    example_limit = session_limit = 0
+    for example_limit, snippet_chars, session_limit in RECURRING_PROMPT_BUDGET_STEPS:
+        text = _render_recurring_prompt(
+            group, examples[:example_limit], _recurring_affected(group, session_limit), context, snippet_chars
+        )
+        if len(text) <= _ANALYSIS_PROMPT_MAX_CHARS:
+            break
+    return {
+        "key": key,
+        "tool": group["tool"],
+        "headline": group["headline"],
+        "prompt": text,
+        "characters": len(text),
+        "examples_included": min(example_limit, len(examples)),
+        "sessions_listed": min(session_limit, len(group["sessions"])),
+        "sessions_total": len(group["sessions"]),
+        "max_chars": _ANALYSIS_PROMPT_MAX_CHARS,
+        "generated_at": now,
+    }
+
+
+@router.get("/failures/recurring/prompt")
+async def recurring_failure_prompt(
+    key: str = Query(..., min_length=1, max_length=400),
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    """A bounded, secret-redacted prompt to investigate one recurring failure in a Duckwork chat."""
+    return await asyncio.to_thread(_scoped_call, profiles, _recurring_prompt_sync, key, days, start_at, end_at)
+
+
+@router.get("/tools")
+async def tools(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _tools_sync, days, start_at, end_at)
+
+
+def _skills_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    period_sql, period_params = _period_sql("s.started_at", period_start, period_end)
+    with _database() as db:
+        rows = _db_connection(db).execute(
+            f"""
+            SELECT m.session_id, m.tool_calls, m.timestamp
+            FROM messages m
+            JOIN sessions s ON s.id=m.session_id{_same_profile(db, "s", "m")}
+            WHERE {period_sql}
+              AND m.role='assistant' AND m.tool_calls IS NOT NULL
+              AND (instr(m.tool_calls,'skill_view') > 0 OR instr(m.tool_calls,'skill_manage') > 0)
+            ORDER BY m.timestamp DESC
+            """,
+            tuple(period_params),
+        ).fetchall()
+        skills: Dict[str, Dict[str, Any]] = {}
+        for row in rows:
+            for call in _iter_tool_calls(row["tool_calls"]):
+                if call["name"] not in {"skill_view", "skill_manage"}:
+                    continue
+                name = call["arguments"].get("name")
+                if not isinstance(name, str) or not name.strip():
+                    continue
+                key = name.strip()
+                entry = skills.setdefault(
+                    key,
+                    {
+                        "name": key,
+                        "view_count": 0,
+                        "manage_count": 0,
+                        "sessions": set(),
+                        "last_used_at": None,
+                        "evidence": "recorded invocation",
+                    },
+                )
+                entry["view_count" if call["name"] == "skill_view" else "manage_count"] += 1
+                entry["sessions"].add(row["session_id"])
+                timestamp = _number(row["timestamp"], 0)
+                if timestamp and (not entry["last_used_at"] or timestamp > entry["last_used_at"]):
+                    entry["last_used_at"] = timestamp
+        result = []
+        for entry in skills.values():
+            entry["sessions"] = len(entry["sessions"])
+            entry["total_actions"] = entry["view_count"] + entry["manage_count"]
+            result.append(entry)
+        result.sort(key=lambda item: (item["total_actions"], item["name"]), reverse=True)
+        return {
+            "period_days": days,
+            "period": _period_payload(days, period_start, period_end),
+            "skills": result,
+            "totals": {
+                "loads": sum(item["view_count"] for item in result),
+                "management_actions": sum(item["manage_count"] for item in result),
+                "distinct_skills": len(result),
+            },
+            "definition": "Invoked means a recorded skill_view or skill_manage tool call; availability alone is not counted.",
+            "generated_at": time.time(),
+        }
+
+
+@router.get("/skills")
+async def skills(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+    profiles: str = Query(""),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _skills_sync, days, start_at, end_at)
+
+
+def _profile_db_paths(home: Path) -> List[Tuple[str, Path]]:
+    paths: List[Tuple[str, Path]] = []
+    root_db = home / "state.db"
+    if root_db.exists():
+        paths.append(("default", root_db))
+    profiles_root = home / "profiles"
+    if profiles_root.exists():
+        for profile_dir in sorted(path for path in profiles_root.iterdir() if path.is_dir()):
+            db_path = profile_dir / "state.db"
+            if db_path.exists():
+                paths.append((profile_dir.name, db_path))
+    return paths
+
+
+def _profile_summary(
+    name: str,
+    path: Path,
+    start_at: float,
+    end_at: Optional[float],
+) -> Dict[str, Any]:
+    period_sql, period_params = _period_sql("started_at", start_at, end_at)
+
+    def read(connection: sqlite3.Connection) -> Dict[str, Any]:
+        totals = _row_dict(
+            connection.execute(
+                f"""
+                SELECT COUNT(*) AS sessions,
+                       coalesce(SUM(message_count),0) AS messages,
+                       coalesce(SUM(tool_call_count),0) AS tool_calls,
+                       coalesce(SUM(input_tokens + output_tokens + cache_read_tokens + cache_write_tokens),0) AS total_tokens,
+                       coalesce(SUM(CASE
+                           WHEN actual_cost_usd > 0 THEN actual_cost_usd
+                           WHEN estimated_cost_usd > 0 THEN estimated_cost_usd
+                           ELSE 0 END),0) AS recorded_cost_usd,
+                       MAX(coalesce(last_activity_at, started_at)) AS last_activity_at
+                FROM ({_accounted_sessions_sql(connection)}) sessions WHERE {period_sql}
+                """,
+                tuple(period_params),
+            ).fetchone()
+        )
+        outcomes: Counter[str] = Counter()
+        for row in connection.execute(
+            f"""
+            SELECT end_reason, ended_at, last_activity_at, started_at
+            FROM ({_accounted_sessions_sql(connection)}) sessions WHERE {period_sql}
+            """,
+            tuple(period_params),
+        ).fetchall():
+            outcomes[_session_outcome(_row_dict(row))["outcome"]] += 1
+        models = [
+            {"model": row["model"] or "unknown", "sessions": _integer(row["sessions"])}
+            for row in connection.execute(
+                f"""
+                SELECT model, COUNT(*) AS sessions FROM sessions
+                WHERE {period_sql}
+                GROUP BY model ORDER BY sessions DESC LIMIT 5
+                """,
+                tuple(period_params),
+            ).fetchall()
+        ]
+        return {"totals": totals, "outcomes": outcomes, "models": models}
+
+    try:
+        with _database(path) as db:
+            material = read(_db_connection(db))
+    except sqlite3.OperationalError:
+        # A dormant profile can retain WAL journal mode without writable
+        # sidecars. If there is no WAL to reconcile, SQLite immutable mode is
+        # a safe read-only fallback that neither creates nor updates files.
+        if Path(str(path) + "-wal").exists():
+            raise
+        connection = sqlite3.connect(path.resolve().as_uri() + "?mode=ro&immutable=1", uri=True)
+        connection.row_factory = sqlite3.Row
+        _install_accounting_views(connection)
+        try:
+            material = read(connection)
+        finally:
+            connection.close()
+    totals = material["totals"]
+    outcomes = material["outcomes"]
+    models = material["models"]
+    stat = path.stat()
+    return {
+        "name": name,
+        "is_default": name == "default",
+        "sessions": _integer(totals.get("sessions")),
+        "messages": _integer(totals.get("messages")),
+        "tool_calls": _integer(totals.get("tool_calls")),
+        "total_tokens": _integer(totals.get("total_tokens")),
+        "recorded_cost_usd": _number(totals.get("recorded_cost_usd")),
+        "last_activity_at": totals.get("last_activity_at"),
+        "outcomes": dict(outcomes),
+        "models": models,
+        "database_size_bytes": stat.st_size,
+        "database_updated_at": stat.st_mtime,
+    }
+
+
+def _profiles_sync(
+    days: int,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    profiles = []
+    errors = []
+    for name, path in _profile_db_paths(_duckwork_root()):
+        try:
+            profiles.append(_profile_summary(name, path, period_start, period_end))
+        except Exception as error:
+            errors.append({"profile": name, "error": _clean_text(error, 240)})
+    profiles.sort(key=lambda item: _number(item.get("last_activity_at")), reverse=True)
+    return {
+        "period_days": days,
+        "period": _period_payload(days, period_start, period_end),
+        "profiles": profiles,
+        "serving": _serving_profile_name(),
+        "totals": {
+            "profiles": len(profiles),
+            "sessions": sum(item["sessions"] for item in profiles),
+            "total_tokens": sum(item["total_tokens"] for item in profiles),
+            "recorded_cost_usd": sum(item["recorded_cost_usd"] for item in profiles),
+        },
+        "errors": errors,
+        "generated_at": time.time(),
+    }
+
+
+@router.get("/profiles")
+async def profiles(
+    days: int = Query(30, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(_profiles_sync, days, start_at, end_at)
+
+
+def _read_json_file(path: Path, max_bytes: int = 2 * 1024 * 1024) -> Any:
+    if not path.exists() or path.stat().st_size > max_bytes:
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+
+
+def _profile_file_paths(home: Path, relative: Path) -> List[Tuple[str, Path]]:
+    paths = [("default", home / relative)]
+    profiles_root = home / "profiles"
+    if profiles_root.exists():
+        paths.extend(
+            (profile_dir.name, profile_dir / relative)
+            for profile_dir in sorted(path for path in profiles_root.iterdir() if path.is_dir())
+        )
+    return [(name, path) for name, path in paths if path.exists()]
+
+
+def _gateway_sync() -> Dict[str, Any]:
+    gateways = []
+    for profile, path in _profile_file_paths(_duckwork_root(), Path("gateway_state.json")):
+        state = _read_json_file(path)
+        if not isinstance(state, dict):
+            continue
+        platforms = []
+        raw_platforms = state.get("platforms")
+        if isinstance(raw_platforms, dict):
+            for name, value in raw_platforms.items():
+                value = value if isinstance(value, dict) else {"state": value}
+                platforms.append(
+                    {
+                        "name": str(name),
+                        "state": _clean_text(value.get("state"), 80),
+                        "needs_attention": bool(value.get("needs_attention")),
+                        "error_code": _clean_text(value.get("error_code"), 120) or None,
+                        "error_message": _clean_text(value.get("error_message"), 320) or None,
+                        "updated_at": value.get("updated_at"),
+                    }
+                )
+        gateways.append(
+            {
+                "profile": profile,
+                "state": _clean_text(state.get("gateway_state") or state.get("state"), 80) or "unknown",
+                "kind": _clean_text(state.get("kind"), 80) or None,
+                "pid": _integer(state.get("pid")) or None,
+                "start_time": state.get("start_time"),
+                "updated_at": state.get("updated_at") or path.stat().st_mtime,
+                "exit_reason": _clean_text(state.get("exit_reason"), 240) or None,
+                "restart_requested": bool(state.get("restart_requested")),
+                "active_agents": _integer(state.get("active_agents")),
+                "code_version": _clean_text(state.get("code_version"), 80) or None,
+                "platforms": platforms,
+            }
+        )
+    return {"gateways": gateways, "generated_at": time.time()}
+
+
+# ── Fleet board ───────────────────────────────────────────────────────────
+# One row per profile: is it alive, what is it doing, what is it costing.
+# Bot profiles run sessions for weeks, so a session's lifetime cost says
+# nothing about today: spend and calls over time come from the profile's
+# agent-log API calls, priced per call like the runaway watch. State,
+# failures and open sessions come from its state.db; gateway health from
+# its gateway_state.json.
+
+FLEET_RUNNING_SECONDS = 900
+FLEET_ERROR_ATTENTION = 3
+FLEET_FAILURE_ATTENTION = 10
+
+
+def _fleet_state(last_activity: float, last_call: float, now: float) -> str:
+    latest = max(last_activity or 0.0, last_call or 0.0)
+    if last_call and now - last_call <= FLEET_RUNNING_SECONDS:
+        return "running"
+    if latest and now - latest <= 86400:
+        return "idle"
+    if latest and now - latest <= 7 * 86400:
+        return "quiet"
+    return "dormant"
+
+
+def _fleet_log_figures(name: str, now: float) -> Dict[str, Any]:
+    """Calls, spend and API errors over the last hour and day from one profile's logs."""
+    previous = _get_profile_scope()
+    _set_profile_scope([name])
+    try:
+        runtime = _runtime_events()
+    finally:
+        _set_profile_scope(previous)
+    hour, day = now - 3600, now - 86400
+    figures: Dict[str, Any] = {
+        "calls_hour": 0, "calls_day": 0, "cash_hour_usd": 0.0, "cash_day_usd": 0.0,
+        "list_hour_usd": 0.0, "list_day_usd": 0.0, "unpriced_calls_day": 0, "api_errors_day": 0,
+        "last_call_at": None, "models_day": Counter(),
+    }
+    for event in runtime.get("api", []):
+        timestamp = _number(event.get("timestamp"), 0)
+        if timestamp < day or timestamp > now + 60:
+            continue
+        figures["calls_day"] += 1
+        figures["models_day"][str(event.get("model") or "unknown")] += 1
+        in_hour = timestamp >= hour
+        if in_hour:
+            figures["calls_hour"] += 1
+        if not figures["last_call_at"] or timestamp > figures["last_call_at"]:
+            figures["last_call_at"] = timestamp
+        rates = _call_rates(str(event.get("model") or ""), str(event.get("provider") or ""))
+        if rates is None:
+            figures["unpriced_calls_day"] += 1
+            continue
+        cost = _call_cost(event, rates)
+        bucket = "list" if _is_subscription_route(event.get("provider")) else "cash"
+        figures[f"{bucket}_day_usd"] += cost
+        if in_hour:
+            figures[f"{bucket}_hour_usd"] += cost
+    figures["api_errors_day"] = sum(
+        1 for error in runtime.get("errors", []) if day <= _number(error.get("timestamp"), 0) <= now + 60
+    )
+    stamps = runtime.get("timestamps") or []
+    figures["log_since"] = min(stamps) if stamps else None
+    return figures
+
+
+def _fleet_db_figures(path: Path, now: float) -> Dict[str, Any]:
+    day = now - 86400
+    with _database(path) as db:
+        connection = _db_connection(db)
+        row = _row_dict(
+            connection.execute(
+                """
+                SELECT MAX(coalesce(last_activity_at, ended_at, started_at)) AS last_activity_at,
+                       SUM(CASE WHEN coalesce(last_activity_at, ended_at, started_at) >= ? THEN 1 ELSE 0 END) AS sessions_day,
+                       SUM(CASE WHEN ended_at IS NULL AND coalesce(last_activity_at, started_at) >= ? THEN 1 ELSE 0 END) AS open_sessions,
+                       COUNT(*) AS sessions_all
+                FROM sessions
+                """,
+                (day, day),
+            ).fetchone()
+        )
+        failures = _confirmed_failure_rows(connection, "coalesce(s.last_activity_at, s.ended_at, s.started_at) >= ?", [day])
+    failures_day = sum(1 for failure in failures if _number(failure.get("timestamp"), now) >= day)
+    return {
+        "last_activity_at": row.get("last_activity_at"),
+        "sessions_day": _integer(row.get("sessions_day")),
+        "open_sessions": _integer(row.get("open_sessions")),
+        "sessions_all": _integer(row.get("sessions_all")),
+        "failures_day": failures_day,
+    }
+
+
+def _fleet_sync(now: Optional[float] = None) -> Dict[str, Any]:
+    now = time.time() if now is None else now
+    gateways = {item["profile"]: item for item in _gateway_sync().get("gateways", [])}
+    rows: List[Dict[str, Any]] = []
+    errors: List[Dict[str, str]] = []
+    for name, path in _profile_db_paths(_duckwork_root()):
+        _check_route_budget()
+        try:
+            db_figures = _fleet_db_figures(path, now)
+            log_figures = _fleet_log_figures(name, now)
+        except RouteBudgetExceeded:
+            raise
+        except Exception as error:
+            errors.append({"profile": name, "error": _clean_text(error, 240)})
+            continue
+        gateway = gateways.get(name)
+        state = _fleet_state(_number(db_figures["last_activity_at"], 0), _number(log_figures["last_call_at"], 0), now)
+        flags: List[str] = []
+        if gateway and str(gateway.get("state") or "").lower() not in {"running", "connected", "ready", "ok", "unknown"}:
+            flags.append(f"gateway {gateway.get('state')}")
+        if gateway and any(platform.get("needs_attention") for platform in gateway.get("platforms") or []):
+            flags.append("a platform needs attention")
+        if log_figures["api_errors_day"] >= FLEET_ERROR_ATTENTION:
+            flags.append(f"{log_figures['api_errors_day']} API errors in 24 h")
+        if db_figures["failures_day"] >= FLEET_FAILURE_ATTENTION:
+            flags.append(f"{db_figures['failures_day']} tool failures in 24 h")
+        top_model = log_figures["models_day"].most_common(1)
+        rows.append(
+            {
+                "profile": name,
+                "state": state,
+                "flags": flags,
+                "last_activity_at": max(
+                    _number(db_figures["last_activity_at"], 0), _number(log_figures["last_call_at"], 0)
+                ) or None,
+                "calls_hour": log_figures["calls_hour"],
+                "calls_day": log_figures["calls_day"],
+                "cash_hour_usd": round(log_figures["cash_hour_usd"], 4),
+                "cash_day_usd": round(log_figures["cash_day_usd"], 4),
+                "list_hour_usd": round(log_figures["list_hour_usd"], 4),
+                "list_day_usd": round(log_figures["list_day_usd"], 4),
+                "unpriced_calls_day": log_figures["unpriced_calls_day"],
+                "api_errors_day": log_figures["api_errors_day"],
+                "failures_day": db_figures["failures_day"],
+                "sessions_day": db_figures["sessions_day"],
+                "open_sessions": db_figures["open_sessions"],
+                "top_model": top_model[0][0] if top_model else None,
+                "log_since": log_figures["log_since"],
+                "logs_cover_day": bool(log_figures["log_since"] and log_figures["log_since"] <= now - 86400),
+                "gateway": (
+                    {"state": gateway.get("state"), "active_agents": gateway.get("active_agents"),
+                     "platforms": [platform.get("name") for platform in gateway.get("platforms") or []]}
+                    if gateway else None
+                ),
+            }
+        )
+    order = {"running": 0, "idle": 1, "quiet": 2, "dormant": 3}
+    rows.sort(key=lambda row: (order.get(row["state"], 4), -(row["cash_day_usd"] + row["list_day_usd"]), row["profile"]))
+    return {
+        "profiles": rows,
+        "errors": errors,
+        "totals": {
+            "profiles": len(rows),
+            "running": sum(1 for row in rows if row["state"] == "running"),
+            "flagged": sum(1 for row in rows if row["flags"]),
+            "cash_day_usd": round(sum(row["cash_day_usd"] for row in rows), 4),
+            "list_day_usd": round(sum(row["list_day_usd"] for row in rows), 4),
+            "calls_day": sum(row["calls_day"] for row in rows),
+        },
+        "definition": (
+            "Every profile on this machine. Calls and spend over the last hour and day come from each profile's agent "
+            "logs, priced per call with Duckwork' pricing tables (subscription use at API list price); failures, open "
+            "sessions and last activity from its state.db; gateway state from its gateway_state.json."
+        ),
+        "generated_at": now,
+    }
+
+
+@router.get("/fleet")
+async def fleet() -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, "", _fleet_sync)
+
+
+@router.get("/gateway")
+async def gateway() -> Dict[str, Any]:
+    return await asyncio.to_thread(_gateway_sync)
+
+
+def _schedules_sync() -> Dict[str, Any]:
+    schedules = []
+    for profile, path in _profile_file_paths(_duckwork_root(), Path("cron") / "jobs.json"):
+        document = _read_json_file(path)
+        jobs = document.get("jobs") if isinstance(document, dict) else document
+        if not isinstance(jobs, list):
+            continue
+        for job in jobs:
+            if not isinstance(job, dict):
+                continue
+            schedule = job.get("schedule") if isinstance(job.get("schedule"), dict) else {}
+            state = job.get("state") if isinstance(job.get("state"), dict) else {}
+            skills = job.get("skills") if isinstance(job.get("skills"), list) else []
+            schedules.append(
+                {
+                    "profile": profile,
+                    "id": _clean_text(job.get("id"), 160),
+                    "name": _clean_text(job.get("name"), 180) or "Untitled schedule",
+                    "enabled": bool(job.get("enabled")),
+                    "schedule": _clean_text(job.get("schedule_display") or schedule.get("display") or schedule.get("expr") or schedule.get("run_at"), 180),
+                    "schedule_kind": _clean_text(schedule.get("kind"), 80),
+                    "model": _clean_text(job.get("model"), 160) or None,
+                    "provider": _clean_text(job.get("provider"), 120) or None,
+                    "skills": [_clean_text(item, 120) for item in skills[:20]],
+                    "no_agent": bool(job.get("no_agent")),
+                    "next_run_at": job.get("next_run_at") or state.get("next_run_at"),
+                    "last_run_at": job.get("last_run_at") or state.get("last_run_at"),
+                    "last_status": _clean_text(job.get("last_status") or state.get("last_status"), 80) or None,
+                    "last_error": _clean_text(job.get("last_error") or state.get("last_error"), 320) or None,
+                    "last_delivery_error": _clean_text(job.get("last_delivery_error") or state.get("last_delivery_error"), 320) or None,
+                    "failure_streak": _integer(job.get("failure_streak") or state.get("failure_streak")),
+                }
+            )
+    schedules.sort(key=lambda item: (not item["enabled"], _number(item.get("next_run_at"), float("inf")), item["name"]))
+    return {
+        "schedules": schedules,
+        "totals": {
+            "jobs": len(schedules),
+            "enabled": sum(1 for item in schedules if item["enabled"]),
+            "failing": sum(1 for item in schedules if item["failure_streak"] or item["last_error"]),
+        },
+        "privacy": {"prompts_included": False},
+        "generated_at": time.time(),
+    }
+
+
+@router.get("/schedules")
+async def schedules() -> Dict[str, Any]:
+    return await asyncio.to_thread(_schedules_sync)
+
+
+def _ai_usage_sync(
+    fresh: bool = False,
+    only_provider: Optional[str] = None,
+    days: int = 7,
+    start_at: Optional[float] = None,
+    end_at: Optional[float] = None,
+) -> Dict[str, Any]:
+    now = time.time()
+    period = (days, start_at, end_at)
+    with _ai_usage_cache_lock:
+        entry = _ai_usage_cache_entry()
+        if not fresh and entry and now - entry[0] < AI_USAGE_CACHE_TTL_SECONDS:
+            cached = copy.deepcopy(entry[1])
+            cached["cached"] = True
+            return _finish_usage_payload(cached, period)
+
+    collectors = {provider: adapter.collect for provider, adapter in _provider_adapters().items()}
+    if fresh and only_provider:
+        collector = collectors.get(only_provider)
+        if collector is not None:
+            merged = _ai_usage_refresh_provider(only_provider, collector)
+            if merged is not None:
+                return _finish_usage_payload(merged, period)
+        # Unknown provider name or no cached payload to merge into — a full
+        # pass answers correctly either way.
+    # Stage 1: local-only credential probes decide which collectors run at
+    # all, so providers with nothing configured never trigger a network call.
+    results: Dict[str, Dict[str, Any]] = {}
+    active: Dict[str, Any] = {}
+    for provider, collector in collectors.items():
+        if _probe_usage_provider(provider):
+            active[provider] = collector
+        else:
+            results[provider] = _provider_payload(
+                provider,
+                status="not_configured",
+                message=_provider_not_configured_message(provider),
+            )
+    if active:
+        _set_collect_fresh(fresh)
+        try:
+            with ThreadPoolExecutor(max_workers=len(active), thread_name_prefix="session-lens-usage") as pool:
+                futures = {_submit_in_context(pool, collector): provider for provider, collector in active.items()}
+                for future in as_completed(futures):
+                    provider = futures[future]
+                    try:
+                        result = future.result()
+                    except (Exception, SystemExit) as error:
+                        # A library that exits inside a collector (Duckwork' bootstrap
+                        # relaunch raises SystemExit) costs one card, never the view.
+                        result = _provider_payload(provider, status="unavailable", message=_provider_message(error))
+                    results[provider] = result
+        finally:
+            _set_collect_fresh(False)
+
+    with _ai_usage_cache_lock:
+        account_cards: Dict[str, List[Dict[str, Any]]] = {}
+        for provider in _provider_ids():
+            result = results.get(provider) or _provider_payload(
+                provider,
+                status="unavailable",
+                message="Provider collector returned no result.",
+            )
+            # Extra per-account cards ride along on the collector result;
+            # split them off before folding so a stale fold of the primary
+            # card never resurrects an old account list.
+            extras = result.pop("extra_accounts", None) or []
+            account_cards[provider] = [
+                _fold_usage_last_success(str(extra.get("provider")), extra) for extra in extras
+            ]
+            result = _fold_usage_last_success(provider, result)
+            results[provider] = result
+
+        providers = []
+        for provider in _provider_ids():
+            providers.append(results[provider])
+            providers.extend(account_cards.get(provider) or [])
+        payload = {
+            "providers": providers,
+            "duckwork_configured_unsupported": _usage_unsupported_configured(),
+            "summary": _ai_usage_summary(providers),
+            "generated_at": time.time(),
+            "cached": False,
+            "cache_ttl_seconds": AI_USAGE_CACHE_TTL_SECONDS,
+            "privacy": {
+                "credentials_returned_to_desktop": False,
+                "browser_cookies_read": False,
+                "external_requests": "Direct authenticated quota requests to the configured providers only",
+                "external_hosts": sorted({host for adapter in _provider_adapters().values() for host in adapter.hosts}),
+            },
+        }
+        _ai_usage_cache_store((time.time(), copy.deepcopy(payload)))
+        return _finish_usage_payload(payload, period)
+
+
+def _attach_window_forecasts(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Give every quota window its run-out forecast (or None) as of now.
+
+    Forecasts depend on the clock, so they are computed per response and
+    never cached with the provider readings.
+    """
+    for card in payload.get("providers", []):
+        if card.get("status") not in {"ok", "stale"}:
+            continue
+        for window in card.get("windows", []):
+            if window.get("kind") != "quota":
+                continue
+            window["forecast"] = _quota_forecast(
+                window.get("label"), window.get("reset_at"), window.get("percentage_used")
+            )
+    return payload
+
+
+def _finish_usage_payload(
+    payload: Dict[str, Any], period: Tuple[int, Optional[float], Optional[float]] = (7, None, None)
+) -> Dict[str, Any]:
+    """Everything a usage response carries beyond the cached provider readings."""
+    _attach_local_usage_records(payload, period)
+    _attach_window_forecasts(payload)
+    payload["providers"] = _order_usage_cards(payload.get("providers", []))
+    payload["summary"] = _ai_usage_summary(payload["providers"])
+    return payload
+
+
+def _attach_local_usage_records(
+    payload: Dict[str, Any], period: Tuple[int, Optional[float], Optional[float]] = (7, None, None)
+) -> Dict[str, Any]:
+    """Join the local records, the month reconciliation and each window's attribution to every base card.
+
+    Applied to every response and never to the cache. The provider readings
+    are account-level and identical for every profile scope, but "recorded
+    locally" and "what consumed this window" come from the profiles in
+    scope — a reading cached under one scope must never carry another
+    scope's records. "Recorded locally" follows the selected period, like
+    every other tab; a window's attribution keeps the window's own span.
+    """
+    days, start_at, end_at = period
+    period_start, period_end = _period_bounds(days, start_at, end_at)
+    if start_at is not None or end_at is not None:
+        span_label = "custom range"
+    else:
+        span_label = f"{days}d" if days > 0 else "all time"
+    recorded = _usage_recorded_local(period_start, period_end)
+    month_start, _month_end = _month_bounds(time.time())
+    local_month = _budget_local_spend(month_start, month_start)
+    for card in payload.get("providers", []):
+        if card.get("account_extra"):
+            continue
+        provider = str(card.get("provider") or "")
+        entry = recorded.get(provider)
+        card["recorded_local"] = {**entry, "label": span_label, "days": days} if entry else None
+        # A provider that reports its own month-to-date spend gets the local
+        # estimate for the same calendar month beside it, so the two numbers
+        # sit on one line with matching spans instead of a 7-day figure
+        # against a calendar week.
+        spend = card.get("account_spend")
+        monthly = _number(spend.get("monthly"), None) if isinstance(spend, Mapping) else None
+        if monthly is not None:
+            month = local_month.get(provider) or {}
+            card["month_reconciliation"] = {
+                "provider_usd": round(monthly, 2),
+                "local_usd": round(_number(month.get("month_cost")), 2),
+                "local_sessions": _integer(month.get("sessions")),
+            }
+        _attach_usage_attribution(provider, card)
+    return payload
+
+
+def _fold_usage_last_success(provider: str, result: Dict[str, Any]) -> Dict[str, Any]:
+    """Track last-good readings; call with _ai_usage_cache_lock held.
+
+    A transient failure re-serves the last good reading marked stale; a
+    definitive credential failure (expired/forbidden/not configured) clears
+    the memory so dead credentials never show comforting numbers.
+    """
+    last_success = _ai_usage_last_success()
+    if result.get("status") == "ok":
+        last_success[provider] = copy.deepcopy(result)
+    elif result.get("status") in {"not_configured", "expired", "forbidden"}:
+        last_success.pop(provider, None)
+    elif result.get("status") == "unavailable" and provider in last_success:
+        current_status = result.get("status")
+        current_message = result.get("message")
+        result = copy.deepcopy(last_success[provider])
+        result.update(
+            {
+                "status": "stale",
+                "stale": True,
+                "last_error_status": current_status,
+                "message": current_message or "The latest refresh failed; showing the last successful reading.",
+            }
+        )
+    return result
+
+
+# Duckwork registry ids (and their aliases) already covered by a provider
+# adapter, as each adapter declares them (registered at package import).
+_USAGE_COVERED_PROVIDER_IDS = _usage_covered_provider_ids()
+
+
+def _usage_unsupported_configured() -> List[Dict[str, str]]:
+    """Providers configured in Duckwork that expose no usage API we can read.
+
+    Sourced from Duckwork' live provider registry, so third-party provider
+    plugins appear here too. Distinguishes "cannot monitor" from "nothing to
+    monitor" on the AI Usage page.
+    """
+    credential_keys = _duckwork_provider_credential_keys()
+    entries: List[Dict[str, str]] = []
+    for provider_id in _duckwork_configured_provider_ids():
+        key = str(provider_id).strip().lower()
+        if not key or key in _USAGE_COVERED_PROVIDER_IDS:
+            continue
+        meta = _MODEL_ROUTE_META.get(key) or {}
+        entries.append({
+            "id": key,
+            "label": str(meta.get("provider") or _humanize_identifier(key)),
+            "credential": credential_keys.get(str(provider_id)) or credential_keys.get(key) or key,
+        })
+    # One credential, one entry: the first label alphabetically carries the
+    # count of the other registry endpoints that read the same key.
+    by_credential: Dict[str, List[Dict[str, str]]] = {}
+    for entry in sorted(entries, key=lambda item: item["label"].lower()):
+        by_credential.setdefault(entry["credential"], []).append(entry)
+    unique: List[Dict[str, str]] = []
+    seen: set[str] = set()
+    for group in sorted(by_credential.values(), key=lambda items: items[0]["label"].lower()):
+        first = group[0]
+        label = first["label"]
+        others = len(group) - 1
+        if others:
+            label = f"{label} (+{others} endpoint{'s' if others != 1 else ''} on the same key)"
+        if label.lower() in seen:
+            continue
+        seen.add(label.lower())
+        unique.append({"id": first["id"], "label": label, "ids": [item["id"] for item in group]})
+    return unique
+
+
+# billing_provider values that join local records to each provider adapter.
+_USAGE_BILLING_KEYS = _usage_billing_keys()
+
+
+def _usage_recorded_7d() -> Dict[str, Dict[str, Any]]:
+    """Trailing-7-day local records per quota provider (the digest's span)."""
+    return _usage_recorded_local(time.time() - 7 * 86_400, None)
+
+
+def _usage_recorded_local(start: float, end: Optional[float]) -> Dict[str, Dict[str, Any]]:
+    """Tokens/cost/sessions per quota provider from local records inside [start, end)."""
+    try:
+        with _database() as db:
+            rows = _db_connection(db).execute(
+                """
+                SELECT LOWER(billing_provider),
+                       SUM(input_tokens + output_tokens + cache_read_tokens + cache_write_tokens),
+                       SUM(CASE WHEN actual_cost_usd > 0 THEN actual_cost_usd ELSE estimated_cost_usd END),
+                       COUNT(DISTINCT session_id)
+                FROM session_model_usage
+                WHERE COALESCE(last_seen, first_seen, 0) >= ?
+                  AND (? IS NULL OR COALESCE(last_seen, first_seen, 0) < ?)
+                GROUP BY LOWER(billing_provider)
+                """,
+                (start, end, end),
+            ).fetchall()
+    except Exception:
+        return {}
+    by_billing = {str(row[0] or ""): row for row in rows}
+    recorded: Dict[str, Dict[str, Any]] = {}
+    for provider, billing_keys in _USAGE_BILLING_KEYS.items():
+        matched = [by_billing[key] for key in billing_keys if key in by_billing]
+        if not matched:
+            continue
+        recorded[provider] = {
+            "tokens": sum(_integer(row[1]) for row in matched),
+            "cost_usd": round(sum(_number(row[2]) for row in matched), 4),
+            "sessions": sum(_integer(row[3]) for row in matched),
+        }
+    return recorded
+
+
+
+_USAGE_ATTRIBUTION_TOP = 5
+_USAGE_ATTRIBUTION_FALLBACK_SECONDS = 7 * 86_400.0
+# Model-specific quota windows ("Opus week") only count the matching family.
+_USAGE_MODEL_FAMILIES = ("opus", "sonnet", "haiku")
+_USAGE_MONEY_UNITS = {"usd", "$", "credits", "credit"}
+
+
+def _usage_window_bounds(window: Mapping[str, Any]) -> Tuple[float, Optional[float], str]:
+    """(since, until, basis) for attributing local sessions to a quota window.
+
+    Timed windows count from reset minus the labelled duration; anything
+    without a readable span falls back to the trailing seven days and says
+    so, because a silent fallback would make the share numbers lie.
+    """
+    reset = _usage_reset_epoch(window.get("reset_at"))
+    duration = _quota_window_duration_seconds(window.get("label"))
+    now = time.time()
+    if reset and duration and reset > now and reset - duration < now:
+        return reset - duration, reset, "window"
+    return now - _USAGE_ATTRIBUTION_FALLBACK_SECONDS, None, "trailing_7d"
+
+
+def _usage_window_model_family(label: Any) -> Optional[str]:
+    text = str(label or "").lower()
+    return next((family for family in _USAGE_MODEL_FAMILIES if family in text), None)
+
+
+def _usage_project_key(row: Mapping[str, Any]) -> Tuple[str, str, str, str]:
+    """(kind, label, path, search) mirroring the Overview project rollup's grouping."""
+    repo = str(row.get("git_repo_root") or "").strip()
+    cwd = str(row.get("cwd") or "").strip()
+    source = str(row.get("source") or "unknown").strip() or "unknown"
+    if repo:
+        return "repo", _path_basename(repo) or repo, repo, 'project:"%s"' % repo
+    if cwd:
+        return "directory", _path_basename(cwd) or cwd, cwd, 'project:"%s"' % cwd
+    return "source", source, source, "source:%s" % source
+
+
+def _usage_attribution_rows(provider: str, since: float) -> List[Dict[str, Any]]:
+    billing_keys = _USAGE_BILLING_KEYS.get(provider) or ()
+    if not billing_keys:
+        return []
+    placeholders = ",".join("?" for _ in billing_keys)
+    with _database() as db:
+        # Several profiles share the sessions view in a multi-profile scope;
+        # the profile name lets the attribution answer "which bot".
+        profile_column = "s.__profile" if getattr(db, "union_profiles", None) else "NULL"
+        rows = _db_connection(db).execute(
+            f"""
+            SELECT u.session_id, u.model, s.title, s.source, s.cwd, s.git_repo_root,
+                   {profile_column} AS profile,
+                   MAX(COALESCE(u.last_seen, u.first_seen, s.last_activity_at, s.started_at, 0)) AS seen_at,
+                   SUM(u.input_tokens + u.output_tokens + u.cache_read_tokens + u.cache_write_tokens) AS tokens,
+                   SUM(CASE WHEN u.actual_cost_usd > 0 THEN u.actual_cost_usd ELSE u.estimated_cost_usd END) AS cost_usd
+            FROM session_model_usage u JOIN sessions s ON s.id = u.session_id{_same_profile(db, "s", "u")}
+            WHERE LOWER(u.billing_provider) IN ({placeholders})
+              AND COALESCE(u.last_seen, u.first_seen, s.last_activity_at, s.started_at, 0) >= ?
+            GROUP BY u.session_id, u.model
+            """,
+            (*[key.lower() for key in billing_keys], since),
+        ).fetchall()
+    return [_row_dict(row) for row in rows]
+
+
+def _usage_window_attribution(
+    window: Mapping[str, Any], rows: List[Mapping[str, Any]]
+) -> Dict[str, Any]:
+    """Rank the local sessions/projects/models that ran inside one quota window.
+
+    Shares are of LOCAL recorded usage — the provider counts in its own
+    units and may include other machines on the same account, so the block
+    never claims to explain the account percentage. When the window carries
+    a money figure, the recorded local cost is compared against it and the
+    unexplained remainder is stated outright.
+    """
+    since, until, basis = _usage_window_bounds(window)
+    family = _usage_window_model_family(window.get("label"))
+    matched = [
+        row
+        for row in rows
+        if _number(row.get("seen_at")) >= since
+        and (family is None or family in str(row.get("model") or "").lower())
+    ]
+    total_tokens = sum(_integer(row.get("tokens")) for row in matched)
+    total_cost = sum(_number(row.get("cost_usd")) for row in matched)
+
+    def share(tokens: int) -> float:
+        return round((tokens / total_tokens) * 100.0, 1) if total_tokens > 0 else 0.0
+
+    sessions: Dict[str, Dict[str, Any]] = {}
+    projects: Dict[str, Dict[str, Any]] = {}
+    models: Dict[str, Dict[str, Any]] = {}
+    profiles: Dict[str, Dict[str, Any]] = {}
+    for row in matched:
+        session_id = str(row.get("session_id") or "")
+        tokens = _integer(row.get("tokens"))
+        cost = _number(row.get("cost_usd"))
+        kind, label, path, search = _usage_project_key(row)
+        profile_name = str(row.get("profile") or "").strip()
+        if profile_name:
+            profile = profiles.setdefault(
+                profile_name,
+                {"label": profile_name, "tokens": 0, "cost_usd": 0.0, "sessions": set(), "search": None},
+            )
+            profile["tokens"] += tokens
+            profile["cost_usd"] += cost
+            profile["sessions"].add(session_id)
+        session = sessions.setdefault(
+            session_id,
+            {
+                "id": session_id,
+                "label": _clean_text(row.get("title"), 120) or session_id,
+                "project": label,
+                "models": {},
+                "tokens": 0,
+                "cost_usd": 0.0,
+                "search": "id:%s" % session_id,
+            },
+        )
+        session["tokens"] += tokens
+        session["cost_usd"] += cost
+        model_name = str(row.get("model") or "")
+        session["models"][model_name] = session["models"].get(model_name, 0) + tokens
+        project = projects.setdefault(
+            path,
+            {"label": label, "kind": kind, "tokens": 0, "cost_usd": 0.0, "sessions": set(), "search": search},
+        )
+        project["tokens"] += tokens
+        project["cost_usd"] += cost
+        project["sessions"].add(session_id)
+        model = models.setdefault(
+            model_name,
+            {"label": model_name, "tokens": 0, "cost_usd": 0.0, "sessions": set(), "search": "model:%s" % model_name},
+        )
+        model["tokens"] += tokens
+        model["cost_usd"] += cost
+        model["sessions"].add(session_id)
+
+    def finish(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        ranked = sorted(items, key=lambda item: (-item["tokens"], str(item.get("label") or "")))
+        top = ranked[:_USAGE_ATTRIBUTION_TOP]
+        rest = ranked[_USAGE_ATTRIBUTION_TOP:]
+        output = []
+        for item in top:
+            entry = dict(item)
+            if isinstance(entry.get("sessions"), set):
+                entry["sessions"] = len(entry["sessions"])
+            if isinstance(entry.get("models"), dict):
+                entry["model"] = max(entry["models"], key=entry["models"].get) if entry["models"] else None
+                entry.pop("models")
+            entry["cost_usd"] = round(entry["cost_usd"], 4)
+            entry["share_percent"] = share(entry["tokens"])
+            output.append(entry)
+        if rest:
+            rest_tokens = sum(item["tokens"] for item in rest)
+            output.append(
+                {
+                    "label": "%d other" % len(rest),
+                    "other": True,
+                    "count": len(rest),
+                    "tokens": rest_tokens,
+                    "cost_usd": round(sum(item["cost_usd"] for item in rest), 4),
+                    "share_percent": share(rest_tokens),
+                }
+            )
+        return output
+
+    result: Dict[str, Any] = {
+        "basis": basis,
+        "since": since,
+        "until": until,
+        "model_family": family,
+        "sessions": len(sessions),
+        "tokens": total_tokens,
+        "cost_usd": round(total_cost, 4),
+        "by_project": finish(list(projects.values())),
+        "by_session": finish(list(sessions.values())),
+        "by_model": finish(list(models.values())),
+        "by_profile": finish(list(profiles.values())) if profiles else [],
+    }
+    unit = str(window.get("unit") or "").strip().lower()
+    used = _number(window.get("used"))
+    if basis == "window" and unit in _USAGE_MONEY_UNITS and used > 0:
+        result["explained"] = {
+            "account_used": round(used, 4),
+            "unit": window.get("unit"),
+            "local_cost_usd": round(total_cost, 4),
+            "percent": round(min(100.0, (total_cost / used) * 100.0), 1),
+        }
+    return result
+
+
+def _attach_usage_attribution(provider: str, result: Dict[str, Any]) -> None:
+    """Add an `attribution` block to each quota window of a base provider card.
+
+    Extra pooled-account cards are skipped: local records name the provider,
+    not which login served the call, so a per-account split would be a guess.
+    """
+    windows = result.get("windows") or []
+    if not windows or result.get("account_extra"):
+        return
+    try:
+        since = min(_usage_window_bounds(window)[0] for window in windows)
+        rows = _usage_attribution_rows(provider, since)
+    except Exception:
+        return
+    for window in windows:
+        window["attribution"] = _usage_window_attribution(window, rows)
+
+
+
+# ── Monthly budgets ───────────────────────────────────────────────────────
+# Caps live in the desktop's plugin storage and arrive as ?budgets=
+# openrouter:150,all:300 — the backend never writes a file, and a budget is
+# the user's own number, so it belongs on the user's side of the boundary.
+
+_BUDGET_MAX_ENTRIES = 40
+_BUDGET_PACE_DAYS = 7.0
+_BUDGET_ALL_KEY = "all"
+_BUDGET_BILLING_TO_PROVIDER = {
+    key: provider for provider, keys in _USAGE_BILLING_KEYS.items() for key in keys
+}
+
+
+def _parse_budgets_param(raw: str) -> Dict[str, float]:
+    budgets: Dict[str, float] = {}
+    for part in str(raw or "").split(","):
+        key, sep, value = part.strip().partition(":")
+        key = key.strip().lower()
+        if not sep or not key or not re.fullmatch(r"[a-z0-9_.-]{1,40}", key):
+            continue
+        try:
+            amount = float(value.strip())
+        except ValueError:
+            continue
+        if amount > 0 and amount < 1e9:
+            budgets[key] = round(amount, 2)
+        if len(budgets) >= _BUDGET_MAX_ENTRIES:
+            break
+    return budgets
+
+
+def _month_bounds(now: Optional[float] = None) -> Tuple[float, float]:
+    """Local calendar month containing `now`: (start, start of next month)."""
+    moment = dt.datetime.fromtimestamp(now if now is not None else time.time())
+    start = moment.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    following = (start + dt.timedelta(days=32)).replace(day=1)
+    return start.timestamp(), following.timestamp()
+
+
+def _budget_provider_label(provider_id: str) -> str:
+    label = _adapter_label(provider_id)
+    if label:
+        return label
+    route = _MODEL_ROUTE_META.get(provider_id) or {}
+    return str(route.get("provider") or _humanize_identifier(provider_id))
+
+
+_BALANCE_LEDGER_MAX_ENTRIES = 40
+
+
+def _parse_balances_param(raw: str) -> Dict[str, Dict[str, float]]:
+    """The desktop's balance ledger for the current month, one entry per provider.
+
+    Providers that report a balance rather than spend (DeepSeek, Fordex, Bright
+    Data, Monid) reveal what they cost only by how far the balance falls
+    between readings. The desktop keeps that ledger in its plugin storage,
+    next to the budget caps, and sends the USD part with every request as
+    `balances`: a JSON list of {p: provider, s: spent, t: topped_up,
+    a: first reading epoch, l: last reading epoch}. Anything malformed is
+    ignored; nothing here is stored by the backend.
+    """
+    try:
+        items = json.loads(raw) if raw else []
+    except (TypeError, ValueError):
+        return {}
+    if not isinstance(items, list):
+        return {}
+    ledger: Dict[str, Dict[str, float]] = {}
+    for item in items:
+        if not isinstance(item, Mapping):
+            continue
+        provider = str(item.get("p") or "").strip().lower()
+        if not re.fullmatch(r"[a-z0-9_.:-]{1,40}", provider):
+            continue
+        spent = _number(item.get("s"), None)
+        first_at = _number(item.get("a"), None)
+        last_at = _number(item.get("l"), None)
+        if spent is None or first_at is None or last_at is None or not (0 <= spent < 1e9) or last_at < first_at:
+            continue
+        ledger[provider] = {
+            "spent": round(spent, 4),
+            "topped_up": round(max(0.0, _number(item.get("t"), 0.0) or 0.0), 4),
+            "first_at": first_at,
+            "last_at": last_at,
+        }
+        if len(ledger) >= _BALANCE_LEDGER_MAX_ENTRIES:
+            break
+    return ledger
+
+
+def _budget_balance_spend(ledger: Mapping[str, Mapping[str, float]]) -> Dict[str, Dict[str, Any]]:
+    """Ledger entries in the shape _budget_entry reads for a provider's account figure.
+
+    Pace is the drawdown over the span the ledger covers, never shorter
+    than a day, so a balance read twice an hour apart does not project a
+    month from one afternoon.
+    """
+    account: Dict[str, Dict[str, Any]] = {}
+    for provider, entry in ledger.items():
+        span_days = max(1.0, (entry["last_at"] - entry["first_at"]) / 86400.0)
+        account[provider] = {
+            "monthly": entry["spent"],
+            "weekly": None,
+            "unit": "USD",
+            "as_of": entry["last_at"],
+            "stale": False,
+            "source": "balance",
+            "pace_daily": entry["spent"] / span_days,
+            "topped_up": entry["topped_up"],
+            "since": entry["first_at"],
+        }
+    return account
+
+
+def _budget_local_spend(month_start: float, pace_start: float) -> Dict[str, Dict[str, Any]]:
+    """Month-to-date and trailing-pace recorded cost per budget provider id."""
+    since = min(month_start, pace_start)
+    try:
+        with _database() as db:
+            rows = _db_connection(db).execute(
+                """
+                SELECT LOWER(billing_provider) AS key,
+                       SUM(CASE WHEN COALESCE(last_seen, first_seen, 0) >= ? THEN
+                           CASE WHEN actual_cost_usd > 0 THEN actual_cost_usd ELSE estimated_cost_usd END ELSE 0 END) AS month_cost,
+                       SUM(CASE WHEN COALESCE(last_seen, first_seen, 0) >= ? THEN
+                           CASE WHEN actual_cost_usd > 0 THEN actual_cost_usd ELSE estimated_cost_usd END ELSE 0 END) AS pace_cost,
+                       COUNT(DISTINCT CASE WHEN COALESCE(last_seen, first_seen, 0) >= ? THEN session_id END) AS sessions
+                FROM session_model_usage
+                WHERE COALESCE(last_seen, first_seen, 0) >= ?
+                GROUP BY LOWER(billing_provider)
+                """,
+                (month_start, pace_start, month_start, since),
+            ).fetchall()
+    except Exception:
+        return {}
+    spend: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        key = str(row[0] or "").strip()
+        if not key:
+            continue
+        provider_id = _BUDGET_BILLING_TO_PROVIDER.get(key, key)
+        entry = spend.setdefault(provider_id, {"month_cost": 0.0, "pace_cost": 0.0, "sessions": 0})
+        entry["month_cost"] += _number(row[1])
+        entry["pace_cost"] += _number(row[2])
+        entry["sessions"] += _integer(row[3])
+    return spend
+
+
+def _budget_account_spend() -> Dict[str, Dict[str, Any]]:
+    """Month-to-date spend reported by providers and services, from cached payloads only."""
+    cards: List[Mapping[str, Any]] = []
+    payload = _ai_usage_cached_payload()
+    if payload:
+        cards.extend(payload.get("providers", []))
+    services_payload = _services_cached_payload()
+    if services_payload:
+        cards.extend(services_payload.get("cards", []))
+    if not cards:
+        return {}
+    account: Dict[str, Dict[str, Any]] = {}
+    for provider in cards:
+        if provider.get("status") not in {"ok", "stale"} or provider.get("account_extra"):
+            continue
+        spend = provider.get("account_spend")
+        if not isinstance(spend, Mapping):
+            continue
+        monthly = _number(spend.get("monthly"), None)
+        if monthly is None:
+            continue
+        account[str(provider.get("provider"))] = {
+            "monthly": monthly,
+            "weekly": _number(spend.get("weekly"), None),
+            "unit": spend.get("unit") or "USD",
+            "as_of": provider.get("fetched_at"),
+            "stale": bool(provider.get("stale")),
+        }
+    return account
+
+
+def _budget_entry(
+    provider_id: str,
+    cap: Optional[float],
+    local: Mapping[str, Any],
+    account: Optional[Mapping[str, Any]],
+    *,
+    now: float,
+    month_start: float,
+    month_end: float,
+) -> Dict[str, Any]:
+    local_month = round(_number(local.get("month_cost")), 4)
+    local_pace = _number(local.get("pace_cost"))
+    if account is not None:
+        spend = _number(account.get("monthly"))
+        source = str(account.get("source") or "account")
+        weekly = account.get("weekly")
+        if account.get("pace_daily") is not None:
+            pace_daily = _number(account.get("pace_daily"))
+        elif weekly is not None:
+            pace_daily = _number(weekly) / _BUDGET_PACE_DAYS
+        else:
+            pace_daily = local_pace / _BUDGET_PACE_DAYS
+    else:
+        spend = local_month
+        source = "local"
+        pace_daily = local_pace / _BUDGET_PACE_DAYS
+    days_remaining = max(0.0, (month_end - now) / 86400.0)
+    elapsed_fraction = min(1.0, max(0.0, (now - month_start) / (month_end - month_start)))
+    projected = spend + pace_daily * days_remaining
+    basis = "7-day pace"
+    if pace_daily <= 0 and spend > 0 and elapsed_fraction >= 0.05:
+        projected = spend / elapsed_fraction
+        basis = "linear"
+    projected = round(projected, 2)
+    status = "no_cap"
+    cross_at: Optional[float] = None
+    if cap:
+        if spend >= cap:
+            status = "over"
+        elif projected >= cap:
+            status = "at_risk"
+            if pace_daily > 0:
+                cross_at = now + ((cap - spend) / pace_daily) * 86400.0
+        else:
+            status = "ok"
+    return {
+        "id": provider_id,
+        "label": "All providers" if provider_id == _BUDGET_ALL_KEY else _budget_provider_label(provider_id),
+        "cap_usd": cap,
+        "spend_usd": round(spend, 2),
+        "spend_source": source,
+        "local_spend_usd": local_month,
+        "local_sessions": _integer(local.get("sessions")),
+        "pace_daily_usd": round(pace_daily, 4),
+        "projected_usd": projected,
+        "projection_basis": basis,
+        "percent_of_cap": round((spend / cap) * 100.0, 1) if cap else None,
+        "projected_percent_of_cap": round((projected / cap) * 100.0, 1) if cap else None,
+        "status": status,
+        "cross_at": cross_at,
+        "account_as_of": account.get("as_of") if account else None,
+        "account_stale": bool(account.get("stale")) if account else False,
+        "balance_topped_up_usd": round(_number(account.get("topped_up")), 2) if account and account.get("source") == "balance" else None,
+        "balance_since": account.get("since") if account and account.get("source") == "balance" else None,
+    }
+
+
+def _budgets_sync(budgets: Mapping[str, float], balances: Optional[Mapping[str, Mapping[str, float]]] = None) -> Dict[str, Any]:
+    now = time.time()
+    month_start, month_end = _month_bounds(now)
+    local = _budget_local_spend(month_start, now - _BUDGET_PACE_DAYS * 86400.0)
+    account = _budget_account_spend()
+    # A provider that reports spend keeps its own figure; one that reports
+    # only a balance gets the desktop's drawdown ledger instead.
+    for provider, entry in _budget_balance_spend(balances or {}).items():
+        account.setdefault(provider, entry)
+    provider_ids = set(local) | set(account) | {key for key in budgets if key != _BUDGET_ALL_KEY}
+    entries: List[Dict[str, Any]] = []
+    for provider_id in sorted(provider_ids):
+        entries.append(
+            _budget_entry(
+                provider_id,
+                budgets.get(provider_id),
+                local.get(provider_id) or {},
+                account.get(provider_id),
+                now=now,
+                month_start=month_start,
+                month_end=month_end,
+            )
+        )
+    entries = [item for item in entries if item["cap_usd"] or item["spend_usd"] > 0 or item["local_spend_usd"] > 0]
+    total_local = {
+        "month_cost": sum(_number(item.get("month_cost")) for item in local.values()),
+        "pace_cost": sum(_number(item.get("pace_cost")) for item in local.values()),
+        "sessions": sum(_integer(item.get("sessions")) for item in local.values()),
+    }
+    # The total takes each provider's best figure: account where reported,
+    # local otherwise. Pace follows the same choice so the projection adds up.
+    total_spend = sum(item["spend_usd"] for item in entries)
+    total_pace = sum(item["pace_daily_usd"] for item in entries)
+    total = _budget_entry(
+        _BUDGET_ALL_KEY,
+        budgets.get(_BUDGET_ALL_KEY),
+        total_local,
+        {"monthly": total_spend, "weekly": total_pace * _BUDGET_PACE_DAYS, "as_of": None, "stale": False},
+        now=now,
+        month_start=month_start,
+        month_end=month_end,
+    )
+    total["spend_source"] = "mixed" if any(item["spend_source"] in {"account", "balance"} for item in entries) else "local"
+    total["account_as_of"] = None
+    severity = {"over": 0, "at_risk": 1, "ok": 2, "no_cap": 3}
+    entries.sort(key=lambda item: (severity[item["status"]], -item["spend_usd"], item["label"]))
+    return {
+        "month": {
+            "start": month_start,
+            "end": month_end,
+            "elapsed_fraction": round(min(1.0, max(0.0, (now - month_start) / (month_end - month_start))), 3),
+            "days_remaining": round(max(0.0, (month_end - now) / 86400.0), 1),
+        },
+        "entries": entries,
+        "total": total,
+        "notes": _budget_attention_notes_from(entries + [total], month_start),
+        "generated_at": now,
+        "definition": (
+            "Month-to-date spend uses the provider's own account figure where it reports one, the "
+            "drawdown of its balance between this desktop's readings where it reports only a balance, and "
+            "locally recorded session cost otherwise; the projection extends the last seven days' pace "
+            "(or the drawdown's own pace) to month end. Caps and balance readings are stored in this "
+            "desktop's plugin storage only."
+        ),
+    }
+
+
+def _budget_attention_notes_from(entries: List[Mapping[str, Any]], month_start: float) -> List[Dict[str, Any]]:
+    notes: List[Dict[str, Any]] = []
+    month_key = dt.datetime.fromtimestamp(month_start).strftime("%Y-%m")
+    for entry in entries:
+        status = entry.get("status")
+        if status not in {"over", "at_risk"}:
+            continue
+        cap = _number(entry.get("cap_usd"))
+        spend = _number(entry.get("spend_usd"))
+        projected = _number(entry.get("projected_usd"))
+        if status == "over":
+            reason = f"${spend:,.2f} spent against a ${cap:,.2f} monthly cap"
+        else:
+            when = entry.get("cross_at")
+            when_label = (
+                f" ~{dt.datetime.fromtimestamp(when).strftime('%b %d')}" if when else ""
+            )
+            reason = f"on pace to pass the ${cap:,.2f} cap{when_label} (projected ${projected:,.2f})"
+        notes.append(
+            {
+                "id": f"budget:{entry.get('id')}:{month_key}",
+                "provider": entry.get("id"),
+                "provider_label": entry.get("label"),
+                "window_label": "Monthly budget",
+                "severity": "danger" if status == "over" else "warning",
+                "percent_used": _number(entry.get("percent_of_cap")),
+                "exhaust_at": None,
+                "reset_at": None,
+                "reason": reason,
+                "as_of": time.time(),
+                "stale": bool(entry.get("account_stale")),
+            }
+        )
+    notes.sort(key=lambda item: (0 if item["severity"] == "danger" else 1, -item["percent_used"]))
+    return notes
+
+
+def _budget_attention_notes(raw: str, balances: str = "") -> List[Dict[str, Any]]:
+    budgets = _parse_budgets_param(raw)
+    if not budgets:
+        return []
+    try:
+        return _budgets_sync(budgets, _parse_balances_param(balances))["notes"]
+    except Exception:
+        return []
+
+
+@router.get("/budgets")
+async def budgets_route(
+    budgets: str = Query(""),
+    profiles: str = Query(""),
+    balances: str = Query("", max_length=8000),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(
+        _scoped_call, profiles, _budgets_sync, _parse_budgets_param(budgets), _parse_balances_param(balances)
+    )
+
+
+def _ai_usage_refresh_provider(provider: str, collector: Any) -> Optional[Dict[str, Any]]:
+    """Refresh ONE provider into the cached payload; None when no cache exists.
+
+    The cache timestamp is deliberately left untouched — refreshing one card
+    must not extend the whole payload's lifetime.
+    """
+    with _ai_usage_cache_lock:
+        entry = _ai_usage_cache_entry()
+        if not entry:
+            return None
+        cached_at, base = entry
+        base = copy.deepcopy(base)
+    if _probe_usage_provider(provider):
+        _set_collect_fresh(True)
+        try:
+            result = collector()
+        except (Exception, SystemExit) as error:
+            result = _provider_payload(provider, status="unavailable", message=_provider_message(error))
+        finally:
+            _set_collect_fresh(False)
+    else:
+        result = _provider_payload(
+            provider,
+            status="not_configured",
+            message=_provider_not_configured_message(provider),
+        )
+    with _ai_usage_cache_lock:
+        extras = result.pop("extra_accounts", None) or []
+        extras = [_fold_usage_last_success(str(extra.get("provider")), extra) for extra in extras]
+        result = _fold_usage_last_success(provider, result)
+        providers = []
+        for item in base.get("providers", []):
+            if item.get("provider") == provider:
+                providers.append(result)
+                providers.extend(extras)
+            elif item.get("base_provider") == provider:
+                continue  # superseded account cards from the previous fetch
+            else:
+                providers.append(item)
+        payload = {
+            **base,
+            "providers": providers,
+            "summary": _ai_usage_summary(providers),
+            "generated_at": time.time(),
+            "cached": False,
+        }
+        _ai_usage_cache_store((cached_at, copy.deepcopy(payload)))
+        return payload
+
+
+@router.get("/ai-usage")
+async def ai_usage(
+    fresh: bool = False,
+    provider: Optional[str] = None,
+    profiles: str = Query(""),
+    days: int = Query(7, ge=0, le=3650),
+    start_at: Optional[float] = Query(None, ge=0),
+    end_at: Optional[float] = Query(None, ge=0),
+) -> Dict[str, Any]:
+    return await asyncio.to_thread(
+        _scoped_call, profiles, _ai_usage_sync, fresh, provider, days, start_at, end_at, budgeted=False
+    )
+
+
+@router.get("/adapters")
+async def adapters_route() -> Dict[str, Any]:
+    """Every provider and service adapter registered, with the hosts each contacts. No network, no credentials."""
+    payload = _adapters_catalog()
+    payload["generated_at"] = time.time()
+    return payload
+
+
+@router.get("/services")
+async def services_route(fresh: bool = False, service: Optional[str] = None) -> Dict[str, Any]:
+    return await asyncio.to_thread(_services_sync, fresh, service)
+
+
+def _system_sync() -> Dict[str, Any]:
+    with _database() as db:
+        path = Path(getattr(db, "db_path", _duckwork_home() / "state.db"))
+        schema_row = _db_connection(db).execute("SELECT version FROM schema_version").fetchone()
+        counts = _db_connection(db).execute(
+            """
+            SELECT (SELECT COUNT(*) FROM sessions) AS sessions,
+                   (SELECT COUNT(*) FROM messages) AS messages,
+                   (SELECT COUNT(*) FROM session_model_usage) AS model_usage_rows,
+                   (SELECT COUNT(*) FROM async_delegations) AS delegations
+            """
+        ).fetchone()
+        fts_names = [
+            row[0]
+            for row in _db_connection(db).execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'messages_fts%' ORDER BY name"
+            ).fetchall()
+        ]
+        stat = path.stat() if path.exists() else None
+        wal = Path(str(path) + "-wal")
+        return {
+            "plugin": {"name": "Duckwork Session Lens", "id": "session-lens", "version": PLUGIN_VERSION},
+            "database": {
+                "available": path.exists(),
+                "read_only": bool(getattr(db, "read_only", False)),
+                "schema_version": _integer(schema_row[0] if schema_row else 0),
+                "path": str(path),
+                "size_bytes": stat.st_size if stat else 0,
+                "last_modified_at": stat.st_mtime if stat else None,
+                "wal_size_bytes": wal.stat().st_size if wal.exists() else 0,
+                "fts_enabled": any(name == "messages_fts" for name in fts_names),
+                "trigram_fts_enabled": any(name == "messages_fts_trigram" for name in fts_names),
+            },
+            "counts": _row_dict(counts),
+            "privacy": {
+                "network_upload": False,
+                "provider_usage_requests": True,
+                "provider_credentials_returned_to_desktop": False,
+                "external_hosts": _adapter_hosts(),
+                "inference_probes": _inference_probe_adapters(),
+                "mutation_endpoints": 0,
+                "route_budget_seconds": _route_budget_seconds(_plugin_settings()),
+                "snippets_redacted_and_bounded": True,
+                "failure_signatures_language": "english",
+                "database_connection": "Duckwork SessionDB(read_only=True)",
+            },
+            "capabilities": _compat_capabilities(),
+            "limits": {
+                "session_page": MAX_SESSION_PAGE,
+                "session_event_analysis": MAX_ANALYSIS_EVENTS,
+                "search_matches": MAX_SEARCH_MATCHES,
+            },
+            "generated_at": time.time(),
+        }
+
+
+@router.get("/system")
+async def system(profiles: str = Query("")) -> Dict[str, Any]:
+    return await asyncio.to_thread(_scoped_call, profiles, _system_sync)
+
+__all__ = [name for name in globals() if not name.startswith("__")]

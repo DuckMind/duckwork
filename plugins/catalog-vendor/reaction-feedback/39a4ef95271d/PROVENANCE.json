@@ -1,0 +1,276 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [
+      {
+        "kind": "image",
+        "reason": "artwork uses a different immutable pin",
+        "url": "https://raw.githubusercontent.com/AhmetArif0/hermes-reaction-feedback/14f339e250ccfac1961977276256745da72e6491/docs/card.png"
+      }
+    ],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "reaction-feedback",
+  "content_id": "39a4ef95271d",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 5967,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "c1e9838d0a0e56977d8eb13bf7589ce82cfe5aed96dd88cbddea14ad8d0c574a"
+    },
+    {
+      "bytes": 3542,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "1ff28320ab9de0db043fba0dab3b693d0742bc879745a778648d3b45101286ef"
+    },
+    {
+      "bytes": 1067,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b"
+    },
+    {
+      "bytes": 539,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "707d32e65e068e8ade93e041d8b0aae8af11c33d5384632f764764362f43a798"
+    },
+    {
+      "bytes": 11252,
+      "mode": "100644",
+      "path": "state.py",
+      "sha256": "b7379fedde9276a637a626a2d6222a8c8d55faccc289a588f63e5f03655ca559"
+    }
+  ],
+  "input_manifest_sha256": "39a4ef95271d35faf71d92818cb0be2cc230c0fcee67f29189a93bd2c8cbf098",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "state.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/AhmetArif0/hermes-reaction-feedback",
+    "sha": "50d8dbd0fb9f89ce1002ad378a8b656e52a617e1",
+    "subdir": "reaction-feedback"
+  },
+  "original_repo": "https://github.com/AhmetArif0/hermes-reaction-feedback",
+  "original_sha": "50d8dbd0fb9f89ce1002ad378a8b656e52a617e1",
+  "original_subdir": "reaction-feedback",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "31065ce4888855f4c429845baa108401d449df1d38a4c362598f47ffc80fa0b4",
+      "bytes": 5924,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "e57b55d4c899f7771c2cc792af533d0dd958c27811f2b4c227942432a4d49430",
+      "bytes": 3550,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+      "bytes": 1067,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "617a6c5abe51757c671f92b9ca972c61a93887add3d41bebd9ac6ec558a4861c",
+      "bytes": 523,
+      "mode": "100644"
+    },
+    {
+      "path": "state.py",
+      "sha256": "dbffd8c41dcedb2e326b75e13c8279f2c5c32d4e7d231f37d092e5eb90c9d118",
+      "bytes": 11256,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "6e9fd72b35a51e9dfced26df71c06879a3ccd7a699cdec7beb80fb731bb5cdd2",
+  "pin_verification": {
+    "archive_bytes": 58677,
+    "archive_sha256": "aa56936b8bc741090819b4063eabfc015f9b5ba98b74011c4fd167b9ef254c21",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "50d8dbd0fb9f89ce1002ad378a8b656e52a617e1",
+    "verified_commit_marker": "50d8dbd0fb9f89ce1002ad378a8b656e52a617e1"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "a95a537c4ae8d5d5be42ded48247f2970c2280a5f72852427d07ce85e3fd54ed",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "c1e9838d0a0e56977d8eb13bf7589ce82cfe5aed96dd88cbddea14ad8d0c574a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c6639e02dca9b9bc2947332aa8ca44e37b60ef6ce427ecb2d06222a15cde3aa8",
+        "source": "README.md",
+        "final_output_sha256": "31065ce4888855f4c429845baa108401d449df1d38a4c362598f47ffc80fa0b4",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "c6639e02dca9b9bc2947332aa8ca44e37b60ef6ce427ecb2d06222a15cde3aa8"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "1ff28320ab9de0db043fba0dab3b693d0742bc879745a778648d3b45101286ef",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e57b55d4c899f7771c2cc792af533d0dd958c27811f2b4c227942432a4d49430",
+        "source": "__init__.py",
+        "final_output_sha256": "e57b55d4c899f7771c2cc792af533d0dd958c27811f2b4c227942432a4d49430",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "e57b55d4c899f7771c2cc792af533d0dd958c27811f2b4c227942432a4d49430"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "707d32e65e068e8ade93e041d8b0aae8af11c33d5384632f764764362f43a798",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "389373ba9e8e20d225d2a67aad370dcffcdac9a56e045e81769753ef59d9b74e",
+        "source": "plugin.yaml",
+        "final_output_sha256": "617a6c5abe51757c671f92b9ca972c61a93887add3d41bebd9ac6ec558a4861c",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "389373ba9e8e20d225d2a67aad370dcffcdac9a56e045e81769753ef59d9b74e"
+      },
+      {
+        "destination": "state.py",
+        "input_sha256": "b7379fedde9276a637a626a2d6222a8c8d55faccc289a588f63e5f03655ca559",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dbffd8c41dcedb2e326b75e13c8279f2c5c32d4e7d231f37d092e5eb90c9d118",
+        "source": "state.py",
+        "final_output_sha256": "dbffd8c41dcedb2e326b75e13c8279f2c5c32d4e7d231f37d092e5eb90c9d118",
+        "cli_destination": "state.py",
+        "previous_staging_sha256": "dbffd8c41dcedb2e326b75e13c8279f2c5c32d4e7d231f37d092e5eb90c9d118"
+      }
+    ],
+    "manifest_sha256": "77bb9c0e996abebcd221bbbc2c6e2472964edb165d806752d9210ab19394a580",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "reaction-feedback/README.md",
+    "__init__.py": "reaction-feedback/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "reaction-feedback/plugin.yaml",
+    "state.py": "reaction-feedback/state.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "reaction-feedback",
+    "python_files_compiled": 2,
+    "secret_findings": 0
+  },
+  "canonical_slug": "reaction-feedback",
+  "catalog_file": "src/plugin-catalog/reaction-feedback.yaml",
+  "identity": {
+    "catalog_id": "reaction-feedback",
+    "canonical_slug": "reaction-feedback",
+    "original_manifest_name": "reaction-feedback",
+    "rebranded_manifest_name": "reaction-feedback",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "a274f4c89944f979babf97e0564d933b982dd08559fdd0f312e88e01fc53904b",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "c6639e02dca9b9bc2947332aa8ca44e37b60ef6ce427ecb2d06222a15cde3aa8",
+          "after_sha256": "31065ce4888855f4c429845baa108401d449df1d38a4c362598f47ffc80fa0b4",
+          "before_bytes": 5993,
+          "after_bytes": 5924,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "389373ba9e8e20d225d2a67aad370dcffcdac9a56e045e81769753ef59d9b74e",
+          "after_sha256": "617a6c5abe51757c671f92b9ca972c61a93887add3d41bebd9ac6ec558a4861c",
+          "before_bytes": 541,
+          "after_bytes": 523,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

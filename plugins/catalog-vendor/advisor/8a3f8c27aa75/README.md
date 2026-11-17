@@ -1,0 +1,312 @@
+# duckwork-advisor-plugin
+
+A persistent second-model review plugin for [Duckwork Agent](https://github.com/DuckMind/duckwork):
+a second model that reviews the main agent's work each turn and delivers
+structured advice inline.
+
+Inspired by and ported from [pi-omplike-advisor](https://github.com/pasky/pi-omplike-advisor)
+by Petr Baudis (pasky), which brought the oh-my-pi advisor onto upstream pi's
+extension surface. This is the same idea, adapted to Duckwork' plugin system and
+its different hook model.
+
+I have been running this in my own Duckwork setup (HermeL on gigul2) and it has
+fired correctly every time — zero false positives so far.
+
+## What it does
+
+The advisor is a stateless reviewer that runs after every completed agent turn.
+It receives the turn transcript (user message, tool calls, tool results,
+assistant response), reviews it through a separate model, and delivers
+structured advice back into the conversation.
+
+Advice uses three severity levels:
+
+| Tag | Meaning | Delivery |
+|---|---|---|
+| `[NIT]` | Non-urgent cleanup, missed opportunity | Injected immediately |
+| `[CONCERN]` | Wrong direction, fragile approach, missing constraint | Held for reconfirmation |
+| `[BLOCKER]` | Fundamentally unsound path | Held for reconfirmation |
+
+Concerns and blockers are held across turns. On the next review, the advisor
+sees them again in a reconfirmation preamble. If the advisor stays silent about
+a previously held item, it is considered resolved and dropped. This prevents
+stale advice from cluttering the conversation.
+
+The advisor is **not** an executor. It cannot edit files, run commands, or
+change session state. It only reads the turn transcript and delivers text advice.
+
+## How it differs from the pi original
+
+| Aspect | pi-omplike-advisor | Duckwork plugin |
+|---|---|---|
+| Context model | Long-lived advisor agent with self-compaction | Stateless per-turn via `ctx.llm.complete()` |
+| Turn detection | Native `turn_end` event | `post_llm_call` hook (fires once per turn, carries full history) |
+| Advice delivery | `pi.sendMessage()` with steer + triggerTurn | `ctx.inject_message()` (CLI only) |
+| Catch-up block | Stalls primary with exponential backoff while advisor settles | **Not available** — the plugin schedules review work after Duckwork invokes its synchronous hook |
+| Slash command | `/advisor on\|off\|status` | Same plus `/advisor model`, `/advisor provider`, `/advisor providers`, `/advisor models`, `/advisor test` |
+
+The biggest difference: Duckwork invokes plugin hooks synchronously. The advisor's
+`post_llm_call` callback therefore does not call the second model directly. It
+copies the completed turn into a one-worker background queue and returns. One
+review may run and one newer turn may wait; if more completed turns arrive, the
+queued turn is replaced by the newest one. This bounds hook latency, worker
+count, memory use, and stale-review backlog.
+
+The model call still has a 90-second timeout, but that timeout applies to the
+background worker, not turn finalization. On process shutdown the plugin waits
+at most one second for a fast in-flight review; the daemon worker is then
+allowed to end with the process. Advice is injected when the review completes.
+The hold-and-reconfirm pattern means concerns are never delivered on first
+emission, only after a later review raises the same normalized note again.
+
+## Installation
+
+```bash
+# 1. From the Duckwork plugin catalog — a human-merged, SHA-pinned entry:
+duckwork plugins install advisor
+
+# …or straight from this repository at a commit you choose:
+duckwork plugins install https://github.com/DuckMind/duckwork
+```
+
+Then enable it in `config.yaml`:
+
+```yaml
+plugins:
+  enabled:
+    - advisor
+```
+
+Or at runtime: `/advisor on`
+
+Check the install before trusting it — the same gate the catalog runs at
+admission:
+
+```bash
+duckwork plugins validate <plugin-dir>   # manifest, hooks, capability probe, security scan
+```
+
+### Prerequisites
+
+- Duckwork >= 0.21, with `ctx.register_hook`, `ctx.register_command`,
+  `ctx.llm.complete` and (for the interactive picker)
+  `PluginContext.request_model_selection`
+- A Duckwork profile with at least one LLM provider configured
+
+## Development
+
+This repository is the source of truth — including the R&D copy. Do not keep a
+python copy of the plugin inside a Duckwork checkout: load *this* directory into a
+profile instead, so there is one tree to edit, one git history, and `duckwork
+plugins update`/`check-updates` still see the origin:
+
+```bash
+ln -s "$PWD" "$DUCKWORK_HOME/plugins/advisor"      # profile plugins dir; discovery follows symlinks
+duckwork plugins adopt advisor                     # optional: record provenance from git origin
+duckwork plugins validate "$PWD"                   # manifest, hooks, capability probe, security scan
+```
+
+Editing a file takes effect on the next Duckwork start — no copy step, no rebuild.
+
+### Publishing a version to the catalog
+
+`plugin-catalog/advisor.yaml` in the Duckwork repository pins one commit SHA, and
+every bump is a new reviewed PR. `scripts/pin-catalog-entry.sh` does the whole
+step, from the pushed commit (it refuses to pin a worktree that is not
+`origin/main`, and it checks the pushed manifest declares a version and its
+hooks, the two things that failed admission once):
+
+```bash
+git commit -am "advisor: <what changed>" && git push
+scripts/pin-catalog-entry.sh            # rewrites sha + docs_url, validates the entry
+scripts/pin-catalog-entry.sh --check    # same checks, writes nothing
+```
+
+## Configuration
+
+### Enable the plugin
+
+The plugin is **disabled by default**. Enable it in config.yaml:
+
+```yaml
+plugins:
+  enabled:
+    - advisor
+```
+
+Or at runtime: `/advisor on`
+
+### Trust gate for provider/model overrides
+
+If you set a different model or provider for the advisor via `/advisor model`
+or `/advisor provider`, Duckwork' PluginLlm trust gate will block the override
+unless you add:
+
+```yaml
+plugins:
+  entries:
+    advisor:
+      llm:
+        allow_provider_override: true
+        allow_model_override: true
+```
+
+Without this, `ctx.llm.complete()` raises `PluginLlmTrustError` and the advisor
+silently produces no output. The error is logged but not visible to the user.
+
+If the advisor inherits the primary model (no `/advisor model` or
+`/advisor provider` set), no trust gate config is needed.
+
+The trust gate is resolved per-call, so config changes take effect on the next
+turn without restarting.
+
+### Advisor model
+
+By default, the advisor uses the same model as the main agent. Override at
+runtime:
+
+```
+/advisor model                      # interactive selector: pick provider + model
+/advisor model mimo-v2.5            # different model, same provider (direct name)
+/advisor provider custom:opencode-go  # different provider
+/advisor config model deepseek-v4-pro  # alias for /advisor model
+/advisor config provider custom:deepseek
+```
+
+**Interactive selector** (`/advisor model` with no arguments): opens the same
+curses-based provider+model picker that `duckwork model` uses. Select a provider,
+then a model — the result is applied to the advisor's override while your primary
+model config stays untouched.
+
+The interactive selector uses the same prompt_toolkit-native modal as `/model`.
+It does not spawn a subprocess, take over the terminal, or write and restore the
+primary `model.*` configuration. The selected provider/model pair is returned
+to the plugin callback and stored only in advisor state. This path is shared on
+macOS, Linux, and Windows.
+
+Model and provider are independently settable. Set only `model` to use a
+different model on the same provider. Set both to route to a completely
+different provider and auth.
+
+Check what's available:
+
+```
+/advisor providers           # list known providers
+/advisor models opencode-go  # list models for a provider
+/advisor status              # show current config
+```
+
+Model/provider settings persist in `$DUCKWORK_HOME/advisor/state.json`, scoped to
+the active profile. Held concerns and blockers are stored under
+`$DUCKWORK_HOME/advisor/sessions/`, scoped to the conversation. Existing
+package-local settings are read once and migrated.
+
+**Real-world setup (author's daily driver):** the primary agent runs
+**DeepSeek-V4-Flash** with `thinking=high` and the advisor runs
+**MiMo-V2.5** — two mid-sized (~300B params) fast models, both routed
+through the same OpenCode Go subscription. Set with `/advisor model mimo-v2.5`
+after configuring `custom:opencode-go` as a provider in Duckwork. This pairing
+gives responsive primary work with a capable second opinion on every turn.
+
+### Project guidance (WATCHDOG.md)
+
+If a `WATCHDOG.md` file exists in the working directory, its contents are
+appended to the advisor's system prompt as advisor-only review guidance. This
+lets you tune what the advisor watches for — project-specific traps, style
+rules, recurring pitfalls — without touching the main agent's prompt.
+
+## Usage
+
+```
+/advisor          — show status
+/advisor on       — enable automatic per-turn review
+/advisor off      — disable (persisted)
+/advisor status   — current state, model, provider, held notes
+/advisor model <name>     — set advisor model
+/advisor provider <name>  — set advisor provider
+/advisor config           — same as /advisor status
+/advisor config model <name>     — same as /advisor model
+/advisor config provider <name>  — same as /advisor provider
+/advisor providers        — list known providers (from the plugin provider registry)
+/advisor models <provider> — list that provider's models (live catalog, else its curated list)
+/advisor test <severity> <note>  — inject a test advisory (for testing delivery)
+```
+
+### Environment variables
+
+| Variable | Effect |
+|---|---|
+| `ADVISOR_NO_REVIEW=1` | Skip live model reviews. Keeps the `/advisor test` delivery path for manual testing. |
+
+## Disclosure
+
+What a user should know before installing (catalog rule 13):
+
+- **Network calls.** Each reviewed turn makes one LLM completion through
+  Duckwork's own route (`ctx.llm.complete()`), billed to the provider that serves
+  the advisor model — by default the same one as the primary agent. No other
+  network calls, no telemetry, no usage reporting.
+- **Reads.** The full turn transcript handed to the `post_llm_call` hook, plus
+  this plugin's own state file. Nothing outside the plugin's data directory.
+- **No shell, no file writes outside its state.** The advisor model produces
+  text only: it never calls tools, edits files or changes session state.
+- **Background work.** One worker thread per process reviews turns; it is a
+  daemon and is given a one-second grace period at shutdown.
+- **State.** `$DUCKWORK_HOME/advisor/state.json` (per profile): enabled flag,
+  advisor provider/model, and the held notes used by the hold-and-reconfirm
+  rule. No credentials — the advisor model's credentials stay in Duckwork.
+
+## Caveats
+
+- **`inject_message` is CLI only.** On Telegram, Discord, or other gateway
+  platforms, deliverable advice is logged but not injected into the
+  conversation. Held concerns remain visible through `/advisor status`.
+- **No catch-up block.** The hook schedules review work and immediately returns.
+  Advice is injected whenever the background review completes. If Duckwork exits
+  while a review is still running after the one-second shutdown grace period,
+  that in-flight result is abandoned.
+- **`post_llm_call` fires once per turn at completion.** The advisor never sees
+  intermediate thinking or mid-turn tool call results until the turn is fully
+  done. For live mid-turn hints, `post_tool_call` would be needed (not implemented).
+- **Plugin code changes require a full Duckwork restart.** `/new` is not enough.
+- **`plugins.enabled` must be a YAML list.** A scalar value like
+  `plugins.enabled: advisor` silently fails. Use:
+  ```yaml
+  plugins:
+    enabled:
+      - advisor
+  ```
+
+## Troubleshooting
+
+### Advisor stuck on an old issue
+
+If the advisor keeps flagging something you've already addressed (like a stale
+`[BLOCKER]` or `[CONCERN]` that won't clear), the held notes need resetting.
+Do the the "IT Crowd" fixit:
+
+```
+/advisor off
+/advisor on
+```
+
+This clears all held notes and starts fresh. Concerns and blockers are stored in 
+`$DUCKWORK_HOME/advisor/sessions/` and survive agent restarts, so stale items can
+accumulate across sessions. The toggle is the surest reset.
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
+
+Same as pi-omplike-advisor and the original oh-my-pi advisor extension.
+
+## Credits
+
+- **Petr Baudis (pasky)** — author of [pi-omplike-advisor](https://github.com/pasky/pi-omplike-advisor),
+  which inspired this port. The advisor system prompt, severity model, and
+  hold-and-reconfirm pattern are directly adapted from that work.
+- **oh-my-pi** — the original advisor concept, built for the pi agent ecosystem
+  by [Can Bölük (can1357)](https://github.com/can1357).
+- Author of this Duckwork port: **Ljubomir Josifovski**.
+- Built with assistance from agents **Duckwork**, **pi**, **Codex** using models
+  **DeepSeek-V4-Flash**, **GPT-5.5**.

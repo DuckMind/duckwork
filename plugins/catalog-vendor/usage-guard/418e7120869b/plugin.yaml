@@ -1,0 +1,68 @@
+name: usage-guard
+version: 0.4.1
+description: "Keeps a Duckwork agent inside its subscription allowance: refuses a provider call once a usage window is exhausted, so paid extra usage is never spent."
+author: mister-ideas
+license: MIT
+manifest_version: 1
+requires_duckwork: ">=0.21.6"
+kind: standalone
+provides_tools: []
+provides_hooks:
+  - pre_llm_call
+provides_middleware:
+  - llm_execution
+  - llm_request
+requires_env: []
+config_schema:
+  provider_keys:
+    type: list
+    default: ["anthropic", "openai-codex"]
+    description: "Provider IDs (middleware payload) this guard gates on usage data; add custom provider plugin IDs here"
+  provider_sources:
+    type: dict
+    default: {"anthropic": "anthropic", "openai-codex": "openai-codex"}
+    description: "provider-id -> fetch_account_usage data-source key; unmapped providers use their own ID"
+  source_min_intervals:
+    type: dict
+    default: {"anthropic": 180.0, "openai-codex": 180.0, "openrouter": 30.0}
+    description: "data-source key -> smallest safe seconds between two reads; Anthropic's usage endpoint has a small hourly budget shared with Claude Code itself, OpenRouter publishes a 20 req/min floor. Undeclared sources use min_fetch_interval_s"
+  source_scales:
+    type: dict
+    default: {"anthropic": "percent", "openai-codex": "percent", "openrouter": "percent"}
+    description: "data-source key -> value scale: 'percent' (0-100, the host contract) or 'fraction' (0-1, scaled x100); undeclared sources are read as percentages and logged once"
+  min_fetch_interval_s:
+    type: float
+    default: 30.0
+    description: "Hard floor between two network reads of one source (enforced across processes); prevents the usage endpoint from rate-limiting the guard. 0 disables"
+  stale_grace_s:
+    type: float
+    default: 900.0
+    description: "While a refresh is failing or rate-limited, keep deciding on the last good snapshot for up to this long instead of refusing. 0 restores the strict stale policy"
+  threshold_percent:
+    type: float
+    default: 100.0
+    description: "Deny when ANY window used_percent >= this value on a fresh snapshot (100 = block only at 0% left)"
+  max_cache_age_s:
+    type: float
+    default: 60.0
+    description: "Snapshots older than this are stale; stale/missing data follows the fail_open policy"
+  poll_wait_timeout_s:
+    type: float
+    default: 20.0
+    description: "On a stale snapshot, wait up to this many seconds for a synchronous refresh before applying the fail_open policy (0 disables the wait)"
+  fail_open:
+    type: bool
+    default: false
+    description: "Allow requests when usage data is stale/missing/unavailable (false = deny, recommended)"
+  warn_percents:
+    type: list
+    default: [80, 90]
+    description: "Usage levels (percent used) at which one short note is added to the next turn's context so the agent can wind down before the refusal; [] disables"
+  near_wall_percent:
+    type: float
+    default: 90.0
+    description: "From this usage level up (and below threshold_percent), max_tokens_near_wall applies"
+  max_tokens_near_wall:
+    type: int
+    default: 0
+    description: "Cap on each request's output budget near the wall, to limit how far an in-flight request can spill; 0 disables (default, since a cap can truncate answers)"

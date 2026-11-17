@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-zerosignal-provider"
+version = "0.1.0"
+description = "ZeroSignal model-provider plugin for Duckwork Agent"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "TxnLab" }]
+# Tracks duckwork-agent's own requires-python.
+requires-python = ">=3.11,<3.14"
+# The plugin has no runtime dependencies beyond Duckwork itself, which loads it.
+dependencies = []
+
+[project.optional-dependencies]
+# Development only. duckwork-agent itself is NOT listed here: its setup.py refuses to build a
+# wheel outside Nix, so it can only be installed editable from a checkout. The pinned commit
+# lives in [tool.duckwork-zerosignal-provider] below; see README "Development" and
+# .github/workflows/validate.yml for the install steps.
+dev = ["pytest", "pyyaml"]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Documentation = "https://github.com/DuckMind/duckwork"
+
+# This is a directory plugin (Duckwork imports __init__.py from the plugin directory), not an
+# importable distribution: nothing is packaged. The project table exists so `pip install
+# -e .[dev]` pulls the dev tools and so the Duckwork pin has a home.
+[tool.setuptools]
+packages = []
+py-modules = []
+
+# Exact duckwork-agent commit the plugin was built and validated against. Single source of
+# truth: the CI workflow reads it from here. Bump it, re-run `duckwork plugins validate .`
+# and the tests, and note the upstream range in the commit message.
+[tool.duckwork-zerosignal-provider]
+duckwork_ref = "d5b3cad7b98b3bcd157ea8b585759b0bb4fb8a6d"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"

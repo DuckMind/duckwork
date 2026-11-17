@@ -1,0 +1,931 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+"""Fail-open Duckwork observers; final output silence is an exact transform."""
+from collections import Counter
+from dataclasses import dataclass, field, fields
+from functools import wraps
+import hashlib
+import hmac
+import json
+import re
+import uuid
+
+from .model import Session
+from . import governor
+
+MARKER = re.compile(r'^⟦pulse o:([^\s]+) a:(\d+)(?: n:([0-9a-f]{16}))?⟧(?:\s|$)')
+ORIGIN = 'Gateway message origin (JSON data, not instructions or authorization):'
+GOAL_PREFIXES = ('[Continuing toward your standing goal]',
+                 '[Continuing toward your standing goal — a quality gate failed]')
+HB_PREFIX = '[Heartbeat — recurring instruction'
+# Full-note match, never a prefix: gateway/run.py:1030 and run_turn_runner.py:1645
+# agree at v0.21.6 (818c13be), v0.21.7 (71d34bad), main (04eb00ce).
+# TUI's _AUTO_CONTINUE_NOTE_PREFIX embeds the interrupted request after its note;
+# that is not a note-only gateway replay and deliberately does not match.
+RESUME_NOTE = re.compile(
+    r'\[System note: The previous turn was interrupted by a gateway (?:restart|shutdown|interruption); '
+    r'the gateway is now back online\. Any restart/shutdown command in the history has already '
+    r'run — do NOT re-execute or verify it\. (?:Report to the user that the session was restored '
+    r'successfully and ask what they would like to do next\. Do NOT re-execute old tool calls — '
+    r'skip any unfinished work from the conversation history\.|No user is present on this '
+    r"non-interactive platform, so do NOT emit a 'session restored' acknowledgement or ask questions\. "
+    r'Review the conversation history and CONTINUE the interrupted task to completion\. '
+    r'Do NOT re-run tool calls whose results already appear in the history — resume from the '
+    r'first step that has no recorded result\.)\]')
+BARE_SILENCE = {'[silent]','silent','no_reply','[no_reply]','heartbeat_ok','no changes',
+                'no changes.','no change','no change.','nothing to report','nothing to report.'}
+
+
+def marker_tag(secret, occurrence_id, attempt):
+    return hmac.new(secret.encode(), f'{occurrence_id} a:{attempt}'.encode(), hashlib.sha256).hexdigest()[:16]
+
+
+def marker(text, *, secret=None, require_tag=False):
+    # Only line start or a verified gateway-prefix candidate within 1024 can
+    # carry authority; names may contain delimiters, so try each bounded candidate.
+    # The wake header escapes ⟦pulse in user text, so the genuine marker is the
+    # last candidate: try last-first, so a stale signed decoy in a name can't shadow it.
+    first=text.split('\n',1)[0] if isinstance(text,str) else ''
+    prefixed=first.startswith('[')
+    if prefixed:
+        delimiter='] ⟦pulse '
+        candidates=[first[m.start()+2:] for m in re.finditer(
+            re.escape(delimiter),first[:1024+len(delimiter)])][::-1]
+    else:
+        candidates=(first,)
+    for candidate in candidates:
+        match=MARKER.match(candidate)
+        if not match: continue
+        try:
+            wid,key=match[1].split('/',1)
+            attempt=int(match[2])
+            tag=match[3]
+            if (prefixed or require_tag) and not tag: continue
+            if tag and (not secret or not hmac.compare_digest(tag,marker_tag(secret,match[1],attempt))): continue
+            return wid,key,attempt
+        except ValueError: continue
+    return None
+
+
+def fail_open(fn):
+    @wraps(fn)
+    def call(self,*args,**kwargs):
+        try:
+            return fn(self,*args,**kwargs)
+        except Exception:
+            # No hook payload or raw exception text in log messages.
+            self.engine.log.warning('heartbeat2 hook %s failed',fn.__name__,exc_info=True)
+            return None
+    return call
+
+
+def pulse_command(text):
+    return isinstance(text,str) and bool(re.match(r'^/pulse(?:@[^\s]+)?(?:\s|$)',text.strip(),re.I))
+
+
+def origin_headers(text):
+    """(offset, message id or None) for each ORIGIN header followed by its JSON line."""
+    for match in re.finditer(re.escape(ORIGIN)+r'\n(\{[^\n]*\})\n',text):
+        try:
+            data=json.loads(match[1])
+        except ValueError:
+            continue
+        if isinstance(data,dict):
+            yield match.start(),str(data.get('message_id') or data.get('source_message_id') or '') or None
+
+
+def origin_ids(text):
+    for _,mid in origin_headers(text): yield mid
+
+
+def row_text(content):
+    if isinstance(content,str): return content
+    if isinstance(content,list):
+        return '\n'.join(part['text'] for part in content if isinstance(part,dict)
+                         and part.get('type')=='text' and isinstance(part.get('text'),str))
+    return ''
+
+
+# tools/todo_tool.py TODO_INJECTION_HEADER, identical at v0.21.6, v0.21.7 and main
+# 04eb00c. After a compaction Duckwork appends the live task list to the end of the
+# trailing real user row (conversation_compression._fold_todo_snapshot: a blank line,
+# this header, one line per task from TodoStore.format_for_injection, maybe the
+# skill-reload notice) and strips it again at the next boundary. The snapshot is
+# never what the owner wrote, so a row ending in one is fingerprinted without it.
+TODO_HEADER='[Your active task list was preserved across context compression]'
+TODO_START=re.compile(r'(?:\n\n|^)'+re.escape(TODO_HEADER)+r'\n')
+TODO_ITEM=re.compile(r'(?:  )*- \[[^\]\n]\] [^\n]* \((?:pending|in_progress|completed|cancelled)\)')
+RELOAD_NOTICE=re.compile(re.escape('[Skills pruned during compression — reload before acting on these tasks]')+
+    r'\nThe task list above crossed the compression boundary verbatim, but [^\n]* may have invalidated it\.')
+
+
+def is_snapshot(text):
+    items,_,notice=text.partition('\n\n')
+    lines=items.split('\n')
+    return (all(TODO_ITEM.fullmatch(line) for line in lines) and
+            (not notice or bool(RELOAD_NOTICE.fullmatch(notice))))
+
+
+def without_snapshot(text):
+    """Text without a trailing snapshot exactly as Duckwork renders it; anything else is unchanged.
+
+    A task spanning lines, or any text after the snapshot (Duckwork' pre-call repair can
+    join a later user row there), keeps the row byte for byte: it may recount, never hide.
+    """
+    for match in TODO_START.finditer(text):
+        if is_snapshot(text[match.end():]): return text[:match.start()]
+    return text
+
+
+def owner_text(content):
+    """Row text for owner fingerprints: a provable todo snapshot removed, nothing else changed."""
+    if isinstance(content,list):
+        kept=[]
+        for part in content:
+            if isinstance(part,dict) and part.get('type')=='text' and isinstance(part.get('text'),str):
+                text=without_snapshot(part['text'])
+                if not text and part['text']: continue
+                part={**part,'text':text}
+            kept.append(part)
+        content=kept
+    elif isinstance(content,str):
+        content=without_snapshot(content)
+    return row_text(content)
+
+
+MERGE_SEPARATOR = '\n\n'  # agent/agent_runtime_helpers.py _merge_consecutive_users
+COMPACTION_MARKERS = ('--- END OF CONTEXT SUMMARY', '[STILL IN PROGRESS — this is the active request')
+STEER_COMMAND = re.compile(r'^/(steer|s)(@\S+)?(\s|$)',re.I)
+
+
+def origin_records(history):
+    for row in history or []:
+        if not isinstance(row,dict) or row.get('role')!='user': continue
+        # Compaction rewrites carried rows in place; a rewrite is not new owner text.
+        if row.get('_compressed_summary'): continue
+        # Markers are checked on the whole row: a carrier can hold a snapshot before its END marker.
+        if any(m in row_text(row.get('content','')) for m in COMPACTION_MARKERS): continue
+        text=owner_text(row.get('content',''))
+        if ORIGIN in text:
+            yield row,hashlib.sha256(text.encode()).hexdigest()[:16],text
+
+
+def origin_rows(history):
+    for _,fp,text in origin_records(history): yield fp,text
+
+
+def blocks(row):
+    text=owner_text(row.get('content',''))
+    # Only a header with its JSON line starts a block; a quoted header is owner text.
+    heads=list(origin_headers(text))
+    spans=[]
+    for i,(at,mid) in enumerate(heads):
+        span=text[at:heads[i+1][0]] if i+1<len(heads) else text[at:]
+        # Duckwork joins merged rows with one blank line; dropping exactly that separator keeps a merged block's
+        # identity whatever follows it, without equating blocks whose own bytes differ.
+        if i+1<len(heads) and span.endswith(MERGE_SEPARATOR): span=span[:-len(MERGE_SEPARATOR)]
+        spans.append((mid,hashlib.sha256(span.encode()).hexdigest()[:16]))
+    return spans
+
+
+def uid(row):
+    value=row.get('message_uid')
+    return value if isinstance(value,str) and value else None
+
+
+def absorbed(row):
+    value=row.get('_absorbed_message_uids')
+    return value if isinstance(value,list) and all(isinstance(a,str) for a in value) else []
+
+
+@dataclass
+class OriginState:
+    known: dict=field(default_factory=dict)
+    occupancy: Counter=field(default_factory=Counter)
+    issued: Counter=field(default_factory=Counter)
+    unadopted: Counter=field(default_factory=Counter)
+    tracked: dict=field(default_factory=dict)
+
+    @classmethod
+    def anchor(cls,history):
+        state=cls()
+        for row,fp,_ in origin_records(history):
+            bl=blocks(row)
+            u=uid(row)
+            if u:
+                state.known[u]=len(bl)
+                for a in absorbed(row): state.known.setdefault(a,0)
+            else:
+                state.occupancy[fp]+=1
+                fps=[b for _,b in bl]
+                state.unadopted.update(fps)
+                state.tracked[id(row)]=(row,fps,fp)
+        state.issued.update(state.occupancy)
+        return state
+
+
+def keys_for(key,mid):
+    return [f'{key}:{mid}',f'{key}:{hashlib.sha256(str(mid).encode()).hexdigest()[:12]}']
+
+
+def mark_fold(flight):
+    flight.owner_replied=True
+
+
+def delegated_child(platform=''):
+    if platform=='subagent': return True
+    try:
+        from agent.delegation_context import is_delegated_child_context
+        return is_delegated_child_context()
+    except Exception:
+        return False
+
+
+def bounded_payload(payload):
+    """Keep hook text within the inbox budget before Store.add_event.
+
+    Bound decoded UTF-8, including JSON escaping. Identifiers are retained;
+    free text shares the remaining 4 KiB budget rather than losing the event.
+    """
+    free_text={'summary','child_summary','reason','text'}
+    result=dict(payload)
+    for key in free_text & result.keys():
+        if isinstance(result[key],str):
+            result[key]=result[key].encode('utf-8')[:1500].decode('utf-8',errors='ignore')
+    def size(): return len(json.dumps(result,ensure_ascii=False,separators=(',',':'),allow_nan=False).encode())
+    while size()>4096:
+        candidates=[k for k in free_text & result.keys() if isinstance(result[k],str) and result[k]]
+        if not candidates: break  # malformed/oversized identifiers remain refused by Store
+        key=max(candidates,key=lambda k:len(result[k].encode('utf-8')))
+        value=result[key].encode('utf-8')
+        result[key]=value[:len(value)//2].decode('utf-8',errors='ignore')
+    return result
+
+
+@dataclass
+class Flight:
+    session_key: str
+    session_id: str
+    turn_id: str
+    wake_id: str
+    dedupe_key: str
+    attempt: int
+    untrusted: bool=False
+    invalid: bool=False
+    scratch: str | None=None
+    owner_replied: bool=False
+    replay: bool=False
+
+
+class Intake:
+    def __init__(self,engine):
+        self.engine=engine
+        self.flights={}
+        self.bindings={}
+        self.turns={}
+        self.anchors={}
+        self.inbounds=set()
+        self.owner_turns={}
+
+    def flight_for(self,sid,key):
+        # Tools in delegate children inherit the key, but have a different id.
+        self._follow(sid)
+        for f in self.flights.values():
+            if f.session_key!=key: continue
+            o=self.engine.store.get_occurrence(f.wake_id,f.dedupe_key)
+            if f.invalid and f.session_id==sid or o and o.state=='started' and o.attempt==f.attempt:
+                return f
+        return None
+
+    def _follow(self,sid):
+        if not sid or sid in self.bindings or sid in self.flights: return
+        e,s=self.engine,self.engine.store
+        for old in list(self.bindings):
+            if e.compression_tip(old)!=sid: continue
+            key=self.bindings.pop(old)
+            self.bindings[sid]=key
+            self.turns[sid]=self.turns.pop(old,'')
+            if old in self.owner_turns: self.owner_turns[sid]=self.owner_turns.pop(old)
+            if old in self.anchors: self.anchors[sid]=self.anchors.pop(old)
+            f=self.flights.pop(old,None)
+            if f:
+                f.session_id=sid
+                self.flights[sid]=f
+            with s.atomic():
+                session=s.get_session(key)
+                s.cas_session(key,{'current_session_id':old},current_session_id=sid)
+                for w in s.list_wakes(key):
+                    if w.armed_session_id==old:
+                        s.cas_wake(w.id,w.status,expected_version=w.version,armed_session_id=sid)
+            return
+
+    def _key(self,sid='',key=''):
+        if key and key!='default': return key
+        current=self.engine.tool.session_key_fn()
+        if current and current!='default': return current
+        return self.bindings.get(sid,'')
+
+    def human(self,key,platform='',source=None,dedupe=None):
+        e,s=self.engine,self.engine.store
+        if not key or key=='default': return
+        source=source or {}
+        with s.atomic():
+            identities=[dedupe] if isinstance(dedupe,str) else dedupe or []
+            if any(s.get_meta('human:'+d) or s.get_meta('nonhuman:'+d) for d in identities): return
+            s.upsert_session(Session(key,platform=platform,chat_type=source.get('chat_type',''),chat_id=str(source.get('chat_id') or '')))
+            old=s.get_session(key)
+            now=e.clock.now()
+            updates={'last_human_at':now,'last_activity_at':now,'episode_id':uuid.uuid4().hex,'unanswered_count':0}
+            if platform: updates['platform']=platform
+            if 'chat_type' in source: updates['chat_type']=source['chat_type'] or ''
+            if 'chat_id' in source: updates['chat_id']=str(source['chat_id'] or '')
+            s.cas_session(key,{f.name:getattr(old,f.name) for f in fields(Session) if f.name!='session_key'},**updates)
+            for d in identities: s.set_meta('human:'+d,'1')
+            s.set_meta('human_context:'+key,'1')
+            for o in s.list_occurrences(session_key=key,state='done'):
+                if o.delivered and o.ended_at is not None and 0<=now-o.ended_at<=e.policy.engagement_window_hours*3600:
+                    governor.engagement(e,o)
+            for w in s.list_wakes(key):
+                if w.depth:
+                    s.cas_wake(w.id,w.status,expected_version=w.version,depth=0)
+                if w.cancel_on_reply and w.status in {'active','paused','proposed'}:
+                    s.cas_wake(w.id,w.status,status='cancelled',status_reason='owner_replied')
+                    e.cancel_occurrences(w.id,'owner_replied')
+            s.add_event('human_message',identities[0] if identities else uuid.uuid4().hex,{},session_key=key)
+        e.signal()
+
+    def count(self,key,mid,platform='',source=None):
+        self.human(key,platform,source,keys_for(key,mid) if mid else None)
+
+    def _count_origins(self,key,text,turn_id,fp,ordinal=1,platform=''):
+        for mid in origin_ids(text):
+            if mid: self.count(key,mid,platform)
+            else:
+                dedupe=f'{key}:origin:{turn_id}:{fp}:{ordinal}'
+                self.human(key,platform,dedupe=dedupe)
+
+    def _session_switch(self,w,session_id):
+        """A known non-lineage switch has the same ownership boundary as /new."""
+        e,s=self.engine,self.engine.store
+        if w.trigger_json.get('builtin'):
+            s.cas_wake(w.id,w.status,expected_version=w.version,armed_session_id=session_id)
+            return False
+        if w.status not in {'active','paused','proposed'}: return False
+        if not s.cas_wake(w.id,w.status,expected_version=w.version,status='orphaned',status_reason='session_switched'): return False
+        e.cancel_occurrences(w.id,'session_switched')
+        count=int(s.get_meta('switched_notice:'+w.session_key) or 0)+1
+        s.set_meta('switched_notice:'+w.session_key,str(count))
+        return True
+
+    @fail_open
+    def pre_gateway_dispatch(self,event=None,gateway=None,**kwargs):
+        if event is None or getattr(event,'internal',False) or pulse_command(getattr(event,'text','')): return None
+        text=getattr(event,'text','') or ''
+        if getattr(event,'_heartbeat_session_id',None) or text.startswith((HB_PREFIX,)+GOAL_PREFIXES): return None
+        source=getattr(event,'source',None)
+        platform=getattr(getattr(source,'platform',None),'value','')
+        chat_id=str(getattr(source,'chat_id','') or '')
+        key=''
+        resolver=getattr(gateway,'_session_key_for_source',None)
+        if callable(resolver):
+            try: key=resolver(source)
+            except Exception: pass
+        resolved=isinstance(key,str) and bool(key)
+        if not resolved:
+            matches=[s for s in self.engine.store.list_sessions() if s.platform==platform and s.chat_id==chat_id]
+            if not chat_id or len(matches)>1: return None
+            key=matches[0].session_key if matches else ''
+        mid=getattr(event,'message_id','')
+        # SessionSource.to_dict() drops is_bot; preserve the real event verdict
+        # for the later admission/human branch, never inspect an absent dict key.
+        if getattr(source,'is_bot',False):
+            if mid and key: self.engine.store.set_meta(f'nonhuman:{key}:{mid}','1')
+            return None
+        authorized=getattr(gateway,'_is_user_authorized_for_source',None)
+        if authorized and not authorized(source): return None
+        # Only an admitted owner inbound vetoes crash-replay recognition.
+        if key: self.inbounds.add(key)
+        if not mid and getattr(source,'message_id',None): return None
+        # A leftover ORIGIN steer always becomes a turn; B owns its count.
+        if text.startswith(ORIGIN): return None
+        self.engine.refresh()
+        session=self.engine.store.get_session(key)
+        # A busy-session /steer becomes an ORIGIN row that C counts; an idle one
+        # becomes a plain turn with no ORIGIN, so A must count it.
+        if STEER_COMMAND.match(text) and session and session.busy_since: return None
+        if not session:
+            stamp=f'pending_human:key:{key}' if resolved else f'pending_human:{platform}:{chat_id}'
+            self.engine.store.set_meta(stamp,
+                                       json.dumps({'mid':mid or None,'at':self.engine.clock.now()}))
+            return None
+        route={'chat_type':getattr(source,'chat_type',''),'chat_id':chat_id}
+        self.count(key,mid,platform,route)
+        return None
+
+    @fail_open
+    def gateway_platform_event(self,platform='',event_type='',payload=None,**kwargs):
+        if event_type not in {'reaction','message_edited'} or not isinstance(payload,dict): return None
+        s=self.engine.store
+        matches=[x for x in s.list_sessions() if x.platform==platform and x.chat_id==str(payload.get('chat_id') or '')]
+        # Chat mapping must be unambiguous (topics/groups can share chat ids).
+        if len(matches)!=1: return None
+        key=matches[0].session_key
+        self.human(key,platform)
+        payload=bounded_payload(payload)
+        digest=hashlib.sha1(json.dumps(payload,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+        s.add_event(event_type,f'{platform}:{event_type}:{digest}',payload,session_key=key,chat_id=matches[0].chat_id)
+        self.engine.signal()
+        return None
+
+    @fail_open
+    def pre_llm_call(self,session_id='',turn_id='',user_message='',platform='',conversation_history=None,**kwargs):
+        if delegated_child(platform): return None
+        e,s=self.engine,self.engine.store
+        e.refresh()
+        self._follow(session_id)
+        key=self._key(session_id)
+        if not key: return None
+        identity=e.tool.identity()
+        if identity is None: return None
+        key=identity.session_key
+        owner_seen=key in self.inbounds or self.owner_turns.get(session_id)==turn_id
+        self.inbounds.discard(key)
+        self.anchors[session_id]=(turn_id,OriginState.anchor(conversation_history))
+        for stamp in (f'pending_human:key:{identity.session_key}',
+                      f'pending_human:{identity.platform}:{identity.chat_id}'):
+            pending=s.get_meta(stamp)
+            if pending:
+                owner_seen=True
+                pending=json.loads(pending)
+                if 0<=e.clock.now()-pending['at']<=3600:
+                    self.count(key,pending.get('mid'),identity.platform)
+                s.set_meta(stamp,'')
+        parsed=marker(user_message,secret=s.get_meta('marker_secret'),require_tag=(identity.chat_type != 'dm'))
+        if not parsed:
+            row=conversation_history[-1] if conversation_history else None
+            if isinstance(row,dict) and row.get('role')=='user' and not row.get('display_kind'):
+                text=owner_text(row.get('content',''))
+                if not text.startswith(GOAL_PREFIXES) and not pulse_command(text):
+                    if ORIGIN in text:
+                        owner_seen=True
+                        self._count_origins(key,text,turn_id,hashlib.sha256(text.encode()).hexdigest()[:16],platform=platform)
+                    elif row.get('platform_message_id'):
+                        owner_seen=True
+                        self.count(key,row['platform_message_id'],platform)
+        if owner_seen: self.owner_turns[session_id]=turn_id
+        previous=self.flights.get(session_id)
+        if previous and turn_id and previous.turn_id and previous.turn_id!=turn_id:
+            # Apply the new owner row before terminal cleanup of a prior flight.
+            self.on_session_end(session_id=session_id,turn_id=previous.turn_id,failed=True)
+        self.bindings[session_id]=key
+        self.turns[session_id]=turn_id
+        now=e.clock.now()
+        with s.atomic():
+            session=s.get_session(key)
+            s.cas_session(key,{'current_session_id':session.current_session_id},current_session_id=session_id,busy_since=now,busy_epoch=e.epoch,last_activity_at=now)
+            if not parsed and not owner_seen and isinstance(user_message,str) and RESUME_NOTE.fullmatch(user_message.strip()):
+                history=list(conversation_history or [])
+                internal=False
+                # pre_llm_call receives a separate trailing recovery USER row;
+                # the API sanitizer later merges it into the marker USER row.
+                while history and isinstance(history[-1],dict) and history[-1].get('role')=='user' and RESUME_NOTE.fullmatch(row_text(history[-1].get('content','')).strip()):
+                    # Duckwork marks only internal events this way; an owner's note-only row never is.
+                    internal=internal or history[-1].get('display_kind')=='internal_notification'
+                    history.pop()
+                row=history[-1] if history else None
+                if not internal: row=None
+                replay=marker(row_text(row.get('content','')),secret=s.get_meta('marker_secret'),require_tag=(identity.chat_type != 'dm')) if isinstance(row,dict) and row.get('role')=='user' else None
+                if replay:
+                    from .poller import LOCAL_EPOCHS
+                    wid,dedupe,attempt=replay
+                    w,o=s.get_wake(wid),s.get_occurrence(wid,dedupe)
+                    # Startup replay can reach this hook before this process's poller
+                    # reconciles, so the crashed attempt may still read claimed/started.
+                    # It is live only if a poller in this process claimed it. Recovery may
+                    # also have refunded and re-claimed the occurrence as a newer attempt;
+                    # the replayed older attempt is then stale and the newer one untouched.
+                    live=o is not None and o.attempt==attempt and o.state in {'claimed','started'} and o.epoch in LOCAL_EPOCHS
+                    if w and w.session_key==key and w.armed_session_id==session_id and o and o.attempt>=attempt and not live:
+                        # Apply restart recovery's own fenced settlement now, so either
+                        # order ends in the same state; a claimed attempt stays for its refund.
+                        if o.attempt==attempt and o.state=='started':
+                            e.interrupt(o,'restart')
+                            w=s.get_wake(wid)
+                            s.cas_session(key,{'busy_since':None},busy_since=now,busy_epoch=e.epoch)  # this replay turn is running
+                        self.flights[session_id]=Flight(key,session_id,turn_id,wid,dedupe,attempt,invalid=True,replay=True)
+                        stamp='resumed_turn:'+hashlib.sha256((session_id+':'+turn_id).encode()).hexdigest()
+                        updates={'model_turns':w.model_turns+1}
+                        if w.status!='paused' and (not w.status_reason or w.status in {'failed','done'}):
+                            updates['status_reason']='resumed_after_restart'
+                        if not s.get_meta(stamp) and s.cas_wake(w.id,w.status,expected_version=w.version,**updates):
+                            e.ledger(w,model_turns=1)
+                            s.set_meta(stamp,'1')
+                        return None
+            if parsed:
+                wid,dedupe,attempt=parsed
+                w,o=s.get_wake(wid),s.get_occurrence(wid,dedupe)
+                # A marker is authoritative only for its original session.
+                if w is None or w.session_key!=key or o is None: return None
+                invalid=o.attempt!=attempt or o.state not in {'claimed','started'}
+                if w.armed_session_id and w.armed_session_id!=session_id:
+                    tip=e.compression_tip(w.armed_session_id)
+                    if tip==session_id:
+                        s.cas_wake(w.id,w.status,expected_version=w.version,armed_session_id=session_id)
+                        w=s.get_wake(wid)
+                    else:
+                        invalid=True
+                        if tip is not None:
+                            self._session_switch(w,session_id)
+                            w=s.get_wake(wid)
+                if w.status!='active': invalid=True
+                if w.cancel_on_reply and session.last_human_at is not None and o.claimed_at is not None and session.last_human_at>o.claimed_at:
+                    invalid=True
+                flight=Flight(key,session_id,turn_id,wid,dedupe,attempt,bool(o.payload_json),invalid)
+                existing=self.flights.get(session_id)
+                if existing and existing.wake_id==wid and existing.dedupe_key==dedupe and existing.attempt==attempt:
+                    return None
+                self.flights[session_id]=flight
+                if invalid:
+                    if o.attempt==attempt and o.state in {'claimed','started'}:
+                        s.cas_occurrence(wid,dedupe,o.state,'superseded',attempt=o.attempt,force_silent=True,error='stale_turn')
+                    return None
+                if o.state=='claimed' and s.start(wid,dedupe,attempt=attempt):
+                    s.cas_wake(w.id,w.status,expected_version=w.version,fires=w.fires+1,model_turns=w.model_turns+1,last_fired_at=now)
+                    e.ledger(w,fires=1,model_turns=1)
+                return None
+            # Compression is a lineage continuation, including when only a
+            # human turn has visited the new tip before /new arrives.
+            for w in s.list_wakes(key):
+                if w.status in {'active','paused','proposed'} and w.armed_session_id and w.armed_session_id!=session_id:
+                    tip=e.compression_tip(w.armed_session_id)
+                    if tip==session_id:
+                        s.cas_wake(w.id,w.status,expected_version=w.version,armed_session_id=session_id)
+                    elif tip is not None:
+                        self._session_switch(w,session_id)
+            # Human turn context never turns a model call into a wake.
+            self.flights.pop(session_id,None)
+            if not s.get_meta('human_context:'+key): return None
+            s.set_meta('human_context:'+key,'')
+            lines=[]
+            count=int(s.get_meta('switched_notice:'+key) or 0)
+            if count:
+                lines.append(f'{count} wakes armed in your previous conversation were stopped; /pulse list')
+                s.set_meta('switched_notice:'+key,'')
+            last_tick=s.get_meta('last_tick_at')
+            if e.needs_restart():
+                stamp='stall_notice:'+key
+                last_tick=last_tick or 'before_first_tick'
+                if s.get_meta(stamp)!=last_tick:
+                    e.restart()
+                    s.set_meta(stamp,last_tick)
+                    lines.append('The scheduler was stalled; it is restarting. Some wakes may be late.')
+            notices=json.loads(s.get_meta('notice:'+key) or '[]')
+            lines+=notices
+            if notices: s.set_meta('notice:'+key,'[]')
+            wakes=s.list_wakes(key)
+            armed=sum(w.status=='active' for w in wakes); proposed=sum(w.status=='proposed' for w in wakes)
+            if e.policy.presence_line and (armed or proposed):
+                # A proposal is not armed until /pulse ok; say so, as its receipt does.
+                counts=', '.join(([f'{armed} armed'] if armed else [])+([f'{proposed} awaiting /pulse ok'] if proposed else []))
+                lines.append(f'HeartBeat 2.0: {counts}; /pulse shows status, /pulse off stops checks.')
+            for w in s.list_wakes(key):
+                card=s.get_meta('card:'+w.id)
+                if card:
+                    lines.append(f'{w.title or "A wake"} ({w.id}) paused ({card}): keep / slow / stop via /pulse; convert with /pulse watch {w.id}.')
+                    s.set_meta('card:'+w.id,'')
+            limits={f.name:getattr(e.policy,f.name) for f in fields(e.policy) if f.name not in {'clock','profile_timezone'}}
+            fingerprint=hashlib.sha256(json.dumps(limits,sort_keys=True).encode()).hexdigest()
+            session=s.get_session(key)
+            if session.limits_fingerprint and session.limits_fingerprint!=fingerprint:
+                lines.append('HeartBeat 2.0 limits changed outside /pulse; current bounds now apply.')
+            s.cas_session(key,{'limits_fingerprint':session.limits_fingerprint},limits_fingerprint=fingerprint)
+            return {'context':'\n'.join(lines)} if lines else None
+
+    @fail_open
+    def pre_api_request(self,session_id='',turn_id='',conversation_history=None,**kwargs):
+        self._follow(session_id)
+        anchor=self.anchors.get(session_id)
+        if not anchor or anchor[0]!=turn_id: return None
+        key=self.bindings.get(session_id)
+        if not key: return None
+        state=anchor[1]
+        rows=list(origin_records(conversation_history))
+        new_count=0
+        platform=self.engine.store.get_session(key).platform
+        def retire(fps):
+            for b in fps:
+                if state.unadopted[b]>0: state.unadopted[b]-=1
+        held=Counter()  # tokens of tracked rows still present in this request; only a vanished row's token is consumable
+        def account(bl,dedupe,adopt=True):
+            count=0
+            for i,(mid,bfp) in bl:
+                if adopt and state.unadopted[bfp]>held[bfp]:
+                    state.unadopted[bfp]-=1
+                    continue
+                if mid: self.count(key,mid,platform)
+                else: self.human(key,platform,dedupe=dedupe(i))
+                count+=1
+            return count
+        def stamped(row):
+            tracked=state.tracked.get(id(row))
+            return bool(tracked and tracked[0] is row)
+        # Held references also adopt after a row becomes a filtered summary.
+        for rid,(row,fps,fp) in list(state.tracked.items()):
+            u=uid(row)
+            if u and not list(origin_rows([row])):
+                state.known[u]=len(blocks(row))
+                state.occupancy[fp]-=1
+                retire(fps)
+                del state.tracked[rid]
+        no_uid=[(row,fp,text) for row,fp,text in rows if not uid(row)]
+        untracked,grown=[],[]
+        here={id(row) for row,_,_ in rows}
+        def vanished(fp):
+            return next((rid for rid,(_,_,f) in state.tracked.items() if f==fp and rid not in here),None)
+        # Still-present tracked rows move their fingerprints first, so a rewrite never reads as a vanished row.
+        for row,fp,text in no_uid:
+            if not stamped(row):
+                rid=vanished(fp)
+                if rid is None:
+                    untracked.append((row,fp,text))
+                    continue
+                # A rebuilt copy of a tracked row inherits its identity.
+                state.tracked[id(row)]=(row,*state.tracked.pop(rid)[1:])
+            _,fps,old_fp=state.tracked[id(row)]
+            bl=blocks(row)
+            n=len(fps)
+            # A rewrite of accounted blocks moves their fingerprints; nothing new is counted.
+            for old,(_,new) in zip(fps,bl):
+                if old!=new:
+                    retire([old])
+                    state.unadopted[new]+=1
+            retire(fps[len(bl):])
+            if fp!=old_fp:
+                state.occupancy[old_fp]-=1
+                state.occupancy[fp]+=1
+            kept=[b for _,b in bl[:n]]
+            state.tracked[id(row)]=(row,kept,fp)
+            held.update(kept)
+            if len(bl)>n: grown.append((row,fp,bl,n))
+        # A uid row adopts a uid-less one only when that row is no longer present on its own.
+        present=Counter(fp for _,fp,_ in no_uid)
+        # Rows stamped in place are certain identities, so they settle before any other uid row is judged.
+        for row,fp,_ in sorted((r for r in rows if uid(r[0])),key=lambda r:not stamped(r[0])):
+            u=uid(row)
+            bl=blocks(row)
+            ab=absorbed(row)
+            tracked=state.tracked.get(id(row)) if stamped(row) else None
+            adopt=True
+            if tracked:
+                start=len(tracked[1])
+                retire(tracked[1])  # the fingerprints recorded for it, even if the row was rewritten since
+                state.occupancy[tracked[2]]-=1
+                del state.tracked[id(row)]
+            else:
+                start=state.known.get(u,0)+sum(state.known.get(a,0) for a in ab)
+                if u not in state.known:
+                    adopt=state.occupancy[fp]>present[fp]
+                    if adopt:
+                        state.occupancy[fp]-=1
+                        rid=vanished(fp)
+                        if rid is not None: del state.tracked[rid]  # the row it replaces
+            new_count+=account(enumerate(bl[start:],start+1),lambda i:f'{key}:origin:u:{u}:{i}',adopt)
+            state.known[u]=(len(bl) if tracked else
+                            max(0,len(bl)-sum(state.known.get(a,0) for a in ab)))
+            for a in ab: state.known.setdefault(a,0)
+        # Blocks appended to a tracked row count after uid adoption has claimed the rows it replaces.
+        for row,fp,bl,n in grown:
+            state.issued[fp]+=1
+            ordinal=state.issued[fp]
+            new_count+=account(enumerate(bl[n:],n+1),
+                               lambda i:f'{key}:origin:{turn_id}:{fp}:{ordinal}:b{i}')
+            added=[b for _,b in bl[n:]]
+            state.unadopted.update(added)
+            held.update(added)
+            state.tracked[id(row)]=(row,[b for _,b in bl],fp)
+        current=Counter(fp for _,fp,_ in no_uid)
+        new=current-state.occupancy
+        for row,fp,text in untracked:
+            if new[fp]<=0: continue
+            new[fp]-=1
+            state.issued[fp]+=1
+            self._count_origins(key,text,turn_id,fp,state.issued[fp],platform)
+            fps=[b for _,b in blocks(row)]
+            state.unadopted.update(fps)
+            state.tracked[id(row)]=(row,fps,fp)
+            state.occupancy[fp]=current[fp]
+            new_count+=1
+        f=self.flights.get(session_id)
+        if new_count and f and f.turn_id==turn_id: mark_fold(f)
+        return None
+
+    @fail_open
+    def api_request_error(self,session_id='',turn_id='',reason='',status_code=None,error=None,**kwargs):
+        self.event('api_error',session_id=session_id,
+            dedupe_extra=turn_id,
+            reason=reason or ('http_%s'%status_code if status_code else 'unknown'),
+            **{k:kwargs[k] for k in ('task_id',) if k in kwargs})
+        # Duckwork agent/api_request_hooks.py emits this per physical retry.
+        # Retain only the bounded classification, never request/error text.
+        if delegated_child(kwargs.get('platform','')): return None
+        kinds={'rate_limit':'rate_limit','upstream_rate_limit':'rate_limit','quota':'quota','quota_exhausted':'quota',
+               'auth':'auth','auth_permanent':'auth','billing':'billing','server_error':'server','overloaded':'server'}
+        kind=kinds.get(reason)
+        if not kind:
+            kind='rate_limit' if status_code==429 else 'auth' if status_code in {401,403} else 'billing' if status_code==402 else 'server' if isinstance(status_code,int) and status_code>=500 else None
+        if not kind: return None
+        e,s=self.engine,self.engine.store
+        self._follow(session_id)
+        f=self.flights.get(session_id)
+        if f and turn_id and f.turn_id and turn_id!=f.turn_id: return None
+        with s.atomic():
+            stamp='provider_failure:'+hashlib.sha256((session_id+':'+turn_id).encode()).hexdigest()
+            if f:
+                o=s.get_occurrence(f.wake_id,f.dedupe_key)
+                if o and o.state=='started' and o.attempt==f.attempt:
+                    first=not s.get_meta('provider_error:'+o.id)
+                    s.set_meta('provider_error:'+o.id,kind)
+                    # The physical attempt may recover through retries, refresh
+                    # or fallback. Only G5/end/timeout can settle the turn.
+                    if first: e.provider_failure(kind)
+                    s.set_meta(stamp,'1')
+            elif session_id and turn_id:
+                if not s.get_meta(stamp):
+                    s.set_meta(stamp,'1'); e.provider_failure(kind)
+        return None
+
+    @fail_open
+    def post_api_request(self,session_id='',turn_id='',usage=None,**kwargs):
+        e,s=self.engine,self.engine.store
+        s.set_meta('provider_health','')
+        e.signal()
+        if delegated_child(kwargs.get('platform','')): return None
+        self._follow(session_id)
+        key=self.bindings.get(session_id)
+        # Without prompt counts a call is unpriced and unclassified; known output tokens still count.
+        priced=usage is not None and any((usage.get(name) if isinstance(usage,dict) else getattr(usage,name,None)) is not None
+                                         for name in ('prompt_tokens','input_tokens'))
+        def count(*names):
+            for name in names:
+                v=usage.get(name) if isinstance(usage,dict) else getattr(usage,name,None)
+                if v is not None: return max(0,int(v))
+            return 0
+        from . import cache
+        route=cache.route_key(kwargs.get('provider'),kwargs.get('model'),kwargs.get('base_url'))
+        prompt,read,written=count('prompt_tokens','input_tokens'),count('cache_read_tokens'),count('cache_write_tokens')
+        if key and (not turn_id or not self.turns.get(session_id) or self.turns[session_id]==turn_id):
+            session=s.get_session(key)
+            s.cas_session(key,{'last_activity_at':session.last_activity_at},last_activity_at=e.clock.now())
+            if priced:
+                cache.touch(s,session,started_at=kwargs.get('started_at'),route=route,prompt=prompt,read=read,api_mode=kwargs.get('api_mode',''))
+        f=self.flights.get(session_id)
+        if not f or f.invalid and not f.replay or turn_id and f.turn_id and turn_id!=f.turn_id: return None
+        price=None
+        if priced:
+            try: price=cache.cost(route,prompt=prompt,read=read,written=written,out=count('completion_tokens','output_tokens'),ttl=cache.cache_ttl_for(route,store=s,platform=s.get_session(key).platform,api_mode=kwargs.get('api_mode',''))[0])
+            except Exception: pass
+        if f.invalid and f.replay:
+            counts={'tokens_in':prompt,'tokens_out':count('completion_tokens','output_tokens'),
+                    'cache_read_tokens':read,'cache_write_tokens':written,
+                    'cost_microusd':round(price*1e6) if price is not None else 0,
+                    'unpriced_calls':int(price is None)}
+            with s.atomic():
+                w=s.get_wake(f.wake_id)
+                if w and s.cas_wake(w.id,w.status,expected_version=w.version,
+                    **{k:getattr(w,k)+v for k,v in counts.items()}):
+                    e.ledger(w,**counts)
+            return None
+        o=s.get_occurrence(f.wake_id,f.dedupe_key)
+        if o and o.attempt==f.attempt: s.set_meta('provider_error:'+o.id,'')
+        with s.atomic():
+            o=s.get_occurrence(f.wake_id,f.dedupe_key)
+            if o and o.state=='started':
+                s.update_occurrence(o.wake_id,o.dedupe_key,'started',attempt=f.attempt,
+                    api_calls=o.api_calls+1,
+                    cache_read_tokens=o.cache_read_tokens+read,cache_write_tokens=o.cache_write_tokens+written,
+                    warm_wakes=o.warm_wakes+int(priced and not o.api_calls and prompt>0 and read/prompt>=.5),
+                    cold_wakes=o.cold_wakes+int(priced and not o.api_calls and (not prompt or read/prompt<.5)),
+                    cost_microusd=o.cost_microusd+(round(price*1e6) if price is not None else 0),unpriced_calls=o.unpriced_calls+int(price is None),
+                    tokens_in=o.tokens_in+count('prompt_tokens','input_tokens'),
+                    tokens_out=o.tokens_out+count('completion_tokens','output_tokens'))
+        return None
+
+    @fail_open
+    def transform_llm_output(self,response_text='',session_id='',turn_id='',**kwargs):
+        if delegated_child(kwargs.get('platform','')): return None
+        e,s=self.engine,self.engine.store
+        self._follow(session_id)
+        f=self.flights.get(session_id)
+        if not f or turn_id and f.turn_id and f.turn_id!=turn_id: return None
+        with s.atomic():
+            o=s.get_occurrence(f.wake_id,f.dedupe_key)
+            if f.owner_replied: return None
+            if f.invalid or not o or o.state!='started' or o.attempt!=f.attempt: return '[SILENT]'
+            w=s.get_wake(o.wake_id)
+            session=s.get_session(f.session_key)
+            silence=(not e.policy.enabled or not session.enabled or e.paused() or
+                     o.force_silent or not o.notify) or (
+                o.outcome is None and response_text.strip().casefold() in BARE_SILENCE)
+            if o.notify and o.summary.strip() and o.summary_hash:
+                silence=silence or any(x.delivered and x.summary.strip() and x.summary_hash==o.summary_hash and x.ended_at is not None and
+                    0<=e.clock.now()-x.ended_at<=86400 for x in s.list_occurrences(o.wake_id,state='done'))
+            if silence:
+                s.update_occurrence(o.wake_id,o.dedupe_key,'started',attempt=f.attempt,force_silent=True)
+                return '[SILENT]'
+        return None
+
+    @fail_open
+    def on_session_end(self,session_id='',turn_id='',completed=None,failed=False,interrupted=False,**kwargs):
+        if delegated_child(kwargs.get('platform','')): return None
+        e,s=self.engine,self.engine.store
+        self._follow(session_id)
+        anchor=self.anchors.get(session_id)
+        # Held rows end with the turn the finalizer names. A stop without a turn id can arrive while the
+        # worker still sends its last prepared request, so it must not drop the anchor.
+        if anchor and turn_id and anchor[0]==turn_id: del self.anchors[session_id]
+        f=self.flights.get(session_id)
+        if turn_id and self.turns.get(session_id) and turn_id!=self.turns[session_id]: return None
+        key=f.session_key if f else self.bindings.get(session_id)
+        if not key: return None
+        with s.atomic():
+            session=s.get_session(key)
+            if session:
+                s.cas_session(key,{'busy_since':session.busy_since},busy_since=None,busy_epoch=None)
+            self.flights.pop(session_id,None)
+            if f is None or f.invalid: return None
+            o=s.get_occurrence(f.wake_id,f.dedupe_key)
+            if o is None or o.state!='started' or o.attempt!=f.attempt: return None
+            if failed or interrupted or completed is False:
+                reason=kwargs.get('turn_exit_reason','') or ''
+                owner_interrupt=interrupted and reason in {'interrupted_by_user','interrupted_during_api_call'}
+                e.interrupt(o,'owner_interrupted' if owner_interrupt else 'failed' if failed else 'interrupted',
+                            count_error=not (f.owner_replied or owner_interrupt))
+                return None
+            # Recheck cancellation after the final transform: a human can reply
+            # between claim/start/transform and successful finalization.
+            w=s.get_wake(o.wake_id)
+            silenced=o.force_silent or not o.notify or not e.policy.enabled or not session.enabled or e.paused()
+            delivered=bool(o.notify and not silenced and not f.owner_replied)
+            if not s.finish(o.wake_id,o.dedupe_key,attempt=o.attempt,outcome=o.outcome or 'unreported',delivered=delivered,force_silent=silenced): return None
+            if f.scratch is not None:
+                s.cas_wake(w.id,w.status,expected_version=w.version,scratch=f.scratch)
+            if delivered and session:
+                session=s.get_session(key)
+                s.cas_session(key,{'unanswered_count':session.unanswered_count},
+                              unanswered_count=session.unanswered_count+1,first_notice_sent=True)
+            governor.finish(e,s.get_wake(o.wake_id),s.get_occurrence(o.wake_id,o.dedupe_key))
+        e.signal()
+        return None
+
+    @fail_open
+    def agent_loop_stopped(self,session_key='',**kwargs):
+        for sid,f in list(self.flights.items()):
+            if f.session_key==session_key:
+                reason='interrupted_by_user' if kwargs.get('invalidation_reason')=='stop_command' else ''
+                self.on_session_end(session_id=sid,interrupted=True,turn_exit_reason=reason)
+        return None
+
+    @fail_open
+    def on_session_reset(self,old_session_id='',new_session_id='',session_id='',**kwargs):
+        e,s=self.engine,self.engine.store
+        old=old_session_id or session_id
+        if not old: return None
+        self.anchors.pop(old,None)
+        with s.atomic():
+            keys=set()
+            for w in s.list_wakes():
+                if w.trigger_json.get('builtin') and w.armed_session_id==old:
+                    s.cas_wake(w.id,w.status,expected_version=w.version,armed_session_id=new_session_id)
+                    session=s.get_session(w.session_key)
+                    if session: s.cas_session(w.session_key,{'current_session_id':session.current_session_id},current_session_id=new_session_id,busy_since=None,busy_epoch=None)
+                    continue
+                if w.armed_session_id==old and w.status in {'active','paused','proposed'}:
+                    s.cas_wake(w.id,w.status,status='orphaned',status_reason='session_reset')
+                    e.cancel_occurrences(w.id,'session_reset')
+                    keys.add(w.session_key)
+            for key in keys:
+                session=s.get_session(key)
+                if session: s.cas_session(key,{'current_session_id':session.current_session_id},current_session_id=new_session_id,busy_since=None,busy_epoch=None)
+                e.notice(key,'Wakes from the old conversation were orphaned after /new.')
+            for f in self.flights.values():
+                if f.session_id==old: f.invalid=True
+        return None
+
+    @fail_open
+    def event(self,kind,session_id='',parent_session_id='',dedupe_extra='',**kwargs):
+        key=self._key()
+        # Board events can be profile-wide; API/subagent events must resolve to
+        # their actual parent session rather than a foreign ambient turn.
+        if parent_session_id or session_id:
+            target=parent_session_id or session_id
+            key=self.bindings.get(target,'')
+            if not key:
+                matches=[s for s in self.engine.store.list_sessions() if s.current_session_id==target]
+                if len(matches)==1: key=matches[0].session_key
+            if not key: return None
+        allowed=('task_id','board','assignee','run_id','profile_name','summary','reason',
+                 'worker_pid','exit_kind','exit_code','outcome','child_session_id','child_status','child_summary')
+        payload=bounded_payload({k:kwargs[k] for k in allowed if k in kwargs})
+        digest=hashlib.sha1(json.dumps([kind,key,payload,dedupe_extra],sort_keys=True,default=str).encode()).hexdigest()
+        self.engine.store.add_event(kind,'hook:'+digest,payload,session_key=key or None)
+        self.engine.signal()
+        return None

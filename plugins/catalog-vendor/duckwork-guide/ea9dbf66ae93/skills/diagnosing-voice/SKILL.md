@@ -1,0 +1,108 @@
+---
+name: diagnosing-voice
+description: Diagnose Duckwork voice mode issues — STT/TTS provider failures, audio device problems, latency, ffmpeg missing, and voice message transcription.
+version: 1.0.9
+metadata:
+  duckwork:
+    tags: [duckwork, voice, tts, stt, troubleshooting]
+    related_skills: [duckwork-configuration-guide, diagnosing-cli-tui]
+---
+
+# Diagnosing Voice Mode
+
+Goal: reduce any voice problem to one concrete fix — a config.yaml field, a provider switch, or a missing dependency. Voice mode covers STT (speech-to-text), TTS (text-to-speech), and voice message transcription.
+
+## 1. Configuration shape
+
+```yaml
+# ~/.duckwork/config.yaml
+voice:
+  record_key: "ctrl+b"
+  max_recording_seconds: 120
+  auto_tts: false
+  beep_enabled: true
+  silence_threshold: 200
+  silence_duration: 3.0
+  stop_phrases: ["stop"]
+
+stt:
+  enabled: true
+  provider: "local"           # local | groq | openai | mistral | xai | elevenlabs | deepinfra
+  local:
+    model: "base"             # tiny | base | small | medium | large-v3
+    language: ""
+
+tts:
+  provider: "edge"            # edge | elevenlabs | openai | minimax | mistral | gemini | xai | deepinfra | neutts | kittentts | piper
+  edge:
+    voice: "en-US-AriaNeural"
+    speed: 1.0
+  streaming:
+    min_len: 20
+```
+
+## 1b. Voice turns (route model vs session model)
+
+Spoken turns run on a voice route (`agent/voice_turn_route.py`) that may select a separate model or retain the session model — with `auxiliary.voice_chat` on `provider: auto` (or `main` without model/base_url), expect the session route. The route reasons **off** by default, which reads as less detailed replies. Streaming transcription is capability-gated (`stt.streaming` plus provider support; live resampling is pure-Python). Catalog voice bridges (`alice-voice`, `carbonvoice-platform`, `deepgram-voice`, `duckwork-live-voice`, `omnivoice`) are separate installable providers — a bridge-specific failure points at the bridge plugin, not the turn router. ffmpeg matters on the file path: command-provider transcription normalizes audio through ffmpeg when configured. Diagnose accordingly: unexpected-model symptoms → check which route served the turn; stalls → streaming support and credentials first, ffmpeg only for file-based normalize failures.
+
+## 2. How to inspect
+
+> [!NOTE]
+> Voice controls are **in-session slash commands**, not `duckwork voice` CLI subcommands. There is no `duckwork voice status`, `duckwork voice tts`, or `duckwork voice stt`. The only valid subcommands are: `/voice`, `/voice on`, `/voice off`, `/voice tts`, `/voice status`.
+
+- `/voice status` — show current voice mode state and provider config
+- `/voice on` / `/voice off` — toggle voice mode
+- `/voice tts` — toggle spoken output (not a provider test — controls whether TTS is spoken)
+- `duckwork logs --follow` — watch for voice-related errors
+- `arecord -l` (Linux) / `system_profiler SPAudioDataType` (macOS) — list audio devices
+
+## 3. Pitfalls (symptom → cause → fix)
+
+1. **No audio output / agent responds in text only** — `tts.provider` not set or invalid; provider API key missing. → Set `tts.provider` in config.yaml; verify API key in `$DUCKWORK_HOME/.env`.
+2. **Ctrl+B does nothing / microphone not detected** — (a) audio device not connected or not default; (b) PulseAudio bridge not active (WSL2); (c) `voice.record_key` changed. → Check `arecord -l` (Linux) or audio settings (macOS); verify default input device; check config.yaml for custom record_key.
+3. **Transcription is inaccurate or misses words** — (a) STT model too small (`base` is fastest but least accurate); (b) background noise; (c) microphone quality. → Switch `stt.local.model` to `small` or `medium`; use a headset or directional mic; reduce background noise.
+4. **TTS not responding** — (a) `tts.provider` not set; (b) provider API key missing; (c) provider service down. → Verify config; check API key; run `/voice tts` to confirm TTS is enabled.
+5. **Voice bubbles showing as files on Telegram** — ffmpeg unavailable (required for audio format conversion). → ffmpeg is a PM-managed required runtime tool on a PM-era install, so restore it with `duckwork pm install ffmpeg` or `duckwork update`; on an older checkout install it with your system package manager (`apt install ffmpeg`, `brew install ffmpeg`). Restart the gateway afterward.
+6. **Response latency too high** — (a) STT model too large; (b) TTS provider slow; (c) network latency. → Start with local STT + Edge TTS (no-key baseline); switch one stage at a time; check network.
+7. **STT returns garbage text** — (a) wrong language hint; (b) model too small; (c) audio quality poor. → Set `stt.local.language` to ISO-639-1 code; upgrade model; improve audio input.
+8. **Voice mode crashes on start** — (a) missing Python dependencies — on a PM-era install the environment is managed, so re-run the installer or `duckwork update` rather than pip-installing into it (PyPI is stale and no longer a supported route); on an older checkout `pip install duckwork-agent[voice]` still applies; (b) audio device busy. → Install voice extras; check for other apps using the microphone.
+
+## 4. Localization workflow
+
+1. `/voice status` — check current provider and mode state.
+2. `/voice tts` — confirm TTS output is enabled.
+3. Check config.yaml `stt:` and `tts:` blocks — verify provider, model, API key.
+4. Check `$DUCKWORK_HOME/.env` — verify provider API keys.
+5. Match the failure: no output → pitfall 1; no input → pitfall 2; bad quality → pitfall 3.
+6. Apply the fix, restart gateway, and test with `/voice status`.
+7. Headless: `/voice*` steps need a live session — check `duckwork logs --follow` for voice errors and inspect the `stt:`/`tts:` blocks in `config.yaml`. On PM-era installs, check ffmpeg with `duckwork pm status`; on older checkouts, run `ffmpeg -version`.
+
+## 5. Cross-references
+
+- `duckwork-configuration-guide` — for $DUCKWORK_HOME resolution and config.yaml structure
+- `diagnosing-cli-tui` — for Windows CLI/TUI rendering and encoding issues
+- `diagnosing-auth` — for provider API key and token issues
+
+## Report
+
+This skill diagnoses voice mode issues — STT/TTS provider failures, audio device problems, latency, ffmpeg missing, and voice message transcription. When you run the diagnostic workflow, present findings in the standard format below.
+
+### Summary
+Your voice messages on Telegram are showing as files instead of playable voice bubbles because ffmpeg is not installed. ffmpeg is required for audio format conversion and is a PM-managed runtime tool on PM-era installs.
+
+### Findings
+| Severity | What | Evidence |
+|---|---|---|
+| HIGH | ffmpeg not installed | `duckwork pm status` shows `ffmpeg: not installed`; Telegram voice messages appear as document files |
+| MEDIUM | TTS provider not configured | `/voice status` shows `tts.provider: (not set)`; agent responds in text only |
+
+### Recommended Fix
+Run `duckwork pm install ffmpeg` (PM-era install) or `apt install ffmpeg` / `brew install ffmpeg` (older checkout), then restart the gateway with `duckwork gateway restart`. For TTS, set `tts.provider: edge` in `config.yaml` for a no-key baseline.
+
+### References
+- `$DUCKWORK_HOME/config.yaml` — `voice:`, `stt:`, `tts:` blocks
+- `duckwork_cli/voice.py` — STT/TTS provider dispatch and playback pipeline
+- `duckwork_cli/cli_voice_mixin.py`, `duckwork_cli/setup_tts.py` — voice wiring and TTS setup
+- `tools/tts_streaming.py` — streaming provider resolution (`resolve_streaming_provider`)
+
+*Facts re-verified 2026-09-21 against upstream source at commit `cedf4a3d78675283fa93e4e6ea2d6212bf414667`: `duckwork_cli/voice.py`; plus the official docs (duckwork-agent.fordex.com/docs/user-guide/features/voice-mode). Re-checked 2026-10-12 against the live install (upstream `e0734a66`): `duckwork_cli/tts.py` and `duckwork_cli/stt.py` do not exist — provider logic lives in `duckwork_cli/voice.py` (+ `cli_voice_mixin.py`, `setup_tts.py`, `tools/tts_streaming.py`). Voice turns verified 2026-10-15 against the installed source at `9bda154d` (v0.21.7) (`agent/voice_turn_route.py` route model + reasoning-off floor, `voice_chat` reasoning none, `stt.streaming` capability flag). Re-verify before reuse.*

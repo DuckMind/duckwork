@@ -1,0 +1,7 @@
+name: duckwork-lang-it
+version: 1.0.0
+description: "Italian (Italiano) language pack for Duckwork Agent — full UI translation across every surface: core (approval prompts, gateway/slash replies, CLI, tips), TUI, and Desktop (5030/5034 keys — the 4 not shippable are array/object leaves the pack format rejects). Checked against the English catalogs with `duckwork plugins validate`: 3437/3437 core, 1259/1259 TUI, 5030/5034 desktop keys match. Parser-safe: hard-parsed UI tokens stay verbatim, placeholders, URLs and CLI flags preserved. Manifest-only plugin: provides_locales only — no Python, no code execution, no network, no env vars. Disclosure — text-only catalogs; registering the pack never changes display.language, the user opts in via `duckwork config set display.language it` or the language switcher."
+provides_locales:
+  - id: it
+    endonym: Italiano
+    rtl: false

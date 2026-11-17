@@ -1,0 +1,97 @@
+# Duckwork Sendblue Plugin
+
+A powerful, **zero-modification** background daemon and plugin that securely bridges [Sendblue](https://sendblue.co) (iMessage / SMS) with the [Duckwork CLI AI Agent](https://github.com/DuckMind/duckwork).
+
+This plugin allows you to text a designated Sendblue number and have Duckwork process your text, act as your personalized AI agent, and text you back the results—all while maintaining full conversation state. 
+
+## 🚀 Features
+
+- **Stateful Threading**: Duckwork maintains conversation state. You can have multi-turn conversations over SMS/iMessage just like you do in the terminal.
+- **Multi-User Support**: Configure multiple authorized phone numbers. The daemon isolates conversation state per user and routes replies back to the correct sender automatically.
+- **Active LLM Tools**: The AI is equipped with `sendblue_send_message` and `sendblue_list_messages`. You can instruct the AI to proactively text other people autonomously.
+- **Admin-Gated Security**: Active tools are restricted out-of-the-box. They will only execute if the AI is communicating with an explicitly authorized admin phone number.
+- **Interactive Command Approvals over SMS**: Because this is a headless remote session, if the AI attempts to execute a dangerous terminal command or modify files, it is explicitly instructed via a silent prompt to text you a "Technical Plan" first and wait for you to reply "Yes" before proceeding.
+- **Continuous Typing Indicators**: Displays the iMessage typing indicator (`...`) while Duckwork is thinking. Our `pre_llm_call` hook ensures the bubble stays active continuously while the AI executes background tools.
+- **Native Voice Routing**: If you send an iMessage Voice Note, the daemon passes it directly to Duckwork's highly optimized, internal STT engine.
+- **Secure Cloud Media Uploads**: If Duckwork replies with an image or audio, the script natively uploads it to your private AWS S3 or Cloudflare R2 bucket to generate a secure pre-signed URL. (Includes a public `tmpfiles.org` fallback for quick testing).
+
+## 🛠️ Prerequisites
+
+1. **Sendblue Account**: Get your Sendblue API Key, Secret, and your assigned Sendblue Phone Number.
+2. **Duckwork**: Ensure Duckwork is installed and available in your `$PATH`.
+3. **Python Packages**: `pip install aiohttp boto3 requests python-dotenv`
+
+## ⚙️ Installation
+
+Do **not** clone this into your Duckwork source tree. Clone it directly into your Duckwork plugins directory:
+
+```bash
+mkdir -p ~/.duckwork/plugins/sendblue
+git clone https://github.com/DuckMind/duckwork ~/.duckwork/plugins/sendblue
+```
+
+Verify the plugin is installed by running `duckwork plugins list`. You should see `sendblue` enabled.
+
+## 🔑 Environment Variables
+
+The daemon and plugin look for environment variables in the system environment, or in `~/.duckwork/plugins/sendblue/.env`, or `~/.duckwork/.env`.
+
+### Required
+```env
+SENDBLUE_API_KEY=your_sendblue_api_key_here
+SENDBLUE_API_SECRET=your_sendblue_api_secret_here
+USER_PHONE=+12345678901,+12345678902   # Comma-separated list of authorized phone numbers (E.164 format)
+SENDBLUE_PHONE=+19876543210            # Your Sendblue phone number (E.164 format)
+```
+
+### Optional Configuration
+```env
+# Admins who are allowed to trigger Active LLM Tools (comma-separated).
+# If empty, defaults to the full USER_PHONE list.
+SENDBLUE_ADMIN_PHONES=+12345678901,+12345678902
+
+# Toolsets to inject into each Duckwork session invoked by the daemon (comma-separated).
+# If empty, defaults to "duckwork-cli".
+SENDBLUE_TOOLSETS=duckwork-cli,mcp-sendblue_api
+
+# Max inbound media size in Megabytes before dropping the file (prevents OOM DOS attacks)
+SENDBLUE_MAX_MEDIA_SIZE_MB=50
+
+# Prefix incoming SMS messages with "[via SendBlue]" in the AI's memory (default: true)
+SENDBLUE_PREFIX_ENABLED=true
+
+```
+
+### Optional: Secure Media Uploads (AWS S3 / Cloudflare R2)
+If Duckwork generates an image or audio file, you must provide a secure place to host it so Sendblue can download and deliver it to your phone. If you do not provide these, the plugin will loudly warn you and upload your media to a public, third-party temporary file host.
+
+```env
+S3_BUCKET_NAME=my-private-duckwork-bucket
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+# R2_ENDPOINT_URL=https://<account_id>.r2.cloudflarestorage.com # (Only required for Cloudflare R2)
+```
+
+## 🏃 Running the Daemon
+
+The plugin provides typing indicators and tools to the Duckwork CLI, but you must run the background daemon to actually poll Sendblue for new text messages:
+
+```bash
+python ~/.duckwork/plugins/sendblue/daemon.py
+```
+
+It is highly recommended to run this daemon via `systemd` or `pm2` so it runs continuously in the background and recovers from crashes.
+
+## 🔒 Architecture & Security
+
+This plugin operates via an **Isolated Asynchronous Polling Daemon**.
+
+Our daemon sits outside the Duckwork core architecture. It uses `aiohttp` to poll Sendblue, and `asyncio.create_subprocess_exec` to invoke the standard `duckwork` CLI command. 
+
+This guarantees:
+1. **Update Safety**: When you update Duckwork Agent, this plugin will not cause merge conflicts or affect the core gateway.
+2. **True Concurrency**: If the AI takes 60 seconds to execute a complex web-scraping tool, the daemon does not block. It continues processing incoming webhooks and queuing messages.
+3. **Multi-Tenant State Isolation**: Instead of a flat file, the daemon uses a SQLite database to map incoming phone numbers to distinct Duckwork Session IDs. If multiple authorized users text the bot, their conversations and context are strictly isolated.
+4. **Idempotency**: All processed message IDs are tracked in a Write-Ahead Logging (WAL) SQLite database (`~/.duckwork/sendblue_daemon.db`), guaranteeing a message is never processed twice even if the daemon crashes mid-execution.
+5. **Denial of Service Prevention**: Large inbound media files (like 4K video) are ingested via chunked asynchronous streams and capped at 50MB. This prevents malicious actors from triggering Out-Of-Memory (OOM) crashes by sending massive files.
+6. **Strict RBAC Gating**: All inbound messages are explicitly verified against the `USER_PHONE` environment variable *before* resources are allocated. Unauthorized incoming messages are silently dropped, preventing Remote Code Execution via SMS.

@@ -1,0 +1,194 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yantrikdb-duckwork-plugin"
+version = "0.27.0"
+description = "Self-maintaining memory plugin for Duckwork Agent — embedded YantrikDB engine, ~10 MB, no server, no token, no GPU. Canonicalizes duplicates, surfaces contradictions, ranks with recency awareness, and explains recall."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+  { name = "Pranab Sarkar", email = "developer@pranab.co.in" },
+]
+keywords = [
+  "duckwork-agent",
+  "memory",
+  "ai-memory",
+  "llm-agent",
+  "yantrikdb",
+  "knowledge-graph",
+  "rag",
+  "plugin",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Every runtime dependency carries an UPPER BOUND. An unbounded `>=` lets a
+# future major silently break releases that are already published: nothing in
+# this repo changes, upstream cuts a new major, and a fresh `pip install`
+# resolves into it. The failure looks like our bug and arrives without warning.
+# yantrikdb-mcp lost their published v0.10.0 exactly this way when the MCP SDK
+# shipped 2.0.0 against an unbounded pin. tests/test_dependency_pins.py enforces
+# this; raise a ceiling only after testing against the new major.
+dependencies = [
+  "yantrikdb>=0.12.1,!=0.15.0,!=0.15.1,!=0.15.2,<0.24.0",
+  "requests>=2.31,<3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.5",
+  "mypy>=1.10",
+  "types-requests",
+]
+# v0.4.2 builtin embedder loaders. Each extra pulls in only what its
+# loader actually needs; the default install stays slim. Pick one based
+# on the embedder family you want to use (model2vec for the lightweight
+# potion family including potion-multilingual-128M; sentence-transformers
+# for the broader HF ecosystem). Both can be installed together if you
+# want to A/B different embedders without uninstalling.
+model2vec = [
+  "model2vec>=0.3,<1.0.0",
+]
+sentence-transformers = [
+  "sentence-transformers>=2.7,<6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Repository = "https://github.com/DuckMind/duckwork"
+Changelog = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+"Duckwork Agent" = "https://github.com/DuckMind/duckwork"
+"YantrikDB Server" = "https://github.com/yantrikos/yantrikdb-server"
+
+[project.scripts]
+# CLI entry point — users run this AFTER `pip install yantrikdb-duckwork-plugin`
+# to copy the plugin source into their duckwork-agent's plugins/memory/.
+# Duckwork plugins load from the filesystem; pip alone can't drop the source
+# in the right place, so this CLI is the bridge.
+yantrikdb-duckwork = "yantrikdb_duckwork_plugin.cli:main"
+
+# ---------------------------------------------------------------------------
+# Packaging — install the plugin source under a Pythonic name that does NOT
+# conflict with the `yantrikdb` engine package on PyPI. The CLI copies the
+# files into <duckwork_root>/plugins/memory/yantrikdb/ where Duckwork loads
+# them under the canonical plugin name `yantrikdb`.
+# ---------------------------------------------------------------------------
+
+[tool.setuptools]
+packages = ["yantrikdb_duckwork_plugin"]
+package-dir = {"yantrikdb_duckwork_plugin" = "yantrikdb"}
+
+[tool.setuptools.package-data]
+yantrikdb_duckwork_plugin = ["*.yaml", "*.md"]
+
+# ---------------------------------------------------------------------------
+# Tooling
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["reference/"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "E501",  # line length (handled by formatter)
+    "B008",  # Do not perform function call in argument defaults (FastAPI-style is fine)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = false
+warn_return_any = false
+strict_optional = true
+check_untyped_defs = true
+disallow_untyped_defs = false
+# v0.4.5: the repo root has an __init__.py (entry point for `duckwork plugins
+# install`). The repo dir name `yantrikdb-duckwork-plugin` isn't a valid Python
+# identifier, so mypy errors when it walks up from yantrikdb/ to find a
+# parent package. explicit_package_bases tells mypy: trust me, yantrikdb/ IS
+# the package root — don't look higher.
+explicit_package_bases = true
+namespace_packages = true
+exclude = ["reference/", "tests/", "^__init__\\.py$"]
+
+# ---------------------------------------------------------------------------
+# bump-my-version — atomic version bumps across all three surfaces
+# ---------------------------------------------------------------------------
+#
+# The plugin's version lives in three places that all have to agree or
+# Duckwork-side display drifts (see CHANGELOG v0.4.14 for the post-mortem on
+# the v0.4.13 ship that missed plugin.yaml). bump-my-version edits all of
+# them in one command:
+#
+#   pipx run bump-my-version bump patch     # 0.4.14 -> 0.4.15
+#   pipx run bump-my-version bump minor     # 0.4.14 -> 0.5.0
+#   pipx run bump-my-version bump major     # 0.4.14 -> 1.0.0
+#
+# CHANGELOG.md still needs a hand-written entry for the new version — the
+# tool can't generate meaningful release notes. After bumping, add the
+# matching `## [X.Y.Z] — YYYY-MM-DD — Summary` header. The CI `version-sync`
+# job blocks merge if the three sources drift.
+[tool.bumpversion]
+current_version = "0.27.0"
+commit = false       # let the human author the commit message + body
+tag = false          # tag via `gh release create`, not on bump
+allow_dirty = true
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+
+# The pyproject.toml file rule uses a regex anchored to start-of-line
+# so it only matches `version = "X.Y.Z"` (the [project] field) and NOT
+# `current_version = "X.Y.Z"` (this same [tool.bumpversion] section
+# which bumpversion already auto-maintains). Without the anchor, a
+# bump matches both lines and shifts the project version twice — the
+# 0.4.14 → 0.4.16 quirk caught during the v0.4.15 ship.
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+regex = true
+search = '^version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "yantrikdb/plugin.yaml"
+search = "version: {current_version}"
+replace = "version: {new_version}"
+
+# The repo root also has a plugin.yaml — read by Duckwork when a user runs
+# `duckwork plugins install yantrikos/yantrikdb-duckwork-plugin` directly
+# against the GitHub repo (the package-internal copy is what the bundled-
+# discovery path uses after `yantrikdb-duckwork install <duckwork>`). Both
+# must declare the same version or `duckwork plugins list` shows stale info
+# for one install path. The root copy drifted from 0.4.12 → 0.4.17 across
+# five releases before community member [@wysie] caught it via dashboard
+# mismatch warning in PR #26; CI version-sync now checks both manifests.
+[[tool.bumpversion.files]]
+filename = "plugin.yaml"
+search = "version: {current_version}"
+replace = "version: {new_version}"

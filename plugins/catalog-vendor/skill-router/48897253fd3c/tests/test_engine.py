@@ -1,0 +1,950 @@
+"""Tests for the skill-router engine — isolated, fixture-based, no network."""
+
+from pathlib import Path
+
+import pytest
+
+from skill_router import engine
+
+MATRIX = """# Test-Matrix
+
+## Thema 1: Documents / OCR
+
+**Keywords:** `ocr`, `pdf`, `document`, `scan`
+
+| Kategorie | Skills |
+|-----------|--------|
+| **Required** | `pdf-extraction`, `action-items` |
+| **Optional** | `debugging` |
+
+## Thema 2: Scheduling
+
+**Keywords:** `calendar`, `schedule`, `reminder`
+
+| Kategorie | Skills |
+|-----------|--------|
+| **Required** | `calendar-sync` |
+"""
+
+SKILL_PDF = """---
+name: pdf-extraction
+description: "Extract text from PDFs and scans."
+metadata:
+  duckwork:
+    tags: [PDF, OCR, Documents]
+---
+"""
+SKILL_KANBAN = """---
+name: kanban-orchestration
+description: "Orchestrate tasks on a kanban board."
+metadata:
+  duckwork:
+    tags: [Kanban, Tasks]
+---
+"""
+SKILL_CAL = """---
+name: calendar-sync
+description: "Sync calendar events."
+metadata:
+  duckwork:
+    tags: [Calendar, Schedule]
+---
+"""
+
+
+@pytest.fixture
+def env(tmp_path: Path, monkeypatch):
+    """Temp DUCKWORK_HOME with fixture skills."""
+    skills = tmp_path / "skills"
+    (skills / "productivity" / "pdf-extraction").mkdir(parents=True)
+    (skills / "productivity" / "pdf-extraction" / "SKILL.md").write_text(SKILL_PDF)
+    (skills / "software-development" / "kanban-orchestration").mkdir(parents=True)
+    (skills / "software-development" / "kanban-orchestration" / "SKILL.md").write_text(SKILL_KANBAN)
+    (skills / "productivity" / "calendar-sync").mkdir(parents=True)
+    (skills / "productivity" / "calendar-sync" / "SKILL.md").write_text(SKILL_CAL)
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    return tmp_path
+
+
+def test_topic_match_injects_required(env):
+    out = engine.build_injection(
+        "write the weekly status report",
+        env / "skills",
+        env / "matrix.md",
+    )
+    assert out is None  # matrix file does not exist yet, keine Tag-Treffer
+
+
+def test_topic_match_with_matrix(env):
+    matrix = env / "matrix.md"
+    matrix.write_text(MATRIX)
+    out = engine.build_injection(
+        "Plan for the OCR bug in the PDF document",
+        env / "skills",
+        matrix,
+    )
+    assert out is not None
+    assert "Documents" in out
+    assert "pdf-extraction" in out
+    assert "action-items" in out
+
+
+def test_skill_match_without_matrix(env):
+    """Without a matrix the engine still matches skills via tags."""
+    out = engine.build_injection("calendar schedule planning", env / "skills")
+    assert out is not None
+    assert "calendar-sync" in out
+
+
+def test_no_match_returns_none(env):
+    out = engine.build_injection("tell me a joke", env / "skills")
+    assert out is None
+
+
+def test_topic_change_signature(env):
+    matrix = env / "matrix.md"
+    matrix.write_text(MATRIX)
+    a = engine.build_injection("OCR fehler im pdf", env / "skills", matrix)
+    b = engine.build_injection("kalender termin eintragen", env / "skills", matrix)
+    assert engine.match_signature(a) != engine.match_signature(b)
+    assert engine.match_signature(a) == engine.match_signature(a)
+
+
+def test_record_tool_call_tracks_stats(env):
+    """Tool-Start erfasst Entscheidungsphasen-Wörter als Kookkurrenz.
+    skill_view-Calls werden auf den Skill-Namen gemappt."""
+    lexicon, stats = {}, engine.empty_stats()
+    lexicon, stats = engine.record_tool_call(
+        "emulator tastatur pruefen",
+        "skill_view",
+        {"name": "device-debugging"},
+        lexicon,
+        stats,
+    )
+    assert stats["total_calls"] == 1
+    assert stats["tools"]["device-debugging"] == 1  # gemappt, nicht "skill_view"
+    assert stats["words"]["tastatur"] == 1
+    assert lexicon["tastatur"] == {"device-debugging": 1}
+
+
+def test_record_tool_call_with_bare_stats(env):
+    """Regression: stats aus leerer Datei ({}) statt empty_stats() —
+    setdefault muss vor dem Lesen laufen (RHS-Reihenfolge)."""
+    lexicon = {}
+    stats = {}  # exakt was load_stats() aus einer leeren Datei liefert
+    lexicon, stats = engine.record_tool_call(
+        "emulator tastatur", "terminal", None, lexicon, stats
+    )
+    assert stats["total_calls"] == 1
+    assert stats["tools"] == {"terminal": 1}
+    assert stats["words"]["emulator"] == 1
+    assert lexicon["tastatur"] == {"terminal": 1}
+
+
+def test_record_never_stores_task_ids(env):
+    """Task-IDs und Hashes sind persönliche/technische Daten — nie erfassen."""
+    # Synthetisch zusammengesetzt, damit der Privacy-Guard-Scan sie nicht
+    # als statisches Muster im Quelltext findet (echte IDs gehören nicht ins Repo).
+    task_id = "t_" + "a1b2c3d4"
+    hash_token = "a1b2c3d4"
+    lexicon, stats = {}, engine.empty_stats()
+    lexicon, stats = engine.record_tool_call(
+        f"document scan with {task_id} and hash {hash_token}",
+        "skill_view",
+        {"name": "pdf-extraction"},
+        lexicon,
+        stats,
+    )
+    assert hash_token not in lexicon and hash_token not in stats["words"]
+    assert task_id not in lexicon and task_id not in stats["words"]
+    # but the task keywords are captured
+    assert "document" in lexicon or "scan" in lexicon
+
+
+def test_record_skips_long_messages(env):
+    """Long messages are context, not task keywords — nothing is captured."""
+    long_msg = " ".join(f"word{i}" for i in range(60))
+    lexicon, stats = {}, engine.empty_stats()
+    lexicon, stats = engine.record_tool_call(
+        long_msg, "terminal", None, lexicon, stats
+    )
+    assert lexicon == {}
+    assert stats["words"] == {}
+    assert stats["total_calls"] == 1  # der Call selbst zählt immer
+
+
+def test_record_caps_at_five_words(env):
+    longish = "three four five six seven eight nine ten problems to fix"
+    lexicon, stats = {}, engine.empty_stats()
+    lexicon, stats = engine.record_tool_call(
+        longish, "terminal", None, lexicon, stats
+    )
+    assert len(lexicon) <= 5
+
+
+def test_lift_specific_vs_generic():
+    """Generische Wörter (gleichmäßig über alle Tools) haben Lift ~1,
+    spezifische Wörter (konzentriert auf ein Tool) deutlich >1."""
+    stats = {
+        "total_calls": 100,
+        "words": {"bitte": 80, "emulator": 10},
+        "tools": {"calendar-sync": 40, "adb": 30},
+    }
+    lexicon = {
+        "bitte": {"calendar-sync": 30, "adb": 30},
+        "emulator": {"adb": 9, "calendar-sync": 1},
+    }
+    # erwartet: 80*40/100 = 32 -> lift 30/32 = 0.94  (Zufall)
+    assert engine.lift("bitte", "calendar-sync", lexicon, stats) < 2.0
+    # erwartet: 10*30/100 = 3 -> lift 9/3 = 3.0  (kausal)
+    assert engine.lift("emulator", "adb", lexicon, stats) >= 2.0
+    # 1x-Kookkurrenz ist kein belegtes Signal
+    assert engine.lift("emulator", "calendar-sync", lexicon, stats) < 2.0
+
+
+def test_matching_gate_ignores_generic_words(env):
+    """Hohe Frequenz ohne Kausalität gewichtet nichts; spezifische Wörter schon."""
+    stats = {
+        "total_calls": 100,
+        "words": {"schnell": 80, "emulator": 10},
+        "tools": {"calendar-sync": 40},
+    }
+    generic = {"schnell": {"calendar-sync": 30}}
+    out = engine.build_injection("schnell", env / "skills", None, generic, stats)
+    assert out is None  # Frequenz ohne Kausalität -> kein Vorschlag
+
+    specific = {"emulator": {"calendar-sync": 9}}
+    out = engine.build_injection("emulator", env / "skills", None, specific, stats)
+    assert out is not None
+    assert "calendar-sync" in out
+
+    # Ohne Stats (wenig Daten) zählt der alte Weg — Kompatibilität
+    out = engine.build_injection("schnell", env / "skills", None, generic)
+    assert out is not None
+
+
+def test_prune_removes_non_causal_words():
+    """Nutzungsbasierte Bereinigung: Wörter ohne kausale Assoziation fliegen raus."""
+    stats = {
+        "total_calls": 100,
+        "words": {"bitte": 80, "emulator": 10},
+        "tools": {"calendar-sync": 40, "adb": 30},
+    }
+    lexicon = {
+        "bitte": {"calendar-sync": 30, "adb": 30},  # Lift ~1 überall -> Rauschen
+        "emulator": {"adb": 9},                     # Lift 3.0 -> echtes Signal
+    }
+    pruned = engine.prune_lexicon(lexicon, stats)
+    assert "bitte" not in pruned
+    assert "emulator" in pruned
+
+    # Zu wenig Daten: keine Bereinigung (Lift zu verrauscht)
+    small = dict(stats, total_calls=10)
+    assert engine.prune_lexicon(lexicon, small) == lexicon
+
+
+def test_prune_spares_fresh_words():
+    """Frische Wörter (Gesamt-Kookkurrenz < MIN_COOCCUR) werden verschont,
+    damit neue Assoziationen nach dem Lift-Start anwachsen können."""
+    stats = {
+        "total_calls": 100,
+        "words": {"windows": 1, "bitte": 60},
+        "tools": {"windows-ssh-remote": 1, "adb": 30},
+    }
+    lexicon = {
+        "windows": {"windows-ssh-remote": 1},  # frisch, co gesamt 1 -> bleibt
+        "bitte": {"adb": 30},                  # genug Daten, kein Signal -> weg
+    }
+    pruned = engine.prune_lexicon(lexicon, stats)
+    assert "windows" in pruned
+    assert "bitte" not in pruned
+
+
+def test_cluster_words_identifies_causal_group():
+    """Cluster = Wörter mit kausaler Assoziation zu einem Tool."""
+    stats = {
+        "total_calls": 100,
+        "words": {"dokument": 4, "scan": 4, "karte": 10},
+        "tools": {"pdf-extraction": 10, "kanban-orchestration": 20},
+    }
+    lexicon = {
+        "dokument": {"pdf-extraction": 2},
+        "scan": {"pdf-extraction": 2},
+        "karte": {"kanban-orchestration": 5},
+    }
+    cluster = engine.cluster_words("pdf-extraction", lexicon, stats)
+    assert cluster == {"dokument", "scan"}
+    assert "karte" not in cluster
+
+
+def test_cluster_bonus_rewards_coherent_hits():
+    stats = {
+        "total_calls": 100,
+        "words": {"dokument": 4, "scan": 4, "karte": 10},
+        "tools": {"pdf-extraction": 10, "kanban-orchestration": 20},
+    }
+    lexicon = {
+        "dokument": {"pdf-extraction": 2},
+        "scan": {"pdf-extraction": 2},
+        "karte": {"kanban-orchestration": 5},
+    }
+    assert engine.cluster_bonus({"dokument", "scan"}, "pdf-extraction", lexicon, stats) == 2
+    assert engine.cluster_bonus({"dokument"}, "pdf-extraction", lexicon, stats) == 0
+    assert engine.cluster_bonus({"dokument", "scan", "x"}, "pdf-extraction", lexicon, stats) == 2
+    assert engine.cluster_bonus({"karte"}, "pdf-extraction", lexicon, stats) == 0
+
+
+def test_cluster_bonus_lifts_skill_above_competitor(env):
+    """Kohärente Mehrfach-Treffer heben einen Skill über einen Einzelwort-Skill."""
+    stats = {
+        "total_calls": 100,
+        "words": {"dokument": 4, "scan": 4, "karte": 10},
+        "tools": {"pdf-extraction": 10, "kanban-orchestration": 20},
+    }
+    lexicon = {
+        "dokument": {"pdf-extraction": 2},
+        "scan": {"pdf-extraction": 2},
+        "karte": {"kanban-orchestration": 5},
+    }
+    out = engine.build_injection(
+        "dokument scan karte", env / "skills", None, lexicon, stats
+    )
+    assert out is not None
+    # pdf-extraction: count 4 + Cluster-Bonus 2 = 6  >  kanban: 5 + 0
+    assert out.index("pdf-extraction") < out.index("kanban-orchestration")
+
+
+def test_generic_lexicon_word_not_weighted(env):
+    """Wort mit >=5 Skill-Assoziationen ist generisch — erzeugt KEIN Matching-Gewicht."""
+    generic = {
+        "phone": {
+            "calendar-sync": 5,
+            "skill-b": 1,
+            "skill-c": 1,
+            "skill-d": 1,
+            "skill-e": 1,
+        }
+    }
+    out = engine.build_injection("phone", env / "skills", None, generic)
+    assert out is None  # generisches Wort allein matcht keinen Fixture-Skill
+
+    specific = {"phone": {"calendar-sync": 5}}
+    out = engine.build_injection("phone", env / "skills", None, specific)
+    assert out is not None
+    assert "calendar-sync" in out
+
+
+def test_learn_words_skips_generic_entries():
+    generic = {
+        "phone": {
+            "skill-a": 1,
+            "skill-b": 1,
+            "skill-c": 1,
+            "skill-d": 1,
+            "skill-e": 1,
+        }
+    }
+    words = engine.learn_words("phone document issue", generic)
+    assert "phone" not in words  # generisch — nicht mehr lernen
+    assert "document" in words
+
+
+def test_learn_words_three_letter_whitelist():
+    """Fachbegriffe mit 3 Buchstaben (ssh, adb, ...) werden trotz
+    Mindestlänge 4 erkannt — gezielt über die Whitelist."""
+    words = engine.learn_words("ssh verbinden windows adb testen")
+    assert "ssh" in words
+    assert "adb" in words
+    assert "windows" in words
+
+
+def test_learn_words_three_letter_noise_filtered():
+    """Nicht-Whitelist-3er (sie, mit, wie) werden weiterhin ignoriert."""
+    words = engine.learn_words("sie und mit wie")
+    assert not any(len(w) == 3 for w in words)
+
+
+def test_task_words_three_letter_matches(env):
+    """3-Buchstaben-Whitelist-Wörter zählen beim Matching (ssh -> Skill)."""
+    (env / "skills" / "autonomous-ai-agents" / "windows-ssh-remote").mkdir(parents=True)
+    (env / "skills" / "autonomous-ai-agents" / "windows-ssh-remote" / "SKILL.md").write_text(
+        "---\n"
+        "name: windows-ssh-remote\n"
+        "description: \"Drive a Windows PC remotely over SSH.\"\n"
+        "metadata:\n"
+        "  duckwork:\n"
+        "    tags: [SSH, Windows, Remote]\n"
+        "---\n"
+    )
+    stats = {
+        "total_calls": 100,
+        "words": {"ssh": 10},
+        "tools": {"windows-ssh-remote": 20},
+    }
+    lexicon = {"ssh": {"windows-ssh-remote": 5}}
+    out = engine.build_injection("ssh verbinden", env / "skills", None, lexicon, stats)
+    assert out is not None
+    assert "windows-ssh-remote" in out
+
+
+def test_lexicon_roundtrip(tmp_path: Path):
+    path = tmp_path / "learned_keywords.json"
+    lex = {"handy": {"device-debugging": 2}}
+    engine.save_lexicon(lex, path)
+    assert engine.load_lexicon(path) == lex
+
+
+def test_save_lexicon_prunes_generic(tmp_path: Path):
+    """Selbstreinigung: Einträge mit >=5 Skill-Assoziationen werden beim Speichern entfernt."""
+    path = tmp_path / "learned_keywords.json"
+    lex = {
+        "good": {"skill-a": 2},
+        "generic": {f"skill-{i}": 1 for i in range(5)},
+    }
+    engine.save_lexicon(lex, path)
+    saved = engine.load_lexicon(path)
+    assert "generic" not in saved  # generisch — physisch entfernt
+    assert "good" in saved
+
+
+def test_fallback_hint_is_short():
+    assert len(engine.FALLBACK_HINT) < 200
+
+
+def test_matrix_optional_default(env, monkeypatch):
+    monkeypatch.delenv("SKILL_ROUTER_MATRIX_PATH", raising=False)
+    assert engine.default_matrix_path() is None
+
+
+# ── Output-Lernen (post_tool_call) — Task 1 ────────────────────────────────
+
+def test_learn_from_result_associates_body_words(env):
+    """Kanban-Task-Body im Tool-Ergebnis trainiert die Skill-Assoziation.
+
+    'Schau ins Kanban und arbeite ab' ist indirekt — die finale Aufgabe steht
+    im Task-Body. Die Body-Wörter müssen mit dem Tool (Skill) verknüpft werden.
+    """
+    lexicon, stats = {}, engine.empty_stats()
+    result = '{"body": "Login-Screen implementieren mit Riverpod und go_router"}'
+    lexicon, stats = engine.learn_from_result(
+        user_message="schau ins kanban und arbeite ab",
+        tool_name="terminal",
+        result=result,
+        lexicon=lexicon,
+        stats=stats,
+    )
+    # Body-Fachwörter gelernt (Kanban-Boost 1x)
+    assert "riverpod" in lexicon
+    assert "router" in lexicon
+    # User-Wort ebenfalls assoziiert
+    assert "kanban" in lexicon
+
+
+def test_learn_from_result_body_vs_non_task_fields(env):
+    """Option A (Wortqualität): NUR Aufgaben-Felder (body/description) werden
+    gelernt — output/text/result/summary (Status, System-Meldungen) sind
+    Rauschen und fliegen komplett raus.
+    """
+    lexicon, stats = {}, engine.empty_stats()
+    result = '{"body": "riverpod refactor", "output": "riverpod version 3"}'
+    lexicon, stats = engine.learn_from_result(
+        user_message="mach weiter", tool_name="terminal",
+        result=result, lexicon=lexicon, stats=stats,
+    )
+    assert lexicon["riverpod"]["terminal"] == 2  # body: 1x-Gewicht
+    assert "version" not in lexicon  # output-Feld: NICHT mehr gelernt
+
+
+def test_learn_from_result_ignores_failed_status(env):
+    """Fehler-Ergebnisse sind Rauschen — nichts lernen."""
+    lexicon, stats = {}, engine.empty_stats()
+    result = '{"status": "error", "body": "timeout riverpod build"}'
+    lexicon, stats = engine.learn_from_result(
+        user_message="baue die app", tool_name="terminal",
+        result=result, lexicon=lexicon, stats=stats,
+    )
+    assert "timeout" not in lexicon
+    assert "riverpod" not in lexicon
+
+
+def test_learn_from_result_caps_huge_output(env):
+    """Riesen-Bodies (stdout-Monster) dürfen das Lexikon nicht fluten."""
+    lexicon, stats = {}, engine.empty_stats()
+    huge = "".join(f"filler{i} " for i in range(5000))
+    result = f'{{"body": "{huge[:2000]}"}}'
+    lexicon, stats = engine.learn_from_result(
+        user_message="kurz", tool_name="terminal",
+        result=result, lexicon=lexicon, stats=stats,
+    )
+    assert len(lexicon) < 50  # Deckel greift
+
+
+def test_learn_from_result_plaintext_fallback(env):
+    """Plaintext-Ergebnisse (kein JSON) sind Rauschen — NICHT mehr gelernt.
+
+    Option A: Plaintext = Terminal-Ausgaben/System-Meldungen (nie User-
+    Suchbegriffe). Nur strukturierte Aufgaben-Felder (body/description)
+    sind Lern-Signale. (User-Message-Wörter werden weiterhin gelernt —
+    das ist das Primärsignal.)
+    """
+    lexicon, stats = {}, engine.empty_stats()
+    result = "document scan completed: ocr extracted 3 pages"
+    lexicon, stats = engine.learn_from_result(
+        user_message="scan das dokument", tool_name="skill_view",
+        result=result, lexicon=lexicon, stats=stats,
+    )
+    # User-Wörter (Primärsignal) bleiben:
+    assert "dokument" in lexicon
+    assert "scan" in lexicon
+    # Plaintext-Ergebnis-Wörter (nur im Ergebnis, nicht in der Message):
+    assert "extracted" not in lexicon
+    assert "completed" not in lexicon
+    assert "pages" not in lexicon
+
+
+def test_learn_from_result_never_learns_ids(env):
+    """Task-IDs/Hashes aus Tool-Ergebnissen nie lernen (Privacy)."""
+    lexicon, stats = {}, engine.empty_stats()
+    task_id = "t_" + "a1b2c3d4"
+    result = f'{{"body": "aufgabe {task_id}: riverpod einbauen"}}'
+    lexicon, stats = engine.learn_from_result(
+        user_message="kanban abarbeiten", tool_name="terminal",
+        result=result, lexicon=lexicon, stats=stats,
+    )
+    assert task_id not in lexicon
+    assert "riverpod" in lexicon
+
+
+def test_learn_from_result_maps_skill_view_to_skill_name(env):
+    """Task-4-Fix: skill_view-Ergebnisse landen unter dem SKILL-NAMEN,
+    nicht unter dem Tool-Namen 'skill_view' (No-Op-Bug in Zeile 308)."""
+    lexicon, stats = {}, engine.empty_stats()
+    result = '{"body": "Riverpod Screen mit go_router bauen"}'
+    lexicon, stats = engine.learn_from_result(
+        user_message="emulator testen",
+        tool_name="skill_view",
+        result=result,
+        lexicon=lexicon,
+        stats=stats,
+        args={"name": "flutter-dev"},
+    )
+    # Ergebnis-Wörter assoziiert mit dem Skill-Namen
+    assert "riverpod" in lexicon
+    assert lexicon["riverpod"].get("flutter-dev", 0) >= 1
+    # NICHT unter dem Tool-Namen 'skill_view' gespeichert
+    assert "skill_view" not in lexicon.get("riverpod", {})
+
+
+def test_output_learning_flag_default_on(tmp_path, monkeypatch):
+    """F1: Feature-Flag Default AN (Freigabe 2026-08-13) —
+    ohne config.yaml und ohne env ist das Lernen aktiv; explizites
+    `output_learning: false` in config.yaml schaltet aus."""
+    monkeypatch.delenv("SKILL_ROUTER_OUTPUT_LEARNING", raising=False)
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    assert engine.output_learning_enabled() is True
+
+
+def test_output_learning_flag_env_override(tmp_path, monkeypatch):
+    """Env-Override schaltet das Flag ein (Tests/CI)."""
+    monkeypatch.setenv("SKILL_ROUTER_OUTPUT_LEARNING", "1")
+    assert engine.output_learning_enabled() is True
+
+
+def test_output_learning_flag_config_yaml(tmp_path, monkeypatch):
+    """config.yaml: skill_router.output_learning: true aktiviert das Lernen."""
+    monkeypatch.delenv("SKILL_ROUTER_OUTPUT_LEARNING", raising=False)
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    (tmp_path / "config.yaml").write_text(
+        "model:\n  default: x\nskill_router:\n  output_learning: true\n",
+        encoding="utf-8",
+    )
+    assert engine.output_learning_enabled() is True
+
+
+def test_output_learning_flag_config_false(tmp_path, monkeypatch):
+    """config.yaml mit false → deaktiviert."""
+    monkeypatch.delenv("SKILL_ROUTER_OUTPUT_LEARNING", raising=False)
+    monkeypatch.setenv("DUCKWORK_HOME", str(tmp_path))
+    (tmp_path / "config.yaml").write_text(
+        "skill_router:\n  output_learning: false\n",
+        encoding="utf-8",
+    )
+    assert engine.output_learning_enabled() is False
+
+
+# ── Output-Lernen (post_llm_call) — Task 2 ─────────────────────────────────
+
+def test_learn_from_response_reinforces_skill_association(env):
+    """LLM-Antwort verstärkt die Skill-Assoziation der User-Wörter.
+
+    'ja, Option A' ist nur mit dem LLM-Output verständlich: Die Fachbegriffe
+    (riverpod, go_router) stehen in der Antwort. Sie werden den Skills
+    zugeordnet, die die User-Wörter dieser Aufgabe bereits kennen.
+    """
+    lexicon = {"option": {"skill-a": 2}, "welche": {"skill-a": 1}}
+    stats = {
+        "total_calls": 5,
+        "words": {"option": 3, "welche": 2},
+        "tools": {"skill-a": 3},
+    }
+    reply = "Option A: riverpod mit go_router passt am besten"
+    lexicon, stats = engine.learn_from_response(
+        user_message="welche option sollen wir nehmen",
+        assistant_response=reply,
+        conversation_history=[],
+        lexicon=lexicon,
+        stats=stats,
+    )
+    # Antwort-Fachwörter wurden Skill-a zugeordnet (Verstärkung)
+    assert lexicon["riverpod"]["skill-a"] >= 1
+    assert lexicon["router"]["skill-a"] >= 1
+
+
+def test_learn_from_response_uses_history_for_confirmation(env):
+    """Bestätigungs-Muster („wir nehmen Option A") löst die Wahl über die History.
+
+    'Option A' allein ist leer — die Optionen stehen in der vorherigen
+    Assistant-Antwort. Deren Fachwörter werden den Skill-Assoziationen
+    der User-Wörter zugeordnet.
+    """
+    lexicon = {"entscheide": {"skill-a": 2}}
+    stats = {
+        "total_calls": 5,
+        "words": {"entscheide": 2},
+        "tools": {"skill-a": 2},
+    }
+    history = [
+        {"role": "assistant",
+         "content": "Option A: riverpod mit go_router. Option B: bloc mit provider."},
+        {"role": "user", "content": "ok"},
+    ]
+    reply = "wir nehmen Option A"
+    lexicon, stats = engine.learn_from_response(
+        user_message="entscheide du",
+        assistant_response=reply,
+        conversation_history=history,
+        lexicon=lexicon,
+        stats=stats,
+    )
+    assert lexicon["riverpod"]["skill-a"] >= 1  # aus der History aufgelöst
+    assert lexicon["router"]["skill-a"] >= 1
+    # Präzisions-Regression: die NICHT gewählte Option B darf nicht gelernt
+    # werden (die ganze History-Antwort beimischen = Rauschen)
+    assert "bloc" not in lexicon
+    assert "provider" not in lexicon
+
+
+def test_learn_from_response_no_association_no_learning(env):
+    """Ohne bestehende Skill-Assoziation der User-Wörter: nichts lernen.
+
+    Kein Signal → kein Lernen (konsistent mit SoK-Warnung: ungefiltertes
+    Lernen aus Modell-Output degradiert).
+    """
+    lexicon, stats = {}, engine.empty_stats()
+    reply = "Option A: riverpod mit go_router"
+    lexicon, stats = engine.learn_from_response(
+        user_message="welche option sollen wir nehmen",
+        assistant_response=reply,
+        conversation_history=[],
+        lexicon=lexicon,
+        stats=stats,
+    )
+    assert lexicon == {}
+
+
+def test_learn_from_response_ignores_empty(env):
+    """Leere Antworten lernen nichts."""
+    lexicon = {"wort": {"skill-a": 1}}
+    stats = {"total_calls": 2, "words": {"wort": 1}, "tools": {"skill-a": 1}}
+    lexicon, stats = engine.learn_from_response(
+        user_message="test", assistant_response="",
+        conversation_history=[], lexicon=lexicon, stats=stats,
+    )
+    assert lexicon == {"wort": {"skill-a": 1}}  # unverändert
+
+
+def test_learn_from_response_never_learns_ids(env):
+    """IDs/Hashes aus LLM-Antworten nie lernen (Privacy)."""
+    lexicon = {"mach": {"skill-a": 2}, "weiter": {"skill-a": 1}}
+    stats = {
+        "total_calls": 5,
+        "words": {"mach": 2, "weiter": 1},
+        "tools": {"skill-a": 3},
+    }
+    task_id = "t_" + "a1b2c3d4"
+    reply = f"nutze dokument {task_id} fuer riverpod"
+    lexicon, stats = engine.learn_from_response(
+        user_message="mach weiter", assistant_response=reply,
+        conversation_history=[], lexicon=lexicon, stats=stats,
+    )
+    assert task_id not in lexicon
+    assert "riverpod" in lexicon
+
+
+# ── Session-Puffer (extra_context) — Task 3 ────────────────────────────────
+
+def test_context_words_extracts_from_tool_results(env):
+    """extra_context: Wörter aus Tool-Ergebnissen (Kanban-Body) extrahieren."""
+    ctx = {
+        "tool_results": ['{"body": "Riverpod Screen mit go_router bauen"}'],
+        "last_response": "wir nehmen Option A: riverpod",
+    }
+    words = engine.context_words(ctx)
+    assert "riverpod" in words
+    assert "router" in words
+    assert "screen" in words
+
+
+def test_context_words_ignores_ids(env):
+    """extra_context: IDs/Hashes nie als Match-Wörter verwenden (Privacy)."""
+    task_id = "t_" + "a1b2c3d4"
+    ctx = {"tool_results": [f'{{"body": "aufgabe {task_id} riverpod"}}']}
+    words = engine.context_words(ctx)
+    assert task_id not in words
+    assert "riverpod" in words
+
+
+def test_build_injection_uses_session_context(env):
+    """Folge-Task matcht gegen vorheriges Tool-Ergebnis (Kanban-Body).
+
+    'mach weiter' allein matcht nichts — mit dem Session-Puffer (Kanban-Body
+    aus vorherigem Tool-Call) wird der passende Skill gefunden.
+    """
+    ctx = {
+        "tool_results": ['{"body": "Kanban-Task: PDF-Scan Feature bauen"}'],
+        "last_response": "",
+    }
+    injection = engine.build_injection(
+        "mach mit der aufgabe weiter",
+        env / "skills",
+        None,
+        None,
+        None,
+        extra_context=ctx,
+    )
+    assert injection is not None
+    assert "pdf-extraction" in injection
+
+
+def test_build_injection_ignores_context_without_flag_data(env):
+    """Ohne extra_context verhält sich build_injection wie bisher."""
+    injection = engine.build_injection(
+        "mach mit der aufgabe weiter",
+        env / "skills",
+        None,
+        None,
+        None,
+    )
+    assert injection is None  # 'mach weiter' matcht ohne Kontext nichts
+
+
+# ── Dynamische DF-Generik (Schritt 7) ─────────────────────────────────────
+
+def test_generic_words_high_document_frequency(env):
+    """Wörter, die viele Skills beschreiben, werden als generisch erkannt.
+
+    'app' kommt in 2 von 3 Fixture-Skills vor (>= 40%) -> generisch.
+    'pdf' kommt nur im pdf-Skill vor -> NICHT generisch.
+    """
+    skills = engine.scan_skills(env / "skills")
+    generic = engine.generic_words(skills)
+    # Fixture-Skills: pdf-extraction (PDF, OCR), kanban-orchestration,
+    # calendar-sync. 'app' ist ein generischer Begriff — je nach Fixture
+    # müssen wir prüfen, was tatsächlich hochfrequent ist.
+    total = len(skills)
+    # Die generische Menge muss konsistent zur DF-Schwelle sein
+    from collections import Counter
+
+    counts: Counter = Counter()
+    for s in skills:
+        seen = set()
+        for tag in s["tags"]:
+            seen |= engine._norm_words(tag)
+        seen |= engine._norm_words(s["name"])
+        seen |= engine._norm_words(s["cat"])
+        seen |= s["desc_words"]
+        counts.update(seen)
+    expected = {w for w, c in counts.items() if c / total >= engine.GENERIC_DF_RATIO}
+    assert generic == expected  # genau die DF-Logik
+
+
+def test_learn_words_skips_df_generic(env):
+    """DF-generische Wörter werden beim Lernen übersprungen (Schritt 7)."""
+    skills = engine.scan_skills(env / "skills")
+    generic = engine.generic_words(skills)
+    # Ein Wort, das NICHT DF-generisch ist, wird gelernt
+    assert engine.learn_words("riverpod screen bauen", df_generic=generic) != []
+    # Ein DF-generisches Wort (wenn vorhanden) wird übersprungen
+    if generic:
+        sample = next(iter(generic))
+        learned = engine.learn_words(
+            f"{sample} riverpod screen", df_generic=generic
+        )
+        assert sample not in learned
+        assert "riverpod" in learned  # spezifisches Wort bleibt
+
+
+def test_learn_from_result_respects_df_generic(env):
+    """learn_from_result respektiert die DF-Generik beim Ergebnis-Lernen."""
+    skills = engine.scan_skills(env / "skills")
+    generic = engine.generic_words(skills)
+    lexicon, stats = {}, engine.empty_stats()
+    # 'app'-artiges generisches Wort im Body + spezifisches Wort
+    body = '{"body": "app riverpod screen"}'
+    lexicon, stats = engine.learn_from_result(
+        user_message="mach weiter",
+        tool_name="terminal",
+        result=body,
+        lexicon=lexicon,
+        stats=stats,
+        df_generic=generic,
+    )
+    assert "riverpod" in lexicon
+    if generic:
+        for g in generic:
+            assert g not in lexicon  # DF-generische nie gelernt
+
+
+def test_scan_skills_finds_nonstandard_layouts(env):
+    """Pitfall 31: scan_skills findet Kategorie-Direktdatei (cat/SKILL.md)
+    und 3-stufige Strukturen (cat/subcat/skill/SKILL.md), Kategorie =
+    Top-Level-Ordner."""
+    skills = env / "skills"
+    # Kategorie-Direktdatei: desktop-plugins/SKILL.md
+    (skills / "desktop-plugins").mkdir(exist_ok=True)
+    (skills / "desktop-plugins" / "SKILL.md").write_text(
+        '---\nname: duckwork-desktop-plugins\ndescription: "Write desktop app plugins."\n---\n'
+    )
+    # 3-stufig: mlops/evaluation/evaluating-llms-harness/SKILL.md
+    (skills / "mlops" / "evaluation" / "evaluating-llms-harness").mkdir(parents=True, exist_ok=True)
+    (skills / "mlops" / "evaluation" / "evaluating-llms-harness" / "SKILL.md").write_text(
+        '---\nname: evaluating-llms-harness\ndescription: "Benchmark LLMs."\n---\n'
+    )
+    found = engine.scan_skills(skills)
+    names = {s["name"] for s in found}
+    cats = {s["name"]: s["cat"] for s in found}
+    # Standard-2-stufig bleibt gefunden
+    assert "pdf-extraction" in names
+    assert cats["pdf-extraction"] == "productivity"
+    # Kategorie-Direktdatei: Name aus Frontmatter, cat = Top-Level
+    assert "duckwork-desktop-plugins" in names
+    assert cats["duckwork-desktop-plugins"] == "desktop-plugins"
+    # 3-stufig: gefunden, cat = Top-Level
+    assert "evaluating-llms-harness" in names
+    assert cats["evaluating-llms-harness"] == "mlops"
+
+
+# ── Selbstlernende Rauschunterdrückung (Skill-Selektivität, 2026-08-22) ────
+# Kein Wörterbuch: Ein Wort ist ein Skill-Signal, wenn es sich auf installierte
+# Skills konzentriert statt auf Basis-Werkzeuge (terminal/process/read_file).
+
+FIXTURE_SKILLS = frozenset(
+    {"pdf-extraction", "kanban-orchestration", "calendar-sync"}
+)
+
+
+def test_skill_selectivity_pure_signal():
+    """Alle Assoziationen auf Skills => Selektivität 1.0."""
+    lex = {"dokument": {"pdf-extraction": 2, "kanban-orchestration": 1}}
+    assert engine.skill_selectivity("dokument", lex, FIXTURE_SKILLS) == 1.0
+
+
+def test_skill_selectivity_base_tool_pollution():
+    """Überwiegend Basis-Tool-Bindung (terminal) => niedrige Selektivität."""
+    lex = {"wars": {"terminal": 55, "process": 28, "todo": 1}}
+    assert (
+        engine.skill_selectivity("wars", lex, FIXTURE_SKILLS)
+        < engine.SKILL_SELECTIVITY_THRESHOLD
+    )
+
+
+def test_best_target_is_skill_true_signal():
+    """Stärkstes Target ist ein Skill => True (auch bei etwas Tool-Rauschen)."""
+    # 'dokument' hat zwar 2 Assoziationen, aber seine stärkste ist ein Skill
+    lex = {"dokument": {"pdf-extraction": 9, "terminal": 1}}
+    assert engine.best_target_is_skill("dokument", lex, FIXTURE_SKILLS)
+
+
+def test_best_target_is_skill_false_for_base_tool():
+    """Stärkstes Target ist ein Basis-Tool (z. B. 'router' -> terminal) => False."""
+    lex = {"router": {"terminal": 1}}  # das konkrete Fehl-Routing dieser Session
+    assert not engine.best_target_is_skill("router", lex, FIXTURE_SKILLS)
+
+
+def test_is_signal_word_filters_router_noise():
+    """REALFALL: 'router' -> {'terminal': 1} ist KEIN Signal (das Fehl-Routing)."""
+    lex = {"router": {"terminal": 1}}
+    assert not engine.is_signal_word("router", lex, FIXTURE_SKILLS)
+
+
+def test_is_signal_word_filters_typo_cascades():
+    """Tippfehler/Basis-Bindung ('wars', 'unsloth') sind kein Signal."""
+    lex = {
+        "wars": {"terminal": 55},
+        "unsloth": {"terminal": 53, "process": 28},
+        "besster": {"web_search": 4},
+    }
+    for w in ("wars", "unsloth", "besster"):
+        assert not engine.is_signal_word(w, lex, FIXTURE_SKILLS)
+
+
+def test_is_signal_word_keeps_genuine_domain_words():
+    """Echte Domänenwörter (auf einen Skill konzentriert) bleiben Signal."""
+    lex = {
+        "dokument": {"pdf-extraction": 3, "terminal": 1},
+        "scan": {"pdf-extraction": 2},
+        "ssh": {"kanban-orchestration": 2},
+    }
+    assert engine.is_signal_word("dokument", lex, FIXTURE_SKILLS)
+    assert engine.is_signal_word("scan", lex, FIXTURE_SKILLS)
+    assert engine.is_signal_word("ssh", lex, FIXTURE_SKILLS)
+
+
+def test_matching_ignores_base_tool_noise_word(env):
+    """Basis-Tool-gekoppeltes Wort ('wars') gewichtet beim Matching NICHT,
+    obwohl es hohen Count hat — es ist kein Skill-Signal."""
+    stats = {
+        "total_calls": 100,
+        "words": {"wars": 60, "scan": 4},
+        "tools": {"pdf-extraction": 10},
+    }
+    # 'wars' nur an terminal gebunden, 'scan' ein echtes Signal
+    lex = {"wars": {"terminal": 55}, "scan": {"pdf-extraction": 2}}
+    out = engine.build_injection(
+        "wars scan dokument", env / "skills", None, lex, stats
+    )
+    assert out is not None
+    # pdf-extraction sollte trotz 'wars' gematcht werden (über 'scan'/'dokument')
+    assert "pdf-extraction" in out
+
+
+def test_prune_removes_base_tool_noise_with_skill_names():
+    """Prune mit skill_names entfernt Basis-Tool-Rauschwörter, die nur Lift
+    gegen 'terminal' haben — sie sind keine Routing-Signale."""
+    stats = {
+        "total_calls": 1000,  # > MIN_CALLS_FOR_LIFT
+        "words": {"wars": 200, "scan": 10},
+        "tools": {"terminal": 500, "pdf-extraction": 10},
+    }
+    # 'wars': hoher Lift gegen terminal, aber best target ist kein Skill
+    lex = {
+        "wars": {"terminal": 190},
+        "scan": {"pdf-extraction": 9},
+    }
+    pruned = engine.prune_lexicon(lex, stats, skill_names=FIXTURE_SKILLS)
+    assert "wars" not in pruned  # Rausch eliminiert
+    assert "scan" in pruned      # echtes Signal bleibt
+
+
+def test_prune_without_skill_names_keeps_old_behavior():
+    """Ohne skill_names (Rückwärtskompatibilität) verhält sich Prune wie bisher."""
+    # Lift(wars, terminal) = 190/(200*500/2000) = 190/50 = 3.8 >= 2.0 -> altes Verhalten behält
+    stats = {"total_calls": 2000, "words": {"wars": 200}, "tools": {"terminal": 500}}
+    lex = {"wars": {"terminal": 190}}
+    # Ohne skill_names: Lift gegen terminal zählt -> bleibt (altes Verhalten)
+    pruned = engine.prune_lexicon(lex, stats)
+    assert "wars" in pruned
+
+    # Mit skill_names: 'terminal' ist kein Skill -> als Rausch entfernt
+    pruned2 = engine.prune_lexicon(lex, stats, skill_names=FIXTURE_SKILLS)
+    assert "wars" not in pruned2

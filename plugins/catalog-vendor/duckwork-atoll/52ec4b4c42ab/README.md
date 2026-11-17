@@ -1,0 +1,172 @@
+<div align="center">
+  <img src="assets/duckwork-atoll-thumbnail.jpg" width="800" alt="Monochrome Roman engraving of Duckwork above a subtle notch-shaped status indicator" />
+  <h1>Duckwork Notch Plugin</h1>
+  <p>A native Duckwork Agent plugin that brings session and turn status to Atoll on macOS.</p>
+</div>
+
+Duckwork Notch Plugin reads Duckwork' local state database in a read-only transaction and presents a compact monitor in Atoll's notch UI. It never writes `state.db` or sends state to a remote service. When a turn starts, the notch may show one bounded, sanitized display-side request preview: text parts only, with obvious secret patterns redacted. It never exposes transcript bodies, tool arguments, provider-only content, or credentials.
+
+## What it does
+
+- Shows active turns, sessions that need attention, and recent session details.
+- Shows the actual session title with `Complete` in a brief sneak peek when a turn/session finishes. A confirmed lease release or durable `ended_at` boundary triggers it; a closed notch keeps rendering glyphs only.
+- Floors dashboard rewrites at one every 5 s so the tab stays well inside Atoll's per-bundle extension rate limit, then delivers the final state on a deferred wake.
+- Uses stable Atoll resource IDs and a single monitor process, so refreshes update the existing display instead of creating duplicates.
+- Watches SQLite and WAL changes with `fswatch`, then falls back to periodic refreshes if `fswatch` is unavailable.
+
+## Dummy-data media evidence
+
+The media below was captured from the native Atoll surface with synthetic, display-only fixtures. It contains no real Duckwork session titles, requests, transcripts, tool arguments, or desktop windows. The GIF is a timed native recording, not a slideshow; the PNGs are state captures.
+
+<p><img src="assets/demo/duckwork-notch-demo.gif" width="570" alt="Timed native Atoll recording of the synthetic one-running-turn notch orbit" /></p>
+
+<p><img src="assets/demo/duckwork-expanded-demo.png" width="645" alt="Native expanded Duckwork panel with synthetic running, needs-action, and idle sessions" /></p>
+
+| Capability | Evidence |
+| --- | --- |
+| Start request preview | [`notch-start.png`](assets/demo/notch-start.png) |
+| One running turn and orbit | [`notch-running-1.png`](assets/demo/notch-running-1.png), timed [`duckwork-notch-demo.gif`](assets/demo/duckwork-notch-demo.gif) |
+| Twelve running turns / two-digit count | [`notch-running-12.png`](assets/demo/notch-running-12.png) |
+| Needs-action marker | [`notch-needs-action.png`](assets/demo/notch-needs-action.png) |
+| Completion title, `Complete`, zero, and retraction | [`notch-complete.png`](assets/demo/notch-complete.png), [`notch-idle.png`](assets/demo/notch-idle.png), [`notch-hidden.png`](assets/demo/notch-hidden.png) |
+| Expanded multi-session list, selection, details, recent steps, and stats | [`duckwork-expanded-demo.png`](assets/demo/duckwork-expanded-demo.png) |
+| Watcher fallback, pacing, lifecycle, transition detection, and read-only data path | `npm test` and `python3 tools/test-plugin-entrypoint.py` (behavioral evidence; screenshots do not prove these nonvisual paths) |
+
+The capture manifests are [`notch-phases.manifest.json`](assets/demo/notch-phases.manifest.json), [`duckwork-notch-demo.manifest.json`](assets/demo/duckwork-notch-demo.manifest.json), and [`duckwork-expanded-demo.manifest.json`](assets/demo/duckwork-expanded-demo.manifest.json). Re-run the native captures with the current, already-running CuaDriver socket (discover it from `ps`; never hardcode an old socket):
+
+```sh
+node tools/demo-effects.js all --seconds 6 \
+  --capture-dir "$HOME/.duckwork/cache/scratch/atoll-effect-demo" \
+  --socket "$CUDRIVER_SOCKET"
+node tools/record-demo-gif.js --socket "$CUDRIVER_SOCKET"
+
+# Resolve the exact Atoll pid/window and inspect its live AX labels first.
+# The expanded capture never accepts screen coordinates.
+cua-driver call list_windows --socket "$CUDRIVER_SOCKET" --json '{}'
+cua-driver call get_window_state --socket "$CUDRIVER_SOCKET" --json \
+  '{"pid":'$ATOLL_PID',"window_id":'$ATOLL_WINDOW_ID',"include_screenshot":false}'
+node tools/capture-expanded-demo.js \
+  --socket "$CUDRIVER_SOCKET" \
+  --pid "$ATOLL_PID" \
+  --window-id "$ATOLL_WINDOW_ID" \
+  --tab-label "$ATOLL_TAB_AX_LABEL"
+```
+
+`--tab-label` must be the exact actionable AX label from that fresh `get_window_state` response. Selection uses CuaDriver's background AX path, not the real pointer, focus, browser, hotkeys, or permissions. If the correct Duckwork tab is already expanded, omit `--tab-label`; the script asserts the synthetic session labels in the background and captures only after that assertion. If the exact window or AX state cannot be verified, it fails closed without producing a screenshot; open the correct tab yourself and retry. The expanded manifest records the asserted pid/window, selection route, and labels.
+
+## Requirements
+
+- macOS 14 or newer on a MacBook with a notch. Setup uses the maintained [himanusia/Atoll fork](https://github.com/himanusia/Atoll), not the upstream repository.
+- [Duckwork Agent](https://github.com/DuckMind/duckwork) with its state database at `~/.duckwork/state.db`. Set `DUCKWORK_HOME` if your Duckwork home is elsewhere.
+- Node.js 22.5 or newer. The Duckwork installer can install this plugin's pinned Node dependencies in its own plugin directory.
+- Homebrew `fswatch` is recommended for faster updates; periodic refresh still works without it.
+- Xcode 15 or newer is required only when Atoll is not already installed. There is currently no verified Atoll release asset for this fork, so setup builds the pinned fork source unsigned and does not claim notarization.
+
+## Install
+
+### With your AI agent (recommended)
+
+Paste this single prompt into Claude Code, Codex, Cursor, Duckwork, or another agent:
+
+```
+Install and set up https://github.com/DuckMind/duckwork for me by following its README, then verify Duckwork Notch Plugin status.
+```
+
+The README is written so an agent can install the Duckwork plugin, ensure the maintained `himanusia/Atoll` fork is used, build it from the pinned source ref when no app is present, and verify the local monitor without replacing an existing Atoll installation.
+
+### Manual
+
+Install and enable the Duckwork plugin:
+
+```sh
+duckwork plugins install himanusia/duckwork-notch-plugin --enable
+```
+
+Accept the installer's separate prompt to install the plugin's Node dependencies. Duckwork keeps them in the plugin directory. Then let the integrated setup choose the safe path:
+
+```sh
+duckwork notch setup
+duckwork notch status
+```
+
+`duckwork notch setup` uses `https://github.com/himanusia/Atoll.git` at immutable commit `3ad728b8c318a51a6098949241d2ca4b6b99e637`. It builds `DynamicIsland.xcodeproj` / `DynamicIsland` with Xcode unsigned, signs the built app, and installs only to a new `~/Applications/Atoll.app`. If an Atoll app already exists, setup detects it and never overwrites, relaunches, clicks permissions, resets permissions, changes xattrs, or uses sudo. Preview the plan first with `duckwork notch setup --dry-run`.
+
+After starting/configuring Atoll yourself and enabling its local extension API, run `duckwork notch status` again. The monitor starts on the next Duckwork session; start it immediately with `duckwork notch start`. When Atoll asks for authorization, allow the extension bundle `dev.hima.notch-plugins`.
+
+## Avoid re-approving macOS permissions
+
+macOS records Accessibility, Screen Recording, and folder grants against the app's designated requirement. An ad-hoc signature gets a `cdhash` requirement that changes on every build, so each update looks like a new app and macOS asks again. A stable local identity makes the requirement certificate-based instead:
+
+```sh
+# ad-hoc
+designated => cdhash H"30487fa1a16135d08abbfb99ca48823c2cf5ef99"
+
+# signed with one local identity
+designated => identifier "com.Ebullioscopic.Atoll" and certificate root = H"46a744ddc047ff480787337f32bc505badac196d"
+```
+
+Create the identity once (it is self-signed, so it does not need to be trusted, and no system trust setting is touched):
+
+```sh
+mkdir -p ~/.duckwork/cache/atoll-signing && cd ~/.duckwork/cache/atoll-signing
+openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 3650 \
+  -keyout key.pem -out cert.pem -subj "/CN=Duckwork Notch Local Signing/O=Himanusia Local Development" \
+  -addext "basicConstraints=critical,CA:FALSE" -addext "keyUsage=critical,digitalSignature" \
+  -addext "extendedKeyUsage=critical,codeSigning"
+openssl pkcs12 -export -inkey key.pem -in cert.pem -name "Duckwork Notch Local Signing" \
+  -out identity.p12 -passout pass:temporary
+security import identity.p12 -k ~/Library/Keychains/login.keychain-db -P temporary -T /usr/bin/codesign
+rm -f key.pem identity.p12
+```
+
+`security find-identity -p codesigning -v` reports this identity as `CSSMERR_TP_NOT_TRUSTED` and counts zero valid identities. That is expected and harmless: `codesign` still signs with it and `codesign --verify --deep --strict` still passes.
+
+Then run setup without extra flags. It prefers `Duckwork Notch Local Signing`, falls back to any other identity in the keychain, and only signs ad-hoc when none exists:
+
+```sh
+duckwork notch setup --dry-run          # shows the exact codesign command and the resolved identity
+duckwork notch setup
+duckwork notch setup --sign-identity "My Other Identity"
+```
+
+Switching an installed ad-hoc app to a certificate costs **one** re-approval of the permissions macOS already asked for. Rebuilding with the same identity afterwards keeps them.
+
+Not notarized: distribution to other machines still needs an Apple Developer ID certificate and notarization. A Developer ID is a different identity from this local one; using it is enough for setup to prefer it automatically, since it is a valid keychain identity.
+
+## Manage the monitor
+
+```sh
+duckwork notch status
+duckwork notch start
+duckwork notch stop
+duckwork notch restart
+```
+
+`stop` keeps the monitor off until the next Duckwork session. Logs are written to `~/.duckwork/logs/notch/duckwork-atoll.log`. The existing `duckwork atoll ...` command remains a compatibility alias; the stable Duckwork plugin identity is still `duckwork-atoll` so enabled users keep working.
+
+To remove the plugin:
+
+```sh
+duckwork notch stop
+duckwork plugins remove duckwork-atoll
+```
+
+## Development
+
+```sh
+npm ci
+npm test
+python3 tools/test-plugin-entrypoint.py
+python3 tools/test-notch-setup.py
+duckwork plugins doctor --ci .
+```
+
+The Node tests cover rendering, state transitions, host lifecycle, and SQLite/WAL watching. The Python smoke test checks Duckwork hook and CLI registration without starting Atoll.
+
+## Repository thumbnail
+
+`assets/duckwork-atoll-thumbnail.jpg` is a landscape 1733 × 908 monochrome illustration. It uses a subtle top-edge notch shape to suggest Atoll's Dynamic Island function. To set it as GitHub's social-preview image, upload the JPG from **Settings → General → Social preview**.
+
+## License
+
+ISC. See [LICENSE](LICENSE).

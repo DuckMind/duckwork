@@ -1,0 +1,41 @@
+# Based on devkit's templates/ci.python.yml, with a Python version matrix:
+# Telesec runs inside whatever Python the Duckwork gateway uses, 3.11 to 3.14.
+# Edited here on purpose, so devkit sync leaves this file alone.
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    uses: neoromantic/devkit/.github/workflows/ci-python.yml@v1
+    permissions:
+      contents: read
+    with:
+      python-version: '["3.11","3.12","3.13","3.14"]'
+
+  hygiene:
+    uses: neoromantic/devkit/.github/workflows/hygiene.yml@v1
+    permissions:
+      contents: read
+
+  # The one required check for the branch ruleset. It is named exactly "ci".
+  ci:
+    needs: [build, hygiene]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: All jobs passed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

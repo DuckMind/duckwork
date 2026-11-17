@@ -1,0 +1,681 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/NousResearch/hermes-official-plugins/54afaf5014db23346148436c4883eb64095e8060/assets/memory-wiki.jpg": "_catalog_assets/assets/memory-wiki.jpg"
+    },
+    "image": "_catalog_assets/assets/memory-wiki.jpg",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-memory-wiki",
+  "content_id": "54d3dde429c0",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 69,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "d682e76aab28fffc76a90b0c104b3966a0b576307988b750397baeff8b6bbe92"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+    },
+    {
+      "bytes": 7843,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "b31a16b7902f7fd2e56da73ab7f39acff9b500ccb30489965b271ad0649117b0"
+    },
+    {
+      "bytes": 570,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "a500c631a622d0a0522c97c22e9573192f267eb81ef9cfc60bb9a625db9c7f50"
+    },
+    {
+      "bytes": 152653,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/memory-wiki.jpg",
+      "sha256": "15c4deb6687e6dbf54f1bf94c5edfd235e00ff9ecd8c98e94e59170dccfbb614"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+    },
+    {
+      "bytes": 1661,
+      "mode": "100644",
+      "path": "conftest.py",
+      "sha256": "0439ef34bab386dbf7b0aa62d78383168a7eab1b7a5c8750a968d483137e776f"
+    },
+    {
+      "bytes": 19531,
+      "mode": "100644",
+      "path": "dashboard/dist/index.js",
+      "sha256": "a1d7b755764224696176affc0318033ce559c04a2edca2511fe04fea12578163"
+    },
+    {
+      "bytes": 373,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "4687cb22b21a9ef66f73e6716608f19aa3aa4642c79988100c03701f6beb58d5"
+    },
+    {
+      "bytes": 19104,
+      "mode": "100644",
+      "path": "dashboard/memory_wiki_core.py",
+      "sha256": "e015808b5fec2eb02fabeee7b447ea0d131647eaab4816c643c0e2cd6605e896"
+    },
+    {
+      "bytes": 4488,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "d5e6c990e377d6028db95bcddfde87f58eca7f86b94c736d51d82cb4ca7a0984"
+    },
+    {
+      "bytes": 17694,
+      "mode": "100644",
+      "path": "dashboard/src/index.jsx",
+      "sha256": "c5c3e0650acf73274c212cc3cb2cf948677ab19a46e5457cb2dfa23dab8125fa"
+    },
+    {
+      "bytes": 9919,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "375cb8648d5b365296819fe5d91e90cd76bff2210cc34345260fe758d0c8396f"
+    },
+    {
+      "bytes": 37254,
+      "mode": "100644",
+      "path": "package-lock.json",
+      "sha256": "8a4d46084aabebda2de48defef6ecbe89cfb054ba329e9795581c394521ffc57"
+    },
+    {
+      "bytes": 1202,
+      "mode": "100644",
+      "path": "package.json",
+      "sha256": "6d4392f8e0dcf05602d9df7c06c5b5b4260cd3038e1303764bd720f337e1b0fc"
+    },
+    {
+      "bytes": 715,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "b108508a965e269c3840c0e705ba1251a88cb71c5296bb31d3d5e9c36dee9f11"
+    },
+    {
+      "bytes": 139,
+      "mode": "100644",
+      "path": "tests/desktop-entry.mjs",
+      "sha256": "0310692e83ffcb989d066139590d84ca4b7d3c56c08ed7bf15b18643e2f14fe8"
+    },
+    {
+      "bytes": 2785,
+      "mode": "100644",
+      "path": "tests/desktop-sdk-shim.mjs",
+      "sha256": "88ffdeee6db35e1e79ab7472faffcedc31445b8563edb45812623f5e35d83064"
+    },
+    {
+      "bytes": 8881,
+      "mode": "100644",
+      "path": "tests/desktop.test.mjs",
+      "sha256": "f7ced85d1927f57dfed555328bdd3088637c899afe642d306f6a3718a3d54b86"
+    },
+    {
+      "bytes": 11598,
+      "mode": "100644",
+      "path": "tests/test_memory_wiki_core.py",
+      "sha256": "04cc0fdb59ce480729e9f82438537ea017a0f4dbb976354f3ef302c2df23b7fe"
+    },
+    {
+      "bytes": 5602,
+      "mode": "100644",
+      "path": "tests/test_plugin_api.py",
+      "sha256": "6388389aec75ff1f6dcad1d537f234e272fd1676d9b5c859797dc16faba35008"
+    }
+  ],
+  "input_manifest_sha256": "54d3dde429c0d16ee26d44637bd4c761bdbd3a92e0b1bf908115b2604a02bc3a",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source_path": "memory-wiki/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".gitignore",
+      "README.md",
+      "__init__.py",
+      "conftest.py",
+      "dashboard/dist/index.js",
+      "dashboard/memory_wiki_core.py",
+      "dashboard/plugin_api.py",
+      "dashboard/src/index.jsx",
+      "desktop/plugin.js",
+      "package-lock.json",
+      "package.json",
+      "plugin.yaml",
+      "tests/desktop.test.mjs",
+      "tests/test_memory_wiki_core.py",
+      "tests/test_plugin_api.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/NousResearch/hermes-official-plugins",
+    "sha": "54afaf5014db23346148436c4883eb64095e8060",
+    "subdir": "memory-wiki"
+  },
+  "original_repo": "https://github.com/NousResearch/hermes-official-plugins",
+  "original_sha": "54afaf5014db23346148436c4883eb64095e8060",
+  "original_subdir": "memory-wiki",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "0f4f5a729f616e101615e78a73e1a923235c7f87dbdf5aa0129184d6a15287da",
+      "bytes": 71,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "f6f31596f4acd3c5fc1bfc450a6bec40889781abd6d9b7a61495f1962f1d7277",
+      "bytes": 7823,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "7e0788dab1d843211b9c784924cf08e0b75953c4dde9d1bc7da9551fc20e10bc",
+      "bytes": 574,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/assets/memory-wiki.jpg",
+      "sha256": "15c4deb6687e6dbf54f1bf94c5edfd235e00ff9ecd8c98e94e59170dccfbb614",
+      "bytes": 152653,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "conftest.py",
+      "sha256": "ffe8e8a4a776439d8c46f10721f9bc321abdcdb3ca96524d16f08679e3df4989",
+      "bytes": 1695,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/index.js",
+      "sha256": "b5e0ee359dcf285694e8c82145ebdddcc110f3f45492ea81ef990f7138087284",
+      "bytes": 19534,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "4687cb22b21a9ef66f73e6716608f19aa3aa4642c79988100c03701f6beb58d5",
+      "bytes": 373,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/memory_wiki_core.py",
+      "sha256": "1b7c01ba1ba1301feccc52435049365c8158f9f17d08593f9c7a84e0eb86cc23",
+      "bytes": 19114,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "6c5b64470d1d0227beedc1e96b1d6763d1627e3f458f5d71a9aaeb014b8feedf",
+      "bytes": 4504,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/src/index.jsx",
+      "sha256": "dbc373919cb1c1cef696f14366e7b99385417a3e67f90add5230773f30b248c7",
+      "bytes": 17706,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "357446f1d056a4cfd36aa517546632a052e51827bd1b2a97c28b1fcf2b8d5302",
+      "bytes": 9929,
+      "mode": "100644"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "e9eb16fe2cb2860267f44061debcc10de28d2e0b866e2230e4db59ecb82ad1ad",
+      "bytes": 37258,
+      "mode": "100644"
+    },
+    {
+      "path": "package.json",
+      "sha256": "5f99925439572d3961473d9ecff6a06037aafeb0845169144ad8094b041ad7f1",
+      "bytes": 1203,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "a5d0af7ad37e5f6f6eb57f3b1c5bb6876d86d62f8e82407a80c8ae3a40adddac",
+      "bytes": 676,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/desktop-entry.mjs",
+      "sha256": "0310692e83ffcb989d066139590d84ca4b7d3c56c08ed7bf15b18643e2f14fe8",
+      "bytes": 139,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/desktop-sdk-shim.mjs",
+      "sha256": "88ffdeee6db35e1e79ab7472faffcedc31445b8563edb45812623f5e35d83064",
+      "bytes": 2785,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/desktop.test.mjs",
+      "sha256": "b0089715dddb39314caa5fc45a7d78ae71bba4bd6780481962b160b644dffc6a",
+      "bytes": 8883,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_memory_wiki_core.py",
+      "sha256": "96ff090576b2966c8af654347c976ba068836d70e632e81e1124f7e8eb50f3bc",
+      "bytes": 11614,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_api.py",
+      "sha256": "0a7f61a5fa75b0a8194cf506afd5de81a4eb6459673c1b1cb32b9254b4cadbce",
+      "bytes": 5654,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "adb02e41a670b7b899b8785648f0be7c110342b694614b975cf139ac6832d8e1",
+  "pin_verification": {
+    "archive_bytes": 8122937,
+    "archive_sha256": "1b4ec54ebc38d9312d40de6066dbbde95f79ce66b46aaef953470df07681c5bb",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "54afaf5014db23346148436c4883eb64095e8060",
+    "verified_commit_marker": "54afaf5014db23346148436c4883eb64095e8060"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "8da9951a002136add417acedb578377c1202cf5524af66c05c2e810db50177a7",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "d682e76aab28fffc76a90b0c104b3966a0b576307988b750397baeff8b6bbe92",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0f4f5a729f616e101615e78a73e1a923235c7f87dbdf5aa0129184d6a15287da",
+        "source": ".gitignore",
+        "final_output_sha256": "0f4f5a729f616e101615e78a73e1a923235c7f87dbdf5aa0129184d6a15287da",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "0f4f5a729f616e101615e78a73e1a923235c7f87dbdf5aa0129184d6a15287da"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source": "LICENSE",
+        "final_output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "b31a16b7902f7fd2e56da73ab7f39acff9b500ccb30489965b271ad0649117b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d4253b3db930b58e0ef90d68e503bdc2fcb1682ea1d762097c39072259367418",
+        "source": "README.md",
+        "final_output_sha256": "f6f31596f4acd3c5fc1bfc450a6bec40889781abd6d9b7a61495f1962f1d7277",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "d4253b3db930b58e0ef90d68e503bdc2fcb1682ea1d762097c39072259367418"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "a500c631a622d0a0522c97c22e9573192f267eb81ef9cfc60bb9a625db9c7f50",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7e0788dab1d843211b9c784924cf08e0b75953c4dde9d1bc7da9551fc20e10bc",
+        "source": "__init__.py",
+        "final_output_sha256": "7e0788dab1d843211b9c784924cf08e0b75953c4dde9d1bc7da9551fc20e10bc",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "7e0788dab1d843211b9c784924cf08e0b75953c4dde9d1bc7da9551fc20e10bc"
+      },
+      {
+        "destination": "_catalog_assets/assets/memory-wiki.jpg",
+        "input_sha256": "15c4deb6687e6dbf54f1bf94c5edfd235e00ff9ecd8c98e94e59170dccfbb614",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "15c4deb6687e6dbf54f1bf94c5edfd235e00ff9ecd8c98e94e59170dccfbb614",
+        "source": "_catalog_assets/assets/memory-wiki.jpg",
+        "final_output_sha256": "15c4deb6687e6dbf54f1bf94c5edfd235e00ff9ecd8c98e94e59170dccfbb614",
+        "cli_destination": "_catalog_assets/assets/memory-wiki.jpg",
+        "previous_staging_sha256": "15c4deb6687e6dbf54f1bf94c5edfd235e00ff9ecd8c98e94e59170dccfbb614"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+      },
+      {
+        "destination": "conftest.py",
+        "input_sha256": "0439ef34bab386dbf7b0aa62d78383168a7eab1b7a5c8750a968d483137e776f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ffe8e8a4a776439d8c46f10721f9bc321abdcdb3ca96524d16f08679e3df4989",
+        "source": "conftest.py",
+        "final_output_sha256": "ffe8e8a4a776439d8c46f10721f9bc321abdcdb3ca96524d16f08679e3df4989",
+        "cli_destination": "conftest.py",
+        "previous_staging_sha256": "ffe8e8a4a776439d8c46f10721f9bc321abdcdb3ca96524d16f08679e3df4989"
+      },
+      {
+        "destination": "dashboard/dist/index.js",
+        "input_sha256": "a1d7b755764224696176affc0318033ce559c04a2edca2511fe04fea12578163",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b5e0ee359dcf285694e8c82145ebdddcc110f3f45492ea81ef990f7138087284",
+        "source": "dashboard/dist/index.js",
+        "final_output_sha256": "b5e0ee359dcf285694e8c82145ebdddcc110f3f45492ea81ef990f7138087284",
+        "cli_destination": "dashboard/dist/index.js",
+        "previous_staging_sha256": "b5e0ee359dcf285694e8c82145ebdddcc110f3f45492ea81ef990f7138087284"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "4687cb22b21a9ef66f73e6716608f19aa3aa4642c79988100c03701f6beb58d5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4687cb22b21a9ef66f73e6716608f19aa3aa4642c79988100c03701f6beb58d5",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "4687cb22b21a9ef66f73e6716608f19aa3aa4642c79988100c03701f6beb58d5",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "4687cb22b21a9ef66f73e6716608f19aa3aa4642c79988100c03701f6beb58d5"
+      },
+      {
+        "destination": "dashboard/memory_wiki_core.py",
+        "input_sha256": "e015808b5fec2eb02fabeee7b447ea0d131647eaab4816c643c0e2cd6605e896",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1b7c01ba1ba1301feccc52435049365c8158f9f17d08593f9c7a84e0eb86cc23",
+        "source": "dashboard/memory_wiki_core.py",
+        "final_output_sha256": "1b7c01ba1ba1301feccc52435049365c8158f9f17d08593f9c7a84e0eb86cc23",
+        "cli_destination": "dashboard/memory_wiki_core.py",
+        "previous_staging_sha256": "1b7c01ba1ba1301feccc52435049365c8158f9f17d08593f9c7a84e0eb86cc23"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "d5e6c990e377d6028db95bcddfde87f58eca7f86b94c736d51d82cb4ca7a0984",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6c5b64470d1d0227beedc1e96b1d6763d1627e3f458f5d71a9aaeb014b8feedf",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "6c5b64470d1d0227beedc1e96b1d6763d1627e3f458f5d71a9aaeb014b8feedf",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "6c5b64470d1d0227beedc1e96b1d6763d1627e3f458f5d71a9aaeb014b8feedf"
+      },
+      {
+        "destination": "dashboard/src/index.jsx",
+        "input_sha256": "c5c3e0650acf73274c212cc3cb2cf948677ab19a46e5457cb2dfa23dab8125fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dbc373919cb1c1cef696f14366e7b99385417a3e67f90add5230773f30b248c7",
+        "source": "dashboard/src/index.jsx",
+        "final_output_sha256": "dbc373919cb1c1cef696f14366e7b99385417a3e67f90add5230773f30b248c7",
+        "cli_destination": "dashboard/src/index.jsx",
+        "previous_staging_sha256": "dbc373919cb1c1cef696f14366e7b99385417a3e67f90add5230773f30b248c7"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "375cb8648d5b365296819fe5d91e90cd76bff2210cc34345260fe758d0c8396f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "357446f1d056a4cfd36aa517546632a052e51827bd1b2a97c28b1fcf2b8d5302",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "357446f1d056a4cfd36aa517546632a052e51827bd1b2a97c28b1fcf2b8d5302",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "357446f1d056a4cfd36aa517546632a052e51827bd1b2a97c28b1fcf2b8d5302"
+      },
+      {
+        "destination": "package-lock.json",
+        "input_sha256": "8a4d46084aabebda2de48defef6ecbe89cfb054ba329e9795581c394521ffc57",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e9eb16fe2cb2860267f44061debcc10de28d2e0b866e2230e4db59ecb82ad1ad",
+        "source": "package-lock.json",
+        "final_output_sha256": "e9eb16fe2cb2860267f44061debcc10de28d2e0b866e2230e4db59ecb82ad1ad",
+        "cli_destination": "package-lock.json",
+        "previous_staging_sha256": "e9eb16fe2cb2860267f44061debcc10de28d2e0b866e2230e4db59ecb82ad1ad"
+      },
+      {
+        "destination": "package.json",
+        "input_sha256": "6d4392f8e0dcf05602d9df7c06c5b5b4260cd3038e1303764bd720f337e1b0fc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5f99925439572d3961473d9ecff6a06037aafeb0845169144ad8094b041ad7f1",
+        "source": "package.json",
+        "final_output_sha256": "5f99925439572d3961473d9ecff6a06037aafeb0845169144ad8094b041ad7f1",
+        "cli_destination": "package.json",
+        "previous_staging_sha256": "5f99925439572d3961473d9ecff6a06037aafeb0845169144ad8094b041ad7f1"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "b108508a965e269c3840c0e705ba1251a88cb71c5296bb31d3d5e9c36dee9f11",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3b9e6800a5d2aaa0ec8a167fc498cb734c5c6cf4bdb93c153b10e212487bd16",
+        "source": "plugin.yaml",
+        "final_output_sha256": "a5d0af7ad37e5f6f6eb57f3b1c5bb6876d86d62f8e82407a80c8ae3a40adddac",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "e3b9e6800a5d2aaa0ec8a167fc498cb734c5c6cf4bdb93c153b10e212487bd16"
+      },
+      {
+        "destination": "tests/desktop-entry.mjs",
+        "input_sha256": "0310692e83ffcb989d066139590d84ca4b7d3c56c08ed7bf15b18643e2f14fe8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0310692e83ffcb989d066139590d84ca4b7d3c56c08ed7bf15b18643e2f14fe8",
+        "source": "tests/desktop-entry.mjs",
+        "final_output_sha256": "0310692e83ffcb989d066139590d84ca4b7d3c56c08ed7bf15b18643e2f14fe8",
+        "cli_destination": "tests/desktop-entry.mjs",
+        "previous_staging_sha256": "0310692e83ffcb989d066139590d84ca4b7d3c56c08ed7bf15b18643e2f14fe8"
+      },
+      {
+        "destination": "tests/desktop-sdk-shim.mjs",
+        "input_sha256": "88ffdeee6db35e1e79ab7472faffcedc31445b8563edb45812623f5e35d83064",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "88ffdeee6db35e1e79ab7472faffcedc31445b8563edb45812623f5e35d83064",
+        "source": "tests/desktop-sdk-shim.mjs",
+        "final_output_sha256": "88ffdeee6db35e1e79ab7472faffcedc31445b8563edb45812623f5e35d83064",
+        "cli_destination": "tests/desktop-sdk-shim.mjs",
+        "previous_staging_sha256": "88ffdeee6db35e1e79ab7472faffcedc31445b8563edb45812623f5e35d83064"
+      },
+      {
+        "destination": "tests/desktop.test.mjs",
+        "input_sha256": "f7ced85d1927f57dfed555328bdd3088637c899afe642d306f6a3718a3d54b86",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b0089715dddb39314caa5fc45a7d78ae71bba4bd6780481962b160b644dffc6a",
+        "source": "tests/desktop.test.mjs",
+        "final_output_sha256": "b0089715dddb39314caa5fc45a7d78ae71bba4bd6780481962b160b644dffc6a",
+        "cli_destination": "tests/desktop.test.mjs",
+        "previous_staging_sha256": "b0089715dddb39314caa5fc45a7d78ae71bba4bd6780481962b160b644dffc6a"
+      },
+      {
+        "destination": "tests/test_memory_wiki_core.py",
+        "input_sha256": "04cc0fdb59ce480729e9f82438537ea017a0f4dbb976354f3ef302c2df23b7fe",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "96ff090576b2966c8af654347c976ba068836d70e632e81e1124f7e8eb50f3bc",
+        "source": "tests/test_memory_wiki_core.py",
+        "final_output_sha256": "96ff090576b2966c8af654347c976ba068836d70e632e81e1124f7e8eb50f3bc",
+        "cli_destination": "tests/test_memory_wiki_core.py",
+        "previous_staging_sha256": "96ff090576b2966c8af654347c976ba068836d70e632e81e1124f7e8eb50f3bc"
+      },
+      {
+        "destination": "tests/test_plugin_api.py",
+        "input_sha256": "6388389aec75ff1f6dcad1d537f234e272fd1676d9b5c859797dc16faba35008",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0a7f61a5fa75b0a8194cf506afd5de81a4eb6459673c1b1cb32b9254b4cadbce",
+        "source": "tests/test_plugin_api.py",
+        "final_output_sha256": "0a7f61a5fa75b0a8194cf506afd5de81a4eb6459673c1b1cb32b9254b4cadbce",
+        "cli_destination": "tests/test_plugin_api.py",
+        "previous_staging_sha256": "0a7f61a5fa75b0a8194cf506afd5de81a4eb6459673c1b1cb32b9254b4cadbce"
+      }
+    ],
+    "manifest_sha256": "4c4476f546c135b0347c3408706878665e4611ae5179bb43ad41d81c6be4b6f7",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": "memory-wiki/.gitignore",
+    "LICENSE": "memory-wiki/LICENSE",
+    "README.md": "memory-wiki/README.md",
+    "__init__.py": "memory-wiki/__init__.py",
+    "_catalog_assets/assets/memory-wiki.jpg": "assets/memory-wiki.jpg",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "conftest.py": "memory-wiki/conftest.py",
+    "dashboard/dist/index.js": "memory-wiki/dashboard/dist/index.js",
+    "dashboard/manifest.json": "memory-wiki/dashboard/manifest.json",
+    "dashboard/memory_wiki_core.py": "memory-wiki/dashboard/memory_wiki_core.py",
+    "dashboard/plugin_api.py": "memory-wiki/dashboard/plugin_api.py",
+    "dashboard/src/index.jsx": "memory-wiki/dashboard/src/index.jsx",
+    "desktop/plugin.js": "memory-wiki/desktop/plugin.js",
+    "package-lock.json": "memory-wiki/package-lock.json",
+    "package.json": "memory-wiki/package.json",
+    "plugin.yaml": "memory-wiki/plugin.yaml",
+    "tests/desktop-entry.mjs": "memory-wiki/tests/desktop-entry.mjs",
+    "tests/desktop-sdk-shim.mjs": "memory-wiki/tests/desktop-sdk-shim.mjs",
+    "tests/desktop.test.mjs": "memory-wiki/tests/desktop.test.mjs",
+    "tests/test_memory_wiki_core.py": "memory-wiki/tests/test_memory_wiki_core.py",
+    "tests/test_plugin_api.py": "memory-wiki/tests/test_plugin_api.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "memory-wiki",
+    "python_files_compiled": 6,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-memory-wiki",
+  "catalog_file": "src/plugin-catalog/duckwork-memory-wiki.yaml",
+  "identity": {
+    "catalog_id": "hermes-memory-wiki",
+    "canonical_slug": "duckwork-memory-wiki",
+    "original_manifest_name": "memory-wiki",
+    "rebranded_manifest_name": "memory-wiki",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "ccc3f9e27e409e2eb54e707fa084f715b81796163074ab5eeb4c5a49a97e9b28",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "d4253b3db930b58e0ef90d68e503bdc2fcb1682ea1d762097c39072259367418",
+          "after_sha256": "f6f31596f4acd3c5fc1bfc450a6bec40889781abd6d9b7a61495f1962f1d7277",
+          "before_bytes": 7883,
+          "after_bytes": 7823,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "e3b9e6800a5d2aaa0ec8a167fc498cb734c5c6cf4bdb93c153b10e212487bd16",
+          "after_sha256": "a5d0af7ad37e5f6f6eb57f3b1c5bb6876d86d62f8e82407a80c8ae3a40adddac",
+          "before_bytes": 717,
+          "after_bytes": 676,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "plugin.yaml": [
+      {
+        "value": "author: \"Abdullah Raja (@Araja119, original #31244), NousResearch (plugin port)\"",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

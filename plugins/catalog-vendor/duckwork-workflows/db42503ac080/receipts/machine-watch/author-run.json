@@ -1,0 +1,26 @@
+{
+  "template": "machine-watch",
+  "receipt_kind": "author-run",
+  "author_estate": "estate seat (WOFS peer author)",
+  "graph_file": "examples/release/machine-watch.workflow.json",
+  "graph_sha256": "66ac78e53a7e6a722ae373b40505e4f40a129ee43d9c372cfb2d07b0250cfef7",
+  "source_digest": "abbe5bd49fe9aec2ac729ddc26ba8f81608a1a31b512dcab4e27a5199ca49173",
+  "run_id": "20261001-012844-core10-machine-watch-see",
+  "runs_root": "~/.duckwork/workflows",
+  "runner_exit": {
+    "reason": "done",
+    "at": "2026-10-01T01:31:20+00:00",
+    "graph_fingerprint": "95fa7b5a3e9cdfe1"
+  },
+  "outcome": "3/3 nodes terminal (bootstrap/report partial-harvest: valid fenced answers harvested, downstream consumed). Machine gate parked on until_argv polling the file-installed check (zero tokens while parked), released by check exit 0: gate.released by=check attempt=20 waited_s=57; report confirmed 'cleared after 20 polls, last probe exit 0'.",
+  "dedup_proof": "second act_run with identical lane_key 'example-team-lane/machine-watch-smoke' while incumbent running returned {deduped:true, run_id:<incumbent>, runner_live:true} — no second spawn; cron double-fire cannot double-run the watch.",
+  "timeout_path_probe": "companion run 20261001-013212-core10-machine-watch-tim (lane_key .../timeout-probe, check_cmd='false'): parked 100 polls, gate.wait_timeout at attempt 100 (timeout_s=300), run closed with runner_exit reason='blocked by failed watch' — the loud-failure path: no silent success, the next deduped lane_key dispatch retries cleanly.",
+  "hygiene": "zero vendor ids, zero host paths outside /tmp scratch root (documented as shared handoff state); make_public 0 scrub hits; validate [] committed.",
+  "notes": "engine main b84a49b checkout; gate deliberately carries NO question — the hybrid question+wait ambiguity (sys-4zsj9o) stays out of shipped examples.",
+  "tested_revision": "28edf6353ff61ed124efcede6da6238ed8282562",
+  "tested_graph_sha256": "251df837a7c0297863d7a141b2f7ad4170d9453bfeebf46da951b1e4275c2c01",
+  "tested_source_digest": "e71836981444f80f7d64d7ee3fdad9b5417c2f6c01a6503e429fa261059f3a19",
+  "restamped_revision": "105e65a22b6c55bdc5ad984627d5c646d903601b",
+  "revision_note": "Historic laps exercised the tested_revision bytes; current graph digests identify the shipped fixed template, not a claim that these laps were rerun on it. New regressions exercise the corrected bytes.",
+  "admission_note": "Historic limited-path PASS was superseded by review changes at the original head; this receipt is provenance, not a new unconditional acceptance."
+}

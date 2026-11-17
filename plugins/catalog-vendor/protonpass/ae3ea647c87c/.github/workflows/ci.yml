@@ -1,0 +1,72 @@
+name: Plugin CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 5 * * 1"   # weekly: catch breaking changes on Duckwork main
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (ruff, Duckwork rule set)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: ruff check (ruff.toml mirrors duckwork-agent's selection)
+        run: uvx ruff@0.15.10 check .
+
+  tests:
+    name: Tests on Duckwork ${{ matrix.duckwork }} (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - duckwork: v2026.8.13   # v0.20.1, the requires_duckwork floor
+            python: "3.11"
+          - duckwork: v0.22.0      # latest release
+            python: "3.14"
+          - duckwork: main         # development head
+            python: "3.14"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.duckwork }}
+          path: duckwork-agent
+      - uses: astral-sh/setup-uv@v6
+      - name: Install Duckwork from its lockfile
+        run: |
+          uv sync --project duckwork-agent --locked --python ${{ matrix.python }}
+          uv pip install --python duckwork-agent/.venv/bin/python pytest
+      - name: Run plugin tests (fake pass-cli + Duckwork conformance kit)
+        working-directory: plugin
+        run: ../duckwork-agent/.venv/bin/python -m pytest tests -q
+
+  validate:
+    name: Catalog validation (duckwork plugins validate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: v0.22.0
+          path: duckwork-agent
+      - uses: astral-sh/setup-uv@v6
+      - name: Install Duckwork from its lockfile
+        run: uv sync --project duckwork-agent --locked --python 3.14
+      - name: Validate plugin
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: duckwork-agent/.venv/bin/duckwork plugins validate "$GITHUB_WORKSPACE/plugin"

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "rea-captcha": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "rea-captcha@0.3.1",
+        "mcp",
+        "--stateless"
+      ]
+    }
+  }
+}

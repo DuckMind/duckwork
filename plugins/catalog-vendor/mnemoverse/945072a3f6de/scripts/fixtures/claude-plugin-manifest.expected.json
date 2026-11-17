@@ -1,0 +1,19 @@
+{
+  "file": ".claude-plugin/plugin.json",
+  "host": "Claude Code plugin manifest",
+  "verifiedAgainst": "https://code.claude.com/docs/en/plugins-reference.md",
+  "verifiedOn": "2026-09-23",
+  "checks": [
+    {
+      "name": "mcpServers is the string path './.mcp.json'",
+      "kind": "equals",
+      "path": ["mcpServers"],
+      "expect": "./.mcp.json"
+    },
+    {
+      "name": "name present",
+      "kind": "present",
+      "path": ["name"]
+    }
+  ]
+}

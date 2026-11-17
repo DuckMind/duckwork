@@ -1,0 +1,86 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      duckwork_ref:
+        description: Duckwork commit or branch for the duckwork-tools job (empty = the pinned commit)
+        required: false
+        default: ""
+  schedule:
+    - cron: "17 5 * * 1"  # weekly, Monday 05:17 UTC: run the Duckwork job against Duckwork main
+
+# The pinned Duckwork commit appears once, in the duckwork-tools matrix below.
+jobs:
+  unit:
+    if: github.event_name != 'schedule'
+    name: unit (${{ matrix.os }}, ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install pytest
+      - name: unit tests and corpora (Duckwork not installed, end-to-end tests skip)
+        run: python -m pytest -v
+
+  duckwork-tools:
+    name: duckwork-tools (${{ matrix.ref }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ref: ${{ fromJSON(github.event_name == 'schedule' && '["main"]' || (inputs.duckwork_ref != '' && inputs.duckwork_ref != null) && format('["{0}"]', inputs.duckwork_ref) || '["b4170e73b0bbd74b47dc567c36166d749c069699"]') }}
+    env:
+      PROVENANCE_GATE_REQUIRE_E2E: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: provenance-gate
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: python -m pip install uv
+      - name: install Duckwork at ${{ matrix.ref }} on Python 3.14
+        run: |
+          git clone --filter=blob:none https://github.com/DuckMind/duckwork duckwork-agent
+          cd duckwork-agent
+          git checkout ${{ matrix.ref }}
+          echo "Duckwork commit: $(git rev-parse HEAD)"
+          uv venv -p 3.14 "$RUNNER_TEMP/duckwork-venv"
+          # Duckwork declares its test tools in the "dev" dependency group.
+          VIRTUAL_ENV="$RUNNER_TEMP/duckwork-venv" uv pip install -e . --group dev
+          echo "$RUNNER_TEMP/duckwork-venv/bin" >> "$GITHUB_PATH"
+      - name: all tests, end-to-end included
+        working-directory: provenance-gate
+        run: python -m pytest -v
+      - name: duckwork plugins validate (no private-import warnings)
+        run: |
+          export DUCKWORK_HOME="$RUNNER_TEMP/validate-home"
+          duckwork plugins validate provenance-gate
+          duckwork plugins validate --json provenance-gate > validate.json
+          python - <<'PY'
+          import json
+          report = json.load(open("validate.json"))
+          assert report["ok"], report
+          assert report["warnings"] == [], report["warnings"]
+          print("validate ok, warnings:", report["warnings"])
+          PY
+      - name: duckwork plugins doctor provenance-gate --ci
+        run: |
+          export DUCKWORK_HOME="$RUNNER_TEMP/doctor-home"
+          mkdir -p "$DUCKWORK_HOME/plugins/provenance-gate"
+          cp -r provenance-gate/plugin.yaml provenance-gate/__init__.py provenance-gate/provenance_gate \
+            provenance-gate/LICENSE provenance-gate/NOTICE "$DUCKWORK_HOME/plugins/provenance-gate/"
+          duckwork plugins enable provenance-gate
+          duckwork plugins doctor provenance-gate --ci

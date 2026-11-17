@@ -1,0 +1,274 @@
+# Duckwork Bridge Adapter
+
+Generic JSON-file-based bridge adapter for the [Duckwork Agent](https://duckwork-agent.fordex.com) Gateway.
+
+Instead of each messaging platform connecting directly to the Gateway, the Bridge Adapter provides a **shared JSON-file interface** — any external service can communicate with Duckwork by reading/writing JSON files in a well-defined directory structure.
+
+**Terminology:** an **External Service** is the messaging platform itself (your messaging service, a chatbot, …). An **External Service Wrapper** (or just *wrapper*) is the script that binds that platform to the JSON-file contract — it reads `outbox/`, writes `inbox/` and `status/`, and copies attachments. The adapter never talks to the platform directly; it only exchanges JSON files with the wrapper.
+
+## How It Works
+
+```
+┌─────────────────────┐     JSON files      ┌──────────────────┐
+│  External Service   │  ┌──────────────┐   │  Duckwork Gateway   │
+│  Wrapper            │──▶│  inbox/      │──▶│  Bridge Adapter   │
+│  (your messaging    │   │  <bridge>/   │   │  polls inbox/     │
+│   service, chatbot) │◀──│  outbox/     │◀──│  writes outbox/   │
+│                     │   │  <bridge>/   │   │  dispatches       │
+│                     │   │  status/     │   │  MessageEvents    │
+│                     │   │  <bridge>/   │   │                   │
+│                     │   │  media/      │   │                   │
+└─────────────────────┘  └──────────────┘   └──────────────────┘
+```
+
+## Directory Structure
+
+```
+<bridge_dir>/
+├── registry/<bridge>.yaml ← bridge manifest (presence = registered)
+├── unified_threads.json   ← persisted unified threads (T-058)
+├── reply_map.json        ← gateway→local message-id map for cross-bridge reply chains (T-060)
+├── identity_map.json     ← alias→person map for member dedup (T-062)
+├── active_threads.json   ← per-person active thread (T-064)
+├── paused_threads.json   ← per-person paused routing (T-068)
+├── pending_claims.json   ← in-flight identity-claim challenges (T-065)
+├── usernames.json        ← per-person display name (T-065)
+├── protokoll/<thread>/   ← rendered protokoll artifacts (T-059)
+├── inbox/<bridge>/       ← written by external service wrapper, read by adapter
+├── outbox/<bridge>/      ← written by adapter, read by external service wrapper
+├── status/<bridge>/      ← written by external service wrapper, read by adapter
+└── media/
+    ├── <bridge>/incoming/  ← incoming attachments (wrapper → adapter)
+    └── <bridge>/outgoing/  ← outgoing attachments (adapter → wrapper)
+```
+
+## Bridge Self-Registration (Registry)
+
+Bridges register with the adapter by dropping a manifest into `registry/`:
+
+```yaml
+# registry/imsg.yaml
+name: imsg
+service: imessage
+host: mac-mini-01
+target_format: [email, phone, chat_id]
+capabilities: [text]
+```
+
+- **Presence of the manifest = the bridge is registered.** The adapter
+  polls `registry/` every few seconds and reconciles:
+  - a **new** manifest → the bridge is registered and its
+    `inbox/`, `outbox/`, `status/`, `media/` directories are created;
+  - the manifest is **removed** (`rm registry/imsg.yaml`) → the bridge is
+    deregistered and its `status/`/`media/` directories are cleaned up.
+- **No config edit needed to add a bridge** — just drop in a manifest (or
+  remove it to take the bridge down). The adapter picks up changes at
+  runtime without a restart.
+- **`target_format`** declares which target shapes the bridge accepts
+  (`email`, `phone`, `chat_id`). It is the basis for the routing check
+  that decides whether a target is routable on a bridge.
+- A bridge that is *registered* (manifest present) may still be
+  *disconnected* (`status/<bridge>/status.json` says `connected: false`);
+  the two are independent.
+
+## JSON Schema
+
+### Inbox (incoming message — wrapper → adapter)
+
+```json
+{
+  "bridge": "imsg",
+  "id": "msg_abc123",
+  "sender": "user_42",
+  "sender_name": "Alice",
+  "text": "Hello! Can you check the deployment status?",
+  "timestamp": "2026-07-26T12:00:00Z",
+  "chat": {
+    "id": "chat_99",
+    "type": "group",
+    "name": "Project Chat"
+  },
+  "attachments": [
+    {
+      "type": "image",
+      "url": "media/imsg/incoming/screenshot.jpg",
+      "mime": "image/jpeg",
+      "size": 204800
+    }
+  ],
+  "reply_to": "msg_001"
+}
+```
+
+### Outbox (outgoing message — adapter → wrapper)
+
+```json
+{
+  "bridge": "imsg",
+  "id": "out_xyz789",
+  "target": "imsg~chat_99",
+  "text": "Sure, let me check that.",
+  "attachments": [
+    {
+      "type": "image",
+      "url": "media/imsg/outgoing/result.png",
+      "mime": "image/png",
+      "size": 102400
+    }
+  ],
+  "typing": true,
+  "reply_to": "msg_abc123",
+  "thread_id": "thread_001",
+  "metadata": {}
+}
+```
+
+### Status (bridge health — wrapper → adapter)
+
+```json
+{
+  "connected": true,
+  "last_seen": "2026-07-26T12:00:00Z",
+  "error": null,
+  "version": "1.0.0"
+}
+```
+
+## Features
+
+- **Platform-agnostic** — any service that reads/writes JSON can be a bridge
+- **duckwork_bridge_sdk (T-090)** — wrappers implement only platform hooks (`send`, `build_inbox_msg`, `is_own`, inbound loop); the SDK package owns the file contract (manifest, status heartbeat, last_seen dedup, atomic inbox write, outbox drain). **→ [`WRAPPER_GUIDE.md`](WRAPPER_GUIDE.md), section "Writing a Wrapper with the SDK"**
+- **Attachment support** — images, files, documents via shared media directory
+- **Reactions** — 👍 reactions on messages
+- **Typing indicators** — show when Duckwork is typing
+- **Reply chains** — reply_to preserves conversation context
+- **Per-bridge config** — mention patterns, user allowlists, poll intervals
+- **Auto-cleanup** — old media files (>24h) and stale outbox entries (>1h, the at-least-once retry window) are purged
+- **Delivery semantics** — file delivery is at-least-once: writes are atomic (temp + `os.replace`, T-094/T-096), a failed outbox send retries on the next sweep (T-095), and the inbox poller retries unreadable files for up to `PARSE_FAILURE_LIMIT` (3) polls before quarantining them as `*.corrupt` (T-097/T-098). A crash between dispatch and unlink can duplicate an inbound message (no ID-based dedup) — at-least-once by design.
+- **Health monitoring** — status files polled every 60s, logged on disconnect
+- **Registry self-registration (T-050)** — bridges register via `registry/` manifests, picked up at runtime without a restart
+- **Agent awareness (T-051)** — a system-prompt platform hint teaches the agent to read `registry/` and address messages as `<bridge>~<target>`; every inbound message carries a compact routing line (`[Message from <sender>, bridge <bridge>, reply to <bridge>~<target>]`)
+- **Routing fallback (T-053)** — `send()` validates the target; unroutable targets (unknown bridge / wrong format) return a clear `SendResult` error instead of silently misrouting
+- **Unified Threads (T-058–T-068) — the differentiator.** Because every bridge is wired to the adapter through the same JSON-file contract, multiple bridges can share a **single agent session** — one conversation across iMessage, Talk, and any other wrapper. Native gateway adapters are isolated from each other; the Bridge Adapter turns them into one thread. `/unified` commands (with `/u` alias shortcuts), 5 participant modes, cross-bridge reply chains, adaptive bundling, member dedup, **message relay** that mirrors every inbound message to the other member bridges so all humans see the full conversation, plus **active-thread switching**, **one-shot send** (T-064), **identity-claim challenge-response** to authorize a user-mapping across bridges (T-065), **unified handles** (T-066) that decouple the on-thread identity from the raw bridge identity (`unified~<username>`, agent handle from config), and **exit** (T-067/T-068) to pause a member chat back into the normal per-bridge DM. **→ [Full docs: `UNIFIED_THREADS.md`](UNIFIED_THREADS.md)**
+
+## Installation
+
+1. Install the plugin:
+   ```bash
+   cp -r bridge-adapter ~/.duckwork/plugins/
+   ```
+
+2. Enable in `~/.duckwork/config.yaml`:
+   ```yaml
+   plugins:
+     enabled:
+       - bridge-adapter
+   gateway:
+     platforms:
+       bridge-adapter:
+         enabled: true
+   ```
+
+3. Set environment:
+   ```bash
+   export BRIDGE_DIR=/home/user/.duckwork/bridge
+   ```
+
+4. Restart the Gateway.
+
+## Plugin Catalog
+
+The bridge-adapter is available in the Duckwork Plugin Catalog:
+
+```bash
+duckwork plugins install bridge-adapter
+duckwork plugins enable bridge-adapter
+```
+
+## Adding a New Bridge
+
+Bridges **self-register** by dropping a manifest into `registry/`. The adapter polls `registry/` every few seconds and picks up new/removed manifests at runtime — no config change, no restart.
+
+To add a new bridge (e.g. your messaging service):
+
+```bash
+# 1. Write a registry manifest (this is the registration)
+cat > <bridge_dir>/registry/myservice.yaml <<'EOF'
+name: myservice
+service: my-messaging-service
+host: my-host
+target_format: [chat_id]
+capabilities: [text]
+EOF
+
+# 2. The adapter creates inbox/outbox/status/media/myservice automatically
+
+# 3. Write a wrapper script that:
+#    - Reads outbox/myservice/*.json → sends via your service's API
+#    - Writes incoming messages to inbox/myservice/*.json
+#    - Writes status to status/myservice/status.json
+
+# 4. Start the wrapper
+python3 myservice-wrapper.py
+```
+
+To take a bridge down, remove its manifest (`rm registry/myservice.yaml`) — the adapter deregisters it and cleans up. See `wrappers/imsg-wrapper.py` for a complete wrapper example.
+
+### Directory structure with multiple bridges
+
+```
+<bridge_dir>/
+├── registry/
+│   ├── imsg.yaml          ← iMessage bridge manifest
+│   └── myservice.yaml     ← your messaging service bridge manifest
+├── inbox/
+│   ├── imsg/              ← iMessage wrapper writes here
+│   └── myservice/         ← your messaging service wrapper writes here
+├── outbox/
+│   ├── imsg/              ← Adapter writes iMessage replies here
+│   └── myservice/         ← Adapter writes your messaging service replies here
+├── status/
+│   ├── imsg/
+│   └── myservice/
+└── media/
+    ├── imsg/
+    └── myservice/
+```
+
+Each bridge is fully isolated — its own inbox, outbox, status, and media directories. Wrappers only touch their own namespace.
+
+## Writing a Bridge Wrapper
+
+**Start with the SDK.** The `wrappers/duckwork_bridge_sdk/` package provides `BridgeRunner` and helpers — a wrapper implements only platform-specific logic and hands it over:
+
+```python
+from duckwork_bridge_sdk import BridgeRunner
+
+BridgeRunner(
+    bridge="mybridge",
+    service="my-service",
+    host="my-host",
+    target_format=["chat_id"],
+    capabilities=["text"],
+    send=lambda target, text, attachments: platform_send(target, text),
+    extra_threads=[lambda: threading.Thread(target=inbound_loop, daemon=True)],
+).main()   # registers manifest, starts outbox+heartbeat threads, blocks, cleans up
+```
+
+The runner registers the manifest on startup (the adapter creates the directory tree), writes the status heartbeat, drains the outbox, and unregisters cleanly on shutdown. **→ Full SDK guide with a complete minimal wrapper: [`WRAPPER_GUIDE.md`](WRAPPER_GUIDE.md)**
+
+Without the SDK, a wrapper is any script that:
+
+1. **Reads** JSON files from `outbox/<bridge>/` (messages from Duckwork)
+2. **Sends** them via the platform's API (your messaging service, chatbot, etc.)
+3. **Writes** incoming messages as JSON to `inbox/<bridge>/`
+4. **Writes** status to `status/<bridge>/`
+
+See `wrappers/imsg-wrapper.py` for a complete example (watch stream with auto-reconnect, history safety net, and registry self-registration). Ready-made wrappers live in [`wrappers/`](wrappers/README.md) — each with a short "use this when" note.
+
+## Requirements
+
+- Duckwork Agent (Gateway mode)
+- Python 3.11+
+- No additional dependencies (uses Duckwork Gateway SDK)
+

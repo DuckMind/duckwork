@@ -1,0 +1,308 @@
+{
+  "grammar": "wf/1",
+  "name": "triage-route",
+  "description": "Triage a work queue with one classifier node and the complementary two-gate branch pair: gates with negated `when` predicates and on_skip=prune route the run down exactly one arm (human escalation OR batch handling) and the dead arm's descendants never spawn. run_context seeds (ALL required): 'work_queue' = where the open items live (a file path, a command, or a URL your tools can read); 'action_target' = where routine actions are APPLIED (the ledger/ticket/file/CLI the rule's actions mutate — often the same place as work_queue, say so explicitly); 'decision_rule' = the owner's standing rule the classifier applies verbatim; 'owner_notify' = how a human is reached (a command, channel name, or file to write). PRUNE LAW (safety-bearing, earned in a two-estate clean-run): an arm node is skipped only when ALL its `after` deps are skipped — adding the classifier to an arm node's `after` 'for convenience' resurrects the dead arm and runs BOTH arms (the batch fan-out executed while the human still held the urgent gate). Therefore each arm hangs ONLY on its route-* gate and pulls the classifier payload via an explicit `inputs:` ref. The fan-out's items_from head must sit in its own `after`, so batch-prep (arm-scoped, hangs only on route-batch, pulls classify via `inputs:`) forwards the routine set — never point an arm node's `after` at the classifier itself. ROUTE SEMANTICS: the pair selects ONE arm per run — when urgent wins, routine items are NOT executed this lap (they stay in your queue; the report lists them for the owner to re-route next lap). RELEASE LAW: 'act' must name what is authorized; a bare 'act' executes nothing (proven: handle-urgent refuses and surfaces it). ADAPTER CONTRACT for work_queue: the intake node must be able to enumerate open items from it with whatever read-only tools the receiver has; nothing here mutates your tracker — every write/escalate step is a node you can point at your real system. Seeds are plain text: a seed value containing { or } breaks fan-out re-rendering and the launch refuses.",
+  "provenance": {
+    "owner": "author-estate (peer-estate maintained)",
+    "source": "duckwork-workflows/examples/triage-route.workflow.json"
+  },
+  "defaults": {
+    "timeout": 900,
+    "context": "You are one lane of a triage-route workflow. Ground rules:\n- Read-only unless your node's goal explicitly says to act or escalate.\n- Self-report is not proof: every classification cites the field or evidence in the item that drove it.\n- Apply the owner's standing rule as written; do not invent policy. An item the rule does not clearly cover is 'ambiguous' — never force it into routine or urgent.\n- Keep answers to the schema; one fenced ```json block as your final message. Never print secrets."
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "type": "agent",
+      "max_turns": 6,
+      "shape": "recon",
+      "goal": "Enumerate the open items in the work queue: {run.work_queue}\nRead them with whatever read-only tools you have. Ignore items closed/answered out-of-band. Return up to 20 items, each reduced to one line.\nReply with ONLY fenced json {\"items\": [{\"id\": \"<stable identifier>\", \"summary\": \"<one line>\"}], \"count\": <int>, \"notes\": \"<anything unreadable or skipped, with reason>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "summary"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "summary": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "count": {
+            "type": "integer"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ]
+      }
+    },
+    {
+      "id": "classify",
+      "type": "agent",
+      "after": [
+        "intake"
+      ],
+      "max_turns": 8,
+      "shape": "recon",
+      "goal": "Classify every item from the intake payload (in ## Inputs) using the owner's standing rule, applied verbatim:\nRULE: {run.decision_rule}\nBuckets (an item goes in exactly one):\n- routine: the rule says how to handle it AND no human judgment is needed\n- urgent: the rule or its evidence says it must not wait for the batch\n- ambiguous: the rule does not clearly cover it\nReply with ONLY fenced json {\"has_urgent\": true|false, \"routine\": [{\"id\": \"<id>\", \"action\": \"<what the rule says to do>\"}], \"urgent\": [{\"id\": \"<id>\", \"evidence\": \"<why it must not wait>\"}], \"ambiguous\": [{\"id\": \"<id>\", \"why\": \"<the gap in the rule>\"}], \"rule_citations\": \"<one line: which part of the rule drove each bucket>\"}\nhas_urgent MUST be true iff the urgent array is non-empty — the branch gates read that boolean (the gate grammar cannot see array length).\nAlso set \"routine_empty\": true iff the ROUTINE bucket is empty after routing every item (an empty queue is a legal classification outcome — never invent an item to fill it).",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "has_urgent": {
+            "type": "boolean"
+          },
+          "routine": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "urgent": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "ambiguous": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "rule_citations": {
+            "type": "string"
+          },
+          "routine_empty": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "has_urgent",
+          "routine",
+          "urgent",
+          "ambiguous",
+          "routine_empty"
+        ]
+      }
+    },
+    {
+      "id": "route-urgent",
+      "type": "gate",
+      "after": [
+        "classify"
+      ],
+      "when": "out.classify.has_urgent == True",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      }
+    },
+    {
+      "id": "route-batch",
+      "type": "gate",
+      "after": [
+        "classify"
+      ],
+      "when": "out.classify.has_urgent == False and out.classify.routine_empty == False",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      }
+    },
+    {
+      "id": "batch-prep",
+      "type": "agent",
+      "after": [
+        "route-batch"
+      ],
+      "inputs": [
+        "classify"
+      ],
+      "max_turns": 4,
+      "shape": "recon",
+      "goal": "Hand the routine set to the batch lanes. From the classify payload (## Inputs): if has_urgent is true, reply {\"routine\": [], \"skipped\": \"urgent arm active — belt on the prune law\"} and do nothing else.\nOtherwise (route-batch only fires on a non-empty routine set; if you are running, the queue has work): re-emit the routine array VERBATIM (no re-classifying, no additions): {\"routine\": [<each {id, action} exactly as classify wrote it>], \"count\": <int>}\nThis node exists because the fan-out grammar requires its items_from head in the lane's own `after` — and an `after` edge to classify would resurrect this arm while the human holds the urgent gate (prune law: all deps must be skipped; a live classifier dep keeps the arm alive).",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "routine": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "count": {
+            "type": "integer"
+          },
+          "skipped": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "routine"
+        ]
+      }
+    },
+    {
+      "id": "escalate",
+      "type": "gate",
+      "after": [
+        "route-urgent"
+      ],
+      "question": "Urgent items need a human now — release which option?",
+      "options": [
+        "act",
+        "hold",
+        "dismiss"
+      ],
+      "context": "Urgent set and evidence are in the classify output above (## Inputs). Owner-escalation channel: {run.owner_notify}. Escalation means surfacing the item to a human, not silently acting on it. Release law: 'act' must state WHAT is authorized (e.g. 'act: refund pw-101 up to $50') — a bare 'act' with no authorization is treated as not-approved by the executor."
+    },
+    {
+      "id": "handle-urgent",
+      "type": "agent",
+      "after": [
+        "escalate"
+      ],
+      "max_turns": 8,
+      "shape": "build",
+      "goal": "The human answered the escalation gate with an option and reason (see ## Inputs from 'escalate'). If the released option is NOT 'act', do nothing to the items: reply {\"acted\": [], \"skipped\": \"not approved: <option>\"} and stop.\nIf it IS 'act': execute exactly and only what the human's release reason AUTHORIZED (named in the release text) for the urgent items (in the classify payload above / gate context). If the release says bare 'act' with no concrete authorization, execute nothing: reply {\"acted\": [], \"skipped\": \"'act' carried no authorization — owner must name what to do\"} and surface it. Record per item what was done and the evidence.\nReply with ONLY fenced json {\"acted\": [{\"id\": \"<id>\", \"action\": \"<what was done>\", \"evidence\": \"<command/output>\"}], \"skipped\": \"<reason or empty>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "acted": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "skipped": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "acted"
+        ]
+      },
+      "inputs": [
+        "classify"
+      ]
+    },
+    {
+      "id": "route-empty",
+      "type": "gate",
+      "after": [
+        "classify"
+      ],
+      "when": "out.classify.has_urgent == False and out.classify.routine_empty == True",
+      "on_skip": "prune",
+      "wait": {
+        "wait_s": 0.01
+      }
+    },
+    {
+      "id": "empty-notice",
+      "type": "echo",
+      "after": [
+        "route-empty"
+      ],
+      "output": {
+        "queue_empty": true,
+        "note": "the routine queue was empty: zero items classified routine, zero lanes dispatched, zero actions taken. The batch side CLOSED, it did not fail."
+      }
+    },
+    {
+      "id": "batch-run",
+      "type": "agent",
+      "after": [
+        "batch-prep"
+      ],
+      "max_turns": 10,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "action_taken": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action_taken"
+        ]
+      },
+      "shape": "build",
+      "goal": "Execute the rule's prescribed action for EACH routine item in the classify payload (## Inputs).\nApply actions at the action target: {run.action_target}\nIf the urgent arm is visible in inputs (has_urgent=true), do nothing and reply {\"items\": [], \"skipped\": \"urgent arm active\"} — belt-and-braces on the prune law.\nWork items one by one; an item whose target row cannot be located gets action_taken 'not applied: <why>' — never invent a target or write anywhere else.\nReply with ONLY fenced json {\"items\": [{\"id\": \"<item id>\", \"action_taken\": \"<what was done, or 'not applied: <why>'>\", \"evidence\": \"<command/output establishing it>\"}], \"count\": <int>}",
+      "fanout": {
+        "items_from": "batch-prep.routine",
+        "goal": "Execute the rule's prescribed action for this routine item: {item}\nApply it at the action target: {run.action_target}\nWork only this item. If the item's target row cannot be located in the action target, do NOT invent a target or write anywhere else: report action_taken as 'not applied: <why>' with your probe evidence.\nReply with ONLY fenced json {\"id\": \"<item id>\", \"action_taken\": \"<what was done, or 'not applied: <why>'>\", \"evidence\": \"<command/output establishing it>\"}"
+      }
+    },
+    {
+      "id": "report",
+      "type": "agent",
+      "after": [
+        "handle-urgent",
+        "batch-run",
+        "empty-notice"
+      ],
+      "inputs": [
+        "classify"
+      ],
+      "max_turns": 6,
+      "shape": "review",
+      "goal": "Write the triage closeout from the payloads in ## Inputs. If empty-notice is your batch-side payload, the queue was empty: report lane \"batch\", done [], and say plainly that zero routine items existed - the batch side CLOSED, never imply work ran. One arm will be absent — that is correct (the losing branch was pruned); say which arm ran. Cover: items seen, per-bucket counts, what was done per item with evidence, the ambiguous set the owner must rule on (list every one — they are the rule-gap backlog), and the gate answer if escalation ran.\nReply with ONLY fenced json {\"lane\": \"urgent|batch\", \"seen\": <int>, \"done\": [\"<id: action + evidence>\"], \"ambiguous_for_owner\": [\"<id: the gap>\"], \"gate\": \"<released option + reason, or 'not reached'>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "lane": {
+            "type": "string",
+            "description": "one of: urgent, batch"
+          },
+          "seen": {
+            "type": "integer"
+          },
+          "done": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ambiguous_for_owner": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "lane",
+          "seen",
+          "done",
+          "ambiguous_for_owner"
+        ]
+      }
+    }
+  ]
+}

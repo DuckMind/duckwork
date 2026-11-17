@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-doctorpack"
+version = "0.1.0"
+description = "Local-first diagnostics, safety audit, and incident postmortems for Duckwork Agent."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Dhiraj Das" }]
+license = "MIT"
+keywords = ["duckwork-agent", "plugin", "diagnostics", "postmortem", "agent-safety"]
+dependencies = ["PyYAML>=6.0,<7"]
+
+[project.entry-points."duckwork_agent.plugins"]
+doctorpack = "duckwork_doctorpack"
+
+[project.scripts]
+duckwork-doctorpack = "duckwork_doctorpack.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["duckwork_doctorpack*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

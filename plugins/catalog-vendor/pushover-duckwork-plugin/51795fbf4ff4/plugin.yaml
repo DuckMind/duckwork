@@ -1,0 +1,40 @@
+name: pushover-duckwork-plugin
+kind: platform
+version: 1.2.0
+requires_duckwork: ">=0.21"
+description: >
+  Pushover gateway adapter for Duckwork Agent.
+  Sends push notifications via the Pushover API.
+  Outbound-only — no inbound message handling.
+  Includes agent lifecycle notifications (opt-in).
+author: Benoit Beauchamp
+provides_hooks:
+  - post_llm_call
+  - pre_approval_request
+  - post_approval_response
+  - pre_tool_call
+  - post_tool_call
+  - on_human_input_request
+requires_env:
+  - name: PUSHOVER_APP_TOKEN
+    description: "API Token from your Pushover app (pushover.net/apps)"
+    secret: true
+  - name: PUSHOVER_USER_KEY
+    description: "Your Pushover User Key (shown on pushover.net front page)"
+    secret: true
+optional_env:
+  - name: PUSHOVER_NOTIFY_ENABLED
+    description: "Enable agent lifecycle notifications (true/false)"
+    default: "false"
+  - name: PUSHOVER_NOTIFY_NATIVE
+    description: "Enable native desktop notifications via notify-send (true/false)"
+    default: "false"
+  - name: PUSHOVER_NOTIFY_QUESTION
+    description: "Question detail level: full, summary, or minimal (privacy)"
+    default: "full"
+  - name: PUSHOVER_NOTIFY_STATES
+    description: "Space-separated states (finished questions errors pre-approval post-approval blockers), or usual / all"
+    default: "all"
+  - name: PUSHOVER_NOTIFY_DEVICE
+    description: "Optional device filter for notifications"
+    default: ""

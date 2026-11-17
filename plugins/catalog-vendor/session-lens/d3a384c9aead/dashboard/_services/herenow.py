@@ -1,0 +1,18 @@
+"""here.now: inventoried, not readable."""
+
+from __future__ import annotations
+
+from .._common import *
+from .._duckwork_compat import *
+from .._providers.shared import *
+from .shared import *
+
+
+register_service(
+    "herenow", "here.now", "Duckwork .env key",
+    env_keys=("HERE_NOW_API_KEY", "HERENOW_API_KEY"),
+    note="here.now's API publishes sites but reports no plan, quota, or usage figure.",
+    order=80, module=__name__,
+)
+
+__all__ = [name for name in globals() if not name.startswith("__")]

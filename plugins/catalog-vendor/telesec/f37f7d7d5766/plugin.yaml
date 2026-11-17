@@ -1,0 +1,15 @@
+manifest_version: 2
+name: telesec
+version: 0.16.1
+description: "Telesec — Telegram Business secretary for Duckwork."
+author: neoromantic
+license: MIT
+homepage: https://telesec.sergeybaus.com
+tags: [telegram, business, voice, history]
+requires_duckwork: ">=0.21.6"
+kind: standalone
+provides_hooks:
+  - pre_gateway_dispatch
+config_schema:
+  cleanup_style: {type: str, default: conservative, choices: [conservative, enriched], description: "Voice transcript cleanup style."}
+  agent_enable: {type: bool, default: false, description: "Pass unhandled Business updates to the Duckwork agent."}

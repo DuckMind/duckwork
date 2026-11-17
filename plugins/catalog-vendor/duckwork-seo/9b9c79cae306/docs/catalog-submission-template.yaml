@@ -1,0 +1,34 @@
+# Preparation template only. Do not submit this file as-is.
+# Replace the repository and SHA placeholders after publishing a public release.
+name: duckwork-seo
+repo: "https://github.com/DuckMind/duckwork"
+sha: "<40-CHARACTER-RELEASE-COMMIT-SHA>"
+title: Duckwork SEO
+description: >-
+  Community Duckwork port of Claude SEO 2.4.2 with 45 SEO workflow and specialist
+  skills, a credential-scoped duckwork_seo_run tool for allowlisted utilities, an
+  isolated Python runtime, and advisory JSON-LD feedback. Disclosure: the plugin
+  starts local subprocesses; setup downloads Python packages and optionally
+  Chromium; audit workflows fetch user-selected websites; separately configured
+  provider integrations send data to their named services and may incur charges.
+  Skills request approval before paid or mutating operations; the tool does not
+  enforce approvals. Native tool subprocesses run in the Duckwork host plugin
+  process rather than a Docker terminal sandbox, and script arguments may name
+  host-visible paths.
+  Google OAuth workflows remain disabled until Duckwork provides a profile-scoped
+  route; supported provider values come only from the active Duckwork profile
+  vault through secret_scope. Runtime
+  state is stored in Duckwork plugin data storage. No telemetry, bundled
+  credentials, background process, or self-updater.
+maintainer: yuzushi-dev
+tier: community
+category: tools
+requires_duckwork: ">=0.22.2"
+version: "0.1.2"
+readme: true
+platforms: [linux, macos]
+capabilities:
+  provides_tools: [duckwork_seo_run]
+  provides_hooks: [transform_tool_result]
+  provides_middleware: []
+  requires_env: []

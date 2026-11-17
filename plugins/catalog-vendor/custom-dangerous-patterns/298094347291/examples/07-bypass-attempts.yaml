@@ -1,0 +1,88 @@
+# Catches deliberate attempts to slip git commands past pattern matching via shell metachars, eval, subshells, or PATH manipulation.
+deny_patterns:
+  # --- EVAL / SOURCE WRAPPERS ---
+  # `eval "git push ..."`, `bash -c "git ..."`, `sh -c 'git ...'`
+  - description: '[BYPASS] Deny eval wrapping git write subcommand'
+    enabled: true
+    group: BYPASS
+    pattern: '\beval\b[^\n]*\b(?:git|gh)\b[^\n]*\b(?:commit|push|merge|rebase|reset|clean|restore|checkout|switch|update-index|update-ref|filter-branch|filter-repo|cherry-pick|revert|stash|add|rm|mv|am|apply|fast-import|symbolic-ref|receive-pack)\b'
+  
+  - description: '[BYPASS] Deny bash -c / sh -c / zsh -c wrapping git writes'
+    enabled: true
+    group: BYPASS
+    pattern: '\b(?:bash|sh|zsh|dash|ksh|fish)\b\s+-c\b[^\n]*\b(?:git|gh)\b[^\n]*\b(?:commit|push|merge|rebase|reset|clean|restore|checkout|switch|update-index|update-ref|filter-branch|filter-repo|cherry-pick|revert|stash|add|rm|mv|am|apply|fast-import|symbolic-ref|receive-pack)\b'
+  
+  # --- XARGS WRAPPING ---
+  - description: '[BYPASS] Deny xargs git<write>'
+    enabled: true
+    group: BYPASS
+    pattern: '\bxargs\b[^\n]*\b(?:git|gh)\b[^\n]*\b(?:commit|push|merge|rebase|reset|clean|restore|checkout|switch|update-index|update-ref|filter-branch|filter-repo|cherry-pick|revert|stash|add|rm|mv|am|apply|fast-import|symbolic-ref|receive-pack)\b'
+  
+  # --- HEREDOC / COMMAND SUBSTITUTION ---
+  # `bash <<EOF ... git commit ... EOF` and `$()` substitution
+  # `[\s\S]` (not `[^\n]*`): a heredoc payload is always on the line
+  # AFTER the `<<`, so a same-line-only pattern can never match a real
+  # heredoc. That gap was ungated by any Duckwork built-in for non-shell
+  # readers such as cat/tee.
+  #
+  # The match is anchored at `\A` and the first `<<` is taken in an
+  # ATOMIC group: unanchored, every `<<` restarts the second half, and
+  # on a one-line command the bounded `[^\n]*?` is as unbounded as
+  # `[\s\S]*?` (there is no newline to stop it). That is quadratic on
+  # single-line spam like `"cat <<EOF git x " * 800` (12.8 KB measured
+  # 90.6 s; the anchored atomic form takes 0.014 s). After the atomic
+  # commitment the second `[\s\S]*?` runs once and still crosses
+  # newlines to reach the heredoc body. The git line is bounded to
+  # `[^\n]{0,256}?` so each `git` token probes at most 256 characters
+  # instead of the rest of the line; both bounds are load-bearing
+  # (atomic-only 0.34 s, bounded-only 5.5 s at 12.8 KB). Atomic groups
+  # need Python 3.11, which is Duckwork' floor. Gated: only git-write
+  # lines that FOLLOW some `<<`. A command with no `<<`, or `git
+  # commit` before the heredoc, is left to 05-git-write.yaml.
+  - description: '[BYPASS] Deny heredoc containing git write subcommand'
+    enabled: true
+    group: BYPASS
+    pattern: '\A(?>[\s\S]*?<<)[\s\S]*?\b(?:git|gh)\b[^\n]{0,256}?\b(?:commit|push|merge|rebase|reset|clean|restore|checkout|switch|update-index|update-ref|filter-branch|filter-repo|cherry-pick|revert|stash|add|rm|mv|am|apply|fast-import|symbolic-ref|receive-pack)\b'
+  
+  # NOTE: when 05-git-write.yaml is also loaded, its generic
+  # `git <subcommand>` rules match this first (deny rules are
+  # first-match-wins in load order), so this rule will not be the one
+  # that fires. It is retained as coverage for setups that load this
+  # file alone.
+  - description: '[BYPASS] Deny $(...) command substitution with git writes'
+    enabled: true
+    group: BYPASS
+    pattern: '\$\([^\n]*\b(?:git|gh)\b[^\n]*\b(?:commit|push|merge|rebase|reset|clean|restore|checkout|switch|update-index|update-ref|filter-branch|filter-repo|cherry-pick|revert|stash|add|rm|mv|am|apply|fast-import|symbolic-ref|receive-pack)\b'
+  
+  # --- PATH / ALIAS WRAPPERS ---
+  # Redefining `git` to a script before invoking
+  # Anchored on the DEFINITION, not on a later invocation: the old form
+  # needed a second `git` token plus a word boundary after `alias\s+git`,
+  # so the common `alias git=/tmp/evil` never matched (`=` is not a word
+  # character). `(?![\w-])` keeps `alias mygit=` and `alias github=` out.
+  # `ln -s` and `cp -f` still require a later `git` token so ordinary file
+  # copies are not denied; `export PATH=` is self-identifying.
+  - description: '[BYPASS] Deny alias/path override before git invocation'
+    enabled: true
+    group: BYPASS
+    pattern: '\b(?:alias\s+git(?![\w-])|export\s+PATH\b|ln\s+-s\w*[^\n]*\bgit\b|cp\s+-f[^\n]*\bgit\b)'
+  
+  # --- ENV-VAR TRICKS ---
+  # `GIT_SSH_COMMAND='rm -rf ~' git push` style
+  # NOTE: when 05-git-write.yaml is also loaded, its generic
+  # `git <subcommand>` rules match this first (deny rules are
+  # first-match-wins in load order), so this rule will not be the one
+  # that fires. It is retained as coverage for setups that load this
+  # file alone.
+  - description: '[BYPASS] Deny GIT_* env vars with destructive commands'
+    enabled: true
+    group: BYPASS
+    pattern: '\bGIT_(?:SSH_COMMAND|COMMITTER_DATE|AUTHOR_DATE|EXTERNAL_DIFF|DIFF_TEXT_CONV|TEMPLATE_DIR|EDITOR|CORE_PAGER|PAGER)\b\s*=[^\n]*(?:rm\s+-rf|rm\s+-fr|;\s*rm\s+|&&\s*rm\s+|\|\s*rm\s+|>|\$\(rm\b)'
+  
+  # --- UNICODE / HOMOGLYPH SMUGGLING (best-effort) ---
+  # If your wrapper normalizes, this catches obvious substitutions of "git" with lookalikes
+  # Note: this is heuristic only — true defense is shell tokenization, not regex
+  - description: '[BYPASS] Deny lookalike git (cyrillic/homoglyph)'
+    enabled: true
+    group: BYPASS
+    pattern: '\b(?:gіt|gıt|g\u0455t|ｇit|giт)\b[^\n]*\b(?:commit|push|merge|rebase|reset|clean|restore|checkout|switch|update-index|update-ref)\b'

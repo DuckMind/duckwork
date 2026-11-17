@@ -1,0 +1,43 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check out Duckwork Agent
+        uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          path: .duckwork-agent
+      - name: Run unit and Duckwork contract tests
+        env:
+          DUCKWORK_AGENT_SRC: ${{ github.workspace }}/.duckwork-agent
+        run: uv run --extra dev pytest tests/unit -q
+      - name: Build and validate distribution artifacts
+        run: |
+          uv build
+          uv run --with twine twine check dist/*
+          python -c 'from pathlib import Path; files = list(Path("dist").glob("*.whl")) + list(Path("dist").glob("*.tar.gz")); assert len(files) == 2, files'
+      - name: Validate installed package discovery
+        run: |
+          wheel="$(find dist -name '*.whl' -print -quit)"
+          uv run --isolated --with "$wheel" python -c 'from importlib.metadata import entry_points; matches = [ep for ep in entry_points(group="duckwork_agent.memory_providers") if ep.name == "metronix"]; assert len(matches) == 1, matches; assert matches[0].value == "metronix:register"'
+      - name: Load packaged provider with current Duckwork
+        run: |
+          wheel="$(find dist -name '*.whl' -print -quit)"
+          uv run --project .duckwork-agent --with "$wheel" python -c 'from plugins.memory import load_memory_provider; provider = load_memory_provider("metronix"); assert provider is not None; assert provider.name == "metronix"'
+      - name: Validate with current Duckwork Plugin Doctor
+        run: |
+          wheel="$(find dist -name '*.whl' -print -quit)"
+          uv run --project .duckwork-agent --with "$wheel" duckwork plugins doctor "$GITHUB_WORKSPACE" --ci

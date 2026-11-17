@@ -1,0 +1,28 @@
+# duckwork-jailbreak-kernel locale catalog — English (source of truth)
+# Flat dotted-key YAML, mirroring agent/i18n.py's flattened catalog semantics.
+# Resolution: DUCKWORK_LANGUAGE > display.language (config.yaml) > en.
+# Keep keys in sync with zh.yaml.
+
+command.description: "Show or switch jailbreak-kernel session state (on|off|slim|full, profile, dump, reset)"
+
+profile.title: "Duckwork jailbreak kernel (armor-piercing)"
+profile.target: "any backend model (DeepSeek-V4 family / Duckwork / other chat models)"
+profile.kernel_parent: "ported from dsh-infinite-gen-4 (v0.4.0) dual-layer same-source kernel"
+profile.session: "session: {session}"
+profile.state: "mode: {mode} · kernel: {kernel} · rotation: {rotation} · dump: {dump} · override: {override}"
+profile.injection: "injection slots:"
+profile.same_source: "same-source=YES (dual sections identical)"
+profile.budget: "budget: total={total}/{budget} · per-section max={max}/{section_max}"
+profile.off_mode: "mode off — no kernel injected in this session (plugin sections stripped at request time)."
+profile.profiles: "kernel profiles: {profiles}"
+profile.request_layer: "request layer: session-mode driven system rebuild + opencode rotation + diagnostic dump"
+profile.switches: "switches(env): DUCKWORK_JAILBREAK_MODE · PROFILE · ROTATE_SESSION · DUMP · DUAL · DISABLE"
+profile.commands: "commands: /jailbreak [on|off|slim|full] · /jailbreak profile [core|research|creative|max] · /jailbreak dump [on|off] · /jailbreak reset"
+profile.en_only_probe: "english-only-probe"
+
+cmd.usage: "usage: /jailbreak [on|off|slim|full] · /jailbreak profile <core|research|creative|max> · /jailbreak dump <on|off> · /jailbreak reset"
+cmd.no_session: "no resolvable session id in this context — run the command inside a conversation session."
+cmd.mode_set: "session mode → {mode} (session {session})"
+cmd.profile_set: "kernel profile → {profile} (session {session})"
+cmd.dump_set: "diagnostic dump → {state}"
+cmd.reset: "session overrides cleared (session {session})"

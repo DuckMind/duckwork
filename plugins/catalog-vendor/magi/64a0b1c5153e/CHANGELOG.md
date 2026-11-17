@@ -1,0 +1,240 @@
+# Changelog
+
+## 1.7.8 — 2026-10-17
+
+- Documented the Duckwork upstream API guarantees still needed for atomic
+  snapshot/version preconditions, including reordering and ABA scenarios;
+  distinguished the pre-existing shared-delimiter serialization issue from
+  regressions caused by the public batch API migration, and summarized the two
+  isolated stress campaigns and their remaining uncertainties.
+- Applied Desktop AI compaction through Duckwork' public `MemoryStore.apply_batch`
+  without rebinding the private `_mutate` method or depending on `skip_drift`,
+  resolving the Duckwork plugin catalog rule 9 review.
+- Kept the preview fingerprint precheck, exact `matched_entry` pins, and native
+  all-or-nothing batch writes for both Memory and User stores. Concurrent
+  additions remain intact, while missing pinned entries reject the batch;
+  full-snapshot revalidation under the lock requires a future Duckwork API
+  precondition parameter.
+- Added focused regressions for public-API-only compaction, concurrent add and
+  remove behavior, and disk-backed Duckwork transactions, with the original
+  1.7.8 manifest, preview limits, and other plugin capabilities unchanged.
+- Removed the process-global module alias from the LLM context bridge and
+  resolved the active Agent bridge by its plugin file, rejecting ambiguous or
+  unavailable contexts.
+- Reorganized Stored memory metrics into compact Entries, Estimated tokens,
+  and Characters summaries above a full-width Character budget bar, and
+  consolidated search, Memory/User selection, and actions into one responsive
+  toolbar.
+- Clarified the selected state of both Memory/User and Pending writes/Stored
+  memory switches with a shared visual treatment, distinct hover/focus states,
+  and accessible pressed-state semantics.
+- Added focused regression coverage for the compact layout, navigation,
+  responsive controls, and selection states.
+- Renamed the visible workspace heading to **Magi Workspace**, added a small
+  decorative wand icon to **Compact with AI**, and updated the README with the
+  current version and separate Pending writes / Stored memory screenshots.
+- Removed six generated POLIS `.polis` delivery packages from Git tracking and
+  ignored future packages across the repository, while keeping the POLIS
+  retention configuration, contracts, plans, proofs, and validation evidence
+  available for version control without rewriting published history.
+
+## 1.7.7 — 2026-10-08
+
+- Closed a compaction race where another Duckwork writer could add a memory entry
+  after Magi checked the preview fingerprint but before native `apply_batch`
+  reloaded the disk under its exclusive lock. Stale previews now abort within
+  that locked mutation before any new compacted entries are written.
+- Added regression coverage for an intervening writer, plus disk-backed native
+  Duckwork integration proving a rejected stale preview preserves every entry
+  and a refreshed preview commits successfully.
+
+## 1.7.6 — 2026-10-08
+
+- Removed the model-facing `maxItems` schema constraint so Duckwork' own
+  structured-output validation cannot abort Magi's retry on an overlong list;
+  Magi still enforces the entry-count cap after parsing.
+- Reused the same 60%-of-original hard character budget on all three passes,
+  eliminating the late-pass 55% reduction requirement that rejected previously
+  acceptable proposals. Preferred budgets still tighten on retries.
+- Retried Duckwork schema errors and malformed structured responses up to three
+  attempts. Invalid candidates never replace the next retry's source; failures
+  leave stored memory untouched.
+- Added regression tests for overlong output, retry consistency, Duckwork schema
+  exceptions, malformed output, and safe failure without Apply.
+
+## 1.7.5 — 2026-10-07
+
+- Made the entry-content viewer vertically resizable in both Pending writes and
+  Stored memory, with bounded default/minimum/maximum heights and internal
+  scrolling preserved.
+- Stored-memory add/edit textareas now use the same resize behavior as pending
+  Overview and technical inspection views, without changing backend contracts.
+
+## 1.7.4 — 2026-10-07
+
+- Added a `compaction_model` Magi setting for choosing the model used by AI
+  compaction previews; leaving it empty preserves Duckwork' active/default model.
+- Routed the configured model through Duckwork' supported `ctx.llm` facade for both
+  Agent commands and Desktop preview requests, while preserving Duckwork'
+  `allow_model_override` and model-allowlist trust gates.
+- Added regression coverage for configured-model routing on both compaction entry
+  points.
+
+## 1.7.3 — 2026-10-07
+
+- Made AI compaction more aggressive without lowering its semantic-safety bar:
+  three passes now progressively remove prose scaffolding, repeated subject
+  wrappers, inferable consequences, and other lexical overhead while keeping the
+  final 55% minimum-reduction acceptance threshold.
+- Added an explicit structured `cannot_compact_further` signal. Magi challenges
+  early claims, accepts the signal only on the final pass, and then reports a
+  non-error "no change" result with the model's reason instead of presenting a
+  failed budget check as an unexplained compaction error.
+- Retry passes now keep working from the shortest candidate seen so far rather
+  than allowing a later, more verbose proposal to become the new baseline.
+
+## 1.7.2 — 2026-10-07
+
+- Fixed multi-profile Desktop requests so pending-memory review resolves the
+  same request-scoped Duckwork home as the native MemoryStore via
+  `duckwork_constants.get_duckwork_home()`.
+- Added regression coverage proving a context-local profile override lists,
+  approves, and rejects only that profile's staged memory records even when
+  process-level `DUCKWORK_HOME` points elsewhere.
+
+## 1.7.1 — 2026-10-06
+
+- Added catalog-ready compatibility metadata with `requires_duckwork: ">=0.21.5"`.
+- Added and documented the disclosures required by Duckwork catalog rule 13.
+- Added a clean screenshot captured from the real Magi Desktop UI for catalog
+  and pinned README rendering.
+
+## 1.7.0 — 2026-10-06
+
+- Renamed the plugin end-to-end to **Magi**, including plugin/dashboard/Desktop IDs, route, slash command, CLI command, runtime bridge alias, tests, documentation, and repository URL.
+- Replaced the Duckwork sidebar icon with the built-in `wand` Codicon.
+- Removed the previous branded slash/CLI aliases so Duckwork configuration and navigation use one canonical plugin identity.
+
+## 1.6.0 — 2026-10-06
+
+- Redesigned the Desktop dashboard around two clear workflows: reviewing pending proposals and maintaining stored memory, with stronger hierarchy, contextual actions, responsive layouts, and clearer empty/loading/error states.
+- Added lightweight reactive polish using native CSS/Tailwind transitions, short fade-ins, progress animation, and loading pulses with reduced-motion support; no animation dependency was added.
+- Pending review now exposes queue health metrics, filtered-result counts, status-aware proposal cards, a clearer decision header, and progressive Overview/Proposal/Diff/Raw/Verify inspection.
+- Stored memory now exposes budget metrics and a live usage bar, clearer Memory/User switching, search result counts, richer entry cards, unsaved/stale editor states, character counts, and a structured AI-compaction review panel.
+
+## 1.5.10 — 2026-10-06
+
+- Pending-write inspection text is now selectable in **Overview**, **Proposal**, **Diff**, **Raw**, and **Verify**, so standard drag-selection plus copy shortcuts work in Duckwork Desktop.
+- Selection is enabled only on the inspection content, leaving tabs and action controls non-selectable.
+
+## 1.5.9 — 2026-10-06
+
+- Fixed pending-memory **Approve**, **Reject**, **Approve all**, **Reject all**, and **Delete obsolete** actions requiring an open or focused Duckwork chat session.
+- Desktop decisions now call the profile-scoped plugin backend instead of `slash.exec`; approved writes still replay through Duckwork' native `apply_memory_pending()` pinned-entry semantics, while rejected proposals are removed from the pending queue.
+- Added regression coverage proving pending decisions work without `activeSessionId` or `focusedSessionId`.
+
+## 1.5.8 — 2026-10-06
+
+- Pending replace/remove proposals now compare their pinned `matched_entry` targets with the current stored Memory/User entries and are marked obsolete when those targets no longer exist.
+- Desktop highlights obsolete proposals in the pending list and detail view, disables approval that Duckwork would reject as stale, and relabels Reject as **Delete obsolete** so the dead proposal can be removed through Duckwork' native decision path.
+- Batch proposals are marked obsolete when any pinned destructive operation targets a missing entry; legacy destructive proposals without a pin are shown as unverifiable and cannot be approved.
+
+## 1.5.7 — 2026-10-06
+
+- Fixed the retry pass re-reading the full original corpus after a too-large first proposal, which encouraged the model to reconstruct the same verbose memory again.
+- The second pass now rewrites the first-pass candidate directly under the stricter budget and is explicitly forbidden from reintroducing details already discarded by the first pass.
+- Added regression coverage proving that retry input is the previous proposal rather than the original source corpus.
+
+## 1.5.6 — 2026-10-06
+
+- Fixed compaction accepting outputs that violated the stricter character budget stated in the prompt; each attempt now enforces its advertised hard budget in plugin code.
+- Moved the invariant compaction policy into Duckwork' supported `system_prompt` channel so stored memory is lower-authority data and source entry boundaries cannot steer the output structure.
+- Explicitly directs the model to optimize for the fewest coherent thematic entries, including one output entry consolidating many source entries when appropriate.
+- Increased the minimum first-pass reduction from 25% to the prompt's actual 40% hard budget; the retry remains stricter at a 55% reduction target.
+
+## 1.5.5 — 2026-10-06
+
+- Fixed AI compaction accepting proposals that exceeded the requested entry-count limit when Duckwork/provider-side JSON Schema validation was unavailable or not enforced.
+- Added plugin-side entry-count validation: over-count proposals automatically retry once with the exact violation called out, then fail closed if the model still exceeds the limit.
+- Added **Add entry** for both `MEMORY.md` and `USER.md`, delegating validation and persistence to Duckwork `MemoryStore.add`.
+- Added exact-entry deletion for both targets through `MemoryStore.remove`, with a two-step **Delete entry** / **Confirm delete** Desktop flow.
+- Added regression coverage for providers that ignore `maxItems`, add/delete success, stale/native-store failures, and the new Desktop controls.
+
+## 1.5.4 — 2026-10-06
+
+- Fixed the AI compaction review layout so it is height-bounded, keeps its controls visible, scrolls proposed entries internally, and cannot cover the stored-memory editor below it.
+- Changed compaction to treat the source as one memory corpus instead of preserving entry boundaries, with a dynamic schema cap that targets substantially fewer output entries.
+- Reworked the compaction prompt around the durable, actionable core and explicitly removes examples, explanations, narrative history, temporary state, repeated qualifiers, and low-value nuance.
+- Require at least 25% exact-character reduction before a proposal is accepted, with substantially tighter first-pass and retry budgets.
+- Added preview metadata for source/output entry counts and actual percentage reduction.
+
+## 1.5.3 — 2026-10-06
+
+- Added visible in-progress feedback for AI compaction with an activity indicator and live elapsed time while Duckwork is generating and validating the preview.
+- Strengthened the compaction prompt with an explicit character budget, tighter compression guidance, and a preference for fewer entry-boundary overheads without dropping unique information.
+- Added one automatic retry with a stricter target when the first AI proposal does not reduce the exact stored-memory character footprint.
+- Changed compaction acceptance to the exact character footprint Duckwork enforces; token counts remain informational estimates.
+
+## 1.5.2 — 2026-10-06
+
+- Fixed **Compact with AI** so preview generation no longer requires an open, active, or focused Duckwork chat session.
+- Moved Desktop preview requests to the plugin REST backend while preserving Duckwork `ctx.llm` ownership of default-model routing, credentials, trust checks, and attribution.
+- Kept preview generation non-mutating and retained stale-fingerprint validation plus one atomic `MemoryStore.apply_batch()` transaction for explicit application.
+
+## 1.5.1 — 2026-10-06
+
+- Fixed Stored memory token estimates to use Duckwork' documented memory-budget scale of 2.75 chars/token instead of the generic model token estimator.
+- Added exact character usage/limit and percentage used for both `memory` and `user`, using the active profile's configured MemoryStore limits.
+- Aligned AI compaction before/after token estimates with the same Duckwork memory-budget scale.
+
+## 1.5.0 — 2026-10-06
+
+- Added approximate token usage for both stored `memory` and `user` targets using Duckwork' `estimate_tokens_rough` helper.
+- Added **Compact with AI** using Duckwork `ctx.llm` with the active/default provider and model, with no provider/model override.
+- Added preview-first compaction with before/after token estimates, model attribution, proposed entries, and explicit **Apply compaction** / **Cancel preview** controls.
+- Added stale-source fingerprint protection and atomic whole-target application through one `MemoryStore.apply_batch()` transaction.
+- Added regression coverage for token metadata, default-model LLM routing, preview/apply separation, stale conflicts, and batch failures without real-memory mutation.
+
+## 1.4.0 — 2026-10-05
+
+- Added a top-level switch between pending writes and stored memory.
+- Added Memory and User views that list every built-in `MEMORY.md` and `USER.md` entry with search and refresh.
+- Added direct editing of existing stored entries from Desktop.
+- Added structured stored-memory GET/PUT backend routes that delegate replacements to Duckwork `MemoryStore` with the exact original entry pinned for stale-write protection.
+- Preserved all v1.3 pending-review controls and native `/memory approve|reject` decision paths.
+
+## 1.3.0 — 2026-10-05
+
+- Added a formatted Overview as the default record view, with readable metadata and proposed content/change blocks.
+- Added individual Approve and Reject controls backed by Duckwork' documented `slash.exec` `/memory` command path.
+- Added Approve all and Reject all with an explicit confirmation step before bulk mutation.
+- Kept the plugin backend GET-only; Duckwork core remains authoritative for applying or discarding staged memory writes.
+- Added structured payload data to the detail endpoint for the Overview renderer.
+
+## 1.2.0 — 2026-10-05
+
+- Added a native Duckwork Desktop **Magi** page and sidebar entry.
+- Added profile-scoped, read-only backend routes for pending record lists and complete Proposal/Diff/Raw/Verify views.
+- Added search, manual refresh, five-second polling fallback, empty/error states, and explicit backend-disabled guidance.
+- Kept all memory mutations in Duckwork core; the plugin backend exposes GET routes only.
+- Added strict POLIS Red→Green coverage for the unified Desktop package and backend API.
+
+## 1.1.0 — 2026-10-05
+
+- Prepared and validated as a planned POLIS V6.10.0 behavior-preserving release.
+- Added strict root-level validation with 24 tests and Cobertura coverage gate >95%.
+- Fixed distribution verification so tests run from the package root.
+- Added explicit POLIS validation contract and consumer handoff guidance.
+- Runtime plugin implementation remains unchanged from 1.0.0.
+
+## 1.0.0 — 2026-10-05
+
+- `/magi` complete read-only inspector.
+- `/memory-show` convenience shortcut.
+- Terminal `duckwork magi` surface.
+- Full payload rendering, unified diffs, search, stats and validation.
+- Exact/unique-prefix/oldest/newest selectors.
+- Pagination.
+- ANSI/control/bidi escaping.
+- Profile-aware DUCKWORK_HOME resolution with explicit override.
+- Installer, uninstaller, verification script and unit tests.

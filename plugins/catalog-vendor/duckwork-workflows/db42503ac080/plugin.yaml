@@ -1,0 +1,16 @@
+name: duckwork-workflows
+version: 1.3.6
+description: Agent-owned workflow graphs — nodes, fan-outs, gates, fingerprint-resume, desktop DAG view
+description_long: |
+  Adds a `workflow` tool: the spawning agent owns a JSON graph of agent nodes and
+  human gates; a background runner executes it with replay-skip resume, fan-outs,
+  and effective-fingerprint staleness. Ships a desktop DAG view, an inline
+  ::workflow{id} transcript card, and the authoring skill.
+author: "Jacob Hausler"
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21.4"  # v2026.9.21: measured stock -Q CLI and quiet turn-report contract
+provides_tools:
+  - workflow
+provides_hooks:
+  - transform_llm_output

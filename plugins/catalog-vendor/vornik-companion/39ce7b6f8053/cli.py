@@ -1,0 +1,229 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+"""``duckwork vornik``: the plugin's terminal subcommand (design 24, "Catalog
+listing" §3).
+
+A person types it; a model cannot. Duckwork registers it with
+``register_cli_command``, an argparse subcommand, as opposed to the in-session
+slash commands, which a model can invoke. The one program this plugin runs is
+``vornikctl``: here, and from the approval transport (approval.py), which
+only Duckwork's approval seam calls. No tool, hook or slash command spawns
+anything (review 8a55 F1).
+
+- ``connect`` runs ``vornikctl agent connect duckwork`` as an argv list, never
+  through a shell, bounded by CONNECT_TIMEOUT_SECONDS. It never downloads or
+  installs anything: without ``vornikctl`` it points at the install page.
+- ``status`` shows the configured URL, which tokens are set (never their
+  values) and the daemon's capability flags. Unconfigured, it opens no
+  connection. It also says whether the Vornik approval transport is
+  registered and selected, and for which namespace.
+- ``approvals on|off`` selects or clears ``security.approval.transport:
+  vornik`` through Duckwork's own config writer (Duckwork approval transport
+  design §4.5). ``on`` refuses without vornikctl or a connected namespace,
+  so approvals are never left failing; it never touches
+  ``transport_fallback``.
+"""
+
+from __future__ import annotations
+
+import os
+import shutil
+import subprocess
+
+from . import approval, settings
+from .vornik_client import VornikClient
+
+# connect checks the daemon, mints a key and writes one config entry; it
+# never waits on a person (it refuses, rather than waits, when no phone is
+# paired: agent-admin design §9.2).
+CONNECT_TIMEOUT_SECONDS = 120
+INSTALL_PAGE = "https://docs.vornik.io/getting-started/"
+SETUP_GUIDE = "https://docs.vornik.io/guides/assistant-setup/"
+TOKENS = ("VORNIK_BROKER_TOKEN", "VORNIK_MEMORY_TOKEN")
+
+
+def setup(parser) -> None:
+    sub = parser.add_subparsers(dest="vornik_action", metavar="{connect,status,approvals}")
+    sub.required = True
+    c = sub.add_parser("connect", help="Connect Duckwork to Vornik as an administering agent (runs vornikctl agent connect duckwork)")
+    c.add_argument("--url", default=None, help="Vornik's URL (default: vornikctl's own, $VORNIK_API_URL)")
+    c.add_argument("--dry-run", action="store_true", help="Check and print what would be done, change nothing")
+    c.add_argument("--vornikctl", default=None, help="Absolute path of the vornikctl to run and to record in Duckwork's config (default: the one on PATH)")
+    sub.add_parser("status", help="Show the configured Vornik URL, which tokens are set, and the daemon's capabilities")
+    a = sub.add_parser("approvals", help="Answer Duckwork's own approval prompts on your paired phone (on) or in Duckwork again (off)")
+    a.add_argument("state", choices=["on", "off"])
+    a.add_argument("--namespace", default=None, help="Which connected Vornik namespace answers, when more than one is connected")
+
+
+def handle(args) -> int:
+    action = getattr(args, "vornik_action", None)
+    if action == "connect":
+        return connect(args)
+    if action == "approvals":
+        return approvals(args)
+    return status(args)
+
+
+def _duckwork_writers():
+    from duckwork_cli.config import set_config_value, unset_config_value
+    return set_config_value, unset_config_value
+
+
+def _safe_config(load_config):
+    try:
+        return (load_config or approval._duckwork_config)() or {}
+    except Exception:  # noqa: BLE001 - status must not fail on a config it cannot read
+        return {}
+
+
+def approvals(args, load_config=None, set_value=None, unset_value=None, out=print) -> int:
+    """``duckwork vornik approvals on|off`` (Duckwork approval transport design §4.5)."""
+    if set_value is None or unset_value is None:
+        set_value, unset_value = _duckwork_writers()
+    cfg = _safe_config(load_config)
+    if args.state == "off":
+        try:
+            unset_value(approval.TRANSPORT_KEY)
+        except SystemExit:
+            pass  # not set: nothing to clear
+        # The namespace pin stays on purpose: it is the user's choice of
+        # namespace, and the next `approvals on` uses it again.
+        out("Duckwork asks for its own approvals again (security.approval.transport cleared).")
+        return 0
+    found = approval.namespaces(cfg)
+    if not found:
+        out("No Vornik namespace is connected. Run: duckwork vornik connect")
+        return 1
+    ns = getattr(args, "namespace", None) or ""
+    if ns and ns not in found:
+        out("Namespace %r is not connected; connected: %s" % (ns, ", ".join(sorted(found))))
+        return 1
+    # valid = the pin names a connected namespace; stale = a non-empty pin not
+    # among the connected set (design 2026-10-03 section 9, amended 2026-10-07).
+    pin = approval.pinned(cfg)
+    stale = pin if pin and pin not in found else ""
+    explicit = bool(ns)
+    if not ns:
+        if pin in found:
+            ns = pin  # the stored choice (design 4.6), also with several connected
+        elif len(found) == 1:
+            ns = next(iter(found))
+        elif stale:
+            out("The approval pin names %r, which is no longer connected; connected: %s; name one with --namespace <ns>."
+                % (stale, ", ".join(sorted(found))))
+            return 1
+        else:
+            out("More than one Vornik namespace is connected (%s); name one with --namespace <ns>." % ", ".join(sorted(found)))
+            return 1
+    exe = found[ns][0]
+    if not approval._executable(exe):
+        out("vornikctl is not at %r, where connect recorded it. Run: duckwork vornik connect" % exe)
+        return 1
+    # No stale pin: the transport first. If the pin then fails, the state is
+    # "selected, no pin", which works whenever one namespace is connected
+    # (choose() picks it) and otherwise denies (review ff65). Replacing a stale
+    # pin: the NEW pin first, so a failed second write leaves "valid pin, not
+    # selected", which is inert, never "selected, stale pin" (all denied).
+    # Duckwork's writer reports a refusal by sys.exit, so it is caught like any failure.
+    transport = (approval.TRANSPORT_KEY, approval.TRANSPORT_NAME)
+    if stale:
+        writes = [(approval.NAMESPACE_KEY, ns), transport]
+    else:
+        writes = [transport]
+        if explicit:
+            writes.append((approval.NAMESPACE_KEY, ns))
+    for key, value in writes:
+        try:
+            set_value(key, value)
+        except (SystemExit, Exception) as e:  # noqa: BLE001 - report, never crash
+            out("Duckwork's config writer could not set %s (%s); run duckwork vornik status to see what is set." % (key, e))
+            return 1
+    out("Duckwork's approval prompts now go to your paired phone (namespace %s). If Vornik is unreachable, "
+        "Duckwork denies the command unless you set security.approval.transport_fallback: builtin." % ns)
+    if stale and not explicit:
+        out('Replaced the approval pin on "%s" (no longer connected) with "%s".' % (stale, ns))
+    return 0
+
+
+def connect(args, which=shutil.which, run=subprocess.run, out=print, is_executable=None) -> int:
+    if is_executable is None:
+        is_executable = approval._executable
+    named = getattr(args, "vornikctl", None)
+    if named:
+        # the setup CLI gaps change: run the named copy and record the same path, so the
+        # path Duckwork runs at every start is one this user can execute.
+        if not os.path.isabs(named):
+            out("--vornikctl must be an absolute path, got %r" % named)
+            return 1
+        if not is_executable(named):
+            out("vornikctl at %s is not executable by this user. Install an executable copy (see %s) and name it." % (named, SETUP_GUIDE))
+            return 1
+        exe = named
+    else:
+        exe = which("vornikctl")
+    if not exe:
+        out("vornikctl is not installed. Install Vornik first: %s" % INSTALL_PAGE)
+        out("Then run: duckwork vornik connect")
+        return 1
+    argv = [exe, "agent", "connect", "duckwork"]
+    if getattr(args, "url", None):
+        argv += ["--url", args.url]
+    if getattr(args, "dry_run", False):
+        argv.append("--dry-run")
+    if named:
+        # Only with the flag: an older vornikctl does not know --vornikctl.
+        argv += ["--vornikctl", named]
+    try:
+        # The child inherits the user's environment, which vornikctl needs for
+        # VORNIK_API_URL and its operator credential. No Duckwork approval or
+        # non-interactive setting is passed: connect only configures, it runs
+        # no workflow (review 8a55 F5).
+        proc = run(argv, shell=False, timeout=CONNECT_TIMEOUT_SECONDS, check=False)
+    except subprocess.TimeoutExpired:
+        out("vornikctl agent connect did not finish within %d seconds; nothing more was done." % CONNECT_TIMEOUT_SECONDS)
+        return 1
+    except OSError as e:
+        out("could not run vornikctl: %s" % e)
+        return 1
+    if proc.returncode != 0:
+        out("connect needs vornikctl signed in as the operator (vornikctl auth login, or VORNIK_API_KEY) "
+            "and a phone paired (vornikctl pair-device). Guide: %s" % SETUP_GUIDE)
+    return proc.returncode
+
+
+def status(args, values=None, opener=None, out=print, load_config=None) -> int:
+    # The settings come through Duckwork's secret scope, like every other read
+    # (design 24, 0.21.5); `values` stands in for it in tests. In a terminal
+    # no scope is bound and Duckwork reads this CLI profile's environment.
+    if values is None:
+        if not settings.supported():
+            out(settings.TOO_OLD)
+            return 1
+        values = {name: settings.get(name) for name in settings.NAMES}
+    env = values
+    cfg = _safe_config(load_config)
+    out("Approval transport registered: %s" % ("yes" if approval.registered() else "no (this Duckwork has no approval-transport seam)"))
+    out("Approval transport selected: %s" % ("yes" if approval.selected(cfg) else "no (duckwork vornik approvals on)"))
+    try:
+        ns = approval.choose(cfg)[0]
+    except ValueError as e:
+        ns = "none (%s)" % e
+    out("Approval namespace: %s" % ns)
+    pin = approval.pinned(cfg)
+    if pin and pin not in approval.namespaces(cfg):
+        out('Approval pin: "%s" (no longer connected); run: duckwork vornik approvals on' % pin)
+    url = env.get("VORNIK_URL", "")
+    out("VORNIK_URL: %s" % (url or "not set"))
+    for name in TOKENS:
+        out("%s: %s" % (name, "set" if env.get(name) else "not set"))
+    token = env.get("VORNIK_BROKER_TOKEN") or env.get("VORNIK_MEMORY_TOKEN") or ""
+    if not url or not token:
+        out("The broker tools and the memory provider need VORNIK_URL and a token. "
+            "An admin setup (duckwork vornik connect) needs neither.")
+        return 1
+    caps = VornikClient(url, token, opener=opener).capabilities()
+    if not caps:
+        out("Vornik did not answer at %s (or is too old to report capabilities)." % url)
+        return 1
+    on = sorted(k for k, v in caps.items() if v)
+    out("Daemon capabilities: %s" % (", ".join(on) or "none"))
+    return 0

@@ -1,0 +1,18 @@
+# Stable runtime identity: existing users keep their enabled plugin state.
+name: duckwork-atoll
+version: "0.3.0"
+manifest_version: 2
+description: >
+  Duckwork Notch Plugin: a native Duckwork Agent integration that installs and runs
+  the local Atoll fork monitor for Duckwork session and turn status on macOS.
+kind: standalone
+author: Hima N.
+license: ISC
+homepage: https://github.com/DuckMind/duckwork
+tags:
+  - atoll
+  - macos
+  - notch
+  - status
+provides_hooks:
+  - on_session_start

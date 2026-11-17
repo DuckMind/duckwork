@@ -1,0 +1,28 @@
+# Duckwork reads [project].dependencies from this file and installs them into its
+# own venv. Deliberately light: only gonogo, which the eval tool calls
+# in-process. The training stack (thomas + modal + torch + transformers) lives
+# in its own environment, pointed at by THOMAS_PYTHON, so a GPU toolchain never
+# lands in the Duckwork venv.
+
+[project]
+name = "duckwork-plugin-thomas"
+version = "0.1.2"
+description = "Duckwork plugin: fine-tune a calibrated encoder on Modal and rate it with gonogo."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "James Dominguez" }]
+keywords = ["duckwork", "plugin", "fine-tuning", "encoder", "calibration", "gonogo"]
+dependencies = [
+  "gonogo-eval>=0.3,<0.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pyyaml>=6"]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Source = "https://github.com/DuckMind/duckwork"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

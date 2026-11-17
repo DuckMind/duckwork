@@ -1,0 +1,310 @@
+"""Shared utilities for Agora modules.
+
+Centralizes path resolution, binary discovery, and common helpers
+used across worker_manager, leader_manager, team_manager, leader_loop,
+and project_planner.
+"""
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def get_global_root() -> Path:
+    """Return the global Duckwork home directory (not profile-scoped).
+
+    All Agora registries (workers, leaders, teams, projects) live under
+    this path so they're shared across all profiles.
+    """
+    kanban_db = os.environ.get("DUCKWORK_KANBAN_DB", "")
+    if kanban_db:
+        return Path(kanban_db).parent
+    try:
+        from duckwork_constants import get_duckwork_home
+        home = Path(get_duckwork_home())
+        if "/profiles/" in str(home):
+            return home.parent.parent
+        return home
+    except Exception:
+        return Path.home() / ".duckwork"
+
+
+def get_duckwork_root() -> Path:
+    """Return the resolved Duckwork home (context override → DUCKWORK_HOME → default).
+
+    Unlike :func:`get_global_root`, this is never unwound out of a profile
+    directory, so it names the active home exactly.
+    """
+    try:
+        from duckwork_constants import get_duckwork_home
+        return Path(get_duckwork_home())
+    except Exception:
+        return Path.home() / ".duckwork"
+
+
+#: Public alias — the active Duckwork home.
+duckwork_home_path = get_duckwork_root
+
+
+def get_registry_dir(name: str) -> Path:
+    """Return (and create) a registry subdirectory under agora/."""
+    d = get_global_root() / "agora" / name
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def get_profiles_root() -> Path:
+    """Return the path to ~/.duckwork/profiles/."""
+    kanban_db = os.environ.get("DUCKWORK_KANBAN_DB", "")
+    if kanban_db:
+        return Path(kanban_db).parent / "profiles"
+    try:
+        from duckwork_constants import get_duckwork_home
+        home = Path(get_duckwork_home())
+        if "/profiles/" in str(home):
+            return home.parent
+        return home / "profiles"
+    except Exception:
+        return Path.home() / ".duckwork" / "profiles"
+
+
+def capture_duckwork_import_env() -> tuple[list[str], list[str]]:
+    """Paths a spawned process needs before it can import Duckwork core.
+
+    Returns ``(core_roots, deps_dirs)``.
+
+    Duckwork does not run on a correctly-configured interpreter alone: its
+    launcher puts the core tree on ``sys.path``, and ``duckwork_bootstrap`` ->
+    ``pm.environments.activate_dependencies`` puts the *selected* environment's
+    ``site-packages`` there too. Neither reaches a process we spawn, so a bare
+    interpreter cannot import ``duckwork_cli`` — and even with the core tree the
+    third-party dependencies (``ruamel``, ``fastapi``, ``pydantic``, ...) are
+    missing. ``sys.executable`` is Duckwork' bundled tool Python, which holds
+    neither.
+
+    Both are *discovered* from the live ``sys.path`` at generation time, where
+    the working configuration is visible — never guessed. An install layout
+    that keeps core somewhere other than ``<duckwork_home>/duckwork-agent`` still
+    resolves, and a still-valid path list simply has no effect when the child
+    already inherits a good environment.
+
+    Returns empty lists outside a Duckwork process; callers keep their previous
+    behaviour in that case.
+    """
+    core_roots: list[str] = []
+    deps_dirs: list[str] = []
+    for entry in sys.path:
+        if not entry:
+            continue
+        candidate = Path(entry)
+        if (candidate / "duckwork_cli" / "__init__.py").is_file():
+            core_roots.append(str(candidate))
+        elif candidate.name in ("site-packages", "dist-packages") and candidate.is_dir():
+            deps_dirs.append(str(candidate))
+    return core_roots, deps_dirs
+
+
+def find_duckwork_binary() -> str:
+    """Locate the ``duckwork`` executable without hardcoding install layouts.
+
+    Order: ``DUCKWORK_BIN`` override → sibling of the running interpreter (a venv
+    ``bin/duckwork`` next to ``bin/python3``) → ``<duckwork_home>/duckwork-agent/`` →
+    ``PATH``. Falls back to the bare name so a mis-resolved path degrades to a
+    normal lookup failure rather than running an unrelated binary.
+    """
+    candidates: list[str] = [os.environ.get("DUCKWORK_BIN", "")]
+
+    # A venv install puts `duckwork` next to the interpreter shelling us out.
+    candidates.append(str(Path(sys.executable).parent / "duckwork"))
+    # Dev/managed installs keep the checkout under the Duckwork home.
+    candidates.append(str(get_duckwork_root() / "duckwork-agent" / "venv" / "bin" / "duckwork"))
+
+    for c in candidates:
+        if c and os.path.isfile(c) and os.access(c, os.X_OK):
+            return c
+    return shutil.which("duckwork") or "duckwork"
+
+
+def now_iso() -> str:
+    """Return current UTC time as ISO string."""
+    return datetime.now(timezone.utc).isoformat()
+
+
+def patch_config_model(config_path: Path, model: str) -> None:
+    """Patch the model field in a profile's config.yaml.
+
+    Handles both formats:
+    - New (dict): ``model:\\n  default: <name>``
+    - Old (flat string): ``model: <name>``
+
+    If the old flat format is found, it is upgraded to the new dict format
+    so Duckwork can resolve the provider and base_url from custom_providers.
+
+    Uses structured yaml.safe_load/safe_dump — not regex — so comments,
+    anchors, and non-model fields are preserved.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    try:
+        import yaml
+        with open(config_path) as f:
+            cfg = yaml.safe_load(f)
+        if cfg is None:
+            cfg = {}
+        if not isinstance(cfg, dict):
+            logger.warning("patch_config_model: config at %s is not a dict, skipping", config_path)
+            return
+
+        model_cfg = cfg.get("model")
+        if isinstance(model_cfg, dict):
+            # New dict format — just update the default
+            if model_cfg.get("default") != model:
+                model_cfg["default"] = model
+                cfg["model"] = model_cfg
+                with open(config_path, "w") as f:
+                    yaml.safe_dump(cfg, f, default_flow_style=False, allow_unicode=True)
+                logger.info("patch_config_model: set model.default=%s (dict format)", model)
+            return
+
+        # Old flat format or missing — upgrade to dict format
+        cfg["model"] = {"default": model}
+        with open(config_path, "w") as f:
+            yaml.safe_dump(cfg, f, default_flow_style=False, allow_unicode=True)
+        logger.info("patch_config_model: upgraded model from flat to dict format, default=%s", model)
+    except Exception as exc:
+        logger.warning("patch_config_model failed for %s: %s", config_path, exc)
+
+
+def ensure_in_place_compression(config_path: Path) -> None:
+    """Ensure a profile's config.yaml has compression.in_place: true.
+
+    When Duckwork compresses conversation context, ``in_place: true`` ensures
+    the session ID does NOT change — so ``--resume <session_id>`` always
+    works for worker/leader agents that are spawned repeatedly.
+
+    This function:
+      - Reads the config.yaml at ``config_path``
+      - Creates a ``compression`` section if it doesn't exist
+      - Sets ``compression.in_place: true`` if not already set
+      - Writes back only if a change was made
+      - Uses yaml.safe_load / yaml.safe_dump
+      - Swallows errors with a warning log (never crashes the caller)
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    try:
+        import yaml
+        if not config_path.exists():
+            logger.debug("ensure_in_place_compression: config not found at %s", config_path)
+            return
+
+        with open(config_path) as f:
+            config = yaml.safe_load(f)
+        if config is None:
+            config = {}
+        if not isinstance(config, dict):
+            logger.warning("ensure_in_place_compression: config at %s is not a dict, skipping", config_path)
+            return
+
+        compression = config.get("compression")
+        if compression is None:
+            compression = {}
+        if not isinstance(compression, dict):
+            logger.warning("ensure_in_place_compression: compression section is not a dict, skipping")
+            return
+
+        changed = False
+        if "in_place" not in compression:
+            compression["in_place"] = True
+            changed = True
+        elif compression["in_place"] is not True:
+            compression["in_place"] = True
+            changed = True
+
+        if changed:
+            config["compression"] = compression
+            with open(config_path, "w") as f:
+                yaml.safe_dump(config, f, default_flow_style=False, allow_unicode=True)
+            logger.info("Set compression.in_place=true in %s", config_path)
+    except Exception as exc:
+        logger.warning("ensure_in_place_compression failed for %s: %s", config_path, exc)
+
+
+def safe_name(name: str) -> str:
+    """Sanitize a name for use as a filename."""
+    import re
+    # Replace path separators and whitespace first
+    name = name.replace("/", "-").replace(" ", "_")
+    # Strip any remaining characters that are unsafe in filenames
+    name = re.sub(r'[<>:"|?*\\;{}()\[\]$~`!@#%^&=+]', "", name)
+    return name
+
+
+def parse_json_response(text: str) -> dict | None:
+    """Extract and parse a JSON object from an LLM response string.
+
+    Handles common LLM output quirks:
+      - Strips markdown code fences (```json ... ```)
+      - Finds the first ``{...}`` block via regex (DOTALL)
+      - Returns ``None`` if the text is not valid JSON
+
+    Extracted from ``agora/discussion/driver.py::_parse_json`` so all
+    callers share one robust implementation.
+    """
+    import re
+
+    text = text.strip()
+
+    # Strip markdown code blocks
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = [l for l in lines[1:] if not l.strip().startswith("```")]
+        text = "\n".join(lines)
+
+    # Try to find JSON object in the text
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if match:
+        text = match.group(0)
+
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, ValueError):
+        return None
+
+
+#: Kanban statuses that represent unfinished *work* — anything here means the
+#: project is not done. Derived from Duckwork' ``VALID_STATUSES`` minus:
+#:
+#: * ``scheduled`` — Agora parks its own chat-root anchor task here permanently
+#:   (see ``agora/chat.py``), so counting it would block completion forever;
+#: * ``done`` / ``archived`` — terminal.
+#:
+#: Do not hardcode a subset at the call sites: an earlier partial list
+#: (``running``/``ready``/``blocked``) missed ``todo``, and Duckwork'
+#: ``initial_task_state`` resolves a motion to ``todo`` whenever its parent chat
+#: root is not ``done`` — so in-progress motions were invisible to the
+#: completion gate and a leader could declare the project complete mid-discussion.
+PENDING_TASK_STATUSES: tuple[str, ...] = (
+    "triage",
+    "todo",
+    "ready",
+    "running",
+    "blocked",
+    "review",
+)
+
+#: Human labels for the statuses above (heartbeat summaries render these).
+STATUS_LABELS: dict[str, str] = {
+    "triage": "Triage",
+    "todo": "Todo",
+    "ready": "Ready (queued)",
+    "running": "Running",
+    "blocked": "Blocked",
+    "review": "In review",
+    "done": "Done",
+}

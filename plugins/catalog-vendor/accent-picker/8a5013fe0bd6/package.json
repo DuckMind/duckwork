@@ -1,0 +1,14 @@
+{
+  "name": "duckwork-desktop-accent-picker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OKLCH accent colour picker for the Duckwork Desktop status bar — a theme-authoring tool that retints the whole app live.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/plugin.tsx --bundle --format=esm --platform=browser --jsx=automatic --external:@duckwork/plugin-sdk --external:react --external:react/jsx-runtime --outfile=desktop/plugin.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

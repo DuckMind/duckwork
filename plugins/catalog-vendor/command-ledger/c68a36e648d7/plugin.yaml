@@ -1,0 +1,7 @@
+name: command-ledger
+version: 1.2.0
+description: "Local ledger of the slash commands you run in Duckwork: which ones, how often, in how many sessions and when last, shown by /command-log."
+author: olric3015
+requires_duckwork: ">=0.21.5"
+provides_hooks:
+  - pre_command

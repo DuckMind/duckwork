@@ -1,0 +1,31 @@
+# Runtime data — contains the USER's personal memory. NEVER commit.
+*.xlsx
+logs/
+__pycache__/
+*.processing
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.pyc
+
+# Runtime data
+.id_seq
+retry_*.jsonl
+session_raw_*.jsonl
+.duckwork-catalog.json
+
+# Python env
+.venv/
+venv/
+
+# Keep source + tests + docs
+!__init__.py
+!store.py
+!worker.py
+!plugin.yaml
+!README.md
+!CHANGELOG_PR.md
+!qa_excel_line.py
+!tests/

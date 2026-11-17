@@ -1,0 +1,18 @@
+manifest_version: 2
+api_version: 1
+name: duckwork-security-audit
+version: "1.0.1"
+description: Approval-gated local security audit tool for Duckwork Agent using Gitleaks, OSV-Scanner, and Semgrep CE.
+author: dafka007
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags:
+  - security
+  - gitleaks
+  - osv-scanner
+  - semgrep
+  - static-analysis
+provides_tools:
+  - security_audit
+provides_hooks:
+  - pre_tool_call

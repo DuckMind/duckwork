@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: false
+      - run: uv sync --locked --all-groups
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pre-commit run --all-files
+
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7.0.0
+        with:
+          persist-credentials: false
+      - name: Checkout Duckwork Agent for contract tests
+        uses: actions/checkout@v7.0.0
+        with:
+          repository: Fordex/duckwork-agent
+          ref: main
+          path: duckwork-agent
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --locked --all-groups
+      - name: Install Duckwork Agent for contract tests
+        run: bash scripts/install-duckwork-contract.sh
+      # Skip the lockfile sync so the editable Duckwork install stays in the env.
+      - run: uv run --no-sync pytest
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.0
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: false
+      - run: uv build
+      - run: uvx twine check dist/*

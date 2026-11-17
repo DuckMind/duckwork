@@ -1,0 +1,2515 @@
+from __future__ import annotations
+
+import argparse
+import inspect
+import json
+import os
+import shutil
+import sqlite3
+import subprocess
+import sys
+import textwrap
+import tomllib
+import zipfile
+from collections.abc import Callable, Iterator, Sequence
+from dataclasses import MISSING, dataclass, fields
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any, TextIO, cast, get_type_hints
+
+import pytest
+
+import duckwork_local_knowledge
+from duckwork_local_knowledge import artifacts as lci_artifacts
+from duckwork_local_knowledge import cli as lci_cli
+from duckwork_local_knowledge import config as lci_config
+from duckwork_local_knowledge import index as lci_index
+from duckwork_local_knowledge import indexer, plugin
+from scripts.verify_release_artifacts import validate_sdist
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PUBLIC_INDEXER_API = (
+    "Artifact",
+    "Edge",
+    "IndexSettings",
+    "build_index",
+    "search_index",
+    "get_artifact",
+    "get_neighbors",
+    "main",
+)
+
+EXPECTED_TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
+    "knowledge_search": {
+        "name": "knowledge_search",
+        "description": (
+            "Search a local capability index to find the right local skill, "
+            "script, runbook, cron job, MCP wrapper, or service doc to inspect first. "
+            "Use this before broad file search for local Duckwork customizations, "
+            "service-operation docs, cron jobs, MCP servers, or project runbooks. Builds "
+            "the index automatically when missing. Usage is logged locally for "
+            "closed-loop router improvement."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Natural-language search query, e.g. 'backup runbook' or 'mcp wrapper'.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "description": "Maximum results to return. Default 8, max 30.",
+                },
+                "artifact_type": {
+                    "type": "string",
+                    "description": (
+                        "Optional type filter such as skill, script, runbook, memory_doc, "
+                        "cron_job, mcp_server, doc, or skill_support_doc."
+                    ),
+                },
+                "rebuild": {
+                    "type": "boolean",
+                    "description": (
+                        "Force a rebuild of the configured state_dir/index.sqlite before searching. "
+                        "Default false."
+                    ),
+                },
+            },
+            "required": ["query"],
+            "additionalProperties": False,
+        },
+    },
+    "knowledge_get": {
+        "name": "knowledge_get",
+        "description": (
+            "Fetch concise routing metadata for one artifact from the local capability "
+            "index by id. Use after knowledge_search returns an artifact id. Usage is "
+            "logged locally."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "artifact_id": {
+                    "type": "string",
+                    "description": "Artifact id such as skill:backup-runbook or cron:daily-review.",
+                },
+                "include_neighbors": {
+                    "type": "boolean",
+                    "description": "Also include graph neighbors for this artifact. Default false.",
+                },
+                "rebuild": {
+                    "type": "boolean",
+                    "description": (
+                        "Force a rebuild of the configured state_dir/index.sqlite before reading. "
+                        "Default false."
+                    ),
+                },
+            },
+            "required": ["artifact_id"],
+            "additionalProperties": False,
+        },
+    },
+    "knowledge_neighbors": {
+        "name": "knowledge_neighbors",
+        "description": (
+            "Return graph neighbors for one local capability artifact. Useful for "
+            "jumping from cron jobs to scripts, MCP config entries to wrappers, or "
+            "skills to related docs/scripts. Usage is logged locally."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "artifact_id": {
+                    "type": "string",
+                    "description": "Artifact id from knowledge_search or knowledge_get.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "description": "Maximum neighbors to return. Default 20, max 50.",
+                },
+                "rebuild": {
+                    "type": "boolean",
+                    "description": (
+                        "Force a rebuild of the configured state_dir/index.sqlite before reading. "
+                        "Default false."
+                    ),
+                },
+            },
+            "required": ["artifact_id"],
+            "additionalProperties": False,
+        },
+    },
+    "knowledge_feedback": {
+        "name": "knowledge_feedback",
+        "description": (
+            "Record feedback about a local knowledge lookup so future sessions can "
+            "improve the capability index. Call this when a result is useful, stale, "
+            "missing, noisy, or pointed at the wrong artifact."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "rating": {
+                    "type": "string",
+                    "enum": [
+                        "missing",
+                        "noisy",
+                        "not_useful",
+                        "other",
+                        "stale",
+                        "useful",
+                        "wrong_artifact",
+                    ],
+                    "description": (
+                        "Feedback rating: useful, not_useful, missing, noisy, "
+                        "wrong_artifact, stale, or other."
+                    ),
+                },
+                "event_id": {
+                    "type": "integer",
+                    "description": "Optional usage_event_id returned by knowledge_search/get/neighbors.",
+                },
+                "query": {
+                    "type": "string",
+                    "description": "Search query being judged, if no event_id is available.",
+                },
+                "artifact_id": {
+                    "type": "string",
+                    "description": "Artifact id being judged, if applicable.",
+                },
+                "note": {
+                    "type": "string",
+                    "description": (
+                        "Short concrete note about what worked or what should improve. "
+                        "Do not include secrets."
+                    ),
+                },
+                "expected_artifact_id": {
+                    "type": "string",
+                    "description": (
+                        "Verified artifact id that should have been returned for this "
+                        "query. Use only after confirming the artifact exists. When set "
+                        "on a negative parent, a resolution must accept this artifact."
+                    ),
+                },
+                "resolves_feedback_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": (
+                        "Feedback id of an unresolved negative parent to close. The new "
+                        "rating must be useful, event_id must reference a successful "
+                        "knowledge_search whose returned page contains artifact_id, and "
+                        "the query is canonicalized to that search event."
+                    ),
+                },
+            },
+            "required": ["rating"],
+            "additionalProperties": False,
+        },
+    },
+    "knowledge_usage_report": {
+        "name": "knowledge_usage_report",
+        "description": (
+            "Return a concise summary of local knowledge usage, search quality, feedback, "
+            "and repair candidates. Use before changing index ranking, triggers, docs, "
+            "or graph edges."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 365,
+                    "description": "Lookback window in days. Default 14.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "description": "Maximum rows per report section. Default 10.",
+                },
+            },
+            "additionalProperties": False,
+        },
+    },
+}
+
+EXPECTED_TOOL_ORDER = list(EXPECTED_TOOL_SCHEMAS)
+EXPECTED_TOOL_EMOJIS = {
+    "knowledge_search": "🗺️",
+    "knowledge_get": "📄",
+    "knowledge_neighbors": "🔗",
+    "knowledge_feedback": "📝",
+    "knowledge_usage_report": "📊",
+}
+ARTIFACT_RESULT_KEYS = {
+    "id",
+    "type",
+    "title",
+    "path",
+    "summary",
+    "triggers",
+    "entities",
+    "related",
+    "updated_at",
+    "source",
+}
+SEARCH_RESULT_KEYS = ARTIFACT_RESULT_KEYS | {"rank"}
+MODEL_ARTIFACT_RESULT_KEYS = {
+    "id",
+    "type",
+    "title",
+    "path",
+    "summary",
+    "source",
+    "related",
+}
+MODEL_NEIGHBOR_RESULT_KEYS = MODEL_ARTIFACT_RESULT_KEYS | {"edge_kind", "edge_evidence"}
+BASE_INDEX_METADATA_KEYS = {
+    "plugin_version",
+    "root",
+    "source_root_source",
+    "state_dir",
+    "state_dir_source",
+    "include_markdown_docs_source",
+    "db_path",
+    "warnings",
+    "rebuilt",
+    "expected_index_format_version",
+}
+PERSISTED_INDEX_METADATA_KEYS = {
+    "index_exists",
+    "index_mtime",
+    "index_age_seconds",
+    "artifact_count",
+    "artifact_counts_by_type",
+    "edge_count",
+    "index_format_version",
+    "jsonl_sha256",
+}
+USAGE_REPORT_KEYS = {
+    "success",
+    "usage_db_path",
+    "live_root",
+    "since",
+    "days",
+    "total_events",
+    "live_total_events",
+    "feedback_count",
+    "live_feedback_count",
+    "implicit_feedback_count",
+    "live_implicit_feedback_count",
+    "implicit_feedback_by_consumer",
+    "current_native_search_quality",
+    "current_non_search_native_errors",
+    "event_cohorts",
+    "avg_latency_ms",
+    "root_breakdown",
+    "feedback_root_breakdown",
+    "top_tools",
+    "top_queries",
+    "zero_result_queries",
+    "live_zero_result_queries",
+    "unresolved_zero_result_queries",
+    "active_zero_result_queries",
+    "probe_zero_result_queries",
+    "resolved_zero_result_queries",
+    "top_artifacts",
+    "errors",
+    "live_errors",
+    "recent_live_errors_since",
+    "recent_live_errors",
+    "feedback_by_rating",
+    "feedback_rating_buckets",
+    "unknown_feedback_ratings",
+    "recent_negative_feedback",
+    "live_recent_negative_feedback",
+    "feedback_linkage_quality",
+    "feedback_linkage_counts",
+    "feedback_resolution_quality",
+    "feedback_resolution_counts",
+    "unresolved_negative_feedback",
+    "unresolved_verified_or_direct_negative_feedback",
+    "unresolved_negative_with_expected_target",
+    "unresolved_negative_without_expected_target",
+    "resolved_negative_feedback",
+    "explicit_resolutions",
+    "explicit_resolution_count",
+    "route_outcomes",
+    "route_verification_failures",
+    "replay_ready_label_counts",
+    "unresolved_negative_with_current_expected_target",
+    "unresolved_negative_without_current_expected_target",
+    "behaviorally_resolved_negative_feedback",
+    "correction_candidates",
+    "latest_index_metadata",
+    "recent_builds",
+    "improvement_candidates",
+    "usage_event_id",
+}
+EVALUATION_METRIC_KEYS = {
+    "query_count",
+    "label_count",
+    "hit_at_1",
+    "hit_at_3",
+    "hit_at_5",
+    "hit_at_10",
+    "mrr_at_10",
+    "parent_equiv_hit_at_1",
+    "parent_equiv_hit_at_3",
+    "parent_equiv_hit_at_5",
+    "parent_equiv_hit_at_10",
+    "parent_equiv_mrr_at_10",
+}
+
+USAGE_EVENT_SCHEMA = [
+    ("id", "INTEGER", 0, None, 1),
+    ("ts", "TEXT", 1, None, 0),
+    ("tool", "TEXT", 1, None, 0),
+    ("client", "TEXT", 1, "'native'", 0),
+    ("session_id", "TEXT", 0, None, 0),
+    ("task_id", "TEXT", 0, None, 0),
+    ("tool_call_id", "TEXT", 0, None, 0),
+    ("api_request_id", "TEXT", 0, None, 0),
+    ("query", "TEXT", 0, None, 0),
+    ("artifact_id", "TEXT", 0, None, 0),
+    ("artifact_type", "TEXT", 0, None, 0),
+    ("limit_value", "INTEGER", 0, None, 0),
+    ("rebuild_requested", "INTEGER", 1, "0", 0),
+    ("rebuilt", "INTEGER", 0, None, 0),
+    ("success", "INTEGER", 1, None, 0),
+    ("error", "TEXT", 0, None, 0),
+    ("result_count", "INTEGER", 0, None, 0),
+    ("top_ids_json", "TEXT", 1, "'[]'", 0),
+    ("top_types_json", "TEXT", 1, "'[]'", 0),
+    ("latency_ms", "INTEGER", 0, None, 0),
+    ("plugin_version", "TEXT", 0, None, 0),
+    ("source_root_source", "TEXT", 0, None, 0),
+    ("state_dir_source", "TEXT", 0, None, 0),
+    ("include_markdown_docs_source", "TEXT", 0, None, 0),
+    ("index_exists", "INTEGER", 0, None, 0),
+    ("index_mtime", "TEXT", 0, None, 0),
+    ("index_age_seconds", "INTEGER", 0, None, 0),
+    ("index_artifact_count", "INTEGER", 0, None, 0),
+    ("index_edge_count", "INTEGER", 0, None, 0),
+    ("index_artifact_counts_json", "TEXT", 1, "'{}'", 0),
+    ("index_metadata_error", "TEXT", 0, None, 0),
+    ("build_duration_ms", "INTEGER", 0, None, 0),
+    ("root", "TEXT", 0, None, 0),
+    ("db_path", "TEXT", 0, None, 0),
+]
+FEEDBACK_SCHEMA = [
+    ("id", "INTEGER", 0, None, 1),
+    ("ts", "TEXT", 1, None, 0),
+    ("event_id", "INTEGER", 0, None, 0),
+    ("rating", "TEXT", 1, None, 0),
+    ("query", "TEXT", 0, None, 0),
+    ("artifact_id", "TEXT", 0, None, 0),
+    ("note", "TEXT", 0, None, 0),
+    ("session_id", "TEXT", 0, None, 0),
+    ("task_id", "TEXT", 0, None, 0),
+    ("tool_call_id", "TEXT", 0, None, 0),
+    ("root", "TEXT", 0, None, 0),
+]
+@dataclass(frozen=True)
+class Workspace:
+    root: Path
+    duckwork_home: Path
+    state_dir: Path
+
+
+class RecordingContext:
+    def __init__(self, *, llm: object | None = None) -> None:
+        self.llm = llm
+        self.tools: list[dict[str, Any]] = []
+        self.skills: list[tuple[str, Path]] = []
+        self.cli_commands: list[dict[str, Any]] = []
+        self.hooks: dict[str, Callable[..., Any]] = {}
+
+    def register_tool(self, **kwargs: Any) -> None:
+        self.tools.append(kwargs)
+
+    def register_skill(self, name: str, skill_md: Path | str) -> None:
+        self.skills.append((name, Path(skill_md)))
+
+    def register_cli_command(self, **kwargs: Any) -> None:
+        self.cli_commands.append(kwargs)
+
+    def register_hook(self, name: str, handler: Callable[..., Any]) -> None:
+        assert name not in self.hooks
+        self.hooks[name] = handler
+
+
+def write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+@pytest.fixture(autouse=True)
+def isolated_process_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    home = tmp_path / "process-home"
+    duckwork_home = home / ".duckwork"
+    duckwork_home.mkdir(parents=True)
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("DUCKWORK_HOME", str(duckwork_home))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(home / ".config"))
+    monkeypatch.setenv("PYTHONDONTWRITEBYTECODE", "1")
+    monkeypatch.delenv("LOCAL_KNOWLEDGE_ROOT", raising=False)
+    monkeypatch.delenv("LOCAL_KNOWLEDGE_STATE_DIR", raising=False)
+    monkeypatch.delenv("DUCKWORK_LOCAL_KNOWLEDGE_OKF_WORKER", raising=False)
+    yield
+
+
+@pytest.fixture
+def workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Workspace:
+    root = tmp_path / "source"
+    duckwork_home = tmp_path / "duckwork-home"
+    state_dir = tmp_path / "state"
+    duckwork_home.mkdir()
+    write(
+        root / "custom_skills" / "quartz-router" / "SKILL.md",
+        """---
+name: quartz-router
+description: Route quartz inventory operations to the canonical local procedure.
+tags:
+  - quartz
+  - inventory
+related_skills:
+  - quartz-helper
+---
+# Quartz Router
+
+Use this skill for quartz inventory operations.
+""",
+    )
+    write(
+        root / "custom_skills" / "quartz-helper" / "SKILL.md",
+        """---
+name: quartz-helper
+description: Supporting procedures for quartz inventory maintenance.
+tags:
+  - quartz
+  - maintenance
+---
+# Quartz Helper
+
+Use this helper after selecting the quartz inventory router.
+""",
+    )
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("DUCKWORK_HOME", str(duckwork_home))
+    monkeypatch.setenv("LOCAL_KNOWLEDGE_ROOT", str(root))
+    monkeypatch.setenv("LOCAL_KNOWLEDGE_STATE_DIR", str(state_dir))
+    return Workspace(root=root, duckwork_home=duckwork_home, state_dir=state_dir)
+
+
+def registered_surface(*, llm: object | None = None) -> RecordingContext:
+    ctx = RecordingContext(llm=llm)
+    plugin.register(ctx)
+    return ctx
+
+
+def tool_call(ctx: RecordingContext, name: str) -> dict[str, Any]:
+    return next(call for call in ctx.tools if call["name"] == name)
+
+
+def invoke_tool(ctx: RecordingContext, name: str, args: Any, **kwargs: Any) -> dict[str, Any]:
+    handler = cast(Callable[..., str], tool_call(ctx, name)["handler"])
+    payload = json.loads(handler(args, **kwargs))
+    assert isinstance(payload, dict)
+    json.dumps(payload, ensure_ascii=False, sort_keys=True)
+    return payload
+
+
+def run_cli_json(capsys: pytest.CaptureFixture[str], argv: Sequence[str]) -> tuple[int, dict[str, Any]]:
+    status = lci_cli.main(list(argv))
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert isinstance(payload, dict)
+    return status, payload
+
+
+def table_columns(conn: sqlite3.Connection, table: str) -> set[str]:
+    return {str(row[1]) for row in conn.execute(f"PRAGMA table_info({table})")}
+
+
+def create_current_usage_history(state_dir: Path, root: Path) -> Path:
+    state_dir.mkdir(parents=True, exist_ok=True)
+    db_path = state_dir / "usage.sqlite"
+    schemas: dict[str, Sequence[tuple[str, str, int, str | None, int]]] = {
+        "usage_events": USAGE_EVENT_SCHEMA,
+        "feedback": FEEDBACK_SCHEMA,
+    }
+    with sqlite3.connect(db_path) as conn:
+        for table, schema in schemas.items():
+            definitions: list[str] = []
+            for name, column_type, not_null, default, primary_key in schema:
+                parts = [name, column_type]
+                if primary_key:
+                    parts.append("PRIMARY KEY")
+                if not_null:
+                    parts.append("NOT NULL")
+                if default is not None:
+                    parts.extend(("DEFAULT", str(default)))
+                definitions.append(" ".join(parts))
+            conn.execute(f"CREATE TABLE {table} ({', '.join(definitions)})")
+        for statement in (
+            "CREATE INDEX idx_usage_events_ts ON usage_events(ts)",
+            "CREATE INDEX idx_usage_events_tool ON usage_events(tool)",
+            "CREATE INDEX idx_usage_events_query ON usage_events(query)",
+            "CREATE INDEX idx_feedback_ts ON feedback(ts)",
+            "CREATE INDEX idx_feedback_rating ON feedback(rating)",
+        ):
+            conn.execute(statement)
+        timestamp = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat().replace("+00:00", "Z")
+        root_text = str(root.resolve())
+        event = {
+            "id": 4001,
+            "ts": timestamp,
+            "tool": "knowledge_search",
+            "client": "native",
+            "session_id": "seeded-session",
+            "query": "seeded historical quartz",
+            "artifact_id": "skill:quartz-router",
+            "artifact_type": "skill",
+            "limit_value": 10,
+            "rebuild_requested": 0,
+            "rebuilt": 0,
+            "success": 1,
+            "result_count": 1,
+            "top_ids_json": '["skill:quartz-router"]',
+            "top_types_json": '["skill"]',
+            "latency_ms": 7,
+            "plugin_version": "0.3.12",
+            "source_root_source": "env",
+            "state_dir_source": "env",
+            "include_markdown_docs_source": "env",
+            "root": root_text,
+            "db_path": str((state_dir / "index.sqlite").resolve()),
+        }
+        columns = ", ".join(event)
+        conn.execute(
+            f"INSERT INTO usage_events ({columns}) VALUES ({', '.join('?' for _ in event)})",
+            tuple(event.values()),
+        )
+        feedback = {
+            "id": 5001,
+            "ts": timestamp,
+            "event_id": 4001,
+            "rating": "useful",
+            "query": "seeded historical quartz",
+            "artifact_id": "skill:quartz-router",
+            "note": "seeded v0.3.12 feedback",
+            "session_id": "seeded-session",
+            "root": root_text,
+        }
+        columns = ", ".join(feedback)
+        conn.execute(
+            f"INSERT INTO feedback ({columns}) VALUES ({', '.join('?' for _ in feedback)})",
+            tuple(feedback.values()),
+        )
+    return db_path
+
+
+def create_current_okf_queue(
+    state_dir: Path,
+    *,
+    tool_name: str = "public_demo_tool",
+    candidates: Sequence[tuple[str, int]] | None = None,
+) -> Path:
+    state_dir.mkdir(parents=True, exist_ok=True)
+    db_path = state_dir / "okf_queue.sqlite"
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            """
+            CREATE TABLE okf_candidates (
+              tool_name TEXT PRIMARY KEY,
+              toolset TEXT,
+              schema_hash TEXT,
+              schema_json TEXT,
+              generator_version TEXT,
+              first_seen TEXT NOT NULL,
+              last_seen TEXT NOT NULL,
+              use_count INTEGER NOT NULL DEFAULT 0,
+              success_count INTEGER NOT NULL DEFAULT 0,
+              error_count INTEGER NOT NULL DEFAULT 0,
+              last_error_type TEXT,
+              last_error_message TEXT,
+              arg_shape_json TEXT NOT NULL DEFAULT '{}',
+              status TEXT NOT NULL DEFAULT 'pending',
+              attempt_count INTEGER NOT NULL DEFAULT 0,
+              claimed_at TEXT,
+              claim_token TEXT,
+              claim_generator_version TEXT,
+              related_tools_json TEXT NOT NULL DEFAULT '[]',
+              okf_path TEXT,
+              last_attempt_error TEXT
+            )
+            """
+        )
+        conn.execute(
+            "CREATE INDEX idx_okf_candidates_status_seen "
+            "ON okf_candidates(status, use_count, last_seen)"
+        )
+        conn.execute(
+            """
+            CREATE TABLE okf_worker_leases (
+              name TEXT PRIMARY KEY,
+              owner TEXT NOT NULL,
+              expires_at REAL NOT NULL
+            )
+            """
+        )
+        for candidate_name, use_count in candidates or [(tool_name, 1)]:
+            row: dict[str, Any] = {
+                "tool_name": candidate_name,
+                "toolset": "local_knowledge",
+                "schema_hash": "sha256:public-fixture",
+                "schema_json": json.dumps(
+                    {
+                        "type": "object",
+                        "properties": {"query": {"type": "string"}},
+                        "required": ["query"],
+                    },
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+                "generator_version": "4",
+                "first_seen": "2026-07-01T00:00:00Z",
+                "last_seen": "2026-07-01T00:00:00Z",
+                "use_count": use_count,
+                "success_count": use_count,
+                "error_count": 0,
+                "last_error_type": None,
+                "last_error_message": None,
+                "arg_shape_json": json.dumps(
+                    {
+                        "type": "object",
+                        "field_count": 1,
+                        "fields": {"field_0": {"type": "str"}},
+                    },
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+                "status": "pending",
+                "attempt_count": 0,
+                "claimed_at": None,
+                "claim_token": None,
+                "claim_generator_version": None,
+                "related_tools_json": "[]",
+                "okf_path": None,
+                "last_attempt_error": None,
+            }
+            columns = ", ".join(row)
+            placeholders = ", ".join("?" for _ in row)
+            conn.execute(
+                f"INSERT INTO okf_candidates ({columns}) VALUES ({placeholders})",
+                tuple(row.values()),
+            )
+    return db_path
+
+
+def test_tool_registration_freezes_exact_five_contracts_and_host_integrations(
+    workspace: Workspace,
+) -> None:
+    ctx = registered_surface()
+
+    assert [call["name"] for call in ctx.tools] == EXPECTED_TOOL_ORDER
+    assert len(ctx.tools) == 5
+    for call in ctx.tools:
+        name = str(call["name"])
+        assert set(call) == {"name", "toolset", "schema", "handler", "check_fn", "emoji"}
+        assert call["toolset"] == "local_knowledge"
+        assert call["schema"] == EXPECTED_TOOL_SCHEMAS[name]
+        check_fn = cast(Callable[[], bool], call["check_fn"])
+        assert check_fn() is True
+        assert call["emoji"] == EXPECTED_TOOL_EMOJIS[name]
+        assert callable(call["handler"])
+
+    expected_skill = REPO_ROOT / "skills" / "local-knowledge-router" / "SKILL.md"
+    assert ctx.skills == [("local-knowledge-router", expected_skill)]
+    assert expected_skill.is_file()
+    assert set(ctx.hooks) == {
+        "pre_llm_call",
+        "post_tool_call",
+        "on_session_end",
+        "on_session_finalize",
+    }
+    assert len(ctx.cli_commands) == 1
+    cli_registration = ctx.cli_commands[0]
+    assert set(cli_registration) == {"name", "help", "description", "setup_fn", "handler_fn"}
+    assert cli_registration["name"] == "local-knowledge"
+    assert cli_registration["help"] == "Install and diagnose the local knowledge plugin"
+    assert cli_registration["description"] == "Install the proactive router skill or check plugin health."
+    assert callable(cli_registration["setup_fn"])
+    assert callable(cli_registration["handler_fn"])
+
+
+def test_registered_handlers_return_stable_json_success_envelopes(workspace: Workspace) -> None:
+    ctx = registered_surface()
+
+    search = invoke_tool(
+        ctx,
+        "knowledge_search",
+        {"query": "quartz inventory operations", "limit": 5, "rebuild": True},
+        session_id="public-contract-session",
+        api_request_id="public-contract-request",
+    )
+    assert set(search) == {"success", "results", "usage_event_id", "rebuilt"}
+    assert search["success"] is True
+    assert isinstance(search["usage_event_id"], int)
+    with sqlite3.connect(workspace.state_dir / "usage.sqlite") as connection:
+        assert connection.execute(
+            "SELECT api_request_id FROM usage_events WHERE id = ?",
+            (search["usage_event_id"],),
+        ).fetchone() == ("public-contract-request",)
+    assert search["rebuilt"] is True
+    assert search["results"][0]["id"] == "skill:quartz-router"
+    assert set(search["results"][0]) == MODEL_ARTIFACT_RESULT_KEYS
+
+    fetched = invoke_tool(
+        ctx,
+        "knowledge_get",
+        {"artifact_id": "skill:quartz-router", "include_neighbors": True},
+    )
+    assert set(fetched) == {"success", "artifact", "neighbors", "usage_event_id"}
+    assert fetched["success"] is True
+    assert fetched["artifact"]["id"] == "skill:quartz-router"
+    assert set(fetched["artifact"]) == MODEL_ARTIFACT_RESULT_KEYS
+    assert isinstance(fetched["usage_event_id"], int)
+    assert [row["id"] for row in fetched["neighbors"]] == ["skill:quartz-helper"]
+    assert set(fetched["neighbors"][0]) <= MODEL_NEIGHBOR_RESULT_KEYS
+    assert {"id", "type", "title", "path", "summary", "source", "edge_kind"} <= set(
+        fetched["neighbors"][0]
+    )
+    assert fetched["neighbors"][0]["edge_evidence"] == "skill:quartz-helper"
+
+    neighbors = invoke_tool(ctx, "knowledge_neighbors", {"artifact_id": "skill:quartz-router"})
+    assert set(neighbors) == {"success", "neighbors", "usage_event_id"}
+    assert neighbors["success"] is True
+    assert isinstance(neighbors["usage_event_id"], int)
+    assert [row["id"] for row in neighbors["neighbors"]] == ["skill:quartz-helper"]
+    assert neighbors["neighbors"][0]["edge_evidence"] == "skill:quartz-helper"
+
+    option_cases: list[tuple[str, dict[str, Any], dict[str, Any], tuple[str, ...]]] = [
+        (
+            "knowledge_search",
+            {"query": "quartz", "artifact_type": "script", "rebuild": False},
+            {"results": []},
+            (),
+        ),
+        (
+            "knowledge_get",
+            {"artifact_id": "skill:quartz-router", "rebuild": True},
+            {"rebuilt": True},
+            ("neighbors",),
+        ),
+        (
+            "knowledge_neighbors",
+            {"artifact_id": "skill:quartz-router", "limit": 1, "rebuild": True},
+            {"rebuilt": True},
+            (),
+        ),
+    ]
+    for tool_name, args, expected, absent_keys in option_cases:
+        payload = invoke_tool(ctx, tool_name, args)
+        assert payload["success"] is True
+        for key, value in expected.items():
+            assert payload[key] == value
+        for key in absent_keys:
+            assert key not in payload
+
+    feedback = invoke_tool(
+        ctx,
+        "knowledge_feedback",
+        {
+            "rating": "useful",
+            "event_id": search["usage_event_id"],
+            "query": "quartz inventory operations",
+            "artifact_id": "skill:quartz-router",
+            "note": "public fixture routed correctly",
+        },
+    )
+    assert set(feedback) == {"success", "feedback_id"}
+    assert feedback["success"] is True
+    assert isinstance(feedback["feedback_id"], int)
+
+    report = invoke_tool(ctx, "knowledge_usage_report", {"days": 30, "limit": 10})
+    assert set(report) == {
+        "success",
+        "window",
+        "event_count",
+        "search_quality",
+        "feedback",
+        "event_cohorts",
+        "improvement_candidates",
+    }
+    assert report["success"] is True
+    assert report["event_count"] == 7
+    assert report["feedback"]["count"] == 1
+
+
+
+def test_registered_handlers_keep_expected_bad_input_inside_error_envelopes(
+    workspace: Workspace,
+) -> None:
+    ctx = registered_surface()
+
+    for name in EXPECTED_TOOL_ORDER:
+        payload = invoke_tool(ctx, name, None)
+        assert payload == {"error": "args must be an object", "success": False}
+        assert "usage_event_id" not in payload
+
+    validation_cases: list[tuple[str, Any, str]] = [
+        ("knowledge_search", {}, "query is required"),
+        ("knowledge_get", {"artifact_id": ""}, "artifact_id is required"),
+        ("knowledge_neighbors", {"artifact_id": None}, "artifact_id is required"),
+        ("knowledge_feedback", {"rating": "great"}, "rating must be one of"),
+        (
+            "knowledge_feedback",
+            {"rating": "useful", "event_id": []},
+            "event_id must be an integer when provided",
+        ),
+    ]
+    for name, args, expected_error in validation_cases:
+        payload = invoke_tool(ctx, name, args)
+        assert payload["success"] is False
+        assert expected_error in payload["error"]
+        assert "usage_event_id" not in payload
+
+    coerced = invoke_tool(
+        ctx,
+        "knowledge_search",
+        {"query": "quartz inventory", "limit": "not-an-integer", "rebuild": []},
+    )
+    assert coerced["success"] is True
+    assert len(coerced["results"]) <= 8
+    assert "limit" not in coerced
+    assert isinstance(coerced["usage_event_id"], int)
+
+    missing = invoke_tool(ctx, "knowledge_get", {"artifact_id": "skill:missing"})
+    assert missing["success"] is False
+    assert missing["error"] == "Artifact not found: skill:missing"
+    assert missing["artifact_id"] == "skill:missing"
+    assert isinstance(missing["usage_event_id"], int)
+
+
+def test_standalone_cli_default_result_limits_are_observable(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    root = tmp_path / "source"
+    duckwork_home = tmp_path / "duckwork-home"
+    state_dir = tmp_path / "state"
+    duckwork_home.mkdir()
+    for index in range(12):
+        write(
+            root / "custom_skills" / f"limit-marker-{index:02d}" / "SKILL.md",
+            f"""---
+name: limit-marker-{index:02d}
+description: Limitmarker public contract capability {index}.
+---
+# Limit marker {index}
+""",
+        )
+    write(
+        duckwork_home / "config.yaml",
+        f"""local_knowledge:
+  source_root: {root}
+  state_dir: {state_dir}
+""",
+    )
+
+    assert lci_cli.main(
+        ["build", "--duckwork-home", str(duckwork_home), "--from-duckwork-config"]
+    ) == 0
+    capsys.readouterr()
+    db_path = state_dir / "index.sqlite"
+
+    assert lci_cli.main(["search", "limitmarker", "--db", str(db_path), "--json"]) == 0
+    rows = json.loads(capsys.readouterr().out)
+    assert len(rows) == 10
+
+    status, doctor = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(duckwork_home), "--query", "limitmarker", "--json"],
+    )
+    assert status == 0
+    assert doctor["rebuilt"] is False
+    assert doctor["smoke_result_count"] == 5
+
+    queue_state = tmp_path / "queue-state"
+    create_current_okf_queue(
+        queue_state,
+        candidates=[(f"limit_tool_{index:02d}", 1) for index in range(12)],
+    )
+    common = ["--state-dir", str(queue_state), "--json"]
+    status, queue = run_cli_json(capsys, ["okf", "status", *common])
+    assert status == 0
+    assert queue["counts"] == {"pending": 12}
+    assert len(queue["pending"]) == 10
+
+    status, claim = run_cli_json(capsys, ["okf", "claim", *common])
+    assert status == 0
+    assert claim["count"] == 1
+
+
+@pytest.mark.parametrize(
+    ("prefix", "snippets"),
+    [
+        (
+            [],
+            [
+                "build index.sqlite and index.jsonl",
+                "search artifacts",
+                "show one artifact by id",
+                "show graph neighbors for one artifact",
+                "replay positive feedback labels against the current search index",
+                "check runtime config, paths, index presence, and optional smoke build/search",
+                "install the bundled router skill into the active Duckwork profile",
+                "manage generated tool OKF candidate queue",
+            ],
+        ),
+        (
+            ["build"],
+            ["--root ROOT", "--duckwork-home DUCKWORK_HOME", "--output-dir OUTPUT_DIR", "--from-duckwork-config"],
+        ),
+        (
+            ["search"],
+            ["query", "--limit LIMIT", "--json", "--db DB", "--duckwork-home DUCKWORK_HOME", "--from-duckwork-config"],
+        ),
+        (["get"], ["artifact_id", "--json", "--db DB", "--from-duckwork-config"]),
+        (["neighbors"], ["artifact_id", "--json", "--db DB", "--from-duckwork-config"]),
+        (
+            ["evaluate"],
+            ["--usage-db USAGE_DB", "--json", "--details", "--db DB", "--from-duckwork-config"],
+        ),
+        (
+            ["doctor"],
+            ["--duckwork-home DUCKWORK_HOME", "--rebuild", "--query QUERY", "--limit LIMIT", "--json"],
+        ),
+        (
+            ["install-router-skill"],
+            ["--duckwork-home DUCKWORK_HOME", "--force", "--json"],
+        ),
+        (
+            ["okf"],
+            [
+                "show OKF queue status",
+                "claim pending OKF candidates",
+                "validate an authored OKF file",
+                "mark a claimed OKF candidate complete",
+                "mark a claimed OKF candidate failed",
+                "reset an exhausted OKF candidate for retry",
+            ],
+        ),
+        (
+            ["okf", "status"],
+            ["--limit LIMIT", "--duckwork-home DUCKWORK_HOME", "--from-duckwork-config", "--state-dir STATE_DIR", "--json"],
+        ),
+        (
+            ["okf", "claim"],
+            ["--limit LIMIT", "--min-use-count MIN_USE_COUNT", "--claim-token CLAIM_TOKEN", "--state-dir STATE_DIR"],
+        ),
+        (
+            ["okf", "validate"],
+            ["--claim-token CLAIM_TOKEN", "--path PATH", "--state-dir STATE_DIR", "--json"],
+        ),
+        (
+            ["okf", "complete"],
+            ["--claim-token CLAIM_TOKEN", "--tool TOOL", "--path PATH", "--json"],
+        ),
+        (
+            ["okf", "fail"],
+            ["--claim-token CLAIM_TOKEN", "--tool TOOL", "--error ERROR", "--json"],
+        ),
+        (["okf", "retry"], ["--tool TOOL", "--state-dir STATE_DIR", "--json"]),
+    ],
+)
+def test_standalone_cli_help_contract(
+    prefix: list[str],
+    snippets: list[str],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        lci_cli.main([*prefix, "--help"])
+    assert exc_info.value.code == 0
+    output = " ".join(capsys.readouterr().out.split())
+    for snippet in snippets:
+        assert snippet in output
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [],
+        ["unknown"],
+        ["search"],
+        ["get"],
+        ["neighbors"],
+        ["okf"],
+        ["okf", "validate"],
+        ["okf", "complete", "--claim-token", "token"],
+        ["okf", "fail", "--claim-token", "token", "--tool", "demo"],
+        ["okf", "retry"],
+    ],
+)
+def test_standalone_cli_parse_errors_exit_two(
+    argv: list[str],
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        lci_cli.main(argv)
+    assert exc_info.value.code == 2
+    assert capsys.readouterr().err
+
+
+def test_public_indexer_api_names_call_shapes_and_model_defaults_are_frozen() -> None:
+    assert indexer.__all__ == list(PUBLIC_INDEXER_API)
+    assert all(hasattr(indexer, name) for name in PUBLIC_INDEXER_API)
+    assert indexer.Artifact is lci_artifacts.Artifact
+    assert indexer.Edge is lci_artifacts.Edge
+    assert indexer.IndexSettings is lci_config.IndexSettings
+    assert indexer.build_index is lci_index.build_index
+    assert indexer.search_index is lci_index.search_index
+    assert indexer.get_artifact is lci_index.get_artifact
+    assert indexer.get_neighbors is lci_index.get_neighbors
+    assert indexer.main is lci_cli.main
+
+    def assert_parameter(
+        callable_obj: Callable[..., Any],
+        name: str,
+        kind: Any,
+        default: Any = inspect.Signature.empty,
+    ) -> None:
+        parameter = inspect.signature(callable_obj).parameters[name]
+        assert parameter.kind is kind
+        assert parameter.default is default or parameter.default == default
+
+    positional = inspect.Parameter.POSITIONAL_OR_KEYWORD
+    keyword_only = inspect.Parameter.KEYWORD_ONLY
+    assert list(inspect.signature(indexer.build_index).parameters) == [
+        "root",
+        "output_dir",
+        "duckwork_home",
+        "settings",
+        "force",
+    ]
+    for name in ("root", "output_dir", "duckwork_home"):
+        assert_parameter(indexer.build_index, name, positional)
+    assert_parameter(indexer.build_index, "settings", positional, None)
+    assert_parameter(indexer.build_index, "force", keyword_only, True)
+    assert get_type_hints(indexer.build_index)["return"] == (
+        tuple[list[indexer.Artifact], list[indexer.Edge]] | None
+    )
+    assert_parameter(indexer.search_index, "db_path", positional)
+    assert_parameter(indexer.search_index, "query", positional)
+    assert_parameter(indexer.search_index, "limit", keyword_only, 10)
+    assert_parameter(indexer.search_index, "artifact_type", keyword_only, None)
+    for lookup in (indexer.get_artifact, indexer.get_neighbors):
+        assert_parameter(lookup, "db_path", positional)
+        assert_parameter(lookup, "artifact_id", positional)
+    assert_parameter(indexer.main, "argv", positional, None)
+
+    root = Path("source")
+    state_dir = Path("state")
+    duckwork_home = Path("duckwork-home")
+    inspect.signature(indexer.build_index).bind(root, state_dir, duckwork_home)
+    inspect.signature(indexer.build_index).bind(
+        root=root,
+        output_dir=state_dir,
+        duckwork_home=duckwork_home,
+        settings=indexer.IndexSettings(),
+    )
+    inspect.signature(indexer.search_index).bind(
+        db_path=state_dir / "index.sqlite",
+        query="quartz",
+        limit=1,
+        artifact_type="skill",
+    )
+    inspect.signature(indexer.get_artifact).bind(state_dir / "index.sqlite", "skill:demo")
+    inspect.signature(indexer.get_neighbors).bind(
+        db_path=state_dir / "index.sqlite",
+        artifact_id="skill:demo",
+    )
+    inspect.signature(indexer.main).bind()
+    inspect.signature(indexer.main).bind(["--help"])
+
+    artifact_fields = fields(indexer.Artifact)
+    assert [field.name for field in artifact_fields] == [
+        "id",
+        "type",
+        "title",
+        "path",
+        "summary",
+        "triggers",
+        "entities",
+        "related",
+        "updated_at",
+        "source",
+        "search_text",
+    ]
+    assert all(field.default is MISSING for field in artifact_fields[:5])
+    assert all(field.default_factory is list for field in artifact_fields[5:8])
+    assert [field.default for field in artifact_fields[8:]] == [None, None, ""]
+    artifact = indexer.Artifact("id", "skill", "Title", "path", "summary")
+    assert artifact.triggers == []
+    assert artifact.entities == []
+    assert artifact.related == []
+
+    edge_fields = fields(indexer.Edge)
+    assert [field.name for field in edge_fields] == ["source", "target", "kind", "evidence"]
+    assert all(field.default is MISSING for field in edge_fields)
+
+    settings = indexer.IndexSettings()
+    assert settings.custom_skill_dirs == ("custom_skills",)
+    assert settings.script_dirs == ("scripts", "duckwork_home/scripts")
+    assert settings.memory_dirs == ("memory",)
+    assert settings.runbook_dirs == ("docs",)
+    assert settings.known_entities == ("Duckwork", "GitHub", "MCP", "Cron")
+    assert settings.include_markdown_docs is True
+    assert settings.exclude_dir_names == ()
+
+
+def test_public_indexer_api_build_search_get_neighbors_and_jsonl_contract(
+    workspace: Workspace,
+) -> None:
+    artifacts, edges = indexer.build_index(
+        workspace.root,
+        workspace.state_dir,
+        workspace.duckwork_home,
+    )
+    assert {artifact.id for artifact in artifacts} == {
+        "skill:quartz-helper",
+        "skill:quartz-router",
+    }
+    assert all(isinstance(artifact, indexer.Artifact) for artifact in artifacts)
+    assert edges == [
+        indexer.Edge(
+            source="skill:quartz-router",
+            target="skill:quartz-helper",
+            kind="related_to",
+            evidence="skill:quartz-helper",
+        )
+    ]
+    assert (workspace.state_dir / "index.sqlite").is_file()
+    assert (workspace.state_dir / "index.jsonl").is_file()
+    assert lci_index.INDEX_BUILD_LOCK_NAME == "index_build.lock"
+    assert (workspace.state_dir / lci_index.INDEX_BUILD_LOCK_NAME).is_file()
+    assert lci_index.INDEX_BUILD_TRANSACTION_LOCK_NAME == "index_build.sqlite"
+    assert (workspace.state_dir / lci_index.INDEX_BUILD_TRANSACTION_LOCK_NAME).is_file()
+
+    jsonl_rows = [
+        json.loads(line)
+        for line in (workspace.state_dir / "index.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert {row["id"] for row in jsonl_rows} == {
+        "skill:quartz-helper",
+        "skill:quartz-router",
+    }
+    assert all(set(row) == ARTIFACT_RESULT_KEYS for row in jsonl_rows)
+    assert all("search_text" not in row for row in jsonl_rows)
+
+    db_path = workspace.state_dir / "index.sqlite"
+    rows = indexer.search_index(db_path, "quartz inventory operations", limit=1)
+    assert [row["id"] for row in rows] == ["skill:quartz-router"]
+    assert set(rows[0]) == SEARCH_RESULT_KEYS
+    assert indexer.search_index(db_path, "quartz", artifact_type="script") == []
+
+    fetched = indexer.get_artifact(db_path, "skill:quartz-router")
+    assert fetched is not None
+    assert fetched["related"] == ["skill:quartz-helper"]
+    assert set(fetched) == ARTIFACT_RESULT_KEYS
+    assert indexer.get_artifact(db_path, "skill:missing") is None
+
+    neighbors = indexer.get_neighbors(db_path, "skill:quartz-router")
+    assert [row["id"] for row in neighbors] == ["skill:quartz-helper"]
+    assert neighbors[0]["edge_kind"] == "related_to"
+    assert neighbors[0]["edge_evidence"] == "skill:quartz-helper"
+    assert set(neighbors[0]) == ARTIFACT_RESULT_KEYS | {"edge_kind", "edge_evidence"}
+    assert indexer.get_neighbors(db_path, "skill:missing") == []
+
+
+def test_cli_core_commands_and_positive_evaluation_output(
+    workspace: Workspace,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert lci_cli.main(
+        [
+            "build",
+            "--root",
+            str(workspace.root),
+            "--duckwork-home",
+            str(workspace.duckwork_home),
+            "--output-dir",
+            str(workspace.state_dir),
+        ]
+    ) == 0
+    build_output = capsys.readouterr().out
+    assert "Built 2 artifacts and 1 edges" in build_output
+    assert "  skill: 2" in build_output
+    assert f"SQLite: {workspace.state_dir / 'index.sqlite'}" in build_output
+    assert f"JSONL:  {workspace.state_dir / 'index.jsonl'}" in build_output
+
+    db_path = workspace.state_dir / "index.sqlite"
+    assert lci_cli.main(
+        ["search", "quartz inventory operations", "--limit", "1", "--db", str(db_path), "--json"]
+    ) == 0
+    search_rows = json.loads(capsys.readouterr().out)
+    assert [row["id"] for row in search_rows] == ["skill:quartz-router"]
+    assert set(search_rows[0]) == SEARCH_RESULT_KEYS
+
+    assert lci_cli.main(["get", "skill:quartz-router", "--db", str(db_path), "--json"]) == 0
+    fetched = json.loads(capsys.readouterr().out)
+    assert fetched["id"] == "skill:quartz-router"
+    assert set(fetched) == ARTIFACT_RESULT_KEYS
+
+    assert lci_cli.main(
+        ["neighbors", "skill:quartz-router", "--db", str(db_path), "--json"]
+    ) == 0
+    neighbors = json.loads(capsys.readouterr().out)
+    assert [row["id"] for row in neighbors] == ["skill:quartz-helper"]
+    assert set(neighbors[0]) == ARTIFACT_RESULT_KEYS | {"edge_kind", "edge_evidence"}
+
+    assert lci_cli.main(["get", "skill:missing", "--db", str(db_path)]) == 1
+    missing = capsys.readouterr()
+    assert missing.out == ""
+    assert missing.err == "Artifact not found: skill:missing\n"
+
+    feedback = invoke_tool(
+        registered_surface(),
+        "knowledge_feedback",
+        {
+            "rating": "useful",
+            "query": "quartz inventory operations",
+            "artifact_id": "skill:quartz-router",
+        },
+    )
+    assert feedback["success"] is True
+    usage_db = workspace.state_dir / "usage.sqlite"
+
+    with sqlite3.connect(usage_db) as conn:
+        before = (
+            conn.execute("SELECT COUNT(*) FROM usage_events").fetchone()[0],
+            conn.execute("SELECT COUNT(*) FROM feedback").fetchone()[0],
+        )
+
+    status, metrics = run_cli_json(
+        capsys,
+        ["evaluate", "--db", str(db_path), "--usage-db", str(usage_db), "--json"],
+    )
+    assert status == 0
+    assert set(metrics) == EVALUATION_METRIC_KEYS
+    assert metrics == {
+        "query_count": 1,
+        "label_count": 1,
+        "hit_at_1": 1.0,
+        "hit_at_3": 1.0,
+        "hit_at_5": 1.0,
+        "hit_at_10": 1.0,
+        "mrr_at_10": 1.0,
+        "parent_equiv_hit_at_1": 1.0,
+        "parent_equiv_hit_at_3": 1.0,
+        "parent_equiv_hit_at_5": 1.0,
+        "parent_equiv_hit_at_10": 1.0,
+        "parent_equiv_mrr_at_10": 1.0,
+    }
+    assert not any("negative" in key for key in metrics)
+
+    status, details = run_cli_json(
+        capsys,
+        [
+            "evaluate",
+            "--db",
+            str(db_path),
+            "--usage-db",
+            str(usage_db),
+            "--json",
+            "--details",
+        ],
+    )
+    assert status == 0
+    assert set(details) == EVALUATION_METRIC_KEYS | {"cases"}
+    assert len(details["cases"]) == 1
+    assert set(details["cases"][0]) == {
+        "query",
+        "expected_ids",
+        "exact_rank",
+        "parent_equiv_rank",
+        "top_ids",
+    }
+    assert details["cases"][0]["expected_ids"] == ["skill:quartz-router"]
+    assert details["cases"][0]["exact_rank"] == 1
+    assert details["cases"][0]["parent_equiv_rank"] == 1
+    assert not any("negative" in key for key in details)
+
+    with sqlite3.connect(usage_db) as conn:
+        after = (
+            conn.execute("SELECT COUNT(*) FROM usage_events").fetchone()[0],
+            conn.execute("SELECT COUNT(*) FROM feedback").fetchone()[0],
+        )
+    assert after == before
+
+
+def test_cli_doctor_and_router_skill_install_public_contract(
+    workspace: Workspace,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    status, doctor = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(workspace.duckwork_home), "--json"],
+    )
+    assert status == 0
+    assert doctor["success"] is True
+    assert doctor["rebuilt"] is False
+    checks = {row["name"]: row for row in doctor["checks"]}
+    assert set(checks) >= {
+        "duckwork_home_exists",
+        "source_root_exists",
+        "state_dir_parent_exists",
+        "index_exists",
+        "router_skill_installed",
+        "router_skill_matches_plugin",
+        "okf_auto_generate",
+    }
+    assert checks["router_skill_installed"]["ok"] is False
+    assert checks["okf_auto_generate"]["ok"] is True
+
+    status, installed = run_cli_json(
+        capsys,
+        [
+            "install-router-skill",
+            "--duckwork-home",
+            str(workspace.duckwork_home),
+            "--json",
+        ],
+    )
+    target = workspace.duckwork_home / "skills" / "local-knowledge-router" / "SKILL.md"
+    assert status == 0
+    assert installed == {
+        "source": str(
+            REPO_ROOT
+            / "duckwork_local_knowledge"
+            / "skills"
+            / "local-knowledge-router"
+            / "SKILL.md"
+        ),
+        "target": str(target),
+        "success": True,
+        "status": "installed",
+        "overwritten": False,
+        "message": "installed normal local-knowledge-router skill",
+    }
+    assert target.is_file()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def test_cli_doctor_accepts_explicit_custom_router_skill_path(
+    workspace: Workspace,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    target = workspace.duckwork_home / "skills" / "note-taking" / "local-knowledge-router" / "SKILL.md"
+    custom_content = """---
+name: "local-knowledge-router"  # customized deployment
+description: Route local operational questions through Alex's customized policy.
+---
+# Custom Local Knowledge Router
+"""
+    write(target, custom_content)
+    write(
+        workspace.duckwork_home / "config.yaml",
+        """local_knowledge:
+  router_skill_path: skills/note-taking/local-knowledge-router/SKILL.md
+""",
+    )
+
+    cfg = lci_config.resolve_config(workspace.duckwork_home)
+    assert cfg.router_skill_path == target
+    assert cfg.router_skill_path_source == "config"
+
+    status, doctor = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(workspace.duckwork_home), "--json"],
+    )
+    assert status == 0
+    assert doctor["router_skill_mode"] == "custom"
+    assert doctor["router_skill_path"] == str(target)
+    checks = {row["name"]: row for row in doctor["checks"]}
+    assert checks["router_skill_installed"]["ok"] is True
+    assert checks["router_skill_identity"]["ok"] is True
+    assert checks["router_skill_matches_plugin"]["ok"] is True
+    assert "byte equality is intentionally not required" in checks[
+        "router_skill_matches_plugin"
+    ]["detail"]
+
+    status, install = run_cli_json(
+        capsys,
+        [
+            "install-router-skill",
+            "--duckwork-home",
+            str(workspace.duckwork_home),
+            "--force",
+            "--json",
+        ],
+    )
+    assert status == 0
+    assert install["success"] is True
+    assert install["status"] == "current"
+    assert install["router_skill_mode"] == "custom"
+    assert install["target"] == str(target)
+    assert install["overwritten"] is False
+    assert target.read_text(encoding="utf-8") == custom_content
+
+    before = target.stat().st_mtime_ns
+    status, forced = run_cli_json(
+        capsys,
+        [
+            "install-router-skill",
+            "--duckwork-home",
+            str(workspace.duckwork_home),
+            "--force",
+            "--json",
+        ],
+    )
+    assert status == 0
+    assert forced["status"] == "current"
+    assert forced["router_skill_mode"] == "custom"
+    assert forced["overwritten"] is False
+    assert target.stat().st_mtime_ns == before
+    assert target.read_text(encoding="utf-8") == custom_content
+
+
+@pytest.mark.parametrize(
+    ("frontmatter", "expected"),
+    [
+        ("name: local-knowledge-router # deployed", "local-knowledge-router"),
+        ('name: "local-knowledge\\u002drouter"', "local-knowledge-router"),
+        ('name: "\'local-knowledge-router\'"', "'local-knowledge-router'"),
+        ("name: local-knowledge-router\nname: local-knowledge-router", None),
+        ("name:\nname: local-knowledge-router", None),
+        ('name: "local-knowledge-router', None),
+    ],
+)
+def test_custom_router_frontmatter_name_uses_fail_closed_scalar_semantics(
+    tmp_path: Path,
+    frontmatter: str,
+    expected: str | None,
+) -> None:
+    skill = tmp_path / "SKILL.md"
+    skill.write_text(f"---\n{frontmatter}\n---\n", encoding="utf-8")
+    assert lci_cli._router_skill_frontmatter_name(skill) == expected
+
+
+def test_cli_doctor_accepts_symlinked_custom_router_skill_path(
+    workspace: Workspace,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source = tmp_path / "custom-router-source"
+    write(
+        source / "SKILL.md",
+        """---
+name: local-knowledge-router
+description: Symlinked custom router skill.
+---
+# Symlinked Router
+""",
+    )
+    link = workspace.duckwork_home / "skills" / "note-taking" / "local-knowledge-router"
+    link.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        link.symlink_to(source, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlinks are unavailable: {exc}")
+    write(
+        workspace.duckwork_home / "config.yaml",
+        """local_knowledge:
+  router_skill_path: skills/note-taking/local-knowledge-router/SKILL.md
+""",
+    )
+
+    status, doctor = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(workspace.duckwork_home), "--json"],
+    )
+    assert status == 0
+    checks = {row["name"]: row for row in doctor["checks"]}
+    assert checks["router_skill_path_enrolled"]["ok"] is True
+    assert checks["router_skill_installed"]["ok"] is True
+    assert checks["router_skill_identity"]["ok"] is True
+
+
+def test_cli_rejects_custom_router_runtime_path_outside_duckwork_skills(
+    workspace: Workspace,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    outside = tmp_path / "outside" / "SKILL.md"
+    write(
+        outside,
+        """---
+name: local-knowledge-router
+---
+# Outside Router
+""",
+    )
+    write(
+        workspace.duckwork_home / "config.yaml",
+        f"""local_knowledge:
+  router_skill_path: {outside}
+""",
+    )
+
+    status, doctor = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(workspace.duckwork_home), "--json"],
+    )
+    assert status == 0
+    checks = {row["name"]: row for row in doctor["checks"]}
+    assert checks["router_skill_path_enrolled"]["ok"] is False
+    assert "must be under DUCKWORK_HOME/skills" in checks["router_skill_path_enrolled"][
+        "detail"
+    ]
+
+    status, install = run_cli_json(
+        capsys,
+        ["install-router-skill", "--duckwork-home", str(workspace.duckwork_home), "--json"],
+    )
+    assert status == 1
+    assert install["success"] is False
+    assert install["status"] == "custom_invalid"
+    assert outside.read_text(encoding="utf-8").endswith("# Outside Router\n")
+
+
+def test_cli_doctor_does_not_scan_for_unconfigured_custom_router_skill(
+    workspace: Workspace,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    write(
+        workspace.duckwork_home
+        / "skills"
+        / "note-taking"
+        / "local-knowledge-router"
+        / "SKILL.md",
+        """---
+name: local-knowledge-router
+description: Unconfigured custom router skill.
+---
+# Custom Router
+""",
+    )
+
+    status, doctor = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(workspace.duckwork_home), "--json"],
+    )
+    assert status == 0
+    cfg = lci_config.resolve_config(workspace.duckwork_home)
+    assert cfg.router_skill_path is None
+    assert cfg.router_skill_path_source == "default"
+    assert doctor["router_skill_mode"] == "bundled"
+    assert Path(doctor["router_skill_path"]).parts[-3:] == (
+        "skills",
+        "local-knowledge-router",
+        "SKILL.md",
+    )
+    checks = {row["name"]: row for row in doctor["checks"]}
+    assert checks["router_skill_installed"]["ok"] is False
+    assert "router_skill_identity" not in checks
+
+
+def test_cli_reports_missing_configured_custom_router_skill_without_default_fallback(
+    workspace: Workspace,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    write(
+        workspace.duckwork_home / "config.yaml",
+        """local_knowledge:
+  router_skill_path: skills/note-taking/local-knowledge-router/SKILL.md
+""",
+    )
+
+    status, doctor = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(workspace.duckwork_home), "--json"],
+    )
+    assert status == 0
+    assert doctor["router_skill_mode"] == "custom"
+    checks = {row["name"]: row for row in doctor["checks"]}
+    assert checks["router_skill_path_enrolled"]["ok"] is True
+    assert checks["router_skill_installed"]["ok"] is False
+    assert checks["router_skill_identity"]["ok"] is False
+    assert checks["router_skill_matches_plugin"]["ok"] is False
+
+    status, install = run_cli_json(
+        capsys,
+        [
+            "install-router-skill",
+            "--duckwork-home",
+            str(workspace.duckwork_home),
+            "--json",
+        ],
+    )
+    assert status == 1
+    assert install["success"] is False
+    assert install["status"] == "custom_missing"
+    assert not (
+        workspace.duckwork_home / "skills" / "local-knowledge-router" / "SKILL.md"
+    ).exists()
+
+
+def test_cli_doctor_rejects_invalid_configured_router_skill_identity(
+    workspace: Workspace,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    target = workspace.duckwork_home / "skills" / "custom-router" / "SKILL.md"
+    write(
+        target,
+        """---
+name: another-router
+description: Wrong skill identity.
+---
+# Wrong Router
+""",
+    )
+    write(
+        workspace.duckwork_home / "config.yaml",
+        """local_knowledge:
+  router_skill_path: skills/custom-router/SKILL.md
+""",
+    )
+
+    status, doctor = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(workspace.duckwork_home), "--json"],
+    )
+    assert status == 0
+    checks = {row["name"]: row for row in doctor["checks"]}
+    assert checks["router_skill_installed"]["ok"] is True
+    assert checks["router_skill_identity"]["ok"] is False
+    assert checks["router_skill_matches_plugin"]["ok"] is False
+    assert "expected frontmatter name 'local-knowledge-router'" in checks[
+        "router_skill_identity"
+    ]["detail"]
+
+    before = target.read_bytes()
+    status, install = run_cli_json(
+        capsys,
+        [
+            "install-router-skill",
+            "--duckwork-home",
+            str(workspace.duckwork_home),
+            "--force",
+            "--json",
+        ],
+    )
+    assert status == 1
+    assert install["success"] is False
+    assert install["status"] == "custom_invalid"
+    assert target.read_bytes() == before
+
+
+def test_duckwork_native_adapter_surface_and_okf_worker_exit_behavior(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    parser = argparse.ArgumentParser(prog="duckwork local-knowledge")
+    lci_cli.setup_duckwork_cli(parser)
+
+    with pytest.raises(SystemExit) as help_exit:
+        parser.parse_args(["--help"])
+    assert help_exit.value.code == 0
+    help_output = capsys.readouterr().out
+    assert "install-router-skill" in help_output
+    assert "doctor" in help_output
+    assert "okf-worker" in help_output
+
+    for argv, snippets in [
+        (["install-router-skill", "--help"], ["--duckwork-home", "--force", "--json"]),
+        (
+            ["doctor", "--help"],
+            ["--duckwork-home", "--rebuild", "--query", "--limit", "--json"],
+        ),
+        (["okf-worker", "--help"], ["--duckwork-home"]),
+    ]:
+        with pytest.raises(SystemExit) as nested_help_exit:
+            parser.parse_args(argv)
+        assert nested_help_exit.value.code == 0
+        output = capsys.readouterr().out
+        assert all(snippet in output for snippet in snippets)
+
+    duckwork_home = tmp_path / "adapter-home"
+    duckwork_home.mkdir()
+    write(
+        duckwork_home / "config.yaml",
+        """local_knowledge:
+  okf:
+    enabled: true
+    auto_generate: true
+""",
+    )
+    doctor_args = parser.parse_args(["doctor", "--duckwork-home", str(duckwork_home), "--json"])
+    assert lci_cli.handle_duckwork_cli(doctor_args) == 0
+    doctor = json.loads(capsys.readouterr().out)
+    assert doctor["success"] is True
+    assert doctor["rebuilt"] is False
+
+    worker_args = parser.parse_args(["okf-worker", "--duckwork-home", str(duckwork_home)])
+    no_model_calls = object()
+    assert lci_cli.handle_duckwork_cli(worker_args, llm=no_model_calls) == 0
+    assert (duckwork_home / "local_knowledge" / "okf_queue.sqlite").is_file()
+
+    with pytest.raises(SystemExit) as worker_exit:
+        lci_cli.handle_duckwork_cli(worker_args, llm=None)
+    assert worker_exit.value.code == 2
+
+
+def test_package_entrypoint_manifest_and_bundled_skill_contract(tmp_path: Path) -> None:
+    pyproject = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    project = pyproject["project"]
+    assert project["name"] == "duckwork-local-knowledge"
+    assert project["version"] == duckwork_local_knowledge.__version__
+    assert project["requires-python"] == ">=3.11"
+    assert project.get("dependencies", []) == []
+    assert project["entry-points"]["duckwork_agent.plugins"] == {
+        "local_knowledge": "duckwork_local_knowledge.plugin"
+    }
+    assert pyproject["tool"]["setuptools"]["package-data"] == {
+        "duckwork_local_knowledge": ["skills/*/SKILL.md"]
+    }
+    assert callable(plugin.register)
+
+    manifest_lines = (REPO_ROOT / "plugin.yaml").read_text(encoding="utf-8").splitlines()
+
+    def manifest_list(key: str) -> list[str]:
+        start = manifest_lines.index(f"{key}:") + 1
+        values: list[str] = []
+        for line in manifest_lines[start:]:
+            if not line.startswith("  - "):
+                break
+            values.append(line.removeprefix("  - "))
+        return values
+
+    assert manifest_list("provides_tools") == EXPECTED_TOOL_ORDER
+    assert manifest_list("provides_hooks") == [
+        "pre_llm_call",
+        "post_tool_call",
+        "on_session_end",
+        "on_session_finalize",
+    ]
+
+    root_skill = REPO_ROOT / "skills" / "local-knowledge-router" / "SKILL.md"
+    package_skill = (
+        REPO_ROOT
+        / "duckwork_local_knowledge"
+        / "skills"
+        / "local-knowledge-router"
+        / "SKILL.md"
+    )
+    example_skill = (
+        REPO_ROOT
+        / "examples"
+        / "local-knowledge-router-skill"
+        / "SKILL.md"
+    )
+    root_bytes = root_skill.read_bytes()
+    assert package_skill.read_bytes() == root_bytes
+    assert example_skill.read_bytes() == root_bytes
+    ctx = registered_surface()
+    assert ctx.skills == [("local-knowledge-router", root_skill)]
+
+    manifest_lines = (REPO_ROOT / "MANIFEST.in").read_text(encoding="utf-8").splitlines()
+    assert "include CHANGELOG.md" in manifest_lines
+    assert "prune tests" in manifest_lines
+
+    source_copy = tmp_path / "source"
+    dist_dir = tmp_path / "dist"
+    shutil.copytree(
+        REPO_ROOT,
+        source_copy,
+        ignore=shutil.ignore_patterns(
+            ".git",
+            ".mypy_cache",
+            ".pytest_cache",
+            ".ruff_cache",
+            "__pycache__",
+            "*.egg-info",
+            "*.pyc",
+            "build",
+            "dist",
+        ),
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "build",
+            "--no-isolation",
+            "--sdist",
+            "--wheel",
+            "--outdir",
+            str(dist_dir),
+        ],
+        cwd=source_copy,
+        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+        text=True,
+        capture_output=True,
+        timeout=120,
+    )
+    assert result.returncode == 0, f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+    [sdist_path] = list(dist_dir.glob("*.tar.gz"))
+    [wheel_path] = list(dist_dir.glob("*.whl"))
+
+    validate_sdist(sdist_path)
+
+    with zipfile.ZipFile(wheel_path) as wheel_archive:
+        wheel_names = set(wheel_archive.namelist())
+    required_public_payload = {
+        "duckwork_local_knowledge/__init__.py",
+        "duckwork_local_knowledge/cli.py",
+        "duckwork_local_knowledge/indexer.py",
+        "duckwork_local_knowledge/plugin.py",
+        "duckwork_local_knowledge/skills/local-knowledge-router/SKILL.md",
+    }
+    assert required_public_payload <= wheel_names
+    assert not any(
+        name.startswith(("tests/", "mutants/"))
+        for name in wheel_names
+    )
+    retired_payload = {
+        f"duckwork_local_knowledge/{name}"
+        for name in {
+            "constants.py",
+            "handlers.py",
+            "models.py",
+            "paths.py",
+            "runtime.py",
+            "scanners.py",
+            "schemas.py",
+            "search.py",
+            "storage.py",
+            "text_utils.py",
+            "tooling.py",
+        }
+    }
+    assert wheel_names.isdisjoint(retired_payload)
+
+
+def test_directory_plugin_root_shim_supports_namespaced_import_without_install(
+    tmp_path: Path,
+) -> None:
+    script = textwrap.dedent(
+        """
+        import importlib.util
+        import json
+        import pathlib
+        import sys
+        import types
+
+        root = pathlib.Path(sys.argv[1]).resolve()
+        parent_name = "public_contract_plugins"
+        parent = types.ModuleType(parent_name)
+        parent.__path__ = [str(root.parent)]
+        sys.modules[parent_name] = parent
+        name = parent_name + ".local_knowledge"
+        spec = importlib.util.spec_from_file_location(
+            name,
+            root / "__init__.py",
+            submodule_search_locations=[str(root)],
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+        calls = []
+        class Context:
+            def register_tool(self, **kwargs):
+                calls.append(kwargs["name"])
+        module.register(Context())
+        implementation = module.register.__module__
+        assert implementation == name + ".duckwork_local_knowledge.plugin", implementation
+        assert calls == [
+            "knowledge_search",
+            "knowledge_get",
+            "knowledge_neighbors",
+            "knowledge_feedback",
+            "knowledge_usage_report",
+        ]
+        assert module.__all__ == ["register"]
+        print(json.dumps({"implementation": implementation, "tools": calls}, sort_keys=True))
+        """
+    )
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env["HOME"] = str(tmp_path / "home")
+    env["DUCKWORK_HOME"] = str(tmp_path / "duckwork-home")
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(REPO_ROOT)],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["implementation"].endswith(".duckwork_local_knowledge.plugin")
+    assert payload["tools"] == EXPECTED_TOOL_ORDER
+
+
+def test_config_implicit_and_explicit_root_markdown_defaults_via_cli_and_plugin(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    implicit_home = tmp_path / "implicit-home"
+    implicit_state = tmp_path / "implicit-state"
+    explicit_home = tmp_path / "explicit-home"
+    explicit_root = tmp_path / "explicit-root"
+    explicit_state = tmp_path / "explicit-state"
+    implicit_home.mkdir()
+    explicit_home.mkdir()
+    write(
+        implicit_home / "custom_skills" / "implicit-skill" / "SKILL.md",
+        "---\nname: implicit-skill\ndescription: Implicit root fixture.\n---\n",
+    )
+    write(implicit_home / "loose-note.md", "# Implicit loose note\n")
+    write(
+        explicit_root / "custom_skills" / "explicit-skill" / "SKILL.md",
+        "---\nname: explicit-skill\ndescription: Explicit root fixture.\n---\n",
+    )
+    write(explicit_root / "loose-note.md", "# Explicit loose note\n")
+    write(
+        implicit_home / "config.yaml",
+        f"""local_knowledge:
+  state_dir: {implicit_state}
+""",
+    )
+    write(
+        explicit_home / "config.yaml",
+        f"""local_knowledge:
+  source_root: {explicit_root}
+  state_dir: {explicit_state}
+""",
+    )
+
+    def build(duckwork_home: Path, state_dir: Path) -> list[dict[str, Any]]:
+        assert lci_cli.main(
+            ["build", "--duckwork-home", str(duckwork_home), "--from-duckwork-config"]
+        ) == 0
+        output = capsys.readouterr().out
+        assert f"SQLite: {state_dir.resolve() / 'index.sqlite'}" in output
+        return [
+            json.loads(line)
+            for line in (state_dir / "index.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+
+    implicit_rows = build(implicit_home, implicit_state)
+    explicit_rows = build(explicit_home, explicit_state)
+    assert {row["path"] for row in implicit_rows} == {"custom_skills/implicit-skill"}
+    assert {row["path"] for row in explicit_rows} == {
+        "custom_skills/explicit-skill",
+        "loose-note.md",
+    }
+
+    status, implicit = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(implicit_home), "--json"],
+    )
+    assert status == 0
+    assert implicit["source_root"] == str(implicit_home.resolve())
+    assert implicit["source_root_source"] == "default"
+    assert implicit["state_dir"] == str(implicit_state.resolve())
+    assert implicit["state_dir_source"] == "config"
+    assert implicit["include_markdown_docs_source"] == "default"
+    implicit_checks = {row["name"]: row for row in implicit["checks"]}
+    assert implicit_checks["okf_auto_generate"]["ok"] is True
+
+    status, explicit = run_cli_json(
+        capsys,
+        ["doctor", "--duckwork-home", str(explicit_home), "--json"],
+    )
+    assert status == 0
+    assert explicit["source_root"] == str(explicit_root.resolve())
+    assert explicit["source_root_source"] == "config"
+    assert explicit["state_dir"] == str(explicit_state.resolve())
+    assert explicit["state_dir_source"] == "config"
+    assert explicit["include_markdown_docs_source"] == "default"
+
+    monkeypatch.setenv("DUCKWORK_HOME", str(implicit_home))
+    hook = registered_surface().hooks["post_tool_call"]
+    hook(
+        tool_name="public_default_tool",
+        args={"query": "public fixture"},
+        result=json.dumps({"success": True}),
+    )
+    status, queue = run_cli_json(
+        capsys,
+        [
+            "okf",
+            "status",
+            "--duckwork-home",
+            str(implicit_home),
+            "--from-duckwork-config",
+            "--json",
+        ],
+    )
+    assert status == 0
+    assert [row["tool"] for row in queue["pending"]] == ["public_default_tool"]
+
+
+
+
+
+
+
+
+
+def test_config_canonical_and_legacy_aliases_reach_cli_build_and_doctor(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_root = tmp_path / "source"
+    canonical_home = tmp_path / "canonical-home"
+    legacy_home = tmp_path / "legacy-home"
+    canonical_state = tmp_path / "canonical-state"
+    legacy_state = tmp_path / "legacy-state"
+    canonical_home.mkdir()
+    legacy_home.mkdir()
+    write(
+        source_root / "skills" / "quartz-router" / "SKILL.md",
+        "---\nname: quartz-router\ndescription: Route Quartz requests.\n---\n",
+    )
+    write(source_root / "scripts" / "quartz_tool.py", "# Maintain Quartz inventory.\n")
+    write(
+        canonical_home / "config.yaml",
+        f"""local_knowledge:
+  source_root: {source_root}
+  state_dir: {canonical_state}
+  custom_skill_dirs: [skills]
+  script_dirs: [scripts]
+  known_entities: [Quartz]
+""",
+    )
+    write(
+        legacy_home / "config.yaml",
+        f"""local_knowledge:
+  root: {source_root}
+  index_dir: {legacy_state}
+  custom_skill_dirs: skills
+  script_dirs: '[scripts]'
+  entities: '[Quartz]'
+""",
+    )
+
+    def build(duckwork_home: Path, state_dir: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        assert lci_cli.main(
+            ["build", "--duckwork-home", str(duckwork_home), "--from-duckwork-config"]
+        ) == 0
+        capsys.readouterr()
+        rows = [
+            json.loads(line)
+            for line in (state_dir / "index.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        status, doctor = run_cli_json(
+            capsys,
+            ["doctor", "--duckwork-home", str(duckwork_home), "--json"],
+        )
+        assert status == 0
+        return rows, doctor
+
+    canonical_rows, canonical_doctor = build(canonical_home, canonical_state)
+    legacy_rows, legacy_doctor = build(legacy_home, legacy_state)
+    assert legacy_rows == canonical_rows
+    assert {row["path"] for row in canonical_rows} == {
+        "scripts/quartz_tool.py",
+        "skills/quartz-router",
+    }
+    quartz_script = next(row for row in canonical_rows if row["type"] == "script")
+    assert quartz_script["entities"] == ["Quartz"]
+    for payload, duckwork_home, state_dir in (
+        (canonical_doctor, canonical_home, canonical_state),
+        (legacy_doctor, legacy_home, legacy_state),
+    ):
+        assert payload["duckwork_home"] == str(duckwork_home.resolve())
+        assert payload["source_root"] == str(source_root.resolve())
+        assert payload["source_root_source"] == "config"
+        assert payload["state_dir"] == str(state_dir.resolve())
+        assert payload["state_dir_source"] == "config"
+        assert payload["warnings"] == []
+
+
+def test_usage_sqlite_schema_report_rows_and_public_keys(
+    workspace: Workspace,
+) -> None:
+    usage_db = create_current_usage_history(workspace.state_dir, workspace.root)
+    event_columns = ", ".join(row[0] for row in USAGE_EVENT_SCHEMA)
+    feedback_columns = ", ".join(row[0] for row in FEEDBACK_SCHEMA)
+    with sqlite3.connect(usage_db) as conn:
+        seeded_event = conn.execute(
+            f"SELECT {event_columns} FROM usage_events WHERE id = 4001"
+        ).fetchone()
+        seeded_feedback = conn.execute(
+            f"SELECT {feedback_columns} FROM feedback WHERE id = 5001"
+        ).fetchone()
+    assert seeded_event is not None
+    assert seeded_feedback is not None
+    ctx = registered_surface()
+    search = invoke_tool(
+        ctx,
+        "knowledge_search",
+        {"query": "quartz inventory operations", "rebuild": True},
+    )
+    invoke_tool(ctx, "knowledge_get", {"artifact_id": "skill:quartz-router"})
+    invoke_tool(ctx, "knowledge_neighbors", {"artifact_id": "skill:quartz-router"})
+    invoke_tool(
+        ctx,
+        "knowledge_feedback",
+        {
+            "rating": "useful",
+            "event_id": search["usage_event_id"],
+            "query": "quartz inventory operations",
+            "artifact_id": "skill:quartz-router",
+        },
+    )
+    report = invoke_tool(ctx, "knowledge_usage_report", {"days": 30, "limit": 10})
+
+    assert usage_db.is_file()
+    with sqlite3.connect(usage_db) as conn:
+        assert table_columns(conn, "usage_events") >= {row[0] for row in USAGE_EVENT_SCHEMA}
+        assert table_columns(conn, "feedback") >= {row[0] for row in FEEDBACK_SCHEMA}
+        assert conn.execute(
+            f"SELECT {event_columns} FROM usage_events WHERE id = 4001"
+        ).fetchone() == seeded_event
+        assert conn.execute(
+            f"SELECT {feedback_columns} FROM feedback WHERE id = 5001"
+        ).fetchone() == seeded_feedback
+
+    assert report["success"] is True
+    assert report["event_count"] >= 4
+    assert report["feedback"]["count"] == 2
+    assert "usage_db_path" not in report
+    assert "latest_index_metadata" not in report
+    assert "recent_builds" not in report
+
+    raw_report = plugin._service().usage_report(days=30, limit=10)
+    assert set(raw_report) == USAGE_REPORT_KEYS - {"usage_event_id"}
+    assert raw_report["total_events"] >= 4
+    assert raw_report["feedback_count"] == 2
+    assert any(
+        row["query"] == "seeded historical quartz" for row in raw_report["top_queries"]
+    )
+    assert any(
+        row["rating"] == "useful" and row["count"] == 2
+        for row in raw_report["feedback_by_rating"]
+    )
+    assert set(raw_report["root_breakdown"][0]) == {
+        "root_scope",
+        "count",
+        "successes",
+        "errors",
+        "last_seen",
+    }
+    assert set(raw_report["feedback_root_breakdown"][0]) == {
+        "root_scope",
+        "count",
+        "last_seen",
+    }
+    assert set(raw_report["top_tools"][0]) == {
+        "client",
+        "tool",
+        "count",
+        "successes",
+        "errors",
+        "avg_latency_ms",
+    }
+    assert set(raw_report["top_queries"][0]) == {
+        "query",
+        "count",
+        "avg_results",
+        "last_seen",
+    }
+    assert set(raw_report["top_artifacts"][0]) == {"artifact_id", "count", "last_seen"}
+    assert set(raw_report["feedback_by_rating"][0]) == {"rating", "count", "last_seen"}
+    assert set(raw_report["feedback_rating_buckets"][0]) == {
+        "rating",
+        "count",
+        "last_seen",
+    }
+    assert set(raw_report["latest_index_metadata"]) == {
+        "id",
+        "ts",
+        "client",
+        "tool",
+        "plugin_version",
+        "root",
+        "db_path",
+        "source_root_source",
+        "state_dir_source",
+        "include_markdown_docs_source",
+        "index_exists",
+        "index_mtime",
+        "index_age_seconds",
+        "index_artifact_count",
+        "index_edge_count",
+        "index_metadata_error",
+        "build_duration_ms",
+        "rebuilt",
+        "index_artifact_counts",
+    }
+    assert set(raw_report["recent_builds"][0]) == {
+        "id",
+        "ts",
+        "client",
+        "tool",
+        "plugin_version",
+        "root",
+        "db_path",
+        "source_root_source",
+        "state_dir_source",
+        "index_mtime",
+        "index_artifact_count",
+        "index_edge_count",
+        "build_duration_ms",
+        "rebuilt",
+        "index_artifact_counts",
+    }
+
+
+def test_okf_cli_status_and_happy_path_contract(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    state_dir = tmp_path / "state"
+    db_path = create_current_okf_queue(state_dir)
+    common = ["--state-dir", str(state_dir), "--json"]
+
+    status, payload = run_cli_json(capsys, ["okf", "status", *common])
+    assert status == 0
+    assert set(payload) == {
+        "success",
+        "state_dir",
+        "okf_dir",
+        "queue_db",
+        "counts",
+        "pending",
+        "errors",
+    }
+    assert payload["success"] is True
+    assert payload["queue_db"] == str(db_path.resolve())
+    assert payload["counts"] == {"pending": 1}
+    assert payload["errors"] == []
+
+    claim_status, claim = run_cli_json(
+        capsys,
+        ["okf", "claim", "--claim-token", "claim-public", *common],
+    )
+    assert claim_status == 0
+    assert set(claim) == {
+        "success",
+        "state_dir",
+        "claim_token",
+        "count",
+        "candidates",
+    }
+    assert claim["success"] is True
+    assert claim["claim_token"] == "claim-public"
+    assert claim["count"] == 1
+    candidate = claim["candidates"][0]
+    assert candidate["tool"] == "public_demo_tool"
+    target = Path(candidate["target_path"])
+    write(
+        target,
+        f"""---
+type: Duckwork Tool
+artifact_type: tool_okf
+tool: public_demo_tool
+toolset: local_knowledge
+schema_hash: {candidate["schema_hash"]}
+generator_version: "4"
+generated: {{"by":"test-generator/1","at":"2026-08-30T00:00:00Z"}}
+title: Public demo router
+aliases:
+  - route quartz inventory records
+triggers:
+  - User asks for the public demo routing capability.
+when_not_to_use:
+related_tools:
+---
+# Public demo router
+
+Route public demo requests to the quartz inventory capability.
+""",
+    )
+
+    validate_status, validation = run_cli_json(
+        capsys,
+        [
+            "okf",
+            "validate",
+            "--claim-token",
+            "claim-public",
+            "--path",
+            str(target),
+            *common,
+        ],
+    )
+    assert validate_status == 0
+    assert validation == {
+        "valid": True,
+        "errors": [],
+        "tool": "public_demo_tool",
+        "path": str(target.resolve()),
+        "claim_token": "claim-public",
+        "success": True,
+    }
+
+    complete_status, completed = run_cli_json(
+        capsys,
+        [
+            "okf",
+            "complete",
+            "--claim-token",
+            "claim-public",
+            "--tool",
+            "public_demo_tool",
+            "--path",
+            str(target),
+            *common,
+        ],
+    )
+    assert complete_status == 0
+    assert completed == {
+        "success": True,
+        "tool": "public_demo_tool",
+        "path": str(target),
+        "claim_token": "claim-public",
+    }
+
+    status, final_status = run_cli_json(capsys, ["okf", "status", *common])
+    assert status == 0
+    assert final_status["counts"] == {"done": 1}
+    assert final_status["pending"] == []
+    assert final_status["errors"] == []
+
+
+def test_registered_finalize_hook_uses_public_okf_worker_log_filename(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "source"
+    duckwork_home = tmp_path / "duckwork-home"
+    state_dir = tmp_path / "state"
+    root.mkdir()
+    duckwork_home.mkdir()
+    create_current_okf_queue(state_dir)
+    write(
+        duckwork_home / "config.yaml",
+        f"""local_knowledge:
+  source_root: {root}
+  state_dir: {state_dir}
+  okf:
+    enabled: true
+    auto_generate: true
+    min_use_count: 1
+""",
+    )
+    monkeypatch.setenv("DUCKWORK_HOME", str(duckwork_home))
+    monkeypatch.setenv("LOCAL_KNOWLEDGE_ROOT", str(root))
+    monkeypatch.setenv("LOCAL_KNOWLEDGE_STATE_DIR", str(state_dir))
+
+    calls: list[tuple[list[str], dict[str, Any]]] = []
+
+    class FakeProcess:
+        pid = 4242
+
+        def wait(self) -> int:
+            return 0
+
+    def fake_popen(command: Sequence[str], **kwargs: Any) -> FakeProcess:
+        calls.append((list(command), kwargs))
+        return FakeProcess()
+
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    ctx = registered_surface()
+    assert ctx.hooks["on_session_finalize"](session_id="public-contract") is True
+    assert len(calls) == 1
+    command, kwargs = calls[0]
+    assert command == [
+        sys.executable,
+        "-m",
+        "duckwork_cli.main",
+        "local-knowledge",
+        "okf-worker",
+        "--duckwork-home",
+        str(duckwork_home.resolve()),
+    ]
+    assert kwargs["cwd"] == str(duckwork_home.resolve())
+    env = cast(dict[str, str], kwargs["env"])
+    assert env["DUCKWORK_LOCAL_KNOWLEDGE_OKF_WORKER"] == "1"
+    assert env["DUCKWORK_HOME"] == str(duckwork_home.resolve())
+    assert kwargs["stdin"] is subprocess.DEVNULL
+    assert kwargs["stderr"] is subprocess.STDOUT
+    assert kwargs["close_fds"] is True
+    if os.name == "nt":
+        expected_flags = int(getattr(subprocess, "CREATE_NEW_PROCESS_GROUP"))
+        expected_flags |= int(getattr(subprocess, "DETACHED_PROCESS"))
+        assert kwargs["creationflags"] & expected_flags == expected_flags
+        assert "start_new_session" not in kwargs
+    else:
+        assert kwargs["start_new_session"] is True
+        assert "creationflags" not in kwargs
+    log_handle = cast(TextIO, kwargs["stdout"])
+    assert Path(log_handle.name) == state_dir.resolve() / "okf_worker.log"
+    assert log_handle.closed is True
+    assert (state_dir / "okf_worker.log").is_file()
+
+
+def test_module_and_direct_indexer_execution_entrypoints(
+    tmp_path: Path,
+) -> None:
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env["HOME"] = str(tmp_path / "home")
+    env["DUCKWORK_HOME"] = str(tmp_path / "duckwork-home")
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    commands = [
+        ([sys.executable, "-m", "duckwork_local_knowledge.cli", "--help"], REPO_ROOT),
+        ([sys.executable, "-m", "duckwork_local_knowledge.indexer", "--help"], REPO_ROOT),
+        ([sys.executable, str(REPO_ROOT / "duckwork_local_knowledge" / "indexer.py"), "--help"], tmp_path),
+    ]
+    for command, cwd in commands:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr
+        assert "build index.sqlite and index.jsonl" in result.stdout
+        assert "search artifacts" in result.stdout
+        assert "install-router-skill" in result.stdout
+        assert "manage generated tool OKF candidate queue" in result.stdout

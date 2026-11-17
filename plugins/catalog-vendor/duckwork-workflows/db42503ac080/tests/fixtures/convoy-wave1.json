@@ -1,0 +1,1209 @@
+{
+ "_source": "Peer golden fixture: run dir throughput-wave1-16lanes, tarball sha256 c0ecf08069b8c3c30bfc12f9bbc5ba8653e2c6e262fc2ed32fb1267dca7102cf. Distilled: node ids + after edges, committed statuses, structured verdict/fleet_touching fields, the recorded run.blocked lists and the failed root's attempt ledger. No prompts, notes or paths.",
+ "nodes": [
+  {
+   "id": "sys-w262it__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-w262it__build",
+   "type": "agent",
+   "after": [
+    "sys-w262it__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-w262it__test",
+   "type": "agent",
+   "after": [
+    "sys-w262it__build"
+   ]
+  },
+  {
+   "id": "sys-w262it__fix",
+   "type": "agent",
+   "after": [
+    "sys-w262it__test"
+   ]
+  },
+  {
+   "id": "sys-w262it__policy",
+   "type": "agent",
+   "after": [
+    "sys-w262it__build",
+    "sys-w262it__test",
+    "sys-w262it__fix"
+   ]
+  },
+  {
+   "id": "sys-w262it__merge",
+   "type": "agent",
+   "after": [
+    "sys-w262it__policy"
+   ]
+  },
+  {
+   "id": "sys-w262it__converge",
+   "type": "agent",
+   "after": [
+    "sys-w262it__merge"
+   ]
+  },
+  {
+   "id": "sys-w262it__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-w262it__converge"
+   ]
+  },
+  {
+   "id": "sys-nj2rzg__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-nj2rzg__build",
+   "type": "agent",
+   "after": [
+    "sys-nj2rzg__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-nj2rzg__test",
+   "type": "agent",
+   "after": [
+    "sys-nj2rzg__build"
+   ]
+  },
+  {
+   "id": "sys-nj2rzg__fix",
+   "type": "agent",
+   "after": [
+    "sys-nj2rzg__test"
+   ]
+  },
+  {
+   "id": "sys-nj2rzg__policy",
+   "type": "agent",
+   "after": [
+    "sys-nj2rzg__build",
+    "sys-nj2rzg__test",
+    "sys-nj2rzg__fix"
+   ]
+  },
+  {
+   "id": "sys-nj2rzg__merge",
+   "type": "agent",
+   "after": [
+    "sys-nj2rzg__policy"
+   ]
+  },
+  {
+   "id": "sys-nj2rzg__converge",
+   "type": "agent",
+   "after": [
+    "sys-nj2rzg__merge",
+    "sys-w262it__converge"
+   ]
+  },
+  {
+   "id": "sys-nj2rzg__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-nj2rzg__converge"
+   ]
+  },
+  {
+   "id": "sys-7cppwl__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-7cppwl__build",
+   "type": "agent",
+   "after": [
+    "sys-7cppwl__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-7cppwl__test",
+   "type": "agent",
+   "after": [
+    "sys-7cppwl__build"
+   ]
+  },
+  {
+   "id": "sys-7cppwl__fix",
+   "type": "agent",
+   "after": [
+    "sys-7cppwl__test"
+   ]
+  },
+  {
+   "id": "sys-7cppwl__policy",
+   "type": "agent",
+   "after": [
+    "sys-7cppwl__build",
+    "sys-7cppwl__test",
+    "sys-7cppwl__fix"
+   ]
+  },
+  {
+   "id": "sys-7cppwl__merge",
+   "type": "agent",
+   "after": [
+    "sys-7cppwl__policy"
+   ]
+  },
+  {
+   "id": "sys-7cppwl__converge",
+   "type": "agent",
+   "after": [
+    "sys-7cppwl__merge",
+    "sys-nj2rzg__converge"
+   ]
+  },
+  {
+   "id": "sys-7cppwl__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-7cppwl__converge"
+   ]
+  },
+  {
+   "id": "sys-i2ng1n__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-i2ng1n__build",
+   "type": "agent",
+   "after": [
+    "sys-i2ng1n__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-i2ng1n__test",
+   "type": "agent",
+   "after": [
+    "sys-i2ng1n__build"
+   ]
+  },
+  {
+   "id": "sys-i2ng1n__fix",
+   "type": "agent",
+   "after": [
+    "sys-i2ng1n__test"
+   ]
+  },
+  {
+   "id": "sys-i2ng1n__policy",
+   "type": "agent",
+   "after": [
+    "sys-i2ng1n__build",
+    "sys-i2ng1n__test",
+    "sys-i2ng1n__fix"
+   ]
+  },
+  {
+   "id": "sys-i2ng1n__merge",
+   "type": "agent",
+   "after": [
+    "sys-i2ng1n__policy"
+   ]
+  },
+  {
+   "id": "sys-i2ng1n__converge",
+   "type": "agent",
+   "after": [
+    "sys-i2ng1n__merge",
+    "sys-7cppwl__converge"
+   ]
+  },
+  {
+   "id": "sys-i2ng1n__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-i2ng1n__converge"
+   ]
+  },
+  {
+   "id": "sys-hemsjz__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-hemsjz__build",
+   "type": "agent",
+   "after": [
+    "sys-hemsjz__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-hemsjz__test",
+   "type": "agent",
+   "after": [
+    "sys-hemsjz__build"
+   ]
+  },
+  {
+   "id": "sys-hemsjz__fix",
+   "type": "agent",
+   "after": [
+    "sys-hemsjz__test"
+   ]
+  },
+  {
+   "id": "sys-hemsjz__policy",
+   "type": "agent",
+   "after": [
+    "sys-hemsjz__build",
+    "sys-hemsjz__test",
+    "sys-hemsjz__fix"
+   ]
+  },
+  {
+   "id": "sys-hemsjz__merge",
+   "type": "agent",
+   "after": [
+    "sys-hemsjz__policy"
+   ]
+  },
+  {
+   "id": "sys-hemsjz__converge",
+   "type": "agent",
+   "after": [
+    "sys-hemsjz__merge",
+    "sys-i2ng1n__converge"
+   ]
+  },
+  {
+   "id": "sys-hemsjz__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-hemsjz__converge"
+   ]
+  },
+  {
+   "id": "sys-plmnbx__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-plmnbx__build",
+   "type": "agent",
+   "after": [
+    "sys-plmnbx__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-plmnbx__test",
+   "type": "agent",
+   "after": [
+    "sys-plmnbx__build"
+   ]
+  },
+  {
+   "id": "sys-plmnbx__fix",
+   "type": "agent",
+   "after": [
+    "sys-plmnbx__test"
+   ]
+  },
+  {
+   "id": "sys-plmnbx__policy",
+   "type": "agent",
+   "after": [
+    "sys-plmnbx__build",
+    "sys-plmnbx__test",
+    "sys-plmnbx__fix"
+   ]
+  },
+  {
+   "id": "sys-plmnbx__merge",
+   "type": "agent",
+   "after": [
+    "sys-plmnbx__policy"
+   ]
+  },
+  {
+   "id": "sys-plmnbx__converge",
+   "type": "agent",
+   "after": [
+    "sys-plmnbx__merge",
+    "sys-hemsjz__converge"
+   ]
+  },
+  {
+   "id": "sys-plmnbx__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-plmnbx__converge"
+   ]
+  },
+  {
+   "id": "sys-wd7uqn__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-wd7uqn__build",
+   "type": "agent",
+   "after": [
+    "sys-wd7uqn__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-wd7uqn__test",
+   "type": "agent",
+   "after": [
+    "sys-wd7uqn__build"
+   ]
+  },
+  {
+   "id": "sys-wd7uqn__fix",
+   "type": "agent",
+   "after": [
+    "sys-wd7uqn__test"
+   ]
+  },
+  {
+   "id": "sys-wd7uqn__policy",
+   "type": "agent",
+   "after": [
+    "sys-wd7uqn__build",
+    "sys-wd7uqn__test",
+    "sys-wd7uqn__fix"
+   ]
+  },
+  {
+   "id": "sys-wd7uqn__merge",
+   "type": "agent",
+   "after": [
+    "sys-wd7uqn__policy"
+   ]
+  },
+  {
+   "id": "sys-wd7uqn__converge",
+   "type": "agent",
+   "after": [
+    "sys-wd7uqn__merge",
+    "sys-plmnbx__converge"
+   ]
+  },
+  {
+   "id": "sys-wd7uqn__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-wd7uqn__converge"
+   ]
+  },
+  {
+   "id": "sys-uvpr60__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-uvpr60__build",
+   "type": "agent",
+   "after": [
+    "sys-uvpr60__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-uvpr60__test",
+   "type": "agent",
+   "after": [
+    "sys-uvpr60__build"
+   ]
+  },
+  {
+   "id": "sys-uvpr60__fix",
+   "type": "agent",
+   "after": [
+    "sys-uvpr60__test"
+   ]
+  },
+  {
+   "id": "sys-uvpr60__policy",
+   "type": "agent",
+   "after": [
+    "sys-uvpr60__build",
+    "sys-uvpr60__test",
+    "sys-uvpr60__fix"
+   ]
+  },
+  {
+   "id": "sys-uvpr60__merge",
+   "type": "agent",
+   "after": [
+    "sys-uvpr60__policy"
+   ]
+  },
+  {
+   "id": "sys-uvpr60__converge",
+   "type": "agent",
+   "after": [
+    "sys-uvpr60__merge",
+    "sys-wd7uqn__converge"
+   ]
+  },
+  {
+   "id": "sys-uvpr60__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-uvpr60__converge"
+   ]
+  },
+  {
+   "id": "sys-5479a5-1__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-5479a5-1__build",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-1__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-5479a5-1__test",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-1__build"
+   ]
+  },
+  {
+   "id": "sys-5479a5-1__fix",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-1__test"
+   ]
+  },
+  {
+   "id": "sys-5479a5-1__policy",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-1__build",
+    "sys-5479a5-1__test",
+    "sys-5479a5-1__fix"
+   ]
+  },
+  {
+   "id": "sys-5479a5-1__merge",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-1__policy"
+   ]
+  },
+  {
+   "id": "sys-5479a5-1__converge",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-1__merge",
+    "sys-uvpr60__converge"
+   ]
+  },
+  {
+   "id": "sys-5479a5-1__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-1__converge"
+   ]
+  },
+  {
+   "id": "sys-5479a5-2__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-5479a5-2__build",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-2__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-5479a5-2__test",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-2__build"
+   ]
+  },
+  {
+   "id": "sys-5479a5-2__fix",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-2__test"
+   ]
+  },
+  {
+   "id": "sys-5479a5-2__policy",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-2__build",
+    "sys-5479a5-2__test",
+    "sys-5479a5-2__fix"
+   ]
+  },
+  {
+   "id": "sys-5479a5-2__merge",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-2__policy"
+   ]
+  },
+  {
+   "id": "sys-5479a5-2__converge",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-2__merge",
+    "sys-5479a5-1__converge"
+   ]
+  },
+  {
+   "id": "sys-5479a5-2__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-5479a5-2__converge"
+   ]
+  },
+  {
+   "id": "sys-840enu-25__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-840enu-25__build",
+   "type": "agent",
+   "after": [
+    "sys-840enu-25__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-840enu-25__test",
+   "type": "agent",
+   "after": [
+    "sys-840enu-25__build"
+   ]
+  },
+  {
+   "id": "sys-840enu-25__fix",
+   "type": "agent",
+   "after": [
+    "sys-840enu-25__test"
+   ]
+  },
+  {
+   "id": "sys-840enu-25__policy",
+   "type": "agent",
+   "after": [
+    "sys-840enu-25__build",
+    "sys-840enu-25__test",
+    "sys-840enu-25__fix"
+   ]
+  },
+  {
+   "id": "sys-840enu-25__merge",
+   "type": "agent",
+   "after": [
+    "sys-840enu-25__policy"
+   ]
+  },
+  {
+   "id": "sys-840enu-25__converge",
+   "type": "agent",
+   "after": [
+    "sys-840enu-25__merge",
+    "sys-5479a5-2__converge"
+   ]
+  },
+  {
+   "id": "sys-840enu-25__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-840enu-25__converge"
+   ]
+  },
+  {
+   "id": "sys-840enu-26__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-840enu-26__build",
+   "type": "agent",
+   "after": [
+    "sys-840enu-26__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-840enu-26__test",
+   "type": "agent",
+   "after": [
+    "sys-840enu-26__build"
+   ]
+  },
+  {
+   "id": "sys-840enu-26__fix",
+   "type": "agent",
+   "after": [
+    "sys-840enu-26__test"
+   ]
+  },
+  {
+   "id": "sys-840enu-26__policy",
+   "type": "agent",
+   "after": [
+    "sys-840enu-26__build",
+    "sys-840enu-26__test",
+    "sys-840enu-26__fix"
+   ]
+  },
+  {
+   "id": "sys-840enu-26__merge",
+   "type": "agent",
+   "after": [
+    "sys-840enu-26__policy"
+   ]
+  },
+  {
+   "id": "sys-840enu-26__converge",
+   "type": "agent",
+   "after": [
+    "sys-840enu-26__merge",
+    "sys-840enu-25__converge"
+   ]
+  },
+  {
+   "id": "sys-840enu-26__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-840enu-26__converge"
+   ]
+  },
+  {
+   "id": "sys-840enu-27__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-840enu-27__build",
+   "type": "agent",
+   "after": [
+    "sys-840enu-27__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-840enu-27__test",
+   "type": "agent",
+   "after": [
+    "sys-840enu-27__build"
+   ]
+  },
+  {
+   "id": "sys-840enu-27__fix",
+   "type": "agent",
+   "after": [
+    "sys-840enu-27__test"
+   ]
+  },
+  {
+   "id": "sys-840enu-27__policy",
+   "type": "agent",
+   "after": [
+    "sys-840enu-27__build",
+    "sys-840enu-27__test",
+    "sys-840enu-27__fix"
+   ]
+  },
+  {
+   "id": "sys-840enu-27__merge",
+   "type": "agent",
+   "after": [
+    "sys-840enu-27__policy"
+   ]
+  },
+  {
+   "id": "sys-840enu-27__converge",
+   "type": "agent",
+   "after": [
+    "sys-840enu-27__merge",
+    "sys-840enu-26__converge"
+   ]
+  },
+  {
+   "id": "sys-840enu-27__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-840enu-27__converge"
+   ]
+  },
+  {
+   "id": "sys-2ro3n0__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-2ro3n0__build",
+   "type": "agent",
+   "after": [
+    "sys-2ro3n0__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-2ro3n0__test",
+   "type": "agent",
+   "after": [
+    "sys-2ro3n0__build"
+   ]
+  },
+  {
+   "id": "sys-2ro3n0__fix",
+   "type": "agent",
+   "after": [
+    "sys-2ro3n0__test"
+   ]
+  },
+  {
+   "id": "sys-2ro3n0__policy",
+   "type": "agent",
+   "after": [
+    "sys-2ro3n0__build",
+    "sys-2ro3n0__test",
+    "sys-2ro3n0__fix"
+   ]
+  },
+  {
+   "id": "sys-2ro3n0__merge",
+   "type": "agent",
+   "after": [
+    "sys-2ro3n0__policy"
+   ]
+  },
+  {
+   "id": "sys-2ro3n0__converge",
+   "type": "agent",
+   "after": [
+    "sys-2ro3n0__merge",
+    "sys-840enu-27__converge"
+   ]
+  },
+  {
+   "id": "sys-2ro3n0__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-2ro3n0__converge"
+   ]
+  },
+  {
+   "id": "sys-5hl3cj__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-5hl3cj__build",
+   "type": "agent",
+   "after": [
+    "sys-5hl3cj__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-5hl3cj__test",
+   "type": "agent",
+   "after": [
+    "sys-5hl3cj__build"
+   ]
+  },
+  {
+   "id": "sys-5hl3cj__fix",
+   "type": "agent",
+   "after": [
+    "sys-5hl3cj__test"
+   ]
+  },
+  {
+   "id": "sys-5hl3cj__policy",
+   "type": "agent",
+   "after": [
+    "sys-5hl3cj__build",
+    "sys-5hl3cj__test",
+    "sys-5hl3cj__fix"
+   ]
+  },
+  {
+   "id": "sys-5hl3cj__merge",
+   "type": "agent",
+   "after": [
+    "sys-5hl3cj__policy"
+   ]
+  },
+  {
+   "id": "sys-5hl3cj__converge",
+   "type": "agent",
+   "after": [
+    "sys-5hl3cj__merge",
+    "sys-2ro3n0__converge"
+   ]
+  },
+  {
+   "id": "sys-5hl3cj__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-5hl3cj__converge"
+   ]
+  },
+  {
+   "id": "sys-dr40m-33__claim-plan",
+   "type": "agent",
+   "after": []
+  },
+  {
+   "id": "sys-dr40m-33__build",
+   "type": "agent",
+   "after": [
+    "sys-dr40m-33__claim-plan"
+   ]
+  },
+  {
+   "id": "sys-dr40m-33__test",
+   "type": "agent",
+   "after": [
+    "sys-dr40m-33__build"
+   ]
+  },
+  {
+   "id": "sys-dr40m-33__fix",
+   "type": "agent",
+   "after": [
+    "sys-dr40m-33__test"
+   ]
+  },
+  {
+   "id": "sys-dr40m-33__policy",
+   "type": "agent",
+   "after": [
+    "sys-dr40m-33__build",
+    "sys-dr40m-33__test",
+    "sys-dr40m-33__fix"
+   ]
+  },
+  {
+   "id": "sys-dr40m-33__merge",
+   "type": "agent",
+   "after": [
+    "sys-dr40m-33__policy"
+   ]
+  },
+  {
+   "id": "sys-dr40m-33__converge",
+   "type": "agent",
+   "after": [
+    "sys-dr40m-33__merge",
+    "sys-5hl3cj__converge"
+   ]
+  },
+  {
+   "id": "sys-dr40m-33__verify-close",
+   "type": "agent",
+   "after": [
+    "sys-dr40m-33__converge"
+   ]
+  }
+ ],
+ "states": {
+  "sys-w262it__claim-plan": "done",
+  "sys-w262it__build": "done",
+  "sys-w262it__test": "done",
+  "sys-w262it__fix": "done",
+  "sys-w262it__policy": "done",
+  "sys-w262it__merge": "done",
+  "sys-w262it__converge": "done",
+  "sys-w262it__verify-close": "done",
+  "sys-nj2rzg__claim-plan": "done",
+  "sys-nj2rzg__build": "partial",
+  "sys-nj2rzg__test": "partial",
+  "sys-nj2rzg__fix": "partial",
+  "sys-nj2rzg__policy": "done",
+  "sys-nj2rzg__merge": "done",
+  "sys-nj2rzg__converge": "done",
+  "sys-nj2rzg__verify-close": "done",
+  "sys-7cppwl__claim-plan": "done",
+  "sys-7cppwl__build": "done",
+  "sys-7cppwl__test": "partial",
+  "sys-7cppwl__fix": "partial",
+  "sys-7cppwl__policy": "done",
+  "sys-7cppwl__merge": "partial",
+  "sys-7cppwl__converge": "partial",
+  "sys-7cppwl__verify-close": "partial",
+  "sys-i2ng1n__claim-plan": "done",
+  "sys-i2ng1n__build": "failed",
+  "sys-i2ng1n__test": "pending",
+  "sys-i2ng1n__fix": "pending",
+  "sys-i2ng1n__policy": "pending",
+  "sys-i2ng1n__merge": "pending",
+  "sys-i2ng1n__converge": "pending",
+  "sys-i2ng1n__verify-close": "pending",
+  "sys-hemsjz__claim-plan": "partial",
+  "sys-hemsjz__build": "partial",
+  "sys-hemsjz__test": "done",
+  "sys-hemsjz__fix": "partial",
+  "sys-hemsjz__policy": "done",
+  "sys-hemsjz__merge": "done",
+  "sys-hemsjz__converge": "pending",
+  "sys-hemsjz__verify-close": "pending",
+  "sys-plmnbx__claim-plan": "done",
+  "sys-plmnbx__build": "done",
+  "sys-plmnbx__test": "partial",
+  "sys-plmnbx__fix": "done",
+  "sys-plmnbx__policy": "done",
+  "sys-plmnbx__merge": "partial",
+  "sys-plmnbx__converge": "pending",
+  "sys-plmnbx__verify-close": "pending",
+  "sys-wd7uqn__claim-plan": "done",
+  "sys-wd7uqn__build": "partial",
+  "sys-wd7uqn__test": "done",
+  "sys-wd7uqn__fix": "partial",
+  "sys-wd7uqn__policy": "done",
+  "sys-wd7uqn__merge": "done",
+  "sys-wd7uqn__converge": "pending",
+  "sys-wd7uqn__verify-close": "pending",
+  "sys-uvpr60__claim-plan": "done",
+  "sys-uvpr60__build": "done",
+  "sys-uvpr60__test": "done",
+  "sys-uvpr60__fix": "done",
+  "sys-uvpr60__policy": "done",
+  "sys-uvpr60__merge": "done",
+  "sys-uvpr60__converge": "pending",
+  "sys-uvpr60__verify-close": "pending",
+  "sys-5479a5-1__claim-plan": "done",
+  "sys-5479a5-1__build": "partial",
+  "sys-5479a5-1__test": "done",
+  "sys-5479a5-1__fix": "done",
+  "sys-5479a5-1__policy": "done",
+  "sys-5479a5-1__merge": "done",
+  "sys-5479a5-1__converge": "pending",
+  "sys-5479a5-1__verify-close": "pending",
+  "sys-5479a5-2__claim-plan": "done",
+  "sys-5479a5-2__build": "done",
+  "sys-5479a5-2__test": "partial",
+  "sys-5479a5-2__fix": "partial",
+  "sys-5479a5-2__policy": "done",
+  "sys-5479a5-2__merge": "done",
+  "sys-5479a5-2__converge": "pending",
+  "sys-5479a5-2__verify-close": "pending",
+  "sys-840enu-25__claim-plan": "partial",
+  "sys-840enu-25__build": "done",
+  "sys-840enu-25__test": "done",
+  "sys-840enu-25__fix": "done",
+  "sys-840enu-25__policy": "done",
+  "sys-840enu-25__merge": "done",
+  "sys-840enu-25__converge": "pending",
+  "sys-840enu-25__verify-close": "pending",
+  "sys-840enu-26__claim-plan": "done",
+  "sys-840enu-26__build": "done",
+  "sys-840enu-26__test": "done",
+  "sys-840enu-26__fix": "done",
+  "sys-840enu-26__policy": "done",
+  "sys-840enu-26__merge": "done",
+  "sys-840enu-26__converge": "pending",
+  "sys-840enu-26__verify-close": "pending",
+  "sys-840enu-27__claim-plan": "partial",
+  "sys-840enu-27__build": "done",
+  "sys-840enu-27__test": "done",
+  "sys-840enu-27__fix": "done",
+  "sys-840enu-27__policy": "done",
+  "sys-840enu-27__merge": "done",
+  "sys-840enu-27__converge": "pending",
+  "sys-840enu-27__verify-close": "pending",
+  "sys-2ro3n0__claim-plan": "done",
+  "sys-2ro3n0__build": "partial",
+  "sys-2ro3n0__test": "done",
+  "sys-2ro3n0__fix": "done",
+  "sys-2ro3n0__policy": "done",
+  "sys-2ro3n0__merge": "done",
+  "sys-2ro3n0__converge": "pending",
+  "sys-2ro3n0__verify-close": "pending",
+  "sys-5hl3cj__claim-plan": "done",
+  "sys-5hl3cj__build": "partial",
+  "sys-5hl3cj__test": "partial",
+  "sys-5hl3cj__fix": "partial",
+  "sys-5hl3cj__policy": "done",
+  "sys-5hl3cj__merge": "done",
+  "sys-5hl3cj__converge": "pending",
+  "sys-5hl3cj__verify-close": "pending",
+  "sys-dr40m-33__claim-plan": "done",
+  "sys-dr40m-33__build": "done",
+  "sys-dr40m-33__test": "done",
+  "sys-dr40m-33__fix": "done",
+  "sys-dr40m-33__policy": "done",
+  "sys-dr40m-33__merge": "done",
+  "sys-dr40m-33__converge": "pending",
+  "sys-dr40m-33__verify-close": "pending"
+ },
+ "outputs": {
+  "sys-w262it__policy": {
+   "fleet_touching": true
+  },
+  "sys-w262it__merge": {
+   "verdict": "blocked-destructive"
+  },
+  "sys-w262it__converge": {
+   "verdict": "skipped"
+  },
+  "sys-w262it__verify-close": {
+   "verdict": "open"
+  },
+  "sys-nj2rzg__policy": {
+   "fleet_touching": true
+  },
+  "sys-nj2rzg__merge": {
+   "verdict": "not-approved"
+  },
+  "sys-nj2rzg__converge": {
+   "verdict": "skipped"
+  },
+  "sys-nj2rzg__verify-close": {
+   "verdict": "open"
+  },
+  "sys-7cppwl__policy": {
+   "fleet_touching": false
+  },
+  "sys-7cppwl__merge": {
+   "verdict": "merged"
+  },
+  "sys-7cppwl__converge": {
+   "verdict": "converged"
+  },
+  "sys-7cppwl__verify-close": {
+   "verdict": "open"
+  },
+  "sys-hemsjz__policy": {
+   "fleet_touching": true
+  },
+  "sys-hemsjz__merge": {
+   "verdict": "blocked-destructive"
+  },
+  "sys-plmnbx__policy": {
+   "fleet_touching": false
+  },
+  "sys-plmnbx__merge": {
+   "verdict": "failed"
+  },
+  "sys-wd7uqn__policy": {
+   "fleet_touching": true
+  },
+  "sys-wd7uqn__merge": {
+   "verdict": "blocked-destructive"
+  },
+  "sys-uvpr60__policy": {
+   "fleet_touching": false
+  },
+  "sys-uvpr60__merge": {
+   "verdict": "not-approved"
+  },
+  "sys-5479a5-1__policy": {
+   "fleet_touching": false
+  },
+  "sys-5479a5-1__merge": {
+   "verdict": "not-approved"
+  },
+  "sys-5479a5-2__policy": {
+   "fleet_touching": false
+  },
+  "sys-5479a5-2__merge": {
+   "verdict": "not-approved"
+  },
+  "sys-840enu-25__policy": {
+   "fleet_touching": true
+  },
+  "sys-840enu-25__merge": {
+   "verdict": "blocked-destructive"
+  },
+  "sys-840enu-26__policy": {
+   "fleet_touching": false
+  },
+  "sys-840enu-26__merge": {
+   "verdict": "not-approved"
+  },
+  "sys-840enu-27__policy": {
+   "fleet_touching": false
+  },
+  "sys-840enu-27__merge": {
+   "verdict": "not-approved"
+  },
+  "sys-2ro3n0__policy": {
+   "fleet_touching": false
+  },
+  "sys-2ro3n0__merge": {
+   "verdict": "merged"
+  },
+  "sys-5hl3cj__policy": {
+   "fleet_touching": true
+  },
+  "sys-5hl3cj__merge": {
+   "verdict": "blocked-destructive"
+  },
+  "sys-dr40m-33__policy": {
+   "fleet_touching": false
+  },
+  "sys-dr40m-33__merge": {
+   "verdict": "not-approved"
+  }
+ },
+ "run_blocked": {
+  "failed": [
+   "sys-i2ng1n__build"
+  ],
+  "blocked": [
+   "sys-i2ng1n__test",
+   "sys-i2ng1n__fix",
+   "sys-i2ng1n__policy",
+   "sys-i2ng1n__merge",
+   "sys-i2ng1n__converge",
+   "sys-i2ng1n__verify-close",
+   "sys-hemsjz__converge",
+   "sys-hemsjz__verify-close",
+   "sys-plmnbx__converge",
+   "sys-plmnbx__verify-close",
+   "sys-wd7uqn__converge",
+   "sys-wd7uqn__verify-close",
+   "sys-uvpr60__converge",
+   "sys-uvpr60__verify-close",
+   "sys-5479a5-1__converge",
+   "sys-5479a5-1__verify-close",
+   "sys-5479a5-2__converge",
+   "sys-5479a5-2__verify-close",
+   "sys-840enu-25__converge",
+   "sys-840enu-25__verify-close",
+   "sys-840enu-26__converge",
+   "sys-840enu-26__verify-close",
+   "sys-840enu-27__converge",
+   "sys-840enu-27__verify-close",
+   "sys-2ro3n0__converge",
+   "sys-2ro3n0__verify-close",
+   "sys-5hl3cj__converge",
+   "sys-5hl3cj__verify-close",
+   "sys-dr40m-33__converge",
+   "sys-dr40m-33__verify-close"
+  ]
+ },
+ "dead_records": {
+  "sys-i2ng1n__build": {
+   "status": "failed",
+   "error_class": "timeout",
+   "attempts": 2,
+   "final": "",
+   "attempts_log": [
+    {
+     "attempt": 0,
+     "error_class": "timeout",
+     "at": "2026-10-01T04:35:40+00:00",
+     "resume": true
+    }
+   ]
+  }
+ }
+}

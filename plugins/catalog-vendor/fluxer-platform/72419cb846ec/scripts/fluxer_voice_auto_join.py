@@ -1,0 +1,442 @@
+#!/usr/bin/env python3
+"""Auto-join Fluxer voice when a target user joins a voice channel.
+
+This is a local supervisor for the realtime-voice spike. It listens to Fluxer
+Gateway VOICE_STATE_UPDATE events, starts `fluxer_stt_voice_loop.py` when a
+configured user joins an allowed voice channel, and stops the loop when that
+user leaves.
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import contextlib
+import logging
+import os
+import signal
+import sys
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+DUCKWORK_ROOT = Path(os.getenv("DUCKWORK_AGENT_ROOT", str(Path.home() / ".duckwork" / "duckwork-agent")))
+for candidate in (ROOT, DUCKWORK_ROOT):
+    if str(candidate) not in sys.path:
+        sys.path.insert(0, str(candidate))
+
+from adapter import FluxerAdapter  # noqa: E402
+from gateway.config import PlatformConfig  # noqa: E402
+from scripts.fluxer_stt_voice_loop import load_env_file  # noqa: E402
+
+logger = logging.getLogger("fluxer_voice_auto_join")
+
+
+def split_csv(value: str | None) -> set[str]:
+    if not value:
+        return set()
+    return {part.strip() for part in value.split(",") if part.strip()}
+
+
+def env_truthy(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def voice_state_user_id(data: dict[str, Any]) -> str:
+    user_id = data.get("user_id") or data.get("userId")
+    if user_id:
+        return str(user_id)
+    member_raw = data.get("member")
+    member = member_raw if isinstance(member_raw, dict) else {}
+    user_raw = member.get("user")
+    user = user_raw if isinstance(user_raw, dict) else {}
+    if user.get("id"):
+        return str(user["id"])
+    return ""
+
+
+def voice_state_channel_id(data: dict[str, Any]) -> str | None:
+    value = data.get("channel_id", data.get("channelId"))
+    return str(value) if value not in (None, "") else None
+
+
+def voice_state_guild_id(data: dict[str, Any]) -> str | None:
+    value = data.get("guild_id", data.get("guildId"))
+    return str(value) if value not in (None, "") else None
+
+
+class FluxerVoiceAutoJoinSupervisor:
+    def __init__(self, args: argparse.Namespace) -> None:
+        self.args = args
+        self.target_user_ids = split_csv(args.target_user_ids)
+        self.allowed_channel_ids = split_csv(args.channel_ids)
+        self.allowed_guild_ids = split_csv(args.guild_ids)
+        self.process: asyncio.subprocess.Process | None = None
+        self.watch_task: asyncio.Task[Any] | None = None
+        self.operation_tasks: set[asyncio.Task[Any]] = set()
+        self.active_channel_id: str | None = None
+        self.active_guild_id: str | None = None
+        self.desired_channel_id: str | None = None
+        self.desired_guild_id: str | None = None
+        self.pending_start_key: tuple[str, str] | None = None
+        self.pending_stop_reason: str | None = None
+        self.last_start_monotonic = 0.0
+
+    def should_watch_user(self, user_id: str) -> bool:
+        return bool(user_id and user_id in self.target_user_ids)
+
+    def should_join_channel(self, *, guild_id: str | None, channel_id: str | None) -> bool:
+        if not channel_id:
+            return False
+        if self.allowed_channel_ids and channel_id not in self.allowed_channel_ids:
+            return False
+        if self.allowed_guild_ids and (guild_id or "") not in self.allowed_guild_ids:
+            return False
+        return True
+
+    def schedule_operation(self, coro: Any, *, name: str) -> None:
+        task = asyncio.create_task(coro, name=name)
+        self.operation_tasks.add(task)
+
+        def discard(done: asyncio.Task[Any]) -> None:
+            self.operation_tasks.discard(done)
+            with contextlib.suppress(asyncio.CancelledError):
+                exc = done.exception()
+                if exc is not None:
+                    logger.error("voice auto-join operation failed", exc_info=(type(exc), exc, exc.__traceback__))
+
+        task.add_done_callback(discard)
+
+    def schedule_start(self, *, guild_id: str | None, channel_id: str) -> None:
+        key = (guild_id or "", channel_id)
+        if self.pending_start_key == key:
+            logger.info("voice loop start already pending for channel=%s", channel_id)
+            return
+        if self.process and self.process.returncode is None and key == (self.active_guild_id or "", self.active_channel_id):
+            logger.info("voice loop already running for channel=%s", channel_id)
+            return
+        self.pending_start_key = key
+
+        async def start_if_still_desired() -> None:
+            try:
+                if self.desired_channel_id != channel_id or (self.desired_guild_id or "") != (guild_id or ""):
+                    logger.info("voice loop start skipped; desired target moved or left")
+                    return
+                await self.start_voice_loop(guild_id=guild_id, channel_id=channel_id)
+            finally:
+                if self.pending_start_key == key:
+                    self.pending_start_key = None
+
+        self.schedule_operation(start_if_still_desired(), name="fluxer-auto-join-start")
+
+    def schedule_stop(self, reason: str) -> None:
+        if self.pending_stop_reason == reason:
+            logger.info("voice loop stop already pending: %s", reason)
+            return
+        if (not self.process or self.process.returncode is not None) and self.active_channel_id is None:
+            logger.info("voice loop stop skipped; no active loop: %s", reason)
+            return
+        self.pending_stop_reason = reason
+
+        async def stop_once() -> None:
+            try:
+                await self.stop_voice_loop(reason)
+            finally:
+                if self.pending_stop_reason == reason:
+                    self.pending_stop_reason = None
+
+        self.schedule_operation(stop_once(), name="fluxer-auto-join-stop")
+
+    async def cancel_operations(self) -> None:
+        tasks = list(self.operation_tasks)
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        for task in tasks:
+            with contextlib.suppress(asyncio.CancelledError, RuntimeError):
+                await task
+        self.operation_tasks.clear()
+
+    def build_voice_loop_command(self, *, guild_id: str | None, channel_id: str) -> list[str]:
+        python = self.args.python
+        script = str(ROOT / "scripts" / "fluxer_stt_voice_loop.py")
+        target = next(iter(self.target_user_ids), "")
+        participant_prefix = self.args.participant_identity_prefix or (f"user_{target}_" if target else "")
+        cmd = [
+            python,
+            script,
+            "--channel-id",
+            channel_id,
+            "--brain-provider",
+            self.args.brain_provider,
+            "--stt-provider",
+            self.args.stt_provider,
+            "--stt-model",
+            self.args.stt_model,
+            "--voice",
+            self.args.voice,
+            "--max-turns",
+            str(self.args.max_turns),
+            "--capture-timeout",
+            str(self.args.capture_timeout),
+            "--silence-ms",
+            str(self.args.silence_ms),
+            "--end-padding-ms",
+            str(self.args.end_padding_ms),
+            "--min-segment-ms",
+            str(self.args.min_segment_ms),
+            "--max-segment-seconds",
+            str(self.args.max_segment_seconds),
+            "--barge-in-energy-threshold",
+            str(self.args.barge_in_energy_threshold),
+            "--barge-in-min-ms",
+            str(self.args.barge_in_min_ms),
+            "--barge-in-window-ms",
+            str(self.args.barge_in_window_ms),
+            "--barge-in-capture-timeout",
+            str(self.args.barge_in_capture_timeout),
+            "--barge-in-stop-phrase-energy-threshold",
+            str(self.args.barge_in_stop_phrase_energy_threshold),
+            "--barge-in-stop-phrase-min-ms",
+            str(self.args.barge_in_stop_phrase_min_ms),
+            "--barge-in-stop-phrase-silence-ms",
+            str(self.args.barge_in_stop_phrase_silence_ms),
+            "--barge-in-stop-phrase-max-seconds",
+            str(self.args.barge_in_stop_phrase_max_seconds),
+            "--max-runtime-seconds",
+            str(self.args.max_runtime_seconds),
+            "--turn-log-jsonl",
+            self.args.turn_log_jsonl,
+        ]
+        if guild_id:
+            cmd.extend(["--guild-id", guild_id])
+        if participant_prefix:
+            cmd.extend(["--participant-identity-prefix", participant_prefix])
+        if self.args.elevenlabs_language_code:
+            cmd.extend(["--elevenlabs-language-code", self.args.elevenlabs_language_code])
+        return cmd
+
+    async def start_voice_loop(self, *, guild_id: str | None, channel_id: str) -> None:
+        if self.process and self.process.returncode is None:
+            if channel_id == self.active_channel_id and (guild_id or "") == (self.active_guild_id or ""):
+                logger.info("voice loop already running for channel=%s", self.active_channel_id)
+                return
+            await self.stop_voice_loop(
+                f"target user moved from guild={self.active_guild_id or '<none>'} channel={self.active_channel_id} "
+                f"to guild={guild_id or '<none>'} channel={channel_id}"
+            )
+        now = asyncio.get_running_loop().time()
+        if now - self.last_start_monotonic < self.args.start_cooldown_seconds:
+            logger.info("voice loop start suppressed by cooldown")
+            return
+        self.last_start_monotonic = now
+        self.active_channel_id = channel_id
+        self.active_guild_id = guild_id
+        cmd = self.build_voice_loop_command(guild_id=guild_id, channel_id=channel_id)
+        logger.info("starting voice loop for guild=%s channel=%s", guild_id or "<none>", channel_id)
+        self.process = await asyncio.create_subprocess_exec(*cmd, cwd=str(ROOT))
+        self.watch_task = asyncio.create_task(self._watch_process(self.process), name="fluxer-auto-join-voice-loop-watch")
+
+    async def stop_voice_loop(self, reason: str) -> None:
+        proc = self.process
+        if not proc or proc.returncode is not None:
+            watch_task = self.watch_task
+            if watch_task is not None and watch_task is not asyncio.current_task():
+                watch_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError, RuntimeError):
+                    await watch_task
+            self.process = None
+            self.watch_task = None
+            self.active_channel_id = None
+            self.active_guild_id = None
+            return
+        logger.info("stopping voice loop: %s", reason)
+        proc.terminate()
+        try:
+            await asyncio.wait_for(proc.wait(), timeout=self.args.stop_timeout_seconds)
+        except asyncio.TimeoutError:
+            logger.warning("voice loop did not exit after terminate; killing")
+            proc.kill()
+            try:
+                await asyncio.wait_for(proc.wait(), timeout=self.args.stop_timeout_seconds)
+            except asyncio.TimeoutError:
+                logger.warning("voice loop did not exit after kill")
+        watch_task = self.watch_task
+        if watch_task is not None and watch_task is not asyncio.current_task():
+            watch_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, RuntimeError):
+                await watch_task
+        if self.process is proc:
+            self.process = None
+            self.active_channel_id = None
+            self.active_guild_id = None
+        if self.watch_task is watch_task:
+            self.watch_task = None
+
+    async def _watch_process(self, proc: asyncio.subprocess.Process) -> None:
+        try:
+            code = await proc.wait()
+        except asyncio.CancelledError:
+            raise
+        if self.process is proc:
+            logger.info("voice loop exited code=%s", code)
+            self.process = None
+            self.watch_task = None
+            self.active_channel_id = None
+            self.active_guild_id = None
+            desired_channel_id = self.desired_channel_id
+            desired_guild_id = self.desired_guild_id
+            if code not in (0, None) and desired_channel_id and self.should_join_channel(
+                guild_id=desired_guild_id,
+                channel_id=desired_channel_id,
+            ):
+                await self._restart_desired_loop_after_exit(code=code, guild_id=desired_guild_id, channel_id=desired_channel_id)
+
+    async def _restart_desired_loop_after_exit(self, *, code: int | None, guild_id: str | None, channel_id: str) -> None:
+        now = asyncio.get_running_loop().time()
+        remaining = max(0.0, self.args.start_cooldown_seconds - (now - self.last_start_monotonic))
+        if remaining:
+            logger.info("voice loop exited code=%s; restarting in %.1fs while target remains in channel=%s", code, remaining, channel_id)
+            await asyncio.sleep(remaining)
+        if self.desired_channel_id != channel_id or (self.desired_guild_id or "") != (guild_id or ""):
+            logger.info("voice loop restart skipped; desired target moved or left")
+            return
+        if self.process and self.process.returncode is None:
+            logger.info("voice loop restart skipped; process already running")
+            return
+        logger.info("restarting voice loop after exit while target remains in guild=%s channel=%s", guild_id or "<none>", channel_id)
+        await self.start_voice_loop(guild_id=guild_id, channel_id=channel_id)
+
+    async def handle_voice_state_update(self, data: dict[str, Any]) -> None:
+        user_id = voice_state_user_id(data)
+        if not self.should_watch_user(user_id):
+            return
+        channel_id = voice_state_channel_id(data)
+        guild_id = voice_state_guild_id(data)
+        if channel_id is None:
+            self.desired_channel_id = None
+            self.desired_guild_id = None
+            self.pending_start_key = None
+            self.schedule_stop(f"target user {user_id} left voice")
+            return
+        if not self.should_join_channel(guild_id=guild_id, channel_id=channel_id):
+            self.desired_channel_id = None
+            self.desired_guild_id = None
+            self.pending_start_key = None
+            self.schedule_stop(f"target user {user_id} moved to unconfigured voice channel {channel_id}")
+            return
+        if self.desired_channel_id == channel_id and (self.desired_guild_id or "") == (guild_id or ""):
+            logger.info("voice loop target state unchanged for channel=%s", channel_id)
+            return
+        self.desired_channel_id = channel_id
+        self.desired_guild_id = guild_id
+        self.schedule_start(guild_id=guild_id, channel_id=channel_id)
+
+
+async def run(args: argparse.Namespace) -> int:
+    load_env_file(Path(args.env_file).expanduser())
+    if not env_truthy("FLUXER_VOICE_ENABLED") or not env_truthy("FLUXER_VOICE_AUTO_JOIN"):
+        logger.info("Fluxer realtime voice auto-join is disabled; set FLUXER_VOICE_ENABLED=true and FLUXER_VOICE_AUTO_JOIN=true to enable")
+        return 0
+    if not args.channel_ids:
+        logger.info("Fluxer realtime voice auto-join has no configured channel IDs; refusing to join arbitrary voice rooms")
+        return 0
+    if not args.target_user_ids:
+        logger.info("Fluxer realtime voice auto-join has no target user IDs; refusing to watch arbitrary users")
+        return 0
+    bot_token = os.getenv("FLUXER_BOT_TOKEN", "").strip()
+    if not bot_token:
+        raise RuntimeError("FLUXER_BOT_TOKEN is required")
+    supervisor = FluxerVoiceAutoJoinSupervisor(args)
+    adapter = FluxerAdapter(
+        PlatformConfig(
+            enabled=True,
+            extra={
+                "bot_token": bot_token,
+                "allow_all_users": env_truthy("FLUXER_ALLOW_ALL_USERS"),
+                "gateway_state_updates": False,
+                "voice": {"supervisor_disabled": True},
+            },
+        )
+    )
+    adapter.set_voice_state_update_handler(supervisor.handle_voice_state_update)
+    stop_event = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        with contextlib.suppress(NotImplementedError):
+            loop.add_signal_handler(sig, stop_event.set)
+    if not await adapter.connect():
+        raise RuntimeError("Fluxer adapter did not connect to gateway")
+    try:
+        if not await adapter.wait_until_gateway_ready(timeout=args.connect_timeout):
+            raise RuntimeError("Fluxer gateway did not emit READY before timeout")
+        logger.info(
+            "auto-join supervisor armed target_users=%s channels=%s guilds=%s",
+            sorted(supervisor.target_user_ids) or ["<any>"],
+            sorted(supervisor.allowed_channel_ids) or ["<any>"],
+            sorted(supervisor.allowed_guild_ids) or ["<any>"],
+        )
+        await stop_event.wait()
+    finally:
+        supervisor.desired_channel_id = None
+        supervisor.desired_guild_id = None
+        await supervisor.cancel_operations()
+        await supervisor.stop_voice_loop("supervisor shutting down")
+        await adapter.disconnect()
+    return 0
+
+
+def _preload_env_file(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--env-file", default=os.getenv("DUCKWORK_ENV_FILE", str(Path.home() / ".duckwork" / ".env")))
+    args, _ = parser.parse_known_args(argv)
+    load_env_file(Path(args.env_file).expanduser())
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Auto-join Fluxer voice when target user joins")
+    parser.add_argument("--target-user-ids", default=os.getenv("FLUXER_VOICE_TARGET_USER_IDS") or os.getenv("FLUXER_AUTO_JOIN_USER_IDS", ""))
+    parser.add_argument("--channel-ids", default=os.getenv("FLUXER_VOICE_CHANNEL_IDS") or os.getenv("FLUXER_AUTO_JOIN_CHANNEL_IDS", ""))
+    parser.add_argument("--guild-ids", default=os.getenv("FLUXER_VOICE_GUILD_IDS") or os.getenv("FLUXER_AUTO_JOIN_GUILD_IDS", ""))
+    parser.add_argument("--participant-identity-prefix", default=os.getenv("FLUXER_VOICE_PARTICIPANT_PREFIX") or os.getenv("FLUXER_AUTO_JOIN_PARTICIPANT_PREFIX", ""))
+    parser.add_argument("--python", default=os.getenv("FLUXER_VOICE_PYTHON", sys.executable))
+    parser.add_argument("--env-file", default=os.getenv("DUCKWORK_ENV_FILE", str(Path.home() / ".duckwork" / ".env")))
+    parser.add_argument("--brain-provider", choices=("auto", "xai-fast", "xai", "duckwork"), default=os.getenv("FLUXER_VOICE_BRAIN_PROVIDER", "duckwork"))
+    parser.add_argument("--stt-provider", choices=("auto", "local", "groq", "xai", "elevenlabs"), default=os.getenv("FLUXER_VOICE_STT_PROVIDER", "elevenlabs"))
+    parser.add_argument("--stt-model", default=os.getenv("FLUXER_VOICE_STT_MODEL", "scribe_v2"))
+    parser.add_argument("--elevenlabs-language-code", default=os.getenv("FLUXER_VOICE_ELEVENLABS_LANGUAGE_CODE", ""))
+    parser.add_argument("--voice", default=os.getenv("FLUXER_VOICE_TTS_VOICE", "eve"))
+    parser.add_argument("--max-turns", type=int, default=int(os.getenv("FLUXER_VOICE_MAX_TURNS", "50")))
+    parser.add_argument("--capture-timeout", type=float, default=float(os.getenv("FLUXER_VOICE_CAPTURE_TIMEOUT_SECONDS", "90.0")))
+    parser.add_argument("--silence-ms", type=int, default=int(os.getenv("FLUXER_VOICE_SILENCE_MS", "850")))
+    parser.add_argument("--end-padding-ms", type=int, default=int(os.getenv("FLUXER_VOICE_END_PADDING_MS", "180")))
+    parser.add_argument("--min-segment-ms", type=int, default=int(os.getenv("FLUXER_VOICE_MIN_SEGMENT_MS", "1200")))
+    parser.add_argument("--max-segment-seconds", type=float, default=float(os.getenv("FLUXER_VOICE_MAX_SEGMENT_SECONDS", "9.0")))
+    parser.add_argument("--barge-in-energy-threshold", type=int, default=int(os.getenv("FLUXER_VOICE_BARGE_IN_ENERGY_THRESHOLD", "180")))
+    parser.add_argument("--barge-in-min-ms", type=int, default=int(os.getenv("FLUXER_VOICE_BARGE_IN_MIN_MS", "1200")))
+    parser.add_argument("--barge-in-window-ms", type=int, default=int(os.getenv("FLUXER_VOICE_BARGE_IN_WINDOW_MS", "0")))
+    parser.add_argument("--barge-in-capture-timeout", type=float, default=float(os.getenv("FLUXER_VOICE_BARGE_IN_CAPTURE_TIMEOUT_SECONDS", "2.0")))
+    parser.add_argument("--barge-in-stop-phrase-energy-threshold", type=int, default=int(os.getenv("FLUXER_VOICE_BARGE_IN_STOP_PHRASE_ENERGY_THRESHOLD", "450")))
+    parser.add_argument("--barge-in-stop-phrase-min-ms", type=int, default=int(os.getenv("FLUXER_VOICE_BARGE_IN_STOP_PHRASE_MIN_MS", "120")))
+    parser.add_argument("--barge-in-stop-phrase-silence-ms", type=int, default=int(os.getenv("FLUXER_VOICE_BARGE_IN_STOP_PHRASE_SILENCE_MS", "180")))
+    parser.add_argument("--barge-in-stop-phrase-max-seconds", type=float, default=float(os.getenv("FLUXER_VOICE_BARGE_IN_STOP_PHRASE_MAX_SECONDS", "2.0")))
+    parser.add_argument("--max-runtime-seconds", type=float, default=float(os.getenv("FLUXER_VOICE_MAX_RUNTIME_SECONDS", "3600.0")))
+    parser.add_argument("--connect-timeout", type=float, default=float(os.getenv("FLUXER_VOICE_CONNECT_TIMEOUT_SECONDS", "30.0")))
+    parser.add_argument("--start-cooldown-seconds", type=float, default=float(os.getenv("FLUXER_VOICE_START_COOLDOWN_SECONDS", "5.0")))
+    parser.add_argument("--stop-timeout-seconds", type=float, default=float(os.getenv("FLUXER_VOICE_STOP_TIMEOUT_SECONDS", "8.0")))
+    parser.add_argument("--turn-log-jsonl", default=os.getenv("FLUXER_VOICE_TURN_LOG_JSONL", "/tmp/duckwork_fluxer_voice_auto_join_turns.jsonl"))
+    parser.add_argument("--verbose", action="store_true")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    _preload_env_file(argv)
+    args = parse_args(argv)
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
+    for noisy_secret_logger in ("websockets", "websockets.client", "httpcore", "httpx", "urllib3"):
+        logging.getLogger(noisy_secret_logger).setLevel(logging.INFO)
+    return asyncio.run(run(args))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

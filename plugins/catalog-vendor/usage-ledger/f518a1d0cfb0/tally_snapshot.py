@@ -1,0 +1,172 @@
+"""Read the numeric Duckwork response tally without exposing response content."""
+
+from __future__ import annotations
+
+import math
+import os
+import re
+from pathlib import Path
+from typing import Any
+
+_CURRENT_FIELDS = {
+    "input_tokens": ("Input tokens",),
+    "output_tokens": ("Output tokens",),
+    "cache_read_tokens": ("Cache-read tokens",),
+    "cache_write_tokens": ("Cache-write tokens",),
+    "reasoning_tokens": ("Reasoning tokens",),
+    "total_tokens": ("Canonical total tokens", "Total tokens", "Tokens Used"),
+    "expanded_activity_tokens": ("Expanded activity tokens",),
+    "calls": ("Calls",),
+    "thinking_seconds": ("Thinking time",),
+    "working_seconds": ("Working time",),
+    "words": ("Word count",),
+    "characters": ("Character count",),
+    "coding_characters": ("Coding character count",),
+}
+
+_RUNNING_FIELDS = {
+    "input_tokens": ("Input Tokens Running tally",),
+    "output_tokens": ("Output Tokens Running tally",),
+    "cache_read_tokens": ("Cache-read Tokens Running tally",),
+    "cache_write_tokens": ("Cache-write Tokens Running tally",),
+    "reasoning_tokens": ("Reasoning Tokens Running tally",),
+    "total_tokens": ("Canonical Total Tokens Running tally",),
+    "expanded_activity_tokens": (
+        "Expanded Activity Tokens Running tally",
+        "Total Tokens Running tally",
+        "Tokens Used Running tally",
+    ),
+    "calls": ("Calls Running tally",),
+    "thinking_seconds": ("Thinking Time Running tally",),
+    "working_seconds": ("Working Time Running tally",),
+    "words": ("Words Running tally",),
+    "characters": ("Character Running tally",),
+    "coding_characters": ("Coding Character Running tally",),
+}
+
+_UNAVAILABLE = {"", "n/a", "unavailable", "not available", "none"}
+_NUMBER = re.compile(r"^([+-]?(?:\d{1,3}(?:,\d{3})*|\d+)(?:\.\d+)?(?:[eE][+-]?\d+)?)\b(?!\.\d)")
+
+
+def _empty_scope() -> dict[str, int | float | None]:
+    return {key: None for key in _CURRENT_FIELDS}
+
+
+def empty_tally_snapshot() -> dict[str, Any]:
+    return {"updated": None, "current": _empty_scope(), "running": _empty_scope(),
+            "working_time_missing_responses": None}
+
+
+_CURRENT_RESPONSE_HEADING = re.compile(r"(?mi)^[ \t]*##[ \t]+Current response[ \t]*$")
+
+# The profile-global Mac tally predates the plugin's Current response block.
+# Normalize only its documented numeric labels; never parse history prose.
+_LEGACY_TOKEN_LABELS = {
+    "Tokens Input": "Input tokens",
+    "Tokens Output": "Output tokens",
+    "Tokens Cache Read": "Cache-read tokens",
+    "Tokens Cache Write": "Cache-write tokens",
+    "Tokens Reasoning": "Reasoning tokens",
+    "Tokens Total": "Canonical total tokens",
+    "Token Running Total Input": "Input Tokens Running tally",
+    "Token Running Total Output": "Output Tokens Running tally",
+    "Token Running Total Cache Read": "Cache-read Tokens Running tally",
+    "Token Running Total Cache Write": "Cache-write Tokens Running tally",
+    "Token Running Total Reasoning": "Reasoning Tokens Running tally",
+    "Token Running Total": "Canonical Total Tokens Running tally",
+}
+
+
+def _latest_block(text: str) -> str:
+    matches = list(_CURRENT_RESPONSE_HEADING.finditer(text))
+    if matches:
+        start = matches[-1].end()
+        next_heading = re.search(r"(?m)^[ \t]*##\s+", text[start:])
+        return text[start : start + next_heading.start()] if next_heading else text[start:]
+    root = re.split(r"(?m)^##\s+", text, maxsplit=1)[0]
+    root_fields = _field_map(root)
+    if "Updated" in root_fields and "Words Running tally" in root_fields:
+        return root
+    blocks = re.split(r"(?m)^##\s+", text)
+    return blocks[-1] if blocks else ""
+
+
+def _field_map(block: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    for line in block.splitlines():
+        if ":" not in line:
+            continue
+        label, value = line.split(":", 1)
+        label = label.strip()
+        legacy_label = re.sub(r" \(last known[^)]*\)$", "", label)
+        fields[_LEGACY_TOKEN_LABELS.get(legacy_label, label)] = value.strip()
+    return fields
+
+
+def _number(value: str | None) -> int | float | None:
+    if value is None or value.strip().casefold() in _UNAVAILABLE:
+        return None
+    match = _NUMBER.match(value.strip())
+    if match is None:
+        return None
+    raw = match.group(1).replace(",", "")
+    number = float(raw) if "." in raw or "e" in raw.lower() else int(raw)
+    if isinstance(number, float):
+        if not math.isfinite(number):
+            return None
+        # A positive measurement below the float range is unavailable, not a
+        # fabricated measured zero. Explicit zero mantissas remain zero.
+        if number == 0 and any(digit in "123456789" for digit in raw.lower().split("e", 1)[0]):
+            return None
+    return number if number >= 0 else None
+
+
+def _first_number(fields: dict[str, str], labels: tuple[str, ...]) -> int | float | None:
+    for label in labels:
+        if label in fields:
+            return _number(fields[label])
+    return None
+
+
+def parse_tally_snapshot(text: str) -> dict[str, Any]:
+    """Return only labeled numeric tally fields from the latest response block."""
+    fields = _field_map(_latest_block(text))
+    snapshot = empty_tally_snapshot()
+    snapshot["updated"] = fields.get("Updated") or None
+    snapshot["current"] = {
+        key: _first_number(fields, labels) for key, labels in _CURRENT_FIELDS.items()
+    }
+    snapshot["running"] = {
+        key: _first_number(fields, labels) for key, labels in _RUNNING_FIELDS.items()
+    }
+    missing = _number(fields.get("Working Time Unavailable Responses"))
+    if missing is None:
+        legacy_missing = re.search(r"/\s*(\d+)\s+unavailable\b", fields.get("Working Time Running tally", ""))
+        missing = int(legacy_missing.group(1)) if legacy_missing else None
+    snapshot["working_time_missing_responses"] = missing if isinstance(missing, int) else None
+    for scope in ("current", "running"):
+        values = snapshot[scope]
+        labels = _CURRENT_FIELDS if scope == "current" else _RUNNING_FIELDS
+        if not any(label in fields for label in labels["expanded_activity_tokens"]):
+            canonical, reasoning = values["total_tokens"], values["reasoning_tokens"]
+            if canonical is not None and reasoning is not None:
+                values["expanded_activity_tokens"] = canonical + reasoning
+    return snapshot
+
+
+def default_tally_path() -> Path:
+    try:
+        from duckwork_constants import get_duckwork_home
+
+        return get_duckwork_home() / "tally.md"
+    except ImportError:
+        home = os.environ.get("DUCKWORK_HOME", "").strip()
+        return (Path(home) if home else Path.home() / ".duckwork") / "tally.md"
+
+
+def read_tally_snapshot(path: Path | None = None) -> dict[str, Any]:
+    """Read a tally file safely; unavailable storage becomes an empty snapshot."""
+    try:
+        return parse_tally_snapshot((path or default_tally_path()).read_text(encoding="utf-8"))
+    except OSError:
+        return empty_tally_snapshot()

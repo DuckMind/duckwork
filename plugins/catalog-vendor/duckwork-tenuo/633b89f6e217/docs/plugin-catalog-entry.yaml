@@ -1,0 +1,29 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+# Entry for the Duckwork plugin catalog (Fordex/duckwork-agent, plugin-catalog/).
+# Submit as a PR adding this file as plugin-catalog/duckwork-tenuo.yaml.
+# The sha below is a placeholder on purpose: fill it at submission time with
+#   git rev-parse v0.1.0
+# so this file never drifts from the tag. Their rules: exact 40-hex sha, pinned
+# commit at least two weeks old, submitted by the repo owner, capabilities must
+# match what register() registers at that commit.
+name: duckwork-tenuo
+repo: https://github.com/DuckMind/duckwork
+sha: "0000000000000000000000000000000000000000"   # placeholder: git rev-parse v0.1.0
+description: Per-call authorization for Duckwork tool calls. Each call is checked against a signed, expiring warrant, arguments included, before the handler runs.
+maintainer: tenuo-ai
+tier: community
+requires_duckwork: ">=0.20"
+docs_url: https://github.com/DuckMind/duckwork
+platforms: []
+capabilities:
+  provides_tools: []
+  provides_hooks:
+    - pre_tool_call
+    - post_tool_call
+    - on_session_start
+    - on_session_end
+    - subagent_start
+  provides_middleware: []
+  requires_env:
+    - TENUO_WARRANT
+    - TENUO_SIGNING_KEY

@@ -1,0 +1,26 @@
+{
+  "template": "gated-publish",
+  "receipt_kind": "peer-clean-run",
+  "reviewer_estate": "peer estate (cross-estate clean-run seat)",
+  "graph_file": "examples/release/gated-publish.workflow.json",
+  "graph_sha256": "11a1b9961968fe9e4707461a5272d77bafb116f1924a8765aec0149027414386",
+  "source_digest": "cbff0a2c812e8b0b17b45581d5eac3767bf167b7cc723b51c2c6917c7e86e32a",
+  "tested_head": "4b7adc9 (PR #98 head; v2 rewrite of the template — supersedes the PASS-with-required-fix receipt filed against b267283, whose parse-node defect class is resolved by deleting parse and flowing approve.answer via inputs)",
+  "verdict": "FAIL - required fix: the authorized-publish path is cold-reader-brittle (see lap A); unauthorized path and prune law hold clean",
+  "runs": [
+    {
+      "run_id": "20261001-124957-gated-publish-lapa",
+      "path": "authorized publish (gate answered 'publish')",
+      "outcome": "draft done; approve held then released 'publish'; publish_gate fired (timer, answer 'timer'), rewrite_gate skipped (prune). BUT publish node refused: output {result: refused, why: 'publish_gate answer is timer, not the required explicit publish approval'} - a LEGITIMATE publish silently no-ops. run.done, so nothing looks red."
+    },
+    {
+      "run_id": "20261001-125120-gated-publish-lapb",
+      "path": "rewrite arm (gate answered 'rewrite')",
+      "outcome": "publish_gate skipped, publish node.skipped 'all deps pruned'; rewrite arm executed with approve.answer + draft.draft both present in ## Inputs, returned a grounded handoff. Prune law and answer-as-data flow PROVEN on this arm (partial rc=1, answer harvested, consumed correctly)."
+    }
+  ],
+  "root_cause": "the publish goal says 'The judge answered the approval gate (## Inputs carries the committed answer). If the answer is not publish...' but ## Inputs carries TWO payloads: the direct parent publish_gate's machine answer {answer: 'timer', _machine: true} AND approve.answer = 'publish'. The machine gate's committed answer reuses the key 'answer', so a cold seat sees two 'answer' fields and the first (its own parent) wins. The seat did the right thing with ambiguous instructions; the graph made the happy path unprovable. Lap A is the proof: refuse-on-ambiguity is safe, but the template's ONLY authorized path then never publishes.",
+  "required_fix": "in the publish (and rewrite) goal, name the payload exactly: 'read approve.answer (NOT the route gate's timer answer; the route gate exists only to carry the branch)'. One-line goal edit per node; source_digest restamp. Optional stronger shape: route gates as type echo with static output, removing the competing 'answer' key entirely.",
+  "notes": "Strict mode respected (wf/1 accepted, no estate config read). Both laps launched via the tool door at literal-baked copies (zero {run.} placeholders in spawned prompts, grep-verified). Engine: installed tree at main-line b179c55. This is the cold-reader value the dual-receipt law exists for: two warm laps on the author estate passed; the third lap on a fresh estate caught the shape nobody authored blind to.",
+  "resolved_by": "goal-fix commit 6bdfd0c on fold/98 (PR #98, ruling wf-101-disposition): the publish and rewrite goals now name approve.answer as the ONLY decision payload and declare the route gate's {answer:'timer',_machine:true} block a scheduling artifact to ignore; structure/ids/edges/schemas byte-identical, pins restamped. CLOSED on the post-fix author cold lap — see receipts/gated-publish/author-run.json (run 20261002-061109-gated-publish, PASS at template_sha256 ec265a01a78d120d03c22d9f06023099731a4f7c2a6edc22e2674a527e032ba2 / source_digest 97b75a8624c5850e257876e4da6d3ea2563921252911f7b038ef32d7439ac3b4): the publish node's ## Inputs carried the SAME two payloads verbatim (timer block + approve.answer:'publish') and the committed output is {result: published} — the authorized path no longer no-ops. Historical pins above name the PRE-FIX bytes and are preserved as the evidence that drove the fix."
+}

@@ -1,0 +1,8 @@
+manifest_version: 1
+name: duckwork-plugin-guard
+version: "0.2.1"
+description: "Static review of candidate Duckwork plugins; target code is never executed."
+author: "Maurice Mohr"
+kind: standalone
+provides_tools:
+  - plugin_guard_review_candidate

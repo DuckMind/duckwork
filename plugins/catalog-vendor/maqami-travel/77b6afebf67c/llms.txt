@@ -1,0 +1,33 @@
+# MAQAMI Travel MCP Server
+
+> Hosted MCP server for MAQAMI, a hotel and flight booking platform with 3M+ hotels. Agents can search live hotel rates and flights, look up cities, airports and hotel details, then send the customer a secure checkout link on book.maqami.co for the exact room or fare they chose. Endpoint: https://mcp.maqami.co/ (Streamable HTTP, no API key). Customers pay only on book.maqami.co; the server never takes payment.
+
+Connection details:
+
+- Endpoint: https://mcp.maqami.co/
+- Transport: Streamable HTTP
+- Authentication: none
+- Official MCP Registry name: io.github.negm17111995/maqami-travel
+- npm stdio bridge: `npx -y maqami-travel`
+- Generic config: `{"mcpServers": {"maqami-travel": {"url": "https://mcp.maqami.co/"}}}`
+
+Typical flows (the server's tools/list is authoritative):
+
+- Hotels: post_hotels_rates (cityName + countryCode, coordinates, iataCode, hotelIds or aiSearch) → get_data_hotel → user confirmation → post_rates_prebook (offerId exactly as returned) → give the customer checkoutUrl (https://book.maqami.co/booking?prebookId=...)
+- Flights: get_data_flights_airports → post_flights_rates → user confirmation → post_flights_verify → give the customer checkoutUrl (https://book.maqami.co/flights/booking?offerId=...)
+- Existing bookings: lookup, amend and cancel tools need the booking ID and the email used to book. Only the tools in tools/list exist.
+
+## Docs
+
+- [README](https://github.com/negm17111995/mcp-server/blob/main/README.md): setup for Claude, Claude Code, Cursor, VS Code, Windsurf, Cline, ChatGPT, Codex, Gemini CLI, OpenAI Agents SDK, LangChain and n8n, plus the booking flow and FAQ
+- [AGENTS.md](https://github.com/negm17111995/mcp-server/blob/main/AGENTS.md): short guide for coding agents
+- [server.json](https://github.com/negm17111995/mcp-server/blob/main/server.json): official MCP Registry entry
+
+## Examples
+
+- [travel-agent-examples](https://github.com/negm17111995/travel-agent-examples): runnable assistants for the OpenAI Agents SDK, LangChain with LangGraph and the Vercel AI SDK, with user approval before any call that is not read-only
+
+## Optional
+
+- [MAQAMI](https://maqami.co): company website
+- [Privacy policy](https://maqami.co/privacy-policy/)

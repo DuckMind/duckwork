@@ -1,0 +1,29 @@
+{
+  "name": "parrotnotes",
+  "version": "1.2.2",
+  "description": "Find, read, summarize and save insights for your ParrotNotes in-person meeting notes through the hosted ParrotNotes MCP server, with the parrotnotes workflow skill bundled.",
+  "author": {
+    "name": "ParrotNotes",
+    "email": "support@parrotnotes.app",
+    "url": "https://parrotnotes.app"
+  },
+  "homepage": "https://parrotnotes.app/docs/mcp",
+  "repository": "https://github.com/DuckMind/duckwork",
+  "license": "MIT",
+  "keywords": [
+    "parrotnotes",
+    "notes",
+    "meetings",
+    "in-person-meetings",
+    "transcripts",
+    "action-items",
+    "productivity",
+    "mcp"
+  ],
+  "mcpServers": {
+    "parrotnotes": {
+      "type": "http",
+      "url": "https://mcp.parrotnotes.app/mcp"
+    }
+  }
+}

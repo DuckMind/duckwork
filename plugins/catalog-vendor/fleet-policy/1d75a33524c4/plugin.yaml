@@ -1,0 +1,28 @@
+name: fleet-policy
+version: 0.2.1
+api_version: 1
+description: "Observe what a Duckwork agent actually sends to its LLM provider (model, reasoning effort, service tier, per role) next to the managed-scope policy; measure cron cost per job; watch any MCP read tool and wake the agent only on new items."
+author: Julien Talbot
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags: [automation, managed-scope, fleet, observability, cron, monitor, mcp]
+requires_duckwork: ">=0.21.5"
+provides_tools: []
+provides_hooks:
+  - pre_api_request
+  - pre_auxiliary_call
+provides_middleware:
+  - llm_execution
+config_schema:
+  observe_execution:
+    type: bool
+    default: true
+    description: "Also observe through an llm_execution pass-through middleware (full request + the service tier the provider says it served). Off = hooks only."
+  watch_server_url:
+    type: str
+    default: ""
+    description: "MCP endpoint every `watch` must use (e.g. a read-only tool session). Set it in the managed scope: watch configs then omit server_url, and a different one is refused."
+  allowed_cron_models:
+    type: list
+    default: []
+    description: "Optional allow-list of model ids for cron job pins; `duckwork fleet-policy crons` flags pins outside it."

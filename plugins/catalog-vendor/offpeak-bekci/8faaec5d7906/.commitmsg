@@ -1,0 +1,17 @@
+feat(i18n): kullanıcıya görünen metin İngilizce önce, Türkçe `dil: tr` ile seçilebilir (0.1.4)
+
+İnceleme (PR #139797, teknium1): katalog kartı + README + komut açıklamaları/çıktıları Türkçe-only;
+İngilizce varsayılan, Türkçe seçilebilir olmalı.
+
+- YENİ `metinler.py`: 103 anahtar × {en, tr} saf katalog + `dil_sec(ayar)` + `t(anahtar, dil, **kw)`.
+- `__init__.py` ve `bekci_kurulum.py`: komut açıklamaları/args_hint, `/offpeak-durum` okunur raporu,
+  onayla/kur/kaldir çıktıları, uyarı/hata/bildirim metinleri ve runner promptu katalogdan geliyor.
+- Varsayılan **en**; `config.yaml` → `offpeak-bekci.dil: tr` ile 0.1.3'teki Türkçe metin birebir geri gelir
+  (bayt-eşitliği doğrulandı). `bekci_core.py` ayar sırası/şema yedeğine `dil` eklendi.
+- `plugin.yaml` açıklaması, katalog `title`/`description` ve `README.md` İngilizce önce; Türkçe belge
+  `README.tr.md`'ye taşındı. Masaüstü yarısı `dil` ayarını geçiriyor (ORTAK_AYAR_ANAHTARLARI + AYAR_TIPLERI),
+  `desktop/plugin.js` yeniden derlendi.
+- MAKİNE SÖZLEŞMESİ DEĞİŞMEDİ: `/offpeak-durum json` aynı anahtarlar/sayılar (tek ekleme `ayar.dil`).
+- Kapılar: **116 Python testi OK** · masaüstü 7/7 (+ çekirdek 12/12) · build-desktop --check OK · validate passed.
+
+Not: plan_hash en/tr planlar arasında farklıdır (prompt hash'lenen alanlarda); kurulu işler etkilenmez.

@@ -1,0 +1,382 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "kiro-acp",
+  "content_id": "f4583f58d25c",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 41,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e"
+    },
+    {
+      "bytes": 1069,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "f7208d5ea6250de9495f85823f8a1a4387b8d91e4e6b9cc7fd5cbd14f29b93fc"
+    },
+    {
+      "bytes": 2973,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "273b29d6a548c9568a98cbcf2577f8559764199cddb42b031010f8d3f097fa8d"
+    },
+    {
+      "bytes": 3440,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "f2b8a3165da1d998efc4465f3fe4c35dcaa7e703a713714fbcd19c0177cfbc2c"
+    },
+    {
+      "bytes": 3366,
+      "mode": "100644",
+      "path": "kiro_acp_client.py",
+      "sha256": "6afc67318d3870c956d3ea3ea4e1de20dae8fbf000b7a85e9d89162539a27d2a"
+    },
+    {
+      "bytes": 2887,
+      "mode": "100644",
+      "path": "kiro_acp_models.py",
+      "sha256": "6156770ad5686f4a99322f85fd94feb9c88f561a39d7e45d60ef3967ccbc3e9b"
+    },
+    {
+      "bytes": 156,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "e8b884b68c736915c8ae565ed888111edaafcd58fd23470e7902ea4d2a5c16d8"
+    },
+    {
+      "bytes": 667,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "5a803a7138ea81d6af9c9e31749fb5ded115acae17b146e0c743eee9ba1ddad0"
+    },
+    {
+      "bytes": 43,
+      "mode": "100644",
+      "path": "tests/pytest.ini",
+      "sha256": "ca4b82760538130959a0fbe25c21fc5d28cd46fb7a63b1209def6d19e2b40a62"
+    },
+    {
+      "bytes": 4561,
+      "mode": "100644",
+      "path": "tests/test_kiro_acp_provider.py",
+      "sha256": "314c5511533107827794d063e29b03b6bced7e50456c98988620fde852958561"
+    }
+  ],
+  "input_manifest_sha256": "f4583f58d25ce4cdb827fbff6e57ae1726f6ecfa2a34bd00b012c12ae0bed5d3",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "f7208d5ea6250de9495f85823f8a1a4387b8d91e4e6b9cc7fd5cbd14f29b93fc",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "kiro_acp_client.py",
+      "kiro_acp_models.py",
+      "plugin.yaml",
+      "tests/conftest.py",
+      "tests/test_kiro_acp_provider.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/tobenwarrior/hermes-kiro-provider",
+    "sha": "02c4dd06585436751145961658a22b773f23a0ef",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/tobenwarrior/hermes-kiro-provider",
+  "original_sha": "02c4dd06585436751145961658a22b773f23a0ef",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e",
+      "bytes": 41,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "f7208d5ea6250de9495f85823f8a1a4387b8d91e4e6b9cc7fd5cbd14f29b93fc",
+      "bytes": 1069,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4993eb384900b3e0bbf03a69ecd83abead7920244477da51d8574ca69300d202",
+      "bytes": 2974,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "0ccafc4e99c3f2a82901558b77984d26923a01ff790e8e29fc08ab87e7721e31",
+      "bytes": 3450,
+      "mode": "100644"
+    },
+    {
+      "path": "kiro_acp_client.py",
+      "sha256": "adcc5db38dcdbb2dfc81865a1a3df8d59cd6f11369c1d235bdfa59d075832092",
+      "bytes": 3376,
+      "mode": "100644"
+    },
+    {
+      "path": "kiro_acp_models.py",
+      "sha256": "9b04aedde7c0e74e4b338433688a45306c121064f15e95fc1495eda8c31f582a",
+      "bytes": 2891,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "1b529efb5c2e7fcd70991c41627fc24aec3ce494185aaf900c005d4a811118fd",
+      "bytes": 158,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "419eeca79cd4f8a4deb878d9c559381a9ba729cef0888c7dc7e76eeb01d8197d",
+      "bytes": 689,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/pytest.ini",
+      "sha256": "ca4b82760538130959a0fbe25c21fc5d28cd46fb7a63b1209def6d19e2b40a62",
+      "bytes": 43,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_kiro_acp_provider.py",
+      "sha256": "75c5acb90d32f7b264a816be6a6702c98d768d434ece2aaff8e8fb228f3e4b7c",
+      "bytes": 4595,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "f91b9c5ff551fcfed7f0ac81660794efcdc2f1f15d4c26de73e951ad8f775d0e",
+  "pin_verification": {
+    "archive_bytes": 7593,
+    "archive_sha256": "73131f10f1c22ca7f7aa45f2f8ab879250800616f85c02e3a7e5313aa3211d32",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "02c4dd06585436751145961658a22b773f23a0ef",
+    "verified_commit_marker": "02c4dd06585436751145961658a22b773f23a0ef"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "d4113ce0a3a768f5bca4afc1305c67162663b5952987d918f8b931681173bacb",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e",
+        "source": ".gitignore",
+        "final_output_sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "f6b228e652a56584f0c298fb331d5569c101b5705d3b9563412aa2c390e9726e"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "f7208d5ea6250de9495f85823f8a1a4387b8d91e4e6b9cc7fd5cbd14f29b93fc",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "f7208d5ea6250de9495f85823f8a1a4387b8d91e4e6b9cc7fd5cbd14f29b93fc",
+        "source": "LICENSE",
+        "final_output_sha256": "f7208d5ea6250de9495f85823f8a1a4387b8d91e4e6b9cc7fd5cbd14f29b93fc",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "f7208d5ea6250de9495f85823f8a1a4387b8d91e4e6b9cc7fd5cbd14f29b93fc"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "273b29d6a548c9568a98cbcf2577f8559764199cddb42b031010f8d3f097fa8d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bf93bd60d5eb3d91ffe8a41531973028ee6c8ac94e6682c762c61ec116f8078a",
+        "source": "README.md",
+        "final_output_sha256": "4993eb384900b3e0bbf03a69ecd83abead7920244477da51d8574ca69300d202",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "bf93bd60d5eb3d91ffe8a41531973028ee6c8ac94e6682c762c61ec116f8078a"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "f2b8a3165da1d998efc4465f3fe4c35dcaa7e703a713714fbcd19c0177cfbc2c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0ccafc4e99c3f2a82901558b77984d26923a01ff790e8e29fc08ab87e7721e31",
+        "source": "__init__.py",
+        "final_output_sha256": "0ccafc4e99c3f2a82901558b77984d26923a01ff790e8e29fc08ab87e7721e31",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "0ccafc4e99c3f2a82901558b77984d26923a01ff790e8e29fc08ab87e7721e31"
+      },
+      {
+        "destination": "kiro_acp_client.py",
+        "input_sha256": "6afc67318d3870c956d3ea3ea4e1de20dae8fbf000b7a85e9d89162539a27d2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "adcc5db38dcdbb2dfc81865a1a3df8d59cd6f11369c1d235bdfa59d075832092",
+        "source": "kiro_acp_client.py",
+        "final_output_sha256": "adcc5db38dcdbb2dfc81865a1a3df8d59cd6f11369c1d235bdfa59d075832092",
+        "cli_destination": "kiro_acp_client.py",
+        "previous_staging_sha256": "adcc5db38dcdbb2dfc81865a1a3df8d59cd6f11369c1d235bdfa59d075832092"
+      },
+      {
+        "destination": "kiro_acp_models.py",
+        "input_sha256": "6156770ad5686f4a99322f85fd94feb9c88f561a39d7e45d60ef3967ccbc3e9b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9b04aedde7c0e74e4b338433688a45306c121064f15e95fc1495eda8c31f582a",
+        "source": "kiro_acp_models.py",
+        "final_output_sha256": "9b04aedde7c0e74e4b338433688a45306c121064f15e95fc1495eda8c31f582a",
+        "cli_destination": "kiro_acp_models.py",
+        "previous_staging_sha256": "9b04aedde7c0e74e4b338433688a45306c121064f15e95fc1495eda8c31f582a"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "e8b884b68c736915c8ae565ed888111edaafcd58fd23470e7902ea4d2a5c16d8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1b529efb5c2e7fcd70991c41627fc24aec3ce494185aaf900c005d4a811118fd",
+        "source": "plugin.yaml",
+        "final_output_sha256": "1b529efb5c2e7fcd70991c41627fc24aec3ce494185aaf900c005d4a811118fd",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "1b529efb5c2e7fcd70991c41627fc24aec3ce494185aaf900c005d4a811118fd"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "5a803a7138ea81d6af9c9e31749fb5ded115acae17b146e0c743eee9ba1ddad0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "419eeca79cd4f8a4deb878d9c559381a9ba729cef0888c7dc7e76eeb01d8197d",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "419eeca79cd4f8a4deb878d9c559381a9ba729cef0888c7dc7e76eeb01d8197d",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "419eeca79cd4f8a4deb878d9c559381a9ba729cef0888c7dc7e76eeb01d8197d"
+      },
+      {
+        "destination": "tests/pytest.ini",
+        "input_sha256": "ca4b82760538130959a0fbe25c21fc5d28cd46fb7a63b1209def6d19e2b40a62",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca4b82760538130959a0fbe25c21fc5d28cd46fb7a63b1209def6d19e2b40a62",
+        "source": "tests/pytest.ini",
+        "final_output_sha256": "ca4b82760538130959a0fbe25c21fc5d28cd46fb7a63b1209def6d19e2b40a62",
+        "cli_destination": "tests/pytest.ini",
+        "previous_staging_sha256": "ca4b82760538130959a0fbe25c21fc5d28cd46fb7a63b1209def6d19e2b40a62"
+      },
+      {
+        "destination": "tests/test_kiro_acp_provider.py",
+        "input_sha256": "314c5511533107827794d063e29b03b6bced7e50456c98988620fde852958561",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "75c5acb90d32f7b264a816be6a6702c98d768d434ece2aaff8e8fb228f3e4b7c",
+        "source": "tests/test_kiro_acp_provider.py",
+        "final_output_sha256": "75c5acb90d32f7b264a816be6a6702c98d768d434ece2aaff8e8fb228f3e4b7c",
+        "cli_destination": "tests/test_kiro_acp_provider.py",
+        "previous_staging_sha256": "75c5acb90d32f7b264a816be6a6702c98d768d434ece2aaff8e8fb228f3e4b7c"
+      }
+    ],
+    "manifest_sha256": "0cab4855aae367066e28e4f27d88d8d29812bf217859877809772fb781a2a358",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "kiro_acp_client.py": "kiro_acp_client.py",
+    "kiro_acp_models.py": "kiro_acp_models.py",
+    "plugin.yaml": "plugin.yaml",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/pytest.ini": "tests/pytest.ini",
+    "tests/test_kiro_acp_provider.py": "tests/test_kiro_acp_provider.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "kiro-acp-provider",
+    "python_files_compiled": 5,
+    "secret_findings": 0
+  },
+  "canonical_slug": "kiro-acp",
+  "catalog_file": "src/plugin-catalog/kiro-acp.yaml",
+  "identity": {
+    "catalog_id": "kiro-acp",
+    "canonical_slug": "kiro-acp",
+    "original_manifest_name": "kiro-acp-provider",
+    "rebranded_manifest_name": "kiro-acp-provider",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "4edff8a6fa1c77f89da756e293ab7fcd838c025ac1057ec2e9aecbf2794e66db",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "bf93bd60d5eb3d91ffe8a41531973028ee6c8ac94e6682c762c61ec116f8078a",
+          "after_sha256": "4993eb384900b3e0bbf03a69ecd83abead7920244477da51d8574ca69300d202",
+          "before_bytes": 3021,
+          "after_bytes": 2974,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

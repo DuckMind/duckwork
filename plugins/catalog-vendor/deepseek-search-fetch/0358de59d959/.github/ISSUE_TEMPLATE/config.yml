@@ -1,0 +1,16 @@
+# Issue chooser configuration.
+# Blank issues are off so every report arrives with the fields needed to act on it.
+blank_issues_enabled: false
+
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/DuckMind/duckwork
+    about: Report privately. Please do not open a public issue for a security problem.
+
+  - name: Bug or request in Duckwork itself
+    url: https://github.com/DuckMind/duckwork
+    about: This repository is only the DeepSeek web provider plugin — host-app bugs go upstream.
+
+  - name: Question or usage help
+    url: https://github.com/DuckMind/duckwork
+    about: The README covers install, routing, cost, limits, security and the test commands.

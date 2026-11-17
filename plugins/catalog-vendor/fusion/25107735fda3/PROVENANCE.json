@@ -1,0 +1,946 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "fusion",
+  "content_id": "25107735fda3",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 764,
+      "mode": "100644",
+      "path": ".claude-plugin/marketplace.json",
+      "sha256": "b68b8706bac0e9c9121a057510691593c3c67410973762d9698f723abc6333ff"
+    },
+    {
+      "bytes": 19,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "bytes": 630,
+      "mode": "100644",
+      "path": ".grok-plugin/marketplace.json",
+      "sha256": "3114766738c5dc19c56f119434f24ba34d2033c816e30c8e0cd1dc5eb5fc82ac"
+    },
+    {
+      "bytes": 1073,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "5ef7da8642a5b7b564edd697e7f805a0acebab6983653a3a26d4cbcbd8929fa5"
+    },
+    {
+      "bytes": 2561,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "526fb1ae3f486d2e1c36d9a34a99a31da107d905fad1279e1e0231a329ee0463"
+    },
+    {
+      "bytes": 1136,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "651938b06d6afa4d12e25f9e9e985e31317f90501e7d2ec738045d5a9f0895b0"
+    },
+    {
+      "bytes": 9253,
+      "mode": "100644",
+      "path": "adapters.py",
+      "sha256": "1b78ed219959f22909f2b2a66253c04268c1f691cc6ccef5f98973331fb73315"
+    },
+    {
+      "bytes": 1190,
+      "mode": "100644",
+      "path": "classify.py",
+      "sha256": "da5779a61f8e8e733faf18bd63444bd32084aa46e6753f6fdc2b5196f7cd3aae"
+    },
+    {
+      "bytes": 8241,
+      "mode": "100644",
+      "path": "cli.py",
+      "sha256": "275512245e86d6cb6d30e3e3c7203bf0418fad74737fba05b93706ae1b84aceb"
+    },
+    {
+      "bytes": 285,
+      "mode": "100644",
+      "path": "codex/fusion-router/mcp.json",
+      "sha256": "ec01cbade58fd89adbb33836a4d96b7988fd560f787d6aa008d326605be14e6f"
+    },
+    {
+      "bytes": 558,
+      "mode": "100644",
+      "path": "codex/fusion-router/plugin.json",
+      "sha256": "9c590d54a69de6ef82fa5db2f122e5e106d7d714dbcc7fcfefa129896019702f"
+    },
+    {
+      "bytes": 1720,
+      "mode": "100644",
+      "path": "codex/fusion-router/skills/fusion-router/SKILL.md",
+      "sha256": "32a55d8658a5bba6f07fb7d4e92dc639e17faafcee8dae1c5840ff403d8a5dc8"
+    },
+    {
+      "bytes": 1031,
+      "mode": "100644",
+      "path": "fusion.example.yaml",
+      "sha256": "1b4e11fcfb78e4b4094f64d7cb7c505736c3ce975f32b183b9c7a84c924df474"
+    },
+    {
+      "bytes": 5639,
+      "mode": "100644",
+      "path": "harnesses.py",
+      "sha256": "5712227a4fa8d225f30460bddb6b73bf9343d395ba12f2f72e830d6bcdc81b64"
+    },
+    {
+      "bytes": 7548,
+      "mode": "100644",
+      "path": "mcp_server.py",
+      "sha256": "7ef07e7dec98f7e8e962656747dcf257cd540d2a09b886496d7e84b57c6a0ea4"
+    },
+    {
+      "bytes": 12135,
+      "mode": "100644",
+      "path": "mm_loop.py",
+      "sha256": "13cfc42bc3100131e2d48304efd19300e70d0f55f0853776709d5aef4c049840"
+    },
+    {
+      "bytes": 1395,
+      "mode": "100644",
+      "path": "paths.py",
+      "sha256": "be8e3f68dc1c0819f90425d11f27b46c566dbefdcce8d3adaee73ad8ef0f3aa0"
+    },
+    {
+      "bytes": 310,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "6cb58c43ce29d06eb7ca5d3f622bda3bc8b6d5ceddcb04beca218f73d0213566"
+    },
+    {
+      "bytes": 508,
+      "mode": "100644",
+      "path": "plugins/fusion-router/.claude-plugin/plugin.json",
+      "sha256": "01549a810cb9c8168ca117d328402a72e8e7327e6ad7f70b39663dc1b4ccb72f"
+    },
+    {
+      "bytes": 941,
+      "mode": "100644",
+      "path": "plugins/fusion-router/agents/consult.md",
+      "sha256": "b133f95053c617085bf02ad4b1048167520d5494e829a32d1873826642928e0a"
+    },
+    {
+      "bytes": 1161,
+      "mode": "100644",
+      "path": "plugins/fusion-router/agents/frontier-worker.md",
+      "sha256": "ee618f8b26e75ec198b9b6f3a8e172787d7da327a88fa834c4b560dad1be7e5e"
+    },
+    {
+      "bytes": 1267,
+      "mode": "100644",
+      "path": "plugins/fusion-router/agents/middle-manager.md",
+      "sha256": "4d7acc3fa65d63b090fc59dddef24f72f3bc0e378b72e9639b3aeb202a0657e1"
+    },
+    {
+      "bytes": 1213,
+      "mode": "100644",
+      "path": "plugins/fusion-router/commands/fusion.md",
+      "sha256": "23e3b97c18c7359aa225c24ab911dad0afb1d3851c7ca5c0db5541fa3a4a4260"
+    },
+    {
+      "bytes": 1945,
+      "mode": "100644",
+      "path": "plugins/fusion-router/skills/fusion-router/SKILL.md",
+      "sha256": "bcd05a479d782ffc830a3d27baa3114d771d07444d396a0f000db6e522bd7b24"
+    },
+    {
+      "bytes": 3496,
+      "mode": "100644",
+      "path": "roster.py",
+      "sha256": "1ffcedfccff5bb9dfa245c3a0f20a09943e59db3c5dae888d36820481331cf02"
+    },
+    {
+      "bytes": 12929,
+      "mode": "100755",
+      "path": "scripts/analyze_fusion_feedback.py",
+      "sha256": "c9b44cb1c4955b8e91865b3babcf92bb66edcd15bf8591238a3522abe8f3473a"
+    },
+    {
+      "bytes": 15031,
+      "mode": "100644",
+      "path": "scripts/build_fusion_header.py",
+      "sha256": "1c8d477a2bc221d4da254824e35a110cd9955c74f1e9fbe9381177e833c257c5"
+    },
+    {
+      "bytes": 32734,
+      "mode": "100644",
+      "path": "scripts/execute_fusion_plan.py",
+      "sha256": "eea6012391a2b6412530a5833c58595de4fdfa677154ec7d87985e397763737d"
+    },
+    {
+      "bytes": 1980,
+      "mode": "100755",
+      "path": "scripts/extract_fusion_json.py",
+      "sha256": "cd2f3fead70a726c2b21545866d1b6b5ab9bb63c2cb690cbad42df4b2a705803"
+    },
+    {
+      "bytes": 14750,
+      "mode": "100644",
+      "path": "scripts/normalize_fusion_plan.py",
+      "sha256": "0de664a13f7c8b5b640e4fdaa912392d1ff11529353b6361a48d4194195f516a"
+    },
+    {
+      "bytes": 7233,
+      "mode": "100644",
+      "path": "scripts/sync_model_index.py",
+      "sha256": "78f116e3e977e39bf32564e47044d50213cc56db28aa60c727a16cf9d4cbd2a2"
+    },
+    {
+      "bytes": 7577,
+      "mode": "100644",
+      "path": "scripts/validate_fusion_packet.py",
+      "sha256": "d05e95305d51cb3c3a48d8a5098eb2047d216d921c1ceb681f1a6c3a372d291b"
+    }
+  ],
+  "input_manifest_sha256": "25107735fda31c0bdf058f825f4b002a15dddabedf2a8a511edf31526b1d2bae",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "5ef7da8642a5b7b564edd697e7f805a0acebab6983653a3a26d4cbcbd8929fa5",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".claude-plugin/marketplace.json",
+      ".grok-plugin/marketplace.json",
+      "README.md",
+      "__init__.py",
+      "adapters.py",
+      "cli.py",
+      "codex/fusion-router/skills/fusion-router/SKILL.md",
+      "fusion.example.yaml",
+      "harnesses.py",
+      "mcp_server.py",
+      "mm_loop.py",
+      "paths.py",
+      "plugin.yaml",
+      "plugins/fusion-router/.claude-plugin/plugin.json",
+      "roster.py",
+      "scripts/analyze_fusion_feedback.py",
+      "scripts/build_fusion_header.py",
+      "scripts/execute_fusion_plan.py",
+      "scripts/normalize_fusion_plan.py",
+      "scripts/sync_model_index.py",
+      "scripts/validate_fusion_packet.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/BoredSexyJordan/hermes-fusion",
+    "sha": "edab6a6d17838d4d9a1525a2a7d3500c62694e17",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/BoredSexyJordan/hermes-fusion",
+  "original_sha": "edab6a6d17838d4d9a1525a2a7d3500c62694e17",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "sha256": "b14f0594557cfb6dccf21a55baab62f24a68f97cd86f129c8c0bcc4b0cb82011",
+      "bytes": 752,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+      "bytes": 19,
+      "mode": "100644"
+    },
+    {
+      "path": ".grok-plugin/marketplace.json",
+      "sha256": "0e946bad8f2d2925dfa4e3c63da997c48f69fbb00cd3be4510120695b3f4afe8",
+      "bytes": 618,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "5ef7da8642a5b7b564edd697e7f805a0acebab6983653a3a26d4cbcbd8929fa5",
+      "bytes": 1073,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "d386f3aa336544432132cb81b32220b85504e92d2e9034274714163c652a1bb0",
+      "bytes": 2597,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "698a0a7447111a22bc77b9f2d9344752b55962efb8f954e2ea7b0b4fd0a53973",
+      "bytes": 1140,
+      "mode": "100644"
+    },
+    {
+      "path": "adapters.py",
+      "sha256": "c2585dcfe38d00d35750ed4bba107834e7574628a281dcac4d11537e9ee0ebcd",
+      "bytes": 9275,
+      "mode": "100644"
+    },
+    {
+      "path": "classify.py",
+      "sha256": "da5779a61f8e8e733faf18bd63444bd32084aa46e6753f6fdc2b5196f7cd3aae",
+      "bytes": 1190,
+      "mode": "100644"
+    },
+    {
+      "path": "cli.py",
+      "sha256": "a5eff58bc26ad698892d1ab16089a9d1868e36308f96fcec69c00bec8bba4bc7",
+      "bytes": 8265,
+      "mode": "100644"
+    },
+    {
+      "path": "codex/fusion-router/mcp.json",
+      "sha256": "ec01cbade58fd89adbb33836a4d96b7988fd560f787d6aa008d326605be14e6f",
+      "bytes": 285,
+      "mode": "100644"
+    },
+    {
+      "path": "codex/fusion-router/plugin.json",
+      "sha256": "9c590d54a69de6ef82fa5db2f122e5e106d7d714dbcc7fcfefa129896019702f",
+      "bytes": 558,
+      "mode": "100644"
+    },
+    {
+      "path": "codex/fusion-router/skills/fusion-router/SKILL.md",
+      "sha256": "0cdc8af071d7f5b6ebade7a598d42dce540247bc5f89968469018239ddc34780",
+      "bytes": 1722,
+      "mode": "100644"
+    },
+    {
+      "path": "fusion.example.yaml",
+      "sha256": "746a04ea8af086a70584c3884e0985d2a959f6f1c8223c6787910fb4b03be00e",
+      "bytes": 1037,
+      "mode": "100644"
+    },
+    {
+      "path": "harnesses.py",
+      "sha256": "de81122be76bfc4744463a30f5d6d6861b139ef2dbab5f004c9875cfabc4d2c8",
+      "bytes": 5663,
+      "mode": "100644"
+    },
+    {
+      "path": "mcp_server.py",
+      "sha256": "ae5e593a242fbc1872529a0c852ad079550a1bfc1ce4cf9509dae64d3ac91c90",
+      "bytes": 7556,
+      "mode": "100644"
+    },
+    {
+      "path": "mm_loop.py",
+      "sha256": "cb3d6b62f1ff6bbba4e50fe3626283c89a5648c1efd41c9fa4caef9c5792c34d",
+      "bytes": 12137,
+      "mode": "100644"
+    },
+    {
+      "path": "paths.py",
+      "sha256": "8e25e37bcb18f2e26a9bbc479e3f725cdc36633feb8da86ff7ff4918bcdf0998",
+      "bytes": 1451,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "f6392cd4e10f0a13fb7e6af4dfe5b4a7630388367fcec4d3d8b9ade2ae7e72de",
+      "bytes": 312,
+      "mode": "100644"
+    },
+    {
+      "path": "plugins/fusion-router/.claude-plugin/plugin.json",
+      "sha256": "3191b174c431ba660ecef98eff1f61b912e95ba8153ac141bbd304a38ce7cfb2",
+      "bytes": 484,
+      "mode": "100644"
+    },
+    {
+      "path": "plugins/fusion-router/agents/consult.md",
+      "sha256": "b133f95053c617085bf02ad4b1048167520d5494e829a32d1873826642928e0a",
+      "bytes": 941,
+      "mode": "100644"
+    },
+    {
+      "path": "plugins/fusion-router/agents/frontier-worker.md",
+      "sha256": "ee618f8b26e75ec198b9b6f3a8e172787d7da327a88fa834c4b560dad1be7e5e",
+      "bytes": 1161,
+      "mode": "100644"
+    },
+    {
+      "path": "plugins/fusion-router/agents/middle-manager.md",
+      "sha256": "4d7acc3fa65d63b090fc59dddef24f72f3bc0e378b72e9639b3aeb202a0657e1",
+      "bytes": 1267,
+      "mode": "100644"
+    },
+    {
+      "path": "plugins/fusion-router/commands/fusion.md",
+      "sha256": "23e3b97c18c7359aa225c24ab911dad0afb1d3851c7ca5c0db5541fa3a4a4260",
+      "bytes": 1213,
+      "mode": "100644"
+    },
+    {
+      "path": "plugins/fusion-router/skills/fusion-router/SKILL.md",
+      "sha256": "bcd05a479d782ffc830a3d27baa3114d771d07444d396a0f000db6e522bd7b24",
+      "bytes": 1945,
+      "mode": "100644"
+    },
+    {
+      "path": "roster.py",
+      "sha256": "a304164d2fe561dc7d9b93b8ee1173e39288e03a72a22c3f745487374a675c39",
+      "bytes": 3510,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/analyze_fusion_feedback.py",
+      "sha256": "b8ff431b16478866d4b32af0bb9be27015892c6b42935511733fdf350d0f861a",
+      "bytes": 12941,
+      "mode": "100755"
+    },
+    {
+      "path": "scripts/build_fusion_header.py",
+      "sha256": "5b1f1ca965f6f4bd73e887f6991dd0666c1367461f271b8f165c1c7357dce7ad",
+      "bytes": 15035,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/execute_fusion_plan.py",
+      "sha256": "2907da8cb8579900c812f59f01421a168b0d6462e6645cde0c4557881ed93c52",
+      "bytes": 32766,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/extract_fusion_json.py",
+      "sha256": "cd2f3fead70a726c2b21545866d1b6b5ab9bb63c2cb690cbad42df4b2a705803",
+      "bytes": 1980,
+      "mode": "100755"
+    },
+    {
+      "path": "scripts/normalize_fusion_plan.py",
+      "sha256": "f78ae493fa8307f8925109c88e8f0daf8bdf3966119be9fddcf8a4b7c65ab6ea",
+      "bytes": 14772,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/sync_model_index.py",
+      "sha256": "f98b6fbad82b92b0831a7e595b17d2f3e736733948a00c1a606fe1b69b10a158",
+      "bytes": 7247,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/validate_fusion_packet.py",
+      "sha256": "210f4e12971c052d51189cc803413e10d7779049e733f87128da14151f9c8519",
+      "bytes": 7579,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "befdda0dd3a06a0969821f6e6fdcb93362bbc5fa0d85636af5952033579e1391",
+  "pin_verification": {
+    "archive_bytes": 46966,
+    "archive_sha256": "d9e84a8792c9e6fce92218028d7766c4a50ac5c5bae618e4eb5d09356b6aa2ae",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "edab6a6d17838d4d9a1525a2a7d3500c62694e17",
+    "verified_commit_marker": "edab6a6d17838d4d9a1525a2a7d3500c62694e17"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "fbe9dd5fb954ae4cdb15f28976aed06d7895e6830d98e55bb23e199ed2edc28a",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".claude-plugin/marketplace.json",
+        "input_sha256": "b68b8706bac0e9c9121a057510691593c3c67410973762d9698f723abc6333ff",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b68b8706bac0e9c9121a057510691593c3c67410973762d9698f723abc6333ff",
+        "source": ".claude-plugin/marketplace.json",
+        "final_output_sha256": "b14f0594557cfb6dccf21a55baab62f24a68f97cd86f129c8c0bcc4b0cb82011",
+        "cli_destination": ".claude-plugin/marketplace.json",
+        "previous_staging_sha256": "b68b8706bac0e9c9121a057510691593c3c67410973762d9698f723abc6333ff"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+        "source": ".gitignore",
+        "final_output_sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+      },
+      {
+        "destination": ".grok-plugin/marketplace.json",
+        "input_sha256": "3114766738c5dc19c56f119434f24ba34d2033c816e30c8e0cd1dc5eb5fc82ac",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3114766738c5dc19c56f119434f24ba34d2033c816e30c8e0cd1dc5eb5fc82ac",
+        "source": ".grok-plugin/marketplace.json",
+        "final_output_sha256": "0e946bad8f2d2925dfa4e3c63da997c48f69fbb00cd3be4510120695b3f4afe8",
+        "cli_destination": ".grok-plugin/marketplace.json",
+        "previous_staging_sha256": "3114766738c5dc19c56f119434f24ba34d2033c816e30c8e0cd1dc5eb5fc82ac"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "5ef7da8642a5b7b564edd697e7f805a0acebab6983653a3a26d4cbcbd8929fa5",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "5ef7da8642a5b7b564edd697e7f805a0acebab6983653a3a26d4cbcbd8929fa5",
+        "source": "LICENSE",
+        "final_output_sha256": "5ef7da8642a5b7b564edd697e7f805a0acebab6983653a3a26d4cbcbd8929fa5",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "5ef7da8642a5b7b564edd697e7f805a0acebab6983653a3a26d4cbcbd8929fa5"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "526fb1ae3f486d2e1c36d9a34a99a31da107d905fad1279e1e0231a329ee0463",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d386f3aa336544432132cb81b32220b85504e92d2e9034274714163c652a1bb0",
+        "source": "README.md",
+        "final_output_sha256": "d386f3aa336544432132cb81b32220b85504e92d2e9034274714163c652a1bb0",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "d386f3aa336544432132cb81b32220b85504e92d2e9034274714163c652a1bb0"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "651938b06d6afa4d12e25f9e9e985e31317f90501e7d2ec738045d5a9f0895b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "698a0a7447111a22bc77b9f2d9344752b55962efb8f954e2ea7b0b4fd0a53973",
+        "source": "__init__.py",
+        "final_output_sha256": "698a0a7447111a22bc77b9f2d9344752b55962efb8f954e2ea7b0b4fd0a53973",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "698a0a7447111a22bc77b9f2d9344752b55962efb8f954e2ea7b0b4fd0a53973"
+      },
+      {
+        "destination": "adapters.py",
+        "input_sha256": "1b78ed219959f22909f2b2a66253c04268c1f691cc6ccef5f98973331fb73315",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c2585dcfe38d00d35750ed4bba107834e7574628a281dcac4d11537e9ee0ebcd",
+        "source": "adapters.py",
+        "final_output_sha256": "c2585dcfe38d00d35750ed4bba107834e7574628a281dcac4d11537e9ee0ebcd",
+        "cli_destination": "adapters.py",
+        "previous_staging_sha256": "c2585dcfe38d00d35750ed4bba107834e7574628a281dcac4d11537e9ee0ebcd"
+      },
+      {
+        "destination": "classify.py",
+        "input_sha256": "da5779a61f8e8e733faf18bd63444bd32084aa46e6753f6fdc2b5196f7cd3aae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "da5779a61f8e8e733faf18bd63444bd32084aa46e6753f6fdc2b5196f7cd3aae",
+        "source": "classify.py",
+        "final_output_sha256": "da5779a61f8e8e733faf18bd63444bd32084aa46e6753f6fdc2b5196f7cd3aae",
+        "cli_destination": "classify.py",
+        "previous_staging_sha256": "da5779a61f8e8e733faf18bd63444bd32084aa46e6753f6fdc2b5196f7cd3aae"
+      },
+      {
+        "destination": "cli.py",
+        "input_sha256": "275512245e86d6cb6d30e3e3c7203bf0418fad74737fba05b93706ae1b84aceb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a5eff58bc26ad698892d1ab16089a9d1868e36308f96fcec69c00bec8bba4bc7",
+        "source": "cli.py",
+        "final_output_sha256": "a5eff58bc26ad698892d1ab16089a9d1868e36308f96fcec69c00bec8bba4bc7",
+        "cli_destination": "cli.py",
+        "previous_staging_sha256": "a5eff58bc26ad698892d1ab16089a9d1868e36308f96fcec69c00bec8bba4bc7"
+      },
+      {
+        "destination": "codex/fusion-router/mcp.json",
+        "input_sha256": "ec01cbade58fd89adbb33836a4d96b7988fd560f787d6aa008d326605be14e6f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec01cbade58fd89adbb33836a4d96b7988fd560f787d6aa008d326605be14e6f",
+        "source": "codex/fusion-router/mcp.json",
+        "final_output_sha256": "ec01cbade58fd89adbb33836a4d96b7988fd560f787d6aa008d326605be14e6f",
+        "cli_destination": "codex/fusion-router/mcp.json",
+        "previous_staging_sha256": "ec01cbade58fd89adbb33836a4d96b7988fd560f787d6aa008d326605be14e6f"
+      },
+      {
+        "destination": "codex/fusion-router/plugin.json",
+        "input_sha256": "9c590d54a69de6ef82fa5db2f122e5e106d7d714dbcc7fcfefa129896019702f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9c590d54a69de6ef82fa5db2f122e5e106d7d714dbcc7fcfefa129896019702f",
+        "source": "codex/fusion-router/plugin.json",
+        "final_output_sha256": "9c590d54a69de6ef82fa5db2f122e5e106d7d714dbcc7fcfefa129896019702f",
+        "cli_destination": "codex/fusion-router/plugin.json",
+        "previous_staging_sha256": "9c590d54a69de6ef82fa5db2f122e5e106d7d714dbcc7fcfefa129896019702f"
+      },
+      {
+        "destination": "codex/fusion-router/skills/fusion-router/SKILL.md",
+        "input_sha256": "32a55d8658a5bba6f07fb7d4e92dc639e17faafcee8dae1c5840ff403d8a5dc8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0cdc8af071d7f5b6ebade7a598d42dce540247bc5f89968469018239ddc34780",
+        "source": "codex/fusion-router/skills/fusion-router/SKILL.md",
+        "final_output_sha256": "0cdc8af071d7f5b6ebade7a598d42dce540247bc5f89968469018239ddc34780",
+        "cli_destination": "codex/fusion-router/skills/fusion-router/SKILL.md",
+        "previous_staging_sha256": "0cdc8af071d7f5b6ebade7a598d42dce540247bc5f89968469018239ddc34780"
+      },
+      {
+        "destination": "fusion.example.yaml",
+        "input_sha256": "1b4e11fcfb78e4b4094f64d7cb7c505736c3ce975f32b183b9c7a84c924df474",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "746a04ea8af086a70584c3884e0985d2a959f6f1c8223c6787910fb4b03be00e",
+        "source": "fusion.example.yaml",
+        "final_output_sha256": "746a04ea8af086a70584c3884e0985d2a959f6f1c8223c6787910fb4b03be00e",
+        "cli_destination": "fusion.example.yaml",
+        "previous_staging_sha256": "746a04ea8af086a70584c3884e0985d2a959f6f1c8223c6787910fb4b03be00e"
+      },
+      {
+        "destination": "harnesses.py",
+        "input_sha256": "5712227a4fa8d225f30460bddb6b73bf9343d395ba12f2f72e830d6bcdc81b64",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "de81122be76bfc4744463a30f5d6d6861b139ef2dbab5f004c9875cfabc4d2c8",
+        "source": "harnesses.py",
+        "final_output_sha256": "de81122be76bfc4744463a30f5d6d6861b139ef2dbab5f004c9875cfabc4d2c8",
+        "cli_destination": "harnesses.py",
+        "previous_staging_sha256": "de81122be76bfc4744463a30f5d6d6861b139ef2dbab5f004c9875cfabc4d2c8"
+      },
+      {
+        "destination": "mcp_server.py",
+        "input_sha256": "7ef07e7dec98f7e8e962656747dcf257cd540d2a09b886496d7e84b57c6a0ea4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ae5e593a242fbc1872529a0c852ad079550a1bfc1ce4cf9509dae64d3ac91c90",
+        "source": "mcp_server.py",
+        "final_output_sha256": "ae5e593a242fbc1872529a0c852ad079550a1bfc1ce4cf9509dae64d3ac91c90",
+        "cli_destination": "mcp_server.py",
+        "previous_staging_sha256": "ae5e593a242fbc1872529a0c852ad079550a1bfc1ce4cf9509dae64d3ac91c90"
+      },
+      {
+        "destination": "mm_loop.py",
+        "input_sha256": "13cfc42bc3100131e2d48304efd19300e70d0f55f0853776709d5aef4c049840",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cb3d6b62f1ff6bbba4e50fe3626283c89a5648c1efd41c9fa4caef9c5792c34d",
+        "source": "mm_loop.py",
+        "final_output_sha256": "cb3d6b62f1ff6bbba4e50fe3626283c89a5648c1efd41c9fa4caef9c5792c34d",
+        "cli_destination": "mm_loop.py",
+        "previous_staging_sha256": "cb3d6b62f1ff6bbba4e50fe3626283c89a5648c1efd41c9fa4caef9c5792c34d"
+      },
+      {
+        "destination": "paths.py",
+        "input_sha256": "be8e3f68dc1c0819f90425d11f27b46c566dbefdcce8d3adaee73ad8ef0f3aa0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8e25e37bcb18f2e26a9bbc479e3f725cdc36633feb8da86ff7ff4918bcdf0998",
+        "source": "paths.py",
+        "final_output_sha256": "8e25e37bcb18f2e26a9bbc479e3f725cdc36633feb8da86ff7ff4918bcdf0998",
+        "cli_destination": "paths.py",
+        "previous_staging_sha256": "8e25e37bcb18f2e26a9bbc479e3f725cdc36633feb8da86ff7ff4918bcdf0998"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "6cb58c43ce29d06eb7ca5d3f622bda3bc8b6d5ceddcb04beca218f73d0213566",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f6392cd4e10f0a13fb7e6af4dfe5b4a7630388367fcec4d3d8b9ade2ae7e72de",
+        "source": "plugin.yaml",
+        "final_output_sha256": "f6392cd4e10f0a13fb7e6af4dfe5b4a7630388367fcec4d3d8b9ade2ae7e72de",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "f6392cd4e10f0a13fb7e6af4dfe5b4a7630388367fcec4d3d8b9ade2ae7e72de"
+      },
+      {
+        "destination": "plugins/fusion-router/.claude-plugin/plugin.json",
+        "input_sha256": "01549a810cb9c8168ca117d328402a72e8e7327e6ad7f70b39663dc1b4ccb72f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "01549a810cb9c8168ca117d328402a72e8e7327e6ad7f70b39663dc1b4ccb72f",
+        "source": "plugins/fusion-router/.claude-plugin/plugin.json",
+        "final_output_sha256": "3191b174c431ba660ecef98eff1f61b912e95ba8153ac141bbd304a38ce7cfb2",
+        "cli_destination": "plugins/fusion-router/.claude-plugin/plugin.json",
+        "previous_staging_sha256": "01549a810cb9c8168ca117d328402a72e8e7327e6ad7f70b39663dc1b4ccb72f"
+      },
+      {
+        "destination": "plugins/fusion-router/agents/consult.md",
+        "input_sha256": "b133f95053c617085bf02ad4b1048167520d5494e829a32d1873826642928e0a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b133f95053c617085bf02ad4b1048167520d5494e829a32d1873826642928e0a",
+        "source": "plugins/fusion-router/agents/consult.md",
+        "final_output_sha256": "b133f95053c617085bf02ad4b1048167520d5494e829a32d1873826642928e0a",
+        "cli_destination": "plugins/fusion-router/agents/consult.md",
+        "previous_staging_sha256": "b133f95053c617085bf02ad4b1048167520d5494e829a32d1873826642928e0a"
+      },
+      {
+        "destination": "plugins/fusion-router/agents/frontier-worker.md",
+        "input_sha256": "ee618f8b26e75ec198b9b6f3a8e172787d7da327a88fa834c4b560dad1be7e5e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ee618f8b26e75ec198b9b6f3a8e172787d7da327a88fa834c4b560dad1be7e5e",
+        "source": "plugins/fusion-router/agents/frontier-worker.md",
+        "final_output_sha256": "ee618f8b26e75ec198b9b6f3a8e172787d7da327a88fa834c4b560dad1be7e5e",
+        "cli_destination": "plugins/fusion-router/agents/frontier-worker.md",
+        "previous_staging_sha256": "ee618f8b26e75ec198b9b6f3a8e172787d7da327a88fa834c4b560dad1be7e5e"
+      },
+      {
+        "destination": "plugins/fusion-router/agents/middle-manager.md",
+        "input_sha256": "4d7acc3fa65d63b090fc59dddef24f72f3bc0e378b72e9639b3aeb202a0657e1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4d7acc3fa65d63b090fc59dddef24f72f3bc0e378b72e9639b3aeb202a0657e1",
+        "source": "plugins/fusion-router/agents/middle-manager.md",
+        "final_output_sha256": "4d7acc3fa65d63b090fc59dddef24f72f3bc0e378b72e9639b3aeb202a0657e1",
+        "cli_destination": "plugins/fusion-router/agents/middle-manager.md",
+        "previous_staging_sha256": "4d7acc3fa65d63b090fc59dddef24f72f3bc0e378b72e9639b3aeb202a0657e1"
+      },
+      {
+        "destination": "plugins/fusion-router/commands/fusion.md",
+        "input_sha256": "23e3b97c18c7359aa225c24ab911dad0afb1d3851c7ca5c0db5541fa3a4a4260",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23e3b97c18c7359aa225c24ab911dad0afb1d3851c7ca5c0db5541fa3a4a4260",
+        "source": "plugins/fusion-router/commands/fusion.md",
+        "final_output_sha256": "23e3b97c18c7359aa225c24ab911dad0afb1d3851c7ca5c0db5541fa3a4a4260",
+        "cli_destination": "plugins/fusion-router/commands/fusion.md",
+        "previous_staging_sha256": "23e3b97c18c7359aa225c24ab911dad0afb1d3851c7ca5c0db5541fa3a4a4260"
+      },
+      {
+        "destination": "plugins/fusion-router/skills/fusion-router/SKILL.md",
+        "input_sha256": "bcd05a479d782ffc830a3d27baa3114d771d07444d396a0f000db6e522bd7b24",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bcd05a479d782ffc830a3d27baa3114d771d07444d396a0f000db6e522bd7b24",
+        "source": "plugins/fusion-router/skills/fusion-router/SKILL.md",
+        "final_output_sha256": "bcd05a479d782ffc830a3d27baa3114d771d07444d396a0f000db6e522bd7b24",
+        "cli_destination": "plugins/fusion-router/skills/fusion-router/SKILL.md",
+        "previous_staging_sha256": "bcd05a479d782ffc830a3d27baa3114d771d07444d396a0f000db6e522bd7b24"
+      },
+      {
+        "destination": "roster.py",
+        "input_sha256": "1ffcedfccff5bb9dfa245c3a0f20a09943e59db3c5dae888d36820481331cf02",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a304164d2fe561dc7d9b93b8ee1173e39288e03a72a22c3f745487374a675c39",
+        "source": "roster.py",
+        "final_output_sha256": "a304164d2fe561dc7d9b93b8ee1173e39288e03a72a22c3f745487374a675c39",
+        "cli_destination": "roster.py",
+        "previous_staging_sha256": "a304164d2fe561dc7d9b93b8ee1173e39288e03a72a22c3f745487374a675c39"
+      },
+      {
+        "destination": "scripts/analyze_fusion_feedback.py",
+        "input_sha256": "c9b44cb1c4955b8e91865b3babcf92bb66edcd15bf8591238a3522abe8f3473a",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "b8ff431b16478866d4b32af0bb9be27015892c6b42935511733fdf350d0f861a",
+        "source": "scripts/analyze_fusion_feedback.py",
+        "final_output_sha256": "b8ff431b16478866d4b32af0bb9be27015892c6b42935511733fdf350d0f861a",
+        "cli_destination": "scripts/analyze_fusion_feedback.py",
+        "previous_staging_sha256": "b8ff431b16478866d4b32af0bb9be27015892c6b42935511733fdf350d0f861a"
+      },
+      {
+        "destination": "scripts/build_fusion_header.py",
+        "input_sha256": "1c8d477a2bc221d4da254824e35a110cd9955c74f1e9fbe9381177e833c257c5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b1f1ca965f6f4bd73e887f6991dd0666c1367461f271b8f165c1c7357dce7ad",
+        "source": "scripts/build_fusion_header.py",
+        "final_output_sha256": "5b1f1ca965f6f4bd73e887f6991dd0666c1367461f271b8f165c1c7357dce7ad",
+        "cli_destination": "scripts/build_fusion_header.py",
+        "previous_staging_sha256": "5b1f1ca965f6f4bd73e887f6991dd0666c1367461f271b8f165c1c7357dce7ad"
+      },
+      {
+        "destination": "scripts/execute_fusion_plan.py",
+        "input_sha256": "eea6012391a2b6412530a5833c58595de4fdfa677154ec7d87985e397763737d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2907da8cb8579900c812f59f01421a168b0d6462e6645cde0c4557881ed93c52",
+        "source": "scripts/execute_fusion_plan.py",
+        "final_output_sha256": "2907da8cb8579900c812f59f01421a168b0d6462e6645cde0c4557881ed93c52",
+        "cli_destination": "scripts/execute_fusion_plan.py",
+        "previous_staging_sha256": "2907da8cb8579900c812f59f01421a168b0d6462e6645cde0c4557881ed93c52"
+      },
+      {
+        "destination": "scripts/extract_fusion_json.py",
+        "input_sha256": "cd2f3fead70a726c2b21545866d1b6b5ab9bb63c2cb690cbad42df4b2a705803",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "cd2f3fead70a726c2b21545866d1b6b5ab9bb63c2cb690cbad42df4b2a705803",
+        "source": "scripts/extract_fusion_json.py",
+        "final_output_sha256": "cd2f3fead70a726c2b21545866d1b6b5ab9bb63c2cb690cbad42df4b2a705803",
+        "cli_destination": "scripts/extract_fusion_json.py",
+        "previous_staging_sha256": "cd2f3fead70a726c2b21545866d1b6b5ab9bb63c2cb690cbad42df4b2a705803"
+      },
+      {
+        "destination": "scripts/normalize_fusion_plan.py",
+        "input_sha256": "0de664a13f7c8b5b640e4fdaa912392d1ff11529353b6361a48d4194195f516a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f78ae493fa8307f8925109c88e8f0daf8bdf3966119be9fddcf8a4b7c65ab6ea",
+        "source": "scripts/normalize_fusion_plan.py",
+        "final_output_sha256": "f78ae493fa8307f8925109c88e8f0daf8bdf3966119be9fddcf8a4b7c65ab6ea",
+        "cli_destination": "scripts/normalize_fusion_plan.py",
+        "previous_staging_sha256": "f78ae493fa8307f8925109c88e8f0daf8bdf3966119be9fddcf8a4b7c65ab6ea"
+      },
+      {
+        "destination": "scripts/sync_model_index.py",
+        "input_sha256": "78f116e3e977e39bf32564e47044d50213cc56db28aa60c727a16cf9d4cbd2a2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f98b6fbad82b92b0831a7e595b17d2f3e736733948a00c1a606fe1b69b10a158",
+        "source": "scripts/sync_model_index.py",
+        "final_output_sha256": "f98b6fbad82b92b0831a7e595b17d2f3e736733948a00c1a606fe1b69b10a158",
+        "cli_destination": "scripts/sync_model_index.py",
+        "previous_staging_sha256": "f98b6fbad82b92b0831a7e595b17d2f3e736733948a00c1a606fe1b69b10a158"
+      },
+      {
+        "destination": "scripts/validate_fusion_packet.py",
+        "input_sha256": "d05e95305d51cb3c3a48d8a5098eb2047d216d921c1ceb681f1a6c3a372d291b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "210f4e12971c052d51189cc803413e10d7779049e733f87128da14151f9c8519",
+        "source": "scripts/validate_fusion_packet.py",
+        "final_output_sha256": "210f4e12971c052d51189cc803413e10d7779049e733f87128da14151f9c8519",
+        "cli_destination": "scripts/validate_fusion_packet.py",
+        "previous_staging_sha256": "210f4e12971c052d51189cc803413e10d7779049e733f87128da14151f9c8519"
+      }
+    ],
+    "manifest_sha256": "b5058db21d1c472136b220774622e29686acd623064f92686d1e244ca9823e4a",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".claude-plugin/marketplace.json": ".claude-plugin/marketplace.json",
+    ".gitignore": ".gitignore",
+    ".grok-plugin/marketplace.json": ".grok-plugin/marketplace.json",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "adapters.py": "adapters.py",
+    "classify.py": "classify.py",
+    "cli.py": "cli.py",
+    "codex/fusion-router/mcp.json": "codex/fusion-router/mcp.json",
+    "codex/fusion-router/plugin.json": "codex/fusion-router/plugin.json",
+    "codex/fusion-router/skills/fusion-router/SKILL.md": "codex/fusion-router/skills/fusion-router/SKILL.md",
+    "fusion.example.yaml": "fusion.example.yaml",
+    "harnesses.py": "harnesses.py",
+    "mcp_server.py": "mcp_server.py",
+    "mm_loop.py": "mm_loop.py",
+    "paths.py": "paths.py",
+    "plugin.yaml": "plugin.yaml",
+    "plugins/fusion-router/.claude-plugin/plugin.json": "plugins/fusion-router/.claude-plugin/plugin.json",
+    "plugins/fusion-router/agents/consult.md": "plugins/fusion-router/agents/consult.md",
+    "plugins/fusion-router/agents/frontier-worker.md": "plugins/fusion-router/agents/frontier-worker.md",
+    "plugins/fusion-router/agents/middle-manager.md": "plugins/fusion-router/agents/middle-manager.md",
+    "plugins/fusion-router/commands/fusion.md": "plugins/fusion-router/commands/fusion.md",
+    "plugins/fusion-router/skills/fusion-router/SKILL.md": "plugins/fusion-router/skills/fusion-router/SKILL.md",
+    "roster.py": "roster.py",
+    "scripts/analyze_fusion_feedback.py": "scripts/analyze_fusion_feedback.py",
+    "scripts/build_fusion_header.py": "scripts/build_fusion_header.py",
+    "scripts/execute_fusion_plan.py": "scripts/execute_fusion_plan.py",
+    "scripts/extract_fusion_json.py": "scripts/extract_fusion_json.py",
+    "scripts/normalize_fusion_plan.py": "scripts/normalize_fusion_plan.py",
+    "scripts/sync_model_index.py": "scripts/sync_model_index.py",
+    "scripts/validate_fusion_packet.py": "scripts/validate_fusion_packet.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "fusion",
+    "python_files_compiled": 16,
+    "secret_findings": 0
+  },
+  "canonical_slug": "fusion",
+  "catalog_file": "src/plugin-catalog/fusion.yaml",
+  "identity": {
+    "catalog_id": "fusion",
+    "canonical_slug": "fusion",
+    "original_manifest_name": "fusion",
+    "rebranded_manifest_name": "fusion",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "d11544e42e37395e91f66a1c3d06f7b5051476eb9ee39bdb761e866303eecac5",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": ".claude-plugin/marketplace.json",
+          "after_path": ".claude-plugin/marketplace.json",
+          "before_sha256": "b68b8706bac0e9c9121a057510691593c3c67410973762d9698f723abc6333ff",
+          "after_sha256": "b14f0594557cfb6dccf21a55baab62f24a68f97cd86f129c8c0bcc4b0cb82011",
+          "before_bytes": 764,
+          "after_bytes": 752,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": ".grok-plugin/marketplace.json",
+          "after_path": ".grok-plugin/marketplace.json",
+          "before_sha256": "3114766738c5dc19c56f119434f24ba34d2033c816e30c8e0cd1dc5eb5fc82ac",
+          "after_sha256": "0e946bad8f2d2925dfa4e3c63da997c48f69fbb00cd3be4510120695b3f4afe8",
+          "before_bytes": 630,
+          "after_bytes": 618,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugins/fusion-router/.claude-plugin/plugin.json",
+          "after_path": "plugins/fusion-router/.claude-plugin/plugin.json",
+          "before_sha256": "01549a810cb9c8168ca117d328402a72e8e7327e6ad7f70b39663dc1b4ccb72f",
+          "after_sha256": "3191b174c431ba660ecef98eff1f61b912e95ba8153ac141bbd304a38ce7cfb2",
+          "before_bytes": 508,
+          "after_bytes": 484,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

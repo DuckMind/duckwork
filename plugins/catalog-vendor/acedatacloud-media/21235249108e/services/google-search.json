@@ -1,0 +1,97 @@
+{
+  "service": "google-search",
+  "title": "Ace Data Cloud Google Search",
+  "kind": "search",
+  "description": "Google web and news search with links and snippets through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_google_search",
+  "generate_path": "/serp/google",
+  "task_path": null,
+  "defaults": {
+    "type": "search",
+    "number": 3,
+    "page": 1
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "query"
+    ],
+    "properties": {
+      "query": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048,
+        "pattern": ".*\\S.*"
+      },
+      "number": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20
+      },
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "country": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 32
+      },
+      "language": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 32
+      },
+      "range": {
+        "type": "string",
+        "enum": [
+          "h",
+          "d",
+          "w",
+          "m",
+          "y",
+          "qdr:h",
+          "qdr:d",
+          "qdr:w",
+          "qdr:m",
+          "qdr:y"
+        ],
+        "maxLength": 4000
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "search",
+          "news"
+        ],
+        "maxLength": 4000
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_google_search_search",
+  "tools": [
+    "acedatacloud_google_search_search"
+  ],
+  "toolset": "acedatacloud-google-search"
+}

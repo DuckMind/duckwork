@@ -1,0 +1,99 @@
+# Every gate that needs no running Duckwork runs on both runners. The core contract and the audit read
+# the core's SOURCE, so they get a SPARSE, pinned checkout of it and run instead of skipping. The
+# measured Electron render needs a built app and stays local; see README § "Continuous integration".
+name: CI
+
+# One run per change: a branch push is tested through its pull request only (an unscoped `push`
+# ran every PR commit twice); `main` is tested on every push; `workflow_dispatch` runs it by hand.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer commit on the same PR cancels the older PR run; runs on main are never cancelled.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUTF8: "1"   # Windows runners print cp1252 otherwise; audit messages carry non-ASCII
+  # The core revision this panel's contract is verified against: v0.21.7, the oldest supported Duckwork.
+  # It moves together with `requires_duckwork` in plugin.yaml and the range in README.md ("Supported
+  # Duckwork versions"). The newest core is checked weekly by newest-core.yml.
+  CORE_REPO: https://github.com/DuckMind/duckwork
+  CORE_SHA: 71d34bad1045610252eda02ee79549436896e784
+
+jobs:
+  gates:
+    name: gates (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    # The canary step re-runs the gates once per mutation (277 at 2.0.0): it took ~17 min at 1.6.0 and
+    # passed 23 min at 2.0.0 before 25 cut it off. 60 leaves room; a hang still ends.
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+
+      - name: Install the gate dependencies
+        run: |
+          # psutil: the liveness fallback the host venv ships (duckwork-agent venv has 7.2.2)
+          python -m pip install --quiet "fastapi==0.115.*" "psutil==7.2.2"
+          (cd tests && npm ci)
+
+      - name: Core sources for the contract (sparse, pinned)
+        run: |
+          set -euo pipefail
+          core="$RUNNER_TEMP/duckwork-core"
+          git init -q "$core"
+          git -C "$core" remote add origin "$CORE_REPO"
+          git -C "$core" sparse-checkout init --no-cone
+          # MSYS_NO_PATHCONV: Git Bash on Windows would rewrite /tools/ into C:/Program Files/Git/tools/
+          MSYS_NO_PATHCONV=1 git -C "$core" sparse-checkout set /duckwork_state_common.py /tools/ /agent/conversation_compression.py /agent/usage_pricing.py /agent/context_compressor.py \
+            /tui_gateway/contracts/ /tui_gateway/server.py /tui_gateway/agent_factory.py /apps/desktop/src/sdk/ /apps/desktop/src/contrib/plugin.ts
+          for i in 1 2 3; do git -C "$core" fetch -q --depth 1 origin "$CORE_SHA" && break; sleep $((i*20)); done
+          git -C "$core" checkout -q FETCH_HEAD
+          test -f "$core/duckwork_state_common.py" || { echo "core sources missing"; exit 1; }
+          echo "DUCKWORK_AGENT_DIR=$core" >> "$GITHUB_ENV"
+          echo "DUCKWORK_HOME=$RUNNER_TEMP/duckwork-home" >> "$GITHUB_ENV"
+
+      - name: Backend (fixture state.db)
+        working-directory: tests
+        run: python check_api.py
+
+      - name: Render and behaviour (jsdom)
+        working-directory: tests
+        run: node render_check.mjs
+
+      - name: Static audit (includes the release gate)
+        working-directory: tests
+        run: python audit_static.py
+
+      - name: Core contract and its selftest
+        working-directory: tests
+        run: python contract_core.py && python contract_core.py --selftest
+
+      - name: Release gate canary (changelog, manifest, installed copy)
+        working-directory: tests
+        run: python release_gate.py
+
+      - name: Canary run (every lock must be able to fail)
+        working-directory: tests
+        run: python canary_audit.py

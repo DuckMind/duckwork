@@ -1,0 +1,22 @@
+name: duckwork-pii
+version: 0.1.0.dev2
+description: "Offline Presidio PII filtering with a separately provisioned English model. Returns original text on detector errors; not a privacy guarantee."
+provides_tools: []
+provides_hooks:
+  - pre_llm_call
+provides_middleware:
+  - llm_request
+requires_env: []
+config_schema:
+  language:
+    type: str
+    default: en
+    description: "Language supported by the installed local NLP model"
+  model_name:
+    type: str
+    default: en_core_web_sm
+    description: "Installed spaCy model or local directory; provision separately before enabling"
+  score_threshold:
+    type: float
+    default: 0.4
+    description: "Presidio confidence threshold between 0 and 1"

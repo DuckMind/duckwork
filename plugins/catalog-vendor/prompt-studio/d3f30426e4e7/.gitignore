@@ -1,0 +1,45 @@
+# Prompt Studio: keep local state and build noise out of git.
+
+# Local environment files (none are used today; keep a stray one out of git)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Scratch space and logs
+.scratch/
+*.log
+
+# Screenshots of real sessions never go in git; curated README images live in docs/images/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.webp
+!docs/images/
+!docs/images/*.png
+!docs/images/*.jpg
+!docs/images/*.webp
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

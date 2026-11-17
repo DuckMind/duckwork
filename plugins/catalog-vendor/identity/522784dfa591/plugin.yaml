@@ -1,0 +1,14 @@
+name: identity
+version: 1.0.1
+description: "Identity — view and edit SOUL.md, MEMORY.md, USER.md, AGENT.md with profile/persona switching and per-line utilization tracking."
+source: https://github.com/DuckMind/duckwork
+provides_tools:
+  - identity_view
+  - identity_edit
+  - identity_switch_profile
+  - identity_dashboard
+  - identity_list_profiles
+  - identity_reset_usage
+provides_hooks:
+  - post_llm_call
+  - post_tool_call

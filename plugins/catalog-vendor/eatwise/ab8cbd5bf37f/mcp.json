@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "ew": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "--allow-git=all",
+        "--package",
+        "git+https://github.com/harrylabsj/eatwise-mcp#cbc08f64609f64ee453ca21cca427a7eaeaa3158",
+        "eatwise-mcp"
+      ],
+      "env": {
+        "CHICHULAIDE_LOCAL_HISTORY_PATH": "${PLUGIN_DATA}/history.sqlite3"
+      }
+    }
+  }
+}

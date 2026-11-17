@@ -1,0 +1,23 @@
+{
+  "name": "duckwork-notch-plugin-sidecar",
+  "version": "0.3.0",
+  "description": "Node sidecar for the Duckwork Notch Plugin and Atoll on macOS",
+  "private": true,
+  "author": "Hima N.",
+  "homepage": "https://github.com/DuckMind/duckwork",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DuckMind/duckwork"
+  },
+  "license": "ISC",
+  "scripts": {
+    "test": "node tools/test-rendering.js && node tools/test-transitions.js && node tools/test-host-lifecycle.js && node tools/test-state-watch.js && node tools/test-pacing.js && node tools/test-capture-expanded-demo.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@ebullioscopic/atoll-js": "^1.0.0"
+  }
+}

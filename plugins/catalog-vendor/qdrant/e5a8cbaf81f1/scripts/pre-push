@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Pre-push gate for duckwork-qdrant-memory
+# Runs the four mandatory checks before allowing a push to main.
+#
+# Install: cp scripts/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+# Or add to your CI when the repo goes public.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Use the duckwork venv python (pytest is not installed in system python3)
+# The `duckwork` CLI is installed separately in /home/gk/.local/bin/duckwork
+PY="/home/gk/.duckwork/duckwork-agent/venv/bin/python"
+DUCKWORK="/home/gk/.local/bin/duckwork"
+
+# Only run on pushes to main (or any branch you protect)
+while read local_ref local_sha remote_ref remote_sha; do
+    if [[ "$remote_ref" == "refs/heads/main" ]]; then
+        echo "=== pre-push: protecting main ==="
+    else
+        echo "=== pre-push: skipping (not main) ==="
+        exit 0
+    fi
+done
+
+echo "1/4: docs honesty gate..."
+"$PY" scripts/check_docs_honesty.py || exit 1
+
+echo "2/4: tree-rules gate..."
+"$PY" -m pytest tests/test_tree_rules.py -q || exit 1
+
+echo "3/4: full test suite..."
+"$PY" -m pytest -q || exit 1
+
+echo "4/4: plugin validation..."
+"$DUCKWORK" plugins validate . || exit 1
+
+echo "=== pre-push: all gates passed ==="

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "looot",
+  "version": "0.1.0",
+  "description": "looot for Duckwork: one sign-in and one prepaid balance for 2,500+ data API endpoints (work emails, phones, company and people search, SERP, web pages, news). Hosted MCP server plus 21 skills.",
+  "author": {
+    "name": "looot",
+    "email": "hello@looot.ai",
+    "url": "https://looot.ai"
+  },
+  "homepage": "https://looot.ai",
+  "repository": "https://github.com/DuckMind/duckwork",
+  "license": "MIT",
+  "keywords": ["looot", "mcp", "data", "enrichment", "email-finder", "serp", "lead-generation"],
+  "extensions": {
+    "com.fordex.duckwork": {
+      "servers": {
+        "looot": { "trust": "untrusted" }
+      }
+    }
+  }
+}

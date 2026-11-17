@@ -1,0 +1,690 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "opencode-shepherd",
+  "content_id": "189f4a2c37f7",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 618,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "36a1581a7f05d6ac3a7d6952be29907b884b3480b08100d3dcd4b175c07fa0ec"
+    },
+    {
+      "bytes": 83,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "779e19ab55bd8663a63496d37351e4f7dd928906d54ac018ef44000f88d22114"
+    },
+    {
+      "bytes": 1065,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "9df162169e7a44f7f30037100cdeb47a42b9ef97fa9ff5be9305cc74840bb5c7"
+    },
+    {
+      "bytes": 10323,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "16641cef1bb19330b81b8ca24f313bc0bba0a1d9e7c88383dff12653bccbf500"
+    },
+    {
+      "bytes": 455,
+      "mode": "100644",
+      "path": "cli/README.md",
+      "sha256": "90d6012a1ae8fc21e877e54f75846744031af4052d627cb6c2389e54072d6e48"
+    },
+    {
+      "bytes": 1340,
+      "mode": "100644",
+      "path": "cli/pyproject.toml",
+      "sha256": "852e514b9a01d0ebc4ab7b37640bc57599b64b830bb40415e452ed93f3480f6e"
+    },
+    {
+      "bytes": 109,
+      "mode": "100644",
+      "path": "cli/src/ocshepherd/__init__.py",
+      "sha256": "1afe07b768bcb641f0a0587f09a3081ac63f41c4599fe7bf10cd5a3057768f4f"
+    },
+    {
+      "bytes": 89,
+      "mode": "100644",
+      "path": "cli/src/ocshepherd/__main__.py",
+      "sha256": "5964aa94d84a8243c3061f4918cfdc3f31f4d3d232c3364a291acbe5df295816"
+    },
+    {
+      "bytes": 20011,
+      "mode": "100644",
+      "path": "cli/src/ocshepherd/cli.py",
+      "sha256": "b6b35a738a7f02d6993d6776df89c6adab62d827771ad2fce62df17d18436968"
+    },
+    {
+      "bytes": 10784,
+      "mode": "100644",
+      "path": "cli/src/ocshepherd/client.py",
+      "sha256": "d2a7c9b1121a533f9c0cf1d04a868f671a7af7bcdedffb26649b2cd425b4ee25"
+    },
+    {
+      "bytes": 2857,
+      "mode": "100644",
+      "path": "cli/src/ocshepherd/config.py",
+      "sha256": "908982f6a9bde5db16446c013dab196fe8fed230b712c748ea9c371fedf15132"
+    },
+    {
+      "bytes": 5601,
+      "mode": "100644",
+      "path": "cli/src/ocshepherd/snapshot.py",
+      "sha256": "3b9298ab1e68c21f19a366210828c95bf26cba6c8923c6ad3a7fba4d8a1f17b9"
+    },
+    {
+      "bytes": 16400,
+      "mode": "100644",
+      "path": "cli/src/ocshepherd/watch.py",
+      "sha256": "9dc2180448718d2aab5f80a4a8f972a4acbe29086ef69cd45851ddb72f38693a"
+    },
+    {
+      "bytes": 1932,
+      "mode": "100644",
+      "path": "cli/tests/test_client.py",
+      "sha256": "8dadb67b39588b0a5d3c4f312a6ab5ea0519d418a90a255fa308b16eca39a7af"
+    },
+    {
+      "bytes": 1630,
+      "mode": "100644",
+      "path": "cli/tests/test_config.py",
+      "sha256": "3adb81f8fa9f8470ba925b343a3d3ef8c3d1a0171fc37451ef8dc32e64cad959"
+    },
+    {
+      "bytes": 7010,
+      "mode": "100644",
+      "path": "cli/tests/test_watch.py",
+      "sha256": "cdf5a9075c58b4a137fa1f72be6297f4f2778337cc691f648de7faaa1feb6231"
+    },
+    {
+      "bytes": 1057,
+      "mode": "100644",
+      "path": "examples/crontab.txt",
+      "sha256": "82ebbdfe56cd4f04c80c27bac4a1a60bba1a4584126262c3b3c3a76cc043054e"
+    },
+    {
+      "bytes": 251,
+      "mode": "100644",
+      "path": "examples/ntfy-notify.sh",
+      "sha256": "023f1248996434e8155238341aa4fbb7a754ee7e71bb63b6c8b8e9a000a8cbc9"
+    },
+    {
+      "bytes": 498,
+      "mode": "100644",
+      "path": "examples/systemd/ocshepherd-events.service",
+      "sha256": "6bee2063af9a58260ac157b77d2e4d4e5cd4b8b7835214fce693527eb3250e7f"
+    },
+    {
+      "bytes": 354,
+      "mode": "100644",
+      "path": "examples/systemd/ocshepherd-watch.service",
+      "sha256": "9f06aab36b59eefeb5b06958d963e8d2b6274c458e4678a9946b31ef0a2d3b4a"
+    },
+    {
+      "bytes": 186,
+      "mode": "100644",
+      "path": "examples/systemd/ocshepherd-watch.timer",
+      "sha256": "0051783e1ea77646a11f86b53bf48c6ad43427f73742481cb3060b1d4448c554"
+    },
+    {
+      "bytes": 726,
+      "mode": "100644",
+      "path": "plugin.json",
+      "sha256": "b3e3a933b67a55053263beb4220fc2fcc013e8ba67ac50c96b7a842b10a69c9e"
+    },
+    {
+      "bytes": 5283,
+      "mode": "100644",
+      "path": "skills/opencode-shepherd/SKILL.md",
+      "sha256": "81e4d8e6e06ff01e4f540b22c99aab21a6d8358ddaeb2cca0c11f5d849b4fe1d"
+    }
+  ],
+  "input_manifest_sha256": "189f4a2c37f712f95b214b374ffc7953bcb58c364666bea126c4a8d8da5dccaf",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "9df162169e7a44f7f30037100cdeb47a42b9ef97fa9ff5be9305cc74840bb5c7",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "cli/README.md",
+      "plugin.json"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/okazakee/opencode-shepherd",
+    "sha": "207a1443a5daa20e20824d13776794c0057cd539",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/okazakee/opencode-shepherd",
+  "original_sha": "207a1443a5daa20e20824d13776794c0057cd539",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "36a1581a7f05d6ac3a7d6952be29907b884b3480b08100d3dcd4b175c07fa0ec",
+      "bytes": 618,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "779e19ab55bd8663a63496d37351e4f7dd928906d54ac018ef44000f88d22114",
+      "bytes": 83,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "9df162169e7a44f7f30037100cdeb47a42b9ef97fa9ff5be9305cc74840bb5c7",
+      "bytes": 1065,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "8ba487418ca78fbcefb8ef0d2557a9cf5aafba10c27ef40fd63fe803dc5457d9",
+      "bytes": 10329,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/README.md",
+      "sha256": "b79278d30177863967d273827832dbd6d814c3ef76ba9abe19c80396d4f747ce",
+      "bytes": 457,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/pyproject.toml",
+      "sha256": "852e514b9a01d0ebc4ab7b37640bc57599b64b830bb40415e452ed93f3480f6e",
+      "bytes": 1340,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/src/ocshepherd/__init__.py",
+      "sha256": "1afe07b768bcb641f0a0587f09a3081ac63f41c4599fe7bf10cd5a3057768f4f",
+      "bytes": 109,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/src/ocshepherd/__main__.py",
+      "sha256": "5964aa94d84a8243c3061f4918cfdc3f31f4d3d232c3364a291acbe5df295816",
+      "bytes": 89,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/src/ocshepherd/cli.py",
+      "sha256": "b6b35a738a7f02d6993d6776df89c6adab62d827771ad2fce62df17d18436968",
+      "bytes": 20011,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/src/ocshepherd/client.py",
+      "sha256": "d2a7c9b1121a533f9c0cf1d04a868f671a7af7bcdedffb26649b2cd425b4ee25",
+      "bytes": 10784,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/src/ocshepherd/config.py",
+      "sha256": "908982f6a9bde5db16446c013dab196fe8fed230b712c748ea9c371fedf15132",
+      "bytes": 2857,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/src/ocshepherd/snapshot.py",
+      "sha256": "3b9298ab1e68c21f19a366210828c95bf26cba6c8923c6ad3a7fba4d8a1f17b9",
+      "bytes": 5601,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/src/ocshepherd/watch.py",
+      "sha256": "9dc2180448718d2aab5f80a4a8f972a4acbe29086ef69cd45851ddb72f38693a",
+      "bytes": 16400,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/tests/test_client.py",
+      "sha256": "8dadb67b39588b0a5d3c4f312a6ab5ea0519d418a90a255fa308b16eca39a7af",
+      "bytes": 1932,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/tests/test_config.py",
+      "sha256": "3adb81f8fa9f8470ba925b343a3d3ef8c3d1a0171fc37451ef8dc32e64cad959",
+      "bytes": 1630,
+      "mode": "100644"
+    },
+    {
+      "path": "cli/tests/test_watch.py",
+      "sha256": "cdf5a9075c58b4a137fa1f72be6297f4f2778337cc691f648de7faaa1feb6231",
+      "bytes": 7010,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/crontab.txt",
+      "sha256": "82ebbdfe56cd4f04c80c27bac4a1a60bba1a4584126262c3b3c3a76cc043054e",
+      "bytes": 1057,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/ntfy-notify.sh",
+      "sha256": "023f1248996434e8155238341aa4fbb7a754ee7e71bb63b6c8b8e9a000a8cbc9",
+      "bytes": 251,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/systemd/ocshepherd-events.service",
+      "sha256": "6bee2063af9a58260ac157b77d2e4d4e5cd4b8b7835214fce693527eb3250e7f",
+      "bytes": 498,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/systemd/ocshepherd-watch.service",
+      "sha256": "9f06aab36b59eefeb5b06958d963e8d2b6274c458e4678a9946b31ef0a2d3b4a",
+      "bytes": 354,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/systemd/ocshepherd-watch.timer",
+      "sha256": "0051783e1ea77646a11f86b53bf48c6ad43427f73742481cb3060b1d4448c554",
+      "bytes": 186,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.json",
+      "sha256": "3fe64fd8352a6d73cbec7de0080e46c9157b669972e20742352cf0caf31f8b8b",
+      "bytes": 732,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/opencode-shepherd/SKILL.md",
+      "sha256": "81e4d8e6e06ff01e4f540b22c99aab21a6d8358ddaeb2cca0c11f5d849b4fe1d",
+      "bytes": 5283,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "5101bd73743d68773f8d58ba92283b3c015a4120b3a90499e189ef3dce38e29c",
+  "pin_verification": {
+    "archive_bytes": 27045,
+    "archive_sha256": "8965567b0ada28c4bba0e8f03438e5f77509adf9eccfb8f877770741401791a9",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "207a1443a5daa20e20824d13776794c0057cd539",
+    "verified_commit_marker": "207a1443a5daa20e20824d13776794c0057cd539"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "53468e6a85e8bffe3cb2f7c0632d6c2b9174d7fc244e4ef229fac0749c9cf009",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "36a1581a7f05d6ac3a7d6952be29907b884b3480b08100d3dcd4b175c07fa0ec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "36a1581a7f05d6ac3a7d6952be29907b884b3480b08100d3dcd4b175c07fa0ec",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "36a1581a7f05d6ac3a7d6952be29907b884b3480b08100d3dcd4b175c07fa0ec",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "36a1581a7f05d6ac3a7d6952be29907b884b3480b08100d3dcd4b175c07fa0ec"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "779e19ab55bd8663a63496d37351e4f7dd928906d54ac018ef44000f88d22114",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "779e19ab55bd8663a63496d37351e4f7dd928906d54ac018ef44000f88d22114",
+        "source": ".gitignore",
+        "final_output_sha256": "779e19ab55bd8663a63496d37351e4f7dd928906d54ac018ef44000f88d22114",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "779e19ab55bd8663a63496d37351e4f7dd928906d54ac018ef44000f88d22114"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "9df162169e7a44f7f30037100cdeb47a42b9ef97fa9ff5be9305cc74840bb5c7",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "9df162169e7a44f7f30037100cdeb47a42b9ef97fa9ff5be9305cc74840bb5c7",
+        "source": "LICENSE",
+        "final_output_sha256": "9df162169e7a44f7f30037100cdeb47a42b9ef97fa9ff5be9305cc74840bb5c7",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "9df162169e7a44f7f30037100cdeb47a42b9ef97fa9ff5be9305cc74840bb5c7"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "16641cef1bb19330b81b8ca24f313bc0bba0a1d9e7c88383dff12653bccbf500",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9d2fdcd622f6ff2bd7a20037ef878dc6f10c38d41472aa15ece41c2aa98eaf93",
+        "source": "README.md",
+        "final_output_sha256": "8ba487418ca78fbcefb8ef0d2557a9cf5aafba10c27ef40fd63fe803dc5457d9",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "9d2fdcd622f6ff2bd7a20037ef878dc6f10c38d41472aa15ece41c2aa98eaf93"
+      },
+      {
+        "destination": "cli/README.md",
+        "input_sha256": "90d6012a1ae8fc21e877e54f75846744031af4052d627cb6c2389e54072d6e48",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b79278d30177863967d273827832dbd6d814c3ef76ba9abe19c80396d4f747ce",
+        "source": "cli/README.md",
+        "final_output_sha256": "b79278d30177863967d273827832dbd6d814c3ef76ba9abe19c80396d4f747ce",
+        "cli_destination": "cli/README.md",
+        "previous_staging_sha256": "b79278d30177863967d273827832dbd6d814c3ef76ba9abe19c80396d4f747ce"
+      },
+      {
+        "destination": "cli/pyproject.toml",
+        "input_sha256": "852e514b9a01d0ebc4ab7b37640bc57599b64b830bb40415e452ed93f3480f6e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "852e514b9a01d0ebc4ab7b37640bc57599b64b830bb40415e452ed93f3480f6e",
+        "source": "cli/pyproject.toml",
+        "final_output_sha256": "852e514b9a01d0ebc4ab7b37640bc57599b64b830bb40415e452ed93f3480f6e",
+        "cli_destination": "cli/pyproject.toml",
+        "previous_staging_sha256": "852e514b9a01d0ebc4ab7b37640bc57599b64b830bb40415e452ed93f3480f6e"
+      },
+      {
+        "destination": "cli/src/ocshepherd/__init__.py",
+        "input_sha256": "1afe07b768bcb641f0a0587f09a3081ac63f41c4599fe7bf10cd5a3057768f4f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1afe07b768bcb641f0a0587f09a3081ac63f41c4599fe7bf10cd5a3057768f4f",
+        "source": "cli/src/ocshepherd/__init__.py",
+        "final_output_sha256": "1afe07b768bcb641f0a0587f09a3081ac63f41c4599fe7bf10cd5a3057768f4f",
+        "cli_destination": "cli/src/ocshepherd/__init__.py",
+        "previous_staging_sha256": "1afe07b768bcb641f0a0587f09a3081ac63f41c4599fe7bf10cd5a3057768f4f"
+      },
+      {
+        "destination": "cli/src/ocshepherd/__main__.py",
+        "input_sha256": "5964aa94d84a8243c3061f4918cfdc3f31f4d3d232c3364a291acbe5df295816",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5964aa94d84a8243c3061f4918cfdc3f31f4d3d232c3364a291acbe5df295816",
+        "source": "cli/src/ocshepherd/__main__.py",
+        "final_output_sha256": "5964aa94d84a8243c3061f4918cfdc3f31f4d3d232c3364a291acbe5df295816",
+        "cli_destination": "cli/src/ocshepherd/__main__.py",
+        "previous_staging_sha256": "5964aa94d84a8243c3061f4918cfdc3f31f4d3d232c3364a291acbe5df295816"
+      },
+      {
+        "destination": "cli/src/ocshepherd/cli.py",
+        "input_sha256": "b6b35a738a7f02d6993d6776df89c6adab62d827771ad2fce62df17d18436968",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b6b35a738a7f02d6993d6776df89c6adab62d827771ad2fce62df17d18436968",
+        "source": "cli/src/ocshepherd/cli.py",
+        "final_output_sha256": "b6b35a738a7f02d6993d6776df89c6adab62d827771ad2fce62df17d18436968",
+        "cli_destination": "cli/src/ocshepherd/cli.py",
+        "previous_staging_sha256": "b6b35a738a7f02d6993d6776df89c6adab62d827771ad2fce62df17d18436968"
+      },
+      {
+        "destination": "cli/src/ocshepherd/client.py",
+        "input_sha256": "d2a7c9b1121a533f9c0cf1d04a868f671a7af7bcdedffb26649b2cd425b4ee25",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d2a7c9b1121a533f9c0cf1d04a868f671a7af7bcdedffb26649b2cd425b4ee25",
+        "source": "cli/src/ocshepherd/client.py",
+        "final_output_sha256": "d2a7c9b1121a533f9c0cf1d04a868f671a7af7bcdedffb26649b2cd425b4ee25",
+        "cli_destination": "cli/src/ocshepherd/client.py",
+        "previous_staging_sha256": "d2a7c9b1121a533f9c0cf1d04a868f671a7af7bcdedffb26649b2cd425b4ee25"
+      },
+      {
+        "destination": "cli/src/ocshepherd/config.py",
+        "input_sha256": "908982f6a9bde5db16446c013dab196fe8fed230b712c748ea9c371fedf15132",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "908982f6a9bde5db16446c013dab196fe8fed230b712c748ea9c371fedf15132",
+        "source": "cli/src/ocshepherd/config.py",
+        "final_output_sha256": "908982f6a9bde5db16446c013dab196fe8fed230b712c748ea9c371fedf15132",
+        "cli_destination": "cli/src/ocshepherd/config.py",
+        "previous_staging_sha256": "908982f6a9bde5db16446c013dab196fe8fed230b712c748ea9c371fedf15132"
+      },
+      {
+        "destination": "cli/src/ocshepherd/snapshot.py",
+        "input_sha256": "3b9298ab1e68c21f19a366210828c95bf26cba6c8923c6ad3a7fba4d8a1f17b9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3b9298ab1e68c21f19a366210828c95bf26cba6c8923c6ad3a7fba4d8a1f17b9",
+        "source": "cli/src/ocshepherd/snapshot.py",
+        "final_output_sha256": "3b9298ab1e68c21f19a366210828c95bf26cba6c8923c6ad3a7fba4d8a1f17b9",
+        "cli_destination": "cli/src/ocshepherd/snapshot.py",
+        "previous_staging_sha256": "3b9298ab1e68c21f19a366210828c95bf26cba6c8923c6ad3a7fba4d8a1f17b9"
+      },
+      {
+        "destination": "cli/src/ocshepherd/watch.py",
+        "input_sha256": "9dc2180448718d2aab5f80a4a8f972a4acbe29086ef69cd45851ddb72f38693a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9dc2180448718d2aab5f80a4a8f972a4acbe29086ef69cd45851ddb72f38693a",
+        "source": "cli/src/ocshepherd/watch.py",
+        "final_output_sha256": "9dc2180448718d2aab5f80a4a8f972a4acbe29086ef69cd45851ddb72f38693a",
+        "cli_destination": "cli/src/ocshepherd/watch.py",
+        "previous_staging_sha256": "9dc2180448718d2aab5f80a4a8f972a4acbe29086ef69cd45851ddb72f38693a"
+      },
+      {
+        "destination": "cli/tests/test_client.py",
+        "input_sha256": "8dadb67b39588b0a5d3c4f312a6ab5ea0519d418a90a255fa308b16eca39a7af",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8dadb67b39588b0a5d3c4f312a6ab5ea0519d418a90a255fa308b16eca39a7af",
+        "source": "cli/tests/test_client.py",
+        "final_output_sha256": "8dadb67b39588b0a5d3c4f312a6ab5ea0519d418a90a255fa308b16eca39a7af",
+        "cli_destination": "cli/tests/test_client.py",
+        "previous_staging_sha256": "8dadb67b39588b0a5d3c4f312a6ab5ea0519d418a90a255fa308b16eca39a7af"
+      },
+      {
+        "destination": "cli/tests/test_config.py",
+        "input_sha256": "3adb81f8fa9f8470ba925b343a3d3ef8c3d1a0171fc37451ef8dc32e64cad959",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3adb81f8fa9f8470ba925b343a3d3ef8c3d1a0171fc37451ef8dc32e64cad959",
+        "source": "cli/tests/test_config.py",
+        "final_output_sha256": "3adb81f8fa9f8470ba925b343a3d3ef8c3d1a0171fc37451ef8dc32e64cad959",
+        "cli_destination": "cli/tests/test_config.py",
+        "previous_staging_sha256": "3adb81f8fa9f8470ba925b343a3d3ef8c3d1a0171fc37451ef8dc32e64cad959"
+      },
+      {
+        "destination": "cli/tests/test_watch.py",
+        "input_sha256": "cdf5a9075c58b4a137fa1f72be6297f4f2778337cc691f648de7faaa1feb6231",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cdf5a9075c58b4a137fa1f72be6297f4f2778337cc691f648de7faaa1feb6231",
+        "source": "cli/tests/test_watch.py",
+        "final_output_sha256": "cdf5a9075c58b4a137fa1f72be6297f4f2778337cc691f648de7faaa1feb6231",
+        "cli_destination": "cli/tests/test_watch.py",
+        "previous_staging_sha256": "cdf5a9075c58b4a137fa1f72be6297f4f2778337cc691f648de7faaa1feb6231"
+      },
+      {
+        "destination": "examples/crontab.txt",
+        "input_sha256": "82ebbdfe56cd4f04c80c27bac4a1a60bba1a4584126262c3b3c3a76cc043054e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "82ebbdfe56cd4f04c80c27bac4a1a60bba1a4584126262c3b3c3a76cc043054e",
+        "source": "examples/crontab.txt",
+        "final_output_sha256": "82ebbdfe56cd4f04c80c27bac4a1a60bba1a4584126262c3b3c3a76cc043054e",
+        "cli_destination": "examples/crontab.txt",
+        "previous_staging_sha256": "82ebbdfe56cd4f04c80c27bac4a1a60bba1a4584126262c3b3c3a76cc043054e"
+      },
+      {
+        "destination": "examples/ntfy-notify.sh",
+        "input_sha256": "023f1248996434e8155238341aa4fbb7a754ee7e71bb63b6c8b8e9a000a8cbc9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "023f1248996434e8155238341aa4fbb7a754ee7e71bb63b6c8b8e9a000a8cbc9",
+        "source": "examples/ntfy-notify.sh",
+        "final_output_sha256": "023f1248996434e8155238341aa4fbb7a754ee7e71bb63b6c8b8e9a000a8cbc9",
+        "cli_destination": "examples/ntfy-notify.sh",
+        "previous_staging_sha256": "023f1248996434e8155238341aa4fbb7a754ee7e71bb63b6c8b8e9a000a8cbc9"
+      },
+      {
+        "destination": "examples/systemd/ocshepherd-events.service",
+        "input_sha256": "6bee2063af9a58260ac157b77d2e4d4e5cd4b8b7835214fce693527eb3250e7f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6bee2063af9a58260ac157b77d2e4d4e5cd4b8b7835214fce693527eb3250e7f",
+        "source": "examples/systemd/ocshepherd-events.service",
+        "final_output_sha256": "6bee2063af9a58260ac157b77d2e4d4e5cd4b8b7835214fce693527eb3250e7f",
+        "cli_destination": "examples/systemd/ocshepherd-events.service",
+        "previous_staging_sha256": "6bee2063af9a58260ac157b77d2e4d4e5cd4b8b7835214fce693527eb3250e7f"
+      },
+      {
+        "destination": "examples/systemd/ocshepherd-watch.service",
+        "input_sha256": "9f06aab36b59eefeb5b06958d963e8d2b6274c458e4678a9946b31ef0a2d3b4a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9f06aab36b59eefeb5b06958d963e8d2b6274c458e4678a9946b31ef0a2d3b4a",
+        "source": "examples/systemd/ocshepherd-watch.service",
+        "final_output_sha256": "9f06aab36b59eefeb5b06958d963e8d2b6274c458e4678a9946b31ef0a2d3b4a",
+        "cli_destination": "examples/systemd/ocshepherd-watch.service",
+        "previous_staging_sha256": "9f06aab36b59eefeb5b06958d963e8d2b6274c458e4678a9946b31ef0a2d3b4a"
+      },
+      {
+        "destination": "examples/systemd/ocshepherd-watch.timer",
+        "input_sha256": "0051783e1ea77646a11f86b53bf48c6ad43427f73742481cb3060b1d4448c554",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0051783e1ea77646a11f86b53bf48c6ad43427f73742481cb3060b1d4448c554",
+        "source": "examples/systemd/ocshepherd-watch.timer",
+        "final_output_sha256": "0051783e1ea77646a11f86b53bf48c6ad43427f73742481cb3060b1d4448c554",
+        "cli_destination": "examples/systemd/ocshepherd-watch.timer",
+        "previous_staging_sha256": "0051783e1ea77646a11f86b53bf48c6ad43427f73742481cb3060b1d4448c554"
+      },
+      {
+        "destination": "plugin.json",
+        "input_sha256": "b3e3a933b67a55053263beb4220fc2fcc013e8ba67ac50c96b7a842b10a69c9e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3fe64fd8352a6d73cbec7de0080e46c9157b669972e20742352cf0caf31f8b8b",
+        "source": "plugin.json",
+        "final_output_sha256": "3fe64fd8352a6d73cbec7de0080e46c9157b669972e20742352cf0caf31f8b8b",
+        "cli_destination": "plugin.json",
+        "previous_staging_sha256": "3fe64fd8352a6d73cbec7de0080e46c9157b669972e20742352cf0caf31f8b8b"
+      },
+      {
+        "destination": "skills/opencode-shepherd/SKILL.md",
+        "input_sha256": "81e4d8e6e06ff01e4f540b22c99aab21a6d8358ddaeb2cca0c11f5d849b4fe1d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "81e4d8e6e06ff01e4f540b22c99aab21a6d8358ddaeb2cca0c11f5d849b4fe1d",
+        "source": "skills/opencode-shepherd/SKILL.md",
+        "final_output_sha256": "81e4d8e6e06ff01e4f540b22c99aab21a6d8358ddaeb2cca0c11f5d849b4fe1d",
+        "cli_destination": "skills/opencode-shepherd/SKILL.md",
+        "previous_staging_sha256": "81e4d8e6e06ff01e4f540b22c99aab21a6d8358ddaeb2cca0c11f5d849b4fe1d"
+      }
+    ],
+    "manifest_sha256": "9c28d325f7db3d98431547f3a120d944fe5ed80a3d339d0b5eff048d53db73f4",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "cli/README.md": "cli/README.md",
+    "cli/pyproject.toml": "cli/pyproject.toml",
+    "cli/src/ocshepherd/__init__.py": "cli/src/ocshepherd/__init__.py",
+    "cli/src/ocshepherd/__main__.py": "cli/src/ocshepherd/__main__.py",
+    "cli/src/ocshepherd/cli.py": "cli/src/ocshepherd/cli.py",
+    "cli/src/ocshepherd/client.py": "cli/src/ocshepherd/client.py",
+    "cli/src/ocshepherd/config.py": "cli/src/ocshepherd/config.py",
+    "cli/src/ocshepherd/snapshot.py": "cli/src/ocshepherd/snapshot.py",
+    "cli/src/ocshepherd/watch.py": "cli/src/ocshepherd/watch.py",
+    "cli/tests/test_client.py": "cli/tests/test_client.py",
+    "cli/tests/test_config.py": "cli/tests/test_config.py",
+    "cli/tests/test_watch.py": "cli/tests/test_watch.py",
+    "examples/crontab.txt": "examples/crontab.txt",
+    "examples/ntfy-notify.sh": "examples/ntfy-notify.sh",
+    "examples/systemd/ocshepherd-events.service": "examples/systemd/ocshepherd-events.service",
+    "examples/systemd/ocshepherd-watch.service": "examples/systemd/ocshepherd-watch.service",
+    "examples/systemd/ocshepherd-watch.timer": "examples/systemd/ocshepherd-watch.timer",
+    "plugin.json": "plugin.json",
+    "skills/opencode-shepherd/SKILL.md": "skills/opencode-shepherd/SKILL.md"
+  },
+  "verification": {
+    "manifest": "plugin.json",
+    "manifest_name": "opencode-shepherd",
+    "python_files_compiled": 10,
+    "secret_findings": 0
+  },
+  "canonical_slug": "opencode-shepherd",
+  "catalog_file": "src/plugin-catalog/opencode-shepherd.yaml",
+  "identity": {
+    "catalog_id": "opencode-shepherd",
+    "canonical_slug": "opencode-shepherd",
+    "original_manifest_name": "opencode-shepherd",
+    "rebranded_manifest_name": "opencode-shepherd",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "6a5af49311c2906073e1d09ef71fac5f5acea50baf0ea85591b3c224fe72b500",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "9d2fdcd622f6ff2bd7a20037ef878dc6f10c38d41472aa15ece41c2aa98eaf93",
+          "after_sha256": "8ba487418ca78fbcefb8ef0d2557a9cf5aafba10c27ef40fd63fe803dc5457d9",
+          "before_bytes": 10337,
+          "after_bytes": 10329,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

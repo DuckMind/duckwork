@@ -1,0 +1,38 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-24.04
+    # Duckwork at fdec926e declares 13 of its core dependencies for Python 3.14 and up only, so 3.14
+    # is the one version a full Duckwork install runs on, and the one this suite can exercise.
+    strategy:
+      matrix:
+        python: ["3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      # The suite imports Duckwork's own MemoryProvider, MemoryManager and loader. Duckwork refuses a
+      # wheel build, so it installs editable from a pinned commit, the one the plugin is built against.
+      - name: Duckwork Agent at the pinned commit
+        run: |
+          git clone --filter=blob:none https://github.com/DuckMind/duckwork "$RUNNER_TEMP/duckwork-agent"
+          git -C "$RUNNER_TEMP/duckwork-agent" checkout fdec926e
+          python -m pip install -e "$RUNNER_TEMP/duckwork-agent[mcp]"
+      - name: Plugin dependencies
+        run: python -m pip install "mcp>=2.0.0,<3" "httpx2>=2.7.0,<3" "filelock>=3.12,<4" "pytest==9.1.1" "pytest-asyncio==1.3.0"
+      - run: python -m pytest -q
+      - name: Duckwork catalog validation
+        run: |
+          mkdir "$RUNNER_TEMP/clean" && git archive HEAD | tar -x -C "$RUNNER_TEMP/clean"
+          DUCKWORK_HOME="$RUNNER_TEMP/duckwork-home" duckwork plugins validate "$RUNNER_TEMP/clean"

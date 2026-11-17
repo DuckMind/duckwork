@@ -1,0 +1,147 @@
+"""USD -> VND spot rate, fetched from a keyless public feed and cached on disk.
+
+Duckwork prices models in dollars and the vilao ledger is denominated in dong, so every dollar figure
+this surface shows has to be converted somewhere to be readable in dong. ``open.er-api.com`` (the free
+ExchangeRate-API endpoint, no key, no account) republishes once a day, so the cache is refreshed on a
+6-hour TTL: four reads a day at most, and the rate is never more than a few hours behind.
+
+The cache is the acting home's own file: :func:`cache_path` answers
+``<home>/plugin-data/call-ledger/usd-vnd.json`` through ``duckwork_constants.get_duckwork_home()``, so under a
+multiplex host each profile keeps its own copy. This is the one path in the plugin that does not follow the
+shared store and the catalogue cache -- those resolve their ``plugin-data/call-ledger`` directory through
+``get_default_duckwork_root()`` (``usage_store.root_home``, ``vilao_read.cache_dir``) because what they hold is
+one account's truth: a home with its own ledger was blind to the other profiles, and a home with its own
+copy of the price list meant walking the marketplace once per home instead of once. A spot rate is neither
+of those: the same quote means the same thing in every home, so a per-home copy hides nothing from a reader.
+What the two rules really trade is the write -- a refresh updates the file of the home whose process fetched
+it, never a file the other profiles are reading -- and the price is one first fetch per home.
+
+The rate is fetched once and kept on disk, so the surfaces in this plugin that print dong all read one
+number instead of each asking the feed for its own. A read-only caller never writes.
+
+When the fetch fails the previous value keeps being served, labelled stale: a rate a few hours behind
+beats falling back to dollars on a page whose whole point is dong. With neither a cache nor a feed there
+is no rate, and ``rates()`` says so by answering ``None`` -- a number this module invented is not a rate
+anybody quoted, so the money columns print an em dash instead of it. ``VILAO_USD_VND`` (and optionally
+``VILAO_CNY_VND``) pins the rate outright, feed skipped.
+"""
+from __future__ import annotations
+
+import json
+import os
+import time
+from pathlib import Path
+from typing import Any, Optional
+
+TTL_S = 6 * 3600.0
+ENDPOINT = "https://open.er-api.com/v6/latest/USD"
+
+
+def cache_path() -> Optional[Path]:
+    try:
+        from duckwork_constants import get_duckwork_home
+
+        return get_duckwork_home() / "plugin-data" / "call-ledger" / "usd-vnd.json"
+    except Exception:
+        return None
+
+
+def _stored(path: Path) -> Optional[dict[str, Any]]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) and data.get("usd_vnd") else None
+
+
+def _fetch() -> Optional[dict[str, Any]]:
+    import httpx
+
+    resp = httpx.get(ENDPOINT, timeout=10.0)
+    resp.raise_for_status()
+    body = resp.json() or {}
+    rates = body.get("rates")
+    if not isinstance(rates, dict):
+        return None
+    usd = rates.get("VND")
+    cny = rates.get("CNY")
+    if not usd:
+        return None
+    return {
+        "usd_vnd": float(usd),
+        "cny_vnd": round(float(usd) / float(cny), 2) if cny else None,
+        "at": time.time(),
+        "source": "open.er-api.com",
+        "quote_time": body.get("time_last_update_utc"),
+    }
+
+
+def _pinned() -> Optional[dict[str, Any]]:
+    """A hand-set rate wins over any feed: ``VILAO_USD_VND``, optionally ``VILAO_CNY_VND``."""
+    try:
+        usd = float(os.environ.get("VILAO_USD_VND") or 0)
+    except ValueError:
+        return None
+    if usd <= 0:
+        return None
+    try:
+        cny = float(os.environ.get("VILAO_CNY_VND") or 0) or None
+    except ValueError:
+        cny = None
+    return {"usd_vnd": usd, "cny_vnd": cny, "at": time.time(), "source": "VILAO_USD_VND", "pinned": True}
+
+
+def rates(force: bool = False) -> Optional[dict[str, Any]]:
+    """The rate table, refreshed when the cache is older than :data:`TTL_S`.
+
+    Answers ``None`` when there is nothing to say -- no pin, no cache, no feed. That is an answer rather
+    than a failure: the caller prints a dash where a rate this module made up would print a plausible
+    wrong price.
+    """
+    pinned = _pinned()
+    if pinned:
+        return pinned
+    path = cache_path()
+    cached = _stored(path) if path else None
+    if cached and not force and time.time() - float(cached.get("at") or 0) < TTL_S:
+        return cached
+    fresh = None
+    try:
+        fresh = _fetch()
+    except Exception:
+        fresh = None
+    if fresh:
+        if path:
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                tmp = path.with_suffix(path.suffix + ".%d.tmp" % os.getpid())
+                tmp.write_text(json.dumps(fresh), encoding="utf-8")
+                os.replace(tmp, path)
+            except OSError:
+                pass
+        return fresh
+    if cached:
+        out = dict(cached)
+        out["stale"] = True
+        return out
+    return None
+
+
+def to_vnd(amount: Any, cur: Any, table: Optional[dict[str, Any]] = None) -> Optional[float]:
+    """Convert an amount to dong. ``None`` when the currency is unknown or there is no rate.
+
+    Dong amounts pass through: the ledger is already the unit every figure on these surfaces is
+    compared against, and rounding a value that was billed in dong is the display's business only.
+    """
+    try:
+        value = float(amount)
+    except (TypeError, ValueError):
+        return None
+    code = str(cur or "USD").upper()
+    if code == "VND":
+        return value
+    table = table if table is not None else rates()
+    if not table:
+        return None
+    rate = table.get("usd_vnd") if code == "USD" else table.get("cny_vnd") if code == "CNY" else None
+    return value * float(rate) if rate else None

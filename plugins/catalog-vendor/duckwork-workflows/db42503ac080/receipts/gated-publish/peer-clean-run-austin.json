@@ -1,0 +1,28 @@
+{
+  "template": "gated-publish",
+  "receipt_kind": "peer-clean-run",
+  "reviewer_estate": "austin-exec (homelab profile, devbox)",
+  "graph_file": "examples/release/gated-publish.workflow.json",
+  "graph_sha256": "ed5d6d89ac74140a4c31a989a4544ce424654f1f0bbd15c02ea0b7fd7b3d8b4b",
+  "source_digest": "ecd487f7f2cef56c4c928124378d39d676dd2520600141eddfee030a03f0586f",
+  "verdict": "PASS — with one required follow-up fix (see required_fix; re-pin receipt after patch)",
+  "runs": [
+    {
+      "run_id": "20261001-021811-peer95-gated-publish-a",
+      "path": "authorized publish",
+      "outcome": "runner_exit done; parse normalized 'publish: copy staged.bin to the publish_target' -> authorized=true scope verbatim; route-hold gate skipped prune; publish copied, hash-verified vs stage (verified=true, sha byte-equal source/target, checked independently with sha256sum); report lane=publish."
+    },
+    {
+      "run_id": "20261001-022012-peer95-gated-publish-b",
+      "path": "bare-'publish' refusal",
+      "outcome": "runner_exit done; parse -> authorized=false, held_reason='publish'; route-publish gate skipped prune, publish node.skipped 'all deps pruned'; publish_target gp-published-B.bin NEVER CREATED (ls: No such file) — LAW TWO held with zero writes; hold-report + report lane=hold."
+    },
+    {
+      "probe": "machine/human gate separation (LAW THREE)",
+      "outcome": "confirmed in both laps: precheck parks on until_argv (released 'check' attempt 1, zero tokens), approve holds as bare question gate (gate.held -> human release). No hybrid gate."
+    }
+  ],
+  "required_fix": "LAW ONE's second layer is blind: publish and hold-report goals claim 'the parse payload is in ## Inputs' but parse is neither a direct after-parent nor a gate — auto-injection covers direct parents + transitive GATE answers only, so parse NEVER reaches either node. Lap B evidence: hold-report replied 'no parse payload is present in ## Inputs' and reconstructed from the raw approve answer; Lap A publish echoed authorized_scope as the raw 'publish: ...' answer text, not parse.scope — the copy happened because the ROUTE gate reads out.parse.authorized (that part is solid), not because publish saw the normalizer. The unauthorized path is fully protected; what is dead is publish's independent scope re-check + verbatim held_reason. Fix: add inputs: ['parse'] to publish and hold-report (one line each; changes source_digest — re-pin).",
+  "notes": "Strict mode: unknown-grammar refusal respected (wf/1 accepted, no estate config read). No vendor ids in-file. Both files validated clean on this engine before launch. Digests pinned to the tested head b267283.",
+  "historical_pin_note": "Pins honest: this receipt tested EARLIER bytes (template_sha256 ed5d6d89... / source_digest ecd487f7..., tested head b267283 — the pre-v2 draft whose parse node this lap's required_fix names). It is preserved verbatim as the PASS-with-required_fix evidence in the fold of PR #101 into #98; the template has since moved through the v2 rewrite (4b7adc9, peer v2 FAIL) and the goal-fix fold (author cold lap PASS at ec265a01.../97b75a86...). Do not read these pins as the current template bytes."
+}

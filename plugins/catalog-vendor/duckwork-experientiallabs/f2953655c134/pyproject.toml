@@ -1,0 +1,22 @@
+# Test configuration plus minimal project metadata. The plugin is loaded by
+# Duckwork' own provider discovery (from plugin.yaml / __init__.py), not installed
+# as a package, so there is intentionally no build backend or runtime dependency
+# declared here. A [project] table with a version is still required: Duckwork'
+# plugin manager (pm/workspace.py) copies this file into a uv workspace member,
+# and `uv lock` rejects a [project] table whose version is neither set nor
+# dynamic. httpx is imported lazily by the account-usage hook and is already a
+# Duckwork Agent dependency.
+
+[project]
+name = "duckwork-experientiallabs"
+version = "0.4.0"
+description = "Experiential Labs (experientiallabs.ai) model provider for Duckwork Agent"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not integration and not live'"
+markers = [
+    "integration: exercises real network/services (deselected by default)",
+    "live: requires live credentials or a running gateway (deselected by default)",
+]

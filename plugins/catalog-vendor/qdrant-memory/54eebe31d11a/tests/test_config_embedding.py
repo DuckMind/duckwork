@@ -1,0 +1,183 @@
+"""Configuration, identity, embedding wire format and retry contracts."""
+
+import json
+import os
+
+import httpx
+import pytest
+
+from qdrant_memory.config import DEFAULTS, fingerprint, load_config, merge, validate_url
+from qdrant_memory.config_schema import save_config
+from qdrant_memory.embedding import HTTPEmbeddingProvider, build_embedder
+from qdrant_memory.models import Scope, content_hash, enforce_limits, payload, point_id
+from qdrant_memory.retry import run_with_retry, safe_error
+
+
+def test_scoped_config_and_secret_safe_save(tmp_path, monkeypatch):
+    """Verify scoped config and secret safe save."""
+    monkeypatch.setattr(
+        "qdrant_memory.config.secret",
+        lambda name: {"QDRANT_URL": "https://cloud.example", "QDRANT_API_KEY": "sentinel-key"}.get(
+            name
+        ),
+    )
+    path = tmp_path / "qdrant-memory.json"
+    path.write_text(
+        json.dumps(
+            {
+                "qdrant": {
+                    "mode": "cloud",
+                    "url": "https://explicit.example",
+                    "api_key": "explicit-key",
+                }
+            }
+        )
+    )
+    cfg = load_config(tmp_path)
+    assert cfg["qdrant"]["url"] == "https://explicit.example"
+    assert cfg["qdrant"]["api_key"] == "explicit-key"
+    save_config({"api_key": "never-save-me", "embedding_api_key": "nor-this"}, tmp_path)
+    saved = json.loads(path.read_text())
+    assert "api_key" not in saved["qdrant"]
+    assert "api_key" not in saved["embedding"]
+    if os.name != "nt":
+        assert path.stat().st_mode & 0o777 == 0o600
+    assert load_config(tmp_path)["qdrant"]["api_key"] == "sentinel-key"
+
+
+def test_hash_identity_and_payload_limits():
+    """Verify hash identity and payload limits."""
+    a, b = Scope("alice", "duckwork"), Scope("bob", "duckwork")
+    assert content_hash(" hello\nworld ") == content_hash("hello world")
+    reconstructed = Scope(**json.loads(json.dumps(a.as_dict())))
+    assert point_id(a, "mem0", "id") == point_id(reconstructed, "mem0", "id")
+    assert point_id(a, "mem0", "id") != point_id(b, "mem0", "id")
+    value = payload("é" * 10, a, "manual_tool")
+    limits = merge(DEFAULTS["limits"], {"max_text_bytes": 5})
+    with pytest.raises(ValueError):
+        enforce_limits(value, limits)
+    truncated = enforce_limits(value, {**limits, "oversize_policy": "truncate"})
+    assert truncated["text"] == "éé"
+    assert truncated["content_hash"] == content_hash("éé")
+
+
+@pytest.mark.parametrize("url", ["http://example.test", "http://192.168.1.20:6333"])
+def test_api_key_requires_https_for_remote_endpoints(url):
+    """API-key HTTP transport is rejected for non-loopback endpoints."""
+    with pytest.raises(ValueError, match="API-key endpoints require HTTPS"):
+        validate_url(url, api_key="sentinel")
+
+
+@pytest.mark.parametrize(
+    "url", ["http://localhost:6333", "http://127.0.0.2:6333", "http://[::1]:6333"]
+)
+def test_api_key_allows_http_for_local_endpoints(url):
+    """Loopback endpoints remain usable with local development API keys."""
+    validate_url(url, api_key="sentinel")
+
+
+def test_resolved_qdrant_api_key_requires_https(tmp_path, monkeypatch):
+    """The configured endpoint validator sees API keys resolved from secret scope."""
+    monkeypatch.setattr(
+        "qdrant_memory.config.secret",
+        lambda name: "remote-key" if name == "QDRANT_API_KEY" else None,
+    )
+    (tmp_path / "qdrant-memory.json").write_text(
+        json.dumps({"qdrant": {"mode": "server", "url": "http://qdrant.example"}})
+    )
+    with pytest.raises(ValueError, match="API-key endpoints require HTTPS"):
+        load_config(tmp_path)
+
+
+def test_fingerprint_normalizes_trailing_base_url_slashes():
+    """Equivalent request base URLs share one pipeline fingerprint."""
+    cfg = merge(DEFAULTS["embedding"], {"base_url": "https://embed.example/v1"})
+    assert fingerprint(cfg) == fingerprint({**cfg, "base_url": "https://embed.example/v1///"})
+
+
+def test_embedding_secret_requires_https_before_http_client_creation(monkeypatch):
+    """Environment-resolved embedding keys cannot reach remote HTTP endpoints."""
+    monkeypatch.setattr("qdrant_memory.embedding.secret", lambda name: "resolved-key")
+    created = []
+    monkeypatch.setattr(httpx, "Client", lambda **kwargs: created.append(kwargs))
+    cfg = merge(DEFAULTS["embedding"], {"base_url": "http://embed.example"})
+
+    with pytest.raises(ValueError, match="API-key endpoints require HTTPS"):
+        HTTPEmbeddingProvider(cfg)
+
+    assert created == []
+
+
+@pytest.mark.parametrize("provider", ["ollama", "openai-compatible"])
+def test_embedding_wire_contract(provider, monkeypatch):
+    """Verify embedding wire contract."""
+    monkeypatch.setattr("qdrant_memory.embedding.secret", lambda name: None)
+    requests = []
+
+    def handler(request):
+        """Serve controlled embedding responses and capture outgoing requests."""
+        requests.append(request)
+        if provider == "ollama":
+            return httpx.Response(200, json={"embeddings": [[1, 0], [0, 1]]})
+        return httpx.Response(
+            200,
+            json={"data": [{"index": 1, "embedding": [0, 1]}, {"index": 0, "embedding": [1, 0]}]},
+        )
+
+    cfg = merge(
+        DEFAULTS["embedding"],
+        {
+            "provider": provider,
+            "dimensions": 2,
+            "base_url": "http://example.test/v1" if provider != "ollama" else "http://example.test",
+        },
+    )
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    embedder = HTTPEmbeddingProvider(cfg, client)
+    assert embedder.embed_documents(["cat", "dog"]) == [[1, 0], [0, 1]]
+    request = requests[0]
+    body = json.loads(request.content)
+    assert "dimensions" not in body
+    assert request.url.path == ("/api/embed" if provider == "ollama" else "/v1/embeddings")
+    assert provider != "ollama" or body["truncate"] is False
+    client.close()
+
+
+def test_embedding_dimensions_and_fallback(monkeypatch):
+    """Verify embedding dimensions and fallback."""
+    monkeypatch.setattr("qdrant_memory.embedding.secret", lambda name: None)
+    client = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda req: httpx.Response(200, json={"embeddings": [[1, 0, 0]]})
+        )
+    )
+    embedder = HTTPEmbeddingProvider(merge(DEFAULTS["embedding"], {"dimensions": 2}), client)
+    with pytest.raises(ValueError, match="dimension"):
+        embedder.embed_query("query")
+    client.close()
+    cfg = merge(DEFAULTS, {"embedding": {"mode": "inherit", "inherit_fallback": {"dimensions": 2}}})
+    fallback = build_embedder(None, cfg)
+    assert fallback.dimensions == 2
+    fallback.close()
+    assert fingerprint(cfg["embedding"]) != fingerprint({**cfg["embedding"], "model": "changed"})
+
+
+@pytest.mark.parametrize("code,attempts", [(429, 3), (503, 3), (401, 1), (403, 1), (400, 1)])
+def test_retry_classification_and_redaction(code, attempts):
+    """Verify retry classification and redaction."""
+    calls = []
+
+    def action():
+        """Fail transiently before allowing the retry contract to succeed."""
+        calls.append(1)
+        response = httpx.Response(
+            code, request=httpx.Request("GET", "https://example.test"), text="sentinel-secret"
+        )
+        response.raise_for_status()
+
+    with pytest.raises(httpx.HTTPStatusError) as error:
+        run_with_retry(
+            action, {"max_attempts": 3, "backoff_base_seconds": 0, "backoff_max_seconds": 0}
+        )
+    assert len(calls) == attempts
+    assert "sentinel-secret" not in json.dumps(safe_error(error.value))

@@ -1,0 +1,67 @@
+name: refusal
+label: Refusal
+version: 0.2.0
+description: Detects model refusals and deflections, retries the turn on a fallback model, and can add user-supplied text to the retry's system prompt
+author: 0ldev
+license: MIT
+homepage: https://github.com/0ldev/refusal
+tags:
+  - fallback
+  - safety
+  - refusal
+  - routing
+requires_duckwork: ">=0.22.3"
+capabilities: []
+provides_middleware:
+  - llm_execution
+  - llm_request
+provides_tools: []
+provides_hooks:
+  - on_session_finalize
+  - on_session_reset
+  - on_session_delete
+  - post_compaction
+config_schema:
+  preprompt:
+    type: str
+    default: ""
+    label: Retry preprompt
+    description: "Text appended to the system prompt of requests after a refusal is detected in the session. Empty (default) leaves requests untouched; the plugin ships no text of its own"
+  preprompt_escalated:
+    type: str
+    default: ""
+    label: Escalated retry preprompt
+    description: "Optional text used instead of the preprompt after the preprompt itself was refused (only with on_preprompt_refusal: escalate). Empty reuses the preprompt"
+  on_preprompt_refusal:
+    type: str
+    choices: [disarm, escalate, keep]
+    default: disarm
+    label: When the preprompt is refused too
+    description: "disarm stops sending the preprompt for the session, escalate switches to preprompt_escalated, keep leaves the level unchanged. Duckwork still moves on to the next fallback entry in every case"
+  preprompt_scope:
+    type: str
+    choices: [turn, session]
+    default: turn
+    label: Preprompt scope
+    description: "turn forgets the armed level when the next turn starts; session keeps it until the session ends or is reset"
+  preprompt_models:
+    type: list
+    default: []
+    label: Models that may receive the preprompt
+    description: "Glob patterns matched against model or provider/model (for example google/gemini-*). Empty allows any model"
+  arm_on_native_refusal:
+    type: bool
+    default: true
+    label: Arm on provider-signalled refusals
+    description: "Also treat a provider's own refusal signal (Anthropic stop_reason=refusal, finish_reason=content_filter) as a refusal for the retry preprompt, not only matched text"
+  persist_state:
+    type: bool
+    default: false
+    label: Persist armed sessions
+    description: "Off by default. When on, armed session ids, levels and turn ids (never any text) are kept in Duckwork's plugin state so they survive a restart and are shared between processes. Costs one small file read per request while the preprompt is configured"
+  max_armed_sessions:
+    type: int
+    default: 1024
+    label: Max armed sessions
+    description: "How many sessions with an active level are tracked at once; the least recently armed is forgotten first"
+requires_env: []

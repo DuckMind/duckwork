@@ -1,0 +1,636 @@
+"""Standalone Duckwork tools for Yandex Calendar.
+
+Each handler has the signature ``handle(args: dict, **kwargs) -> str``, returns
+a JSON string, and NEVER raises — every failure path becomes
+``{"error": "..."}`` so the agent gets a usable message instead of a crash.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from datetime import UTC, date, datetime, timedelta
+from typing import Any
+
+from .caldav import CalDAVError
+from .config import MissingCredentials, build_client
+from .ical import TRANSP_BUSY, TRANSP_FREE, Attendee, Event
+
+TOOLSET = "yandex_calendar"
+
+# -- schemas ----------------------------------------------------------------
+
+_DATETIME_HINT = (
+    "ISO 8601 date or datetime, e.g. '2026-07-25' or '2026-07-25T14:00:00+03:00'. "
+    "A datetime without an offset is treated as UTC."
+)
+_CALENDAR_HINT = (
+    "Target calendar: its name (as shown by yandex_calendar_list_calendars), the last "
+    "segment of its href, or the full href. Omit to use the default calendar."
+)
+# Plain strings only: a union item type ("string" or "object") is rejected by
+# strict function-calling validators. Handlers still accept objects if a model
+# sends them anyway.
+_ATTENDEE_HINT = "Each entry is an email ('a@x.ru') or a 'Name <a@x.ru>' string."
+# RFC 6531 allows UTF-8 local parts; C0 and C1 control characters stay out.
+_MAILBOX_ATOM = r"[A-Za-z0-9!#$'*+\-=^_`{|}~\u00a0-\U0010ffff]+"
+_MAILBOX_LABEL = r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+_MAILBOX = re.compile(
+    rf"{_MAILBOX_ATOM}(?:\.{_MAILBOX_ATOM})*@{_MAILBOX_LABEL}(?:\.{_MAILBOX_LABEL})*"
+)
+
+LIST_CALENDARS_SCHEMA: dict[str, Any] = {
+    "name": "yandex_calendar_list_calendars",
+    "description": (
+        "List the Yandex calendars this plugin can use (name + href). Use a returned "
+        "name or href as the 'calendar' argument of the other tools. The first one "
+        "listed is the default: it is where an event goes when no calendar is named."
+    ),
+    "parameters": {"type": "object", "properties": {}, "required": []},
+}
+
+LIST_SCHEMA: dict[str, Any] = {
+    "name": "yandex_calendar_list_events",
+    "description": (
+        "List events from the user's Yandex Calendar within a time range. "
+        "Returns each event's summary, start/end, location, description, attendees, "
+        "busy status, and href (the href is needed to update or delete an event). "
+        "Recurring events are not expanded: a series is returned as stored, with the "
+        "start/end of its first occurrence (possibly before the requested range) and "
+        "without its recurrence rule, and a series with modified occurrences appears "
+        "as several entries sharing one href."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "start": {
+                "type": "string",
+                "description": f"Range start ({_DATETIME_HINT}). Defaults to now.",
+            },
+            "end": {
+                "type": "string",
+                "description": f"Range end ({_DATETIME_HINT}). Defaults to 7 days after start.",
+            },
+            "calendar": {"type": "string", "description": _CALENDAR_HINT},
+        },
+        "required": [],
+    },
+}
+
+CREATE_SCHEMA: dict[str, Any] = {
+    "name": "yandex_calendar_create_event",
+    "description": "Create a new event in the user's Yandex Calendar.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "summary": {"type": "string", "description": "Event title."},
+            "start": {"type": "string", "description": f"Event start ({_DATETIME_HINT})."},
+            "end": {
+                "type": "string",
+                "description": (
+                    f"Event end ({_DATETIME_HINT}). Defaults to 1 hour after the start, and "
+                    "must be after it; use a date for both ends of an all-day event."
+                ),
+            },
+            "location": {"type": "string", "description": "Optional location."},
+            "description": {"type": "string", "description": "Optional description / notes."},
+            "all_day": {"type": "boolean", "description": "If true, create an all-day event."},
+            "calendar": {"type": "string", "description": _CALENDAR_HINT},
+            "attendees": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": f"Optional attendees to invite. {_ATTENDEE_HINT}",
+            },
+            "busy": {
+                "type": "boolean",
+                "description": "Show the time as busy (true, default) or free (false).",
+            },
+        },
+        "required": ["summary", "start"],
+    },
+}
+
+UPDATE_SCHEMA: dict[str, Any] = {
+    "name": "yandex_calendar_update_event",
+    "description": (
+        "Update an existing event (identified by its href from "
+        "yandex_calendar_list_events). Only the fields you provide are changed; "
+        "attendees are added/removed incrementally and unrelated properties "
+        "(recurrence, alarms, time zone definitions) are preserved. A start or end "
+        "you do not pass keeps the exact local time and time zone it is stored with, "
+        "so editing anything else cannot move the event; one you do pass is written "
+        "in that same zone, so rescheduling a recurring event does not re-anchor it "
+        "to UTC. Give a time with an offset, or in UTC, and it is converted into the "
+        "event's zone; a time without one is read as UTC, as everywhere else in this "
+        "plugin. A recurring event whose individual "
+        "occurrences were modified is refused; it can only be moved or deleted as a whole."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "event_href": {"type": "string", "description": "The event resource href to update."},
+            "summary": {
+                "type": "string",
+                "description": "New title. An empty string clears it.",
+            },
+            "start": {"type": "string", "description": f"New start ({_DATETIME_HINT})."},
+            "end": {
+                "type": "string",
+                "description": (
+                    f"New end ({_DATETIME_HINT}). Must be after the start, and the same "
+                    "kind of value as it — moving a start past an unchanged end is refused."
+                ),
+            },
+            "location": {
+                "type": "string",
+                "description": "New location. An empty string clears it.",
+            },
+            "description": {
+                "type": "string",
+                "description": "New description / notes. An empty string clears it.",
+            },
+            "all_day": {
+                "type": "boolean",
+                "description": (
+                    "Whether the event is all-day. While it is all-day only the date part of "
+                    "start/end is stored, so a datetime sent without all_day=false loses its "
+                    "time. To turn an all-day event into a timed one, pass all_day=false "
+                    "together with a datetime start and a datetime end."
+                ),
+            },
+            "busy": {
+                "type": "boolean",
+                "description": "Change busy status: true = busy, false = free.",
+            },
+            "add_attendees": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": f"Attendees to add. {_ATTENDEE_HINT}",
+            },
+            "remove_attendees": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Emails of attendees to remove.",
+            },
+        },
+        "required": ["event_href"],
+    },
+}
+
+RESPOND_SCHEMA: dict[str, Any] = {
+    "name": "yandex_calendar_respond_event",
+    "description": (
+        "Respond to a meeting invitation: accept, decline, or tentatively accept it. "
+        "Sets the account owner's participation status on the event identified by its href. "
+        "A recurring event whose individual occurrences were modified is refused."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "event_href": {"type": "string", "description": "The event resource href."},
+            "response": {
+                "type": "string",
+                "enum": ["accept", "decline", "tentative"],
+                "description": "How to respond to the invitation.",
+            },
+        },
+        "required": ["event_href", "response"],
+    },
+}
+
+MOVE_SCHEMA: dict[str, Any] = {
+    "name": "yandex_calendar_move_event",
+    "description": (
+        "Move an event to a different calendar. The event keeps its details, attendees, "
+        "recurrence, and alarms."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "event_href": {"type": "string", "description": "The event resource href to move."},
+            "calendar": {
+                "type": "string",
+                "description": (
+                    "Destination calendar: its name (from yandex_calendar_list_calendars) or href."
+                ),
+            },
+        },
+        "required": ["event_href", "calendar"],
+    },
+}
+
+DELETE_SCHEMA: dict[str, Any] = {
+    "name": "yandex_calendar_delete_event",
+    "description": (
+        "Delete an event from the user's Yandex Calendar by its href "
+        "(obtain the href from yandex_calendar_list_events). The href identifies "
+        "both the event and the calendar it lives in. Deleting is idempotent: an href "
+        "that no longer exists is reported as deleted rather than as an error."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "event_href": {"type": "string", "description": "The event resource href to delete."},
+        },
+        "required": ["event_href"],
+    },
+}
+
+
+# -- parsing / serialization ------------------------------------------------
+
+
+def _parse_dt(value: str) -> datetime | date:
+    """Parse an ISO 8601 date or datetime. Naive datetimes are assumed UTC."""
+    value = value.strip()
+    try:
+        if len(value) == 10 and value.count("-") == 2:
+            return date.fromisoformat(value)
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
+    except ValueError as exc:
+        raise ValueError(f"Invalid date/time {value!r}: {exc}") from exc
+
+
+def _parse_attendee(item: Any) -> Attendee:
+    """Accept an email string, a 'Name <email>' string, or an attendee object."""
+    if isinstance(item, dict):
+        email = str(item.get("email", "")).strip()
+        if not email:
+            raise ValueError("Attendee object is missing 'email'.")
+        attendee = Attendee(
+            email=email,
+            name=str(item.get("name", "")).strip(),
+            role=str(item.get("role", "")).strip(),
+            partstat=str(item.get("partstat", "")).strip(),
+        )
+        _validate_input_attendee(attendee)
+        return attendee
+    text = str(item).strip()
+    if "<" in text and ">" in text:
+        name = text[: text.index("<")].strip()
+        email = text[text.index("<") + 1 : text.index(">")].strip()
+        attendee = Attendee(email=email, name=name)
+        _validate_input_attendee(attendee)
+        return attendee
+    if not text:
+        raise ValueError("Attendee email is empty.")
+    attendee = Attendee(email=text.removeprefix("mailto:"))
+    _validate_input_attendee(attendee)
+    return attendee
+
+
+def _idna_mailbox(address: str) -> str:
+    """``address`` with its domain IDNA-encoded (``пример.рф`` -> ``xn--e1afmkfd.xn--p1ai``).
+
+    Used for validation only: the address is stored exactly as the caller wrote it.
+    A domain the codec refuses comes back unchanged, for the pattern to reject.
+    """
+    local, sep, domain = address.rpartition("@")
+    if not sep:
+        return address
+    try:
+        return f"{local}@{domain.encode('idna').decode('ascii')}"
+    except UnicodeError:
+        return address
+
+
+def _validate_input_attendee(attendee: Attendee) -> None:
+    values = (attendee.email, attendee.name, attendee.role, attendee.partstat)
+    if any("\r" in value or "\n" in value for value in values):
+        raise ValueError("Calendar addresses must not contain a line break.")
+    if _MAILBOX.fullmatch(_idna_mailbox(attendee.email)) is None:
+        raise ValueError(f"Invalid attendee email address: {attendee.email!r}.")
+
+
+def _iso(value: datetime | date | None) -> str | None:
+    return None if value is None else value.isoformat()
+
+
+def _attendee_to_dict(attendee: Attendee) -> dict[str, Any]:
+    return {
+        "email": attendee.email,
+        "name": attendee.name,
+        "role": attendee.role,
+        "partstat": attendee.partstat,
+    }
+
+
+def _event_to_dict(event: Event) -> dict[str, Any]:
+    busy: bool | None = None
+    if event.transp:
+        busy = event.transp.upper() != TRANSP_FREE
+    return {
+        "uid": event.uid,
+        "summary": event.summary,
+        "start": _iso(event.start),
+        "end": _iso(event.end),
+        "location": event.location,
+        "description": event.description,
+        "all_day": event.all_day,
+        "busy": busy,
+        "organizer": _attendee_to_dict(event.organizer) if event.organizer else None,
+        "attendees": [_attendee_to_dict(a) for a in event.attendees],
+        "href": event.href,
+    }
+
+
+def _error(message: str) -> str:
+    return json.dumps({"error": message})
+
+
+def _transp_for(busy: Any) -> str:
+    return TRANSP_BUSY if bool(busy) else TRANSP_FREE
+
+
+# -- handlers ---------------------------------------------------------------
+
+
+def handle_list_calendars(args: dict[str, Any], **_kwargs: Any) -> str:
+    try:
+        with build_client() as client:
+            calendars = client.list_calendars()
+        return json.dumps(
+            {
+                "count": len(calendars),
+                "calendars": [{"name": c.display_name, "href": c.href} for c in calendars],
+            }
+        )
+    except MissingCredentials as exc:
+        return _error(str(exc))
+    except (CalDAVError, ValueError) as exc:
+        return _error(str(exc))
+    except Exception as exc:
+        return _error(f"Unexpected error listing calendars: {exc}")
+
+
+def _range_from_args(args: dict[str, Any]) -> tuple[datetime | date, datetime | date]:
+    """The time range to query: defaults to the next seven days from now."""
+    start = _parse_dt(args["start"]) if args.get("start") else datetime.now(UTC)
+    if args.get("end"):
+        return start, _parse_dt(args["end"])
+    base = (
+        start
+        if isinstance(start, datetime)
+        else datetime(start.year, start.month, start.day, tzinfo=UTC)
+    )
+    return start, base + timedelta(days=7)
+
+
+def handle_list(args: dict[str, Any], **_kwargs: Any) -> str:
+    try:
+        start, end = _range_from_args(args)
+        calendar = (args.get("calendar") or "").strip() or None
+        with build_client() as client:
+            events = client.list_events(start, end, calendar=calendar)
+        events.sort(key=lambda e: (e.start is None, _iso(e.start) or ""))
+        return json.dumps({"count": len(events), "events": [_event_to_dict(e) for e in events]})
+    except MissingCredentials as exc:
+        return _error(str(exc))
+    except (CalDAVError, ValueError) as exc:
+        return _error(str(exc))
+    except Exception as exc:
+        return _error(f"Unexpected error listing events: {exc}")
+
+
+def _span_for_create(args: dict[str, Any]) -> tuple[datetime | date, datetime | date, bool]:
+    """Work out (start, end, all_day) from the create arguments.
+
+    A bare date with no ``end`` becomes a whole day; a datetime defaults to an
+    hour. A bare date always implies an all-day event, even unflagged.
+    """
+    all_day = bool(args.get("all_day"))
+    start = _parse_dt(args["start"])
+    is_date_only = not isinstance(start, datetime)
+    if args.get("end"):
+        return start, _parse_dt(args["end"]), all_day
+    if is_date_only:
+        return start, start + timedelta(days=1), True
+    return start, start + timedelta(hours=1), all_day
+
+
+def _as_date(value: datetime | date) -> date:
+    """The calendar day a value falls on, for comparing an all-day span."""
+    return value.date() if isinstance(value, datetime) else value
+
+
+def _check_span(start: datetime | date | None, end: datetime | date | None, all_day: bool) -> None:
+    """Refuse a span that does not run forwards, before it reaches the server.
+
+    The server answers one with a bare HTTP 400, which reaches the caller as a
+    status code and nothing else, after a round trip. Saying it here costs
+    nothing and names both values.
+    """
+    if start is None or end is None:
+        return
+    if all_day or not (isinstance(start, datetime) or isinstance(end, datetime)):
+        _check_day_span(start, end)
+    else:
+        _check_time_span(start, end)
+
+
+def _check_day_span(start: datetime | date, end: datetime | date) -> None:
+    """DTEND is exclusive for a whole-day event: the day after the last one."""
+    if _as_date(end) <= _as_date(start):
+        raise ValueError(
+            f"An all-day event must end on a later day than it starts: "
+            f"start {_as_date(start).isoformat()}, end {_as_date(end).isoformat()}. "
+            "The end is the day after the last one the event covers."
+        )
+
+
+def _check_time_span(start: datetime | date, end: datetime | date) -> None:
+    """A timed span, where both ends must be the same kind of value.
+
+    RFC 5545 requires that, and a bare date cannot honestly be placed on a
+    clock, so a mixed pair is refused rather than guessed at. One floating end
+    against one anchored end is not comparable either; that one is left to the
+    server rather than resolved by assuming a zone.
+    """
+    if isinstance(start, datetime) != isinstance(end, datetime):
+        kinds = (
+            "a date-time" if isinstance(start, datetime) else "a date",
+            "a date-time" if isinstance(end, datetime) else "a date",
+        )
+        raise ValueError(
+            f"'start' and 'end' must be the same kind of value: got {kinds[0]} "
+            f"({start.isoformat()}) and {kinds[1]} ({end.isoformat()}). Use a date for "
+            "both ends of an all-day event, or a date-time for both of a timed one."
+        )
+    if (start.tzinfo is None) == (end.tzinfo is None) and end <= start:
+        raise ValueError(
+            f"An event must end after it starts: start {start.isoformat()}, end {end.isoformat()}."
+        )
+
+
+def _event_from_create_args(args: dict[str, Any]) -> Event:
+    start, end, all_day = _span_for_create(args)
+    _check_span(start, end, all_day)
+    return Event(
+        uid="",
+        summary=(args.get("summary") or "").strip(),
+        start=start,
+        end=end,
+        location=(args.get("location") or "").strip(),
+        description=(args.get("description") or "").strip(),
+        all_day=all_day,
+        attendees=[_parse_attendee(a) for a in (args.get("attendees") or [])],
+        transp=_transp_for(args.get("busy", True)) if "busy" in args else "",
+    )
+
+
+def handle_create(args: dict[str, Any], **_kwargs: Any) -> str:
+    try:
+        if not (args.get("summary") or "").strip():
+            return _error("'summary' is required.")
+        if not args.get("start"):
+            return _error("'start' is required.")
+        event = _event_from_create_args(args)
+        calendar = (args.get("calendar") or "").strip() or None
+        with build_client() as client:
+            created = client.create_event(event, calendar=calendar)
+        return json.dumps({"created": True, "event": _event_to_dict(created)})
+    except MissingCredentials as exc:
+        return _error(str(exc))
+    except (CalDAVError, ValueError) as exc:
+        return _error(str(exc))
+    except Exception as exc:
+        return _error(f"Unexpected error creating event: {exc}")
+
+
+def handle_update(args: dict[str, Any], **_kwargs: Any) -> str:
+    try:
+        href = (args.get("event_href") or "").strip()
+        if not href:
+            return _error("'event_href' is required.")
+        with build_client() as client:
+            event = client.get_event(href)
+            if event is None:
+                return _error(f"Event not found: {href}")
+            _apply_updates(event, args)
+            updated = client.update_event(event, href)
+        return json.dumps({"updated": True, "event": _event_to_dict(updated)})
+    except MissingCredentials as exc:
+        return _error(str(exc))
+    except (CalDAVError, ValueError) as exc:
+        return _error(str(exc))
+    except Exception as exc:
+        return _error(f"Unexpected error updating event: {exc}")
+
+
+_UPDATABLE_TEXT = ("summary", "location", "description")
+
+
+def _apply_field_updates(event: Event, args: dict[str, Any]) -> None:
+    """Apply the scalar fields present in ``args`` (an empty string clears one)."""
+    for field in _UPDATABLE_TEXT:
+        if args.get(field) is not None:
+            setattr(event, field, str(args[field]).strip())
+    if "all_day" in args:
+        event.all_day = bool(args["all_day"])
+    if args.get("start"):
+        event.start = _parse_dt(args["start"])
+    if args.get("end"):
+        event.end = _parse_dt(args["end"])
+    _widen_all_day(event)
+    if "busy" in args:
+        event.transp = _transp_for(args["busy"])
+
+
+def _widen_all_day(event: Event) -> None:
+    """Give a newly all-day event an end that is the day after its last one.
+
+    Turning a timed event into an all-day one keeps only the date part of each
+    end, so a meeting that ran 10:00 to 10:30 would come out starting and
+    ending on the same day. DTEND is exclusive for a whole-day event, so that
+    is a zero-length day: the RFC forbids it and a server may refuse it. The
+    request itself is perfectly reasonable, so widen it to one day rather than
+    reject it.
+    """
+    if not event.all_day or event.start is None:
+        return
+    start = _as_date(event.start)
+    if event.end is None or _as_date(event.end) <= start:
+        event.end = start + timedelta(days=1)
+
+
+def _apply_attendee_updates(event: Event, args: dict[str, Any]) -> None:
+    """Add and remove attendees incrementally, matching e-mails case-insensitively."""
+    for item in args.get("add_attendees") or []:
+        new = _parse_attendee(item)
+        if not any(a.email.lower() == new.email.lower() for a in event.attendees):
+            event.attendees.append(new)
+    remove = {str(e).strip().lower() for e in (args.get("remove_attendees") or [])}
+    if remove:
+        event.attendees = [a for a in event.attendees if a.email.lower() not in remove]
+
+
+def _apply_updates(event: Event, args: dict[str, Any]) -> None:
+    """Mutate ``event`` in place with the provided update fields."""
+    _apply_field_updates(event, args)
+    _check_span(event.start, event.end, event.all_day)
+    _apply_attendee_updates(event, args)
+
+
+_RESPONSE_PARTSTAT = {
+    "accept": "ACCEPTED",
+    "accepted": "ACCEPTED",
+    "decline": "DECLINED",
+    "declined": "DECLINED",
+    "tentative": "TENTATIVE",
+}
+
+
+def handle_respond(args: dict[str, Any], **_kwargs: Any) -> str:
+    try:
+        href = (args.get("event_href") or "").strip()
+        if not href:
+            return _error("'event_href' is required.")
+        response = (args.get("response") or "").strip().lower()
+        partstat = _RESPONSE_PARTSTAT.get(response)
+        if partstat is None:
+            return _error("'response' must be one of: accept, decline, tentative.")
+        with build_client() as client:
+            updated = client.respond_to_event(href, partstat)
+        return json.dumps({"responded": True, "status": partstat, "event": _event_to_dict(updated)})
+    except MissingCredentials as exc:
+        return _error(str(exc))
+    except (CalDAVError, ValueError) as exc:
+        return _error(str(exc))
+    except Exception as exc:
+        return _error(f"Unexpected error responding to event: {exc}")
+
+
+def handle_move(args: dict[str, Any], **_kwargs: Any) -> str:
+    try:
+        href = (args.get("event_href") or "").strip()
+        if not href:
+            return _error("'event_href' is required.")
+        calendar = (args.get("calendar") or "").strip()
+        if not calendar:
+            return _error("'calendar' (destination) is required.")
+        with build_client() as client:
+            moved = client.move_event(href, calendar)
+        return json.dumps({"moved": True, "event": _event_to_dict(moved)})
+    except MissingCredentials as exc:
+        return _error(str(exc))
+    except (CalDAVError, ValueError) as exc:
+        return _error(str(exc))
+    except Exception as exc:
+        return _error(f"Unexpected error moving event: {exc}")
+
+
+def handle_delete(args: dict[str, Any], **_kwargs: Any) -> str:
+    try:
+        href = (args.get("event_href") or "").strip()
+        if not href:
+            return _error("'event_href' is required.")
+        with build_client() as client:
+            client.delete_event(href)
+        return json.dumps({"deleted": True, "event_href": href})
+    except MissingCredentials as exc:
+        return _error(str(exc))
+    except (CalDAVError, ValueError) as exc:
+        return _error(str(exc))
+    except Exception as exc:
+        return _error(f"Unexpected error deleting event: {exc}")

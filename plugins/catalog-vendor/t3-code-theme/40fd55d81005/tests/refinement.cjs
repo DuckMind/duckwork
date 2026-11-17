@@ -1,0 +1,30 @@
+// Structural Chromium test; does not replace evidence from the real Duckwork app.
+const {chromium} = require(process.env.PLAYWRIGHT_PATH || 'playwright');
+const fs = require('node:fs'), assert = require('node:assert/strict'), vm = require('node:vm');
+const source = fs.readFileSync(require('node:path').join(__dirname,'../desktop/plugin.js'),'utf8');
+let theme;
+const sandbox={sdk:{},THEMES_AREA:'themes',CHAT_EMPTY_AREA:'chat.empty',requestTheme(){throw Error('Must not reactivate')}};
+vm.createContext(sandbox);vm.runInContext(source.replace(/^import .*\n/gm,'').replace('export default','globalThis.plugin ='),sandbox);
+sandbox.plugin.register({register: entry=>{if(entry.area==='themes')theme=entry.data},onDispose(){},storage:{get:(k,d)=>k==='installed'?true:d,set(){throw Error('Must not modify preferences')}}});
+(async()=>{const browser=await chromium.launch();try{
+assert.equal(theme.colors.background,'#0a0a0a','T3 canvas, not approximate zinc');
+assert.equal(theme.colors.sidebarBackground,'#000000');
+assert.equal(theme.colors.card,'#111111');assert.equal(theme.colors.primary,'#346bf1');
+assert(theme.typography.fontSans.startsWith('-apple-system'));
+const page=await browser.newPage();
+await page.setContent(`<html data-duckwork-theme="t3-code-theme" style="--dt-primary-solid:#abc"><head><style>:root{--ui-bg-chrome:purple;--ui-bg-sidebar:purple;--dt-font-sans:${theme.typography.fontSans}}body{font-family:var(--dt-font-sans)}[data-chat-surface]{background:var(--ui-chat-surface-background)}[data-tour=sessions-sidebar]{background:var(--ui-sidebar-surface-background)}[data-slot=composer-surface]{background:var(--composer-fill)}[data-slot=aui_assistant-message-content]{font-size:var(--conversation-text-font-size)}</style></head><body><aside data-tour="sessions-sidebar"></aside><main data-chat-surface><article data-slot="aui_assistant-message-content">Text</article><div data-slot="composer-root"><div data-slot="composer-surface"></div></div></main></body></html>`);
+await page.addStyleTag({content:source.match(/const css = `([\s\S]*?)`/)[1]});
+const styles=await page.evaluate(()=>{const s=q=>getComputedStyle(document.querySelector(q));return{canvas:s('main').backgroundColor,sidebar:s('aside').backgroundColor,primary:s('html').getPropertyValue('--dt-primary-solid').trim(),font:s('article').fontFamily,size:s('article').fontSize,line:s('article').lineHeight}});
+assert.equal(styles.canvas,'rgb(10, 10, 10)');assert.equal(styles.sidebar,'rgb(0, 0, 0)');assert.equal(styles.primary,'#346bf1');assert.equal(styles.size,'14px');assert.equal(styles.line,'22.75px');
+await page.evaluate(()=>document.documentElement.dataset.duckworkTheme='fordex');
+assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--dt-primary-solid').trim()),'#abc');
+await page.evaluate(()=>{document.documentElement.dataset.duckworkTheme='t3-code-theme';document.documentElement.style.setProperty('--dt-line-height','1.5');document.querySelector('article').innerHTML='<div class="aui-md"><p>Test</p></div>'});
+await page.addStyleTag({content:'.aui-md,.aui-md p{line-height:var(--dt-line-height);color:var(--dt-foreground,#f5f5f5)}'});
+const prose=await page.$eval('.aui-md p',e=>({line:getComputedStyle(e).lineHeight,color:getComputedStyle(e).color}));
+assert.equal(prose.line,'22.75px','Real paragraph must not fall back to Duckwork 1.5 line-height');
+assert.equal(prose.color,'rgba(245, 245, 245, 0.8)');
+await page.evaluate(()=>{const b=document.createElement('div');b.dataset.slot='aui_user-message-root';b.style.setProperty('--human-msg-line-height','1.3');b.innerHTML='<button class="composer-human-message"><span data-slot="aui_user-inline-text">Test</span></button>';document.body.append(b)});
+await page.addStyleTag({content:'[data-slot=aui_user-inline-text]{line-height:var(--human-msg-line-height)}'});
+assert.equal(await page.$eval('[data-slot=aui_user-inline-text]',e=>getComputedStyle(e).lineHeight),'22.75px');
+console.log('PASS palette, real paragraph typography and isolation',styles,prose);
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

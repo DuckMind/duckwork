@@ -1,0 +1,11 @@
+manifest_version: 1
+name: project-manager
+version: 1.0.0
+description: "Project Manager — discover git projects on the system, list branches, commits, and watch paths. Backed by the duckwork-plugins-api FastAPI server at http://127.0.0.1:9120."
+author: Tiboo
+provides_tools:
+  - list_projects
+  - get_project
+  - list_branches
+  - get_recent_commits
+  - list_watch_paths

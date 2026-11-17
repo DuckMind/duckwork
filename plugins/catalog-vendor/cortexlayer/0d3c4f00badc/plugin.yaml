@@ -1,0 +1,13 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: cortexlayer
+version: 0.1.1
+description: >
+  CortexLayer memory provider — linked-page memory with link-expansion
+  retrieval, wired into Duckwork' automatic per-turn prefetch/sync instead of
+  the generic MCP tool registration (see cortex-backend's mcp_server.py for
+  that separate integration path).
+hooks:
+  - on_session_end
+  - on_pre_compress
+pip_dependencies:
+  - cortexlayer>=0.1.2,<0.3

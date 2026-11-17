@@ -1,0 +1,27 @@
+name: vector-platform
+label: Vector
+kind: platform
+version: 0.5.3
+description: >
+  Vector (vectorapp.io) gateway adapter for Duckwork Agent.
+  Spawns a local Rust sidecar wrapping vector-sdk and relays
+  DMs over HTTP/SSE. The plugin is a first-class Vector bot
+  identity (its own nsec/npub), not an impersonation of a human.
+author: BonesGit
+# VECTOR_NPUB is written by `duckwork gateway setup`. Do not list it under
+# requires_env — install would prompt for a bot npub that does not exist yet,
+# and people often paste their personal Vector npub by mistake.
+optional_env:
+  - name: VECTOR_NPUB
+    description: "Bot public key (npub1…); written by duckwork gateway setup. Not your personal Vector npub."
+    prompt: "Vector bot npub (leave empty — setup writes this)"
+    url: "https://vectorapp.io"
+    password: false
+  - name: VECTOR_ALLOWED_USERS
+    description: "Comma-separated npubs allowed to DM the bot. Also grants community turns (union). Pairing is DM-only."
+    prompt: "Allowed npubs (DMs)"
+    password: false
+  - name: VECTOR_HOME_CHANNEL
+    description: "Operator npub for cron / join notices (channel ids)"
+    prompt: "Home npub"
+    password: false

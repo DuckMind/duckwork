@@ -1,0 +1,21 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    # GitHub-hosted runner. An ephemeral per-job VM replaces the dedicated
+    # self-hosted VPS runner: no maintainer node executes public fork code,
+    # and public repositories get free unlimited minutes.
+    # Fork PR heads run here too — the host is not a persistent asset.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # engines floor is >=22.18 for native TS type-stripping (tests import
+          # src/*.ts); pinned to 24 to match local development.
+          node-version: '24'
+      - run: npm ci
+      - run: npm test
+      - run: npm run check

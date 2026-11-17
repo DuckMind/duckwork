@@ -1,0 +1,41 @@
+name: chat-length
+version: 1.1.0
+manifest_version: 2
+api_version: 1
+requires_duckwork: ">=0.21.5"
+description: "Long-chat notice for Duckwork: once a chat passes a configurable fill level (default 70 % and 90 %), Duckwork appends a short notice with a ready-made opener for a new chat. The new chat pulls the context itself via session_search. No auto-opening of chats, no system-prompt changes (prompt caching stays intact)."
+author: MadeByBrain
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+tags: [chat, context, compaction, session_search, notice]
+provides_hooks:
+  - pre_llm_call
+  - post_api_request
+config_schema:
+  threshold_1:
+    type: float
+    default: 0.70
+    label: "First notice"
+    description: "Fill level (0 to 1) at which a notice appears once per chat."
+  threshold_2:
+    type: float
+    default: 0.90
+    label: "Second notice (urgent)"
+    description: "Fill level (0 to 1) at which an urgent notice appears once per chat."
+  basis:
+    type: str
+    choices: [compaction, window]
+    default: compaction
+    label: "Measured against"
+    description: "compaction = the point where Duckwork automatically compacts the chat (recommended). window = the model's full context window."
+  language:
+    type: str
+    choices: [auto, en, de]
+    default: auto
+    label: "Notice language"
+    description: "auto = the language of the conversation (English template, translated by the model). en or de = fixed wording."
+  disabled_platforms:
+    type: list
+    default: [cron, subagent, kanban, batch, webhook]
+    label: "No notice on"
+    description: "Platforms that never get a notice (background jobs)."

@@ -1,0 +1,41 @@
+{
+  "template": "triage-route",
+  "receipt_kind": "author-run",
+  "revision": "v3 (prune-law fix after peer-estate clean-run FAIL) PROVENANCE restamp: provenance.owner -> role wording per publish-scrub; per portable law 10 provenance is annotation-only, so source_digest (52559c3c) is UNCHANGED and every walked lap ran node-identical bytes; only the file sha moved.",
+  "author_estate": "author estate (homelab seat, devbox)",
+  "graph_file": "examples/build/triage-route.workflow.json",
+  "graph_sha256": "26758b8e61ad555be0c0bb3dfb63b78fcfc33bb0bfe90847e923c21f8dcb65db",
+  "source_digest": "5028f75585e59d990571dfd494dfba9d9fa2039668bac835fc5a463073b9cc30",
+  "runs": [
+    {
+      "run_id": "20261001-012845-urgent-arm-lap",
+      "arm": "urgent",
+      "runner_exit": "done 2026-10-01T01:30:11Z",
+      "proof": "has_urgent=true: route-batch SKIPPED prune; batch-prep AND batch-run node.skipped 'all deps pruned' - peer-estate failure scenario REVERSED, zero batch lanes spawned, action-target ledger never created (ls urgent-ledger.md -> No such file). escalate gate held; bare 'act' release -> handle-urgent replied skipped: act carried no authorization. report lane=urgent."
+    },
+    {
+      "run_id": "20261001-013031-batch-regression-lap",
+      "arm": "batch",
+      "runner_exit": "done 2026-10-01T01:32:10Z",
+      "proof": "post-fix regression: route-urgent/escalate/handle-urgent skipped, batch-prep forwarded routine verbatim, fan-out 2/2 done with per-item evidence, report lane=batch."
+    }
+  ],
+  "root_cause": "LAW A: fanout.items_from head must be in the fan-out node's own after (validator). LAW B: prune_states skips a node only when ALL after deps are skipped. v2 satisfied A by adding classify to batch-run.after, so B never pruned the arm while classify stayed done (peer-estate lap mutated a ledger mid human-gate-hold). v3: arm-scoped batch-prep hangs only on route-batch (prunes cleanly), pulls classify via inputs ref, re-emits routine verbatim as the fan-out head; escalate arm symmetric. Prune law + route semantics + release law stated in description.",
+  "lap_history": "v1 found the action_target gap; v2 passed the batch arm, FAILED the peer estate's urgent arm; v3 walks BOTH arms live on this estate.",
+  "notes": "Engine collision filed upstream as an issue against the engine repo (fix candidate). The in-template mitigation is portable regardless of which upstream fix lands.",
+  "p1_fix": {
+    "defect": "maintainer P1: a zero-routine queue emptied batch-prep.routine, items_from resolved [] and the engine hard-failed batch-run (error_class fanout_empty, wf.py:2887-2892), darkening report.",
+    "fix": "classify declares routine_empty (required field); route-batch carries the complementary when-pair member; new route-empty gate + zero-token echo empty-notice keep exactly one live batch-side payload so report is always reachable. v0.1 sanctioned idiom only (when-pair + echo), no new engine surface.",
+    "empty_lap": {
+      "run_id": "20261002-174835-triage-empty-lap",
+      "graph_fingerprint": "16aaed285d7db91c",
+      "outcome": "route-urgent + route-batch SKIPPED, batch-prep/batch-run terminal all-deps-pruned with ZERO fan-out spawns, zero fanout_empty events in the log; empty-notice committed its honest payload; report DONE (not darkened): lane=batch, seen=2, done=[], ambiguous_for_owner=[q1,q2 cited], gate=not reached; runner_exit done."
+    },
+    "routine_control_lap": {
+      "run_id": "20261002-174835-triage-routine-lap",
+      "graph_fingerprint": "df0935b5f4653b7b",
+      "outcome": "negative control - the pair is a route, not a constant: route-empty SKIPPED, empty-notice pruned, batch-prep emitted routine=[r1], batch-run fanned out 1 item with evidence (action taken on the real target file), report lane=batch done=[r1 ...]. Exactly one batch arm lives per classification, both directions walked."
+    },
+    "boundary": "the v3 peer PASS lap ran bytes 291d4e8d/52559c3c; deltas since: prune-law collision fix (ca2697e) + this P1 belt. This receipt pins the CURRENT shipped bytes above; peer re-run clock re-stamps at the new head per the ratified law."
+  }
+}

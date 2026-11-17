@@ -1,0 +1,31 @@
+# Scan-safe test fixtures.
+#
+# These fixtures use benign commands that exercise the same code paths as
+# the destructive originals, without matching any destructive-pattern
+# scanner rule. The runtime assertions are unchanged in intent:
+#
+#   ruby_system_exec       → tests is_deny_pattern() deny matching
+#   glob_wildcard_end_*    → tests glob_to_regex() trailing-* behaviour
+#   ls_env_bak_*           → tests glob_to_regex() brace expansion
+#   stub_builtins          → tests _format_builtins() / _get_builtin_patterns()
+#   ansi_obfuscation_*     → tests _normalize() ANSI + null + unicode stripping
+
+ruby_system_exec: "ruby -e 'system(\"echo hello\")'"
+
+glob_wildcard_end_input: "test -rf /tmp/*"
+glob_wildcard_end_match: "test -rf /tmp/foo"
+glob_wildcard_end_match_bar: "test -rf /tmp/foo/bar"
+glob_wildcard_end_no_match: "test -rf /var/foo"
+
+ansi_obfuscation_input: "vultr\x00\u00b2"
+ansi_obfuscation_expected: "vultr2"
+
+ls_env_bak_glob: "ls *.{txt,md}"
+ls_env_bak_expected: "\\bls(?!/)\\s+(?:\\S+\\.txt|\\S+\\.md)"
+
+# Built-in patterns stub for the --builtins tests (3 entries so the
+# search-filter test can assert a non-empty filtered subset).
+stub_builtins:
+  - ["\\bgit\\s+status\\b", "git status (read-only)"]
+  - ["\\bls\\s+-la\\b", "ls -la (read-only)"]
+  - ["\\becho\\b", "echo (read-only)"]

@@ -1,0 +1,217 @@
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import textwrap
+from pathlib import Path
+
+import pytest
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def run_command(command: list[str], *, env: dict[str, str], cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    result = subprocess.run(
+        command,
+        cwd=cwd,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=120,
+    )
+    assert result.returncode == 0, (
+        f"command failed: {' '.join(command)}\n"
+        f"STDOUT:\n{result.stdout}\n"
+        f"STDERR:\n{result.stderr}"
+    )
+    return result
+
+
+def test_duckwork_plugin_install_register_and_search_smoke(tmp_path: Path) -> None:
+    if shutil.which("duckwork") is None:
+        if os.environ.get("CI"):
+            pytest.fail("duckwork CLI is required for CI plugin install smoke")
+        pytest.skip("duckwork CLI is not available")
+
+    duckwork_home = tmp_path / "duckwork_home"
+    source_root = tmp_path / "source_root"
+    state_dir = duckwork_home / "local_knowledge"
+    duckwork_home.mkdir()
+    write(
+        source_root / "custom_skills" / "note-taking" / "demo-local" / "SKILL.md",
+        """---
+name: demo-local
+description: Demo local reusable knowledge router skill.
+tags: [demo, reusable]
+---
+# Demo Local
+""",
+    )
+
+    env = os.environ.copy()
+    env.update(
+        {
+            "DUCKWORK_HOME": str(duckwork_home),
+            "LOCAL_KNOWLEDGE_ROOT": str(source_root),
+            "LOCAL_KNOWLEDGE_STATE_DIR": str(state_dir),
+            "EXPECTED_PLUGIN_ROOT": str((duckwork_home / "plugins" / "local_knowledge").resolve()),
+            "PYTHONDONTWRITEBYTECODE": "1",
+        }
+    )
+    env.pop("PYTHONPATH", None)
+
+    plugin_source = tmp_path / "plugin_source"
+    shutil.copytree(
+        REPO_ROOT,
+        plugin_source,
+        ignore=shutil.ignore_patterns(".git", ".pytest_cache", "__pycache__", "*.pyc", "*.egg-info"),
+    )
+    run_command(["git", "init", "-q"], env=env, cwd=plugin_source)
+    run_command(["git", "add", "."], env=env, cwd=plugin_source)
+    run_command(
+        [
+            "git",
+            "-c",
+            "user.name=Duckwork Test",
+            "-c",
+            "user.email=duckwork-test@example.invalid",
+            "commit",
+            "-q",
+            "-m",
+            "test plugin source",
+        ],
+        env=env,
+        cwd=plugin_source,
+    )
+    # This real public install is also the compatibility gate for Duckwork'
+    # default-on plugin security scanner. Do not disable scanning in this home.
+    run_command(["duckwork", "plugins", "install", f"file://{plugin_source}", "--enable"], env=env)
+    listing = run_command(["duckwork", "plugins", "list", "--user", "--json"], env=env)
+    plugins = json.loads(listing.stdout)
+    assert any(item["name"] == "local_knowledge" and item["status"] == "enabled" for item in plugins)
+    installed_plugin = duckwork_home / "plugins" / "local_knowledge"
+    bundled_skill = installed_plugin / "skills" / "local-knowledge-router" / "SKILL.md"
+    assert bundled_skill.exists()
+    skill_env = dict(env)
+    skill_env["PYTHONPATH"] = str(installed_plugin)
+    skill_env["PYTHONNOUSERSITE"] = "1"
+    skill_install = run_command(
+        [
+            sys.executable,
+            "-m",
+            "duckwork_local_knowledge.cli",
+            "install-router-skill",
+            "--json",
+        ],
+        env=skill_env,
+        cwd=tmp_path,
+    )
+    skill_install_payload = json.loads(skill_install.stdout)
+    normal_skill = duckwork_home / "skills" / "local-knowledge-router" / "SKILL.md"
+    assert skill_install_payload["status"] == "installed"
+    assert normal_skill.read_bytes() == bundled_skill.read_bytes()
+
+    smoke_script = tmp_path / "load_and_search.py"
+    write(
+        smoke_script,
+        textwrap.dedent(
+            """
+            import importlib.abc
+            import importlib.metadata
+            import json
+            import os
+            import sys
+            from duckwork_cli.plugins import PluginManager
+            from tools.registry import registry
+
+            def _without_packaged_local_knowledge_entrypoint(entry_points):
+                rows = [
+                    ep for ep in entry_points
+                    if not (ep.group == "duckwork_agent.plugins" and ep.name == "local_knowledge")
+                ]
+                try:
+                    return importlib.metadata.EntryPoints(rows)
+                except Exception:
+                    class FilteredEntryPoints(list):
+                        def select(self, **params):
+                            group = params.get("group")
+                            name = params.get("name")
+                            return FilteredEntryPoints([
+                                ep for ep in self
+                                if (group is None or ep.group == group) and (name is None or ep.name == name)
+                            ])
+                    return FilteredEntryPoints(rows)
+
+            # This smoke validates Duckwork directory-plugin install/loading. The
+            # test environment may also have this repo installed editable for
+            # test dependencies, which creates the same-named pip entry point.
+            # Duckwork Agent 0.17 loads entry points after user plugins, so filter
+            # that package entry point here or the test asserts the wrong path.
+            _entry_points = importlib.metadata.entry_points
+            def _entry_points_without_packaged_plugin(*args, **kwargs):
+                eps = _entry_points(*args, **kwargs)
+                if isinstance(eps, dict):
+                    return {
+                        group: _without_packaged_local_knowledge_entrypoint(group_eps)
+                        if group == "duckwork_agent.plugins" else group_eps
+                        for group, group_eps in eps.items()
+                    }
+                return _without_packaged_local_knowledge_entrypoint(eps)
+            importlib.metadata.entry_points = _entry_points_without_packaged_plugin
+
+            class BlockAmbientLocalKnowledge(importlib.abc.MetaPathFinder):
+                def find_spec(self, fullname, path=None, target=None):
+                    if fullname == "duckwork_local_knowledge" or fullname.startswith("duckwork_local_knowledge."):
+                        raise ModuleNotFoundError(f"ambient top-level import blocked: {fullname}")
+                    return None
+
+            for name in list(sys.modules):
+                if name == "duckwork_local_knowledge" or name.startswith("duckwork_local_knowledge."):
+                    del sys.modules[name]
+            sys.meta_path.insert(0, BlockAmbientLocalKnowledge())
+
+            manager = PluginManager()
+            manager.discover_and_load(force=True)
+            module_files = {
+                name: getattr(module, "__file__", "")
+                for name, module in sys.modules.items()
+                if name.startswith("duckwork_plugins.") and ".duckwork_local_knowledge" in name
+            }
+            expected_root = os.environ["EXPECTED_PLUGIN_ROOT"]
+            assert module_files, "local_knowledge implementation modules were not loaded"
+            assert all(path and os.path.realpath(path).startswith(expected_root) for path in module_files.values()), module_files
+            entry = registry.get_entry("knowledge_search")
+            assert entry is not None, "knowledge_search was not registered"
+            payload = json.loads(entry.handler({"query": "demo reusable", "rebuild": True}, session_id="pytest-smoke"))
+            print(json.dumps({
+                "tool": entry.name,
+                "toolset": entry.toolset,
+                "success": payload["success"],
+                "rebuilt": payload["rebuilt"],
+                "ids": [row["id"] for row in payload["results"]],
+                "module_files": module_files,
+            }, sort_keys=True))
+            """
+        ).strip()
+        + "\n",
+    )
+    result = run_command([sys.executable, str(smoke_script)], env=env, cwd=tmp_path)
+    payload = json.loads(result.stdout)
+
+    assert payload["tool"] == "knowledge_search"
+    assert payload["toolset"] == "local_knowledge"
+    assert payload["success"] is True
+    assert payload["rebuilt"] is True
+    assert "skill:demo-local" in payload["ids"]
+    assert (state_dir / "index.sqlite").exists()
+    assert (state_dir / "usage.sqlite").exists()
+    assert not (source_root / "knowledge" / "index.sqlite").exists()

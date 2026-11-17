@@ -1,0 +1,1197 @@
+from __future__ import annotations
+
+import json
+import sqlite3
+from contextlib import closing
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from duckwork_local_knowledge import index
+from duckwork_local_knowledge.artifacts import Artifact, Edge
+from duckwork_local_knowledge.config import Config, IndexSettings
+from duckwork_local_knowledge.routing import (
+    ROUTING_TRACE_METADATA_KEY,
+    RouteOutcome,
+    SearchRoutingTrace,
+)
+from duckwork_local_knowledge.service import LocalKnowledgeService
+
+
+def write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def make_config(tmp_path: Path) -> Config:
+    root = (tmp_path / "source").resolve()
+    duckwork_home = (tmp_path / "duckwork-home").resolve()
+    state_dir = (tmp_path / "state").resolve()
+    root.mkdir()
+    duckwork_home.mkdir()
+    write(
+        root / "custom_skills" / "quartz-router" / "SKILL.md",
+        """---
+name: quartz-router
+description: Route Quartz inventory operations.
+metadata:
+  duckwork:
+    related_skills: [quartz-helper]
+---
+# Quartz Router
+""",
+    )
+    write(
+        root / "custom_skills" / "quartz-helper" / "SKILL.md",
+        """---
+name: quartz-helper
+description: Help with Quartz inventory operations.
+---
+# Quartz Helper
+""",
+    )
+    return Config(
+        source_root=root,
+        duckwork_home=duckwork_home,
+        state_dir=state_dir,
+        index_settings=IndexSettings(
+            custom_skill_dirs=("custom_skills",),
+            script_dirs=("scripts",),
+            memory_dirs=("memory",),
+            runbook_dirs=("docs",),
+            known_entities=("Quartz",),
+            include_markdown_docs=True,
+        ),
+        source_root_source="config",
+        state_dir_source="config",
+        include_markdown_docs_source="config",
+        warnings=("test warning",),
+    )
+
+
+def test_force_mapping_none_build_and_metadata(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    artifact = Artifact(
+        id="skill:quartz-router",
+        type="skill",
+        title="Quartz Router",
+        path="custom_skills/quartz-router/SKILL.md",
+        summary="Route Quartz inventory operations.",
+    )
+    edge = Edge(
+        source="skill:quartz-router",
+        target="skill:quartz-helper",
+        kind="related_to",
+        evidence="skill:quartz-helper",
+    )
+    forces: list[bool] = []
+
+    def build(
+        root: Path,
+        output_dir: Path,
+        duckwork_home: Path,
+        settings: IndexSettings,
+        *,
+        force: bool,
+    ) -> tuple[list[Artifact], list[Edge]] | None:
+        assert (root, output_dir, duckwork_home, settings) == (
+            config.source_root,
+            config.state_dir,
+            config.duckwork_home,
+            config.index_settings,
+        )
+        forces.append(force)
+        return ([artifact], [edge]) if force else None
+
+    service = LocalKnowledgeService(
+        config,
+        build_index_fn=build,
+        index_metadata_fn=lambda path: {
+            "index_exists": path == config.state_dir / "index.sqlite"
+        },
+    )
+
+    db_path, ensure_metadata = service.ensure_index()
+    artifacts, edges, rebuild_metadata = service.rebuild()
+
+    assert db_path == config.state_dir / "index.sqlite"
+    assert forces == [False, True]
+    assert ensure_metadata["rebuilt"] is False
+    assert "build_duration_ms" not in ensure_metadata
+    assert ensure_metadata["expected_index_format_version"] == index.INDEX_FORMAT_VERSION
+    assert ensure_metadata["plugin_version"]
+    assert ensure_metadata["root"] == str(config.source_root)
+    assert ensure_metadata["state_dir"] == str(config.state_dir)
+    assert ensure_metadata["warnings"] == ["test warning"]
+    assert artifacts == [artifact]
+    assert edges == [edge]
+    assert rebuild_metadata["rebuilt"] is True
+    assert rebuild_metadata["artifact_count"] == 1
+    assert rebuild_metadata["artifact_counts_by_type"] == {"skill": 1}
+    assert rebuild_metadata["edge_count"] == 1
+    assert "build_duration_ms" in rebuild_metadata
+
+
+def test_forced_rebuild_rejects_none_result(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+
+    def no_build(*args: Any, **kwargs: Any) -> None:
+        return None
+
+    service = LocalKnowledgeService(config, build_index_fn=no_build)
+
+    with pytest.raises(RuntimeError, match="forced index rebuild returned no result"):
+        service.rebuild()
+
+
+@pytest.mark.parametrize("initial_state", ["missing", "older", "corrupt"])
+def test_managed_missing_older_and_corrupt_indexes_auto_rebuild(
+    tmp_path: Path,
+    initial_state: str,
+) -> None:
+    config = make_config(tmp_path)
+    db_path = config.state_dir / "index.sqlite"
+    if initial_state == "older":
+        config.state_dir.mkdir(parents=True)
+        with closing(sqlite3.connect(db_path)) as connection, connection:
+            connection.execute(f"PRAGMA user_version={index.INDEX_FORMAT_VERSION - 1}")
+    elif initial_state == "corrupt":
+        write(db_path, "not a sqlite database")
+
+    service = LocalKnowledgeService(config)
+    rebuilt_path, metadata = service.ensure_index()
+    rows, query_metadata = service.search("quartz inventory", limit=5)
+
+    assert rebuilt_path == db_path
+    assert metadata["rebuilt"] is True
+    assert query_metadata["rebuilt"] is False
+    assert index.index_format_state(db_path) == ("current", index.INDEX_FORMAT_VERSION)
+    assert any(row["id"] == "skill:quartz-router" for row in rows)
+
+
+@pytest.mark.parametrize("operation", ["ensure", "rebuild"])
+def test_newer_index_is_refused_before_scanning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    operation: str,
+) -> None:
+    config = make_config(tmp_path)
+    config.state_dir.mkdir(parents=True)
+    db_path = config.state_dir / "index.sqlite"
+    with closing(sqlite3.connect(db_path)) as connection, connection:
+        connection.execute(f"PRAGMA user_version={index.INDEX_FORMAT_VERSION + 1}")
+    before = db_path.read_bytes()
+
+    def fail_scan(*args: Any, **kwargs: Any) -> list[Artifact]:
+        raise AssertionError("newer index must be refused before scanning")
+
+    monkeypatch.setattr(index, "collect_artifacts", fail_scan)
+    service = LocalKnowledgeService(config)
+
+    with pytest.raises(index.NewerIndexFormatError) as raised:
+        service.ensure_index() if operation == "ensure" else service.rebuild()
+
+    assert raised.value.expected_version == index.INDEX_FORMAT_VERSION
+    assert raised.value.actual_version == index.INDEX_FORMAT_VERSION + 1
+    assert db_path.read_bytes() == before
+
+
+def test_clean_nonforced_ensure_skips_scan(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config = make_config(tmp_path)
+    service = LocalKnowledgeService(config)
+    service.rebuild()
+
+    def fail_scan(*args: Any, **kwargs: Any) -> list[Artifact]:
+        raise AssertionError("clean current index must not be scanned")
+
+    monkeypatch.setattr(index, "collect_artifacts", fail_scan)
+
+    _db_path, metadata = service.ensure_index()
+
+    assert metadata["rebuilt"] is False
+    assert metadata["index_format_version"] == index.INDEX_FORMAT_VERSION
+
+
+def test_dirty_token_triggers_one_builder_owned_rebuild(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = make_config(tmp_path)
+    LocalKnowledgeService(config).rebuild()
+    marker = config.state_dir / index.DIRTY_MARKER_NAME
+    marker.mkdir(parents=True, exist_ok=True)
+    token = marker / "new-okf"
+    token.touch()
+    original_build = index.build_index
+    forces: list[bool] = []
+
+    def counted_build(
+        root: Path,
+        output_dir: Path,
+        duckwork_home: Path,
+        settings: IndexSettings,
+        *,
+        force: bool,
+    ) -> tuple[list[Artifact], list[Edge]] | None:
+        forces.append(force)
+        return original_build(root, output_dir, duckwork_home, settings, force=force)
+
+    monkeypatch.setattr(index, "build_index", counted_build)
+    service = LocalKnowledgeService(config)
+
+    _db_path, metadata = service.ensure_index()
+
+    assert forces == [False]
+    assert metadata["rebuilt"] is True
+    assert not token.exists()
+
+
+def test_build_search_get_and_neighbors_outputs(tmp_path: Path) -> None:
+    service = LocalKnowledgeService(make_config(tmp_path))
+
+    artifacts, edges, build_metadata = service.rebuild()
+    search_rows, search_metadata = service.search("quartz inventory", limit=3)
+    artifact, get_metadata = service.get("skill:quartz-router")
+    neighbors, neighbors_metadata = service.neighbors("skill:quartz-router")
+
+    assert {item.id for item in artifacts} >= {"skill:quartz-router", "skill:quartz-helper"}
+    assert edges
+    assert build_metadata["rebuilt"] is True
+    assert search_rows[0]["id"] == "skill:quartz-router"
+    assert search_metadata["rebuilt"] is False
+    assert artifact is not None
+    assert artifact["id"] == "skill:quartz-router"
+    assert get_metadata["rebuilt"] is False
+    assert any(row["id"] == "skill:quartz-helper" for row in neighbors)
+    assert neighbors_metadata["rebuilt"] is False
+
+
+def test_caller_owned_db_never_ensures_or_consumes_managed_tokens(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    caller_state = tmp_path / "caller-state"
+    build = index.build_index(
+        config.source_root,
+        caller_state,
+        config.duckwork_home,
+        config.index_settings,
+    )
+    assert build is not None
+    caller_db = caller_state / "index.sqlite"
+    marker = config.state_dir / index.DIRTY_MARKER_NAME
+    marker.mkdir(parents=True)
+    token = marker / "managed-dirty"
+    token.touch()
+
+    def unexpected_build(*args: Any, **kwargs: Any) -> None:
+        raise AssertionError("caller-owned DB must not invoke the builder")
+
+    service = LocalKnowledgeService(config, build_index_fn=unexpected_build)
+
+    search_rows, _ = service.search(
+        "quartz inventory",
+        limit=3,
+        rebuild=True,
+        db_path=caller_db,
+        ensure=True,
+    )
+    artifact, _ = service.get(
+        "skill:quartz-router",
+        rebuild=True,
+        db_path=caller_db,
+        ensure=True,
+    )
+    neighbors, _ = service.neighbors(
+        "skill:quartz-router",
+        rebuild=True,
+        db_path=caller_db,
+        ensure=True,
+    )
+
+    assert search_rows
+    assert artifact is not None
+    assert neighbors
+    assert token.is_file()
+    assert not (config.state_dir / index.INDEX_BUILD_LOCK_NAME).exists()
+    assert not (config.state_dir / index.INDEX_BUILD_TRANSACTION_LOCK_NAME).exists()
+
+
+def test_query_dependency_injection_and_configured_paths_are_stable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = make_config(tmp_path)
+    calls: list[tuple[Any, ...]] = []
+
+    def search_fn(db_path: Path, query: str, *, limit: int, artifact_type: str | None = None) -> list[dict[str, Any]]:
+        calls.append(("search", db_path, query, limit, artifact_type))
+        return [{"id": "skill:injected"}]
+
+    def get_fn(db_path: Path, artifact_id: str) -> dict[str, Any]:
+        calls.append(("get", db_path, artifact_id))
+        return {"id": artifact_id}
+
+    def neighbors_fn(db_path: Path, artifact_id: str) -> list[dict[str, Any]]:
+        calls.append(("neighbors", db_path, artifact_id))
+        return [{"id": "skill:neighbor"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        get_artifact_fn=get_fn,
+        get_neighbors_fn=neighbors_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    monkeypatch.setenv("LOCAL_KNOWLEDGE_STATE_DIR", str(tmp_path / "changed-state"))
+
+    assert service.db_path == config.state_dir / "index.sqlite"
+    assert service.usage_db_path == config.state_dir / "usage.sqlite"
+    assert service.search("injected", limit=4, artifact_type="skill", ensure=False)[0] == [
+        {"id": "skill:injected"}
+    ]
+    assert service.get("skill:injected", ensure=False)[0] == {"id": "skill:injected"}
+    assert service.neighbors("skill:injected", ensure=False)[0] == [{"id": "skill:neighbor"}]
+    assert calls == [
+        ("search", service.db_path, "injected", 4, "skill"),
+        ("get", service.db_path, "skill:injected"),
+        ("neighbors", service.db_path, "skill:injected"),
+    ]
+
+
+def test_search_promotes_explicit_useful_route_via_concise_typed_retry(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    target_id = "skill_support_doc:daily-diary-cron-evidence-patterns"
+    broad_query = "daily diary sqlite3 fallback cron json parsing evidence"
+    accepted_query = "daily diary cron evidence patterns"
+    calls: list[tuple[str, int, str | None]] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append((query, limit, artifact_type))
+        if query == accepted_query:
+            return [
+                {"id": target_id, "type": "skill_support_doc"},
+                {"id": "skill_support_doc:other", "type": "skill_support_doc"},
+            ]
+        return [{"id": "runbook:noise", "type": "runbook"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query=accepted_query,
+        artifact_id=target_id,
+        note="accepted route",
+        context={},
+    )
+
+    rows, metadata = service.search(broad_query, limit=3, ensure=False)
+
+    assert [row["id"] for row in rows] == [target_id, "runbook:noise"]
+    trace = metadata[ROUTING_TRACE_METADATA_KEY]
+    assert isinstance(trace, SearchRoutingTrace)
+    assert trace.baseline_ids == ("runbook:noise",)
+    assert trace.decision.rows is rows
+    assert trace.decision.outcome is RouteOutcome.PROMOTED_RETRY
+    assert trace.decision.feedback_id == 1
+    assert trace.decision.artifact_id == target_id
+    assert trace.decision.feedback_max_id == 1
+    assert calls == [
+        (broad_query, 3, None),
+        (accepted_query, 10, "skill_support_doc"),
+    ]
+
+
+def test_search_moves_an_explicit_useful_candidate_to_rank_one_without_retry(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    target_id = "runbook:application-release-versions"
+    calls: list[tuple[str, int, str | None]] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append((query, limit, artifact_type))
+        return [
+            {"id": "skill:self-hosted-application-operations", "type": "skill"},
+            {"id": target_id, "type": "runbook"},
+        ]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query="docker image version report",
+        artifact_id=target_id,
+        note="accepted route",
+        context={},
+    )
+
+    rows, metadata = service.search(
+        "docker image version report needs update", limit=2, ensure=False
+    )
+
+    assert [row["id"] for row in rows] == [
+        target_id,
+        "skill:self-hosted-application-operations",
+    ]
+    assert calls == [("docker image version report needs update", 2, None)]
+    trace = metadata[ROUTING_TRACE_METADATA_KEY]
+    assert isinstance(trace, SearchRoutingTrace)
+    assert trace.baseline_ids == (
+        "skill:self-hosted-application-operations",
+        target_id,
+    )
+    assert trace.decision.outcome is RouteOutcome.PROMOTED_EXISTING
+
+
+def test_search_ignores_route_after_newer_negative_feedback(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    target_id = "skill_support_doc:daily-diary-cron-evidence-patterns"
+    calls: list[tuple[str, int, str | None]] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append((query, limit, artifact_type))
+        return [{"id": "runbook:noise", "type": "runbook"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    for rating in ("useful", "wrong_artifact"):
+        service.feedback(
+            rating=rating,
+            event_id=None,
+            query="daily diary cron evidence patterns",
+            artifact_id=target_id,
+            note="route judgment",
+            context={},
+        )
+
+    rows, _metadata = service.search(
+        "daily diary sqlite3 fallback cron json parsing evidence",
+        limit=3,
+        ensure=False,
+    )
+
+    assert [row["id"] for row in rows] == ["runbook:noise"]
+    assert calls == [("daily diary sqlite3 fallback cron json parsing evidence", 3, None)]
+
+
+def test_search_feedback_prior_respects_explicit_type_and_managed_index_scope(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    target_id = "runbook:application-release-versions"
+    calls: list[tuple[Path, str, int, str | None]] = []
+
+    def search_fn(
+        db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append((db_path, query, limit, artifact_type))
+        return [{"id": "script:baseline", "type": "script"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query="docker image version report",
+        artifact_id=target_id,
+        note="accepted route",
+        context={},
+    )
+
+    filtered, _ = service.search(
+        "docker image version report needs update",
+        limit=2,
+        artifact_type="script",
+        ensure=False,
+    )
+    caller_db = tmp_path / "caller" / "index.sqlite"
+    caller_owned, _ = service.search(
+        "docker image version report needs update",
+        limit=2,
+        db_path=caller_db,
+        ensure=False,
+    )
+
+    assert filtered == [{"id": "script:baseline", "type": "script"}]
+    assert caller_owned == [{"id": "script:baseline", "type": "script"}]
+    assert calls == [
+        (service.db_path, "docker image version report needs update", 2, "script"),
+        (caller_db, "docker image version report needs update", 2, None),
+    ]
+
+
+def test_search_feedback_prior_is_fail_open_for_corrupt_usage_db(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    config.state_dir.mkdir(parents=True)
+    config.state_dir.joinpath("usage.sqlite").write_text("not sqlite", encoding="utf-8")
+    calls: list[str] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append(query)
+        return [{"id": "runbook:baseline", "type": "runbook"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+
+    rows, metadata = service.search("ordinary query", limit=3, ensure=False)
+
+    assert rows == [{"id": "runbook:baseline", "type": "runbook"}]
+    assert calls == ["ordinary query"]
+    trace = metadata[ROUTING_TRACE_METADATA_KEY]
+    assert isinstance(trace, SearchRoutingTrace)
+    assert trace.baseline_ids == ("runbook:baseline",)
+    assert trace.decision.outcome is RouteOutcome.NONE
+    assert trace.decision.feedback_max_id is None
+
+
+def test_search_no_route_captures_empty_and_irrelevant_feedback_high_water(
+    tmp_path: Path,
+) -> None:
+    config = make_config(tmp_path)
+
+    def search_fn(*_args: Any, **_kwargs: Any) -> list[dict[str, Any]]:
+        return [{"id": "runbook:baseline", "type": "runbook"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.record_usage(tool="knowledge_get", success=True)
+
+    empty_rows, empty_metadata = service.search("ordinary query", limit=3, ensure=False)
+    empty_trace = empty_metadata[ROUTING_TRACE_METADATA_KEY]
+    assert isinstance(empty_trace, SearchRoutingTrace)
+    assert empty_trace.decision.feedback_max_id == 0
+    assert empty_trace.baseline_ids == tuple(str(row["id"]) for row in empty_rows)
+
+    service.feedback(
+        rating="other",
+        event_id=None,
+        query="irrelevant neutral feedback",
+        artifact_id="runbook:irrelevant",
+        note="not used by today's matcher",
+        context={},
+    )
+    final_rows, final_metadata = service.search("ordinary query", limit=3, ensure=False)
+    final_trace = final_metadata[ROUTING_TRACE_METADATA_KEY]
+    assert isinstance(final_trace, SearchRoutingTrace)
+    assert final_trace.decision.outcome is RouteOutcome.NONE
+    assert final_trace.decision.feedback_max_id == 1
+    assert final_trace.baseline_ids == tuple(str(row["id"]) for row in final_rows)
+
+
+def test_failed_route_verification_preserves_baseline_bytes_and_provenance(
+    tmp_path: Path,
+) -> None:
+    config = make_config(tmp_path)
+    broad_query = "daily diary sqlite fallback cron evidence"
+    accepted_query = "daily diary cron evidence"
+    target_id = "runbook:missing-target"
+    baseline = [
+        {"id": "runbook:first", "type": "runbook", "title": "First"},
+        {"id": "runbook:second", "type": "runbook", "title": "Second"},
+    ]
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        if query == accepted_query:
+            return [{"id": "runbook:other", "type": "runbook"}]
+        return baseline
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query=accepted_query,
+        artifact_id=target_id,
+        note="accepted route",
+        context={},
+    )
+    baseline_bytes = json.dumps(
+        baseline, ensure_ascii=False, separators=(",", ":")
+    ).encode()
+
+    rows, metadata = service.search(broad_query, limit=2, ensure=False)
+
+    assert (
+        json.dumps(rows, ensure_ascii=False, separators=(",", ":")).encode()
+        == baseline_bytes
+    )
+    trace = metadata[ROUTING_TRACE_METADATA_KEY]
+    assert isinstance(trace, SearchRoutingTrace)
+    assert trace.decision.rows is baseline
+    assert trace.decision.outcome is RouteOutcome.VERIFICATION_FAILED
+    assert trace.decision.feedback_id == 1
+    assert trace.decision.artifact_id == target_id
+    assert trace.decision.feedback_max_id == 1
+
+
+def test_search_feedback_prior_preserves_different_quoted_phrase_order(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    target_id = "runbook:quoted-order"
+    calls: list[str] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append(query)
+        return [
+            {"id": "runbook:strict-baseline", "type": "runbook"},
+            {"id": target_id, "type": "runbook"},
+        ]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query='"unique exact phrase"',
+        artifact_id=target_id,
+        note="accepted route",
+        context={},
+    )
+
+    service.feedback(
+        rating="wrong_artifact",
+        event_id=None,
+        query='"phrase exact unique"',
+        artifact_id=target_id,
+        note="rejected reordered phrase",
+        context={},
+    )
+
+    reordered_rows, _metadata = service.search('"phrase exact unique"', limit=2, ensure=False)
+    accepted_rows, _metadata = service.search('"unique exact phrase"', limit=2, ensure=False)
+
+    assert [row["id"] for row in reordered_rows] == ["runbook:strict-baseline", target_id]
+    assert [row["id"] for row in accepted_rows] == [target_id, "runbook:strict-baseline"]
+    assert calls == ['"phrase exact unique"', '"unique exact phrase"']
+
+
+def test_search_feedback_prior_does_not_inject_an_unverified_artifact(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    target_id = "runbook:accepted-but-stale"
+    accepted_query = "docker image version report"
+    calls: list[tuple[str, str | None]] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append((query, artifact_type))
+        if query == accepted_query:
+            return [{"id": "runbook:replacement", "type": "runbook"}]
+        return [{"id": "skill:baseline", "type": "skill"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query=accepted_query,
+        artifact_id=target_id,
+        note="accepted route",
+        context={},
+    )
+
+    rows, _metadata = service.search(
+        "docker image version report needs update",
+        limit=3,
+        ensure=False,
+    )
+
+    assert rows == [{"id": "skill:baseline", "type": "skill"}]
+    assert calls == [
+        ("docker image version report needs update", None),
+        (accepted_query, "runbook"),
+    ]
+
+
+def test_search_feedback_retry_failure_returns_the_baseline_results(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    accepted_query = "docker image version report"
+    calls: list[str] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append(query)
+        if query == accepted_query:
+            raise RuntimeError("optional retry failed")
+        return [{"id": "skill:baseline", "type": "skill"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query=accepted_query,
+        artifact_id="runbook:accepted",
+        note="accepted route",
+        context={},
+    )
+
+    rows, _metadata = service.search(
+        "docker image version report needs update",
+        limit=3,
+        ensure=False,
+    )
+
+    assert rows == [{"id": "skill:baseline", "type": "skill"}]
+    assert calls == ["docker image version report needs update", accepted_query]
+
+
+@pytest.mark.parametrize("stored_root_state", ["missing", "different"])
+def test_search_feedback_prior_requires_a_matching_index_source_root(
+    tmp_path: Path,
+    stored_root_state: str,
+) -> None:
+    config = make_config(tmp_path)
+    target_id = "runbook:accepted"
+    calls: list[str] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append(query)
+        return [
+            {"id": "runbook:baseline", "type": "runbook"},
+            {"id": target_id, "type": "runbook"},
+        ]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {
+            "index_exists": True,
+        },
+        index_source_root_fn=lambda _path: (
+            None if stored_root_state == "missing" else str(tmp_path / "other-root")
+        ),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query="docker image version report",
+        artifact_id=target_id,
+        note="accepted route",
+        context={},
+    )
+
+    rows, _metadata = service.search(
+        "docker image version report needs update",
+        limit=2,
+        ensure=False,
+    )
+
+    assert [row["id"] for row in rows] == ["runbook:baseline", target_id]
+    assert calls == ["docker image version report needs update"]
+
+
+def test_search_feedback_prior_ignores_feedback_from_another_root(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    calls: list[str] = []
+
+    def search_fn(
+        _db_path: Path,
+        query: str,
+        *,
+        limit: int,
+        artifact_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        calls.append(query)
+        return [{"id": "runbook:baseline", "type": "runbook"}]
+
+    service = LocalKnowledgeService(
+        config,
+        search_index_fn=search_fn,
+        index_metadata_fn=lambda _path: {"index_exists": True},
+        index_source_root_fn=lambda _path: str(config.source_root),
+    )
+    service.feedback(
+        rating="useful",
+        event_id=None,
+        query="docker image version report",
+        artifact_id="runbook:accepted",
+        note="accepted route",
+        context={},
+    )
+    with closing(sqlite3.connect(service.usage_db_path)) as connection, connection:
+        connection.execute("UPDATE feedback SET root = ?", (str(tmp_path / "other-root"),))
+
+    rows, _metadata = service.search(
+        "docker image version report needs update",
+        limit=3,
+        ensure=False,
+    )
+
+    assert rows == [{"id": "runbook:baseline", "type": "runbook"}]
+    assert calls == ["docker image version report needs update"]
+
+
+def test_record_usage_owns_paths_and_merges_base_metadata(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    captured: dict[str, Any] = {}
+
+    def record(root: Path, **kwargs: Any) -> int:
+        captured["root"] = root
+        captured.update(kwargs)
+        return 41
+
+    service = LocalKnowledgeService(config, record_usage_fn=record)
+    target = tmp_path / "external" / "index.sqlite"
+
+    event_id = service.record_usage(
+        tool="knowledge_search",
+        success=True,
+        db_path=target,
+        index_metadata={"index_exists": True, "plugin_version": "provided-version"},
+    )
+
+    assert event_id == 41
+    assert captured["root"] == config.source_root
+    assert captured["usage_db_path"] == service.usage_db_path
+    metadata = captured["index_metadata"]
+    assert metadata["root"] == str(config.source_root)
+    assert metadata["state_dir"] == str(config.state_dir)
+    assert metadata["db_path"] == str(target)
+    assert metadata["source_root_source"] == "config"
+    assert metadata["state_dir_source"] == "config"
+    assert metadata["include_markdown_docs_source"] == "config"
+    assert metadata["warnings"] == ["test warning"]
+    assert metadata["index_exists"] is True
+    assert metadata["plugin_version"] == "provided-version"
+
+
+def test_usage_success_error_and_failures_are_best_effort(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    service = LocalKnowledgeService(config)
+
+    success_id = service.record_usage(
+        tool="knowledge_search",
+        success=True,
+        query="quartz inventory",
+        result_count=1,
+    )
+    error_id = service.record_usage(
+        tool="knowledge_search",
+        success=False,
+        query="broken query",
+        error="synthetic failure",
+    )
+
+    assert isinstance(success_id, int)
+    assert isinstance(error_id, int)
+    with sqlite3.connect(service.usage_db_path) as connection:
+        rows = connection.execute("SELECT success, error FROM usage_events ORDER BY id").fetchall()
+    assert rows == [(1, None), (0, "synthetic failure")]
+
+    def fail_record(*args: Any, **kwargs: Any) -> int:
+        raise sqlite3.OperationalError("telemetry unavailable")
+
+    failing = LocalKnowledgeService(config, record_usage_fn=fail_record)
+    assert failing.record_usage(tool="knowledge_search", success=True) is None
+    assert failing.record_usage(tool="knowledge_search", success=False, error="lookup failed") is None
+
+
+def test_feedback_failures_remain_strict(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+
+    def fail_feedback(*args: Any, **kwargs: Any) -> tuple[int, int]:
+        raise sqlite3.OperationalError("feedback unavailable")
+
+    service = LocalKnowledgeService(config, record_feedback_fn=fail_feedback)
+
+    with pytest.raises(sqlite3.OperationalError, match="feedback unavailable"):
+        service.feedback(
+            rating="useful",
+            event_id=None,
+            query="quartz inventory",
+            artifact_id="skill:quartz-router",
+            note="",
+            context={},
+        )
+
+
+def test_feedback_report_and_evaluation_preserve_paths_and_behavior(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    service = LocalKnowledgeService(config)
+    service.rebuild()
+    usage_event_id = service.record_usage(
+        tool="knowledge_search",
+        success=True,
+        query="quartz inventory",
+        artifact_id="skill:quartz-router",
+        result_count=1,
+        top_ids=["skill:quartz-router"],
+    )
+    assert isinstance(usage_event_id, int)
+
+    feedback_id, feedback_usage_event_id = service.feedback(
+        rating="useful",
+        event_id=usage_event_id,
+        query="quartz inventory",
+        artifact_id="skill:quartz-router",
+        note="correct route",
+        context={"session_id": "session-1"},
+    )
+    report = service.usage_report(days=30, limit=10)
+    before_evaluation = (
+        report["total_events"],
+        report["feedback_count"],
+    )
+    evaluation = service.evaluate()
+    after_evaluation = service.usage_report(days=30, limit=10)
+
+    assert isinstance(feedback_id, int)
+    assert isinstance(feedback_usage_event_id, int)
+    assert report["usage_db_path"] == str(service.usage_db_path)
+    assert before_evaluation == (2, 1)
+    assert evaluation.metrics.query_count == 1
+    assert evaluation.metrics.hit_at_1 == 1.0
+    assert evaluation.metrics.parent_equiv_hit_at_10 == 1.0
+    assert (after_evaluation["total_events"], after_evaluation["feedback_count"]) == before_evaluation
+
+
+def test_feedback_report_and_evaluation_injections_receive_configured_paths(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    calls: list[tuple[Any, ...]] = []
+    expected_report = object()
+
+    def feedback_fn(root: Path, **kwargs: Any) -> tuple[int, int]:
+        calls.append(("feedback", root, kwargs["usage_db_path"]))
+        return 41, 42
+
+    def report_fn(root: Path, **kwargs: Any) -> dict[str, Any]:
+        calls.append(("report", root, kwargs["usage_db_path"], kwargs["days"], kwargs["limit"]))
+        return {"success": True}
+
+    def evaluate_fn(db_path: Path, usage_db_path: Path) -> Any:
+        calls.append(("evaluate", db_path, usage_db_path))
+        return expected_report
+
+    service = LocalKnowledgeService(
+        config,
+        record_feedback_fn=feedback_fn,
+        usage_report_fn=report_fn,
+        evaluate_fn=evaluate_fn,
+    )
+
+    assert service.feedback(
+        rating="useful",
+        event_id=None,
+        query="",
+        artifact_id="",
+        note="",
+        context={},
+    ) == (41, 42)
+    assert service.usage_report(days=7, limit=3) == {"success": True}
+    assert service.evaluate() is expected_report
+    assert calls == [
+        ("feedback", config.source_root, service.usage_db_path),
+        ("report", config.source_root, service.usage_db_path, 7, 3),
+        ("evaluate", service.db_path, service.usage_db_path),
+    ]
+
+
+def test_usage_report_rechecks_candidates_and_only_promotes_verified_corrections(
+    tmp_path: Path,
+) -> None:
+    config = make_config(tmp_path)
+    config.state_dir.mkdir(parents=True, exist_ok=True)
+    (config.state_dir / "index.sqlite").touch()
+    candidates = [
+        {
+            "id": 1,
+            "rating": "noisy",
+            "effective_query": "already fixed",
+            "expected_artifact_id": "skill:fixed",
+            "linkage_quality": "verified_event",
+        },
+        {
+            "id": 2,
+            "rating": "wrong_artifact",
+            "effective_query": "needs correction",
+            "expected_artifact_id": "skill:target",
+            "linkage_quality": "verified_event",
+        },
+        {
+            "id": 3,
+            "rating": "missing",
+            "effective_query": "missing target",
+            "expected_artifact_id": "skill:gone",
+            "linkage_quality": "verified_event",
+        },
+        {
+            "id": 4,
+            "rating": "noisy",
+            "effective_query": "direct correction",
+            "expected_artifact_id": "skill:direct",
+            "linkage_quality": "direct_query",
+        },
+    ]
+    search_calls: list[tuple[str, str | None, int]] = []
+
+    def report_fn(root: Path, **kwargs: Any) -> dict[str, Any]:
+        return {
+            "success": True,
+            "search_issue_candidates": candidates,
+            "improvement_candidates": [{"type": "tool_error", "error": "kept"}],
+        }
+
+    def search_fn(
+        db_path: Path,
+        query: str,
+        *,
+        artifact_type: str | None,
+        limit: int,
+    ) -> list[dict[str, Any]]:
+        search_calls.append((query, artifact_type, limit))
+        top_ids = {
+            "already fixed": "skill:fixed",
+            "needs correction": "skill:other",
+            "missing target": "skill:other",
+            "direct correction": "skill:other",
+        }
+        return [{"id": top_ids[query]}]
+
+    current_ids = {"skill:fixed", "skill:target", "skill:direct"}
+    service = LocalKnowledgeService(
+        config,
+        usage_report_fn=report_fn,
+        search_index_fn=search_fn,
+        get_artifact_fn=lambda _db, artifact_id: (
+            {"id": artifact_id} if artifact_id in current_ids else None
+        ),
+        index_source_root_fn=lambda _db: str(config.source_root),
+    )
+
+    report = service.usage_report(days=30, limit=10)
+
+    assert [row["id"] for row in report["behaviorally_resolved_negative_feedback"]] == [1]
+    assert [row["id"] for row in report["correction_candidates"]] == [2]
+    assert [row["id"] for row in report["unresolved_negative_with_current_expected_target"]] == [2, 4]
+    assert [row["id"] for row in report["unresolved_negative_without_current_expected_target"]] == [3]
+    assert [row["type"] for row in report["improvement_candidates"]] == [
+        "tool_error",
+        "correction_candidate",
+        "feedback_missing",
+        "feedback_noisy",
+    ]
+    assert search_calls == [
+        ("already fixed", None, 1),
+        ("needs correction", None, 1),
+        ("missing target", None, 1),
+        ("direct correction", None, 1),
+    ]
+
+
+def test_usage_report_retains_candidates_when_current_index_is_unavailable(tmp_path: Path) -> None:
+    config = make_config(tmp_path)
+    candidate = {
+        "id": 9,
+        "rating": "missing",
+        "effective_query": "cannot replay",
+        "expected_artifact_id": "skill:target",
+        "linkage_quality": "verified_event",
+    }
+    service = LocalKnowledgeService(
+        config,
+        usage_report_fn=lambda _root, **_kwargs: {
+            "success": True,
+            "search_issue_candidates": [candidate],
+            "improvement_candidates": [{"type": "feedback_missing", **candidate}],
+        },
+    )
+
+    report = service.usage_report(days=30, limit=10)
+
+    assert report["behaviorally_resolved_negative_feedback"] == []
+    assert report["correction_candidates"] == []
+    assert report["improvement_candidates"][0]["candidate_kind"] == "current_state_unavailable"

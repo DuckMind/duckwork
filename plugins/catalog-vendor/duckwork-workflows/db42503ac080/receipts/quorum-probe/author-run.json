@@ -1,0 +1,44 @@
+{
+  "template": "quorum-probe",
+  "receipt_kind": "author-run",
+  "author_estate": "estate seat (WOFS peer author)",
+  "graph_file": "examples/build/quorum-probe.workflow.json",
+  "graph_sha256": "12f190cf1095753b1b86eb66d8f9bc407c253b4a8755e5384e72618ce8ed1ecd",
+  "source_digest": "8915e542bb60fbfa4095fcfae50caed35b9046839cb45fe97631b156ba4449a7",
+  "laps": {
+    "lap_a_first_launch_of_revised_graph": {
+      "graph_sha256": "ec47ee1602a1f8dbe928ddbdf6e5f35203bba5e2bc8e53db9668d639e940e9ce",
+      "run_id": "20261001-195726-core10-qp-lapa",
+      "outcome": "done (runner respawned once after an unrelated host restart mid-reconcile; replay-skip law resumed it with zero re-spawn of finished nodes). probe_race done: 2/3 items done, sleep-marshal error_class 'cancelled' with cancel evidence 'had output at quorum moment (log 360 bytes, workdir 1 files)'. probe_coverage done: 2/3 items done, archive-lane failed error_class 'schema' (honest dead-lane contract death). reconcile: coverage_gaps ['archive-lane'], verdict starts 'COVERAGE GAP'. report: both shapes stated as incomplete sets, cancel evidence quoted verbatim.",
+      "runner_exit": {
+        "reason": "done",
+        "at": "2026-10-01T20:04:09+00:00",
+        "graph_fingerprint": "42d3240199bff120"
+      }
+    },
+    "lap_b_clean_single_pass": {
+      "graph_sha256": "ec47ee1602a1f8dbe928ddbdf6e5f35203bba5e2bc8e53db9668d639e940e9ce",
+      "run_id": "20261001-200437-core10-qp-lapb",
+      "outcome": "done 5/5 nodes terminal, single pass. probe_race: quorum 2/3 committed — host-kernel 'Linux', utc-clock '2026-10-01T20:04:51Z' done; sleep-marshal cancelled at the quorum moment with recorded cancel evidence (log 360 bytes, workdir 1 files), excluded from failure math (failed_items 0, cancelled_items 1). probe_coverage barrier: NO cancellation — archive-lane died its schema contract honestly (error_class 'schema', failed_items 1) and the node still committed at majority with the two survivors. reconcile vs the master catalog: covered [disk-space, machine-arch], coverage_gaps [archive-lane], verdict 'COVERAGE GAP: archive-lane has no committed answer ... 2 of 3 declared lanes answered'. report: honest_statement names BOTH incomplete sets — race 2-of-3 (quorum cancel) and coverage 2-of-3 (dead lane) — full roster never claimed.",
+      "runner_exit": {
+        "reason": "done",
+        "at": "2026-10-01T20:06:24+00:00",
+        "graph_fingerprint": "42d3240199bff120"
+      }
+    },
+    "lap_c_cold_reader_hardening_on_shipped_bytes": {
+      "graph_sha256": "12f190cf1095753b1b86eb66d8f9bc407c253b4a8755e5384e72618ce8ed1ecd",
+      "run_id": "20261001-205926-core10-qp-lapc",
+      "outcome": "done 5/5 terminal, single pass, on the bytes this receipt now pins. Same teaching behaviors after hardening: race 2/3 done + sleep-marshal cancelled at the quorum moment (cancel evidence 'had output at quorum moment (log 360 bytes, workdir 0 files)'); archive-lane died its schema contract ('LANE OFFLINE: archive-lane answers nothing.', error_class 'schema', failed_items 1); reconcile verdict 'COVERAGE GAP: archive-lane has no committed answer (self-declared LANE OFFLINE, status failed, no obs)'; report read the DISPATCHED ROSTER FROM all_results (not a baked list) and stated both incomplete sets.",
+      "runner_exit": {
+        "reason": "done",
+        "at": "2026-10-01T21:01:11+00:00",
+        "graph_fingerprint": "346aaa22707e5904"
+      }
+    }
+  },
+  "cold_reader_gate": "Two independent zero-context readers (rubric: agree on gate semantics from file content alone) ran on the pre-C bytes: both decoded the quorum-cancel mechanism and the catalog-vs-all_results coverage check correctly, both ruled sleep-marshal and archive-lane deaths as designed (not bugs), both confirmed nothing in the file permits claiming a full roster. Both independently flagged the SAME real flaw: report declared no `inputs` although its goal cites '## Inputs' (reviewer 2 called it 'the file's one real inconsistency'), plus report baked the race roster into its reply template and the synth nodes had no machine-checkable output contracts. Fixed in the shipped bytes (lap C): report declares inputs:['probe_race.all_results','reconcile'] + output schema {quorum_shape,coverage_shape,honest_statement}; reconcile gets schema {covered,coverage_gaps,verdict}; report reads the dispatched roster from all_results instead of a hardcoded list. Accepted-with-note: the dead-lane simulation is prompt-enforced (a disobedient model could fabricate obs and slip the 'LANE OFFLINE' heuristic) — a teaching honesty demo, not an adversarial control; recorded here as the reviewer's accepted caveat.",
+  "folded_contrast_proof": "Both modes get a real author lap on every launch (the two fan-outs are independent shapes side by side, so one run exercises quorum AND barrier). QUORUM SIDE: the explicit fanout.quorum=2 closed probe_race on the first two committers and the engine SIGKILLed sleep-marshal mid-'sleep 360'; the straggler record carries error_class 'cancelled' + the honest cancel snapshot, and the committed node counts failed_items 0 / cancelled_items 1 — speed bought, coverage conceded. COVERAGE SIDE: probe_coverage carries NO quorum — nothing was cancelled; the simulated dead lane (archive-lane, plain-text 'LANE OFFLINE' reply, JSON forbidden by its item goal) died its reply contract as error_class 'schema' and reconcile, reading ONLY the catalog's coverage_lanes roster, named it a loud COVERAGE GAP while the node itself stayed done — coverage bought with latency, no silent loss.",
+  "authoring_defects_found_and_fixed": "Pre-fix lap 20261001-160110 (graph sha 182d1f78...) surfaced two real author bugs, both fixed before the shipped bytes: (1) the dead-lane child satisfied the fenced-json contract anyway — self-wrapping 'LANE OFFLINE' inside an obs envelope — so the item goal now FORBIDS any JSON-shaped reply, making the dead lane fail schema like a real dead lane (proved: lap A/B archive-lane is error_class 'schema', no obs); (2) reconcile died cap_exhausted at max_turns 3 burning turns exploring beyond its ## Inputs — synths now carry a judge-only directive and turns to spare (8), and report declares after_partial:true so a harvest-on-death partial cannot darken the leaf via blocked_by_partial_ancestor (the pre-fix run's exact death).",
+  "hygiene": "validate [] (shared validator + door), test_packaging ALL PASS, test_validate_0923 ALL PASS (53) incl. this example, make_public 0 scrub hits, graph_check OK, duckwork plugins validate 'Validation passed.'; zero vendor ids, zero host paths in the graph (commands are uname/date/df/sleep self-contained), engine checkout at main (8ce2a50 lineage)."
+}

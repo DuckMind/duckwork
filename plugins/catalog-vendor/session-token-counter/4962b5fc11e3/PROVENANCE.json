@@ -1,0 +1,270 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "session-token-counter",
+  "content_id": "4962b5fc11e3",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 30,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "2f9aebd7a15d0a9e62d69bff1c888bb93ec5eab506a9db272de622defda4735c"
+    },
+    {
+      "bytes": 1066,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "1c0eddbfb6ece68fa6090208b37710bef3b4a51645ed64be8753a67af0e28553"
+    },
+    {
+      "bytes": 2144,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "2b6dc0f6f02e8cf72dabe535c8bdc961867f512174c294a106639a5b4944305d"
+    },
+    {
+      "bytes": 1659,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "d3586c874aadcf9184d065fbc77bccd40b2b6f3f055d977c851bc6c56b53f31e"
+    },
+    {
+      "bytes": 248,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "278928aed7c181b6952eaea6417b819ac326f40a22326877617a8f767e49666c"
+    },
+    {
+      "bytes": 4120,
+      "mode": "100644",
+      "path": "tests/plugin.test.mjs",
+      "sha256": "bb309c723831b4b3d41a67d080300018ceaddc6f62e9e2ed487587b883fc1184"
+    }
+  ],
+  "input_manifest_sha256": "4962b5fc11e33404957e5fc029837083ddb5dbd0f775c59a9fcfc067485c17a4",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "1c0eddbfb6ece68fa6090208b37710bef3b4a51645ed64be8753a67af0e28553",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "desktop/plugin.js",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Vsemagush/session-token-counter",
+    "sha": "0e69fb55f8ec11a44f32382c59746e13a30bc179",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/Vsemagush/session-token-counter",
+  "original_sha": "0e69fb55f8ec11a44f32382c59746e13a30bc179",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "2f9aebd7a15d0a9e62d69bff1c888bb93ec5eab506a9db272de622defda4735c",
+      "bytes": 30,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "1c0eddbfb6ece68fa6090208b37710bef3b4a51645ed64be8753a67af0e28553",
+      "bytes": 1066,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "ec8d70e06fdaebab05fbeb71e894a6f647455d68de5ded4b8a1f242ecf1aaecd",
+      "bytes": 2164,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "15e7e0821e88fb26da84326f2652423bf1ff8c7d4f9ce81cf76c700a1e553787",
+      "bytes": 1665,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "cc7b2aae6c9f4ff6cb4804dbd5efe4fcb0b24bc742c030b5287608cf432c6909",
+      "bytes": 252,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/plugin.test.mjs",
+      "sha256": "bb309c723831b4b3d41a67d080300018ceaddc6f62e9e2ed487587b883fc1184",
+      "bytes": 4120,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "98d584632047a833db2ee8a69737cefac0a36e89f7cb0452e25285237d2e54aa",
+  "pin_verification": {
+    "archive_bytes": 4297,
+    "archive_sha256": "252ddb0bc9778fb8646d167e4bfa724a86d77e8d0de0dac377f58c6bf1085296",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "0e69fb55f8ec11a44f32382c59746e13a30bc179",
+    "verified_commit_marker": "0e69fb55f8ec11a44f32382c59746e13a30bc179"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "0fc2ee302e229a7705ac16d42207062d73df094c3b63c82cfdddc782ac099163",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "2f9aebd7a15d0a9e62d69bff1c888bb93ec5eab506a9db272de622defda4735c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2f9aebd7a15d0a9e62d69bff1c888bb93ec5eab506a9db272de622defda4735c",
+        "source": ".gitignore",
+        "final_output_sha256": "2f9aebd7a15d0a9e62d69bff1c888bb93ec5eab506a9db272de622defda4735c",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "2f9aebd7a15d0a9e62d69bff1c888bb93ec5eab506a9db272de622defda4735c"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "1c0eddbfb6ece68fa6090208b37710bef3b4a51645ed64be8753a67af0e28553",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "1c0eddbfb6ece68fa6090208b37710bef3b4a51645ed64be8753a67af0e28553",
+        "source": "LICENSE",
+        "final_output_sha256": "1c0eddbfb6ece68fa6090208b37710bef3b4a51645ed64be8753a67af0e28553",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "1c0eddbfb6ece68fa6090208b37710bef3b4a51645ed64be8753a67af0e28553"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "2b6dc0f6f02e8cf72dabe535c8bdc961867f512174c294a106639a5b4944305d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec8d70e06fdaebab05fbeb71e894a6f647455d68de5ded4b8a1f242ecf1aaecd",
+        "source": "README.md",
+        "final_output_sha256": "ec8d70e06fdaebab05fbeb71e894a6f647455d68de5ded4b8a1f242ecf1aaecd",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "ec8d70e06fdaebab05fbeb71e894a6f647455d68de5ded4b8a1f242ecf1aaecd"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "d3586c874aadcf9184d065fbc77bccd40b2b6f3f055d977c851bc6c56b53f31e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "15e7e0821e88fb26da84326f2652423bf1ff8c7d4f9ce81cf76c700a1e553787",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "15e7e0821e88fb26da84326f2652423bf1ff8c7d4f9ce81cf76c700a1e553787",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "15e7e0821e88fb26da84326f2652423bf1ff8c7d4f9ce81cf76c700a1e553787"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "278928aed7c181b6952eaea6417b819ac326f40a22326877617a8f767e49666c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cc7b2aae6c9f4ff6cb4804dbd5efe4fcb0b24bc742c030b5287608cf432c6909",
+        "source": "plugin.yaml",
+        "final_output_sha256": "cc7b2aae6c9f4ff6cb4804dbd5efe4fcb0b24bc742c030b5287608cf432c6909",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "cc7b2aae6c9f4ff6cb4804dbd5efe4fcb0b24bc742c030b5287608cf432c6909"
+      },
+      {
+        "destination": "tests/plugin.test.mjs",
+        "input_sha256": "bb309c723831b4b3d41a67d080300018ceaddc6f62e9e2ed487587b883fc1184",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bb309c723831b4b3d41a67d080300018ceaddc6f62e9e2ed487587b883fc1184",
+        "source": "tests/plugin.test.mjs",
+        "final_output_sha256": "bb309c723831b4b3d41a67d080300018ceaddc6f62e9e2ed487587b883fc1184",
+        "cli_destination": "tests/plugin.test.mjs",
+        "previous_staging_sha256": "bb309c723831b4b3d41a67d080300018ceaddc6f62e9e2ed487587b883fc1184"
+      }
+    ],
+    "manifest_sha256": "d02bb9c55a866b224c784cf95df0169b5195f31c7471991926f93bfebd993293",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "plugin.yaml": "plugin.yaml",
+    "tests/plugin.test.mjs": "tests/plugin.test.mjs"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "session-token-counter",
+    "python_files_compiled": 0,
+    "secret_findings": 0
+  },
+  "canonical_slug": "session-token-counter",
+  "catalog_file": "src/plugin-catalog/session-token-counter.yaml",
+  "identity": {
+    "catalog_id": "session-token-counter",
+    "canonical_slug": "session-token-counter",
+    "original_manifest_name": "session-token-counter",
+    "rebranded_manifest_name": "session-token-counter",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "8112c74cc2a959eff0e0d02ddc0da6b8140e1659c084c0cb96b4d0fec2481ca2",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

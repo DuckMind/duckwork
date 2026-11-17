@@ -1,0 +1,192 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "The verifier is a different seat that trusts none of the builder's claims \u2014 machine-checked, not self-attested",
+        "The run branches ON the verdict: verified lands behind a human gate, failed escalates with the ladder empty",
+        "Both arms converge on a single closeout paragraph the owner skims first"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "8 nodes: build -> independent verify -> 2-way route -> land_gate | escalate, joined at closeout",
+        "No retry loop ships here: a failed attempt reaches the owner, not another silent build",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "build",
+      "id": "build-verify",
+      "to": "verify",
+      "variant": "default"
+    },
+    {
+      "from": "verify",
+      "id": "verify-route-verified",
+      "to": "route-verified",
+      "variant": "security"
+    },
+    {
+      "from": "verify",
+      "id": "verify-route-failed",
+      "to": "route-failed",
+      "variant": "security"
+    },
+    {
+      "from": "route-verified",
+      "id": "route-verified-land_gate",
+      "to": "land_gate",
+      "variant": "default"
+    },
+    {
+      "from": "land_gate",
+      "id": "land_gate-land",
+      "to": "land",
+      "variant": "default"
+    },
+    {
+      "from": "route-failed",
+      "id": "route-failed-escalate",
+      "to": "escalate",
+      "variant": "default"
+    },
+    {
+      "from": "land",
+      "id": "land-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "escalate",
+      "id": "escalate-closeout",
+      "to": "closeout",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "gates",
+      "label": "Gates",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/escalation-ladder.html",
+    "quality_profile": "standard",
+    "subtitle": "A fix attempt that is machine-verified, then BRANCHED on the verification verdict: verified lands behind a hum",
+    "title": "escalation-ladder"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "build",
+      "label": "Build",
+      "lane": "work",
+      "sublabel": "attempt the fix on",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "verify",
+      "label": "Verify",
+      "lane": "work",
+      "sublabel": "you are the",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "route-failed",
+      "label": "Route Failed",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "route-verified",
+      "label": "Route Verified",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 3,
+      "id": "escalate",
+      "label": "Escalate",
+      "lane": "gates",
+      "sublabel": "verification failed",
+      "tag": "human hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "land_gate",
+      "label": "Land Gate",
+      "lane": "gates",
+      "sublabel": "verification passed",
+      "tag": "human hold",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 4,
+      "id": "land",
+      "label": "Land",
+      "lane": "work",
+      "sublabel": "the judge answered",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "closeout",
+      "label": "Closeout",
+      "lane": "work",
+      "sublabel": "write the one",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 4
+    },
+    {
+      "fromCol": 5,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 5
+    }
+  ],
+  "schema_version": 2
+}

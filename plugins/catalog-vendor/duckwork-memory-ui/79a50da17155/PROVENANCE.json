@@ -1,0 +1,760 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-memory-ui",
+  "content_id": "79a50da17155",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1268,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "7324ee122de979a2fced80491f01ed86ffac8fcc8f6e1686db510468b3e7f72c"
+    },
+    {
+      "bytes": 240,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "887bebf5b096892a6758f0191780329a79c888b7d370cf913698433d1f6bb1d7"
+    },
+    {
+      "bytes": 1066,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119"
+    },
+    {
+      "bytes": 8451,
+      "mode": "100644",
+      "path": "README-API.md",
+      "sha256": "0eb2ce8bdfc271e1b24f692a3af31d8492145417ee9ba7400fdbaa777492ab2a"
+    },
+    {
+      "bytes": 27111,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "249e81cef6bc53684db48b0af018b3afc0dfd2e9b7ee12bfa59c1ae3edc4c288"
+    },
+    {
+      "bytes": 524,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "c83e1da30ef3e65d55f86f072ca1409b43bc06d8c144dd9605c7091b05a4cdb8"
+    },
+    {
+      "bytes": 57838,
+      "mode": "100644",
+      "path": "dashboard/dist/index.js",
+      "sha256": "091f1a48853bd866412707624fe0dd3f28bbb1d3a3fe2234bc49ea165d69610f"
+    },
+    {
+      "bytes": 7121,
+      "mode": "100644",
+      "path": "dashboard/dist/style.css",
+      "sha256": "02882ff8c2eff627ad341f234ae0cac6c2702f2827bfbf846262b356373e92d2"
+    },
+    {
+      "bytes": 388,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "b6175ff85806093b1ed27b0fa497b6780edab9fa08d7cb7418d29a0614141f28"
+    },
+    {
+      "bytes": 112816,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "9259cc28a1e4b06903296722a0b2b0316b00b693db1912db0a98ae9d00745e8d"
+    },
+    {
+      "bytes": 71588,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "3f750f3a091b4ba419e1f8bf7d88336247deb5fec0d093d2c762c65690cfab20"
+    },
+    {
+      "bytes": 2061171,
+      "mode": "100644",
+      "path": "docs/assets/hermes-memory-dashboard1.png",
+      "sha256": "50f12609bdd69a52300fd460bb07fd9c109e7fb33a4b938f0c04d7a2d661c5b4"
+    },
+    {
+      "bytes": 2629728,
+      "mode": "100644",
+      "path": "docs/assets/hermes-memory-dashboard2.png",
+      "sha256": "893d8761e0ac4f6eb63f78604f7ce350b2f514daa7e820c672f951a4849e6ba3"
+    },
+    {
+      "bytes": 2243728,
+      "mode": "100644",
+      "path": "docs/assets/hermes-memory-dashboard3.png",
+      "sha256": "ae07ec5e6b1d43a7394a3625a00a8c4ca798a178d71e21b4e97874bb9941037f"
+    },
+    {
+      "bytes": 3523577,
+      "mode": "100644",
+      "path": "docs/assets/hermes-memory-dashboard4.png",
+      "sha256": "09773e0ada68ac8a26d650b89b6d349557db59cce9ebf51c19a7b78c59601f10"
+    },
+    {
+      "bytes": 2920139,
+      "mode": "100644",
+      "path": "docs/assets/hermes-memory-dashboard5.png",
+      "sha256": "b77f4792f831af75ac7d16e30e7ee8f63d6af54fa360345fd643264ac14097f2"
+    },
+    {
+      "bytes": 2368821,
+      "mode": "100644",
+      "path": "docs/assets/hermes-memory-dashboard6.png",
+      "sha256": "bbf4372bc93ddf15ca8881210ef5af48108fe8670f43279f70ddbda59ec1988a"
+    },
+    {
+      "bytes": 2513116,
+      "mode": "100644",
+      "path": "docs/assets/hermes-memory-dashboard7.png",
+      "sha256": "ad4db9afb8b9d29dbc90c72246ff169cd9a5930c7e7da9976b3a012fde026b4b"
+    },
+    {
+      "bytes": 273,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "d24937a6aa79a3e57ab5713500cb1697855db9c8f51b9e081887b1b889ecf7f7"
+    },
+    {
+      "bytes": 7985,
+      "mode": "100644",
+      "path": "tests/dashboard_profile_scope_smoke.mjs",
+      "sha256": "de7bbed3ee3d1ad059b0b47e96ffc8a49adc713f3dc1a0b433dd41c156e39664"
+    },
+    {
+      "bytes": 7284,
+      "mode": "100644",
+      "path": "tests/desktop_plugin_smoke.mjs",
+      "sha256": "de03f66a482518c9a6fba8d8c3b9af7b4030eab62f7d265099cfb91e701f554a"
+    },
+    {
+      "bytes": 11470,
+      "mode": "100644",
+      "path": "tests/profile_scope_http_regression.py",
+      "sha256": "2d1400a63857b8deb28861f84b193deefeb3448132da05b83349642ac2ea5bab"
+    },
+    {
+      "bytes": 6221,
+      "mode": "100644",
+      "path": "tests/test_desktop_plugin.py",
+      "sha256": "c6184b52ac3da9c64cbd50bf79fe9383dc34215a441c8faa680a80007416accf"
+    },
+    {
+      "bytes": 77829,
+      "mode": "100644",
+      "path": "tests/test_plugin_api.py",
+      "sha256": "9ea32f114560b592a95eab11dd1e8d8a572401369d7fffc20c75705cceab1d40"
+    },
+    {
+      "bytes": 10346,
+      "mode": "100644",
+      "path": "tests/test_profile_scope_regressions.py",
+      "sha256": "04acf48fd35a12e89c8029243b075961c2fb74c7fe59ff71fa019ccae61d591e"
+    }
+  ],
+  "input_manifest_sha256": "79a50da171557de9c4c7686e4884d01308214789eff9ab7561ecfc155aef19d9",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README-API.md",
+      "README.md",
+      "__init__.py",
+      "dashboard/dist/index.js",
+      "dashboard/manifest.json",
+      "dashboard/plugin_api.py",
+      "desktop/plugin.js",
+      "plugin.yaml",
+      "tests/dashboard_profile_scope_smoke.mjs",
+      "tests/desktop_plugin_smoke.mjs",
+      "tests/profile_scope_http_regression.py",
+      "tests/test_desktop_plugin.py",
+      "tests/test_plugin_api.py",
+      "tests/test_profile_scope_regressions.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/xraysight/hermes-memory-ui",
+    "sha": "8f798101a61a33e16f38eb22c3b1ad50ef9484a1",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/xraysight/hermes-memory-ui",
+  "original_sha": "8f798101a61a33e16f38eb22c3b1ad50ef9484a1",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "7324ee122de979a2fced80491f01ed86ffac8fcc8f6e1686db510468b3e7f72c",
+      "bytes": 1268,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "887bebf5b096892a6758f0191780329a79c888b7d370cf913698433d1f6bb1d7",
+      "bytes": 240,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+      "bytes": 1066,
+      "mode": "100644"
+    },
+    {
+      "path": "README-API.md",
+      "sha256": "e8ba6f7a30efe69df91ae82dfab4b41a54cc8038a847eee1a0ab0d5d9c99208d",
+      "bytes": 8517,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "b4978efd5f1b883eeac0b6a68f6a915d425cc14f743ad54f08ae029e1f19116e",
+      "bytes": 27395,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "dc783b16e318717b9cbd216f3a53d6b4e893f587e3b2c79b99509f9856d338af",
+      "bytes": 532,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/index.js",
+      "sha256": "4f2ebb1fd638aedd8f33f8f8158d0eb1da1aad1871eddbc60b064559bc8b64e6",
+      "bytes": 57874,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/dist/style.css",
+      "sha256": "02882ff8c2eff627ad341f234ae0cac6c2702f2827bfbf846262b356373e92d2",
+      "bytes": 7121,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "fc80add7bcf675d44ed5b32ae1dfff4702975df788a3e8381b55fb7908c9057d",
+      "bytes": 392,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "fa36e4adc0536d8ab76553ceb4571d16eaf81c7acc24fc0cd4021eb2d0560625",
+      "bytes": 113028,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "d902eb89698ec7c9789ecc5e1e2f10109c95a3d7d733b28879d70cafe2ac6437",
+      "bytes": 71612,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/duckwork-memory-dashboard1.png",
+      "sha256": "50f12609bdd69a52300fd460bb07fd9c109e7fb33a4b938f0c04d7a2d661c5b4",
+      "bytes": 2061171,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/duckwork-memory-dashboard2.png",
+      "sha256": "893d8761e0ac4f6eb63f78604f7ce350b2f514daa7e820c672f951a4849e6ba3",
+      "bytes": 2629728,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/duckwork-memory-dashboard3.png",
+      "sha256": "ae07ec5e6b1d43a7394a3625a00a8c4ca798a178d71e21b4e97874bb9941037f",
+      "bytes": 2243728,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/duckwork-memory-dashboard4.png",
+      "sha256": "09773e0ada68ac8a26d650b89b6d349557db59cce9ebf51c19a7b78c59601f10",
+      "bytes": 3523577,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/duckwork-memory-dashboard5.png",
+      "sha256": "b77f4792f831af75ac7d16e30e7ee8f63d6af54fa360345fd643264ac14097f2",
+      "bytes": 2920139,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/duckwork-memory-dashboard6.png",
+      "sha256": "bbf4372bc93ddf15ca8881210ef5af48108fe8670f43279f70ddbda59ec1988a",
+      "bytes": 2368821,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/duckwork-memory-dashboard7.png",
+      "sha256": "ad4db9afb8b9d29dbc90c72246ff169cd9a5930c7e7da9976b3a012fde026b4b",
+      "bytes": 2513116,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "7e4789b29678eb25374c3a6ac8d477d2a8207185084bee2e7cd6e6d3ea7d2115",
+      "bytes": 268,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/dashboard_profile_scope_smoke.mjs",
+      "sha256": "c2a879f515b83b9eef770b612e423a94ae18bfd050005bb208e01cbc060225be",
+      "bytes": 8015,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/desktop_plugin_smoke.mjs",
+      "sha256": "c0b146a8fb4dbba0fc2020d8616caa083052ec5c36e65d9a387bb8e0d37e91c6",
+      "bytes": 7288,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/profile_scope_http_regression.py",
+      "sha256": "df17db64ad8d8fd0fd8f128fc3f484e51b42df8cc4d37f9dbe1740ebfea2383e",
+      "bytes": 11538,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_desktop_plugin.py",
+      "sha256": "8eef43ab5ace3f2af831cf9aab1ffe2255807cd09ffe725d76530f996d12ee9f",
+      "bytes": 6243,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_api.py",
+      "sha256": "4b554f8bc397e9c6940f81f75933928088e2bcda20b42b61c50b480f1c1d6b19",
+      "bytes": 77949,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_profile_scope_regressions.py",
+      "sha256": "ac94689510fc8780c6b2015182211416edfb499cfe043c2c5b5225330c938216",
+      "bytes": 10414,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "aa909831521de66698f6fa71e18c826641d3bba64f83452d867cea7bef9bdd75",
+  "pin_verification": {
+    "archive_bytes": 18338414,
+    "archive_sha256": "43b59fd376b22a9fec62340db6b25269173a2b1dbfa3be22b32a6988ee81e7a8",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "8f798101a61a33e16f38eb22c3b1ad50ef9484a1",
+    "verified_commit_marker": "8f798101a61a33e16f38eb22c3b1ad50ef9484a1"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "cb197afea42e4ef5622ca15a9a33caee323bed4b1a5cc22f43d78572d1940dc3",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "7324ee122de979a2fced80491f01ed86ffac8fcc8f6e1686db510468b3e7f72c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7324ee122de979a2fced80491f01ed86ffac8fcc8f6e1686db510468b3e7f72c",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "7324ee122de979a2fced80491f01ed86ffac8fcc8f6e1686db510468b3e7f72c",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "7324ee122de979a2fced80491f01ed86ffac8fcc8f6e1686db510468b3e7f72c"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "887bebf5b096892a6758f0191780329a79c888b7d370cf913698433d1f6bb1d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "887bebf5b096892a6758f0191780329a79c888b7d370cf913698433d1f6bb1d7",
+        "source": ".gitignore",
+        "final_output_sha256": "887bebf5b096892a6758f0191780329a79c888b7d370cf913698433d1f6bb1d7",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "887bebf5b096892a6758f0191780329a79c888b7d370cf913698433d1f6bb1d7"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+        "source": "LICENSE",
+        "final_output_sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119"
+      },
+      {
+        "destination": "README-API.md",
+        "input_sha256": "0eb2ce8bdfc271e1b24f692a3af31d8492145417ee9ba7400fdbaa777492ab2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e8ba6f7a30efe69df91ae82dfab4b41a54cc8038a847eee1a0ab0d5d9c99208d",
+        "source": "README-API.md",
+        "final_output_sha256": "e8ba6f7a30efe69df91ae82dfab4b41a54cc8038a847eee1a0ab0d5d9c99208d",
+        "cli_destination": "README-API.md",
+        "previous_staging_sha256": "e8ba6f7a30efe69df91ae82dfab4b41a54cc8038a847eee1a0ab0d5d9c99208d"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "249e81cef6bc53684db48b0af018b3afc0dfd2e9b7ee12bfa59c1ae3edc4c288",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "aa447469cd2a108ed7be713aa1275370f65a41d6cee826846cf066ad6020b404",
+        "source": "README.md",
+        "final_output_sha256": "b4978efd5f1b883eeac0b6a68f6a915d425cc14f743ad54f08ae029e1f19116e",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "aa447469cd2a108ed7be713aa1275370f65a41d6cee826846cf066ad6020b404"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "c83e1da30ef3e65d55f86f072ca1409b43bc06d8c144dd9605c7091b05a4cdb8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dc783b16e318717b9cbd216f3a53d6b4e893f587e3b2c79b99509f9856d338af",
+        "source": "__init__.py",
+        "final_output_sha256": "dc783b16e318717b9cbd216f3a53d6b4e893f587e3b2c79b99509f9856d338af",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "dc783b16e318717b9cbd216f3a53d6b4e893f587e3b2c79b99509f9856d338af"
+      },
+      {
+        "destination": "dashboard/dist/index.js",
+        "input_sha256": "091f1a48853bd866412707624fe0dd3f28bbb1d3a3fe2234bc49ea165d69610f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4f2ebb1fd638aedd8f33f8f8158d0eb1da1aad1871eddbc60b064559bc8b64e6",
+        "source": "dashboard/dist/index.js",
+        "final_output_sha256": "4f2ebb1fd638aedd8f33f8f8158d0eb1da1aad1871eddbc60b064559bc8b64e6",
+        "cli_destination": "dashboard/dist/index.js",
+        "previous_staging_sha256": "4f2ebb1fd638aedd8f33f8f8158d0eb1da1aad1871eddbc60b064559bc8b64e6"
+      },
+      {
+        "destination": "dashboard/dist/style.css",
+        "input_sha256": "02882ff8c2eff627ad341f234ae0cac6c2702f2827bfbf846262b356373e92d2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "02882ff8c2eff627ad341f234ae0cac6c2702f2827bfbf846262b356373e92d2",
+        "source": "dashboard/dist/style.css",
+        "final_output_sha256": "02882ff8c2eff627ad341f234ae0cac6c2702f2827bfbf846262b356373e92d2",
+        "cli_destination": "dashboard/dist/style.css",
+        "previous_staging_sha256": "02882ff8c2eff627ad341f234ae0cac6c2702f2827bfbf846262b356373e92d2"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "b6175ff85806093b1ed27b0fa497b6780edab9fa08d7cb7418d29a0614141f28",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc80add7bcf675d44ed5b32ae1dfff4702975df788a3e8381b55fb7908c9057d",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "fc80add7bcf675d44ed5b32ae1dfff4702975df788a3e8381b55fb7908c9057d",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "fc80add7bcf675d44ed5b32ae1dfff4702975df788a3e8381b55fb7908c9057d"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "9259cc28a1e4b06903296722a0b2b0316b00b693db1912db0a98ae9d00745e8d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fa36e4adc0536d8ab76553ceb4571d16eaf81c7acc24fc0cd4021eb2d0560625",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "fa36e4adc0536d8ab76553ceb4571d16eaf81c7acc24fc0cd4021eb2d0560625",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "fa36e4adc0536d8ab76553ceb4571d16eaf81c7acc24fc0cd4021eb2d0560625"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "3f750f3a091b4ba419e1f8bf7d88336247deb5fec0d093d2c762c65690cfab20",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d902eb89698ec7c9789ecc5e1e2f10109c95a3d7d733b28879d70cafe2ac6437",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "d902eb89698ec7c9789ecc5e1e2f10109c95a3d7d733b28879d70cafe2ac6437",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "d902eb89698ec7c9789ecc5e1e2f10109c95a3d7d733b28879d70cafe2ac6437"
+      },
+      {
+        "destination": "docs/assets/duckwork-memory-dashboard1.png",
+        "input_sha256": "50f12609bdd69a52300fd460bb07fd9c109e7fb33a4b938f0c04d7a2d661c5b4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "50f12609bdd69a52300fd460bb07fd9c109e7fb33a4b938f0c04d7a2d661c5b4",
+        "source": "docs/assets/hermes-memory-dashboard1.png",
+        "final_output_sha256": "50f12609bdd69a52300fd460bb07fd9c109e7fb33a4b938f0c04d7a2d661c5b4",
+        "cli_destination": "docs/assets/duckwork-memory-dashboard1.png",
+        "previous_staging_sha256": "50f12609bdd69a52300fd460bb07fd9c109e7fb33a4b938f0c04d7a2d661c5b4"
+      },
+      {
+        "destination": "docs/assets/duckwork-memory-dashboard2.png",
+        "input_sha256": "893d8761e0ac4f6eb63f78604f7ce350b2f514daa7e820c672f951a4849e6ba3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "893d8761e0ac4f6eb63f78604f7ce350b2f514daa7e820c672f951a4849e6ba3",
+        "source": "docs/assets/hermes-memory-dashboard2.png",
+        "final_output_sha256": "893d8761e0ac4f6eb63f78604f7ce350b2f514daa7e820c672f951a4849e6ba3",
+        "cli_destination": "docs/assets/duckwork-memory-dashboard2.png",
+        "previous_staging_sha256": "893d8761e0ac4f6eb63f78604f7ce350b2f514daa7e820c672f951a4849e6ba3"
+      },
+      {
+        "destination": "docs/assets/duckwork-memory-dashboard3.png",
+        "input_sha256": "ae07ec5e6b1d43a7394a3625a00a8c4ca798a178d71e21b4e97874bb9941037f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ae07ec5e6b1d43a7394a3625a00a8c4ca798a178d71e21b4e97874bb9941037f",
+        "source": "docs/assets/hermes-memory-dashboard3.png",
+        "final_output_sha256": "ae07ec5e6b1d43a7394a3625a00a8c4ca798a178d71e21b4e97874bb9941037f",
+        "cli_destination": "docs/assets/duckwork-memory-dashboard3.png",
+        "previous_staging_sha256": "ae07ec5e6b1d43a7394a3625a00a8c4ca798a178d71e21b4e97874bb9941037f"
+      },
+      {
+        "destination": "docs/assets/duckwork-memory-dashboard4.png",
+        "input_sha256": "09773e0ada68ac8a26d650b89b6d349557db59cce9ebf51c19a7b78c59601f10",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "09773e0ada68ac8a26d650b89b6d349557db59cce9ebf51c19a7b78c59601f10",
+        "source": "docs/assets/hermes-memory-dashboard4.png",
+        "final_output_sha256": "09773e0ada68ac8a26d650b89b6d349557db59cce9ebf51c19a7b78c59601f10",
+        "cli_destination": "docs/assets/duckwork-memory-dashboard4.png",
+        "previous_staging_sha256": "09773e0ada68ac8a26d650b89b6d349557db59cce9ebf51c19a7b78c59601f10"
+      },
+      {
+        "destination": "docs/assets/duckwork-memory-dashboard5.png",
+        "input_sha256": "b77f4792f831af75ac7d16e30e7ee8f63d6af54fa360345fd643264ac14097f2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b77f4792f831af75ac7d16e30e7ee8f63d6af54fa360345fd643264ac14097f2",
+        "source": "docs/assets/hermes-memory-dashboard5.png",
+        "final_output_sha256": "b77f4792f831af75ac7d16e30e7ee8f63d6af54fa360345fd643264ac14097f2",
+        "cli_destination": "docs/assets/duckwork-memory-dashboard5.png",
+        "previous_staging_sha256": "b77f4792f831af75ac7d16e30e7ee8f63d6af54fa360345fd643264ac14097f2"
+      },
+      {
+        "destination": "docs/assets/duckwork-memory-dashboard6.png",
+        "input_sha256": "bbf4372bc93ddf15ca8881210ef5af48108fe8670f43279f70ddbda59ec1988a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bbf4372bc93ddf15ca8881210ef5af48108fe8670f43279f70ddbda59ec1988a",
+        "source": "docs/assets/hermes-memory-dashboard6.png",
+        "final_output_sha256": "bbf4372bc93ddf15ca8881210ef5af48108fe8670f43279f70ddbda59ec1988a",
+        "cli_destination": "docs/assets/duckwork-memory-dashboard6.png",
+        "previous_staging_sha256": "bbf4372bc93ddf15ca8881210ef5af48108fe8670f43279f70ddbda59ec1988a"
+      },
+      {
+        "destination": "docs/assets/duckwork-memory-dashboard7.png",
+        "input_sha256": "ad4db9afb8b9d29dbc90c72246ff169cd9a5930c7e7da9976b3a012fde026b4b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ad4db9afb8b9d29dbc90c72246ff169cd9a5930c7e7da9976b3a012fde026b4b",
+        "source": "docs/assets/hermes-memory-dashboard7.png",
+        "final_output_sha256": "ad4db9afb8b9d29dbc90c72246ff169cd9a5930c7e7da9976b3a012fde026b4b",
+        "cli_destination": "docs/assets/duckwork-memory-dashboard7.png",
+        "previous_staging_sha256": "ad4db9afb8b9d29dbc90c72246ff169cd9a5930c7e7da9976b3a012fde026b4b"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "d24937a6aa79a3e57ab5713500cb1697855db9c8f51b9e081887b1b889ecf7f7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "48db6f564e7044b5fb540e588593375579de81138eb0bd026926a095a84e048f",
+        "source": "plugin.yaml",
+        "final_output_sha256": "7e4789b29678eb25374c3a6ac8d477d2a8207185084bee2e7cd6e6d3ea7d2115",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "48db6f564e7044b5fb540e588593375579de81138eb0bd026926a095a84e048f"
+      },
+      {
+        "destination": "tests/dashboard_profile_scope_smoke.mjs",
+        "input_sha256": "de7bbed3ee3d1ad059b0b47e96ffc8a49adc713f3dc1a0b433dd41c156e39664",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c2a879f515b83b9eef770b612e423a94ae18bfd050005bb208e01cbc060225be",
+        "source": "tests/dashboard_profile_scope_smoke.mjs",
+        "final_output_sha256": "c2a879f515b83b9eef770b612e423a94ae18bfd050005bb208e01cbc060225be",
+        "cli_destination": "tests/dashboard_profile_scope_smoke.mjs",
+        "previous_staging_sha256": "c2a879f515b83b9eef770b612e423a94ae18bfd050005bb208e01cbc060225be"
+      },
+      {
+        "destination": "tests/desktop_plugin_smoke.mjs",
+        "input_sha256": "de03f66a482518c9a6fba8d8c3b9af7b4030eab62f7d265099cfb91e701f554a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c0b146a8fb4dbba0fc2020d8616caa083052ec5c36e65d9a387bb8e0d37e91c6",
+        "source": "tests/desktop_plugin_smoke.mjs",
+        "final_output_sha256": "c0b146a8fb4dbba0fc2020d8616caa083052ec5c36e65d9a387bb8e0d37e91c6",
+        "cli_destination": "tests/desktop_plugin_smoke.mjs",
+        "previous_staging_sha256": "c0b146a8fb4dbba0fc2020d8616caa083052ec5c36e65d9a387bb8e0d37e91c6"
+      },
+      {
+        "destination": "tests/profile_scope_http_regression.py",
+        "input_sha256": "2d1400a63857b8deb28861f84b193deefeb3448132da05b83349642ac2ea5bab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "df17db64ad8d8fd0fd8f128fc3f484e51b42df8cc4d37f9dbe1740ebfea2383e",
+        "source": "tests/profile_scope_http_regression.py",
+        "final_output_sha256": "df17db64ad8d8fd0fd8f128fc3f484e51b42df8cc4d37f9dbe1740ebfea2383e",
+        "cli_destination": "tests/profile_scope_http_regression.py",
+        "previous_staging_sha256": "df17db64ad8d8fd0fd8f128fc3f484e51b42df8cc4d37f9dbe1740ebfea2383e"
+      },
+      {
+        "destination": "tests/test_desktop_plugin.py",
+        "input_sha256": "c6184b52ac3da9c64cbd50bf79fe9383dc34215a441c8faa680a80007416accf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8eef43ab5ace3f2af831cf9aab1ffe2255807cd09ffe725d76530f996d12ee9f",
+        "source": "tests/test_desktop_plugin.py",
+        "final_output_sha256": "8eef43ab5ace3f2af831cf9aab1ffe2255807cd09ffe725d76530f996d12ee9f",
+        "cli_destination": "tests/test_desktop_plugin.py",
+        "previous_staging_sha256": "8eef43ab5ace3f2af831cf9aab1ffe2255807cd09ffe725d76530f996d12ee9f"
+      },
+      {
+        "destination": "tests/test_plugin_api.py",
+        "input_sha256": "9ea32f114560b592a95eab11dd1e8d8a572401369d7fffc20c75705cceab1d40",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4b554f8bc397e9c6940f81f75933928088e2bcda20b42b61c50b480f1c1d6b19",
+        "source": "tests/test_plugin_api.py",
+        "final_output_sha256": "4b554f8bc397e9c6940f81f75933928088e2bcda20b42b61c50b480f1c1d6b19",
+        "cli_destination": "tests/test_plugin_api.py",
+        "previous_staging_sha256": "4b554f8bc397e9c6940f81f75933928088e2bcda20b42b61c50b480f1c1d6b19"
+      },
+      {
+        "destination": "tests/test_profile_scope_regressions.py",
+        "input_sha256": "04acf48fd35a12e89c8029243b075961c2fb74c7fe59ff71fa019ccae61d591e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ac94689510fc8780c6b2015182211416edfb499cfe043c2c5b5225330c938216",
+        "source": "tests/test_profile_scope_regressions.py",
+        "final_output_sha256": "ac94689510fc8780c6b2015182211416edfb499cfe043c2c5b5225330c938216",
+        "cli_destination": "tests/test_profile_scope_regressions.py",
+        "previous_staging_sha256": "ac94689510fc8780c6b2015182211416edfb499cfe043c2c5b5225330c938216"
+      }
+    ],
+    "manifest_sha256": "7a2187eb7a78e91afad80014ee3d4761a4f226ddf8328a6e3083c229ae3dbd44",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README-API.md": "README-API.md",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "dashboard/dist/index.js": "dashboard/dist/index.js",
+    "dashboard/dist/style.css": "dashboard/dist/style.css",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "docs/assets/hermes-memory-dashboard1.png": "docs/assets/hermes-memory-dashboard1.png",
+    "docs/assets/hermes-memory-dashboard2.png": "docs/assets/hermes-memory-dashboard2.png",
+    "docs/assets/hermes-memory-dashboard3.png": "docs/assets/hermes-memory-dashboard3.png",
+    "docs/assets/hermes-memory-dashboard4.png": "docs/assets/hermes-memory-dashboard4.png",
+    "docs/assets/hermes-memory-dashboard5.png": "docs/assets/hermes-memory-dashboard5.png",
+    "docs/assets/hermes-memory-dashboard6.png": "docs/assets/hermes-memory-dashboard6.png",
+    "docs/assets/hermes-memory-dashboard7.png": "docs/assets/hermes-memory-dashboard7.png",
+    "plugin.yaml": "plugin.yaml",
+    "tests/dashboard_profile_scope_smoke.mjs": "tests/dashboard_profile_scope_smoke.mjs",
+    "tests/desktop_plugin_smoke.mjs": "tests/desktop_plugin_smoke.mjs",
+    "tests/profile_scope_http_regression.py": "tests/profile_scope_http_regression.py",
+    "tests/test_desktop_plugin.py": "tests/test_desktop_plugin.py",
+    "tests/test_plugin_api.py": "tests/test_plugin_api.py",
+    "tests/test_profile_scope_regressions.py": "tests/test_profile_scope_regressions.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-memory-ui",
+    "python_files_compiled": 6,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-memory-ui",
+  "catalog_file": "src/plugin-catalog/duckwork-memory-ui.yaml",
+  "identity": {
+    "catalog_id": "hermes-memory-ui",
+    "canonical_slug": "duckwork-memory-ui",
+    "original_manifest_name": "hermes-memory-ui",
+    "rebranded_manifest_name": "duckwork-memory-ui",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "6626bac7c446e63fe6913b87ea7e1b341b2a2922261146233e5baa61b02c45ba",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "aa447469cd2a108ed7be713aa1275370f65a41d6cee826846cf066ad6020b404",
+          "after_sha256": "b4978efd5f1b883eeac0b6a68f6a915d425cc14f743ad54f08ae029e1f19116e",
+          "before_bytes": 27403,
+          "after_bytes": 27395,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "48db6f564e7044b5fb540e588593375579de81138eb0bd026926a095a84e048f",
+          "after_sha256": "7e4789b29678eb25374c3a6ac8d477d2a8207185084bee2e7cd6e6d3ea7d2115",
+          "before_bytes": 277,
+          "after_bytes": 268,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

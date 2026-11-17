@@ -1,0 +1,50 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install ruff==0.16.5
+      - run: ruff format --check .
+      - run: ruff check .
+      - run: python -m unittest discover -s tests -v
+
+  duckwork:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: plugin
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: v0.21.7
+          path: duckwork-agent
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          # Duckwork v0.21.7 declares its runtime dependencies for Python >= 3.14 only.
+          python-version: "3.14"
+      - run: python -m pip install -e ./duckwork-agent
+      - name: Integration tests
+        working-directory: plugin
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: PYTHONPATH="$GITHUB_WORKSPACE/duckwork-agent" python -m unittest discover -s tests -v
+      - name: Plugin doctor and validate
+        working-directory: plugin
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: |
+          duckwork plugins doctor . --ci
+          duckwork plugins validate .

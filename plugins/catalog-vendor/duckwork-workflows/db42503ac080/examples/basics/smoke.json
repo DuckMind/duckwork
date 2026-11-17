@@ -1,0 +1,48 @@
+{
+  "name": "smoke",
+  "nodes": [
+    {
+      "id": "one",
+      "type": "agent",
+      "goal": "Reply with exactly this json and nothing else: {\"result\": \"ping-one\"}",
+      "schema": {
+        "type": "object",
+        "required": [
+          "result"
+        ]
+      },
+      "max_turns": 4
+    },
+    {
+      "id": "fan",
+      "type": "agent",
+      "after": [
+        "one"
+      ],
+      "fanout": {
+        "items": [
+          "alpha",
+          "beta"
+        ],
+        "goal": "For the word {item}, reply exactly: {\"result\": \"saw-{item}\"}",
+        "schema": {
+          "type": "object",
+          "required": [
+            "result"
+          ]
+        }
+      },
+      "max_turns": 4
+    },
+    {
+      "id": "two",
+      "type": "agent",
+      "after": [
+        "fan"
+      ],
+      "goal": "Say hello in 3 words.",
+      "max_turns": 4
+    }
+  ],
+  "description": "agent -> 2-way fan-out -> agent; provider smoke test"
+}

@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.local-scorer/
+
+# CI host checkout and generated reports
+.ci/
+test-results.xml
+coverage.xml
+.coverage
+
+# Local secrets: never commit a real .env
+.env
+.env.*
+!.env.example

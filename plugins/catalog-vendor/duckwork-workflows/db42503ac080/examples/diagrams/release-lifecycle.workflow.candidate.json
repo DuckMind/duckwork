@@ -1,0 +1,332 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Preflight refuses the lane before any change; a second, INDEPENDENT verifier node re-checks the prep it did not make",
+        "Complementary prune gates route drift and halt to echoes that terminate loud, so no silent half-release",
+        "Publication is audited per-channel: the fan-out runs each channel's OWN check, never a global pipeline status"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "15 nodes: preflight -> 4-way route -> prep -> verify -> approve -> publish -> await-ci -> per-channel fan-out -> closeout",
+        "Human gates carry the launch/answer surface; await-ci is a machine gate parking at no token cost at all",
+        "closeout joins every arm, live or pruned, from machine records auto-injected in ## Inputs",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "preflight",
+      "id": "preflight-route-go",
+      "to": "route-go",
+      "variant": "security"
+    },
+    {
+      "from": "preflight",
+      "id": "preflight-route-halt",
+      "to": "route-halt",
+      "variant": "security"
+    },
+    {
+      "from": "route-halt",
+      "id": "route-halt-halt-notice",
+      "to": "halt-notice",
+      "variant": "default"
+    },
+    {
+      "from": "route-go",
+      "id": "route-go-prep",
+      "to": "prep",
+      "variant": "default"
+    },
+    {
+      "from": "prep",
+      "id": "prep-verify",
+      "to": "verify",
+      "variant": "default"
+    },
+    {
+      "from": "verify",
+      "id": "verify-route-consistent",
+      "to": "route-consistent",
+      "variant": "security"
+    },
+    {
+      "from": "verify",
+      "id": "verify-route-drift",
+      "to": "route-drift",
+      "variant": "security"
+    },
+    {
+      "from": "route-drift",
+      "id": "route-drift-drift-halt",
+      "to": "drift-halt",
+      "variant": "default"
+    },
+    {
+      "from": "route-consistent",
+      "id": "route-consistent-approve",
+      "to": "approve",
+      "variant": "default"
+    },
+    {
+      "from": "approve",
+      "id": "approve-publish",
+      "to": "publish",
+      "variant": "default"
+    },
+    {
+      "from": "publish",
+      "id": "publish-await-ci",
+      "to": "await-ci",
+      "variant": "default"
+    },
+    {
+      "from": "await-ci",
+      "id": "await-ci-channel-intake",
+      "to": "channel-intake",
+      "variant": "default"
+    },
+    {
+      "from": "channel-intake",
+      "id": "channel-intake-verify-channels",
+      "to": "verify-channels",
+      "variant": "default"
+    },
+    {
+      "from": "verify",
+      "id": "verify-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "approve",
+      "id": "approve-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "publish",
+      "id": "publish-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "verify-channels",
+      "id": "verify-channels-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "drift-halt",
+      "id": "drift-halt-closeout",
+      "to": "closeout",
+      "variant": "default"
+    },
+    {
+      "from": "halt-notice",
+      "id": "halt-notice-closeout",
+      "to": "closeout",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "gates",
+      "label": "Gates",
+      "variant": "normal"
+    },
+    {
+      "id": "room",
+      "label": "Deterministic",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/release-lifecycle.html",
+    "quality_profile": "standard",
+    "subtitle": "Gate-aware release lifecycle: preflight drift check -> version/changelog prep -> INDEPENDENT machine re-verifi",
+    "title": "release-lifecycle"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "preflight",
+      "label": "Preflight",
+      "lane": "work",
+      "sublabel": "preflight the",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "route-go",
+      "label": "Route Go",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "route-halt",
+      "label": "Route Halt",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 2,
+      "id": "halt-notice",
+      "label": "Halt Notice",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "prep",
+      "label": "Prep",
+      "lane": "work",
+      "sublabel": "prepare release run",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "verify",
+      "label": "Verify",
+      "lane": "work",
+      "sublabel": "independently verify",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 4,
+      "id": "route-consistent",
+      "label": "Route Consist\u2026",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 4,
+      "id": "route-drift",
+      "label": "Route Drift",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 5,
+      "id": "approve",
+      "label": "Approve",
+      "lane": "gates",
+      "sublabel": "release run version",
+      "tag": "human hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "await-ci",
+      "label": "Await Ci",
+      "lane": "gates",
+      "sublabel": "usr bin python3",
+      "tag": "machine hold",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 5,
+      "id": "channel-intake",
+      "label": "Channel Intake",
+      "lane": "work",
+      "sublabel": "enumerate the",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "closeout",
+      "label": "Closeout",
+      "lane": "work",
+      "sublabel": "write the release",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 5,
+      "id": "drift-halt",
+      "label": "Drift Halt",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 5,
+      "id": "publish",
+      "label": "Publish",
+      "lane": "work",
+      "sublabel": "the human answered",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 184
+    },
+    {
+      "col": 5,
+      "id": "verify-channels",
+      "label": "Verify Channe\u2026",
+      "lane": "work",
+      "sublabel": "verify publication",
+      "tag": "fan-out N",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 276
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 4
+    },
+    {
+      "fromCol": 5,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 5
+    }
+  ],
+  "schema_version": 2
+}

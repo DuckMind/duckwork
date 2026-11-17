@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-telemetry"
+version = "0.9.1"
+description = "Observability + budget guardrails for Duckwork Agent — tokens, cost, latency, tool calls per session and cron job."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "nujovich", email = "nujovich@gmail.com"},
+]
+keywords = ["duckwork", "telemetry", "observability", "budget", "llm", "agent"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Monitoring",
+]
+dependencies = [
+    "watchdog>=3.0,<7",  # budget.yaml file watcher for hot-reload
+    "pyyaml>=6.0,<7",  # pricing/budget/stats loaders read YAML configs
+]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Repository = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+Changelog = "https://github.com/DuckMind/duckwork"
+
+[tool.setuptools]
+packages = ["duckwork_telemetry"]
+
+[tool.setuptools.package-dir]
+duckwork_telemetry = "."
+
+[tool.setuptools.package-data]
+duckwork_telemetry = ["*.yaml", "*.html"]
+
+# ---------------------------------------------------------------------------
+# Linting & formatting (ruff)
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py38"
+line-length = 100
+
+# Markdown is documentation, not source. ruff 0.16.0 graduated Markdown
+# formatting out of preview and began rewriting the Python blocks embedded in
+# README.md / ONBOARDING.md, which turned CI red with no repo change at all.
+# Those blocks are hand-aligned reference tables (hook kwargs, row shapes) where
+# the column alignment IS the readability, and the formatter collapses it.
+# Excluding *.md keeps `ruff format --check .` deterministic across ruff
+# versions; adopting Markdown formatting later is a deliberate, separate call.
+extend-exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (we use 100, not 79)
+    "B008",  # function call in default arg (common in fixtures)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # unused imports re-exportados
+"tests/*" = ["S101", "E402"]  # assert en tests, imports diferidos
+"poc_setup*.py" = ["E402"]  # imports diferidos para setup de paquete
+"db.py" = ["SIM105"]  # try/except en migraciones (contextlib.suppress rompe la legibilidad)
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ---------------------------------------------------------------------------
+# Type checking (mypy) — optional, para quien quiera usarlo
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+ignore_missing_imports = true

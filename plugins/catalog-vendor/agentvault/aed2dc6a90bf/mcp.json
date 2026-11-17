@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "vault": {
+      "type": "stdio",
+      "command": "sh",
+      "args": [
+        "scripts/launch-mcp.sh",
+        "duckwork"
+      ],
+      "cwd": "./",
+      "env": {
+        "VAULT_MCP_TOKEN": "${VAULT_MCP_TOKEN}",
+        "VAULT_HOME": "${VAULT_HOME}",
+        "VAULT_APP_PATH": "${VAULT_APP_PATH}"
+      }
+    }
+  }
+}

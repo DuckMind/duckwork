@@ -1,0 +1,107 @@
+# CI for duckwork-workflows: the same five gates the release integrator runs by hand.
+#   1. desktop half parses as ESM
+#   2. serial test suite (stdlib Python + Node .mjs) → ci-out/exits.json + per-test logs
+#   3. private-string scrub audit
+#   4. knowledge-graph single-writer (PR branches must not touch graphify-out/; main owns regen)
+#   5. `duckwork plugins validate .` against a PINNED upstream commit
+#
+# DUCKWORK_PIN = the measured requires_duckwork floor, tag v2026.9.21 (first release
+# whose quiet turn report carries DUCKWORK_QUIET_TURN_REPORT_FILE; evidence in
+# docs/catalog/pr-body.md). Bump deliberately; never track a branch.
+#
+# Order matters: the pinned core is installed BEFORE the suite because the suite
+# asserts vocabulary parity against it (tests/test_validate_0923.py imports
+# duckwork_constants — the same import path the plugin uses at runtime).
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DUCKWORK_PIN: d337b736aa1e8ebecfab043842d13e4a2d2f48a3   # v2026.9.21
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # fetch-depth:0 — the ban step computes merge-base(origin/main, HEAD);
+        # a shallow checkout (default depth 1) has no shared history with
+        # origin/main, merge-base fails, and the gate fails CLOSED (peer repro,
+        # run 37127917562: rc=2 "cannot compute merge-base"). Full history is
+        # the only way the ban can answer anything but "unknown".
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Checkout pinned duckwork-agent
+        run: |
+          git clone --filter=blob:none https://github.com/DuckMind/duckwork /tmp/duckwork-agent
+          git -C /tmp/duckwork-agent checkout "$DUCKWORK_PIN"
+
+      - name: Install pinned duckwork (editable) + graphify
+        run: |
+          pip install -e /tmp/duckwork-agent
+          pip install "graphifyy==0.9.67"
+          duckwork --version || true
+          graphify --version
+
+      - name: Desktop half parses (ESM)
+        run: cp desktop/plugin.js /tmp/plugin.check.mjs && node --check /tmp/plugin.check.mjs
+
+      - name: Serial suite
+        # est-9yl2: admission against the committed green ledger
+        # (ci-baseline/exits.json, PROVENANCE.json). Red identity = test name +
+        # exit code; only `introduced` blocks the lane. No baseline => every red
+        # is introduced, so a missing/corrupt ledger fails closed (suite.py rc=2).
+        run: python3 scripts/suite.py . ci-out --baseline ci-baseline/exits.json
+
+      - name: Upload suite ledger + per-test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-out
+          path: ci-out/
+
+      - name: Scrub audit (private strings)
+        run: python3 scripts/make_public.py /tmp/public-tree
+
+      - name: PR branches do not touch the knowledge graph (single-writer)
+        if: github.event_name == 'pull_request'
+        # merge-base needs real history: default fetch-depth:1 checkout has no
+        # origin/main ref and the ban correctly fails closed (peer review #170).
+        # The suite above ran BEFORE this step on the shallow tree, so deepening
+        # here is order-safe.
+        run: |
+          git fetch --no-recurse-submodules origin main
+          python3 scripts/graph_path_ban.py
+
+      - name: Validate plugin against pinned duckwork
+        run: duckwork plugins validate .
+
+  graph-main:
+    # Single-writer honesty guarantee (#153): the committed graph on MAIN must
+    # equal the AST of the main tree. The regen lane (ra-graph-regen) is the
+    # only writer; this job is the proof it cannot lie. AST-only, no LLM.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned graphify
+        run: pip install "graphifyy==0.9.67"
+      - name: Committed graph matches main source (AST only)
+        run: python3 scripts/graph_check.py

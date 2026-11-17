@@ -1,0 +1,191 @@
+﻿---
+name: diagnosing-cli-tui
+description: "Diagnose and fix Duckwork Agent CLI/TUI issues on native Windows (PowerShell/conhost, Git Bash backend): rendering artifacts, themes/skins, busy indicators, mouse modes, encoding, and launch/resume."
+version: 1.1.20
+metadata:
+  duckwork:
+    tags: [duckwork, tui, cli, windows, themes, troubleshooting, diagnosing]
+    related_skills: [duckwork-configuration-guide, diagnosing-path, installing-duckwork]
+---
+
+# Diagnose Duckwork CLI/TUI (Windows)
+
+Playbook for running and fixing the Duckwork Agent CLI/TUI on this machine.
+Use when the TUI misrenders, truncates, shows unreadable indicators, fails
+to launch, or when asked how to theme/skin Duckwork on Windows.
+
+> **Disambiguation**: if the desktop app (Electron) fails to launch or shows a blank window, see `diagnosing-desktop` — that is a desktop-app problem, not a CLI/TUI problem. If a `/command` is missing or overridden, see `diagnosing-commands`.
+
+## 0. Environment baseline (origin machine: one Windows box, re-verified 2026-09-14)
+
+> [!CAUTION]
+> This baseline records **one specific Windows machine** — the box this skill was written on. It is **not** a description of your machine. Before applying anything below, confirm the local environment with `duckwork config path`, `duckwork --version`, and `duckwork doctor`; paths, `DUCKWORK_HOME`, shell, and OS differ per machine (on macOS/Linux the **default** home is `~/.duckwork` — overridable via `DUCKWORK_HOME` or a named profile; `duckwork config path` always prints the active one).
+
+- Duckwork Agent **v2026.9.24** on the Windows desktop install (v0.20.4 when this skill was first written, v0.21.1 at the 2026-09-14 re-check); git install: `%LOCALAPPDATA%\duckwork\duckwork-agent` (on the box this baseline was recorded the in-tree venv was a `.venv/`, not `venv/`; a PM-era install has no in-tree venv at all — see `diagnosing-path` for why that matters)
+- `DUCKWORK_HOME = %LOCALAPPDATA%\duckwork` (native Windows; `~/.duckwork` is NOT the active home)
+- OS: Windows 10 Home 22H2 (build 19045.7663)
+- Shell: Windows PowerShell 5.1; console host: conhost (classic window) or Windows Terminal 1.24.11911 (present on the reference box; a bare Windows 10 box has **only conhost**)
+- Tool shell backend: PortableGit (MinGit, msys2) bash - resolved via `DUCKWORK_GIT_BASH_PATH` or `%LOCALAPPDATA%\duckwork\git\usr\bin\bash.exe` (non-busybox variant)
+- TUI frontend: Node app `duckwork-tui` (React 19 + custom Ink fork), launched as a subprocess of the Python CLI. Node resolution (2026-09): **through PM** — `duckwork_cli/main_tui_launch.py::_tui_node_bin` prefers an explicit `DUCKWORK_NODE` binary, else PM's locked Node (**26.7.0** in `pm/lock.json`); a system Node on PATH is deliberately **not** used to run Duckwork's JS (`duckwork_cli/main_tui_launch.py::_tui_node_bin`, asserted by the path-shape e2e tests). If no Node can be resolved, `duckwork --tui` exits with a pointer to `duckwork --cli`.
+- Ground truth commands: `duckwork config path`, `duckwork config show`, `duckwork --version`, `duckwork doctor`
+
+## 1. Launch and resume
+
+```powershell
+duckwork              # classic CLI by default; launches TUI when display.interface: tui
+duckwork --tui        # force TUI
+duckwork --tui -c     # resume latest TUI session (or DUCKWORK_TUI_RESUME=1 / display.tui_auto_resume_recent: true)
+duckwork --cli        # force classic REPL for one invocation
+duckwork -z "prompt"  # one-shot (--oneshot): run a single prompt with tools, print the answer, exit.
+                    #   Non-interactive — ideal for scripts, cron, and CI smoke-tests (e.g. verifying a
+                    #   skill is discoverable AND followed: duckwork -z "Use the diagnosing-path skill: which
+                    #   interpreter should a script in the checkout use?"). Exits non-zero on failure.
+```
+
+Applied on the origin machine (config.yaml, backup: `config.yaml.bak-20260824-0457`):
+
+```yaml
+display:
+  interface: tui
+  tui_status_indicator: ascii
+  mouse_tracking: wheel
+  details_mode: collapsed
+```
+
+`display.tui_auto_resume_recent` is **false** (fresh session per launch). If `duckwork` ever opens a previous chat instead of a fresh session, check that key or `DUCKWORK_TUI_RESUME=1`; resume on demand with `duckwork --tui -c` (`--resume <id>` for a specific session).
+
+User env vars: `EDITOR=code --wait`, `DUCKWORK_TUI_THEME=dark`.
+
+### Stale update lock wedges every launch
+
+Every `duckwork` invocation hanging on `an update is still running` / `finishing an interrupted source update` with no update in progress means a leftover checkout lock (`duckwork_cli/update_lock.py::read_live_update` judges it; `duckwork_cli/update_lock.py::describe_holder` explains refusals). Read the holder record at `<git common dir>/duckwork-update.lock` (or `<install root>/.duckwork-update.lock` for a ZIP install with no `.git`) — `pid`, `started_at`, `ct:` creation time — then judge liveness the way upstream does: the owner counts live only while its pid runs **and** its recorded creation time still matches (2 s tolerance), so a dead pid is suggestive but a reused pid proves nothing. Three verdicts: live owner → wait (watch `duckwork logs`), never touch the lock; dead owner **and** no surviving updater child (`Get-Process` shows no duckwork update/python holdouts) → stale, safe to remove with human confirmation, then `duckwork --version` must exit 0; dead owner **but** an updater-started process still runs → it holds the checkout (`held`) — wait, never delete. Deletion is the only write in this flow and stays human-confirmed. `duckwork guide update` automates the PID-liveness verdict where the install can still launch (fully wedged installs start here by hand). Observed live 2026-10-16: timeout-killed plugin install, owner PID dead 6+ min, CLI recovered after removal. When probing liveness by hand, never use `os.kill(pid, 0)` on Windows — it terminates the target there (POSIX-only idiom); use `Get-Process` instead. POSIX reverses the rule: `ps -p <pid>` shows a live owner, and `kill -0 <pid>` exits 0 only while it runs — a probe there, never a signal. Read a nonzero exit carefully: permission-denied means the owner lives but is not yours (confirm with `ps -p <pid>`); only a no-such-process result means dead, and a reused pid still proves nothing either way.
+
+## 2. In-TUI slash commands that fix rendering
+
+| Command | Effect |
+|---|---|
+| `/indicator ascii` | Readable busy indicator (default is `kaomoji`, can be hard to read on conhost). Styles: kaomoji, emoji, unicode (braille), ascii. Persist: `display.tui_status_indicator` |
+| `/skin <name>` | Live theme preview. Built-ins: default, ares, mono, slate, daylight, warm-lightmode, poseidon, sisyphus, charizard. Persist: `display.skin` |
+| `/mouse wheel` | Mouse preset 1000+1006 (scroll + click, no hover). `all` includes 1003 hover - unsupported on conhost. Persist: `display.mouse_tracking` |
+| `/details collapsed` | Quiet feed: fold thinking/tools under chevrons. Persist: `display.details_mode` or `display.sections.<section>: collapsed` |
+| `/usage` | Token/cost panel. If silent in TUI, see upstream #37637 |
+| `/exit` | Quit; conhost should restore a clean prompt (no residual frame) |
+
+## 3. Skins & themes (style system)
+
+- Skins live at `$DUCKWORK_HOME/skins/<name>.yaml`; user skins inherit missing keys from `default`
+- Keys: `colors` (banner_*, ui_*, prompt, input_rule, response_border, session_*, status_bar_bg, voice_status_bg, selection_bg, completion_menu_*), `spinner` (waiting_faces, thinking_faces, thinking_verbs, wings), `branding` (agent_name, response_label, prompt_symbol, help_header...), `tool_prefix`, `tool_emojis`, `banner_logo` / `banner_hero` (Rich markup ASCII art)
+- Built-in skins load from `duckwork_cli/skin_engine.py`; unknown skins fall back to `default`
+- Consoles with poor glyph coverage: prefer ASCII-ish faces (e.g. `(>_<)`, `(^_^)`, `(o_o)`) and box-drawing `tool_prefix` like `|`
+- Save skin YAML as UTF-8 WITHOUT BOM (a BOM inside a folded YAML scalar silently breaks parsing)
+- Visual editor: `npx -y duckwork-mod` (community tool; honors DUCKWORK_HOME)
+- Light/dark detection order (upstream `ui-tui/src/theme.ts`, verified 2026-09-14):
+  1. `DUCKWORK_TUI_LIGHT` — `1/true/yes/on` = light, `0/false/no/off` = dark. **Wins over everything.**
+  2. `DUCKWORK_TUI_THEME` — named only: `light` or `dark`.
+  3. `DUCKWORK_TUI_BACKGROUND` — 3- or 6-digit hex (with or without `#`); luminance decides.
+  4. `COLORFGBG` last field (XFCE / rxvt / Terminal.app profiles).
+  5. `TERM_PROGRAM` light-default allow-list (currently `Apple_Terminal`).
+  Anything undecidable stays **dark**. There is **no OSC 11 probe** — the hex env var is named `DUCKWORK_TUI_BACKGROUND` so a future OSC 11 client could feed it, nothing more. Note `duckwork_cli/tips.py` advertises `DUCKWORK_TUI_THEME=light|dark|<hex>`, which the TUI code does not implement; trust the code, and set hex via `DUCKWORK_TUI_BACKGROUND`.)
+
+## 4. Windows-specific troubleshooting
+
+1. **Mojibake / garbled output**: Duckwork forces UTF-8 via `duckwork_cli/stdio.py::configure_windows_stdio()` (sets CP_UTF8, PYTHONUTF8=1, PYTHONIOENCODING=utf-8). Do NOT set `DUCKWORK_DISABLE_WINDOWS_UTF8`. If tool output from the Git Bash backend is garbled, set `LANG=C.UTF-8` / `LC_ALL=C.UTF-8` for that bash (msys2 reads Windows env). PS 5.1 pipes: `$OutputEncoding = [Text.UTF8Encoding]::new()`.
+2. **Missing glyphs / tofu faces**: conhost has no font fallback. Fixes: Windows Terminal + Cascadia Mono, or `/indicator ascii`.
+3. **Editor silent (`/edit`, Ctrl-X Ctrl-E)**: Duckwork defaults `EDITOR=notepad`. Set `EDITOR=code --wait` (Cursor/VS Code shim works). Never point at an editor that returns immediately without `--wait`.
+4. **WinError 193 (%1 is not a valid Win32 application)**: invoking an extensionless shebang script. Always use the `.cmd` shim (`npx.cmd`, not `npx`).
+5. **Process liveness**: never `os.kill(pid, 0)` on Windows — upstream's own comment (`duckwork_cli/gateway.py`): *"`os.kill(pid, 0)` hard-kills on Windows (TerminateProcess)"*, i.e. the probe kills the process instead of testing it. Use `psutil.pid_exists()` / `gateway.status._pid_exists()`.
+6. **Gateway at login**: `duckwork gateway install` uses schtasks (ONLOGON, no admin), spawns via pythonw.exe with DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW.
+7. **Antivirus flags uv.exe**: false positive; whitelist the `%LOCALAPPDATA%\duckwork\bin` folder (hash changes each upgrade). Verify authenticity via `gh attestation verify` (see README).
+8. **Installer BOM**: `iex (irm ...)` strips BOM; `[scriptblock]::Create((irm ...))` does not.
+9. **Config schema drift**: `duckwork config set` flags `display.mouse_tracking` and `display.details_mode` as unrecognized - they ARE valid TUI keys (documented); values save and are read anyway. Do not delete them.
+10. **ConPTY mouse/selection loss (Windows Terminal)**: Windows Terminal uses ConPTY, which never delivers DEC mouse sequences (confirmed by MSFT maintainer Dustin Howett, microsoft/terminal#376). The TUI's AlternateScreen + mouse tracking swallows the wheel and native text selection. PR #97663 defaults `duckwork --tui` to inline mode (primary buffer) on native Windows ConPTY — the same fallback Termux uses. Git Bash/MSYS mintty outside WT is unaffected. Workaround until merge: `DUCKWORK_TUI_INLINE=1`. Opt out with `DUCKWORK_TUI_INLINE=0`. WSL2-in-WT is intentionally excluded (WSL reports `platform === 'linux'`, mouse sequences DO reach the Linux PTY). **Additional risk**: microsoft/terminal#19674 documents console mode corruption when mouse tracking + `SetConsoleMode` are combined — no confirmed workaround beyond inline mode.
+
+## 5. Known upstream issues (check state before re-reporting)
+
+States verified 2026-10-08. `closed` means fixed or declined upstream — check the issue before reinstalling. A linked PR proposes a fix; check its review and release status before relying on it.
+
+| Issue | PR | State | Topic |
+|---|---|---|---|
+| #25418 | — | closed (not planned) | Terminal resize corrupts TUI layout (Ghostty, iTerm2, ...) — tracked by #24164 |
+| #19216 | — | closed | TUI: resize causes infinite scroll/render loop (flicker, duplicated status bar) |
+| #12130 | — | open | TUI v2 feature-parity gaps vs the classic CLI (overlays, slash commands, @ refs) |
+| #53301 | #53346 | open | TUI pet colors washed out on WSL/Windows Terminal — **cause is chalk falling back to 256-color when `COLORTERM` is unset** (not a Kitty-graphics issue; fix the env, e.g. `COLORTERM=truecolor`) |
+| #37637 | — | closed | `/usage` silent in CLI/TUI (worked via Telegram) |
+| #19214 | — | closed | `terminal.cwd` is a foot-gun: CLI/TUI should use the launch directory |
+| #14638 | — | closed | Windows: exit 126 with empty output on every command (Git Bash backend) |
+| #20782 | — | closed | Windows: `terminal` / `write_file` tools fail (exit 126 / empty file) |
+| #83938 | — | open | `test_profiles.py` failures on Windows with a non-UTF-8 codepage |
+| #86571 | #97663 | open (PR) | TUI mouse wheel + selection fail under Windows Terminal/ConPTY — fix: default inline mode on native Windows ConPTY |
+| #96372 | #96410 | open (PR) | TUI chat history clears on terminal resize — fix: stable row keys independent of `cols` |
+| #126970 | #126992 | open (PR) | CLI clarify panels stay ~67 columns wide — fix: derive panel width from live terminal width |
+| #67151 | #128225 | open (PR) | Unicode glyphs render as tofu on conhost/Consolas — fix: degrade glyphs safely on legacy Windows console |
+| #85278 | — | open | Windows same-surface guard weak + pid_alive blast radius + voice auto-restart bypasses throttle (partially stale; claim 3 still valid) |
+| #86204 | — | open | Orphan CLI python.exe children not reaped on Windows — **solution identified**: Job Objects with `KILL_ON_JOB_CLOSE` (automatic crash-safe tree cleanup) |
+| #93999 | — | open | KawaiiSpinner floods terminal when message exceeds terminal width |
+| #129029 | #129052 | open (PR) | CLI input unresponsive after focus loss (macOS) |
+| #129418 | #129422 | open (PR) | CLI import resets .env-sourced TERMINAL_DOCKER_VOLUMES |
+| #134831 | — | open | CLI oneshot hangs in Honcho shutdown thread join |
+
+## 5b. Temporary workaround vs permanent fix
+
+Label every remedy. A temporary workaround unblocks **now** and is worth undoing once the
+real fix lands; a permanent fix changes the host or the config and is worth keeping. Some
+permanent fixes are **outside Duckwork entirely** — do not report those as Duckwork bugs.
+
+| Symptom | Temporary (until a proper fix) | Permanent |
+|---|---|---|
+| Tofu / unreadable busy face on conhost | `/indicator ascii` (or persist `display.tui_status_indicator: ascii`) | Install **Windows Terminal** (winget: `Microsoft.WindowsTerminal`) + Cascadia Mono, set it as the default terminal — a **non-Duckwork** fix for a conhost/PowerShell-5.1 limitation; Duckwork itself is fine |
+| Garbled tool output from the Git Bash backend | `LANG=C.UTF-8 LC_ALL=C.UTF-8` for that shell | Leave `configure_windows_stdio()` enabled — never set `DUCKWORK_DISABLE_WINDOWS_UTF8`; PS 5.1 pipes: `$OutputEncoding = [Text.UTF8Encoding]::new()` |
+| Editor silent on `/edit` | one-off `EDITOR=code --wait` in that session | Persist `EDITOR` in config/env with the same `--wait` |
+| Washed-out colors (#53301) | none needed | Export a truthful `COLORTERM` (e.g. `truecolor`) so chalk stops downgrading to 256-color |
+| `duckwork config set` warns on a TUI key | ignore the notice (the value still saves and is read) | Report upstream if a key the TUI honors stays unrecognized long-term |
+
+When a workaround is temporary, say what "done" looks like: the upstream issue to watch, or
+the version that carries the fix.
+
+## 6. Cross-platform guardrails
+
+- Prefer config/env fixes (work identically on POSIX); keep path logic runtime-resolved via `DUCKWORK_HOME`
+- Never hardcode `C:\...` paths in skills/plugins - use `%LOCALAPPDATA%\duckwork` on Windows, `~/.duckwork` elsewhere
+- Shell commands issued by the agent keep POSIX syntax (the Windows backend is Git Bash); mind MSYS2 path translation and `core.autocrlf`
+- Skins degrade to `default`; unknown indicator styles fall back; when Node can't be resolved the TUI exits with a `duckwork --cli` pointer (no silent fallback) - preserve these behaviors
+- Terminal persistence (`persistent_shell`, `TERMINAL_*` env carry) means shell state survives across commands — a "clean shell" repro must start a fresh non-persistent session or the old env leaks in. Local backend: exported-variable carry follows `TERMINAL_LOCAL_PERSISTENT` (default true, `tools/terminal_tool.py`); set it `false` before creating the terminal environment. `persistent_shell` is the config key, not the local switch.
+- Dashboard browser-open (`duckwork_cli/web_server_lifecycle.py::_maybe_open_browser`) fires `webbrowser.open` (the macOS `open` helper) in a daemon thread 1s after serve, mapping `0.0.0.0`/`::` to `127.0.0.1` and appending `?profile=` when set — open failures are swallowed, so "dashboard served but no browser, no error" means retry the printed URL manually and pass `--no-open` to silence it. The headless-Linux skip (no `DISPLAY`/`WAYLAND_DISPLAY`) never triggers on macOS.
+
+## 7. Verification checklist
+
+```powershell
+duckwork --version; duckwork doctor      # PM-managed Node, bash, deps
+duckwork config get display            # confirm keys above
+duckwork skills list                   # this skill should appear (hub or local, enabled)
+# in TUI: /indicator ascii; /skin slate; /mouse wheel; /usage; /exit
+```
+
+Deep-dive reference: the original investigation with screenshot forensics,
+redundancy analysis, and full source evidence lives at
+`references/duckwork-cli-tui-windows-investigation.md` in this skill's directory.
+
+## Report
+
+This skill diagnoses CLI/TUI issues on native Windows — rendering artifacts, themes/skins, busy indicators, mouse modes, encoding, and launch/resume. When you run the diagnostic workflow, present findings in the standard format below.
+
+### Summary
+Your TUI shows unreadable tofu faces for the busy indicator because conhost has no font fallback for the default kaomoji style. Switching to ASCII indicator style fixes the readability.
+
+### Findings
+| Severity | What | Evidence |
+|---|---|---|
+| MEDIUM | Default kaomoji busy indicator renders as tofu on conhost | Screenshot shows `□□□` instead of animated faces; conhost has no font fallback |
+| LOW | Washed-out colors on Windows Terminal | `COLORTERM` is unset; chalk falls back to 256-color (issue #53301) |
+
+### Recommended Fix
+Run `/indicator ascii` in the TUI for an immediate fix, then persist by adding `display.tui_status_indicator: ascii` to `config.yaml`. For the color issue, set `COLORTERM=truecolor` in your environment.
+
+### References
+- `$DUCKWORK_HOME/config.yaml` — the `display:` block
+- `duckwork_cli/skin_engine.py` — skin loading logic
+- `duckwork_cli/stdio.py` — `configure_windows_stdio()` UTF-8 handling
+
+---
+
+*Facts re-verified 2026-10-09 against upstream source at commit `f97608f178d1ffeca59860195ab7da295f7c8e5f` (skin_engine.py, config_defaults.py, stdio.py, gateway.py, tui_gateway/server.py, ui-tui/src/theme.ts, ui-tui/src/app/useMainApp.ts, duckwork_cli/cli_tui_mixin.py, duckwork_cli/update_cmd.py, duckwork_cli/doctor_platform.py, duckwork_cli/active_sessions.py, duckwork_cli/cli_voice_mixin.py), upstream docs (installation.md), the issue tracker (19 citations, states noted), and the live Windows 10 desktop install (v0.21.1, `.venv`, Windows Terminal 1.24.12741); Node resolution re-checked 2026-09-29 at `5000e2993` (TUI node resolves through PM; `pm/lock.json` pins Node 26.7.0). Terminal persistence verified 2026-10-15 against the installed source at `9bda154d` (v0.21.7): `persistent_shell` → `TERMINAL_PERSISTENT_SHELL` mapping (`gateway/run.py`), config key set (`duckwork_cli/cli_config_load.py`); local-backend carry follows `TERMINAL_LOCAL_PERSISTENT` (`tools/terminal_tool.py`). Dashboard browser-open verified 2026-10-15 against the installed source at `9bda154d`: `_maybe_open_browser` (`duckwork_cli/web_server_lifecycle.py`) — `webbrowser.open` in a daemon thread after 1s, failures swallowed, `--no-open` suppresses, headless-Linux skip only. Stale-lock verdicts verified 2026-10-16 against the installed source at `9bda154d` (`duckwork_cli/update_lock.py` marker/lock format, incarnation rule, held-holder wording; refusal strings in `duckwork_cli/venv_sync.py`) plus a live wedge (dead PID 96771, lock removed, CLI recovered). POSIX liveness variant verified 2026-10-16 (`ps`/`kill -0` probe semantics, EPERM-means-alive nuance). Re-verify before reuse.*

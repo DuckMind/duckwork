@@ -334,6 +334,7 @@ def deliver_to_live_owner(
     profile_home: Path | str, owner: dict[str, Any], message: str,
     *, delivery_id: str | None = None, author: dict[str, Any] | None = None,
     notification_category: str = "result",
+    cron_run: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Return durable admission immediately, without waiting for the owner.
 
@@ -341,7 +342,7 @@ def deliver_to_live_owner(
     state. Reusing an id with a different payload is an error, never an overwrite.
     """
     return _door(authority_delivery, profile_home, owner, message, delivery_id=delivery_id, author=author,
-                 notification_category=notification_category)
+                 notification_category=notification_category, cron_run=cron_run)
 
 
 def settle_held_delivery(profile_home: Path | str, owner: dict[str, Any], message: str, *, delivery_id: str,
@@ -352,12 +353,14 @@ def settle_held_delivery(profile_home: Path | str, owner: dict[str, Any], messag
 
 
 def _door(call: Callable[[Path, dict], dict], profile_home, owner, message, *, delivery_id=None, author=None,
-          notification_category="result"):
+          notification_category="result", cron_run=None):
     pinned = _owner(profile_home, owner)
     if not isinstance(message, str):
         raise ValueError("message must be a string")
     if notification_category not in ('result', 'diagnostic'):
         raise ValueError("invalid notification category")
+    if cron_run is not None and (not isinstance(cron_run, dict) or author is not None):
+        raise ValueError("cron run requires a trusted owner without an author")
     home = Path(profile_home).resolve()
     category = {"notification_category": "diagnostic"} if notification_category == "diagnostic" else {}
     # The authority refuses a category-changing replay (admission_conflict), so the admitted
@@ -365,7 +368,8 @@ def _door(call: Callable[[Path, dict], dict], profile_home, owner, message, *, d
     return {**call(home, dict(id=_delivery_id(delivery_id if delivery_id is not None else uuid.uuid4().hex),
         profile=home.name if home.parent.name == "profiles" else "default",
         message=message, **({"session_id": pinned["session_id"]} if pinned["session_id"] else {}),
-        **({"author": dict(author)} if author else {}), **category)), **category}
+        **({"author": dict(author)} if author else {}),
+        **({"cron_run": dict(cron_run)} if cron_run is not None else {}), **category)), **category}
 
 
 def owner_holds_delivery(profile_home: Path | str, record: dict) -> bool:

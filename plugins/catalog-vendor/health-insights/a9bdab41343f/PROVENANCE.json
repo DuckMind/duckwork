@@ -1,0 +1,2395 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "health-insights",
+  "content_id": "a9bdab41343f",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 99,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "a80b04743879993941c2c454043fc9d914ebab21a6c4819595f4a2c0a8ee7352"
+    },
+    {
+      "bytes": 11358,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "bytes": 6249,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "c99741c5d6a3625870f0da0f17d35615c6306b4f3b8751d6a61f28588c2c8c2c"
+    },
+    {
+      "bytes": 4486,
+      "mode": "100644",
+      "path": "docs/GLP1_MONITORING.md",
+      "sha256": "10900680f1181cd496736a62206fb0805c25b4648484871f8d24eed73fa44e0a"
+    },
+    {
+      "bytes": 3058,
+      "mode": "100644",
+      "path": "docs/MODULES.md",
+      "sha256": "ceeeb19fd541e99bc3570e563037fd45efb3cdc43ad13b3a1d76300d2bd59b47"
+    },
+    {
+      "bytes": 349,
+      "mode": "100644",
+      "path": "health_insights/__init__.py",
+      "sha256": "49f070017e1db670d39f7d75b4447b8b783573c22249a5c1e73ee219e4a2a7a0"
+    },
+    {
+      "bytes": 13847,
+      "mode": "100644",
+      "path": "health_insights/analysis.py",
+      "sha256": "bcdd633a9d8ac2d3bb6c850810f45792e27a56cf4cc02e5ad723315925cb60a0"
+    },
+    {
+      "bytes": 10498,
+      "mode": "100644",
+      "path": "health_insights/anomalies.py",
+      "sha256": "0268c2777dda9e7ff9698ac6bc172b2ccb1b6dfa76e729113629f5b218dcb687"
+    },
+    {
+      "bytes": 8363,
+      "mode": "100644",
+      "path": "health_insights/bp.py",
+      "sha256": "903f0dec220582b6d915561ed00c0561fbf19df2fdec7465ff3167d632ba18df"
+    },
+    {
+      "bytes": 5015,
+      "mode": "100644",
+      "path": "health_insights/bridge_db.py",
+      "sha256": "8972d7073ad8d7d4974181a9425398ac738ebf92cc2ecd605c8e169053a1718e"
+    },
+    {
+      "bytes": 23762,
+      "mode": "100644",
+      "path": "health_insights/cli.py",
+      "sha256": "06b5146bc9b93e57c58dd7df0eaa1afc35c803455d17d551d6ffa24f62f43bd7"
+    },
+    {
+      "bytes": 29,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/__init__.py",
+      "sha256": "8056ffb9ac22d55ba40decff8e449a78d4e4ba99617e7e20456ea15aed4771b6"
+    },
+    {
+      "bytes": 3276,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/adherence_rules.py",
+      "sha256": "6fb541cfbc4cac5c616e20527f4ec5d7e6125e0c182c875403bdc43e6df0974f"
+    },
+    {
+      "bytes": 5001,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/bp_rules.py",
+      "sha256": "f88b5c59ae0a85b8212722bc791f94024b881e917f9a8ed0cbe7fd5e39029ef7"
+    },
+    {
+      "bytes": 7202,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/gap_rules.py",
+      "sha256": "dff2a549a12063e38c94ea4a65c89bf71d2e91950654861957bf0eeb58c77f6b"
+    },
+    {
+      "bytes": 23385,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/glp1_rules.py",
+      "sha256": "a898bfed9104d336b453491a164d5d6cd74ce5e9fa88fec18a349f08ec402f7b"
+    },
+    {
+      "bytes": 3436,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/labs_rules.py",
+      "sha256": "fd620721df1bce1e994c976dfa754688e706a43bd42e322144fac3373e91199a"
+    },
+    {
+      "bytes": 4375,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/nutrition_rules.py",
+      "sha256": "602d259b6fad5860ed4eda6f127fcc521b8f22d1dae10738d66ea3b1694c92d6"
+    },
+    {
+      "bytes": 10769,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/spo2_ecg_rules.py",
+      "sha256": "582954fd8b1789168ff49dc407fde97592c82836b3b11afb89e262608b52da4c"
+    },
+    {
+      "bytes": 11265,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/vitals_rules.py",
+      "sha256": "7d9c342ceee747235649de231568b91b4b19eb72b525329a34d7b7a2db7c1fe0"
+    },
+    {
+      "bytes": 5769,
+      "mode": "100644",
+      "path": "health_insights/concern_rules/workout_rules.py",
+      "sha256": "7dab203118b0441fe1b1a7a4b8f72a334eedbc9d2e8460b086f731473b4ccd8d"
+    },
+    {
+      "bytes": 5434,
+      "mode": "100644",
+      "path": "health_insights/concerns.py",
+      "sha256": "37d9be5137963f3b7301bb1bf99c3fbc58b60f2fc1a89b69174424753024aca1"
+    },
+    {
+      "bytes": 9197,
+      "mode": "100644",
+      "path": "health_insights/data/dri.yaml",
+      "sha256": "c170f2848127f3814db5d9b446d64fa513d961366e55de688e483a3fffa266c0"
+    },
+    {
+      "bytes": 2572,
+      "mode": "100644",
+      "path": "health_insights/data/health_monitor.yaml",
+      "sha256": "2015e62c666ca24452c0b4f31a772e7a5835f55e06becba0dcecde7554a57b9f"
+    },
+    {
+      "bytes": 3838,
+      "mode": "100644",
+      "path": "health_insights/demo.py",
+      "sha256": "f1be1b7fedeaaaf88fbb15cf2a59e0486525ba448d1f1bd2bdadb4e0691f9370"
+    },
+    {
+      "bytes": 10546,
+      "mode": "100644",
+      "path": "health_insights/dietary_types.py",
+      "sha256": "294ce47b1eb35e25799f3cb47370e7e455a4a157911862963fa5a003c316c4af"
+    },
+    {
+      "bytes": 21985,
+      "mode": "100644",
+      "path": "health_insights/ecg.py",
+      "sha256": "1064ecd51b932493a4d528d109b837627b032c0bf3a1f19837724a38ee56b964"
+    },
+    {
+      "bytes": 881,
+      "mode": "100644",
+      "path": "health_insights/energy.py",
+      "sha256": "fb0f47dd53dd241bf6245fb355804284460abeb563f9af6cff6e0b4ca7d65846"
+    },
+    {
+      "bytes": 17636,
+      "mode": "100644",
+      "path": "health_insights/health_types.py",
+      "sha256": "003f23733567d78b383230dc45178c6f3cf6987e1758672c527a40c0314d4d7e"
+    },
+    {
+      "bytes": 1649,
+      "mode": "100644",
+      "path": "health_insights/hydration.py",
+      "sha256": "b81e8eb3e86e7435733babbece24f10589fc2d75bbb0959985e55e36823d4840"
+    },
+    {
+      "bytes": 24520,
+      "mode": "100644",
+      "path": "health_insights/labs.py",
+      "sha256": "493d47d8b51a62d95784e5e41c0d8189b0211ff9a9442f5f749e9a0e6a95ca50"
+    },
+    {
+      "bytes": 5698,
+      "mode": "100644",
+      "path": "health_insights/modules.py",
+      "sha256": "8970c28071ce7a051217e90e5dff6b97ba4afa6cdbeb21307e510e4e69f5f3de"
+    },
+    {
+      "bytes": 6457,
+      "mode": "100644",
+      "path": "health_insights/narration.py",
+      "sha256": "efa49f92aa4f08a29ffd4b16575d5f94f6233ee62d4c916888518c624d7c05d7"
+    },
+    {
+      "bytes": 27419,
+      "mode": "100644",
+      "path": "health_insights/nutrition.py",
+      "sha256": "adaefdbe80dfbaefcf1ca318d5edbb66d3c160bf24df9826d7da97c42d5f0e0d"
+    },
+    {
+      "bytes": 6717,
+      "mode": "100644",
+      "path": "health_insights/settings.py",
+      "sha256": "bda1b8e2320a377ef7894be4e4d0a022be8bdc52b79fda31d493790d2102bd2b"
+    },
+    {
+      "bytes": 610,
+      "mode": "100644",
+      "path": "health_insights/sqlite_ro.py",
+      "sha256": "a8a1117aa346a9bb9ecc33c0f4c3ad5c14d7e8a0f010e7071737556acb1766d3"
+    },
+    {
+      "bytes": 2107,
+      "mode": "100644",
+      "path": "health_insights/stats.py",
+      "sha256": "8d81d568737f3cfd8a7b09f16491977f8befbbd15a002c7e616c317654832bfd"
+    },
+    {
+      "bytes": 496,
+      "mode": "100644",
+      "path": "health_insights/units.py",
+      "sha256": "e0b41a02cb4f56426e0d4df221849601508741310b62f084e40adb7bc0661d64"
+    },
+    {
+      "bytes": 15458,
+      "mode": "100644",
+      "path": "health_insights/weekly.py",
+      "sha256": "348778cdca4b62ffdc88260e49178d45b31c38ef474914629a251f675fd2ebf7"
+    },
+    {
+      "bytes": 6814,
+      "mode": "100644",
+      "path": "health_insights/workouts.py",
+      "sha256": "e74ed2773b7198622060b4821e24b84093540049ac926e4b0cd69bc8a0748a70"
+    },
+    {
+      "bytes": 726,
+      "mode": "100644",
+      "path": "plugin.json",
+      "sha256": "453da3b5db680e8b78c34fd449fc08fba9c96e5374e81595a866a106c0698899"
+    },
+    {
+      "bytes": 689,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "f1e5389c3488e06d03aafb476518866e108b00b5d42f63709f35cbadb7257cb0"
+    },
+    {
+      "bytes": 67,
+      "mode": "100644",
+      "path": "pytest.ini",
+      "sha256": "bd251497d5ad9113ca9d99963fad60db6044b947cb047318b511118d895bee16"
+    },
+    {
+      "bytes": 1547,
+      "mode": "100644",
+      "path": "skills/health-insights-concerns-check/SKILL.md",
+      "sha256": "fb3a54690c3a417cbdbf07cfd9dd1d04e0d55fa6d63f078fcbf37c54a99e1b58"
+    },
+    {
+      "bytes": 1153,
+      "mode": "100644",
+      "path": "skills/health-insights-energy-target/SKILL.md",
+      "sha256": "e194792dcc3644678d55e06f69b34dd0d1779584f9de09c949adef9ccb9177ae"
+    },
+    {
+      "bytes": 3690,
+      "mode": "100644",
+      "path": "skills/health-insights-glp1-monitoring/SKILL.md",
+      "sha256": "6d200d5aac0c23658813b743080ec8620e08eb1dfb2eb5f27cbf15bcd63081a1"
+    },
+    {
+      "bytes": 2641,
+      "mode": "100644",
+      "path": "skills/health-insights-glp1-nutrition/SKILL.md",
+      "sha256": "0dc088c6ecb55b35deb649fd8b188427dbe753185215882f81016c8820de219a"
+    },
+    {
+      "bytes": 3029,
+      "mode": "100644",
+      "path": "skills/health-insights-glp1-warning-signs/SKILL.md",
+      "sha256": "9399ed57949657eba68a5086a48a537c5cb9d70e2bd6406097f92096d2dbd94b"
+    },
+    {
+      "bytes": 1363,
+      "mode": "100644",
+      "path": "skills/health-insights-labs-review/SKILL.md",
+      "sha256": "5b6f6894b0a972b6e2590a0ba75e0af985737d75de9b1e293313263648e512ae"
+    },
+    {
+      "bytes": 2003,
+      "mode": "100644",
+      "path": "skills/health-insights-modules/SKILL.md",
+      "sha256": "5619f0a9ab6b7aee420b3d02d5ba4bdb65e4131ddbf040548fc92ceb32b55ae9"
+    },
+    {
+      "bytes": 1326,
+      "mode": "100644",
+      "path": "skills/health-insights-nutrition-review/SKILL.md",
+      "sha256": "9bf11083bbce3a84480e1b45f292c8846d55005e035fb57c0940b8b70011531d"
+    },
+    {
+      "bytes": 3562,
+      "mode": "100644",
+      "path": "skills/health-insights-setup/SKILL.md",
+      "sha256": "2189c6bb2a5307550aeb06ab49ec959d4fb254fb3aefbb1f248e92ecf9ce7a9b"
+    },
+    {
+      "bytes": 1352,
+      "mode": "100644",
+      "path": "skills/health-insights-weekly-review/SKILL.md",
+      "sha256": "8cdf090563e295d5eb3cc0c364d86db32ea11717f75d7cb1707963dff6454bf1"
+    },
+    {
+      "bytes": 1779,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "95d793907007dc4ccb0f99046610483e2218697b84d97b0a925d9a633d9ec772"
+    },
+    {
+      "bytes": 23364,
+      "mode": "100644",
+      "path": "tests/fixtures/bridge_type_catalog.json",
+      "sha256": "a09934a7b3607a28fc1b3884e5ab923d42be0ba22a176a85008b7ad7468a3e06"
+    },
+    {
+      "bytes": 6769,
+      "mode": "100644",
+      "path": "tests/fixtures/healthkit_dietary_types.json",
+      "sha256": "9acc88456dd432901c88e190981044afefb939f9dda87d535f46444ee7953a30"
+    },
+    {
+      "bytes": 4907,
+      "mode": "100644",
+      "path": "tests/test_adherence_rules.py",
+      "sha256": "d5c5ba23563e589e889b1fd303fa9879396c82dbb4bfe4a350d6a13c6172aa80"
+    },
+    {
+      "bytes": 21399,
+      "mode": "100644",
+      "path": "tests/test_anomalies.py",
+      "sha256": "6b27825181d5796b1f13737cd224820bf9debe1ca302e9918a1389f9992addde"
+    },
+    {
+      "bytes": 10785,
+      "mode": "100644",
+      "path": "tests/test_bp.py",
+      "sha256": "b07d672746047109f7a7a03af1337be31c97a66343534952809291c4229000a7"
+    },
+    {
+      "bytes": 9164,
+      "mode": "100644",
+      "path": "tests/test_cli_db_resolution.py",
+      "sha256": "d94532cc3fb92d94904fb2b7fb5b581919bbc87e49f62eefc0fecd166dd6df69"
+    },
+    {
+      "bytes": 2440,
+      "mode": "100644",
+      "path": "tests/test_cli_smoke.py",
+      "sha256": "eccbbbfcaff59dd831eb96c8fd8b178d39fccf23cacb580b36cb02c18bba5a60"
+    },
+    {
+      "bytes": 19661,
+      "mode": "100644",
+      "path": "tests/test_concerns.py",
+      "sha256": "c5005f9177e164a3dd4c300043d9b500536479d0d8b6656e78bbae957a4d5c41"
+    },
+    {
+      "bytes": 1945,
+      "mode": "100644",
+      "path": "tests/test_concerns_review.py",
+      "sha256": "0a4c9a0b3d8d365bfe7592408d223a7a7f1e338ad773542c877dc6c78ac726e3"
+    },
+    {
+      "bytes": 1877,
+      "mode": "100644",
+      "path": "tests/test_demo.py",
+      "sha256": "10f4220ca4623d0e8a2ecc335ac92ec433d43e9ff4e2099044fa6f558254e7f7"
+    },
+    {
+      "bytes": 4330,
+      "mode": "100644",
+      "path": "tests/test_dietary_types.py",
+      "sha256": "1ce737fd11fc992d837d9297fdfffee5aaca0242f625278e8c8d6843ad3d1b94"
+    },
+    {
+      "bytes": 6930,
+      "mode": "100644",
+      "path": "tests/test_ecg.py",
+      "sha256": "1757959fc5d34b5f78357b1a7714f436dc5b1dbc0faf67fea984026e61174aea"
+    },
+    {
+      "bytes": 8837,
+      "mode": "100644",
+      "path": "tests/test_ecg_bridge.py",
+      "sha256": "c0c53cb76e5980458a811a4de74f3e7517f2364e3874140123ca122cdca5d12d"
+    },
+    {
+      "bytes": 8072,
+      "mode": "100644",
+      "path": "tests/test_ecg_json.py",
+      "sha256": "489861346bb580ea8ca1eb01d27da3ef5dc115c0351f5656e169e3308532c6df"
+    },
+    {
+      "bytes": 1188,
+      "mode": "100644",
+      "path": "tests/test_energy.py",
+      "sha256": "0d3d7b188c3a9f1d397a2aa6343da7995279f361ca22994dcc8d83867b5f24af"
+    },
+    {
+      "bytes": 12212,
+      "mode": "100644",
+      "path": "tests/test_gap_rules.py",
+      "sha256": "329413f38a6428d7ea8d9cd7f96ee145a851170830f022e74eea9e87359afe59"
+    },
+    {
+      "bytes": 12721,
+      "mode": "100644",
+      "path": "tests/test_glp1_rules.py",
+      "sha256": "3cd6bbab983446916a178196fb56b30250e5d4792141cf955203ddb7f7479c2b"
+    },
+    {
+      "bytes": 8493,
+      "mode": "100644",
+      "path": "tests/test_health_insights.py",
+      "sha256": "a42e6bc29bc7be393cc45456cb39c99737a7dc17aef8cdfd9eecebb24e82065d"
+    },
+    {
+      "bytes": 4160,
+      "mode": "100644",
+      "path": "tests/test_health_types.py",
+      "sha256": "5786ab9a71f4e52f81cc5f49f6549a4e3fa672d36789a70bee5147db73b00be7"
+    },
+    {
+      "bytes": 2615,
+      "mode": "100644",
+      "path": "tests/test_hydration.py",
+      "sha256": "d8f14ae36b77b7f02d665a86efe378c3f757431eca92ef4b97c417259481e476"
+    },
+    {
+      "bytes": 7631,
+      "mode": "100644",
+      "path": "tests/test_labs.py",
+      "sha256": "7340658a1141a655608e5d4920b57e794a05816fec393d8a54416b148efe4b9a"
+    },
+    {
+      "bytes": 5714,
+      "mode": "100644",
+      "path": "tests/test_labs_bridge.py",
+      "sha256": "6745dd7e97f474a7cce20f067bed4e42f934d024ef82504f9297c5304a104e1f"
+    },
+    {
+      "bytes": 8462,
+      "mode": "100644",
+      "path": "tests/test_labs_json.py",
+      "sha256": "bde46587caef5d8ab0df40674ebf2a34319678c7bcc17ef3e90485be333f5923"
+    },
+    {
+      "bytes": 5866,
+      "mode": "100644",
+      "path": "tests/test_labs_rules.py",
+      "sha256": "d51dcc0a8e418419adc9e7685f8694d61a98ee56e94f3bdcf889e3bffe38010e"
+    },
+    {
+      "bytes": 6759,
+      "mode": "100644",
+      "path": "tests/test_modules.py",
+      "sha256": "8dffb078f672ddfa7feb80ff46ef42db88877c015e76bc7c5405fdd22ab55d5d"
+    },
+    {
+      "bytes": 7729,
+      "mode": "100644",
+      "path": "tests/test_narration.py",
+      "sha256": "37eee5799560e230ab4e1e433a565492f2ebc75b891ed47caca3d8c0a96c5742"
+    },
+    {
+      "bytes": 31209,
+      "mode": "100644",
+      "path": "tests/test_nutrition.py",
+      "sha256": "3b0540485928b6e99712e6600b529bdc28367ba6597cce481d3f249f6beead25"
+    },
+    {
+      "bytes": 11579,
+      "mode": "100644",
+      "path": "tests/test_nutrition_rules.py",
+      "sha256": "90bbe2a999d386887cd7ae1470469200aed1e33c61b6ab1277ec916d83fe81f1"
+    },
+    {
+      "bytes": 4132,
+      "mode": "100644",
+      "path": "tests/test_nutrition_wording.py",
+      "sha256": "250de9ccd241b8d544c1ba2042f1a1d0e0ba742256d427bca051571d7335a4c1"
+    },
+    {
+      "bytes": 611,
+      "mode": "100644",
+      "path": "tests/test_scratch_location.py",
+      "sha256": "8ecbcf6086e928e4bd00f0cdcbc725a92ddc708dc321ffc09da79262882a77d7"
+    },
+    {
+      "bytes": 4790,
+      "mode": "100644",
+      "path": "tests/test_settings.py",
+      "sha256": "1169431c51765a733f223390b0589790f007d86d94b85ed45c3dd49834092fc0"
+    },
+    {
+      "bytes": 12550,
+      "mode": "100644",
+      "path": "tests/test_spo2_ecg_rules.py",
+      "sha256": "67efcf19abd0200a9e1223dfcb9771911f5e9715215d31122309b78a5602b4a7"
+    },
+    {
+      "bytes": 1900,
+      "mode": "100644",
+      "path": "tests/test_sqlite_ro.py",
+      "sha256": "5c2b457290f49360f20eff622078cf7a1567f82be0a769783c4be26d97e34b61"
+    },
+    {
+      "bytes": 1314,
+      "mode": "100644",
+      "path": "tests/test_units_display.py",
+      "sha256": "655e73b9f9bae9051587e4f07d6001bba8f918693c7126f88e8075f6eb8d8825"
+    },
+    {
+      "bytes": 13899,
+      "mode": "100644",
+      "path": "tests/test_vitals_rules.py",
+      "sha256": "9654bd6f6dbc4b5428e19602e5991a813964b00d1f13fce281fb81faae7aa698"
+    },
+    {
+      "bytes": 15176,
+      "mode": "100644",
+      "path": "tests/test_weekly.py",
+      "sha256": "146adeae95598039435fcf8c7e9ae5cc63b545d630d18b5cc6191c2aa7c9ad2f"
+    },
+    {
+      "bytes": 11652,
+      "mode": "100644",
+      "path": "tests/test_workout_rules.py",
+      "sha256": "a1dbca5c862592e7af49536a89d9966748acff1a7cca3efac2d29e0fc5d6098b"
+    },
+    {
+      "bytes": 11190,
+      "mode": "100644",
+      "path": "tests/test_workouts.py",
+      "sha256": "e54db7e29eb2ee71200d3509d5ab0566973835c511f474926230f0ed6180e27c"
+    }
+  ],
+  "input_manifest_sha256": "a9bdab41343fde9ebd94fb9a16cf925beb232baa7221fde77f1b0d88d31e7bbf",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "health_insights/anomalies.py",
+      "plugin.json",
+      "skills/health-insights-setup/SKILL.md"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      "README.md",
+      "health_insights/anomalies.py",
+      "skills/health-insights-setup/SKILL.md"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/mwdearing/hermes-health-insights",
+    "sha": "d6d09c1f17ada6ca60368a1e0c7a7b5bd4efefc6",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/mwdearing/hermes-health-insights",
+  "original_sha": "d6d09c1f17ada6ca60368a1e0c7a7b5bd4efefc6",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "a80b04743879993941c2c454043fc9d914ebab21a6c4819595f4a2c0a8ee7352",
+      "bytes": 99,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "7f18ebbd060d159136ea7780c41d35bf5baa528e8e1bd49788a5d7b9e8258d6c",
+      "bytes": 6406,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/GLP1_MONITORING.md",
+      "sha256": "10900680f1181cd496736a62206fb0805c25b4648484871f8d24eed73fa44e0a",
+      "bytes": 4486,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/MODULES.md",
+      "sha256": "ceeeb19fd541e99bc3570e563037fd45efb3cdc43ad13b3a1d76300d2bd59b47",
+      "bytes": 3058,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/__init__.py",
+      "sha256": "49f070017e1db670d39f7d75b4447b8b783573c22249a5c1e73ee219e4a2a7a0",
+      "bytes": 349,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/analysis.py",
+      "sha256": "bcdd633a9d8ac2d3bb6c850810f45792e27a56cf4cc02e5ad723315925cb60a0",
+      "bytes": 13847,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/anomalies.py",
+      "sha256": "01675616537c07906b73122cc2b3dba671fb0b56f527082e1423cd4ff91a01a4",
+      "bytes": 10642,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/bp.py",
+      "sha256": "903f0dec220582b6d915561ed00c0561fbf19df2fdec7465ff3167d632ba18df",
+      "bytes": 8363,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/bridge_db.py",
+      "sha256": "8972d7073ad8d7d4974181a9425398ac738ebf92cc2ecd605c8e169053a1718e",
+      "bytes": 5015,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/cli.py",
+      "sha256": "06b5146bc9b93e57c58dd7df0eaa1afc35c803455d17d551d6ffa24f62f43bd7",
+      "bytes": 23762,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/__init__.py",
+      "sha256": "8056ffb9ac22d55ba40decff8e449a78d4e4ba99617e7e20456ea15aed4771b6",
+      "bytes": 29,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/adherence_rules.py",
+      "sha256": "6fb541cfbc4cac5c616e20527f4ec5d7e6125e0c182c875403bdc43e6df0974f",
+      "bytes": 3276,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/bp_rules.py",
+      "sha256": "f88b5c59ae0a85b8212722bc791f94024b881e917f9a8ed0cbe7fd5e39029ef7",
+      "bytes": 5001,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/gap_rules.py",
+      "sha256": "dff2a549a12063e38c94ea4a65c89bf71d2e91950654861957bf0eeb58c77f6b",
+      "bytes": 7202,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/glp1_rules.py",
+      "sha256": "a898bfed9104d336b453491a164d5d6cd74ce5e9fa88fec18a349f08ec402f7b",
+      "bytes": 23385,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/labs_rules.py",
+      "sha256": "fd620721df1bce1e994c976dfa754688e706a43bd42e322144fac3373e91199a",
+      "bytes": 3436,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/nutrition_rules.py",
+      "sha256": "602d259b6fad5860ed4eda6f127fcc521b8f22d1dae10738d66ea3b1694c92d6",
+      "bytes": 4375,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/spo2_ecg_rules.py",
+      "sha256": "582954fd8b1789168ff49dc407fde97592c82836b3b11afb89e262608b52da4c",
+      "bytes": 10769,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/vitals_rules.py",
+      "sha256": "7d9c342ceee747235649de231568b91b4b19eb72b525329a34d7b7a2db7c1fe0",
+      "bytes": 11265,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concern_rules/workout_rules.py",
+      "sha256": "7dab203118b0441fe1b1a7a4b8f72a334eedbc9d2e8460b086f731473b4ccd8d",
+      "bytes": 5769,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/concerns.py",
+      "sha256": "37d9be5137963f3b7301bb1bf99c3fbc58b60f2fc1a89b69174424753024aca1",
+      "bytes": 5434,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/data/dri.yaml",
+      "sha256": "c170f2848127f3814db5d9b446d64fa513d961366e55de688e483a3fffa266c0",
+      "bytes": 9197,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/data/health_monitor.yaml",
+      "sha256": "2015e62c666ca24452c0b4f31a772e7a5835f55e06becba0dcecde7554a57b9f",
+      "bytes": 2572,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/demo.py",
+      "sha256": "f1be1b7fedeaaaf88fbb15cf2a59e0486525ba448d1f1bd2bdadb4e0691f9370",
+      "bytes": 3838,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/dietary_types.py",
+      "sha256": "294ce47b1eb35e25799f3cb47370e7e455a4a157911862963fa5a003c316c4af",
+      "bytes": 10546,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/ecg.py",
+      "sha256": "1064ecd51b932493a4d528d109b837627b032c0bf3a1f19837724a38ee56b964",
+      "bytes": 21985,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/energy.py",
+      "sha256": "fb0f47dd53dd241bf6245fb355804284460abeb563f9af6cff6e0b4ca7d65846",
+      "bytes": 881,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/health_types.py",
+      "sha256": "003f23733567d78b383230dc45178c6f3cf6987e1758672c527a40c0314d4d7e",
+      "bytes": 17636,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/hydration.py",
+      "sha256": "b81e8eb3e86e7435733babbece24f10589fc2d75bbb0959985e55e36823d4840",
+      "bytes": 1649,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/labs.py",
+      "sha256": "493d47d8b51a62d95784e5e41c0d8189b0211ff9a9442f5f749e9a0e6a95ca50",
+      "bytes": 24520,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/modules.py",
+      "sha256": "8970c28071ce7a051217e90e5dff6b97ba4afa6cdbeb21307e510e4e69f5f3de",
+      "bytes": 5698,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/narration.py",
+      "sha256": "efa49f92aa4f08a29ffd4b16575d5f94f6233ee62d4c916888518c624d7c05d7",
+      "bytes": 6457,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/nutrition.py",
+      "sha256": "adaefdbe80dfbaefcf1ca318d5edbb66d3c160bf24df9826d7da97c42d5f0e0d",
+      "bytes": 27419,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/settings.py",
+      "sha256": "bda1b8e2320a377ef7894be4e4d0a022be8bdc52b79fda31d493790d2102bd2b",
+      "bytes": 6717,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/sqlite_ro.py",
+      "sha256": "a8a1117aa346a9bb9ecc33c0f4c3ad5c14d7e8a0f010e7071737556acb1766d3",
+      "bytes": 610,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/stats.py",
+      "sha256": "8d81d568737f3cfd8a7b09f16491977f8befbbd15a002c7e616c317654832bfd",
+      "bytes": 2107,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/units.py",
+      "sha256": "e0b41a02cb4f56426e0d4df221849601508741310b62f084e40adb7bc0661d64",
+      "bytes": 496,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/weekly.py",
+      "sha256": "348778cdca4b62ffdc88260e49178d45b31c38ef474914629a251f675fd2ebf7",
+      "bytes": 15458,
+      "mode": "100644"
+    },
+    {
+      "path": "health_insights/workouts.py",
+      "sha256": "e74ed2773b7198622060b4821e24b84093540049ac926e4b0cd69bc8a0748a70",
+      "bytes": 6814,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.json",
+      "sha256": "97ffa16a7de41cb90c631b3c685afab2a00193f397f346b2c22cd98cbe6dc54d",
+      "bytes": 696,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "f1e5389c3488e06d03aafb476518866e108b00b5d42f63709f35cbadb7257cb0",
+      "bytes": 689,
+      "mode": "100644"
+    },
+    {
+      "path": "pytest.ini",
+      "sha256": "bd251497d5ad9113ca9d99963fad60db6044b947cb047318b511118d895bee16",
+      "bytes": 67,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-concerns-check/SKILL.md",
+      "sha256": "fb3a54690c3a417cbdbf07cfd9dd1d04e0d55fa6d63f078fcbf37c54a99e1b58",
+      "bytes": 1547,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-energy-target/SKILL.md",
+      "sha256": "e194792dcc3644678d55e06f69b34dd0d1779584f9de09c949adef9ccb9177ae",
+      "bytes": 1153,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-glp1-monitoring/SKILL.md",
+      "sha256": "6d200d5aac0c23658813b743080ec8620e08eb1dfb2eb5f27cbf15bcd63081a1",
+      "bytes": 3690,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-glp1-nutrition/SKILL.md",
+      "sha256": "0dc088c6ecb55b35deb649fd8b188427dbe753185215882f81016c8820de219a",
+      "bytes": 2641,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-glp1-warning-signs/SKILL.md",
+      "sha256": "9399ed57949657eba68a5086a48a537c5cb9d70e2bd6406097f92096d2dbd94b",
+      "bytes": 3029,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-labs-review/SKILL.md",
+      "sha256": "5b6f6894b0a972b6e2590a0ba75e0af985737d75de9b1e293313263648e512ae",
+      "bytes": 1363,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-modules/SKILL.md",
+      "sha256": "5619f0a9ab6b7aee420b3d02d5ba4bdb65e4131ddbf040548fc92ceb32b55ae9",
+      "bytes": 2003,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-nutrition-review/SKILL.md",
+      "sha256": "9bf11083bbce3a84480e1b45f292c8846d55005e035fb57c0940b8b70011531d",
+      "bytes": 1326,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-setup/SKILL.md",
+      "sha256": "7b408f76cc687a9cae4df78c8a55ce6f6736d7a18f094e977b7a00007bda179d",
+      "bytes": 3717,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/health-insights-weekly-review/SKILL.md",
+      "sha256": "8cdf090563e295d5eb3cc0c364d86db32ea11717f75d7cb1707963dff6454bf1",
+      "bytes": 1352,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "95d793907007dc4ccb0f99046610483e2218697b84d97b0a925d9a633d9ec772",
+      "bytes": 1779,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/bridge_type_catalog.json",
+      "sha256": "a09934a7b3607a28fc1b3884e5ab923d42be0ba22a176a85008b7ad7468a3e06",
+      "bytes": 23364,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/healthkit_dietary_types.json",
+      "sha256": "9acc88456dd432901c88e190981044afefb939f9dda87d535f46444ee7953a30",
+      "bytes": 6769,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_adherence_rules.py",
+      "sha256": "d5c5ba23563e589e889b1fd303fa9879396c82dbb4bfe4a350d6a13c6172aa80",
+      "bytes": 4907,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_anomalies.py",
+      "sha256": "6b27825181d5796b1f13737cd224820bf9debe1ca302e9918a1389f9992addde",
+      "bytes": 21399,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_bp.py",
+      "sha256": "b07d672746047109f7a7a03af1337be31c97a66343534952809291c4229000a7",
+      "bytes": 10785,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cli_db_resolution.py",
+      "sha256": "d94532cc3fb92d94904fb2b7fb5b581919bbc87e49f62eefc0fecd166dd6df69",
+      "bytes": 9164,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cli_smoke.py",
+      "sha256": "eccbbbfcaff59dd831eb96c8fd8b178d39fccf23cacb580b36cb02c18bba5a60",
+      "bytes": 2440,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_concerns.py",
+      "sha256": "c5005f9177e164a3dd4c300043d9b500536479d0d8b6656e78bbae957a4d5c41",
+      "bytes": 19661,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_concerns_review.py",
+      "sha256": "0a4c9a0b3d8d365bfe7592408d223a7a7f1e338ad773542c877dc6c78ac726e3",
+      "bytes": 1945,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_demo.py",
+      "sha256": "10f4220ca4623d0e8a2ecc335ac92ec433d43e9ff4e2099044fa6f558254e7f7",
+      "bytes": 1877,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_dietary_types.py",
+      "sha256": "1ce737fd11fc992d837d9297fdfffee5aaca0242f625278e8c8d6843ad3d1b94",
+      "bytes": 4330,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_ecg.py",
+      "sha256": "1757959fc5d34b5f78357b1a7714f436dc5b1dbc0faf67fea984026e61174aea",
+      "bytes": 6930,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_ecg_bridge.py",
+      "sha256": "c0c53cb76e5980458a811a4de74f3e7517f2364e3874140123ca122cdca5d12d",
+      "bytes": 8837,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_ecg_json.py",
+      "sha256": "489861346bb580ea8ca1eb01d27da3ef5dc115c0351f5656e169e3308532c6df",
+      "bytes": 8072,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_energy.py",
+      "sha256": "0d3d7b188c3a9f1d397a2aa6343da7995279f361ca22994dcc8d83867b5f24af",
+      "bytes": 1188,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_gap_rules.py",
+      "sha256": "329413f38a6428d7ea8d9cd7f96ee145a851170830f022e74eea9e87359afe59",
+      "bytes": 12212,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_glp1_rules.py",
+      "sha256": "3cd6bbab983446916a178196fb56b30250e5d4792141cf955203ddb7f7479c2b",
+      "bytes": 12721,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_health_insights.py",
+      "sha256": "a42e6bc29bc7be393cc45456cb39c99737a7dc17aef8cdfd9eecebb24e82065d",
+      "bytes": 8493,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_health_types.py",
+      "sha256": "5786ab9a71f4e52f81cc5f49f6549a4e3fa672d36789a70bee5147db73b00be7",
+      "bytes": 4160,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_hydration.py",
+      "sha256": "d8f14ae36b77b7f02d665a86efe378c3f757431eca92ef4b97c417259481e476",
+      "bytes": 2615,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_labs.py",
+      "sha256": "7340658a1141a655608e5d4920b57e794a05816fec393d8a54416b148efe4b9a",
+      "bytes": 7631,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_labs_bridge.py",
+      "sha256": "6745dd7e97f474a7cce20f067bed4e42f934d024ef82504f9297c5304a104e1f",
+      "bytes": 5714,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_labs_json.py",
+      "sha256": "bde46587caef5d8ab0df40674ebf2a34319678c7bcc17ef3e90485be333f5923",
+      "bytes": 8462,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_labs_rules.py",
+      "sha256": "d51dcc0a8e418419adc9e7685f8694d61a98ee56e94f3bdcf889e3bffe38010e",
+      "bytes": 5866,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_modules.py",
+      "sha256": "8dffb078f672ddfa7feb80ff46ef42db88877c015e76bc7c5405fdd22ab55d5d",
+      "bytes": 6759,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_narration.py",
+      "sha256": "37eee5799560e230ab4e1e433a565492f2ebc75b891ed47caca3d8c0a96c5742",
+      "bytes": 7729,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_nutrition.py",
+      "sha256": "3b0540485928b6e99712e6600b529bdc28367ba6597cce481d3f249f6beead25",
+      "bytes": 31209,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_nutrition_rules.py",
+      "sha256": "90bbe2a999d386887cd7ae1470469200aed1e33c61b6ab1277ec916d83fe81f1",
+      "bytes": 11579,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_nutrition_wording.py",
+      "sha256": "250de9ccd241b8d544c1ba2042f1a1d0e0ba742256d427bca051571d7335a4c1",
+      "bytes": 4132,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_scratch_location.py",
+      "sha256": "8ecbcf6086e928e4bd00f0cdcbc725a92ddc708dc321ffc09da79262882a77d7",
+      "bytes": 611,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_settings.py",
+      "sha256": "1169431c51765a733f223390b0589790f007d86d94b85ed45c3dd49834092fc0",
+      "bytes": 4790,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_spo2_ecg_rules.py",
+      "sha256": "67efcf19abd0200a9e1223dfcb9771911f5e9715215d31122309b78a5602b4a7",
+      "bytes": 12550,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_sqlite_ro.py",
+      "sha256": "5c2b457290f49360f20eff622078cf7a1567f82be0a769783c4be26d97e34b61",
+      "bytes": 1900,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_units_display.py",
+      "sha256": "655e73b9f9bae9051587e4f07d6001bba8f918693c7126f88e8075f6eb8d8825",
+      "bytes": 1314,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_vitals_rules.py",
+      "sha256": "9654bd6f6dbc4b5428e19602e5991a813964b00d1f13fce281fb81faae7aa698",
+      "bytes": 13899,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_weekly.py",
+      "sha256": "146adeae95598039435fcf8c7e9ae5cc63b545d630d18b5cc6191c2aa7c9ad2f",
+      "bytes": 15176,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_workout_rules.py",
+      "sha256": "a1dbca5c862592e7af49536a89d9966748acff1a7cca3efac2d29e0fc5d6098b",
+      "bytes": 11652,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_workouts.py",
+      "sha256": "e54db7e29eb2ee71200d3509d5ab0566973835c511f474926230f0ed6180e27c",
+      "bytes": 11190,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "64bc5c57754a17b49d092bd1bb2d02035c86e6163db0e53af1ceb8fda234683a",
+  "pin_verification": {
+    "archive_bytes": 173668,
+    "archive_sha256": "3d835511cfea73e24719d518578087ffd0d84747386713b194ea78fd02bbf420",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "d6d09c1f17ada6ca60368a1e0c7a7b5bd4efefc6",
+    "verified_commit_marker": "d6d09c1f17ada6ca60368a1e0c7a7b5bd4efefc6"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "681b3168278d8a0faada3677e71af03a9416e965efd32aa578e3dfdd90c47967",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "a80b04743879993941c2c454043fc9d914ebab21a6c4819595f4a2c0a8ee7352",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a80b04743879993941c2c454043fc9d914ebab21a6c4819595f4a2c0a8ee7352",
+        "source": ".gitignore",
+        "final_output_sha256": "a80b04743879993941c2c454043fc9d914ebab21a6c4819595f4a2c0a8ee7352",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "a80b04743879993941c2c454043fc9d914ebab21a6c4819595f4a2c0a8ee7352"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source": "LICENSE",
+        "final_output_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "c99741c5d6a3625870f0da0f17d35615c6306b4f3b8751d6a61f28588c2c8c2c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a2d266dbde4e49e9293311f8a97500efe9d4b94b389f425ccf356d1677c08ad1",
+        "source": "README.md",
+        "final_output_sha256": "7f18ebbd060d159136ea7780c41d35bf5baa528e8e1bd49788a5d7b9e8258d6c",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "1e8a9914442a29e36d1284472ba5d96b90d089fcc9c2068d769b6e0f1df8571d"
+      },
+      {
+        "destination": "docs/GLP1_MONITORING.md",
+        "input_sha256": "10900680f1181cd496736a62206fb0805c25b4648484871f8d24eed73fa44e0a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "10900680f1181cd496736a62206fb0805c25b4648484871f8d24eed73fa44e0a",
+        "source": "docs/GLP1_MONITORING.md",
+        "final_output_sha256": "10900680f1181cd496736a62206fb0805c25b4648484871f8d24eed73fa44e0a",
+        "cli_destination": "docs/GLP1_MONITORING.md",
+        "previous_staging_sha256": "10900680f1181cd496736a62206fb0805c25b4648484871f8d24eed73fa44e0a"
+      },
+      {
+        "destination": "docs/MODULES.md",
+        "input_sha256": "ceeeb19fd541e99bc3570e563037fd45efb3cdc43ad13b3a1d76300d2bd59b47",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ceeeb19fd541e99bc3570e563037fd45efb3cdc43ad13b3a1d76300d2bd59b47",
+        "source": "docs/MODULES.md",
+        "final_output_sha256": "ceeeb19fd541e99bc3570e563037fd45efb3cdc43ad13b3a1d76300d2bd59b47",
+        "cli_destination": "docs/MODULES.md",
+        "previous_staging_sha256": "ceeeb19fd541e99bc3570e563037fd45efb3cdc43ad13b3a1d76300d2bd59b47"
+      },
+      {
+        "destination": "health_insights/__init__.py",
+        "input_sha256": "49f070017e1db670d39f7d75b4447b8b783573c22249a5c1e73ee219e4a2a7a0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "49f070017e1db670d39f7d75b4447b8b783573c22249a5c1e73ee219e4a2a7a0",
+        "source": "health_insights/__init__.py",
+        "final_output_sha256": "49f070017e1db670d39f7d75b4447b8b783573c22249a5c1e73ee219e4a2a7a0",
+        "cli_destination": "health_insights/__init__.py",
+        "previous_staging_sha256": "49f070017e1db670d39f7d75b4447b8b783573c22249a5c1e73ee219e4a2a7a0"
+      },
+      {
+        "destination": "health_insights/analysis.py",
+        "input_sha256": "bcdd633a9d8ac2d3bb6c850810f45792e27a56cf4cc02e5ad723315925cb60a0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bcdd633a9d8ac2d3bb6c850810f45792e27a56cf4cc02e5ad723315925cb60a0",
+        "source": "health_insights/analysis.py",
+        "final_output_sha256": "bcdd633a9d8ac2d3bb6c850810f45792e27a56cf4cc02e5ad723315925cb60a0",
+        "cli_destination": "health_insights/analysis.py",
+        "previous_staging_sha256": "bcdd633a9d8ac2d3bb6c850810f45792e27a56cf4cc02e5ad723315925cb60a0"
+      },
+      {
+        "destination": "health_insights/anomalies.py",
+        "input_sha256": "0268c2777dda9e7ff9698ac6bc172b2ccb1b6dfa76e729113629f5b218dcb687",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "be0fa39c2989b795732dc7aa654a8e92a49af14aa5430112107489878057df66",
+        "source": "health_insights/anomalies.py",
+        "final_output_sha256": "01675616537c07906b73122cc2b3dba671fb0b56f527082e1423cd4ff91a01a4",
+        "cli_destination": "health_insights/anomalies.py",
+        "previous_staging_sha256": "01675616537c07906b73122cc2b3dba671fb0b56f527082e1423cd4ff91a01a4"
+      },
+      {
+        "destination": "health_insights/bp.py",
+        "input_sha256": "903f0dec220582b6d915561ed00c0561fbf19df2fdec7465ff3167d632ba18df",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "903f0dec220582b6d915561ed00c0561fbf19df2fdec7465ff3167d632ba18df",
+        "source": "health_insights/bp.py",
+        "final_output_sha256": "903f0dec220582b6d915561ed00c0561fbf19df2fdec7465ff3167d632ba18df",
+        "cli_destination": "health_insights/bp.py",
+        "previous_staging_sha256": "903f0dec220582b6d915561ed00c0561fbf19df2fdec7465ff3167d632ba18df"
+      },
+      {
+        "destination": "health_insights/bridge_db.py",
+        "input_sha256": "8972d7073ad8d7d4974181a9425398ac738ebf92cc2ecd605c8e169053a1718e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8972d7073ad8d7d4974181a9425398ac738ebf92cc2ecd605c8e169053a1718e",
+        "source": "health_insights/bridge_db.py",
+        "final_output_sha256": "8972d7073ad8d7d4974181a9425398ac738ebf92cc2ecd605c8e169053a1718e",
+        "cli_destination": "health_insights/bridge_db.py",
+        "previous_staging_sha256": "8972d7073ad8d7d4974181a9425398ac738ebf92cc2ecd605c8e169053a1718e"
+      },
+      {
+        "destination": "health_insights/cli.py",
+        "input_sha256": "06b5146bc9b93e57c58dd7df0eaa1afc35c803455d17d551d6ffa24f62f43bd7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "06b5146bc9b93e57c58dd7df0eaa1afc35c803455d17d551d6ffa24f62f43bd7",
+        "source": "health_insights/cli.py",
+        "final_output_sha256": "06b5146bc9b93e57c58dd7df0eaa1afc35c803455d17d551d6ffa24f62f43bd7",
+        "cli_destination": "health_insights/cli.py",
+        "previous_staging_sha256": "06b5146bc9b93e57c58dd7df0eaa1afc35c803455d17d551d6ffa24f62f43bd7"
+      },
+      {
+        "destination": "health_insights/concern_rules/__init__.py",
+        "input_sha256": "8056ffb9ac22d55ba40decff8e449a78d4e4ba99617e7e20456ea15aed4771b6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8056ffb9ac22d55ba40decff8e449a78d4e4ba99617e7e20456ea15aed4771b6",
+        "source": "health_insights/concern_rules/__init__.py",
+        "final_output_sha256": "8056ffb9ac22d55ba40decff8e449a78d4e4ba99617e7e20456ea15aed4771b6",
+        "cli_destination": "health_insights/concern_rules/__init__.py",
+        "previous_staging_sha256": "8056ffb9ac22d55ba40decff8e449a78d4e4ba99617e7e20456ea15aed4771b6"
+      },
+      {
+        "destination": "health_insights/concern_rules/adherence_rules.py",
+        "input_sha256": "6fb541cfbc4cac5c616e20527f4ec5d7e6125e0c182c875403bdc43e6df0974f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6fb541cfbc4cac5c616e20527f4ec5d7e6125e0c182c875403bdc43e6df0974f",
+        "source": "health_insights/concern_rules/adherence_rules.py",
+        "final_output_sha256": "6fb541cfbc4cac5c616e20527f4ec5d7e6125e0c182c875403bdc43e6df0974f",
+        "cli_destination": "health_insights/concern_rules/adherence_rules.py",
+        "previous_staging_sha256": "6fb541cfbc4cac5c616e20527f4ec5d7e6125e0c182c875403bdc43e6df0974f"
+      },
+      {
+        "destination": "health_insights/concern_rules/bp_rules.py",
+        "input_sha256": "f88b5c59ae0a85b8212722bc791f94024b881e917f9a8ed0cbe7fd5e39029ef7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f88b5c59ae0a85b8212722bc791f94024b881e917f9a8ed0cbe7fd5e39029ef7",
+        "source": "health_insights/concern_rules/bp_rules.py",
+        "final_output_sha256": "f88b5c59ae0a85b8212722bc791f94024b881e917f9a8ed0cbe7fd5e39029ef7",
+        "cli_destination": "health_insights/concern_rules/bp_rules.py",
+        "previous_staging_sha256": "f88b5c59ae0a85b8212722bc791f94024b881e917f9a8ed0cbe7fd5e39029ef7"
+      },
+      {
+        "destination": "health_insights/concern_rules/gap_rules.py",
+        "input_sha256": "dff2a549a12063e38c94ea4a65c89bf71d2e91950654861957bf0eeb58c77f6b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dff2a549a12063e38c94ea4a65c89bf71d2e91950654861957bf0eeb58c77f6b",
+        "source": "health_insights/concern_rules/gap_rules.py",
+        "final_output_sha256": "dff2a549a12063e38c94ea4a65c89bf71d2e91950654861957bf0eeb58c77f6b",
+        "cli_destination": "health_insights/concern_rules/gap_rules.py",
+        "previous_staging_sha256": "dff2a549a12063e38c94ea4a65c89bf71d2e91950654861957bf0eeb58c77f6b"
+      },
+      {
+        "destination": "health_insights/concern_rules/glp1_rules.py",
+        "input_sha256": "a898bfed9104d336b453491a164d5d6cd74ce5e9fa88fec18a349f08ec402f7b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a898bfed9104d336b453491a164d5d6cd74ce5e9fa88fec18a349f08ec402f7b",
+        "source": "health_insights/concern_rules/glp1_rules.py",
+        "final_output_sha256": "a898bfed9104d336b453491a164d5d6cd74ce5e9fa88fec18a349f08ec402f7b",
+        "cli_destination": "health_insights/concern_rules/glp1_rules.py",
+        "previous_staging_sha256": "a898bfed9104d336b453491a164d5d6cd74ce5e9fa88fec18a349f08ec402f7b"
+      },
+      {
+        "destination": "health_insights/concern_rules/labs_rules.py",
+        "input_sha256": "fd620721df1bce1e994c976dfa754688e706a43bd42e322144fac3373e91199a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fd620721df1bce1e994c976dfa754688e706a43bd42e322144fac3373e91199a",
+        "source": "health_insights/concern_rules/labs_rules.py",
+        "final_output_sha256": "fd620721df1bce1e994c976dfa754688e706a43bd42e322144fac3373e91199a",
+        "cli_destination": "health_insights/concern_rules/labs_rules.py",
+        "previous_staging_sha256": "fd620721df1bce1e994c976dfa754688e706a43bd42e322144fac3373e91199a"
+      },
+      {
+        "destination": "health_insights/concern_rules/nutrition_rules.py",
+        "input_sha256": "602d259b6fad5860ed4eda6f127fcc521b8f22d1dae10738d66ea3b1694c92d6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "602d259b6fad5860ed4eda6f127fcc521b8f22d1dae10738d66ea3b1694c92d6",
+        "source": "health_insights/concern_rules/nutrition_rules.py",
+        "final_output_sha256": "602d259b6fad5860ed4eda6f127fcc521b8f22d1dae10738d66ea3b1694c92d6",
+        "cli_destination": "health_insights/concern_rules/nutrition_rules.py",
+        "previous_staging_sha256": "602d259b6fad5860ed4eda6f127fcc521b8f22d1dae10738d66ea3b1694c92d6"
+      },
+      {
+        "destination": "health_insights/concern_rules/spo2_ecg_rules.py",
+        "input_sha256": "582954fd8b1789168ff49dc407fde97592c82836b3b11afb89e262608b52da4c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "582954fd8b1789168ff49dc407fde97592c82836b3b11afb89e262608b52da4c",
+        "source": "health_insights/concern_rules/spo2_ecg_rules.py",
+        "final_output_sha256": "582954fd8b1789168ff49dc407fde97592c82836b3b11afb89e262608b52da4c",
+        "cli_destination": "health_insights/concern_rules/spo2_ecg_rules.py",
+        "previous_staging_sha256": "582954fd8b1789168ff49dc407fde97592c82836b3b11afb89e262608b52da4c"
+      },
+      {
+        "destination": "health_insights/concern_rules/vitals_rules.py",
+        "input_sha256": "7d9c342ceee747235649de231568b91b4b19eb72b525329a34d7b7a2db7c1fe0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7d9c342ceee747235649de231568b91b4b19eb72b525329a34d7b7a2db7c1fe0",
+        "source": "health_insights/concern_rules/vitals_rules.py",
+        "final_output_sha256": "7d9c342ceee747235649de231568b91b4b19eb72b525329a34d7b7a2db7c1fe0",
+        "cli_destination": "health_insights/concern_rules/vitals_rules.py",
+        "previous_staging_sha256": "7d9c342ceee747235649de231568b91b4b19eb72b525329a34d7b7a2db7c1fe0"
+      },
+      {
+        "destination": "health_insights/concern_rules/workout_rules.py",
+        "input_sha256": "7dab203118b0441fe1b1a7a4b8f72a334eedbc9d2e8460b086f731473b4ccd8d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7dab203118b0441fe1b1a7a4b8f72a334eedbc9d2e8460b086f731473b4ccd8d",
+        "source": "health_insights/concern_rules/workout_rules.py",
+        "final_output_sha256": "7dab203118b0441fe1b1a7a4b8f72a334eedbc9d2e8460b086f731473b4ccd8d",
+        "cli_destination": "health_insights/concern_rules/workout_rules.py",
+        "previous_staging_sha256": "7dab203118b0441fe1b1a7a4b8f72a334eedbc9d2e8460b086f731473b4ccd8d"
+      },
+      {
+        "destination": "health_insights/concerns.py",
+        "input_sha256": "37d9be5137963f3b7301bb1bf99c3fbc58b60f2fc1a89b69174424753024aca1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "37d9be5137963f3b7301bb1bf99c3fbc58b60f2fc1a89b69174424753024aca1",
+        "source": "health_insights/concerns.py",
+        "final_output_sha256": "37d9be5137963f3b7301bb1bf99c3fbc58b60f2fc1a89b69174424753024aca1",
+        "cli_destination": "health_insights/concerns.py",
+        "previous_staging_sha256": "37d9be5137963f3b7301bb1bf99c3fbc58b60f2fc1a89b69174424753024aca1"
+      },
+      {
+        "destination": "health_insights/data/dri.yaml",
+        "input_sha256": "c170f2848127f3814db5d9b446d64fa513d961366e55de688e483a3fffa266c0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c170f2848127f3814db5d9b446d64fa513d961366e55de688e483a3fffa266c0",
+        "source": "health_insights/data/dri.yaml",
+        "final_output_sha256": "c170f2848127f3814db5d9b446d64fa513d961366e55de688e483a3fffa266c0",
+        "cli_destination": "health_insights/data/dri.yaml",
+        "previous_staging_sha256": "c170f2848127f3814db5d9b446d64fa513d961366e55de688e483a3fffa266c0"
+      },
+      {
+        "destination": "health_insights/data/health_monitor.yaml",
+        "input_sha256": "2015e62c666ca24452c0b4f31a772e7a5835f55e06becba0dcecde7554a57b9f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2015e62c666ca24452c0b4f31a772e7a5835f55e06becba0dcecde7554a57b9f",
+        "source": "health_insights/data/health_monitor.yaml",
+        "final_output_sha256": "2015e62c666ca24452c0b4f31a772e7a5835f55e06becba0dcecde7554a57b9f",
+        "cli_destination": "health_insights/data/health_monitor.yaml",
+        "previous_staging_sha256": "2015e62c666ca24452c0b4f31a772e7a5835f55e06becba0dcecde7554a57b9f"
+      },
+      {
+        "destination": "health_insights/demo.py",
+        "input_sha256": "f1be1b7fedeaaaf88fbb15cf2a59e0486525ba448d1f1bd2bdadb4e0691f9370",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f1be1b7fedeaaaf88fbb15cf2a59e0486525ba448d1f1bd2bdadb4e0691f9370",
+        "source": "health_insights/demo.py",
+        "final_output_sha256": "f1be1b7fedeaaaf88fbb15cf2a59e0486525ba448d1f1bd2bdadb4e0691f9370",
+        "cli_destination": "health_insights/demo.py",
+        "previous_staging_sha256": "f1be1b7fedeaaaf88fbb15cf2a59e0486525ba448d1f1bd2bdadb4e0691f9370"
+      },
+      {
+        "destination": "health_insights/dietary_types.py",
+        "input_sha256": "294ce47b1eb35e25799f3cb47370e7e455a4a157911862963fa5a003c316c4af",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "294ce47b1eb35e25799f3cb47370e7e455a4a157911862963fa5a003c316c4af",
+        "source": "health_insights/dietary_types.py",
+        "final_output_sha256": "294ce47b1eb35e25799f3cb47370e7e455a4a157911862963fa5a003c316c4af",
+        "cli_destination": "health_insights/dietary_types.py",
+        "previous_staging_sha256": "294ce47b1eb35e25799f3cb47370e7e455a4a157911862963fa5a003c316c4af"
+      },
+      {
+        "destination": "health_insights/ecg.py",
+        "input_sha256": "1064ecd51b932493a4d528d109b837627b032c0bf3a1f19837724a38ee56b964",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1064ecd51b932493a4d528d109b837627b032c0bf3a1f19837724a38ee56b964",
+        "source": "health_insights/ecg.py",
+        "final_output_sha256": "1064ecd51b932493a4d528d109b837627b032c0bf3a1f19837724a38ee56b964",
+        "cli_destination": "health_insights/ecg.py",
+        "previous_staging_sha256": "1064ecd51b932493a4d528d109b837627b032c0bf3a1f19837724a38ee56b964"
+      },
+      {
+        "destination": "health_insights/energy.py",
+        "input_sha256": "fb0f47dd53dd241bf6245fb355804284460abeb563f9af6cff6e0b4ca7d65846",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fb0f47dd53dd241bf6245fb355804284460abeb563f9af6cff6e0b4ca7d65846",
+        "source": "health_insights/energy.py",
+        "final_output_sha256": "fb0f47dd53dd241bf6245fb355804284460abeb563f9af6cff6e0b4ca7d65846",
+        "cli_destination": "health_insights/energy.py",
+        "previous_staging_sha256": "fb0f47dd53dd241bf6245fb355804284460abeb563f9af6cff6e0b4ca7d65846"
+      },
+      {
+        "destination": "health_insights/health_types.py",
+        "input_sha256": "003f23733567d78b383230dc45178c6f3cf6987e1758672c527a40c0314d4d7e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "003f23733567d78b383230dc45178c6f3cf6987e1758672c527a40c0314d4d7e",
+        "source": "health_insights/health_types.py",
+        "final_output_sha256": "003f23733567d78b383230dc45178c6f3cf6987e1758672c527a40c0314d4d7e",
+        "cli_destination": "health_insights/health_types.py",
+        "previous_staging_sha256": "003f23733567d78b383230dc45178c6f3cf6987e1758672c527a40c0314d4d7e"
+      },
+      {
+        "destination": "health_insights/hydration.py",
+        "input_sha256": "b81e8eb3e86e7435733babbece24f10589fc2d75bbb0959985e55e36823d4840",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b81e8eb3e86e7435733babbece24f10589fc2d75bbb0959985e55e36823d4840",
+        "source": "health_insights/hydration.py",
+        "final_output_sha256": "b81e8eb3e86e7435733babbece24f10589fc2d75bbb0959985e55e36823d4840",
+        "cli_destination": "health_insights/hydration.py",
+        "previous_staging_sha256": "b81e8eb3e86e7435733babbece24f10589fc2d75bbb0959985e55e36823d4840"
+      },
+      {
+        "destination": "health_insights/labs.py",
+        "input_sha256": "493d47d8b51a62d95784e5e41c0d8189b0211ff9a9442f5f749e9a0e6a95ca50",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "493d47d8b51a62d95784e5e41c0d8189b0211ff9a9442f5f749e9a0e6a95ca50",
+        "source": "health_insights/labs.py",
+        "final_output_sha256": "493d47d8b51a62d95784e5e41c0d8189b0211ff9a9442f5f749e9a0e6a95ca50",
+        "cli_destination": "health_insights/labs.py",
+        "previous_staging_sha256": "493d47d8b51a62d95784e5e41c0d8189b0211ff9a9442f5f749e9a0e6a95ca50"
+      },
+      {
+        "destination": "health_insights/modules.py",
+        "input_sha256": "8970c28071ce7a051217e90e5dff6b97ba4afa6cdbeb21307e510e4e69f5f3de",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8970c28071ce7a051217e90e5dff6b97ba4afa6cdbeb21307e510e4e69f5f3de",
+        "source": "health_insights/modules.py",
+        "final_output_sha256": "8970c28071ce7a051217e90e5dff6b97ba4afa6cdbeb21307e510e4e69f5f3de",
+        "cli_destination": "health_insights/modules.py",
+        "previous_staging_sha256": "8970c28071ce7a051217e90e5dff6b97ba4afa6cdbeb21307e510e4e69f5f3de"
+      },
+      {
+        "destination": "health_insights/narration.py",
+        "input_sha256": "efa49f92aa4f08a29ffd4b16575d5f94f6233ee62d4c916888518c624d7c05d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "efa49f92aa4f08a29ffd4b16575d5f94f6233ee62d4c916888518c624d7c05d7",
+        "source": "health_insights/narration.py",
+        "final_output_sha256": "efa49f92aa4f08a29ffd4b16575d5f94f6233ee62d4c916888518c624d7c05d7",
+        "cli_destination": "health_insights/narration.py",
+        "previous_staging_sha256": "efa49f92aa4f08a29ffd4b16575d5f94f6233ee62d4c916888518c624d7c05d7"
+      },
+      {
+        "destination": "health_insights/nutrition.py",
+        "input_sha256": "adaefdbe80dfbaefcf1ca318d5edbb66d3c160bf24df9826d7da97c42d5f0e0d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "adaefdbe80dfbaefcf1ca318d5edbb66d3c160bf24df9826d7da97c42d5f0e0d",
+        "source": "health_insights/nutrition.py",
+        "final_output_sha256": "adaefdbe80dfbaefcf1ca318d5edbb66d3c160bf24df9826d7da97c42d5f0e0d",
+        "cli_destination": "health_insights/nutrition.py",
+        "previous_staging_sha256": "adaefdbe80dfbaefcf1ca318d5edbb66d3c160bf24df9826d7da97c42d5f0e0d"
+      },
+      {
+        "destination": "health_insights/settings.py",
+        "input_sha256": "bda1b8e2320a377ef7894be4e4d0a022be8bdc52b79fda31d493790d2102bd2b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bda1b8e2320a377ef7894be4e4d0a022be8bdc52b79fda31d493790d2102bd2b",
+        "source": "health_insights/settings.py",
+        "final_output_sha256": "bda1b8e2320a377ef7894be4e4d0a022be8bdc52b79fda31d493790d2102bd2b",
+        "cli_destination": "health_insights/settings.py",
+        "previous_staging_sha256": "bda1b8e2320a377ef7894be4e4d0a022be8bdc52b79fda31d493790d2102bd2b"
+      },
+      {
+        "destination": "health_insights/sqlite_ro.py",
+        "input_sha256": "a8a1117aa346a9bb9ecc33c0f4c3ad5c14d7e8a0f010e7071737556acb1766d3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a8a1117aa346a9bb9ecc33c0f4c3ad5c14d7e8a0f010e7071737556acb1766d3",
+        "source": "health_insights/sqlite_ro.py",
+        "final_output_sha256": "a8a1117aa346a9bb9ecc33c0f4c3ad5c14d7e8a0f010e7071737556acb1766d3",
+        "cli_destination": "health_insights/sqlite_ro.py",
+        "previous_staging_sha256": "a8a1117aa346a9bb9ecc33c0f4c3ad5c14d7e8a0f010e7071737556acb1766d3"
+      },
+      {
+        "destination": "health_insights/stats.py",
+        "input_sha256": "8d81d568737f3cfd8a7b09f16491977f8befbbd15a002c7e616c317654832bfd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8d81d568737f3cfd8a7b09f16491977f8befbbd15a002c7e616c317654832bfd",
+        "source": "health_insights/stats.py",
+        "final_output_sha256": "8d81d568737f3cfd8a7b09f16491977f8befbbd15a002c7e616c317654832bfd",
+        "cli_destination": "health_insights/stats.py",
+        "previous_staging_sha256": "8d81d568737f3cfd8a7b09f16491977f8befbbd15a002c7e616c317654832bfd"
+      },
+      {
+        "destination": "health_insights/units.py",
+        "input_sha256": "e0b41a02cb4f56426e0d4df221849601508741310b62f084e40adb7bc0661d64",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e0b41a02cb4f56426e0d4df221849601508741310b62f084e40adb7bc0661d64",
+        "source": "health_insights/units.py",
+        "final_output_sha256": "e0b41a02cb4f56426e0d4df221849601508741310b62f084e40adb7bc0661d64",
+        "cli_destination": "health_insights/units.py",
+        "previous_staging_sha256": "e0b41a02cb4f56426e0d4df221849601508741310b62f084e40adb7bc0661d64"
+      },
+      {
+        "destination": "health_insights/weekly.py",
+        "input_sha256": "348778cdca4b62ffdc88260e49178d45b31c38ef474914629a251f675fd2ebf7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "348778cdca4b62ffdc88260e49178d45b31c38ef474914629a251f675fd2ebf7",
+        "source": "health_insights/weekly.py",
+        "final_output_sha256": "348778cdca4b62ffdc88260e49178d45b31c38ef474914629a251f675fd2ebf7",
+        "cli_destination": "health_insights/weekly.py",
+        "previous_staging_sha256": "348778cdca4b62ffdc88260e49178d45b31c38ef474914629a251f675fd2ebf7"
+      },
+      {
+        "destination": "health_insights/workouts.py",
+        "input_sha256": "e74ed2773b7198622060b4821e24b84093540049ac926e4b0cd69bc8a0748a70",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e74ed2773b7198622060b4821e24b84093540049ac926e4b0cd69bc8a0748a70",
+        "source": "health_insights/workouts.py",
+        "final_output_sha256": "e74ed2773b7198622060b4821e24b84093540049ac926e4b0cd69bc8a0748a70",
+        "cli_destination": "health_insights/workouts.py",
+        "previous_staging_sha256": "e74ed2773b7198622060b4821e24b84093540049ac926e4b0cd69bc8a0748a70"
+      },
+      {
+        "destination": "plugin.json",
+        "input_sha256": "453da3b5db680e8b78c34fd449fc08fba9c96e5374e81595a866a106c0698899",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "453da3b5db680e8b78c34fd449fc08fba9c96e5374e81595a866a106c0698899",
+        "source": "plugin.json",
+        "final_output_sha256": "97ffa16a7de41cb90c631b3c685afab2a00193f397f346b2c22cd98cbe6dc54d",
+        "cli_destination": "plugin.json",
+        "previous_staging_sha256": "453da3b5db680e8b78c34fd449fc08fba9c96e5374e81595a866a106c0698899"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "f1e5389c3488e06d03aafb476518866e108b00b5d42f63709f35cbadb7257cb0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f1e5389c3488e06d03aafb476518866e108b00b5d42f63709f35cbadb7257cb0",
+        "source": "pyproject.toml",
+        "final_output_sha256": "f1e5389c3488e06d03aafb476518866e108b00b5d42f63709f35cbadb7257cb0",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "f1e5389c3488e06d03aafb476518866e108b00b5d42f63709f35cbadb7257cb0"
+      },
+      {
+        "destination": "pytest.ini",
+        "input_sha256": "bd251497d5ad9113ca9d99963fad60db6044b947cb047318b511118d895bee16",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bd251497d5ad9113ca9d99963fad60db6044b947cb047318b511118d895bee16",
+        "source": "pytest.ini",
+        "final_output_sha256": "bd251497d5ad9113ca9d99963fad60db6044b947cb047318b511118d895bee16",
+        "cli_destination": "pytest.ini",
+        "previous_staging_sha256": "bd251497d5ad9113ca9d99963fad60db6044b947cb047318b511118d895bee16"
+      },
+      {
+        "destination": "skills/health-insights-concerns-check/SKILL.md",
+        "input_sha256": "fb3a54690c3a417cbdbf07cfd9dd1d04e0d55fa6d63f078fcbf37c54a99e1b58",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fb3a54690c3a417cbdbf07cfd9dd1d04e0d55fa6d63f078fcbf37c54a99e1b58",
+        "source": "skills/health-insights-concerns-check/SKILL.md",
+        "final_output_sha256": "fb3a54690c3a417cbdbf07cfd9dd1d04e0d55fa6d63f078fcbf37c54a99e1b58",
+        "cli_destination": "skills/health-insights-concerns-check/SKILL.md",
+        "previous_staging_sha256": "fb3a54690c3a417cbdbf07cfd9dd1d04e0d55fa6d63f078fcbf37c54a99e1b58"
+      },
+      {
+        "destination": "skills/health-insights-energy-target/SKILL.md",
+        "input_sha256": "e194792dcc3644678d55e06f69b34dd0d1779584f9de09c949adef9ccb9177ae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e194792dcc3644678d55e06f69b34dd0d1779584f9de09c949adef9ccb9177ae",
+        "source": "skills/health-insights-energy-target/SKILL.md",
+        "final_output_sha256": "e194792dcc3644678d55e06f69b34dd0d1779584f9de09c949adef9ccb9177ae",
+        "cli_destination": "skills/health-insights-energy-target/SKILL.md",
+        "previous_staging_sha256": "e194792dcc3644678d55e06f69b34dd0d1779584f9de09c949adef9ccb9177ae"
+      },
+      {
+        "destination": "skills/health-insights-glp1-monitoring/SKILL.md",
+        "input_sha256": "6d200d5aac0c23658813b743080ec8620e08eb1dfb2eb5f27cbf15bcd63081a1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6d200d5aac0c23658813b743080ec8620e08eb1dfb2eb5f27cbf15bcd63081a1",
+        "source": "skills/health-insights-glp1-monitoring/SKILL.md",
+        "final_output_sha256": "6d200d5aac0c23658813b743080ec8620e08eb1dfb2eb5f27cbf15bcd63081a1",
+        "cli_destination": "skills/health-insights-glp1-monitoring/SKILL.md",
+        "previous_staging_sha256": "6d200d5aac0c23658813b743080ec8620e08eb1dfb2eb5f27cbf15bcd63081a1"
+      },
+      {
+        "destination": "skills/health-insights-glp1-nutrition/SKILL.md",
+        "input_sha256": "0dc088c6ecb55b35deb649fd8b188427dbe753185215882f81016c8820de219a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0dc088c6ecb55b35deb649fd8b188427dbe753185215882f81016c8820de219a",
+        "source": "skills/health-insights-glp1-nutrition/SKILL.md",
+        "final_output_sha256": "0dc088c6ecb55b35deb649fd8b188427dbe753185215882f81016c8820de219a",
+        "cli_destination": "skills/health-insights-glp1-nutrition/SKILL.md",
+        "previous_staging_sha256": "0dc088c6ecb55b35deb649fd8b188427dbe753185215882f81016c8820de219a"
+      },
+      {
+        "destination": "skills/health-insights-glp1-warning-signs/SKILL.md",
+        "input_sha256": "9399ed57949657eba68a5086a48a537c5cb9d70e2bd6406097f92096d2dbd94b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9399ed57949657eba68a5086a48a537c5cb9d70e2bd6406097f92096d2dbd94b",
+        "source": "skills/health-insights-glp1-warning-signs/SKILL.md",
+        "final_output_sha256": "9399ed57949657eba68a5086a48a537c5cb9d70e2bd6406097f92096d2dbd94b",
+        "cli_destination": "skills/health-insights-glp1-warning-signs/SKILL.md",
+        "previous_staging_sha256": "9399ed57949657eba68a5086a48a537c5cb9d70e2bd6406097f92096d2dbd94b"
+      },
+      {
+        "destination": "skills/health-insights-labs-review/SKILL.md",
+        "input_sha256": "5b6f6894b0a972b6e2590a0ba75e0af985737d75de9b1e293313263648e512ae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b6f6894b0a972b6e2590a0ba75e0af985737d75de9b1e293313263648e512ae",
+        "source": "skills/health-insights-labs-review/SKILL.md",
+        "final_output_sha256": "5b6f6894b0a972b6e2590a0ba75e0af985737d75de9b1e293313263648e512ae",
+        "cli_destination": "skills/health-insights-labs-review/SKILL.md",
+        "previous_staging_sha256": "5b6f6894b0a972b6e2590a0ba75e0af985737d75de9b1e293313263648e512ae"
+      },
+      {
+        "destination": "skills/health-insights-modules/SKILL.md",
+        "input_sha256": "5619f0a9ab6b7aee420b3d02d5ba4bdb65e4131ddbf040548fc92ceb32b55ae9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5619f0a9ab6b7aee420b3d02d5ba4bdb65e4131ddbf040548fc92ceb32b55ae9",
+        "source": "skills/health-insights-modules/SKILL.md",
+        "final_output_sha256": "5619f0a9ab6b7aee420b3d02d5ba4bdb65e4131ddbf040548fc92ceb32b55ae9",
+        "cli_destination": "skills/health-insights-modules/SKILL.md",
+        "previous_staging_sha256": "5619f0a9ab6b7aee420b3d02d5ba4bdb65e4131ddbf040548fc92ceb32b55ae9"
+      },
+      {
+        "destination": "skills/health-insights-nutrition-review/SKILL.md",
+        "input_sha256": "9bf11083bbce3a84480e1b45f292c8846d55005e035fb57c0940b8b70011531d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9bf11083bbce3a84480e1b45f292c8846d55005e035fb57c0940b8b70011531d",
+        "source": "skills/health-insights-nutrition-review/SKILL.md",
+        "final_output_sha256": "9bf11083bbce3a84480e1b45f292c8846d55005e035fb57c0940b8b70011531d",
+        "cli_destination": "skills/health-insights-nutrition-review/SKILL.md",
+        "previous_staging_sha256": "9bf11083bbce3a84480e1b45f292c8846d55005e035fb57c0940b8b70011531d"
+      },
+      {
+        "destination": "skills/health-insights-setup/SKILL.md",
+        "input_sha256": "2189c6bb2a5307550aeb06ab49ec959d4fb254fb3aefbb1f248e92ecf9ce7a9b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "21ec8404a38cc553cdd74c49df8f9f8bf51b041b3a04bbd9204cf276375e419f",
+        "source": "skills/health-insights-setup/SKILL.md",
+        "final_output_sha256": "7b408f76cc687a9cae4df78c8a55ce6f6736d7a18f094e977b7a00007bda179d",
+        "cli_destination": "skills/health-insights-setup/SKILL.md",
+        "previous_staging_sha256": "7b408f76cc687a9cae4df78c8a55ce6f6736d7a18f094e977b7a00007bda179d"
+      },
+      {
+        "destination": "skills/health-insights-weekly-review/SKILL.md",
+        "input_sha256": "8cdf090563e295d5eb3cc0c364d86db32ea11717f75d7cb1707963dff6454bf1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8cdf090563e295d5eb3cc0c364d86db32ea11717f75d7cb1707963dff6454bf1",
+        "source": "skills/health-insights-weekly-review/SKILL.md",
+        "final_output_sha256": "8cdf090563e295d5eb3cc0c364d86db32ea11717f75d7cb1707963dff6454bf1",
+        "cli_destination": "skills/health-insights-weekly-review/SKILL.md",
+        "previous_staging_sha256": "8cdf090563e295d5eb3cc0c364d86db32ea11717f75d7cb1707963dff6454bf1"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "95d793907007dc4ccb0f99046610483e2218697b84d97b0a925d9a633d9ec772",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "95d793907007dc4ccb0f99046610483e2218697b84d97b0a925d9a633d9ec772",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "95d793907007dc4ccb0f99046610483e2218697b84d97b0a925d9a633d9ec772",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "95d793907007dc4ccb0f99046610483e2218697b84d97b0a925d9a633d9ec772"
+      },
+      {
+        "destination": "tests/fixtures/bridge_type_catalog.json",
+        "input_sha256": "a09934a7b3607a28fc1b3884e5ab923d42be0ba22a176a85008b7ad7468a3e06",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a09934a7b3607a28fc1b3884e5ab923d42be0ba22a176a85008b7ad7468a3e06",
+        "source": "tests/fixtures/bridge_type_catalog.json",
+        "final_output_sha256": "a09934a7b3607a28fc1b3884e5ab923d42be0ba22a176a85008b7ad7468a3e06",
+        "cli_destination": "tests/fixtures/bridge_type_catalog.json",
+        "previous_staging_sha256": "a09934a7b3607a28fc1b3884e5ab923d42be0ba22a176a85008b7ad7468a3e06"
+      },
+      {
+        "destination": "tests/fixtures/healthkit_dietary_types.json",
+        "input_sha256": "9acc88456dd432901c88e190981044afefb939f9dda87d535f46444ee7953a30",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9acc88456dd432901c88e190981044afefb939f9dda87d535f46444ee7953a30",
+        "source": "tests/fixtures/healthkit_dietary_types.json",
+        "final_output_sha256": "9acc88456dd432901c88e190981044afefb939f9dda87d535f46444ee7953a30",
+        "cli_destination": "tests/fixtures/healthkit_dietary_types.json",
+        "previous_staging_sha256": "9acc88456dd432901c88e190981044afefb939f9dda87d535f46444ee7953a30"
+      },
+      {
+        "destination": "tests/test_adherence_rules.py",
+        "input_sha256": "d5c5ba23563e589e889b1fd303fa9879396c82dbb4bfe4a350d6a13c6172aa80",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d5c5ba23563e589e889b1fd303fa9879396c82dbb4bfe4a350d6a13c6172aa80",
+        "source": "tests/test_adherence_rules.py",
+        "final_output_sha256": "d5c5ba23563e589e889b1fd303fa9879396c82dbb4bfe4a350d6a13c6172aa80",
+        "cli_destination": "tests/test_adherence_rules.py",
+        "previous_staging_sha256": "d5c5ba23563e589e889b1fd303fa9879396c82dbb4bfe4a350d6a13c6172aa80"
+      },
+      {
+        "destination": "tests/test_anomalies.py",
+        "input_sha256": "6b27825181d5796b1f13737cd224820bf9debe1ca302e9918a1389f9992addde",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6b27825181d5796b1f13737cd224820bf9debe1ca302e9918a1389f9992addde",
+        "source": "tests/test_anomalies.py",
+        "final_output_sha256": "6b27825181d5796b1f13737cd224820bf9debe1ca302e9918a1389f9992addde",
+        "cli_destination": "tests/test_anomalies.py",
+        "previous_staging_sha256": "6b27825181d5796b1f13737cd224820bf9debe1ca302e9918a1389f9992addde"
+      },
+      {
+        "destination": "tests/test_bp.py",
+        "input_sha256": "b07d672746047109f7a7a03af1337be31c97a66343534952809291c4229000a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b07d672746047109f7a7a03af1337be31c97a66343534952809291c4229000a7",
+        "source": "tests/test_bp.py",
+        "final_output_sha256": "b07d672746047109f7a7a03af1337be31c97a66343534952809291c4229000a7",
+        "cli_destination": "tests/test_bp.py",
+        "previous_staging_sha256": "b07d672746047109f7a7a03af1337be31c97a66343534952809291c4229000a7"
+      },
+      {
+        "destination": "tests/test_cli_db_resolution.py",
+        "input_sha256": "d94532cc3fb92d94904fb2b7fb5b581919bbc87e49f62eefc0fecd166dd6df69",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d94532cc3fb92d94904fb2b7fb5b581919bbc87e49f62eefc0fecd166dd6df69",
+        "source": "tests/test_cli_db_resolution.py",
+        "final_output_sha256": "d94532cc3fb92d94904fb2b7fb5b581919bbc87e49f62eefc0fecd166dd6df69",
+        "cli_destination": "tests/test_cli_db_resolution.py",
+        "previous_staging_sha256": "d94532cc3fb92d94904fb2b7fb5b581919bbc87e49f62eefc0fecd166dd6df69"
+      },
+      {
+        "destination": "tests/test_cli_smoke.py",
+        "input_sha256": "eccbbbfcaff59dd831eb96c8fd8b178d39fccf23cacb580b36cb02c18bba5a60",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "eccbbbfcaff59dd831eb96c8fd8b178d39fccf23cacb580b36cb02c18bba5a60",
+        "source": "tests/test_cli_smoke.py",
+        "final_output_sha256": "eccbbbfcaff59dd831eb96c8fd8b178d39fccf23cacb580b36cb02c18bba5a60",
+        "cli_destination": "tests/test_cli_smoke.py",
+        "previous_staging_sha256": "eccbbbfcaff59dd831eb96c8fd8b178d39fccf23cacb580b36cb02c18bba5a60"
+      },
+      {
+        "destination": "tests/test_concerns.py",
+        "input_sha256": "c5005f9177e164a3dd4c300043d9b500536479d0d8b6656e78bbae957a4d5c41",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c5005f9177e164a3dd4c300043d9b500536479d0d8b6656e78bbae957a4d5c41",
+        "source": "tests/test_concerns.py",
+        "final_output_sha256": "c5005f9177e164a3dd4c300043d9b500536479d0d8b6656e78bbae957a4d5c41",
+        "cli_destination": "tests/test_concerns.py",
+        "previous_staging_sha256": "c5005f9177e164a3dd4c300043d9b500536479d0d8b6656e78bbae957a4d5c41"
+      },
+      {
+        "destination": "tests/test_concerns_review.py",
+        "input_sha256": "0a4c9a0b3d8d365bfe7592408d223a7a7f1e338ad773542c877dc6c78ac726e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0a4c9a0b3d8d365bfe7592408d223a7a7f1e338ad773542c877dc6c78ac726e3",
+        "source": "tests/test_concerns_review.py",
+        "final_output_sha256": "0a4c9a0b3d8d365bfe7592408d223a7a7f1e338ad773542c877dc6c78ac726e3",
+        "cli_destination": "tests/test_concerns_review.py",
+        "previous_staging_sha256": "0a4c9a0b3d8d365bfe7592408d223a7a7f1e338ad773542c877dc6c78ac726e3"
+      },
+      {
+        "destination": "tests/test_demo.py",
+        "input_sha256": "10f4220ca4623d0e8a2ecc335ac92ec433d43e9ff4e2099044fa6f558254e7f7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "10f4220ca4623d0e8a2ecc335ac92ec433d43e9ff4e2099044fa6f558254e7f7",
+        "source": "tests/test_demo.py",
+        "final_output_sha256": "10f4220ca4623d0e8a2ecc335ac92ec433d43e9ff4e2099044fa6f558254e7f7",
+        "cli_destination": "tests/test_demo.py",
+        "previous_staging_sha256": "10f4220ca4623d0e8a2ecc335ac92ec433d43e9ff4e2099044fa6f558254e7f7"
+      },
+      {
+        "destination": "tests/test_dietary_types.py",
+        "input_sha256": "1ce737fd11fc992d837d9297fdfffee5aaca0242f625278e8c8d6843ad3d1b94",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1ce737fd11fc992d837d9297fdfffee5aaca0242f625278e8c8d6843ad3d1b94",
+        "source": "tests/test_dietary_types.py",
+        "final_output_sha256": "1ce737fd11fc992d837d9297fdfffee5aaca0242f625278e8c8d6843ad3d1b94",
+        "cli_destination": "tests/test_dietary_types.py",
+        "previous_staging_sha256": "1ce737fd11fc992d837d9297fdfffee5aaca0242f625278e8c8d6843ad3d1b94"
+      },
+      {
+        "destination": "tests/test_ecg.py",
+        "input_sha256": "1757959fc5d34b5f78357b1a7714f436dc5b1dbc0faf67fea984026e61174aea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1757959fc5d34b5f78357b1a7714f436dc5b1dbc0faf67fea984026e61174aea",
+        "source": "tests/test_ecg.py",
+        "final_output_sha256": "1757959fc5d34b5f78357b1a7714f436dc5b1dbc0faf67fea984026e61174aea",
+        "cli_destination": "tests/test_ecg.py",
+        "previous_staging_sha256": "1757959fc5d34b5f78357b1a7714f436dc5b1dbc0faf67fea984026e61174aea"
+      },
+      {
+        "destination": "tests/test_ecg_bridge.py",
+        "input_sha256": "c0c53cb76e5980458a811a4de74f3e7517f2364e3874140123ca122cdca5d12d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c0c53cb76e5980458a811a4de74f3e7517f2364e3874140123ca122cdca5d12d",
+        "source": "tests/test_ecg_bridge.py",
+        "final_output_sha256": "c0c53cb76e5980458a811a4de74f3e7517f2364e3874140123ca122cdca5d12d",
+        "cli_destination": "tests/test_ecg_bridge.py",
+        "previous_staging_sha256": "c0c53cb76e5980458a811a4de74f3e7517f2364e3874140123ca122cdca5d12d"
+      },
+      {
+        "destination": "tests/test_ecg_json.py",
+        "input_sha256": "489861346bb580ea8ca1eb01d27da3ef5dc115c0351f5656e169e3308532c6df",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "489861346bb580ea8ca1eb01d27da3ef5dc115c0351f5656e169e3308532c6df",
+        "source": "tests/test_ecg_json.py",
+        "final_output_sha256": "489861346bb580ea8ca1eb01d27da3ef5dc115c0351f5656e169e3308532c6df",
+        "cli_destination": "tests/test_ecg_json.py",
+        "previous_staging_sha256": "489861346bb580ea8ca1eb01d27da3ef5dc115c0351f5656e169e3308532c6df"
+      },
+      {
+        "destination": "tests/test_energy.py",
+        "input_sha256": "0d3d7b188c3a9f1d397a2aa6343da7995279f361ca22994dcc8d83867b5f24af",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0d3d7b188c3a9f1d397a2aa6343da7995279f361ca22994dcc8d83867b5f24af",
+        "source": "tests/test_energy.py",
+        "final_output_sha256": "0d3d7b188c3a9f1d397a2aa6343da7995279f361ca22994dcc8d83867b5f24af",
+        "cli_destination": "tests/test_energy.py",
+        "previous_staging_sha256": "0d3d7b188c3a9f1d397a2aa6343da7995279f361ca22994dcc8d83867b5f24af"
+      },
+      {
+        "destination": "tests/test_gap_rules.py",
+        "input_sha256": "329413f38a6428d7ea8d9cd7f96ee145a851170830f022e74eea9e87359afe59",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "329413f38a6428d7ea8d9cd7f96ee145a851170830f022e74eea9e87359afe59",
+        "source": "tests/test_gap_rules.py",
+        "final_output_sha256": "329413f38a6428d7ea8d9cd7f96ee145a851170830f022e74eea9e87359afe59",
+        "cli_destination": "tests/test_gap_rules.py",
+        "previous_staging_sha256": "329413f38a6428d7ea8d9cd7f96ee145a851170830f022e74eea9e87359afe59"
+      },
+      {
+        "destination": "tests/test_glp1_rules.py",
+        "input_sha256": "3cd6bbab983446916a178196fb56b30250e5d4792141cf955203ddb7f7479c2b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3cd6bbab983446916a178196fb56b30250e5d4792141cf955203ddb7f7479c2b",
+        "source": "tests/test_glp1_rules.py",
+        "final_output_sha256": "3cd6bbab983446916a178196fb56b30250e5d4792141cf955203ddb7f7479c2b",
+        "cli_destination": "tests/test_glp1_rules.py",
+        "previous_staging_sha256": "3cd6bbab983446916a178196fb56b30250e5d4792141cf955203ddb7f7479c2b"
+      },
+      {
+        "destination": "tests/test_health_insights.py",
+        "input_sha256": "a42e6bc29bc7be393cc45456cb39c99737a7dc17aef8cdfd9eecebb24e82065d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a42e6bc29bc7be393cc45456cb39c99737a7dc17aef8cdfd9eecebb24e82065d",
+        "source": "tests/test_health_insights.py",
+        "final_output_sha256": "a42e6bc29bc7be393cc45456cb39c99737a7dc17aef8cdfd9eecebb24e82065d",
+        "cli_destination": "tests/test_health_insights.py",
+        "previous_staging_sha256": "a42e6bc29bc7be393cc45456cb39c99737a7dc17aef8cdfd9eecebb24e82065d"
+      },
+      {
+        "destination": "tests/test_health_types.py",
+        "input_sha256": "5786ab9a71f4e52f81cc5f49f6549a4e3fa672d36789a70bee5147db73b00be7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5786ab9a71f4e52f81cc5f49f6549a4e3fa672d36789a70bee5147db73b00be7",
+        "source": "tests/test_health_types.py",
+        "final_output_sha256": "5786ab9a71f4e52f81cc5f49f6549a4e3fa672d36789a70bee5147db73b00be7",
+        "cli_destination": "tests/test_health_types.py",
+        "previous_staging_sha256": "5786ab9a71f4e52f81cc5f49f6549a4e3fa672d36789a70bee5147db73b00be7"
+      },
+      {
+        "destination": "tests/test_hydration.py",
+        "input_sha256": "d8f14ae36b77b7f02d665a86efe378c3f757431eca92ef4b97c417259481e476",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d8f14ae36b77b7f02d665a86efe378c3f757431eca92ef4b97c417259481e476",
+        "source": "tests/test_hydration.py",
+        "final_output_sha256": "d8f14ae36b77b7f02d665a86efe378c3f757431eca92ef4b97c417259481e476",
+        "cli_destination": "tests/test_hydration.py",
+        "previous_staging_sha256": "d8f14ae36b77b7f02d665a86efe378c3f757431eca92ef4b97c417259481e476"
+      },
+      {
+        "destination": "tests/test_labs.py",
+        "input_sha256": "7340658a1141a655608e5d4920b57e794a05816fec393d8a54416b148efe4b9a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7340658a1141a655608e5d4920b57e794a05816fec393d8a54416b148efe4b9a",
+        "source": "tests/test_labs.py",
+        "final_output_sha256": "7340658a1141a655608e5d4920b57e794a05816fec393d8a54416b148efe4b9a",
+        "cli_destination": "tests/test_labs.py",
+        "previous_staging_sha256": "7340658a1141a655608e5d4920b57e794a05816fec393d8a54416b148efe4b9a"
+      },
+      {
+        "destination": "tests/test_labs_bridge.py",
+        "input_sha256": "6745dd7e97f474a7cce20f067bed4e42f934d024ef82504f9297c5304a104e1f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6745dd7e97f474a7cce20f067bed4e42f934d024ef82504f9297c5304a104e1f",
+        "source": "tests/test_labs_bridge.py",
+        "final_output_sha256": "6745dd7e97f474a7cce20f067bed4e42f934d024ef82504f9297c5304a104e1f",
+        "cli_destination": "tests/test_labs_bridge.py",
+        "previous_staging_sha256": "6745dd7e97f474a7cce20f067bed4e42f934d024ef82504f9297c5304a104e1f"
+      },
+      {
+        "destination": "tests/test_labs_json.py",
+        "input_sha256": "bde46587caef5d8ab0df40674ebf2a34319678c7bcc17ef3e90485be333f5923",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bde46587caef5d8ab0df40674ebf2a34319678c7bcc17ef3e90485be333f5923",
+        "source": "tests/test_labs_json.py",
+        "final_output_sha256": "bde46587caef5d8ab0df40674ebf2a34319678c7bcc17ef3e90485be333f5923",
+        "cli_destination": "tests/test_labs_json.py",
+        "previous_staging_sha256": "bde46587caef5d8ab0df40674ebf2a34319678c7bcc17ef3e90485be333f5923"
+      },
+      {
+        "destination": "tests/test_labs_rules.py",
+        "input_sha256": "d51dcc0a8e418419adc9e7685f8694d61a98ee56e94f3bdcf889e3bffe38010e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d51dcc0a8e418419adc9e7685f8694d61a98ee56e94f3bdcf889e3bffe38010e",
+        "source": "tests/test_labs_rules.py",
+        "final_output_sha256": "d51dcc0a8e418419adc9e7685f8694d61a98ee56e94f3bdcf889e3bffe38010e",
+        "cli_destination": "tests/test_labs_rules.py",
+        "previous_staging_sha256": "d51dcc0a8e418419adc9e7685f8694d61a98ee56e94f3bdcf889e3bffe38010e"
+      },
+      {
+        "destination": "tests/test_modules.py",
+        "input_sha256": "8dffb078f672ddfa7feb80ff46ef42db88877c015e76bc7c5405fdd22ab55d5d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8dffb078f672ddfa7feb80ff46ef42db88877c015e76bc7c5405fdd22ab55d5d",
+        "source": "tests/test_modules.py",
+        "final_output_sha256": "8dffb078f672ddfa7feb80ff46ef42db88877c015e76bc7c5405fdd22ab55d5d",
+        "cli_destination": "tests/test_modules.py",
+        "previous_staging_sha256": "8dffb078f672ddfa7feb80ff46ef42db88877c015e76bc7c5405fdd22ab55d5d"
+      },
+      {
+        "destination": "tests/test_narration.py",
+        "input_sha256": "37eee5799560e230ab4e1e433a565492f2ebc75b891ed47caca3d8c0a96c5742",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "37eee5799560e230ab4e1e433a565492f2ebc75b891ed47caca3d8c0a96c5742",
+        "source": "tests/test_narration.py",
+        "final_output_sha256": "37eee5799560e230ab4e1e433a565492f2ebc75b891ed47caca3d8c0a96c5742",
+        "cli_destination": "tests/test_narration.py",
+        "previous_staging_sha256": "37eee5799560e230ab4e1e433a565492f2ebc75b891ed47caca3d8c0a96c5742"
+      },
+      {
+        "destination": "tests/test_nutrition.py",
+        "input_sha256": "3b0540485928b6e99712e6600b529bdc28367ba6597cce481d3f249f6beead25",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3b0540485928b6e99712e6600b529bdc28367ba6597cce481d3f249f6beead25",
+        "source": "tests/test_nutrition.py",
+        "final_output_sha256": "3b0540485928b6e99712e6600b529bdc28367ba6597cce481d3f249f6beead25",
+        "cli_destination": "tests/test_nutrition.py",
+        "previous_staging_sha256": "3b0540485928b6e99712e6600b529bdc28367ba6597cce481d3f249f6beead25"
+      },
+      {
+        "destination": "tests/test_nutrition_rules.py",
+        "input_sha256": "90bbe2a999d386887cd7ae1470469200aed1e33c61b6ab1277ec916d83fe81f1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "90bbe2a999d386887cd7ae1470469200aed1e33c61b6ab1277ec916d83fe81f1",
+        "source": "tests/test_nutrition_rules.py",
+        "final_output_sha256": "90bbe2a999d386887cd7ae1470469200aed1e33c61b6ab1277ec916d83fe81f1",
+        "cli_destination": "tests/test_nutrition_rules.py",
+        "previous_staging_sha256": "90bbe2a999d386887cd7ae1470469200aed1e33c61b6ab1277ec916d83fe81f1"
+      },
+      {
+        "destination": "tests/test_nutrition_wording.py",
+        "input_sha256": "250de9ccd241b8d544c1ba2042f1a1d0e0ba742256d427bca051571d7335a4c1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "250de9ccd241b8d544c1ba2042f1a1d0e0ba742256d427bca051571d7335a4c1",
+        "source": "tests/test_nutrition_wording.py",
+        "final_output_sha256": "250de9ccd241b8d544c1ba2042f1a1d0e0ba742256d427bca051571d7335a4c1",
+        "cli_destination": "tests/test_nutrition_wording.py",
+        "previous_staging_sha256": "250de9ccd241b8d544c1ba2042f1a1d0e0ba742256d427bca051571d7335a4c1"
+      },
+      {
+        "destination": "tests/test_scratch_location.py",
+        "input_sha256": "8ecbcf6086e928e4bd00f0cdcbc725a92ddc708dc321ffc09da79262882a77d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8ecbcf6086e928e4bd00f0cdcbc725a92ddc708dc321ffc09da79262882a77d7",
+        "source": "tests/test_scratch_location.py",
+        "final_output_sha256": "8ecbcf6086e928e4bd00f0cdcbc725a92ddc708dc321ffc09da79262882a77d7",
+        "cli_destination": "tests/test_scratch_location.py",
+        "previous_staging_sha256": "8ecbcf6086e928e4bd00f0cdcbc725a92ddc708dc321ffc09da79262882a77d7"
+      },
+      {
+        "destination": "tests/test_settings.py",
+        "input_sha256": "1169431c51765a733f223390b0589790f007d86d94b85ed45c3dd49834092fc0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1169431c51765a733f223390b0589790f007d86d94b85ed45c3dd49834092fc0",
+        "source": "tests/test_settings.py",
+        "final_output_sha256": "1169431c51765a733f223390b0589790f007d86d94b85ed45c3dd49834092fc0",
+        "cli_destination": "tests/test_settings.py",
+        "previous_staging_sha256": "1169431c51765a733f223390b0589790f007d86d94b85ed45c3dd49834092fc0"
+      },
+      {
+        "destination": "tests/test_spo2_ecg_rules.py",
+        "input_sha256": "67efcf19abd0200a9e1223dfcb9771911f5e9715215d31122309b78a5602b4a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "67efcf19abd0200a9e1223dfcb9771911f5e9715215d31122309b78a5602b4a7",
+        "source": "tests/test_spo2_ecg_rules.py",
+        "final_output_sha256": "67efcf19abd0200a9e1223dfcb9771911f5e9715215d31122309b78a5602b4a7",
+        "cli_destination": "tests/test_spo2_ecg_rules.py",
+        "previous_staging_sha256": "67efcf19abd0200a9e1223dfcb9771911f5e9715215d31122309b78a5602b4a7"
+      },
+      {
+        "destination": "tests/test_sqlite_ro.py",
+        "input_sha256": "5c2b457290f49360f20eff622078cf7a1567f82be0a769783c4be26d97e34b61",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5c2b457290f49360f20eff622078cf7a1567f82be0a769783c4be26d97e34b61",
+        "source": "tests/test_sqlite_ro.py",
+        "final_output_sha256": "5c2b457290f49360f20eff622078cf7a1567f82be0a769783c4be26d97e34b61",
+        "cli_destination": "tests/test_sqlite_ro.py",
+        "previous_staging_sha256": "5c2b457290f49360f20eff622078cf7a1567f82be0a769783c4be26d97e34b61"
+      },
+      {
+        "destination": "tests/test_units_display.py",
+        "input_sha256": "655e73b9f9bae9051587e4f07d6001bba8f918693c7126f88e8075f6eb8d8825",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "655e73b9f9bae9051587e4f07d6001bba8f918693c7126f88e8075f6eb8d8825",
+        "source": "tests/test_units_display.py",
+        "final_output_sha256": "655e73b9f9bae9051587e4f07d6001bba8f918693c7126f88e8075f6eb8d8825",
+        "cli_destination": "tests/test_units_display.py",
+        "previous_staging_sha256": "655e73b9f9bae9051587e4f07d6001bba8f918693c7126f88e8075f6eb8d8825"
+      },
+      {
+        "destination": "tests/test_vitals_rules.py",
+        "input_sha256": "9654bd6f6dbc4b5428e19602e5991a813964b00d1f13fce281fb81faae7aa698",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9654bd6f6dbc4b5428e19602e5991a813964b00d1f13fce281fb81faae7aa698",
+        "source": "tests/test_vitals_rules.py",
+        "final_output_sha256": "9654bd6f6dbc4b5428e19602e5991a813964b00d1f13fce281fb81faae7aa698",
+        "cli_destination": "tests/test_vitals_rules.py",
+        "previous_staging_sha256": "9654bd6f6dbc4b5428e19602e5991a813964b00d1f13fce281fb81faae7aa698"
+      },
+      {
+        "destination": "tests/test_weekly.py",
+        "input_sha256": "146adeae95598039435fcf8c7e9ae5cc63b545d630d18b5cc6191c2aa7c9ad2f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "146adeae95598039435fcf8c7e9ae5cc63b545d630d18b5cc6191c2aa7c9ad2f",
+        "source": "tests/test_weekly.py",
+        "final_output_sha256": "146adeae95598039435fcf8c7e9ae5cc63b545d630d18b5cc6191c2aa7c9ad2f",
+        "cli_destination": "tests/test_weekly.py",
+        "previous_staging_sha256": "146adeae95598039435fcf8c7e9ae5cc63b545d630d18b5cc6191c2aa7c9ad2f"
+      },
+      {
+        "destination": "tests/test_workout_rules.py",
+        "input_sha256": "a1dbca5c862592e7af49536a89d9966748acff1a7cca3efac2d29e0fc5d6098b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a1dbca5c862592e7af49536a89d9966748acff1a7cca3efac2d29e0fc5d6098b",
+        "source": "tests/test_workout_rules.py",
+        "final_output_sha256": "a1dbca5c862592e7af49536a89d9966748acff1a7cca3efac2d29e0fc5d6098b",
+        "cli_destination": "tests/test_workout_rules.py",
+        "previous_staging_sha256": "a1dbca5c862592e7af49536a89d9966748acff1a7cca3efac2d29e0fc5d6098b"
+      },
+      {
+        "destination": "tests/test_workouts.py",
+        "input_sha256": "e54db7e29eb2ee71200d3509d5ab0566973835c511f474926230f0ed6180e27c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e54db7e29eb2ee71200d3509d5ab0566973835c511f474926230f0ed6180e27c",
+        "source": "tests/test_workouts.py",
+        "final_output_sha256": "e54db7e29eb2ee71200d3509d5ab0566973835c511f474926230f0ed6180e27c",
+        "cli_destination": "tests/test_workouts.py",
+        "previous_staging_sha256": "e54db7e29eb2ee71200d3509d5ab0566973835c511f474926230f0ed6180e27c"
+      }
+    ],
+    "manifest_sha256": "566001e8637968a2c812f19810472d4e4e79c47abbdce585b92f39a4ad0bb500",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "docs/GLP1_MONITORING.md": "docs/GLP1_MONITORING.md",
+    "docs/MODULES.md": "docs/MODULES.md",
+    "health_insights/__init__.py": "health_insights/__init__.py",
+    "health_insights/analysis.py": "health_insights/analysis.py",
+    "health_insights/anomalies.py": "health_insights/anomalies.py",
+    "health_insights/bp.py": "health_insights/bp.py",
+    "health_insights/bridge_db.py": "health_insights/bridge_db.py",
+    "health_insights/cli.py": "health_insights/cli.py",
+    "health_insights/concern_rules/__init__.py": "health_insights/concern_rules/__init__.py",
+    "health_insights/concern_rules/adherence_rules.py": "health_insights/concern_rules/adherence_rules.py",
+    "health_insights/concern_rules/bp_rules.py": "health_insights/concern_rules/bp_rules.py",
+    "health_insights/concern_rules/gap_rules.py": "health_insights/concern_rules/gap_rules.py",
+    "health_insights/concern_rules/glp1_rules.py": "health_insights/concern_rules/glp1_rules.py",
+    "health_insights/concern_rules/labs_rules.py": "health_insights/concern_rules/labs_rules.py",
+    "health_insights/concern_rules/nutrition_rules.py": "health_insights/concern_rules/nutrition_rules.py",
+    "health_insights/concern_rules/spo2_ecg_rules.py": "health_insights/concern_rules/spo2_ecg_rules.py",
+    "health_insights/concern_rules/vitals_rules.py": "health_insights/concern_rules/vitals_rules.py",
+    "health_insights/concern_rules/workout_rules.py": "health_insights/concern_rules/workout_rules.py",
+    "health_insights/concerns.py": "health_insights/concerns.py",
+    "health_insights/data/dri.yaml": "health_insights/data/dri.yaml",
+    "health_insights/data/health_monitor.yaml": "health_insights/data/health_monitor.yaml",
+    "health_insights/demo.py": "health_insights/demo.py",
+    "health_insights/dietary_types.py": "health_insights/dietary_types.py",
+    "health_insights/ecg.py": "health_insights/ecg.py",
+    "health_insights/energy.py": "health_insights/energy.py",
+    "health_insights/health_types.py": "health_insights/health_types.py",
+    "health_insights/hydration.py": "health_insights/hydration.py",
+    "health_insights/labs.py": "health_insights/labs.py",
+    "health_insights/modules.py": "health_insights/modules.py",
+    "health_insights/narration.py": "health_insights/narration.py",
+    "health_insights/nutrition.py": "health_insights/nutrition.py",
+    "health_insights/settings.py": "health_insights/settings.py",
+    "health_insights/sqlite_ro.py": "health_insights/sqlite_ro.py",
+    "health_insights/stats.py": "health_insights/stats.py",
+    "health_insights/units.py": "health_insights/units.py",
+    "health_insights/weekly.py": "health_insights/weekly.py",
+    "health_insights/workouts.py": "health_insights/workouts.py",
+    "plugin.json": "plugin.json",
+    "pyproject.toml": "pyproject.toml",
+    "pytest.ini": "pytest.ini",
+    "skills/health-insights-concerns-check/SKILL.md": "skills/health-insights-concerns-check/SKILL.md",
+    "skills/health-insights-energy-target/SKILL.md": "skills/health-insights-energy-target/SKILL.md",
+    "skills/health-insights-glp1-monitoring/SKILL.md": "skills/health-insights-glp1-monitoring/SKILL.md",
+    "skills/health-insights-glp1-nutrition/SKILL.md": "skills/health-insights-glp1-nutrition/SKILL.md",
+    "skills/health-insights-glp1-warning-signs/SKILL.md": "skills/health-insights-glp1-warning-signs/SKILL.md",
+    "skills/health-insights-labs-review/SKILL.md": "skills/health-insights-labs-review/SKILL.md",
+    "skills/health-insights-modules/SKILL.md": "skills/health-insights-modules/SKILL.md",
+    "skills/health-insights-nutrition-review/SKILL.md": "skills/health-insights-nutrition-review/SKILL.md",
+    "skills/health-insights-setup/SKILL.md": "skills/health-insights-setup/SKILL.md",
+    "skills/health-insights-weekly-review/SKILL.md": "skills/health-insights-weekly-review/SKILL.md",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/fixtures/bridge_type_catalog.json": "tests/fixtures/bridge_type_catalog.json",
+    "tests/fixtures/healthkit_dietary_types.json": "tests/fixtures/healthkit_dietary_types.json",
+    "tests/test_adherence_rules.py": "tests/test_adherence_rules.py",
+    "tests/test_anomalies.py": "tests/test_anomalies.py",
+    "tests/test_bp.py": "tests/test_bp.py",
+    "tests/test_cli_db_resolution.py": "tests/test_cli_db_resolution.py",
+    "tests/test_cli_smoke.py": "tests/test_cli_smoke.py",
+    "tests/test_concerns.py": "tests/test_concerns.py",
+    "tests/test_concerns_review.py": "tests/test_concerns_review.py",
+    "tests/test_demo.py": "tests/test_demo.py",
+    "tests/test_dietary_types.py": "tests/test_dietary_types.py",
+    "tests/test_ecg.py": "tests/test_ecg.py",
+    "tests/test_ecg_bridge.py": "tests/test_ecg_bridge.py",
+    "tests/test_ecg_json.py": "tests/test_ecg_json.py",
+    "tests/test_energy.py": "tests/test_energy.py",
+    "tests/test_gap_rules.py": "tests/test_gap_rules.py",
+    "tests/test_glp1_rules.py": "tests/test_glp1_rules.py",
+    "tests/test_health_insights.py": "tests/test_health_insights.py",
+    "tests/test_health_types.py": "tests/test_health_types.py",
+    "tests/test_hydration.py": "tests/test_hydration.py",
+    "tests/test_labs.py": "tests/test_labs.py",
+    "tests/test_labs_bridge.py": "tests/test_labs_bridge.py",
+    "tests/test_labs_json.py": "tests/test_labs_json.py",
+    "tests/test_labs_rules.py": "tests/test_labs_rules.py",
+    "tests/test_modules.py": "tests/test_modules.py",
+    "tests/test_narration.py": "tests/test_narration.py",
+    "tests/test_nutrition.py": "tests/test_nutrition.py",
+    "tests/test_nutrition_rules.py": "tests/test_nutrition_rules.py",
+    "tests/test_nutrition_wording.py": "tests/test_nutrition_wording.py",
+    "tests/test_scratch_location.py": "tests/test_scratch_location.py",
+    "tests/test_settings.py": "tests/test_settings.py",
+    "tests/test_spo2_ecg_rules.py": "tests/test_spo2_ecg_rules.py",
+    "tests/test_sqlite_ro.py": "tests/test_sqlite_ro.py",
+    "tests/test_units_display.py": "tests/test_units_display.py",
+    "tests/test_vitals_rules.py": "tests/test_vitals_rules.py",
+    "tests/test_weekly.py": "tests/test_weekly.py",
+    "tests/test_workout_rules.py": "tests/test_workout_rules.py",
+    "tests/test_workouts.py": "tests/test_workouts.py"
+  },
+  "verification": {
+    "manifest": "plugin.json",
+    "manifest_name": "health-insights",
+    "python_files_compiled": 70,
+    "secret_findings": 0
+  },
+  "canonical_slug": "health-insights",
+  "catalog_file": "src/plugin-catalog/health-insights.yaml",
+  "identity": {
+    "catalog_id": "health-insights",
+    "canonical_slug": "health-insights",
+    "original_manifest_name": "health-insights",
+    "rebranded_manifest_name": "health-insights",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "e28ff3c72f2207740b58abc51f58b11253ddb8a5512c9598c1bee3d373d52a19",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "1e8a9914442a29e36d1284472ba5d96b90d089fcc9c2068d769b6e0f1df8571d",
+          "after_sha256": "87860ec79d724f9bff52c6698d113c00ef6208e40f4708f8aa48890c64e6afed",
+          "before_bytes": 6436,
+          "after_bytes": 6366,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.json",
+          "after_path": "plugin.json",
+          "before_sha256": "453da3b5db680e8b78c34fd449fc08fba9c96e5374e81595a866a106c0698899",
+          "after_sha256": "97ffa16a7de41cb90c631b3c685afab2a00193f397f346b2c22cd98cbe6dc54d",
+          "before_bytes": 726,
+          "after_bytes": 696,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    },
+    {
+      "revision": "r46-external-package-wire-review",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "99a4e7fe8540415c2c7026c7b34ed592139ffd1b118e8cb2e7b2f2c9d0a4b2db",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "87860ec79d724f9bff52c6698d113c00ef6208e40f4708f8aa48890c64e6afed",
+          "after_sha256": "7f18ebbd060d159136ea7780c41d35bf5baa528e8e1bd49788a5d7b9e8258d6c",
+          "before_bytes": 6366,
+          "after_bytes": 6406,
+          "operation": "preserve-external-package-and-wire-contract",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "README.md": [
+      {
+        "value": "git+https://github.com/mwdearing/hermes-health-insights@",
+        "reason": "external npm/PyPI Git dependency source coordinate; renaming would request a different package"
+      },
+      {
+        "value": "git+https://github.com/mwdearing/hermes-health-insights@",
+        "reason": "external npm/PyPI Git dependency source coordinate; renaming would request a different package"
+      }
+    ]
+  }
+}

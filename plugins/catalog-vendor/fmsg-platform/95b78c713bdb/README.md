@@ -1,0 +1,295 @@
+<p align="center">
+  <a href="https://github.com/DuckMind/duckwork">
+    <img src="https://github.com/DuckMind/duckwork" alt="Test">
+  </a>
+</p>
+
+# DUCKWORK FMSG
+
+<img align="right" src="img/fmsg-falcon.png" alt="fmsg falcon" width="340">
+
+[fmsg](https://github.com/markmnl/fmsg) platform plugin for
+[Duckwork Agent](https://github.com/DuckMind/duckwork) — give your Duckwork
+agent its own address and durable, threaded conversations.
+
+An fmsg thread is also the agent's conversation context: roots map to Duckwork
+sessions, linear replies continue them, and later branches get their own session
+with direct ancestry restored as context.
+
+
+```bash
+duckwork plugins install markmnl/duckwork-fmsg --enable
+```
+
+<br/>
+
+## Why fmsg for an agent?
+
+- **A durable agent identity:** people and other agents can contact a stable
+  `@agent@domain` address without sharing a human login.
+- **Context-native threads:** fmsg's message tree maps to Duckwork sessions and
+  branch context instead of flattening every conversation into one chat.
+- **Offline-safe delivery:** WebSocket push is backed by inbox catch-up after a
+  restart or network interruption.
+- **Revocable access:** an agent uses its own expiring API key, exchanged for
+  short-lived JWTs, rather than a human password or persistent user token.
+- **Federated reach:** addresses on independently operated fmsg hosts can
+  communicate without joining the same messaging silo.
+- **Self Hostable:** self-host an fmsg host on your domain and choose storage,
+  quotas, retention, and policy without per-message platform metering. Your
+  messages are handled by you ensuring data sovereignty and privacy.
+- **Rich workflows:** text, attachments, reply-all, cron delivery, and
+  agent-to-agent messaging use the same address.
+
+
+## Status
+
+`v0.2.3` The core message, attachment, reconnect, auth,
+threading, and branching paths are implemented and unit tested. Install now
+prompts for home channel + allowlist, and seeds the allowlist from
+`FMSG_HOME_CHANNEL` when the allowlist is left empty. The plugin is a
+standalone community integration, not bundled with Duckwork Agent.
+
+Supported and continuously tested with Duckwork Agent `v0.19` through `v0.21`.
+Please report compatibility problems with your Duckwork version and operating
+system.
+
+## Quickstart
+
+### 1. Get an agent address and API key
+
+Choose either route:
+
+- **Hosted:** use an fmsg service provider, create an agent/sub-account under
+  your user address, and copy its one-time API key. You also need the provider's
+  fmsg Web API URL.
+
+[fmsg.io](https://fmsg.io) provides accounts with up to 5 sub-accounts for free.
+
+- **Self-hosted:** deploy the open-source
+  [fmsg-docker](https://github.com/markmnl/fmsg-docker) stack, then create a
+  derived sub-account and API key through its Web API or CLI.
+
+Use a dedicated agent identity such as `@alice_duckwork@example.com`. Do not give
+the plugin a human password or a user's identity-provider token.
+
+### 2. Install with Duckwork
+
+```bash
+duckwork plugins install markmnl/duckwork-fmsg --enable
+```
+
+The Duckwork installer prompts for:
+
+- `FMSG_API_URL` — the base URL of the host's fmsg Web API; the plugin uses
+  `https://api.fmsg.io` when it is left unset.
+- `FMSG_API_KEY` — the agent's `fmsgk_...` API key.
+- `FMSG_HOME_CHANNEL` — your owner fmsg address (cron / notifications; also
+  used as the default allowed sender if the allowlist is empty).
+- `FMSG_ALLOWED_USERS` — comma-separated addresses allowed to message the
+  agent (use your address at minimum).
+
+Duckwork only prompts variables listed under `requires_env`. Empty answers are
+still skipped, so the plugin also **seeds** `FMSG_ALLOWED_USERS` from
+`FMSG_HOME_CHANNEL` at gateway start when the allowlist is unset (see below).
+Duckwork skips an install prompt when the variable is already present in either
+the current process environment or `~/.duckwork/.env`.
+
+The repository root is a native Duckwork plugin package; cloning or copying files
+manually is not required.
+
+### 3. Configure the environment
+
+Here are the FMSG_ env vars this plugin can use:
+
+```dotenv
+# Required (prompted at install)
+FMSG_API_KEY=fmsgk_<key_id>_<secret>
+FMSG_API_URL=https://api.fmsg.io
+FMSG_HOME_CHANNEL=@alice@example.com
+FMSG_ALLOWED_USERS=@alice@example.com
+
+# Optional
+FMSG_ALLOW_ALL_USERS=false
+FMSG_HOME_CHANNEL_NAME=Alice
+FMSG_DEFAULT_TOPIC=Duckwork
+```
+
+Access control defaults to **deny**. At least one trusted address is required
+for inbound replies:
+
+- Prefer setting both `FMSG_HOME_CHANNEL` and `FMSG_ALLOWED_USERS` at install.
+- If `FMSG_ALLOWED_USERS` is empty, `FMSG_ALLOW_ALL_USERS` is off, and
+  `FMSG_HOME_CHANNEL` is set, the plugin copies the home channel into the
+  allowlist for the gateway process and logs a warning.
+- If none of those are set, every inbound sender is rejected
+  (`Unauthorized user: ... on fmsg` in the gateway log).
+- `FMSG_ALLOW_ALL_USERS=true` bypasses the allowlist and is intended only for
+  isolated development.
+
+`FMSG_HOME_CHANNEL` should normally be the plugin owner's own fmsg address.
+Environment variables take precedence over `platforms.fmsg.extra` in
+`~/.duckwork/config.yaml`.
+
+### 4. Start or restart the gateway
+
+```bash
+duckwork gateway restart
+duckwork gateway status
+duckwork plugins list --plain --no-bundled
+```
+
+The plugin list should show `fmsg-platform` enabled and the gateway log should
+show `fmsg connected — streaming from …`. Send a message to the agent's address to open its first
+Duckwork session.
+
+### Sending messages from Duckwork
+
+The sending identity is the fmsg sub-account bound to `FMSG_API_KEY`. The
+plugin obtains that address from the exchanged JWT and supplies it as the
+message's `from` address; do not configure a separate sender address.
+
+With `FMSG_HOME_CHANNEL` set, an agent or shell command can send to that
+address using the platform-only target:
+
+```bash
+duckwork send --to fmsg "whats up"
+```
+
+Replies in an existing fmsg conversation automatically use that
+conversation's address and thread. Code calling the plugin sender directly
+must pass the recipient's complete fmsg address, such as
+`@alice@example.com`, as `chat_id` without an `fmsg:` prefix.
+
+Use these integration paths:
+
+- **Current conversation:** reply normally; the live adapter preserves the
+  fmsg parent, recipients, and Duckwork session.
+- **Configured home channel:** use `duckwork send --to fmsg "message"` or the
+  Duckwork `send_message` tool with target `fmsg`.
+- **Cron delivery:** configure `FMSG_HOME_CHANNEL`; Duckwork invokes the plugin's
+  registered standalone sender when it is outside the gateway process.
+- **Application code inside Duckwork:** call the platform adapter's `send` method
+  with the complete address as `chat_id`.
+
+In all of these paths the plugin owns API-key exchange, sender identity,
+threading, attachments, and error handling. The Duckwork agent should not read
+`FMSG_API_KEY`, manage JWTs, or construct fmsg drafts itself.
+
+## How conversations map to Duckwork
+
+| fmsg | Duckwork |
+|---|---|
+| counterparty address `@user@domain` | chat and authenticated user identity |
+| root message | new session keyed by root message ID |
+| first child path | continuation of the root session |
+| later sibling branch | new `{root}:br:{message}` session with direct ancestry context |
+| `short_text` or message data | inbound prompt text |
+| attachments | cached inbound media or outbound fmsg attachments |
+| `important` / `no_reply` | event metadata and model context |
+| parent participants | reply-all recipients for that parent message |
+| read route | receipt after Duckwork dispatches the message |
+
+Multiple Duckwork replies in one turn form a chain: the first replies to the
+latest inbound message, and each subsequent message replies to the previous
+outbound message. A later inbound message resets that chain.
+
+Agent-initiated messages without an explicit thread continue the most recent
+one-to-one conversation with that address. Set metadata
+`fmsg_new_thread=true` to force a new root, with an optional `topic` override.
+Multi-party conversations are never selected for automatic continuation.
+
+### Reply-all behavior
+
+A reply includes every participant on the specific parent message (`from`,
+`to`, and `add_to`), excluding the agent. Exceptional callers can select a
+subset with `fmsg_to` / `recipients`, or set `fmsg_reply_all=false` for the
+counterparty only.
+
+## Security notes
+
+- Review any Duckwork plugin before installation; plugins execute inside the
+  Duckwork process.
+- Keep the fmsg API key in `~/.duckwork/.env`, never in a repository or issue.
+- Restrict the key to expected CIDRs where the host supports it.
+- Prefer short expiry periods and rotate or revoke a key immediately if it is
+  exposed.
+- Keep `FMSG_ALLOWED_USERS` narrow. Do not enable `FMSG_ALLOW_ALL_USERS` on an
+  Internet-connected agent.
+
+Please report suspected vulnerabilities privately as described in
+[SECURITY.md](SECURITY.md).
+
+## Troubleshooting
+
+```bash
+duckwork --version
+duckwork plugins list --plain --no-bundled
+duckwork gateway status
+duckwork logs --help
+```
+
+Common checks:
+
+- **Plugin is disabled:** rerun the install with `--enable`, or use
+  `duckwork plugins enable fmsg-platform`.
+- **Missing dependency:** install `httpx` and `websockets` in the Python
+  environment used by Duckwork.
+- **API key rejected:** confirm it is unexpired, unrevoked, allowed from the
+  gateway's IP, and belongs to the intended agent address.
+- **Messages ignored / `Unauthorized user` in gateway log:** add the sender to
+  `FMSG_ALLOWED_USERS` (or set `FMSG_HOME_CHANNEL` so the plugin can seed the
+  allowlist) and restart the gateway. Empty allowlist is default-deny.
+- **Outbound works, inbound does not:** `duckwork send` uses the standalone
+  sender and does not need a running gateway. Inbound replies need
+  `duckwork gateway` with `fmsg connected` in the log.
+- **Connection drops:** the adapter reconnects with backoff and catches up from
+  the inbox. Include sanitized `fmsg` lines from the gateway log in a bug report.
+
+Never post API keys, JWTs, private addresses, or unredacted URLs containing
+credentials.
+
+## Updating and uninstalling
+
+```bash
+duckwork plugins update fmsg-platform
+duckwork plugins disable fmsg-platform
+duckwork plugins remove fmsg-platform
+```
+
+Consult `duckwork plugins --help` if command names differ on an older Duckwork
+release.
+
+## Development
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/python -m pytest tests/ -v
+```
+
+Unit tests use an in-memory fake fmsg Web API and stub only the Duckwork gateway
+surface needed by the adapter.
+
+The legacy developer copy target remains available:
+
+```bash
+make install
+```
+
+### End-to-end test
+
+The opt-in test exchanges a threaded round trip between two real API-key
+identities:
+
+```bash
+FMSG_E2E=1 \
+FMSG_E2E_API_URL=http://127.0.0.1:8000 \
+FMSG_E2E_API_KEY=fmsgk_... \
+FMSG_E2E_PEER_KEY=fmsgk_... \
+.venv/bin/python -m pytest tests/e2e/ -v
+```
+
+It requires a running fmsg Web API with the `fmsgd` base schema and the Web API
+schema applied. The `fmsg-docker` stack provides the full integration
+environment.

@@ -1,0 +1,135 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Folded fan-out modes, single launch: quorum-raced probe beside a no-quorum barrier",
+        "The probe must name its cancelled stragglers honestly; the barrier prints coverage gaps loudly",
+        "Sibling nodes, no branch gates \u2014 every lap walks both modes"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "5 nodes, 1 echo, 2 fan-out: catalog -> probe (quorum) + barrier -> reconcile",
+        "Laps exist per-engine-side, not per-mode",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "catalog",
+      "id": "catalog-reconcile",
+      "to": "reconcile",
+      "variant": "default"
+    },
+    {
+      "from": "probe_coverage",
+      "id": "probe_coverage-reconcile",
+      "to": "reconcile",
+      "variant": "default"
+    },
+    {
+      "from": "probe_race",
+      "id": "probe_race-report",
+      "to": "report",
+      "variant": "default"
+    },
+    {
+      "from": "reconcile",
+      "id": "reconcile-report",
+      "to": "report",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "room",
+      "label": "Deterministic",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/quorum-probe.html",
+    "quality_profile": "standard",
+    "subtitle": "Redundant-probe pair teaching the FOLDED speed/coverage contrast in ONE file. DEFAULT SHAPE - probe_race: a fa",
+    "title": "quorum-probe"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "catalog",
+      "label": "Catalog",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 0,
+      "id": "probe_coverage",
+      "label": "Probe Coverage",
+      "lane": "work",
+      "tag": "fan-out 3",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 0,
+      "id": "probe_race",
+      "label": "Probe Race",
+      "lane": "work",
+      "tag": "quorum fan-out 3",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 1,
+      "id": "reconcile",
+      "label": "Reconcile",
+      "lane": "work",
+      "sublabel": "you are the coverage",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "report",
+      "label": "Report",
+      "lane": "work",
+      "sublabel": "report the folded",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 1
+    },
+    {
+      "fromCol": 2,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 2
+    }
+  ],
+  "schema_version": 2
+}

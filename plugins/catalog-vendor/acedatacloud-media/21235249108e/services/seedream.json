@@ -1,0 +1,71 @@
+{
+  "service": "seedream",
+  "title": "Ace Data Cloud Seedream",
+  "kind": "image",
+  "description": "Seedream 5.0 Lite text-to-image generation through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_seedream",
+  "generate_path": "/seedream/images",
+  "task_path": "/seedream/tasks",
+  "defaults": {
+    "model": "doubao-seedream-5-0-lite-260128",
+    "size": "2K",
+    "response_format": "url"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "prompt"
+    ],
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "2K",
+          "3K",
+          "4K"
+        ],
+        "maxLength": 4000
+      },
+      "watermark": {
+        "type": "boolean"
+      },
+      "model": {
+        "type": "string",
+        "enum": [
+          "doubao-seedream-5-0-lite-260128"
+        ],
+        "maxLength": 4000
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_seedream_generate",
+  "tools": [
+    "acedatacloud_seedream_generate",
+    "acedatacloud_seedream_task"
+  ],
+  "toolset": "acedatacloud-seedream"
+}

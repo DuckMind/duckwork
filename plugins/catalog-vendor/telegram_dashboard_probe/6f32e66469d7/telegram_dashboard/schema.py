@@ -1,0 +1,359 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Literal
+
+Severity = Literal["normal", "warning", "critical", "unknown"]
+# ``unsupported``: this installation cannot answer the question at all (no file, no facade).
+# It renders exactly like ``unavailable`` (reduced coverage), never as zero or green.
+SourceState = Literal["fresh", "stale", "unavailable", "unsupported"]
+Authority = Literal["official", "local", "derived", "unknown"]
+# ``expired``: the provider answered that the login behind the number has ended; the line says
+# so instead of a number, and the owner signs in again.
+QuotaKind = Literal["official", "local", "unavailable", "unsupported", "expired"]
+DriftState = Literal["clean", "drift", "unknown", "unsupported"]
+BackupState = Literal["ok", "failed", "unknown", "unsupported"]
+GatewayProcessState = Literal["running", "stopped", "unknown", "unsupported"]
+PlatformState = Literal["connected", "degraded", "disconnected", "unknown", "unsupported"]
+# The cron ticker and its jobs as the engine's own records say (``cron_jobs.py``): ``failing``
+# is at least one job that did not deliver what it should, ``stalled`` a heartbeat older than
+# the engine's own threshold, ``ticks_failing`` a ticker that beats but whose every tick ends in
+# an error. ``unknown``: the records could not be read; ``unsupported``: no cron directory.
+CronState = Literal["ok", "failing", "stalled", "ticks_failing", "unknown", "unsupported"]
+CronFailureKind = Literal["run", "delivery", "blocked", "overdue"]
+# Whether messages move through a connected Telegram adapter (``telegram_traffic.py``):
+# ``no_sends`` is the adapter's own send gate closed, ``stalled`` a poll without progress,
+# ``quiet`` no update for longer than this installation usually waits, ``reconnecting`` a
+# fresh polling generation that has not received anything yet.
+TrafficState = Literal[
+    "ok", "no_sends", "stalled", "quiet", "reconnecting", "unknown", "unsupported"
+]
+# Whether the agent sees its rules (``context_files.py``), per platform, from the system prompt
+# of its latest session against the files on disk now: ``loaded`` as they are on disk,
+# ``truncated`` cut in the middle by the engine's budget, ``outdated`` an older text than the
+# file holds now, ``blocked`` refused by the engine's injection scan, ``none`` no file in the
+# prompt while one is there for it, ``no_files`` no file where the agent or the gateway looks,
+# ``off`` the platform skips context files in the engine's config, ``unknown`` the prompt has
+# rules and names no directory to compare them with, or has none while a file is there and the
+# engine's config, which may switch them off, could not be read (``why`` ``config``).
+RulesVerdict = Literal[
+    "loaded", "truncated", "outdated", "blocked", "none", "no_files", "off", "unknown"
+]
+# Why a ``none``: the file changed after the session started (``/new`` picks it up); it was
+# there and the prompt does not carry it; it is not UTF-8, which the engine skips in silence;
+# it lies only in the gateway's working directory or only in ``DUCKWORK_HOME``, where the agent
+# does not look. Why an ``outdated``: ``gone``, the prompt carries rules no file has now. Why an
+# ``unknown``: ``config``, the engine's config.yaml was not read (no parser, or refused).
+RulesWhy = Literal["after", "not_loaded", "not_utf8", "gateway_dir", "home", "gone", "config"]
+# ``observed``: the verdicts stand; ``off``: the dashboard's own setting turned the line off.
+RulesState = Literal["observed", "unknown", "unsupported", "off"]
+
+
+@dataclass(frozen=True, slots=True)
+class SourceObservation:
+    name: str
+    authority: Authority
+    state: SourceState
+    observed_at: str | None = None
+    detail: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Coverage:
+    expected_profiles: int = 0
+    observed_profiles: int = 0
+    failed_sources: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class Incident:
+    incident_id: str
+    severity: Severity
+    title: str
+    scope: str = "installation"
+
+
+@dataclass(frozen=True, slots=True)
+class WorkSummary:
+    executing: int = 0
+    queued: int = 0
+    waiting_human: int = 0
+    failed: int = 0
+    unknown: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class CronFailure:
+    """One job that is not delivering what it should, as the engine's own records say."""
+
+    job_id: str
+    name: str
+    kind: CronFailureKind
+    # The failed run's end (``last_run_at``), or the overdue ``next_run_at``.
+    at: str | None = None
+    # Runs in a row; ``None`` when the history cannot say.
+    streak: int | None = None
+    # The KIND of the error in a word (``cron_jobs.error_kind``), never its text.
+    reason: str | None = None
+    # A later ok run replaced it in ``jobs.json``; held in the details for a while.
+    recovered_at: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CronSummary:
+    state: CronState = "unknown"
+    # Enabled and scheduled (or running).
+    active: int | None = None
+    paused: int | None = None
+    # Current: on the line and in the events.
+    failing: tuple[CronFailure, ...] = ()
+    # Erased by a later run: details only.
+    held: tuple[CronFailure, ...] = ()
+    # The last heartbeat.
+    ticker_at: str | None = None
+    # The last tick without an error.
+    ticker_ok_at: str | None = None
+    # The kind of the ticker's last error in a word, never its text.
+    ticker_error: str | None = None
+    detail: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class TrafficSummary:
+    """Whether messages move through the connected Telegram adapter, from its own counters."""
+
+    state: TrafficState = "unknown"
+    # The tick that saw the update counter grow.
+    last_update_seen_at: str | None = None
+    # The last successful getUpdates round-trip, wall clock.
+    polling_at: str | None = None
+    sends_blocked_since: str | None = None
+    # From the engine's error log.
+    last_send_error_at: str | None = None
+    send_errors_hour: int = 0
+    quiet_seconds: float | None = None
+    threshold_seconds: float | None = None
+    # The longest gap between updates seen lately, what the threshold was made from.
+    usual_gap_seconds: float | None = None
+    detail: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PlatformRules:
+    """One platform's latest session with a saved prompt, judged; never the text of either."""
+
+    platform: str
+    verdict: RulesVerdict
+    session_started_at: str | None = None
+    # The files as the prompt labels them (``AGENTS.md``, ``../AGENTS.md``) or, for ``none``,
+    # the names found on disk; never a path.
+    files: tuple[str, ...] = ()
+    # ``loaded``: the sections' length; ``truncated``: the full length the engine cut.
+    chars: int | None = None
+    # ``truncated``: what the engine kept of ``chars``.
+    kept: int | None = None
+    # ``outdated`` and ``none``: when the file (or a link to it) changed last.
+    changed_at: str | None = None
+    why: RulesWhy | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class RulesSummary:
+    state: RulesState = "unknown"
+    platforms: tuple[PlatformRules, ...] = ()
+    detail: str | None = None
+
+
+# The agent's memory (``memory.py``): ``observed`` the numbers stand; ``off`` the dashboard's own
+# setting turned the section off; ``unknown`` it could not be read (``detail``); ``unsupported``
+# no config, notebook or queue of Duckwork in this home.
+MemoryState = Literal["observed", "unknown", "unsupported", "off"]
+
+
+@dataclass(frozen=True, slots=True)
+class MemoryNotebook:
+    """One notebook (``MEMORY.md``, ``USER.md``) counted the engine's way; never its text.
+    ``enabled`` and ``limit`` are ``None`` when the engine's config could not be read, ``chars``
+    when there is no file yet or the engine cannot decode it (``readable`` False: it loads
+    nothing and refuses every write). ``limit`` is ``0`` when no add can pass it."""
+
+    name: str
+    enabled: bool | None = None
+    chars: int | None = None
+    limit: int | None = None
+    entries: int = 0
+    largest: int = 0
+    changed_at: str | None = None
+    readable: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class MemoryQueue:
+    """The writes that wait for approval (``pending/memory``, ``pending/skills``): how many, the
+    oldest and the newest, when a write last landed; for memory, per notebook the characters
+    the waiting adds would write and the room left (``(name, needed, free)``). ``gate`` is the
+    engine's ``write_approval``, ``None`` when its config could not be read."""
+
+    subsystem: str
+    gate: bool | None = None
+    count: int = 0
+    oldest_at: str | None = None
+    newest_at: str | None = None
+    applied_at: str | None = None
+    needs: tuple[tuple[str, int, int], ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class MemoryProvider:
+    """A configured provider: the engine's warnings about it over the last day, the time of the
+    last one whatever its age, and when the engine said in this gateway process that the
+    provider reports unavailable (0.21.6 says so once per process)."""
+
+    name: str
+    errors: int = 0
+    last_error_at: str | None = None
+    log_read: bool = True
+    unavailable_at: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class MemorySummary:
+    state: MemoryState = "unknown"
+    notebooks: tuple[MemoryNotebook, ...] = ()
+    queues: tuple[MemoryQueue, ...] = ()
+    provider: MemoryProvider | None = None
+    detail: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class QuotaWindow:
+    label: str
+    used_percent: float | None = None
+    reset_at: str | None = None
+    # The provider's state in words when it gives no number (Grok's week before the first
+    # request); shown instead of the percent, never turned into one.
+    note: str | None = None
+    # The model the limit applies to (``Fable``); ``None`` is the account's own limit.
+    scope: str | None = None
+    # The provider's own verdict on the window: ``normal``, ``warning`` or ``critical``.
+    severity: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Refusal:
+    """The provider's last HTTP 429 as the engine's own log recorded it (``gemini_log.py``).
+
+    ``at`` is ``None`` when the log was read and holds none. Every other field is optional: the
+    provider's message names a ``limit``, a ``model`` and the seconds to retry only sometimes.
+    ``daily`` is a retry longer than a per-minute window, so the quota is out until a reset;
+    ``active_until`` is how long the refusal stays on the screen (the line carries the mark, a
+    daily one is an event). Both are derived on every tick, never stored."""
+
+    at: str | None = None
+    limit: int | None = None
+    retry_seconds: float | None = None
+    model: str | None = None
+    daily: bool = False
+    active_until: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class QuotaMetric:
+    provider: str
+    kind: QuotaKind
+    used: int | None = None
+    limit: int | None = None
+    reset_at: str | None = None
+    windows: tuple[QuotaWindow, ...] = ()
+    detail: str | None = None
+    # When the number was read from the provider; a line older than the screen says so itself.
+    fetched_at: str | None = None
+    # The plan as the provider names it (``Max 5x``, ``Prolite``, ``SuperGrok``); details only.
+    plan: str | None = None
+    # When the login behind the number ends; the owner signs in again before that.
+    login_expires_at: str | None = None
+    # The last 429 the engine logged for the provider; ``None`` when nobody watches its log.
+    refusal: Refusal | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CapacitySummary:
+    quotas: tuple[QuotaMetric, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class DriftSummary:
+    state: DriftState = "unknown"
+    changed_keys: int | None = None
+    total_keys: int | None = None
+    checked_at: str | None = None
+    detail: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class BackupSummary:
+    """The last backup run as its status file describes it. ``ok``/``failed`` is the run's
+    verdict; ``unknown`` is a status that could not be read (``detail`` says why);
+    ``unsupported`` is an installation with no status source configured."""
+
+    state: BackupState = "unknown"
+    finished_at: str | None = None
+    integrity: str | None = None
+    phase: str | None = None
+    reason: str | None = None
+    detail: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class GatewaySummary:
+    process: GatewayProcessState = "unknown"
+    telegram: PlatformState = "unknown"
+    updated_at: str | None = None
+    detail: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class VersionSummary:
+    """The Duckwork version the running gateway serves against the latest upstream release.
+
+    Information only: no status, incident or coverage is derived from it. ``running`` is
+    ``None`` when this installation cannot say (``local_reason``); ``latest`` is ``None`` when
+    the upstream check has no answer (``reason``). ``behind`` is the position of ours on
+    upstream's release list relative to Latest: above zero behind, zero the same release, below
+    zero newer; ``None`` when ours is not among the ``list_size`` releases read. With ``latest``
+    set, ``reason`` is why the last check failed (the answer is the one confirmed at
+    ``confirmed_at``)."""
+
+    running: str | None = None
+    latest: str | None = None
+    running_published_at: str | None = None
+    latest_published_at: str | None = None
+    behind: int | None = None
+    list_size: int | None = None
+    checked_at: str | None = None
+    reason: str | None = None
+    local_reason: str | None = None
+    confirmed_at: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class DashboardSnapshot:
+    overall: Severity
+    observed_at: str
+    coverage: Coverage = field(default_factory=Coverage)
+    # ``None`` means the block is not observed on this installation (outside MVP or unsupported).
+    work: WorkSummary | None = None
+    cron: CronSummary | None = None
+    traffic: TrafficSummary | None = None
+    capacity: CapacitySummary = field(default_factory=CapacitySummary)
+    incidents: tuple[Incident, ...] = ()
+    drift: DriftSummary | None = None
+    gateway: GatewaySummary | None = None
+    backup: BackupSummary | None = None
+    sources: tuple[SourceObservation, ...] = ()
+    # Not a source: the line informs and never moves the status or the coverage.
+    version: VersionSummary | None = None
+    # Whether the agent sees its rules; ``None`` when not collected (the demo states).
+    rules: RulesSummary | None = None
+    # Whether the agent's memory works; ``None`` when not collected.
+    memory: MemorySummary | None = None

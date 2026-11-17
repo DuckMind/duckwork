@@ -1,0 +1,59 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "PR #352 — Heartbeat Verdict + Run Explain (est-zsws, #127)",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "est-zsws.html"
+  },
+  "lanes": [
+    { "id": "consumer", "label": "Consumer" },
+    { "id": "readmodel", "label": "Read Model (derive-only)" },
+    { "id": "evidence", "label": "Evidence Channels" }
+  ],
+  "phases": [
+    { "id": "ask", "label": "Status call", "fromCol": 0, "toCol": 1 },
+    { "id": "derive", "label": "Derive verdict", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "compose", "label": "Compose explain", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": ["caller", "fold", "heartbeat", "payload"],
+  "nodes": [
+    { "id": "caller", "lane": "consumer", "col": 0, "type": "external", "label": "Status Call", "sublabel": "workflow action=status", "width": 140 },
+    { "id": "payload", "lane": "consumer", "col": 5, "type": "frontend", "label": "Status Payload", "sublabel": "nodes + run fields", "width": 140 },
+    { "id": "fold", "lane": "readmodel", "col": 1, "type": "backend", "label": "Metrics Fold", "sublabel": "_trim per node", "width": 140 },
+    { "id": "heartbeat", "lane": "readmodel", "col": 2, "type": "backend", "label": "heartbeat()", "sublabel": "alive · min age · stalled", "tag": "running nodes only", "width": 150 },
+    { "id": "explain", "lane": "readmodel", "col": 4, "type": "backend", "label": "run_explain()", "sublabel": "one line, no slogan", "width": 140 },
+    { "id": "sessrow", "lane": "evidence", "col": 2, "type": "database", "label": "Session Row", "sublabel": "idle_s", "width": 130 },
+    { "id": "artifact", "lane": "evidence", "col": 1, "type": "database", "label": "#128 Artifact", "sublabel": "mtime_age_s", "width": 130 }
+  ],
+  "edges": [
+    { "id": "caller-fold", "from": "caller", "to": "fold", "label": "status", "variant": "default" },
+    { "id": "fold-heartbeat", "from": "fold", "to": "heartbeat", "label": "metrics line", "variant": "emphasis" },
+    { "id": "sess-heartbeat", "from": "sessrow", "to": "heartbeat", "label": "idle_s", "variant": "dashed" },
+    { "id": "art-heartbeat", "from": "artifact", "to": "heartbeat", "label": "mtime_age_s", "variant": "dashed" },
+    { "id": "heartbeat-payload", "from": "heartbeat", "to": "payload", "label": "heartbeat per node", "variant": "emphasis" },
+    { "id": "payload-explain", "from": "payload", "to": "explain", "label": "own fields only", "variant": "dashed" },
+    { "id": "explain-payload", "from": "explain", "to": "payload", "label": "attach run.explain", "variant": "emphasis", "role": "return", "fromSide": "right", "toSide": "right", "route": "outside-right", "width": 1.2 }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Derive-only law",
+      "items": [
+        "Zero new writes, zero new persisted surface",
+        "stalled = alive AND known age >= threshold",
+        "Unknown age never infers a stall (R2 honest absence)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Explain discipline",
+      "items": [
+        "Composed only from fields the payload already carries",
+        "Terminal run: no explain key, never an empty slogan",
+        "artifact evidence un-stalls a stale session row (min of ages)"
+      ]
+    }
+  ]
+}

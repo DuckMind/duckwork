@@ -1,0 +1,195 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: vornik-companion
+version: 0.22.1
+requires_duckwork: ">=0.21.5"
+manifest_version: 2
+# Declared, not inferred: Duckwork classifies an undeclared plugin whose
+# __init__.py mentions a memory provider as `kind: exclusive`, and general
+# discovery skips exclusive plugins, so the broker tools never loaded
+# (e2e lane bring-up against Duckwork v2026.9.24). The memory provider is
+# still found by Duckwork's memory discovery, which scans plugin directories
+# itself.
+kind: standalone
+description: >-
+  Vornik as Duckwork's privileged-work broker and long-term memory. Duckwork holds
+  no credentials: work that touches mail, calendar, documents or accounts is
+  delegated to operator-authored broker workflows on a Vornik daemon, which
+  return a bounded, schema-validated result instead of raw access.
+  0.22.1 — the vornik_remember description and the README state the note
+  floor Vornik applies, three words and ten characters, instead of "about
+  ten words", so a short fact is not padded (GitHub #392).
+  0.22.0 — with a memory token, a develop-with-memory skill teaches how to
+  change code in any repository: recall before reading code, design before
+  changing it, keep memory current, and, where vornik_recall's design_record
+  finds no design for the part being changed, write an as-built record of it
+  with the user instead of assuming one exists (GitHub #382).
+  0.21.6 — a vornik_remember refused as a duplicate (dedup_hash) tells the
+  model the note is already on record and not to store it again, reworded
+  or not; only a too-short or empty note is coached to be restated, and a
+  quarantined note is reported as not stored. A vornik_remember whose
+  content carries leaked tool-call syntax (JSON tool arguments, chat-format
+  tokens, or the memory tool's own arguments as Key: value text) is refused
+  before it is sent, and the model is told to use its
+  own memory tool to forget (GitHub #380).
+  0.21.5 — VORNIK_URL, VORNIK_BROKER_TOKEN and VORNIK_MEMORY_TOKEN are read
+  through Duckwork's secret scope (agent.secret_scope.get_secret) at each use,
+  never from the process environment, so a Duckwork serving several profiles
+  gives each profile its own Vornik URL and keys; they are declared in
+  config_schema (the Desktop shows them under Settings > Plugins), and a
+  missing one is named in the answer with how to set it.
+  0.21.4 — the README states that Duckwork's cron, single-query (-q, -z) and
+  unattended-platform sessions never reach the approval transport.
+  0.21.3 — the vornik-admin skill says the user can install a recipe that
+  list_recipes marks connector: true themselves, from the Connectors page of
+  their phone.
+  0.21.2 — the per-turn digest and /vornik-peek list every project the key
+  can see when the daemon advertises companion-list-all-projects, so a broker
+  task delegated into another project of an agent-admin namespace is reported
+  when it finishes instead of looking stuck running.
+  0.21.1 — vornik_task_logs and vornik_task_explain are offered only when the
+  daemon advertises companion-progress, so an older daemon no longer shows two
+  tools whose every call fails.
+  0.21.0 — vornik_task_logs and vornik_task_explain diagnose a broker task (the
+  broker skill named them before the plugin had them); /vornik-memory shows a
+  distinct short id for every memory, correction notes included, and
+  /vornik-forget forgets them; the digest no longer keeps state for tasks it
+  has finished reporting.
+  0.20.0 — the admin skill teaches show_workflow before redefining an existing workflow.
+  0.19.0 — the broker skill teaches task_logs and task_explain for task
+  diagnosis and daemon_log and doctor for agent-admin connections; the admin
+  skill names update_project.
+  0.18.0 — list and read approved completed-run artifacts; relay binary download
+  links without putting file bytes in model context.
+  0.17.0 — the vornik-admin skill asks which account to use and gives each
+  connection its own account label and credential name; the broker skill
+  relays account names in results. The first read after a connection or
+  credential change stays fresh.
+  0.16.0 — the pre_llm_call digest says where running broker tasks are
+  ("step 2 of 3 (curate)") when the daemon advertises companion-progress;
+  vornik_delegate takes max_age_seconds, sent only when companion-result-reuse
+  is advertised, to reuse a read-only answer fetched minutes ago; the
+  vornik-broker and vornik-admin skills teach both.
+  0.15.0 — /vornik-memory pages through the daemon's memory_list when it
+  is advertised (/vornik-memory more for the next page), and
+  /vornik-memory export prints the approver-device link to download or
+  forget everything.
+  0.14.0 — the vornik-admin skill says every Vornik feature is a tool on
+  the connection and that a link a tool returns is shown to the user.
+  0.13.0 — the vornik-admin skill says to call test_connection after the
+  user enters a credential, before defining a workflow that uses it; duckwork
+  vornik connect --vornikctl <path> runs that vornikctl and records the same
+  path, so Duckwork's user can run what connect wrote.
+  0.12.0 — the vornik-admin skill says to pass transport "sse" to
+  add_mcp_server for an SSE server.
+  0.11.3 — a memory Duckwork forgot and adds again is recalled again; an
+  identical replace no longer forgets the note; forgets declare their route,
+  and /vornik-forget holds against the same text stored again.
+  0.11.2 — approvals on replaces a pin on a disconnected namespace.
+  0.11.1 — the README leads with the broker setup (the default) and points
+  to docs.vornik.io/guides/duckwork-setup/, which covers Duckwork and Vornik
+  under separate OS users; documentation only.
+  0.11.0 — the vornik-admin skill says how to hand a workflow a document
+  (an x-untrusted-document input, read by the role from artifacts/in).
+  0.10.0 — the vornik-admin skill says that a client refusing a field
+  describe_installation lists holds the tool list from before a change,
+  and to ask the user to reconnect Vornik in the client.
+  0.9.0 — the vornik-admin skill says a role may name a model from the
+  catalogue describe_installation lists; a local one applies at once, a
+  remote one is approved on the phone once per destination (provider and
+  host).
+  0.8.0 — forgetting reaches Vornik: an entry removed from (or replaced in)
+  Duckwork's own memory is refuted in Vornik too, found by an identity token
+  the mirror now writes on every note (never shown to the model or the user);
+  /vornik-memory lists what Vornik keeps and /vornik-forget <id> forgets one.
+  Refuting stops recall; the record stays until retention or the operator
+  erases it.
+  0.7.0 — the Vornik approval transport: with `duckwork vornik approvals on`,
+  Duckwork's own safety prompts (a flagged rm -rf, a force-push) are answered
+  on the user's paired phone (allow once, allow for this session, or deny)
+  through vornikctl agent host-approval. Duckwork still decides and enforces;
+  any failure, Vornik being down included, is a deny. Inert until selected.
+  0.6.0 —the vornik-admin skill says to prefer a recipe when one fits
+  (list_recipes, install_recipe: a tested workflow installed as one change
+  the user approves once); author a workflow only when none does.
+  0.5.0 — the vornik-admin skill says to build teams: a project is a domain,
+  a workflow a capability, the swarm a team of roles with their own tools.
+  0.4.0 — ready for Duckwork's plugin catalog: `duckwork vornik connect` runs
+  vornikctl agent connect duckwork (it never installs anything) and
+  `duckwork vornik status` shows what is configured; VORNIK_URL and both tokens
+  are optional, since an admin setup needs none of them; requires Duckwork
+  0.21.5 or later.
+  0.3.0 — the vornik-admin skill, for a Duckwork connected to Vornik as an
+  administering agent (vornikctl agent connect duckwork): it sets up projects,
+  workflows and connections itself, and the user approves each change on
+  their phone. Vornik keeps every credential.
+  0.2.1 — install and memory-provider instructions corrected against
+  Duckwork v2026.9.24: the provider is named vornik-companion.
+  0.2.0 — broker write actions: the skill explains proposed writes and their
+  approval states, and vornik_result says how to relay them.
+  0.1.0 — first release: broker tools, digest hook, /vornik-peek and
+  /vornik-result, and the vornik memory provider.
+author: EaseIT Labs s.r.o. and contributors
+license: Apache-2.0
+homepage: https://docs.vornik.io/features/companion/
+tags: [vornik, broker, memory, privacy]
+
+# All eleven, although vornik_recall and vornik_remember come from the memory
+# provider and register only with VORNIK_MEMORY_TOKEN set: the catalog's rule
+# 6 is about what the plugin can register, and Duckwork's validator warns, not
+# fails, on a declared tool its env-less probe did not see (design 24,
+# catalog listing; review 8a55 F2).
+provides_tools:
+  - vornik_catalog
+  - vornik_delegate
+  - vornik_result
+  - vornik_status
+  - vornik_cancel
+  - vornik_list_artifacts
+  - vornik_read_artifact
+  - vornik_task_logs
+  - vornik_task_explain
+  - vornik_recall
+  - vornik_remember
+provides_hooks:
+  - pre_llm_call
+
+# Nothing is required: a broker setup sets VORNIK_URL and VORNIK_BROKER_TOKEN,
+# a memory setup adds VORNIK_MEMORY_TOKEN, and an admin setup (duckwork vornik
+# connect) needs none of them. Unset, the broker tools stay hidden and nothing
+# opens a connection. requires_env stays empty: it is documented as a load
+# gate, which would misstate the admin setup (design 24, 0.4.0 and 0.21.5).
+#
+# The three are read only with agent.secret_scope.get_secret (catalogue rule
+# 11), so each Duckwork profile has its own. `type: secret` is the
+# config_schema type kept in the profile's .env, where get_secret reads;
+# VORNIK_URL is not a credential, but it is per profile too (design 24,
+# "Settings through Duckwork's secret scope (0.21.5)").
+config_schema:
+  vornik_url:
+    type: secret
+    env: VORNIK_URL
+    required: false
+    label: Vornik URL
+    description: Base URL of the Vornik daemon, e.g. https://vornik.example.com (http only on loopback). Needed for the broker tools and the memory provider.
+  broker_token:
+    type: secret
+    env: VORNIK_BROKER_TOKEN
+    required: false
+    label: Vornik broker key
+    description: Companion key minted on a BROKER project (vornikctl companion grant -p <broker project> --client duckwork --workflows ...). Enables the broker tools.
+  memory_token:
+    type: secret
+    env: VORNIK_MEMORY_TOKEN
+    required: false
+    label: Vornik memory key
+    description: Companion key on a separate memory project, minted with --memory-all --no-delegate. Enables the vornik memory provider.
+
+optional_env:
+  - name: VORNIK_URL
+    description: "Base URL of the Vornik daemon, e.g. https://vornik.example.com"
+  - name: VORNIK_BROKER_TOKEN
+    description: "Companion key minted on a BROKER project (vornikctl companion grant -p <broker project> --client duckwork --workflows ...)"
+    secret: true
+  - name: VORNIK_MEMORY_TOKEN
+    description: "Optional. Companion key on a separate memory project, minted with --memory-all --no-delegate. Enables the vornik memory provider."
+    secret: true

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hardlight-ui"
+version = "0.2.0"
+description = "Stateless frontend direction, reference and navigation tools for Duckwork"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=9,<10", "ruff>=0.11,<1", "build>=1.2,<2"]
+browser = ["playwright>=1.50,<2; sys_platform == 'linux' or sys_platform == 'darwin' or sys_platform == 'win32'"]
+
+[project.scripts]
+hardlight = "hardlight.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["hardlight"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"data" = "hardlight/data"
+"references" = "hardlight/references"
+"skills" = "hardlight/skills"
+
+[tool.hatch.build.targets.sdist]
+include = ["/__init__.py", "/plugin.yaml", "/pyproject.toml", "/hardlight", "/data", "/references", "/skills", "/tests", "/examples", "/docs", "/.github", "/.gitignore", "/README.md", "/CHANGELOG.md", "/LICENSE", "/CONTRIBUTING.md", "/SECURITY.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["native: opt-in real Duckwork integration (set DUCKWORK_SOURCE)", "browser: opt-in installed-browser evidence (set HARDLIGHT_BROWSER_TESTS=1)"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

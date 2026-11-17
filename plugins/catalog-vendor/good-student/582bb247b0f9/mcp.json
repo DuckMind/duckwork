@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "gs": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/harrylabsj/good-student@2469cbb6f105b41a7a3ecc89b33df1f4543c06d9[mcp]",
+        "good-student-mcp"
+      ],
+      "env": {
+        "GOOD_STUDENT_DATA": "${PLUGIN_DATA}/good-student"
+      }
+    }
+  }
+}

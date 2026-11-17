@@ -1,0 +1,19 @@
+name: prompt-tray
+version: 0.1.0
+manifest_version: 1
+api_version: 1
+description: >
+  Saved chat prompts: click a tray item to insert it into the Duckwork composer.
+  Review / Plan / Explain defaults, then your own. No API keys.
+author: aydnOktay
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21"
+tags: [desktop, prompts, snippets, composer, tools]
+provides_tools:
+  - prompt_tray_list
+config_schema:
+  max_items:
+    type: int
+    default: 40
+    description: Maximum saved prompts in the tray.

@@ -1,0 +1,47 @@
+name: duckwork-stt-enhance
+version: 0.5.1
+requires_duckwork: ">=0.15.0"
+description: >-
+  Local STT with two interchangeable backends (faster-whisper or sherpa-onnx
+  Parakeet V3), long-audio chunking, and an optional bounded LLM pass that
+  enhances the transcript with instructions from a custom skill or prompt.
+provides_transcription_providers:
+  - stt_enhance
+
+# Dependencies
+#
+# The default `faster_whisper` backend adds nothing to install: it delegates to
+# the transcription stack Duckwork already ships, and the post-processing pass
+# reuses Duckwork' own LLM client (`agent.auxiliary_client.call_llm`).
+#
+# The `parakeet` backend is opt-in and owns its dependencies itself. They are
+# deliberately NOT declared in `python_dependencies`: that field is warn-only
+# (Duckwork never installs from it) and would warn on every faster-whisper
+# install about packages it does not need.
+#
+# Instead the backend keeps them in a plugin-owned runtime directory OUTSIDE
+# Duckwork' venv, provisioned on first use and addressed by interpreter ABI plus
+# a digest of the exact pinned lock:
+#
+#   ~/.duckwork/plugin-runtimes/duckwork-stt-enhance/<env-tag>-<lock-digest>/
+#
+# A Duckwork venv rebuild cannot wipe it, upgrades install into a clean
+# directory, the previous one stays for rollback, and every profile on the
+# machine shares one copy. See runtime_deps.py and docs/dependency-model.md.
+#
+# Pins (Apache-2.0 / BSD-3-Clause, no copyleft): sherpa-onnx==1.13.4,
+# numpy==2.4.3. Provision or inspect by hand with:
+#
+#   python scripts/plugin_runtime.py --status|--install|--verify
+#
+# Opt out of first-use provisioning with
+# `stt.stt_enhance.parakeet.auto_install_deps: false`.
+#
+# `ffmpeg` (with `ffprobe`) must be on PATH whenever `audio_speed` is not 1.0 or
+# the parakeet backend is selected; input is normalized to 16 kHz mono PCM WAV
+# first. Matching input is passed through untouched, so the faster-whisper
+# default never shells out.
+#
+# Parakeet also needs a sherpa-onnx model export (encoder/decoder/joiner/tokens)
+# pointed at by `stt.stt_enhance.parakeet.model_path` or
+# $DUCKWORK_PARAKEET_MODEL_PATH. See README.md.

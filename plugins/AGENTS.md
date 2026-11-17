@@ -58,7 +58,7 @@ command. A hook with no concrete consumer is speculative infrastructure and is r
   PR is a coupling decision, not a quality judgment.
 - Reference/docs-companion plugins (`example-dashboard`, `strike-freedom-cockpit`,
   `plugin-llm-example`, `plugin-llm-async-example`) live in
-  [`duckwork-example-plugins`](https://github.com/%4EousResearch/%68ermes-example-plugins), not here.
+  [`duckwork-example-plugins`](https://github.com/DuckMind/duckwork), not here.
 
 ## Plugin catalog (`plugin-catalog/`, Sep 2026)
 

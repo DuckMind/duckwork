@@ -1,0 +1,82 @@
+{
+  "template": "exchange-run",
+  "receipt_kind": "author-run",
+  "author_estate": "author estate (cross-estate clean-run seat)",
+  "graph_file": "examples/basics/exchange-run.workflow.json",
+  "graph_sha256": "b216164425fd711ffc89dc7bc1b2eec41d6c22e46203db414f48fe0d8362c327",
+  "source_digest": "bb39e93bc5c26c8eb9e2944249a1aa21c8147950bf35884304e67d0446339ab7",
+  "tested_head": "core10/exchange-run (rebased on origin/main @ 7c89a1a); template bytes pinned below are the committed bytes the laps ran",
+  "runs_root": "author-estate scratch runs root (WF_RUNS_ROOT pinned per lap; hermetic launch: env -u WF_RUNS_ROOT -u DUCKWORK_HOME around the driver, pins set INSIDE the lap script)",
+  "state_history": "v1 c584ddf8 (initial bytes) - laps run, then two cold-reader honesty fixes landed before merge: (a) description claimed 'shelf copy and executed copy are the same bytes' but the run-dir copy bakes budget defaults (timeout) into node defs - clause restated to 'launch bakes budget defaults into node defs and nothing else, and budgets are excluded from identity'; (b) hand-written top-level provenance block deleted because the door's save writes provenance ONLY with source= (a manual block posing as the door's stamp). v2 c9bda923 = fix (a); v3 b2161644 = fix (b) = FINAL committed bytes = the graph_sha256 above. All three final laps below ran against v3 bytes. Earlier laps on v1/v2 are disclosed, not laundered: they proved the same loop; v3 re-laps re-proved it end to end.",
+  "byte_portability_proof": {
+    "law": "the claim of the template: same graph bytes -> same graph fingerprint, any launch, budgets excluded",
+    "graph_fingerprint_all_laps": "9537deef7744b990 (identical across lap A clean launch, lap B kill/respawn resume-runner, lap C kill/respawn resume-runner - three distinct runner processes, two runner generations, one fingerprint)",
+    "per_node_efp_stable_across_laps": {
+      "manifest": "9c12915ff348d2cd",
+      "prepare": "f9efffd696fe9f47",
+      "verify": "011e5cce2c29280e"
+    },
+    "budget_exclusion_proof": "committed node defs carry NO timeout keys; every run-dir frozen copy adds baked timeout defaults (lap A diffed them: prepare/verify gain exactly one 'timeout' key, nothing else) and the fingerprint is unchanged - budgets excluded from identity as the description states"
+  },
+  "shelf_provenance_proof": {
+    "law": "description claim (2): library lists the entry with its provenance and source_digest",
+    "proof": "act_save(source='duckwork-workflows/examples/basics/exchange-run.workflow.json') stamped the shelf entry: provenance={owner: default (launcher profile), source: duckwork-workflows/examples/basics/exchange-run.workflow.json, saved_at: 2026-10-02T21:28:13+00:00, source_digest: bb39e93b...39ab7}; the library row carries owner/source/source_digest non-null. The committed file itself carries NO hand-written provenance block - the door writes it, only from the real save."
+  },
+  "shelf_byte_equality_proof": {
+    "law": "description claim: what is stored is exactly what is replayed",
+    "template_sha256": "b216164425fd711ffc89dc7bc1b2eec41d6c22e46203db414f48fe0d8362c327",
+    "shelf_raw_sha256": "4a451005588a84860ae0a74c7024ef58aa23e08d40557e9c01efdcc676d50c29",
+    "honest_statement": "the engine stores the entry as the #50 ENVELOPE {meta:{description,tags}, graph} because the author's save carried description+tags, and the door ADDS a provenance block inside the graph when source= is given — so the raw shelf file is NOT byte-identical to the template (different digests, by design). Byte-equality holds at the CANONICAL level, verified per lap-A entry: graph-minus-provenance (name, grammar, description, nodes) is canonical-JSON-equal to the committed template (nodes canon-equal, description string-equal, name equal); the ONLY door additions are provenance={owner,source,saved_at,source_digest} and the meta envelope. run from=exchange-run re-loads those exact shelf bytes and the run froze a copy carrying the same node defs."
+  },
+  "seat_binding_proof": "no model id in graph, run.json, or any spawned prompt (grep 0 over lap prompts); children spawned duckwork chat with NO --model flag -> seat-default resolution; run.json carries no model keys",
+  "laps": [
+    {
+      "lap": "A_save_library_replay_clean",
+      "template_sha256": "b216164425fd711ffc89dc7bc1b2eec41d6c22e46203db414f48fe0d8362c327",
+      "graph_fingerprint": "9537deef7744b990",
+      "run_id": "20261002-212813-core10-ex3-lapa",
+      "status": "done",
+      "nodes_status": {"manifest": "done", "prepare": "done", "verify": "done"},
+      "ts": "2026-10-02T21:28:48+00:00",
+      "runner_exit": {"reason": "done", "at": "2026-10-02T21:28:48+00:00", "graph_fingerprint": "9537deef7744b990", "fp_rule_version": 2},
+      "shape": "save(name,source) -> library(list) row with door-stamped provenance -> run from=exchange-run by NAME (no inline graph) -> terminal done; leaf verify output {token: exchange-roundtrip-v1, byte_equal: true, input_labels: [manifest, prepare]} - hand-off proven by re-read, not memory",
+      "events": ["run.started", "node.done manifest(echo)", "node.started prepare", "node.finished prepare", "node.started verify", "node.finished verify", "run.done"]
+    },
+    {
+      "lap": "B_sigkill_frontier_at_prepare",
+      "template_sha256": "b216164425fd711ffc89dc7bc1b2eec41d6c22e46203db414f48fe0d8362c327",
+      "graph_fingerprint": "9537deef7744b990",
+      "run_id": "20261002-212853-core10-ex3-lapb",
+      "status": "done",
+      "nodes_status": {"manifest": "done", "prepare": "done", "verify": "done"},
+      "ts": "2026-10-02T21:29:36+00:00",
+      "runner_exit": {"reason": "done", "at": "2026-10-02T21:29:36+00:00", "graph_fingerprint": "9537deef7744b990", "fp_rule_version": 2},
+      "shape": "SIGKILL runner mid-wave while prepare was live -> status interrupted (honest crash shape, runner.reaped reason 'crashed (no exit record)') -> explicit wait respawned the dead runner -> run.resumed; manifest replay-skipped WITHOUT re-spawn (single node.done, pre-death efp), prepare was frontier-at-death so it correctly re-ran; fingerprint unchanged across both runner generations",
+      "events_tail": ["runner.reaped prev_pid=233809 crashed", "run.resumed", "node.started prepare(re-drive)", "node.finished prepare", "node.started verify", "node.finished verify", "run.done"]
+    },
+    {
+      "lap": "C_sigkill_frontier_at_verify_replay_skip",
+      "template_sha256": "b216164425fd711ffc89dc7bc1b2eec41d6c22e46203db414f48fe0d8362c327",
+      "graph_fingerprint": "9537deef7744b990",
+      "run_id": "20261002-212937-core10-ex3-lapc",
+      "status": "done",
+      "nodes_status": {"manifest": "done", "prepare": "done", "verify": "done"},
+      "ts": "2026-10-02T21:30:33+00:00",
+      "runner_exit": {"reason": "done", "at": "2026-10-02T21:30:33+00:00", "graph_fingerprint": "9537deef7744b990", "fp_rule_version": 2},
+      "shape": "SIGKILL runner while verify (the leaf) was live and prepare+manifest already committed -> wait respawn -> replay-skip PROVED on an agent node: prepare record byte-identical across the boundary (same efp f9efffd6, same started 21:29:37, never re-spawned - events show its single node.finished BEFORE runner.reaped), only verify (frontier at death) re-ran and its re-run output still carried byte_equal: true - the resumed leaf re-read both replay-skipped parents' committed records from its ## Inputs and the round-trip still verified",
+      "events_tail": ["node.finished prepare (pre-kill)", "node.started verify", "runner.reaped prev_pid=237126 crashed", "run.resumed", "node.started verify (re-drive)", "node.finished verify", "run.done"]
+    }
+  ],
+  "outcome": "3/3 nodes done on every lap; THREE terminal runner_exit records all reason=done (laps A/B/C) plus TWO crash reaps disclosed in the event tails (runner.reaped prev_pid=233809 and prev_pid=237126, reason 'crashed (no exit record)' — the SIGKILL generations carry no exit record by design, so they count as reaps, not exits) — five runner generations total, all under the SAME graph_fingerprint: the save -> library -> re-run -> SIGKILL -> wait-resume -> replay-skip -> byte-equality loop stands on the door's real verbs",
+  "verification_gates": {
+    "test_example_exchange_run": "26 checks PASS (committed bytes); the zero-vendor-vocab guard binds to scripts/scrub-list.txt itself (template must match ZERO lines of the peer-agreed committed scrub list) rather than a hand-copied ban list",
+    "test_validate_0923": "ALL PASS (53) - exchange-run.workflow in the compatibility corpus",
+    "test_packaging": "ALL PASS - archive membership + SHA256SUMS cover examples/basics/exchange-run.workflow.json",
+    "graph_check": "OK after --fix regeneration on the rebased tree",
+    "make_public_scrub": "0 scrub hits (238 files published on the final tree)",
+    "suite": "123 cases via scripts/suite.py on the final tree, 122 green; 1 red (test_11_integration_golden owner.platform) proven PRE-EXISTING: identical failure on pristine main a4a5266 without this branch (environmental: launcher session platform leaks into the owner stamp; hermetic on a clean host)"
+  },
+  "subject_of_lap": "the exchange-run template itself as the traveling artifact: save->library->run-from-name loop, interrupted-resume with replay-skip, and fingerprint stability across three runner generations on the final v3 bytes",
+  "notes": "Zero seeds required (verified: no seeds consumed by any lap). No vendor model ids anywhere in graph or prompts. The verify leaf's notes field names the run-dir layout (nodes/<id>.json, run.json, runner_exit.json) matching the records on disk exactly - run-dir legibility claim holds.",
+  "revision": "v3 (final): re-lapped all three shapes on bytes b2161644 after the two cold-reader fixes; v1/v2 digests disclosed in state_history, never laundered onto the final claim"
+}

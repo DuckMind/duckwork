@@ -1,0 +1,81 @@
+# Duckwork T3 Control
+
+Check on your T3 coding tasks and continue them from Duckwork. You can review progress, send follow-ups, and handle requests without switching between the two apps.
+
+## Before you start
+
+- Use Linux or WSL2 with Git that supports SSH signature verification.
+- Install Duckwork 0.20.4, 0.20.5, or 0.21.0.
+- Keep T3 running in the same environment.
+
+## 1. Install
+
+[Download `install-t3.sh`](https://github.com/DuckMind/duckwork), open a Linux terminal in the downloaded file's folder, and run:
+
+```bash
+bash install-t3.sh
+```
+
+Installer SHA-256: `dd5d6210c5d78e65925a083b369a5e45e7d1312dd1c2b97fc67b1b059662200e`.
+
+Confirm the Duckwork profile shown by the installer.
+
+<details>
+<summary>What does the installer check?</summary>
+
+Running this file trusts the installer published by this project on GitHub over HTTPS. It then verifies the signed plugin release, installs its exact version with Duckwork scanning enabled, validates it with Plugin Doctor, and enables it without permission to replace built-in tools. It never uses `--force` or restarts Duckwork. See [manual release verification](docs/operations.md#published-asset-verification) for the full independent check.
+
+</details>
+
+<details>
+<summary>Using WSL?</summary>
+
+If your browser saved the file to Windows, open that Downloads folder from your Linux terminal before running the command.
+
+</details>
+
+## 2. Reload Duckwork
+
+Close and reopen the Duckwork CLI. If you use Duckwork Desktop or `duckwork serve`, fully relaunch that same process.
+
+<details>
+<summary>Using a managed gateway?</summary>
+
+Run these commands in the same Duckwork profile shown during installation:
+
+```bash
+duckwork gateway restart
+duckwork gateway status
+```
+
+</details>
+
+## 3. Try it
+
+Start a fresh Duckwork session and ask:
+
+> Show my T3 threads.
+
+Duckwork should show your T3 tasks and their current progress, or tell you that none were found.
+
+## What you can do
+
+- Check progress and read results.
+- Create tasks and send follow-up instructions.
+- Answer approvals, interrupt a turn, or stop a session.
+
+## Experimental continuation
+
+Same-conversation verification and optional Telegram completion notices are experimental and off by default. Ordinary sends require automatic completion and fail before dispatch without the matching host APIs. On stock Duckwork, intentionally send without automatic reporting using `completion_policy: "none"`.
+
+Automatic reporting requires a separate patch for one exact Duckwork revision. The upstream PR is not merged; installing this plugin alone does not patch Duckwork. Follow [Experimental continuation](docs/experimental-continuation.md) to install the matching v1.5.0 host patch.
+
+## Help and reference
+
+- [Troubleshooting, upgrade, rollback, and uninstall](docs/operations.md)
+- [Compatibility](docs/compatibility.md)
+- [Tool reference](docs/tools.md)
+- [Security model](docs/security.md)
+- [Community index status](docs/community-index.md)
+
+Released under the [MIT License](LICENSE).

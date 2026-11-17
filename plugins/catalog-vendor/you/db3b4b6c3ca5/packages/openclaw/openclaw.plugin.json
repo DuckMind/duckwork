@@ -1,0 +1,35 @@
+{
+  "id": "you",
+  "name": "You.com",
+  "description": "You.com skill pack with MCP setup metadata.",
+  "version": "1.6.1",
+  "skills": ["./skills"],
+  "mcpServers": {
+    "you": {
+      "transport": "streamable-http",
+      "url": "https://api.you.com/mcp"
+    },
+    "you-finance": {
+      "transport": "streamable-http",
+      "url": "https://api.you.com/mcp/finance"
+    },
+    "you-research": {
+      "transport": "streamable-http",
+      "url": "https://api.you.com/mcp/research"
+    }
+  },
+  "setup": {
+    "providers": [
+      {
+        "id": "you",
+        "envVars": ["YDC_API_KEY"]
+      }
+    ],
+    "requiresRuntime": false
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "service": "face",
+  "title": "Ace Data Cloud Face Transform",
+  "kind": "face",
+  "description": "Face landmark analysis from an HTTPS image through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_face",
+  "generate_path": "/face/analyze",
+  "task_path": null,
+  "defaults": {},
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "image_url"
+    ],
+    "properties": {
+      "image_url": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 2048
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_face_analyze",
+  "tools": [
+    "acedatacloud_face_analyze"
+  ],
+  "toolset": "acedatacloud-face"
+}

@@ -1,0 +1,25 @@
+name: kanban-stream
+version: "1.0.2"
+description: >-
+  Stream live kanban worker activity to a Telegram ops channel — one
+  edit-in-place message per task with rolling tool history, elapsed timer,
+  tokens/sec, final-state pin, and mid-task /steer steering via task
+  comments.
+author: "Michael Gulden"
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.20.5"
+requires_env:
+  - KANBAN_STREAM_BOT_TOKEN
+  - KANBAN_STREAM_ALLOWED_USERS
+provides_tools: []
+provides_hooks:
+  - pre_tool_call
+  - post_tool_call
+  - pre_llm_call
+  - post_api_request
+  - kanban_task_completed
+  - kanban_task_blocked
+# Deliberately off by default: the plugin makes network calls to Telegram
+# and is only useful when the KANBAN_STREAM_* credentials are configured.
+enabled_by_default: false

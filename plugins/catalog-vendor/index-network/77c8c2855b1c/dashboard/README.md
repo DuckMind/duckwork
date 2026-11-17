@@ -1,0 +1,19 @@
+# Index Network Duckwork Dashboard
+
+The dashboard is the optional UI for the Index Duckwork plugin. It is not an authority boundary: every HTTP API call goes through the plugin's Python transport, which holds the `INDEX_SESSION_TOKEN` credential in the Duckwork process environment. The dashboard-to-transport boundary is credential-free: the browser JavaScript never receives the token.
+
+## Connection and status
+
+The tab displays connection status. When no `INDEX_SESSION_TOKEN` is configured, the login screen offers **log in with browser**: `POST /auth/login/start` binds a loopback callback and opens the web `/cli-auth` handshake. That callback is a port on this host, so a browser on another machine cannot finish it; `duckwork index login` accepts the landed address from the terminal instead. The UI polls `GET /auth/login/status`, which exchanges the returned device code for a session token and persists it to the Duckwork env file. **Sign out** (`POST /auth/logout`) revokes that session server-side and clears the local file.
+
+## Scope
+
+The dashboard exposes intent work, opportunities, networks, profile context, and bounded conversation SSE.
+
+`dashboard/dist/` is the dashboard source. `desktop/plugin.js` is generated from it. From the package root:
+
+```bash
+bun run build:desktop
+```
+
+Edit `dashboard/dist/` directly. Do not edit `desktop/plugin.js`.

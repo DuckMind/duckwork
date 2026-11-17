@@ -1,0 +1,16 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+title = "duckwork-rtk-rewrite gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented placeholder values that are intentionally non-secret"
+regexes = [
+  '''(?i)^your-token$''',
+  '''(?i)^your-api-key$''',
+  '''(?i)^example-token$''',
+  '''(?i)^dummy-token$''',
+  '''(?i)^<pw>.*''',
+  '''(?i)^\*{3}$''',
+]

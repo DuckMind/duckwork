@@ -1,0 +1,16 @@
+name: orquehelx
+version: 0.3.0
+description: "Subagents across subscriptions: the model delegates each subagent by route to the provider you choose (Claude, Codex, Antigravity or any provider Duckwork knows), each on its own quota, with no automatic provider switch."
+author: TicoraX
+license: MIT
+homepage: https://github.com/TicoraX/OrqueHelx
+requires_duckwork: ">=0.22.0"
+platforms:
+  - linux
+  - macos
+  - windows
+provides_tools:
+  - delegate_to
+provides_hooks:
+  - api_request_error
+  - pre_tool_call

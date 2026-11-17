@@ -1,0 +1,22 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Why it works",
+      "items": [
+        "Portable file walk-in: recon -> review fan-out -> short summary",
+        "run_context seeds (ALL required): target_dir = absolute path to a readable directory (empty target starves the fan-out)",
+        "Missing seeds fail at spawn, not mid-run"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Contract",
+      "items": [
+        "{{nodes}} nodes, {{fanouts}} fan-out: recon -> review lanes -> summary",
+        "No model pins: runs wherever the seat defaults route",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ]
+    }
+  ]
+}

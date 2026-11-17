@@ -1,0 +1,74 @@
+{
+  "service": "flux",
+  "title": "Ace Data Cloud Flux",
+  "kind": "image",
+  "description": "FLUX Dev text-to-image generation through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_flux",
+  "generate_path": "/flux/images",
+  "task_path": "/flux/tasks",
+  "defaults": {
+    "model": "flux-dev",
+    "size": "1024x1024",
+    "count": 1,
+    "action": "generate"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "prompt"
+    ],
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "model": {
+        "type": "string",
+        "enum": [
+          "flux-dev"
+        ],
+        "maxLength": 4000
+      },
+      "size": {
+        "type": "string",
+        "enum": [
+          "1024x1024",
+          "1024x768",
+          "768x1024"
+        ],
+        "maxLength": 4000
+      },
+      "count": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 4
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_flux_generate",
+  "tools": [
+    "acedatacloud_flux_generate",
+    "acedatacloud_flux_task"
+  ],
+  "toolset": "acedatacloud-flux"
+}

@@ -1,0 +1,318 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "colorado-traffic",
+  "content_id": "3422fcb4d19a",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 44,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "9aac107911b3e704e7e511ceb6b14f1e481750b81cf887f4e853df586754018a"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "a578637c48817f8da144f56acbf9c64b6779563406561244be012d1d3f8b00be"
+    },
+    {
+      "bytes": 2658,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "4d91d66709c5e428be0284fe2a4bb343be5ad6b9e938fe4da8e4298047ab0523"
+    },
+    {
+      "bytes": 641,
+      "mode": "100644",
+      "path": "plugin.json",
+      "sha256": "6da1d28755e815f0cd39ebe95822727844d714cb41e0ed04bac4666546c033bb"
+    },
+    {
+      "bytes": 6427,
+      "mode": "100644",
+      "path": "skills/colorado-traffic/SKILL.md",
+      "sha256": "6b045c7980e512a1efb17369a215743003cadf83a853c0b12cfa5dbb0010cef4"
+    },
+    {
+      "bytes": 1906,
+      "mode": "100644",
+      "path": "skills/colorado-traffic/references/sources.md",
+      "sha256": "63467e1339dd447faa8b8fc74840181c54173b4fd9bb6084407cfa5068e6e624"
+    },
+    {
+      "bytes": 7948,
+      "mode": "100644",
+      "path": "skills/colorado-traffic/scripts/cotrip_corridor.py",
+      "sha256": "a8f644240bb16e2e1107a7fc76fb820d32aabde654cc54c7f46dc4df2a7c52c3"
+    },
+    {
+      "bytes": 4031,
+      "mode": "100644",
+      "path": "tests/test_cotrip_corridor.py",
+      "sha256": "f873bf2d09183eea2eeeffa4b7bfabc2196e4315a9817e7ec0680742438eb7e0"
+    }
+  ],
+  "input_manifest_sha256": "3422fcb4d19ae7aa648d2dd6d6e9a5b1e642d1bad318177fd950ab59f161e8b3",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "a578637c48817f8da144f56acbf9c64b6779563406561244be012d1d3f8b00be",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "skills/colorado-traffic/SKILL.md",
+      "skills/colorado-traffic/scripts/cotrip_corridor.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/drkpxl/colorado-traffic",
+    "sha": "e7ae48527f7069ed4e311516773d4828e8453efb",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/drkpxl/colorado-traffic",
+  "original_sha": "e7ae48527f7069ed4e311516773d4828e8453efb",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "9aac107911b3e704e7e511ceb6b14f1e481750b81cf887f4e853df586754018a",
+      "bytes": 44,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "a578637c48817f8da144f56acbf9c64b6779563406561244be012d1d3f8b00be",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "ddcf90d111be26302b366969eacce2300e58694e3a778b665fc36b75d1b4026d",
+      "bytes": 2684,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.json",
+      "sha256": "6da1d28755e815f0cd39ebe95822727844d714cb41e0ed04bac4666546c033bb",
+      "bytes": 641,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/colorado-traffic/SKILL.md",
+      "sha256": "a2b25a0a1a12f341479fa209aa6645cdb21b622a3bb1dad2830944587f26fc5f",
+      "bytes": 6429,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/colorado-traffic/references/sources.md",
+      "sha256": "63467e1339dd447faa8b8fc74840181c54173b4fd9bb6084407cfa5068e6e624",
+      "bytes": 1906,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/colorado-traffic/scripts/cotrip_corridor.py",
+      "sha256": "08cc54929703ac99a1e3d2db02161a1c69564003cc8943f18b5786db635eae3b",
+      "bytes": 7950,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cotrip_corridor.py",
+      "sha256": "f873bf2d09183eea2eeeffa4b7bfabc2196e4315a9817e7ec0680742438eb7e0",
+      "bytes": 4031,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "98accf89b71ce081a7d2d3d92eaf7496c192c8a30991fd7c3a954942aab068e0",
+  "pin_verification": {
+    "archive_bytes": 9441,
+    "archive_sha256": "6ff74f7b9c4dfd4f60b3319ad2c9bc717df501778fb53e18f092c8ec8db30ba1",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "e7ae48527f7069ed4e311516773d4828e8453efb",
+    "verified_commit_marker": "e7ae48527f7069ed4e311516773d4828e8453efb"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "be1982277fcb45c0985d6dd08be837fb5f7562c75bcb37d8cf4b899b227e4a7c",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "9aac107911b3e704e7e511ceb6b14f1e481750b81cf887f4e853df586754018a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9aac107911b3e704e7e511ceb6b14f1e481750b81cf887f4e853df586754018a",
+        "source": ".gitignore",
+        "final_output_sha256": "9aac107911b3e704e7e511ceb6b14f1e481750b81cf887f4e853df586754018a",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "9aac107911b3e704e7e511ceb6b14f1e481750b81cf887f4e853df586754018a"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "a578637c48817f8da144f56acbf9c64b6779563406561244be012d1d3f8b00be",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "a578637c48817f8da144f56acbf9c64b6779563406561244be012d1d3f8b00be",
+        "source": "LICENSE",
+        "final_output_sha256": "a578637c48817f8da144f56acbf9c64b6779563406561244be012d1d3f8b00be",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "a578637c48817f8da144f56acbf9c64b6779563406561244be012d1d3f8b00be"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "4d91d66709c5e428be0284fe2a4bb343be5ad6b9e938fe4da8e4298047ab0523",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ddcf90d111be26302b366969eacce2300e58694e3a778b665fc36b75d1b4026d",
+        "source": "README.md",
+        "final_output_sha256": "ddcf90d111be26302b366969eacce2300e58694e3a778b665fc36b75d1b4026d",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "ddcf90d111be26302b366969eacce2300e58694e3a778b665fc36b75d1b4026d"
+      },
+      {
+        "destination": "plugin.json",
+        "input_sha256": "6da1d28755e815f0cd39ebe95822727844d714cb41e0ed04bac4666546c033bb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6da1d28755e815f0cd39ebe95822727844d714cb41e0ed04bac4666546c033bb",
+        "source": "plugin.json",
+        "final_output_sha256": "6da1d28755e815f0cd39ebe95822727844d714cb41e0ed04bac4666546c033bb",
+        "cli_destination": "plugin.json",
+        "previous_staging_sha256": "6da1d28755e815f0cd39ebe95822727844d714cb41e0ed04bac4666546c033bb"
+      },
+      {
+        "destination": "skills/colorado-traffic/SKILL.md",
+        "input_sha256": "6b045c7980e512a1efb17369a215743003cadf83a853c0b12cfa5dbb0010cef4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a2b25a0a1a12f341479fa209aa6645cdb21b622a3bb1dad2830944587f26fc5f",
+        "source": "skills/colorado-traffic/SKILL.md",
+        "final_output_sha256": "a2b25a0a1a12f341479fa209aa6645cdb21b622a3bb1dad2830944587f26fc5f",
+        "cli_destination": "skills/colorado-traffic/SKILL.md",
+        "previous_staging_sha256": "a2b25a0a1a12f341479fa209aa6645cdb21b622a3bb1dad2830944587f26fc5f"
+      },
+      {
+        "destination": "skills/colorado-traffic/references/sources.md",
+        "input_sha256": "63467e1339dd447faa8b8fc74840181c54173b4fd9bb6084407cfa5068e6e624",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "63467e1339dd447faa8b8fc74840181c54173b4fd9bb6084407cfa5068e6e624",
+        "source": "skills/colorado-traffic/references/sources.md",
+        "final_output_sha256": "63467e1339dd447faa8b8fc74840181c54173b4fd9bb6084407cfa5068e6e624",
+        "cli_destination": "skills/colorado-traffic/references/sources.md",
+        "previous_staging_sha256": "63467e1339dd447faa8b8fc74840181c54173b4fd9bb6084407cfa5068e6e624"
+      },
+      {
+        "destination": "skills/colorado-traffic/scripts/cotrip_corridor.py",
+        "input_sha256": "a8f644240bb16e2e1107a7fc76fb820d32aabde654cc54c7f46dc4df2a7c52c3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "08cc54929703ac99a1e3d2db02161a1c69564003cc8943f18b5786db635eae3b",
+        "source": "skills/colorado-traffic/scripts/cotrip_corridor.py",
+        "final_output_sha256": "08cc54929703ac99a1e3d2db02161a1c69564003cc8943f18b5786db635eae3b",
+        "cli_destination": "skills/colorado-traffic/scripts/cotrip_corridor.py",
+        "previous_staging_sha256": "08cc54929703ac99a1e3d2db02161a1c69564003cc8943f18b5786db635eae3b"
+      },
+      {
+        "destination": "tests/test_cotrip_corridor.py",
+        "input_sha256": "f873bf2d09183eea2eeeffa4b7bfabc2196e4315a9817e7ec0680742438eb7e0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f873bf2d09183eea2eeeffa4b7bfabc2196e4315a9817e7ec0680742438eb7e0",
+        "source": "tests/test_cotrip_corridor.py",
+        "final_output_sha256": "f873bf2d09183eea2eeeffa4b7bfabc2196e4315a9817e7ec0680742438eb7e0",
+        "cli_destination": "tests/test_cotrip_corridor.py",
+        "previous_staging_sha256": "f873bf2d09183eea2eeeffa4b7bfabc2196e4315a9817e7ec0680742438eb7e0"
+      }
+    ],
+    "manifest_sha256": "8d1f3ad267a2367ee77c790af7fbe032a19f2cfa9521d7d1d96bec8008240c47",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "plugin.json": "plugin.json",
+    "skills/colorado-traffic/SKILL.md": "skills/colorado-traffic/SKILL.md",
+    "skills/colorado-traffic/references/sources.md": "skills/colorado-traffic/references/sources.md",
+    "skills/colorado-traffic/scripts/cotrip_corridor.py": "skills/colorado-traffic/scripts/cotrip_corridor.py",
+    "tests/test_cotrip_corridor.py": "tests/test_cotrip_corridor.py"
+  },
+  "verification": {
+    "manifest": "plugin.json",
+    "manifest_name": "colorado-traffic",
+    "python_files_compiled": 2,
+    "secret_findings": 0
+  },
+  "canonical_slug": "colorado-traffic",
+  "catalog_file": "src/plugin-catalog/colorado-traffic.yaml",
+  "identity": {
+    "catalog_id": "colorado-traffic",
+    "canonical_slug": "colorado-traffic",
+    "original_manifest_name": "colorado-traffic",
+    "rebranded_manifest_name": "colorado-traffic",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "3e12efe760494e0035d02ed3ea82606de4749d32fe0689efdf258164839a3666",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

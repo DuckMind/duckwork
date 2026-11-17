@@ -1,0 +1,19 @@
+---
+title: duckwork-telemetry
+description: Observability and budget guardrails for Duckwork Agent.
+template: splash
+hero:
+  tagline: Tokens, cost, latency, and tool calls per session and cron job, with spend budgets enforced at the tool-call gate.
+  actions:
+    - text: Get started
+      link: /duckwork-telemetry/getting-started/introduction/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/DuckMind/duckwork
+      icon: external
+      variant: minimal
+---
+
+duckwork-telemetry is a plugin for [Duckwork Agent](https://github.com/DuckMind/duckwork).
+It captures real usage data from the runtime, persists it to a local SQLite database, and
+enforces budget limits: a hard breach blocks further tool calls, and a breach of a cron job's own budget pauses that job.

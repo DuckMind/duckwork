@@ -1,0 +1,20 @@
+// Download through the host's own authenticated save bridge. `captureGatewayFileDownload` is in every SDK since
+// 0.21.5, but a named import of a missing export would stop the whole plugin loading on a build without it, so this
+// is the only place that touches it, through a namespace import: there a missing member is just undefined and
+// Download stays hidden.
+import * as sdk from '@duckwork/plugin-sdk'
+import { host } from '@duckwork/plugin-sdk'
+
+/** Saves `path` on the agent's machine to this computer; the host shows its own Saved / failed toast. */
+export type SaveFile = (path: string, suggestedName: string) => Promise<void>
+
+export function captureDownload(): SaveFile | null {
+  const capture = (sdk as unknown as Record<string, unknown>).captureGatewayFileDownload
+  return typeof capture === 'function' ? (capture as () => SaveFile)() : null
+}
+
+/** Capture with a read for `scope`'s agent: the host reads the selected agent now, so a different one gets none. */
+export function captureFor([connectionId, profile]: readonly [string, string]): SaveFile | null {
+  const here = (host.state.connectionId.get() ?? 'local') === connectionId && host.state.profile.get() === profile
+  return here ? captureDownload() : null
+}

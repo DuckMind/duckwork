@@ -1,0 +1,36 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pytest pyyaml
+      - run: pytest -q tests
+
+  duckwork-plugin-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      # duckwork-agent refuses wheel builds (setup.py guard), so `pip install git+…` — what the upstream
+      # plugin-validate composite action does — fails. Editable install from a checkout is the supported
+      # CI route (it is what duckwork-agent's own plugin-catalog CI uses).
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: main
+          path: duckwork-agent
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ./duckwork-agent
+      - run: duckwork plugins validate ./plugin

@@ -1,0 +1,104 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "The teaching pair's other half: this file travels save -> library -> re-run, proving byte-portability of a real graph",
+        "The courier is a pure hand-off \u2014 no reasoning about the value \u2014 so the verifier tests the engine, not a model",
+        "The verifier may only prove the hand-off from what the engine hands it, never from memory"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "3 nodes: manifest echo -> prepare courier -> verify; 2 edges, strictly serial",
+        "Verdict is a byte-equality claim on the carried payload, sourced from ## Inputs alone",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "manifest",
+      "id": "manifest-prepare",
+      "to": "prepare",
+      "variant": "default"
+    },
+    {
+      "from": "prepare",
+      "id": "prepare-verify",
+      "to": "verify",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "room",
+      "label": "Deterministic",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/exchange-run.html",
+    "quality_profile": "standard",
+    "subtitle": "The byte-portability teaching pair: this very file is the artifact that travels the save -> library -> re-run ",
+    "title": "exchange-run"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "manifest",
+      "label": "Manifest",
+      "lane": "room",
+      "type": "messagebus",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "prepare",
+      "label": "Prepare",
+      "lane": "work",
+      "sublabel": "you are the seat",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "verify",
+      "label": "Verify",
+      "lane": "work",
+      "sublabel": "you are the byte",
+      "type": "backend",
+      "width": 104
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 1
+    },
+    {
+      "fromCol": 2,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 2
+    }
+  ],
+  "schema_version": 2
+}

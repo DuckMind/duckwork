@@ -1,0 +1,9 @@
+ard-kit turns tools you already have into a discoverable catalog. Discovery only: search and inspect return the invoke command, the agent runs it.
+
+The catalogizer writes ai-catalog.json from a directory: script docstrings and argparse flags, SKILL.md frontmatter, .mcp.json servers, console scripts. No annotation, no account, stdlib only (3.10+); .mcp.json env never enters the catalog. Linux, macOS, Windows.
+
+Trust verdicts (ard-verify CLI, ard_verify MCP tool) screen for injection markers, invisible characters, identity/URN mismatch: VERIFIED / UNVERIFIED / SUSPECT / UNSUPPORTED, worst wins; federation drops SUSPECT peer rows.
+
+Plugin: skill ard-registry (discover/inspect/run/discard); /ard-catalogize indexes and verifies a directory; /ard-serve serves it, /health answering unauthenticated; /ard-doctor runs a seven-check preflight naming the failing link. Ranked search, paging, facets, federation (--upstreams), optional bearer auth.
+
+pipx install agentic-ard-kit. MIT, gitlab.com/ameobius-ai/ard-kit.

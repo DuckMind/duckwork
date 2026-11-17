@@ -1,0 +1,47 @@
+{
+  "name": "@youdotcom-oss/agent-skills",
+  "private": true,
+  "engines": {
+    "node": ">=18",
+    "bun": ">= 1.2.21"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "check": "bun run check:ts && bun run check:package && bun run check:types",
+    "check:package": "format-package --check",
+    "check:ts": "biome check",
+    "check:types": "tsc --noEmit",
+    "check:write": "bun run check:write-js && bun run check:write-package",
+    "check:write-js": "biome check --write",
+    "check:write-package": "format-package --write",
+    "prepare": "git config core.hooksPath .hooks",
+    "release:apply": "bun scripts/semver-release.ts apply --plan /tmp/agent-skills-release-plan.json",
+    "release:dry-run": "bun scripts/semver-release.ts plan --base HEAD~1 --out /tmp/agent-skills-release-plan.json",
+    "release:plan": "bun scripts/semver-release.ts plan",
+    "test": "bun test",
+    "validate:skills": "bun test tests/validate-skills.spec.ts"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "biome check --write --no-errors-on-unmatched"
+    ],
+    "*.{json,md}": [
+      "biome format --write --no-errors-on-unmatched"
+    ],
+    "package.json": [
+      "format-package --write"
+    ]
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12",
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "@types/bun": "1.4.2",
+    "format-package": "^8.0.0",
+    "lint-staged": "^17.5.0",
+    "typescript": "^7.0.2"
+  }
+}

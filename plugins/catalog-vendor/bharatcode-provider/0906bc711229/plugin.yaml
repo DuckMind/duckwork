@@ -1,0 +1,10 @@
+name: bharatcode-provider
+kind: model-provider
+version: 1.0.0
+description: BharatCode models via OpenAI-compatible API
+author: Navya Gupta
+requires_env:
+  - name: BHARATCODE_API_KEY
+    description: BharatCode API key for model inference
+    url: https://bharatcode.ai
+    secret: true

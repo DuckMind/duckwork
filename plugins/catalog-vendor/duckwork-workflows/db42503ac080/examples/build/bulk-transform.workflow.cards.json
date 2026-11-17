@@ -1,0 +1,14 @@
+{
+  "cards": [
+    {"dot": "cyan", "title": "Why it works", "items": [
+      "The roster is declared by an echo before any lane runs — the master list is data, not model memory",
+      "Every lane transforms a single roster item; the auditor reconciles results against the roster, so silent loss fails loud",
+      "Teaches the fan-out surfaces: declared items, per-item payload, and roster-vs-result coverage"
+    ]},
+    {"dot": "rose", "title": "Contract", "items": [
+      "{{nodes}} nodes: roster echo -> transform fan-out -> audit; {{edges}} edges, strictly serial chain",
+      "Audit output is a coverage claim: roster count against landed count, from ## Inputs only",
+      "Derived from this example's bytes by scripts/graph_diagram.py"
+    ]}
+  ]
+}

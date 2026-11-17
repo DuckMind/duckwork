@@ -1,0 +1,44 @@
+<div align="center">
+  <a href="https://github.com/DuckMind/duckwork"><img src="https://github.com/user-attachments/assets/ac2f5702-c842-4b2e-9340-737481fa0ece" width="96" height="96" alt="Fordex Duckwork mark" /></a>
+  <h1>Better Session Appearance</h1>
+  <strong>Make session names easier to scan.</strong>
+  <p>Give each session its own color and idle icon in the session list.</p>
+  <p>
+    <a href="plugin.yaml"><img src="https://img.shields.io/badge/version-1.2.2-2ea44f" alt="Version 1.2.2" /></a>
+    <a href="../../LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license" /></a>
+  </p>
+</div>
+
+<div align="center">
+  <img src="docs/hero.png" width="100%" alt="Better Session Appearance" />
+</div>
+
+## Screenshot
+
+<div align="center">
+  <img src="docs/screenshot.png" alt="Better Session Appearance session color picker and idle icon grid" />
+</div>
+
+## What You Can Do
+
+- Give a session a color from the Appearance picker. It shows on that row’s dot.
+- Pick an idle icon from the Codicon set (search included). Working and finished-unread status dots stay Duckwork’s.
+- Clear a color or icon to hand the row back to Duckwork.
+
+## Install
+
+Requires [Duckwork Agent](https://github.com/DuckMind/duckwork) **0.21.0 or newer**.
+
+```bash
+duckwork plugins pack install https://github.com/DuckMind/duckwork
+```
+
+Enable **Better Session Appearance** under **Capabilities → Plugins**.
+
+## Requirements / Limits
+
+Desktop-only. The color and icon apply to idle session rows; Duckwork keeps ownership of working and unread status dots. Bold session titles and Auto Rules are not part of this edition, since the SDK has no session-title area to decorate. See `LIMITATIONS.md`.
+
+## License
+
+[MIT](../../LICENSE)

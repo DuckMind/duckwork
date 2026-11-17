@@ -1,0 +1,47 @@
+name: Bug report
+description: Something is wrong in an official skill, validator, or docs in this repo
+title: "[bug] "
+labels: ["official-skill"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For Mermail product/API bugs outside skill wording, prefer product support channels.
+        Security-sensitive issues: see [SECURITY.md](https://github.com/Nudgen-Marketing/mermail-skills/blob/main/SECURITY.md).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Skill wording / workflow
+        - Security reference
+        - Validator / CI
+        - Plugin manifests
+        - README / docs
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: skill
+    attributes:
+      label: Skill name (if applicable)
+      placeholder: mermail-compose-email
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: Client, install method, prompts, MCP tools involved (no secrets)
+    validations:
+      required: true

@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest a focused improvement to the provider profile
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repository is limited to the standalone Chutes provider profile for Duckwork Agent.
+        Requests that require a custom transport or a Duckwork core patch belong upstream.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What limitation are you trying to address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: Describe the smallest provider-level change that would help.
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility considerations
+      description: Note any Duckwork or Chutes version constraints and link authoritative sources.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This request can be implemented without patching Duckwork Agent.
+          required: true

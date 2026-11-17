@@ -1,0 +1,672 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "prompt-pocket",
+  "content_id": "ea7f8607ec94",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 109,
+      "mode": "100644",
+      "path": ".gitattributes",
+      "sha256": "f7c77aec929f7d7cf7843c5156241f4de6f7b8ed003130f2d7f682e17fc94a3c"
+    },
+    {
+      "bytes": 562,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "fcfd3041e7dda3a72b7b4cec4362e3dcf0547850d32380851b399434db6b7180"
+    },
+    {
+      "bytes": 410,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "091cda1a796314ceb7a7b05f67b7e1cbf2b7a0b3fec83293842d5a7b1596886c"
+    },
+    {
+      "bytes": 1066,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119"
+    },
+    {
+      "bytes": 4245,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "6f88a9b3d1d665ea2d53875e0a7ba0f1a047ffe2655de13965e4809e6a01b72a"
+    },
+    {
+      "bytes": 7675,
+      "mode": "100644",
+      "path": "SPEC.md",
+      "sha256": "0e61c40a44df3aab42597ef5190b4268752e0c002e6d2b342d68d1567c4a2ecc"
+    },
+    {
+      "bytes": 42609,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "957ff4ccb6920d75231668b056128cd647d1f14b38a48019e0ba2afe95122047"
+    },
+    {
+      "bytes": 5327,
+      "mode": "100644",
+      "path": "docs/images/prompt-pocket-icon.png",
+      "sha256": "f66782d6ab80f223996e9b8a73ec7d1b81667eebc9b5e09f11a93a8975b47b19"
+    },
+    {
+      "bytes": 410013,
+      "mode": "100644",
+      "path": "docs/images/prompt-pocket-library.png",
+      "sha256": "84529d7d561330c5d541a6cd8ea807d1602d60605fd19869e44bc59dbf9d2728"
+    },
+    {
+      "bytes": 446,
+      "mode": "100644",
+      "path": "package.json",
+      "sha256": "61ac13d53b5e4270718ff7dbc7b6ed140daeed39d05864b89ec6aa0292d0612a"
+    },
+    {
+      "bytes": 364,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "19b39ba8b866613426bb7921a7da3bfad56687652d7fdad16288a4e6adb1b7fa"
+    },
+    {
+      "bytes": 7410,
+      "mode": "100644",
+      "path": "scripts/browser-storage-check.mjs",
+      "sha256": "3590dbb849f1276753c4391fe1f5f8129d1b0696e8edcd5d94abf5136893cfac"
+    },
+    {
+      "bytes": 1005,
+      "mode": "100644",
+      "path": "scripts/build.mjs",
+      "sha256": "5031c8f19bf0e1573a92a5abcfeeb42e4dabef2b3a1303aad9c232de0cc5dcee"
+    },
+    {
+      "bytes": 1037,
+      "mode": "100644",
+      "path": "scripts/lint.mjs",
+      "sha256": "f028c891a7333ed8ace19cee281d50636f14359167dae1f871cbcde89cd290de"
+    },
+    {
+      "bytes": 12191,
+      "mode": "100644",
+      "path": "test/components.test.mjs",
+      "sha256": "c40c0872e52e3f02ead8b28d8d0a3ef5b8f4a8adae5798fe2571995e5fd6c41c"
+    },
+    {
+      "bytes": 3742,
+      "mode": "100644",
+      "path": "test/data.test.mjs",
+      "sha256": "3047e739d78646f7fde38841651691312ad1d4174c9da727d6888613f5eb777a"
+    },
+    {
+      "bytes": 2352,
+      "mode": "100644",
+      "path": "test/helpers/confirm-dialog.mjs",
+      "sha256": "b90f0a7a2d358900f471638aa813c4da2bc5786dd90154bd3a2cbf7a32f0ac50"
+    },
+    {
+      "bytes": 5216,
+      "mode": "100644",
+      "path": "test/helpers/fake-indexeddb.mjs",
+      "sha256": "1dcc576b6c426320577cfe8a641783b092cd505c5c1bf0fea91a225e325380a8"
+    },
+    {
+      "bytes": 6133,
+      "mode": "100644",
+      "path": "test/helpers/load-plugin.mjs",
+      "sha256": "789fdb2fec1a935cb1cf657cb9d88f1163086c419329fdfb48fe51c12455162f"
+    },
+    {
+      "bytes": 12127,
+      "mode": "100644",
+      "path": "test/qa-workflows.test.mjs",
+      "sha256": "2d938e8182917369d9ed2650fcfa3d9d5c8a2156fd268dece95a9467ebf142da"
+    },
+    {
+      "bytes": 2820,
+      "mode": "100644",
+      "path": "test/registration.test.mjs",
+      "sha256": "17daa93b9ab8d8c11a88659eda9c271d3a2b9eb53016d253298009bd9c6b992d"
+    },
+    {
+      "bytes": 6955,
+      "mode": "100644",
+      "path": "test/storage.test.mjs",
+      "sha256": "14231705dc980330fd438f50a513ae5894deb317c4568c290ef51ff8c62eb7b6"
+    }
+  ],
+  "input_manifest_sha256": "ea7f8607ec948bcda5af4ec4c43add71bb95272809dacf3abbb8d76db6bc9bb7",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "SPEC.md",
+      "desktop/plugin.js",
+      "package.json",
+      "plugin.yaml",
+      "scripts/browser-storage-check.mjs",
+      "scripts/build.mjs",
+      "test/helpers/confirm-dialog.mjs",
+      "test/helpers/load-plugin.mjs"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/xraysight/hermes-prompt-pocket",
+    "sha": "1da1175923393292c798a20cadfdadc6067adee6",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/xraysight/hermes-prompt-pocket",
+  "original_sha": "1da1175923393292c798a20cadfdadc6067adee6",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "f7c77aec929f7d7cf7843c5156241f4de6f7b8ed003130f2d7f682e17fc94a3c",
+      "bytes": 109,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "fcfd3041e7dda3a72b7b4cec4362e3dcf0547850d32380851b399434db6b7180",
+      "bytes": 562,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "091cda1a796314ceb7a7b05f67b7e1cbf2b7a0b3fec83293842d5a7b1596886c",
+      "bytes": 410,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+      "bytes": 1066,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "dba5df9dd7ae099d1b85ca43a7c76babdbc94040e13075de14a5a49307724254",
+      "bytes": 4263,
+      "mode": "100644"
+    },
+    {
+      "path": "SPEC.md",
+      "sha256": "1fe51db51dfb140e7fa494628d57723a38f145a216ce23ff67456b327905d4f1",
+      "bytes": 7685,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "8a64917703a9fb06b7f76c2b1cd7175750909cac7e4a500bff58d9c01cdd7d1c",
+      "bytes": 42611,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/prompt-pocket-icon.png",
+      "sha256": "f66782d6ab80f223996e9b8a73ec7d1b81667eebc9b5e09f11a93a8975b47b19",
+      "bytes": 5327,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/prompt-pocket-library.png",
+      "sha256": "84529d7d561330c5d541a6cd8ea807d1602d60605fd19869e44bc59dbf9d2728",
+      "bytes": 410013,
+      "mode": "100644"
+    },
+    {
+      "path": "package.json",
+      "sha256": "f5f2e8427e8fb29c5f0d95483567c7235c194605dfe305901c7be632781161ce",
+      "bytes": 448,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "085bd57f3910bd58b7b21921a877f4ae608ac6ffd439da152a1a85e51072a0bd",
+      "bytes": 353,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/browser-storage-check.mjs",
+      "sha256": "db42bca53c6f088936561375df5b441abe937fbd7a951e41e5449730b4afa49d",
+      "bytes": 7412,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/build.mjs",
+      "sha256": "a7fc8e0c75f95dfb4cfdc1010be4ec84d9dba9d462cfb1a70c3ec7c4c5b2da1f",
+      "bytes": 1007,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/lint.mjs",
+      "sha256": "f028c891a7333ed8ace19cee281d50636f14359167dae1f871cbcde89cd290de",
+      "bytes": 1037,
+      "mode": "100644"
+    },
+    {
+      "path": "test/components.test.mjs",
+      "sha256": "c40c0872e52e3f02ead8b28d8d0a3ef5b8f4a8adae5798fe2571995e5fd6c41c",
+      "bytes": 12191,
+      "mode": "100644"
+    },
+    {
+      "path": "test/data.test.mjs",
+      "sha256": "3047e739d78646f7fde38841651691312ad1d4174c9da727d6888613f5eb777a",
+      "bytes": 3742,
+      "mode": "100644"
+    },
+    {
+      "path": "test/helpers/confirm-dialog.mjs",
+      "sha256": "24469f80c5158579cbd10b80381e27a6ad134e78031f661c8697cb3709943249",
+      "bytes": 2354,
+      "mode": "100644"
+    },
+    {
+      "path": "test/helpers/fake-indexeddb.mjs",
+      "sha256": "1dcc576b6c426320577cfe8a641783b092cd505c5c1bf0fea91a225e325380a8",
+      "bytes": 5216,
+      "mode": "100644"
+    },
+    {
+      "path": "test/helpers/load-plugin.mjs",
+      "sha256": "73c91b54a5a0fc323ba4f757cb3dbac23141a3218a200996554bb736518cd143",
+      "bytes": 6135,
+      "mode": "100644"
+    },
+    {
+      "path": "test/qa-workflows.test.mjs",
+      "sha256": "2d938e8182917369d9ed2650fcfa3d9d5c8a2156fd268dece95a9467ebf142da",
+      "bytes": 12127,
+      "mode": "100644"
+    },
+    {
+      "path": "test/registration.test.mjs",
+      "sha256": "17daa93b9ab8d8c11a88659eda9c271d3a2b9eb53016d253298009bd9c6b992d",
+      "bytes": 2820,
+      "mode": "100644"
+    },
+    {
+      "path": "test/storage.test.mjs",
+      "sha256": "14231705dc980330fd438f50a513ae5894deb317c4568c290ef51ff8c62eb7b6",
+      "bytes": 6955,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "9ed773498e587bc744c3a30ce6170d09a59ad944bf54c35e5557b1b0af5308f8",
+  "pin_verification": {
+    "archive_bytes": 440605,
+    "archive_sha256": "ba72e1070439002119c903d81c25aaa80ff71a1517a7ebbe7a15f4cb37d2b495",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "1da1175923393292c798a20cadfdadc6067adee6",
+    "verified_commit_marker": "1da1175923393292c798a20cadfdadc6067adee6"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "cb197afea42e4ef5622ca15a9a33caee323bed4b1a5cc22f43d78572d1940dc3",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitattributes",
+        "input_sha256": "f7c77aec929f7d7cf7843c5156241f4de6f7b8ed003130f2d7f682e17fc94a3c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f7c77aec929f7d7cf7843c5156241f4de6f7b8ed003130f2d7f682e17fc94a3c",
+        "source": ".gitattributes",
+        "final_output_sha256": "f7c77aec929f7d7cf7843c5156241f4de6f7b8ed003130f2d7f682e17fc94a3c",
+        "cli_destination": ".gitattributes",
+        "previous_staging_sha256": "f7c77aec929f7d7cf7843c5156241f4de6f7b8ed003130f2d7f682e17fc94a3c"
+      },
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "fcfd3041e7dda3a72b7b4cec4362e3dcf0547850d32380851b399434db6b7180",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fcfd3041e7dda3a72b7b4cec4362e3dcf0547850d32380851b399434db6b7180",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "fcfd3041e7dda3a72b7b4cec4362e3dcf0547850d32380851b399434db6b7180",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "fcfd3041e7dda3a72b7b4cec4362e3dcf0547850d32380851b399434db6b7180"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "091cda1a796314ceb7a7b05f67b7e1cbf2b7a0b3fec83293842d5a7b1596886c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "091cda1a796314ceb7a7b05f67b7e1cbf2b7a0b3fec83293842d5a7b1596886c",
+        "source": ".gitignore",
+        "final_output_sha256": "091cda1a796314ceb7a7b05f67b7e1cbf2b7a0b3fec83293842d5a7b1596886c",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "091cda1a796314ceb7a7b05f67b7e1cbf2b7a0b3fec83293842d5a7b1596886c"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+        "source": "LICENSE",
+        "final_output_sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "e1a50d984a35d5b7274c84840bf0b97253e362925bc0ee83f9de03204de77119"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "6f88a9b3d1d665ea2d53875e0a7ba0f1a047ffe2655de13965e4809e6a01b72a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dba5df9dd7ae099d1b85ca43a7c76babdbc94040e13075de14a5a49307724254",
+        "source": "README.md",
+        "final_output_sha256": "dba5df9dd7ae099d1b85ca43a7c76babdbc94040e13075de14a5a49307724254",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "dba5df9dd7ae099d1b85ca43a7c76babdbc94040e13075de14a5a49307724254"
+      },
+      {
+        "destination": "SPEC.md",
+        "input_sha256": "0e61c40a44df3aab42597ef5190b4268752e0c002e6d2b342d68d1567c4a2ecc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1fe51db51dfb140e7fa494628d57723a38f145a216ce23ff67456b327905d4f1",
+        "source": "SPEC.md",
+        "final_output_sha256": "1fe51db51dfb140e7fa494628d57723a38f145a216ce23ff67456b327905d4f1",
+        "cli_destination": "SPEC.md",
+        "previous_staging_sha256": "1fe51db51dfb140e7fa494628d57723a38f145a216ce23ff67456b327905d4f1"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "957ff4ccb6920d75231668b056128cd647d1f14b38a48019e0ba2afe95122047",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8a64917703a9fb06b7f76c2b1cd7175750909cac7e4a500bff58d9c01cdd7d1c",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "8a64917703a9fb06b7f76c2b1cd7175750909cac7e4a500bff58d9c01cdd7d1c",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "8a64917703a9fb06b7f76c2b1cd7175750909cac7e4a500bff58d9c01cdd7d1c"
+      },
+      {
+        "destination": "docs/images/prompt-pocket-icon.png",
+        "input_sha256": "f66782d6ab80f223996e9b8a73ec7d1b81667eebc9b5e09f11a93a8975b47b19",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f66782d6ab80f223996e9b8a73ec7d1b81667eebc9b5e09f11a93a8975b47b19",
+        "source": "docs/images/prompt-pocket-icon.png",
+        "final_output_sha256": "f66782d6ab80f223996e9b8a73ec7d1b81667eebc9b5e09f11a93a8975b47b19",
+        "cli_destination": "docs/images/prompt-pocket-icon.png",
+        "previous_staging_sha256": "f66782d6ab80f223996e9b8a73ec7d1b81667eebc9b5e09f11a93a8975b47b19"
+      },
+      {
+        "destination": "docs/images/prompt-pocket-library.png",
+        "input_sha256": "84529d7d561330c5d541a6cd8ea807d1602d60605fd19869e44bc59dbf9d2728",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "84529d7d561330c5d541a6cd8ea807d1602d60605fd19869e44bc59dbf9d2728",
+        "source": "docs/images/prompt-pocket-library.png",
+        "final_output_sha256": "84529d7d561330c5d541a6cd8ea807d1602d60605fd19869e44bc59dbf9d2728",
+        "cli_destination": "docs/images/prompt-pocket-library.png",
+        "previous_staging_sha256": "84529d7d561330c5d541a6cd8ea807d1602d60605fd19869e44bc59dbf9d2728"
+      },
+      {
+        "destination": "package.json",
+        "input_sha256": "61ac13d53b5e4270718ff7dbc7b6ed140daeed39d05864b89ec6aa0292d0612a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f5f2e8427e8fb29c5f0d95483567c7235c194605dfe305901c7be632781161ce",
+        "source": "package.json",
+        "final_output_sha256": "f5f2e8427e8fb29c5f0d95483567c7235c194605dfe305901c7be632781161ce",
+        "cli_destination": "package.json",
+        "previous_staging_sha256": "f5f2e8427e8fb29c5f0d95483567c7235c194605dfe305901c7be632781161ce"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "19b39ba8b866613426bb7921a7da3bfad56687652d7fdad16288a4e6adb1b7fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d1bdea6020a0b59fa54e3d98d47e421416f8750a600b5f7905fbc1151e90dc9a",
+        "source": "plugin.yaml",
+        "final_output_sha256": "085bd57f3910bd58b7b21921a877f4ae608ac6ffd439da152a1a85e51072a0bd",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "d1bdea6020a0b59fa54e3d98d47e421416f8750a600b5f7905fbc1151e90dc9a"
+      },
+      {
+        "destination": "scripts/browser-storage-check.mjs",
+        "input_sha256": "3590dbb849f1276753c4391fe1f5f8129d1b0696e8edcd5d94abf5136893cfac",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "db42bca53c6f088936561375df5b441abe937fbd7a951e41e5449730b4afa49d",
+        "source": "scripts/browser-storage-check.mjs",
+        "final_output_sha256": "db42bca53c6f088936561375df5b441abe937fbd7a951e41e5449730b4afa49d",
+        "cli_destination": "scripts/browser-storage-check.mjs",
+        "previous_staging_sha256": "db42bca53c6f088936561375df5b441abe937fbd7a951e41e5449730b4afa49d"
+      },
+      {
+        "destination": "scripts/build.mjs",
+        "input_sha256": "5031c8f19bf0e1573a92a5abcfeeb42e4dabef2b3a1303aad9c232de0cc5dcee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a7fc8e0c75f95dfb4cfdc1010be4ec84d9dba9d462cfb1a70c3ec7c4c5b2da1f",
+        "source": "scripts/build.mjs",
+        "final_output_sha256": "a7fc8e0c75f95dfb4cfdc1010be4ec84d9dba9d462cfb1a70c3ec7c4c5b2da1f",
+        "cli_destination": "scripts/build.mjs",
+        "previous_staging_sha256": "a7fc8e0c75f95dfb4cfdc1010be4ec84d9dba9d462cfb1a70c3ec7c4c5b2da1f"
+      },
+      {
+        "destination": "scripts/lint.mjs",
+        "input_sha256": "f028c891a7333ed8ace19cee281d50636f14359167dae1f871cbcde89cd290de",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f028c891a7333ed8ace19cee281d50636f14359167dae1f871cbcde89cd290de",
+        "source": "scripts/lint.mjs",
+        "final_output_sha256": "f028c891a7333ed8ace19cee281d50636f14359167dae1f871cbcde89cd290de",
+        "cli_destination": "scripts/lint.mjs",
+        "previous_staging_sha256": "f028c891a7333ed8ace19cee281d50636f14359167dae1f871cbcde89cd290de"
+      },
+      {
+        "destination": "test/components.test.mjs",
+        "input_sha256": "c40c0872e52e3f02ead8b28d8d0a3ef5b8f4a8adae5798fe2571995e5fd6c41c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c40c0872e52e3f02ead8b28d8d0a3ef5b8f4a8adae5798fe2571995e5fd6c41c",
+        "source": "test/components.test.mjs",
+        "final_output_sha256": "c40c0872e52e3f02ead8b28d8d0a3ef5b8f4a8adae5798fe2571995e5fd6c41c",
+        "cli_destination": "test/components.test.mjs",
+        "previous_staging_sha256": "c40c0872e52e3f02ead8b28d8d0a3ef5b8f4a8adae5798fe2571995e5fd6c41c"
+      },
+      {
+        "destination": "test/data.test.mjs",
+        "input_sha256": "3047e739d78646f7fde38841651691312ad1d4174c9da727d6888613f5eb777a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3047e739d78646f7fde38841651691312ad1d4174c9da727d6888613f5eb777a",
+        "source": "test/data.test.mjs",
+        "final_output_sha256": "3047e739d78646f7fde38841651691312ad1d4174c9da727d6888613f5eb777a",
+        "cli_destination": "test/data.test.mjs",
+        "previous_staging_sha256": "3047e739d78646f7fde38841651691312ad1d4174c9da727d6888613f5eb777a"
+      },
+      {
+        "destination": "test/helpers/confirm-dialog.mjs",
+        "input_sha256": "b90f0a7a2d358900f471638aa813c4da2bc5786dd90154bd3a2cbf7a32f0ac50",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "24469f80c5158579cbd10b80381e27a6ad134e78031f661c8697cb3709943249",
+        "source": "test/helpers/confirm-dialog.mjs",
+        "final_output_sha256": "24469f80c5158579cbd10b80381e27a6ad134e78031f661c8697cb3709943249",
+        "cli_destination": "test/helpers/confirm-dialog.mjs",
+        "previous_staging_sha256": "24469f80c5158579cbd10b80381e27a6ad134e78031f661c8697cb3709943249"
+      },
+      {
+        "destination": "test/helpers/fake-indexeddb.mjs",
+        "input_sha256": "1dcc576b6c426320577cfe8a641783b092cd505c5c1bf0fea91a225e325380a8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1dcc576b6c426320577cfe8a641783b092cd505c5c1bf0fea91a225e325380a8",
+        "source": "test/helpers/fake-indexeddb.mjs",
+        "final_output_sha256": "1dcc576b6c426320577cfe8a641783b092cd505c5c1bf0fea91a225e325380a8",
+        "cli_destination": "test/helpers/fake-indexeddb.mjs",
+        "previous_staging_sha256": "1dcc576b6c426320577cfe8a641783b092cd505c5c1bf0fea91a225e325380a8"
+      },
+      {
+        "destination": "test/helpers/load-plugin.mjs",
+        "input_sha256": "789fdb2fec1a935cb1cf657cb9d88f1163086c419329fdfb48fe51c12455162f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "73c91b54a5a0fc323ba4f757cb3dbac23141a3218a200996554bb736518cd143",
+        "source": "test/helpers/load-plugin.mjs",
+        "final_output_sha256": "73c91b54a5a0fc323ba4f757cb3dbac23141a3218a200996554bb736518cd143",
+        "cli_destination": "test/helpers/load-plugin.mjs",
+        "previous_staging_sha256": "73c91b54a5a0fc323ba4f757cb3dbac23141a3218a200996554bb736518cd143"
+      },
+      {
+        "destination": "test/qa-workflows.test.mjs",
+        "input_sha256": "2d938e8182917369d9ed2650fcfa3d9d5c8a2156fd268dece95a9467ebf142da",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2d938e8182917369d9ed2650fcfa3d9d5c8a2156fd268dece95a9467ebf142da",
+        "source": "test/qa-workflows.test.mjs",
+        "final_output_sha256": "2d938e8182917369d9ed2650fcfa3d9d5c8a2156fd268dece95a9467ebf142da",
+        "cli_destination": "test/qa-workflows.test.mjs",
+        "previous_staging_sha256": "2d938e8182917369d9ed2650fcfa3d9d5c8a2156fd268dece95a9467ebf142da"
+      },
+      {
+        "destination": "test/registration.test.mjs",
+        "input_sha256": "17daa93b9ab8d8c11a88659eda9c271d3a2b9eb53016d253298009bd9c6b992d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "17daa93b9ab8d8c11a88659eda9c271d3a2b9eb53016d253298009bd9c6b992d",
+        "source": "test/registration.test.mjs",
+        "final_output_sha256": "17daa93b9ab8d8c11a88659eda9c271d3a2b9eb53016d253298009bd9c6b992d",
+        "cli_destination": "test/registration.test.mjs",
+        "previous_staging_sha256": "17daa93b9ab8d8c11a88659eda9c271d3a2b9eb53016d253298009bd9c6b992d"
+      },
+      {
+        "destination": "test/storage.test.mjs",
+        "input_sha256": "14231705dc980330fd438f50a513ae5894deb317c4568c290ef51ff8c62eb7b6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "14231705dc980330fd438f50a513ae5894deb317c4568c290ef51ff8c62eb7b6",
+        "source": "test/storage.test.mjs",
+        "final_output_sha256": "14231705dc980330fd438f50a513ae5894deb317c4568c290ef51ff8c62eb7b6",
+        "cli_destination": "test/storage.test.mjs",
+        "previous_staging_sha256": "14231705dc980330fd438f50a513ae5894deb317c4568c290ef51ff8c62eb7b6"
+      }
+    ],
+    "manifest_sha256": "7a2187eb7a78e91afad80014ee3d4761a4f226ddf8328a6e3083c229ae3dbd44",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitattributes": ".gitattributes",
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "SPEC.md": "SPEC.md",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "docs/images/prompt-pocket-icon.png": "docs/images/prompt-pocket-icon.png",
+    "docs/images/prompt-pocket-library.png": "docs/images/prompt-pocket-library.png",
+    "package.json": "package.json",
+    "plugin.yaml": "plugin.yaml",
+    "scripts/browser-storage-check.mjs": "scripts/browser-storage-check.mjs",
+    "scripts/build.mjs": "scripts/build.mjs",
+    "scripts/lint.mjs": "scripts/lint.mjs",
+    "test/components.test.mjs": "test/components.test.mjs",
+    "test/data.test.mjs": "test/data.test.mjs",
+    "test/helpers/confirm-dialog.mjs": "test/helpers/confirm-dialog.mjs",
+    "test/helpers/fake-indexeddb.mjs": "test/helpers/fake-indexeddb.mjs",
+    "test/helpers/load-plugin.mjs": "test/helpers/load-plugin.mjs",
+    "test/qa-workflows.test.mjs": "test/qa-workflows.test.mjs",
+    "test/registration.test.mjs": "test/registration.test.mjs",
+    "test/storage.test.mjs": "test/storage.test.mjs"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "prompt-pocket",
+    "python_files_compiled": 0,
+    "secret_findings": 0
+  },
+  "canonical_slug": "prompt-pocket",
+  "catalog_file": "src/plugin-catalog/prompt-pocket.yaml",
+  "identity": {
+    "catalog_id": "prompt-pocket",
+    "canonical_slug": "prompt-pocket",
+    "original_manifest_name": "prompt-pocket",
+    "rebranded_manifest_name": "prompt-pocket",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "7b42916fd3bf63d221fce0687a05e1f901ffd069a31049f440482b8f504f72ce",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "d1bdea6020a0b59fa54e3d98d47e421416f8750a600b5f7905fbc1151e90dc9a",
+          "after_sha256": "085bd57f3910bd58b7b21921a877f4ae608ac6ffd439da152a1a85e51072a0bd",
+          "before_bytes": 366,
+          "after_bytes": 353,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

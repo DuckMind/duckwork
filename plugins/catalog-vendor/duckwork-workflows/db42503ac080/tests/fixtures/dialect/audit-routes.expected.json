@@ -1,0 +1,45 @@
+{
+  "verdict": "importable",
+  "reason": "docs canonical example verbatim: literal meta; one schema agent; single-stage pipeline over a prior agent's field (-> fanout.items_from:'found.files', goal 'Audit {item} ...'); `return <pipeline>.filter(Boolean)` is the documented null-drop idiom and a no-op against our fan-out output.items (dialect.md row 12)",
+  "rows": [
+    1,
+    3,
+    11,
+    12
+  ],
+  "graph_sketch": {
+    "name": "audit-routes",
+    "nodes": [
+      {
+        "id": "found",
+        "type": "agent",
+        "goal": "List every .ts file under src/routes/.",
+        "schema": {
+          "type": "object",
+          "required": [
+            "files"
+          ],
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "audits",
+        "type": "agent",
+        "after": [
+          "found"
+        ],
+        "fanout": {
+          "items_from": "found.files",
+          "goal": "Audit {item} for missing authentication checks."
+        }
+      }
+    ]
+  }
+}

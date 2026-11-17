@@ -1,0 +1,14 @@
+name: talaria-webui
+version: "1.5.1"
+description: Extends Duckwork Agent API capabilities to deliver a richer chat interface with Talaria WebUI
+author: Liam Smith
+requires_duckwork: ">=0.21.5"
+provides_tools: []
+provides_hooks:
+  - pre_api_request
+  - post_api_request
+  - on_session_end
+provides_middleware: []
+requires_env: []
+python_dependencies:
+  - "aiohttp>=3.9,<4"

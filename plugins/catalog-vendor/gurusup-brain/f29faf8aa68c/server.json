@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.gurusup/gurusup",
+  "title": "Gurusup",
+  "description": "Your company brain: search decisions, people, customers and projects across connected sources.",
+  "websiteUrl": "https://gurusup.com/brain/mcp",
+  "repository": {
+    "url": "https://github.com/gurusup/gurusup-brain-plugin",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.brain.gurusup.com/mcp"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+# Catalog entry (template) for duckwork-kuma
+#
+# Submit to Fordex/duckwork-agent as `plugin-catalog/duckwork-kuma.yaml`
+# per that repo's admission policy (owner-submitted PR, public repo, real
+# release tag). Fill `sha` with the full 40-hex commit SHA of the release tag
+# before opening the PR, then rename this file (drop `.template`).
+#
+# The offline test suite validates this template by substituting a synthetic
+# SHA and running the vendored upstream checker (tests/vendor/).
+
+name: duckwork-kuma
+repo: https://github.com/DuckMind/duckwork
+sha: <40-hex commit SHA of the release tag — fill before PR>
+description: 'Uptime-Kuma monitoring for agents: the community MCP server for Uptime Kuma v2 (pinned @0.11.18 over npx stdio) with workflow skills for incident review, status digests, and confirmation-gated maintenance. Credentials stay in host-native MCP config (portable Agent Plugins v1 package, mcp.json + skills/; needs Node.js >= 22 on PATH and a Uptime Kuma v2 instance).'
+maintainer: nitishagar
+tier: community
+category: tools
+docs_url: https://github.com/DuckMind/duckwork
+platforms: []
+capabilities:
+  provides_tools: []
+  provides_hooks: []
+  provides_middleware: []
+  requires_env: []

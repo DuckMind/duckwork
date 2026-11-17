@@ -1,0 +1,71 @@
+---
+name: diagnosing-commands
+description: Diagnose missing or overridden Duckwork slash commands — skills as commands, skill bundles, plugin-registered commands, and per-platform admin/user permissions.
+version: 1.1.6
+metadata:
+  duckwork:
+    tags: [duckwork, commands, troubleshooting]
+    related_skills: [duckwork-configuration-guide]
+---
+
+# Diagnosing Slash Commands
+
+Duckwork has **no standalone custom-command files** (no `commands/*.md` directory like Claude Code). Every `/command` comes from exactly four sources, dispatched through one central registry (`duckwork_cli/commands.py`) on two surfaces: the interactive CLI/TUI and the messaging gateway. Diagnose by identifying which source the command should come from.
+
+> **Disambiguation**: if the skill itself is missing from the index (not just its `/command`), see `diagnosing-skills` — that is a skill-discovery problem, not a command-surface problem.
+
+## 1. The four sources
+
+| Source | How it's created | Notes |
+|---|---|---|
+| **Built-in registry** | Ships with Duckwork (`/model`, `/skills`, `/reload-mcp`, …) | Case-insensitive; see `/help` |
+| **Skills** | Every installed skill is automatically `/<skill-name>` | The name comes from SKILL.md frontmatter, not the directory |
+| **Skill bundles** | `duckwork bundles create <name> --skill a --skill b` → `$DUCKWORK_HOME/skill-bundles/<slug>.yaml` | Loads several skills at once; **a bundle wins a slug collision with a skill** |
+| **Plugin commands** | `ctx.register_command(name, handler, description="", args_hint="")` in a plugin | Only while that plugin is enabled. A name that collides with a **built-in** command is warned and skipped (`resolve_command` check); a collision between two plugins is a **late-registration replace** — the last registrant wins (`duckwork_cli/plugins.py::register_command`, `@_serialized_replacement`), which is why a command can silently change behaviour when another plugin loads |
+
+Multiple leading `/skill` tokens stack in one message — the cap is **`_MAX_STACKED_SKILLS = 5`** (`agent/skill_commands.py`, verified 2026-09-14); parsing stops at the first token that isn't an installed skill, so argument paths like `/tmp/scan.pdf` are safe.
+
+## 2. Pitfalls (symptom → cause → fix)
+
+1. **`/my-skill` not found** — skill not discovered at all (wrong directory, missing/misnamed `SKILL.md`, shadowed by a local copy). → Follow **`diagnosing-skills`**; the command appears when discovery does (`/reload-skills`).
+2. **Command name differs from the folder name** — the slash command uses the frontmatter `name`. → Reference the frontmatter name or rename it.
+3. **`/name` loads the wrong thing** — a bundle with the same slug shadows the skill (intentional), or a local skill shadows an external one. → `duckwork bundles list`; rename one of them.
+4. **A plugin's command is missing** — the plugin is installed but not in `plugins.enabled`. → `duckwork plugins enable <name>`; restart. Follow **`diagnosing-plugins`**.
+5. **Command works in the CLI but not on Telegram/Discord/Slack** — each messaging platform can gate slash commands by role, **scoped separately for DMs and groups**: when `allow_admin_from` (DMs) or `group_allow_admin_from` (groups) lists user IDs, admins get every command and non-admins get only the scope's allowlist — `user_allowed_commands` for DMs, `group_user_allowed_commands` for groups (plus `/help`, `/whoami`); if **no** admin list is set for a scope, gating is **off** for that scope and every allowed user can run everything. → **Permanent:** set the keys in the platform's `extra:` block in the active config file — resolve it first with `duckwork config path` (`$DUCKWORK_HOME` or a named profile redirects the default), then restart the gateway. **Temporary:** run the command from the CLI (no gating there) while you fix the platform config. (All four keys verified in `gateway/config_loader.py`.)
+6. **Command exists but arguments vanish** — stacking parsing consumed what looked like a flag, or the command takes no args (e.g. `/plan` treats trailing text as its request). → Check the command's entry in `/help`; avoid leading `/` in arguments you want passed through.
+7. **A skill slug matching a built-in silently runs the built-in** — the reverse of pitfall 3: bundle-over-skill does not apply here, the **built-in wins** (e.g. installed skill `skills/software-development/plan` (`/plan`) never fires — `/plan` runs the built-in planner). → Detector: `duckwork guide commands` (headless) or `/duckwork-doctor commands` (in-session) flags `shadows a built-in command (builtin wins)`; rename the skill or expect built-in behavior.
+8. **Aliases behave oddly** — many commands have aliases (`/reset`→`/new`, `/ctx`→`/context` — both verified in `duckwork_cli/commands.py`); both dispatch identically. → Not a bug; check the canonical name in the reference.
+
+## 3. Localization workflow
+
+1. In-session: type `/` and search the autocomplete — found? It's a dispatch/args issue (6/8). Not found? → step 2. Headless: skip autocomplete, run the detector at step 4, then continue at step 2.
+2. Which source should provide it? skill → **`diagnosing-skills`** (pitfall 1/2); bundle → `duckwork bundles show <name>` (3); plugin → **`diagnosing-plugins`** (4); expected built-in → check `/help` and your Duckwork version (`duckwork --version`; built-ins gain commands over releases).
+3. Surface-specific failure (CLI works, gateway doesn't) → pitfall 5.
+4. Skill slug matching a built-in (silent builtin-wins) → pitfall 7; detector first: `duckwork guide commands` (headless) or `/duckwork-doctor commands` (in-session).
+5. Apply the fix, `/reload-skills` or restart as appropriate, confirm via autocomplete or invocation.
+6. Re-run the detector: `duckwork guide commands` headless or `/duckwork-doctor commands` in-session; `+` means healthy, `~` means informational, and `x`/`?` means unresolved.
+
+## Report
+
+This skill diagnoses missing or overridden slash commands — skills as commands, skill bundles, plugin-registered commands, and per-platform admin/user permissions. When you run the diagnostic workflow, present findings in the standard format below.
+
+### Summary
+Your `/my-skill` command works in the CLI but not on Telegram because the platform's command gating is configured to restrict non-admin users. The command exists but is not in the Telegram allowlist for your user ID.
+
+### Findings
+| Severity | What | Evidence |
+|---|---|---|
+| HIGH | Command not in Telegram allowlist for non-admin users | Command works in CLI; Telegram returns "command not found"; `gateway.platforms.telegram.extra.user_allowed_commands` does not include `/my-skill` |
+| MEDIUM | `allow_admin_from` is set, enabling gating | Config has `allow_admin_from: [12345]` but your user ID is not listed |
+
+### Recommended Fix
+Add `/my-skill` to `user_allowed_commands` in the Telegram platform's `extra:` block in `config.yaml`, then run `duckwork gateway restart`. Alternatively, add your user ID to `allow_admin_from` to get all commands.
+
+### References
+- `$DUCKWORK_HOME/config.yaml` — `gateway.platforms.telegram.extra:` block
+- `gateway/config_loader.py` — the four gating keys (`allow_admin_from`, `group_allow_admin_from`, `user_allowed_commands`, `group_user_allowed_commands`)
+- `duckwork_cli/commands.py` — command registry and dispatch
+
+---
+
+*Facts re-verified 2026-09-14 against upstream source at commit `46a0daee58abbc1b07f84f505a5ba90f1958295c`: no standalone command files (no `commands/` tree); bundle path `<DUCKWORK_HOME>/skill-bundles/` and bundle-over-skill precedence (`agent/skill_bundles.py`); the stacking cap `_MAX_STACKED_SKILLS = 5` (`agent/skill_commands.py`); `ctx.register_command(name, handler, description=..., args_hint=...)` (`plugins/context_engine/__init__.py`); all four platform gating keys (`gateway/config_loader.py`); alias pairs `new`←`reset` and `context`←`ctx` (`duckwork_cli/commands.py`). Re-checked 2026-10-12 against the live install (upstream `e0734a66`): skill-slug-vs-builtin builtin-wins verdict via `duckwork guide commands` (installed `skills/software-development/plan` shadows builtin `/plan`). Re-verify before reuse.*

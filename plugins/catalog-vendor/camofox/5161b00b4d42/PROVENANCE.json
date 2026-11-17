@@ -1,0 +1,662 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/NousResearch/hermes-official-plugins/190593f4ce4c481a80ed27448535c867c5c6e27f/assets/camofox.jpg": "_catalog_assets/assets/camofox.jpg"
+    },
+    "image": "_catalog_assets/assets/camofox.jpg",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "camofox",
+  "content_id": "5161b00b4d42",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+    },
+    {
+      "bytes": 10575,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "ebd21fce78d6ae7973c7d51bb13f249295637d911927d05833d539b30ee61242"
+    },
+    {
+      "bytes": 4333,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "7f1102a6a1185ad8ecebee060bc6885d81cd3ed57db7c11ff60cabf3f3b06c5e"
+    },
+    {
+      "bytes": 201168,
+      "mode": "100644",
+      "path": "_catalog_assets/assets/camofox.jpg",
+      "sha256": "ab6e45bdc26a1a0e9c25d662ca559f57b8d2fcc829af8d5d3230914e9f2e3656"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+    },
+    {
+      "bytes": 2862,
+      "mode": "100644",
+      "path": "camofox_cli.py",
+      "sha256": "d5185f1b347e0aa4485a813512f1a87370d2ec587f253acb499e326ac513e2d7"
+    },
+    {
+      "bytes": 16336,
+      "mode": "100644",
+      "path": "camofox_client.py",
+      "sha256": "72e458eb9a9c520625da427af1e1d9ea76ed1a1f54e511fbfce933007302c6bc"
+    },
+    {
+      "bytes": 11982,
+      "mode": "100644",
+      "path": "camofox_policy.py",
+      "sha256": "9ad4986cc063b1d9ea0be5705f77827111f402e6bbb4be86efbc92acf0311438"
+    },
+    {
+      "bytes": 7928,
+      "mode": "100644",
+      "path": "camofox_schemas.py",
+      "sha256": "b929fd2d15a505bdd9eb630f280199b99096410ec6400020be87fc44f75b2562"
+    },
+    {
+      "bytes": 23534,
+      "mode": "100644",
+      "path": "camofox_tools.py",
+      "sha256": "0a311a43423261bc525f2e71100fd9455aa7d900cb80c55786697664f69071cb"
+    },
+    {
+      "bytes": 1437,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "46503e26d653f85a1a17f3f34559ecf646414cd0feacfcfe5711b43d3d5e626a"
+    },
+    {
+      "bytes": 423,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "f7eab3946918ba6783cd1eb77447c081f51e683edf2ebc7ecde4c5d6af95ff37"
+    },
+    {
+      "bytes": 61,
+      "mode": "100644",
+      "path": "pytest.ini",
+      "sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a"
+    },
+    {
+      "bytes": 9236,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "8004c7a5b82e05a35937ea7cc2c151a67631129ad5515584ecc55b19624fefcd"
+    },
+    {
+      "bytes": 1117,
+      "mode": "100644",
+      "path": "tests/test_camofox_cli.py",
+      "sha256": "f5267af3a52be4ccbd75fc76b9618a612d7bd1bd7a182ade086cbdee3e2062a0"
+    },
+    {
+      "bytes": 805,
+      "mode": "100644",
+      "path": "tests/test_camofox_client.py",
+      "sha256": "6265bb481c93ae042a8985879e17bcde49de1a4aa1c217bf84fb5e3bf9bd256d"
+    },
+    {
+      "bytes": 5565,
+      "mode": "100644",
+      "path": "tests/test_camofox_cookies.py",
+      "sha256": "674016603d06a10c41f4cff24815a2cb7488c7d9e7a6a93f3091c9978d705ceb"
+    },
+    {
+      "bytes": 8573,
+      "mode": "100644",
+      "path": "tests/test_camofox_sessions.py",
+      "sha256": "95a6cdc966d7e85bdf48db2e3f526eb92e81fd9aa488d13deb7f491a86eb279d"
+    },
+    {
+      "bytes": 18581,
+      "mode": "100644",
+      "path": "tests/test_camofox_tools.py",
+      "sha256": "758fc7a0323ef2a1a7f996bad7f0177757abe76768b3bb19c8bf3a964be888ee"
+    },
+    {
+      "bytes": 5361,
+      "mode": "100644",
+      "path": "tests/test_plugin_registration.py",
+      "sha256": "035118d14e78de5dc86e93a1f0f3a37065293abe88ab995646186252afbfc24f"
+    }
+  ],
+  "input_manifest_sha256": "5161b00b4d4226f8ced3d3e20bf9c2c805861f0a3723621ccc7565e024c05dae",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source_path": "camofox/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "camofox_cli.py",
+      "camofox_client.py",
+      "camofox_policy.py",
+      "camofox_schemas.py",
+      "camofox_tools.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "tests/conftest.py",
+      "tests/test_camofox_cli.py",
+      "tests/test_camofox_sessions.py",
+      "tests/test_camofox_tools.py",
+      "tests/test_plugin_registration.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/NousResearch/hermes-official-plugins",
+    "sha": "190593f4ce4c481a80ed27448535c867c5c6e27f",
+    "subdir": "camofox"
+  },
+  "original_repo": "https://github.com/NousResearch/hermes-official-plugins",
+  "original_sha": "190593f4ce4c481a80ed27448535c867c5c6e27f",
+  "original_subdir": "camofox",
+  "output_files": [
+    {
+      "path": "LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "3f0517ea8b27d3c66f5ea24601ec9988f7669cf9277efb103d3a0e00041f38e2",
+      "bytes": 10626,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "98427837a7c22f9b85326f79ca3f644d86f31663143014d879708449aa7bc20f",
+      "bytes": 4347,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/assets/camofox.jpg",
+      "sha256": "ab6e45bdc26a1a0e9c25d662ca559f57b8d2fcc829af8d5d3230914e9f2e3656",
+      "bytes": 201168,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "camofox_cli.py",
+      "sha256": "3810827fceca74aaf3e4a542e8cfb12cf6748082c08a4ae8e27daf2c6b62f7f7",
+      "bytes": 2880,
+      "mode": "100644"
+    },
+    {
+      "path": "camofox_client.py",
+      "sha256": "e6b5de8fc0a1ecd9f504c1cbc19815bb2e9194906e2bc3a50a400b3bb038a029",
+      "bytes": 16360,
+      "mode": "100644"
+    },
+    {
+      "path": "camofox_policy.py",
+      "sha256": "c36121c989f4eca2c0fb8f6dd9f17187d440f1ba34ef75080433aaaf9c03088d",
+      "bytes": 11992,
+      "mode": "100644"
+    },
+    {
+      "path": "camofox_schemas.py",
+      "sha256": "63ec8cedb501ea811fc5983d5f967c754fea82aa23bf74d00211a454baa35879",
+      "bytes": 7930,
+      "mode": "100644"
+    },
+    {
+      "path": "camofox_tools.py",
+      "sha256": "a34afebc3b1ed746c0e563654f97e008414575395ee648e1520b57abac89c3ae",
+      "bytes": 23546,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "0af8a20fc6d1dfddf0e5f2051c2055e84465990d44fd38a06be0719ff17745fc",
+      "bytes": 1408,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "4d65db0cc99b8b315ddd436565b4d54f326d3195970be8a745789c496de47c47",
+      "bytes": 390,
+      "mode": "100644"
+    },
+    {
+      "path": "pytest.ini",
+      "sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a",
+      "bytes": 61,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "164304a5ea1310797d9297d5f60378914bbe5333f7f1bcfdd72a4d3486796279",
+      "bytes": 9250,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_camofox_cli.py",
+      "sha256": "1dd9e86a011d844bfba1a76723a685b8aecdf4be728ee1292baab61076bc1ca1",
+      "bytes": 1123,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_camofox_client.py",
+      "sha256": "6265bb481c93ae042a8985879e17bcde49de1a4aa1c217bf84fb5e3bf9bd256d",
+      "bytes": 805,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_camofox_cookies.py",
+      "sha256": "674016603d06a10c41f4cff24815a2cb7488c7d9e7a6a93f3091c9978d705ceb",
+      "bytes": 5565,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_camofox_sessions.py",
+      "sha256": "d940010520a6f54e691a155dbe09b59e78c94266e7a4538948057778096a8532",
+      "bytes": 8581,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_camofox_tools.py",
+      "sha256": "f0fa8b21d52c56d9bbe8dbb69c7401d9c494e01eba822f5603ab096f7687c3d2",
+      "bytes": 18583,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_registration.py",
+      "sha256": "9b11f84a16aaecb74012121fd6c81d3d1994057e7ec46c898a771962906afc2c",
+      "bytes": 5365,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "0a53d93f76b2293a98c845fee6c0fd8e09b8f7266a34c0d8260c7f91521159d9",
+  "pin_verification": {
+    "archive_bytes": 8108021,
+    "archive_sha256": "50bbb1e51df917d4c11cf24a9ba1d0956d0a7c133751ab3c6432283d3e2391af",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "190593f4ce4c481a80ed27448535c867c5c6e27f",
+    "verified_commit_marker": "190593f4ce4c481a80ed27448535c867c5c6e27f"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "8da9951a002136add417acedb578377c1202cf5524af66c05c2e810db50177a7",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "LICENSE",
+        "input_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source": "LICENSE",
+        "final_output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "ebd21fce78d6ae7973c7d51bb13f249295637d911927d05833d539b30ee61242",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3f0517ea8b27d3c66f5ea24601ec9988f7669cf9277efb103d3a0e00041f38e2",
+        "source": "README.md",
+        "final_output_sha256": "3f0517ea8b27d3c66f5ea24601ec9988f7669cf9277efb103d3a0e00041f38e2",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "3f0517ea8b27d3c66f5ea24601ec9988f7669cf9277efb103d3a0e00041f38e2"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "7f1102a6a1185ad8ecebee060bc6885d81cd3ed57db7c11ff60cabf3f3b06c5e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "98427837a7c22f9b85326f79ca3f644d86f31663143014d879708449aa7bc20f",
+        "source": "__init__.py",
+        "final_output_sha256": "98427837a7c22f9b85326f79ca3f644d86f31663143014d879708449aa7bc20f",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "98427837a7c22f9b85326f79ca3f644d86f31663143014d879708449aa7bc20f"
+      },
+      {
+        "destination": "_catalog_assets/assets/camofox.jpg",
+        "input_sha256": "ab6e45bdc26a1a0e9c25d662ca559f57b8d2fcc829af8d5d3230914e9f2e3656",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ab6e45bdc26a1a0e9c25d662ca559f57b8d2fcc829af8d5d3230914e9f2e3656",
+        "source": "_catalog_assets/assets/camofox.jpg",
+        "final_output_sha256": "ab6e45bdc26a1a0e9c25d662ca559f57b8d2fcc829af8d5d3230914e9f2e3656",
+        "cli_destination": "_catalog_assets/assets/camofox.jpg",
+        "previous_staging_sha256": "ab6e45bdc26a1a0e9c25d662ca559f57b8d2fcc829af8d5d3230914e9f2e3656"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "5f79d321c17de8ef6e5f34967dc5b484afebeeefd87180890d9741941f6b815f"
+      },
+      {
+        "destination": "camofox_cli.py",
+        "input_sha256": "d5185f1b347e0aa4485a813512f1a87370d2ec587f253acb499e326ac513e2d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3810827fceca74aaf3e4a542e8cfb12cf6748082c08a4ae8e27daf2c6b62f7f7",
+        "source": "camofox_cli.py",
+        "final_output_sha256": "3810827fceca74aaf3e4a542e8cfb12cf6748082c08a4ae8e27daf2c6b62f7f7",
+        "cli_destination": "camofox_cli.py",
+        "previous_staging_sha256": "3810827fceca74aaf3e4a542e8cfb12cf6748082c08a4ae8e27daf2c6b62f7f7"
+      },
+      {
+        "destination": "camofox_client.py",
+        "input_sha256": "72e458eb9a9c520625da427af1e1d9ea76ed1a1f54e511fbfce933007302c6bc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e6b5de8fc0a1ecd9f504c1cbc19815bb2e9194906e2bc3a50a400b3bb038a029",
+        "source": "camofox_client.py",
+        "final_output_sha256": "e6b5de8fc0a1ecd9f504c1cbc19815bb2e9194906e2bc3a50a400b3bb038a029",
+        "cli_destination": "camofox_client.py",
+        "previous_staging_sha256": "e6b5de8fc0a1ecd9f504c1cbc19815bb2e9194906e2bc3a50a400b3bb038a029"
+      },
+      {
+        "destination": "camofox_policy.py",
+        "input_sha256": "9ad4986cc063b1d9ea0be5705f77827111f402e6bbb4be86efbc92acf0311438",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c36121c989f4eca2c0fb8f6dd9f17187d440f1ba34ef75080433aaaf9c03088d",
+        "source": "camofox_policy.py",
+        "final_output_sha256": "c36121c989f4eca2c0fb8f6dd9f17187d440f1ba34ef75080433aaaf9c03088d",
+        "cli_destination": "camofox_policy.py",
+        "previous_staging_sha256": "c36121c989f4eca2c0fb8f6dd9f17187d440f1ba34ef75080433aaaf9c03088d"
+      },
+      {
+        "destination": "camofox_schemas.py",
+        "input_sha256": "b929fd2d15a505bdd9eb630f280199b99096410ec6400020be87fc44f75b2562",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "63ec8cedb501ea811fc5983d5f967c754fea82aa23bf74d00211a454baa35879",
+        "source": "camofox_schemas.py",
+        "final_output_sha256": "63ec8cedb501ea811fc5983d5f967c754fea82aa23bf74d00211a454baa35879",
+        "cli_destination": "camofox_schemas.py",
+        "previous_staging_sha256": "63ec8cedb501ea811fc5983d5f967c754fea82aa23bf74d00211a454baa35879"
+      },
+      {
+        "destination": "camofox_tools.py",
+        "input_sha256": "0a311a43423261bc525f2e71100fd9455aa7d900cb80c55786697664f69071cb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a34afebc3b1ed746c0e563654f97e008414575395ee648e1520b57abac89c3ae",
+        "source": "camofox_tools.py",
+        "final_output_sha256": "a34afebc3b1ed746c0e563654f97e008414575395ee648e1520b57abac89c3ae",
+        "cli_destination": "camofox_tools.py",
+        "previous_staging_sha256": "a34afebc3b1ed746c0e563654f97e008414575395ee648e1520b57abac89c3ae"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "46503e26d653f85a1a17f3f34559ecf646414cd0feacfcfe5711b43d3d5e626a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c0fe1e1760314974c4d04362c39e60bedf31c1a6ed0894c5fdf34f369b66ee6d",
+        "source": "plugin.yaml",
+        "final_output_sha256": "0af8a20fc6d1dfddf0e5f2051c2055e84465990d44fd38a06be0719ff17745fc",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "c0fe1e1760314974c4d04362c39e60bedf31c1a6ed0894c5fdf34f369b66ee6d"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "f7eab3946918ba6783cd1eb77447c081f51e683edf2ebc7ecde4c5d6af95ff37",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f925d8621f01193bef982335cace46fea0aac6ecdc32ca28cb7f27317f04686b",
+        "source": "pyproject.toml",
+        "final_output_sha256": "4d65db0cc99b8b315ddd436565b4d54f326d3195970be8a745789c496de47c47",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "f925d8621f01193bef982335cace46fea0aac6ecdc32ca28cb7f27317f04686b"
+      },
+      {
+        "destination": "pytest.ini",
+        "input_sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a",
+        "source": "pytest.ini",
+        "final_output_sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a",
+        "cli_destination": "pytest.ini",
+        "previous_staging_sha256": "94fdc2d545b2d4077a4d70229fd22ba3ccac21d49d1097d2873f76d04e9a3c7a"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "8004c7a5b82e05a35937ea7cc2c151a67631129ad5515584ecc55b19624fefcd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "164304a5ea1310797d9297d5f60378914bbe5333f7f1bcfdd72a4d3486796279",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "164304a5ea1310797d9297d5f60378914bbe5333f7f1bcfdd72a4d3486796279",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "164304a5ea1310797d9297d5f60378914bbe5333f7f1bcfdd72a4d3486796279"
+      },
+      {
+        "destination": "tests/test_camofox_cli.py",
+        "input_sha256": "f5267af3a52be4ccbd75fc76b9618a612d7bd1bd7a182ade086cbdee3e2062a0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1dd9e86a011d844bfba1a76723a685b8aecdf4be728ee1292baab61076bc1ca1",
+        "source": "tests/test_camofox_cli.py",
+        "final_output_sha256": "1dd9e86a011d844bfba1a76723a685b8aecdf4be728ee1292baab61076bc1ca1",
+        "cli_destination": "tests/test_camofox_cli.py",
+        "previous_staging_sha256": "1dd9e86a011d844bfba1a76723a685b8aecdf4be728ee1292baab61076bc1ca1"
+      },
+      {
+        "destination": "tests/test_camofox_client.py",
+        "input_sha256": "6265bb481c93ae042a8985879e17bcde49de1a4aa1c217bf84fb5e3bf9bd256d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6265bb481c93ae042a8985879e17bcde49de1a4aa1c217bf84fb5e3bf9bd256d",
+        "source": "tests/test_camofox_client.py",
+        "final_output_sha256": "6265bb481c93ae042a8985879e17bcde49de1a4aa1c217bf84fb5e3bf9bd256d",
+        "cli_destination": "tests/test_camofox_client.py",
+        "previous_staging_sha256": "6265bb481c93ae042a8985879e17bcde49de1a4aa1c217bf84fb5e3bf9bd256d"
+      },
+      {
+        "destination": "tests/test_camofox_cookies.py",
+        "input_sha256": "674016603d06a10c41f4cff24815a2cb7488c7d9e7a6a93f3091c9978d705ceb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "674016603d06a10c41f4cff24815a2cb7488c7d9e7a6a93f3091c9978d705ceb",
+        "source": "tests/test_camofox_cookies.py",
+        "final_output_sha256": "674016603d06a10c41f4cff24815a2cb7488c7d9e7a6a93f3091c9978d705ceb",
+        "cli_destination": "tests/test_camofox_cookies.py",
+        "previous_staging_sha256": "674016603d06a10c41f4cff24815a2cb7488c7d9e7a6a93f3091c9978d705ceb"
+      },
+      {
+        "destination": "tests/test_camofox_sessions.py",
+        "input_sha256": "95a6cdc966d7e85bdf48db2e3f526eb92e81fd9aa488d13deb7f491a86eb279d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d940010520a6f54e691a155dbe09b59e78c94266e7a4538948057778096a8532",
+        "source": "tests/test_camofox_sessions.py",
+        "final_output_sha256": "d940010520a6f54e691a155dbe09b59e78c94266e7a4538948057778096a8532",
+        "cli_destination": "tests/test_camofox_sessions.py",
+        "previous_staging_sha256": "d940010520a6f54e691a155dbe09b59e78c94266e7a4538948057778096a8532"
+      },
+      {
+        "destination": "tests/test_camofox_tools.py",
+        "input_sha256": "758fc7a0323ef2a1a7f996bad7f0177757abe76768b3bb19c8bf3a964be888ee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f0fa8b21d52c56d9bbe8dbb69c7401d9c494e01eba822f5603ab096f7687c3d2",
+        "source": "tests/test_camofox_tools.py",
+        "final_output_sha256": "f0fa8b21d52c56d9bbe8dbb69c7401d9c494e01eba822f5603ab096f7687c3d2",
+        "cli_destination": "tests/test_camofox_tools.py",
+        "previous_staging_sha256": "f0fa8b21d52c56d9bbe8dbb69c7401d9c494e01eba822f5603ab096f7687c3d2"
+      },
+      {
+        "destination": "tests/test_plugin_registration.py",
+        "input_sha256": "035118d14e78de5dc86e93a1f0f3a37065293abe88ab995646186252afbfc24f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9b11f84a16aaecb74012121fd6c81d3d1994057e7ec46c898a771962906afc2c",
+        "source": "tests/test_plugin_registration.py",
+        "final_output_sha256": "9b11f84a16aaecb74012121fd6c81d3d1994057e7ec46c898a771962906afc2c",
+        "cli_destination": "tests/test_plugin_registration.py",
+        "previous_staging_sha256": "9b11f84a16aaecb74012121fd6c81d3d1994057e7ec46c898a771962906afc2c"
+      }
+    ],
+    "manifest_sha256": "4c4476f546c135b0347c3408706878665e4611ae5179bb43ad41d81c6be4b6f7",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "LICENSE": "camofox/LICENSE",
+    "README.md": "camofox/README.md",
+    "__init__.py": "camofox/__init__.py",
+    "_catalog_assets/assets/camofox.jpg": "assets/camofox.jpg",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "camofox_cli.py": "camofox/camofox_cli.py",
+    "camofox_client.py": "camofox/camofox_client.py",
+    "camofox_policy.py": "camofox/camofox_policy.py",
+    "camofox_schemas.py": "camofox/camofox_schemas.py",
+    "camofox_tools.py": "camofox/camofox_tools.py",
+    "plugin.yaml": "camofox/plugin.yaml",
+    "pyproject.toml": "camofox/pyproject.toml",
+    "pytest.ini": "camofox/pytest.ini",
+    "tests/conftest.py": "camofox/tests/conftest.py",
+    "tests/test_camofox_cli.py": "camofox/tests/test_camofox_cli.py",
+    "tests/test_camofox_client.py": "camofox/tests/test_camofox_client.py",
+    "tests/test_camofox_cookies.py": "camofox/tests/test_camofox_cookies.py",
+    "tests/test_camofox_sessions.py": "camofox/tests/test_camofox_sessions.py",
+    "tests/test_camofox_tools.py": "camofox/tests/test_camofox_tools.py",
+    "tests/test_plugin_registration.py": "camofox/tests/test_plugin_registration.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "camofox",
+    "python_files_compiled": 13,
+    "secret_findings": 0
+  },
+  "canonical_slug": "camofox",
+  "catalog_file": "src/plugin-catalog/camofox.yaml",
+  "identity": {
+    "catalog_id": "camofox",
+    "canonical_slug": "camofox",
+    "original_manifest_name": "camofox",
+    "rebranded_manifest_name": "camofox",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "bed85ec58798b5612e8fd0c418e1354cc1f8afd7f2c74969278288bccd2daa1d",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "c0fe1e1760314974c4d04362c39e60bedf31c1a6ed0894c5fdf34f369b66ee6d",
+          "after_sha256": "0af8a20fc6d1dfddf0e5f2051c2055e84465990d44fd38a06be0719ff17745fc",
+          "before_bytes": 1445,
+          "after_bytes": 1408,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "f925d8621f01193bef982335cace46fea0aac6ecdc32ca28cb7f27317f04686b",
+          "after_sha256": "4d65db0cc99b8b315ddd436565b4d54f326d3195970be8a745789c496de47c47",
+          "before_bytes": 427,
+          "after_bytes": 390,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "plugin.yaml": [
+      {
+        "value": "author: NousResearch",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ],
+    "pyproject.toml": [
+      {
+        "value": "authors = [{ name = \"Nous Research\" }]",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

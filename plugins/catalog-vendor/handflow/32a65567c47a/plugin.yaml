@@ -1,0 +1,39 @@
+name: handflow
+version: "0.1.0"
+description: >
+  Handflow — a Manus-style planning flow, native to Duckwork. The agent writes a
+  step plan before it starts, marks each step in_progress / completed / blocked
+  with a note as it works, and replans mid-flight; a dockable desktop pane shows
+  the same plan live, and you can toggle a step from the pane. One stdlib-only
+  tool (`handflow`) plus backend routes; state is plain JSON under $DUCKWORK_HOME,
+  no model calls and no network of its own. Flow design ported from OpenManus's
+  PlanningFlow (MIT).
+author: "Ritesh Patel (DECRUX9812)"
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+kind: standalone
+requires_duckwork: ">=0.19"
+platforms:
+  - linux
+  - macos
+tags:
+  - planning
+  - agent-flow
+  - tasks
+  - desktop
+provides_tools:
+  - handflow
+provides_hooks: []
+provides_middleware: []
+requires_env: []
+config_schema:
+  state_dir:
+    type: string
+    default: ""
+    description: >
+      Where plan JSON lives. Empty means $DUCKWORK_HOME/handflow, which is what you
+      want unless you deliberately want plans shared across profiles.
+  pane_refresh_ms:
+    type: integer
+    default: 2000
+    description: How often the desktop pane re-reads the active plan.

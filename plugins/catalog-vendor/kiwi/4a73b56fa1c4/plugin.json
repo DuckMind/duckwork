@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "kiwi",
+  "version": "1.2.2",
+  "description": "Source suppliers and negotiate purchases through the Kiwi Buyer MCP server (A2A commerce runtime, pinned @harrylabsj/kiwi@0.12.5 via npx), with the kiwi-buyer sourcing workflow skill bundled. Buyer-side discovery, RFQ, negotiation, non-binding agreements and trade handoff. The skill runs dual-source sourcing searches: Kiwi Network results from kiwi_search, plus internet e-commerce listings through the host's own web tools when the session has them (a host capability, not a plugin guarantee — the skill reports the internet side as unsearched when they are unavailable). Kiwi never handles payments or places orders.",
+  "author": {
+    "name": "harrylabsj",
+    "url": "https://github.com/harrylabsj"
+  },
+  "homepage": "https://github.com/DuckMind/duckwork",
+  "repository": "https://github.com/DuckMind/duckwork",
+  "license": "Apache-2.0",
+  "keywords": [
+    "kiwi",
+    "commerce",
+    "sourcing",
+    "procurement",
+    "rfq",
+    "negotiation",
+    "a2a",
+    "suppliers",
+    "mcp"
+  ]
+}

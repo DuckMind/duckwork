@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check out Duckwork Agent (adapter base classes for the tests)
+        uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          path: duckwork-agent
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv .venv && uv pip install --python .venv/bin/python -e ./duckwork-agent pytest pyyaml
+      - run: DUCKWORK_AGENT_DIR=$PWD/duckwork-agent .venv/bin/python -m pytest -c tests/pytest.ini --rootdir=tests tests -q
+      - name: Manifest sanity
+        run: |
+          .venv/bin/python - <<'PY'
+          import yaml
+          m = yaml.safe_load(open("plugin.yaml"))
+          assert m["kind"] == "platform" and m["name"] == "openmail"
+          print("plugin.yaml ok, version", m["version"])
+          PY

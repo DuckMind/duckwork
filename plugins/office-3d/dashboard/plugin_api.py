@@ -160,7 +160,8 @@ try:
 except ImportError:
     PROFILE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 
-    def named_profile_is_live(home: Path) -> bool:
+    def named_profile_is_live(profile_home: "str | Path") -> bool:
+        home = Path(profile_home)
         markers = ("config.yaml", ".env", "SOUL.md", "profile.yaml", "auth.json", "state.db")
         return (
             home.is_dir()
@@ -203,11 +204,13 @@ def _windows_pid_alive(pid: int) -> bool:
         from ctypes import wintypes
         PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         STILL_ACTIVE = 259
-        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        # Reached only on Windows; `getattr` keeps cross-platform checkers quiet
+        # about the Windows-only ctypes surface.
+        kernel32 = getattr(ctypes, "WinDLL")("kernel32", use_last_error=True)
         handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
         if not handle:
             # ERROR_ACCESS_DENIED (5) means the process exists but is not ours.
-            return ctypes.get_last_error() == 5
+            return getattr(ctypes, "get_last_error")() == 5
         try:
             code = wintypes.DWORD()
             if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
@@ -315,7 +318,7 @@ atexit.register(_close_all_ro_conns)
 
 _STATS_SQL = (
     "SELECT "
-    "SUM(CASE WHEN last_activity_at IS NOT NULL AND last_activity_at >= ? "
+    "SUM(CASE WHEN ended_at IS NULL AND last_activity_at >= ? "
     "THEN 1 ELSE 0 END), "
     "SUM(CASE WHEN ended_at IS NULL THEN 1 ELSE 0 END), "
     "SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), "
@@ -341,6 +344,7 @@ def _read_session_stats(profile: str) -> Dict[str, Any]:
         "tokens_total": 0,
         "cost_total": 0.0,
         "last_session_activity": None,
+        "session_stats_available": False,
     }
     path = _db_path(profile)
     if not os.path.exists(path):
@@ -361,6 +365,7 @@ def _read_session_stats(profile: str) -> Dict[str, Any]:
 
     if not row:
         return result
+    result["session_stats_available"] = True
     active, opened, tokens, cost, last_act = row
     try:
         if active is not None:
@@ -378,6 +383,55 @@ def _read_session_stats(profile: str) -> Dict[str, Any]:
                 result["last_session_activity"] = None
     except (TypeError, ValueError):
         pass
+    return result
+
+
+def _read_session_metadata(profile: str) -> Dict[str, Optional[str]]:
+    """Recent visible/canonical chat metadata from the owner DB; no messages or prompts."""
+    result: Dict[str, Optional[str]] = {
+        "latest_session_id": None,
+        "current_task": None,
+        "current_model": None,
+        "recent_task": None,
+        "recent_model": None,
+    }
+    path = _db_path(profile)
+    if not os.path.exists(path):
+        return result
+    with _db_lock:
+        con = _get_ro_conn_unlocked(path)
+        if con is None:
+            return result
+        try:
+            # (owning profile, exact title) is the canonical Bot Chat registry.
+            # Only that hidden chat is eligible; internal hidden sessions are not.
+            latest = con.execute(
+                "SELECT id, title, model FROM sessions "
+                "WHERE (COALESCE(hidden, 0) = 0 OR title = ?) "
+                "AND COALESCE(archived, 0) = 0 "
+                "ORDER BY COALESCE(last_activity_at, started_at) DESC LIMIT 1",
+                ("Bot Chat",),
+            ).fetchone()
+        except sqlite3.Error:
+            # Older or damaged schemas cannot authorize a session action.
+            return result
+    if latest:
+        if isinstance(latest[0], str) and latest[0]:
+            result["latest_session_id"] = latest[0]
+        # What the most recent recorded session used, live or finished. Kept
+        # separate from current_* so a stale session is never called current.
+        result["recent_task"] = (
+            latest[1].strip()
+            if isinstance(latest[1], str) and latest[1].strip()
+            else None
+        )
+        result["recent_model"] = (
+            latest[2].strip()
+            if isinstance(latest[2], str) and latest[2].strip()
+            else None
+        )
+    # Recency and gateway liveness do not prove a running turn. Keep current_*
+    # unknown until this projection has authoritative execution evidence.
     return result
 
 
@@ -487,6 +541,12 @@ def _read_profile(
         "tokens_total": 0,
         "cost_total": 0.0,
         "last_session_activity": None,
+        "session_stats_available": False,
+        "latest_session_id": None,
+        "current_task": None,
+        "current_model": None,
+        "recent_task": None,
+        "recent_model": None,
     }
     path = _state_path(profile)
     # Session stats are independent of gateway_state.json availability.
@@ -499,8 +559,10 @@ def _read_profile(
             "tokens_total": 0,
             "cost_total": 0.0,
             "last_session_activity": None,
+            "session_stats_available": False,
         }
     entry.update(stats)
+    entry.update(_read_session_metadata(profile))
 
     # Session activity ALONE is enough to be considered online+busy — a worker
     # profile (dev/data/…) running `duckwork -p … chat` has active sessions but

@@ -1,0 +1,12 @@
+[project]
+name = "duckwork-supermemory"
+version = "1.0.1"
+description = "Duckwork Agent memory provider plugin: supermemory"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+# Installed into the Duckwork venv by `duckwork plugins install` / `enable` and re-applied after
+# every `duckwork update` (duckwork-agent#113851). Keep upper bounds: Duckwork pins its own deps exactly
+# and refuses a plugin whose requirements cannot resolve against them.
+dependencies = [
+    "supermemory>=3.50.0,<4",
+]

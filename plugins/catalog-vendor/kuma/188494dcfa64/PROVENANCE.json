@@ -1,0 +1,793 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "kuma",
+  "content_id": "188494dcfa64",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 607,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "fc10ae8be276e3a4b1c491678f4c8e14d36753d6c187f5839a0973e42f39c4de"
+    },
+    {
+      "bytes": 63,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "593efc87726db61180501cec6f236a0421b48922f940bacfb57918ebd9d05e9d"
+    },
+    {
+      "bytes": 1067,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "309110428ea5dd7a8c25a38026c15d0dad28bda54cc4fb5ea330b4f447291c52"
+    },
+    {
+      "bytes": 5716,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "c3393a83409d6a6fde5cf9195b529adb1b1df78bd05a7eefef0086436bbf0311"
+    },
+    {
+      "bytes": 3807,
+      "mode": "100644",
+      "path": "docs/VERIFICATION.md",
+      "sha256": "2d555a9f3363227f1f2f787b6c688f13f33ab1b5f841e48ee8940693f3486591"
+    },
+    {
+      "bytes": 1215,
+      "mode": "100644",
+      "path": "docs/catalog-entry.yaml.template",
+      "sha256": "9cf58c5a6b9edc25650203a5622c488a9dcf9c8541a0e3620cbbb4f002e636b3"
+    },
+    {
+      "bytes": 247,
+      "mode": "100644",
+      "path": "mcp.json",
+      "sha256": "7e5ba96d40fed6f655725efb1048da76ac57b08dfe0f60554ab27964968e684c"
+    },
+    {
+      "bytes": 689,
+      "mode": "100644",
+      "path": "plugin.json",
+      "sha256": "d47aaa0a96302694f012bef7f29f63776229476240ba5627ed20f40e5dce7afd"
+    },
+    {
+      "bytes": 27,
+      "mode": "100644",
+      "path": "pytest.ini",
+      "sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead"
+    },
+    {
+      "bytes": 2609,
+      "mode": "100644",
+      "path": "skills/kuma-incident-review/SKILL.md",
+      "sha256": "924c67d50c241b24dfd29e40e92acbc529ddcf41b5252f26074e36efe67dd840"
+    },
+    {
+      "bytes": 3038,
+      "mode": "100644",
+      "path": "skills/kuma-maintenance/SKILL.md",
+      "sha256": "4e0eef74d24c0fff5ac1f054f3a7af00f874c1099fb449fb552c228bde5e5b78"
+    },
+    {
+      "bytes": 6495,
+      "mode": "100644",
+      "path": "skills/kuma-setup/SKILL.md",
+      "sha256": "61b8bf8ef825fad268feba48fc7059881d496a5c572ad1bdabfc5c90273da685"
+    },
+    {
+      "bytes": 2304,
+      "mode": "100644",
+      "path": "skills/kuma-status-digest/SKILL.md",
+      "sha256": "b31d1c91e35701aedcfe0fe6bc67f9526c06b66ad8e8a2116016453156b444b8"
+    },
+    {
+      "bytes": 4255,
+      "mode": "100644",
+      "path": "tests/bundle_facts.py",
+      "sha256": "52b1a549412c4b9c4c869afd3292007f5479fc6c13b130936a540935795b43b6"
+    },
+    {
+      "bytes": 519,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "43ac4e48e00c2df0178cb7774478454ea83a3cfbc36482ccc7bd621e1a19cba8"
+    },
+    {
+      "bytes": 2311,
+      "mode": "100644",
+      "path": "tests/fixtures/tools.json",
+      "sha256": "9aed9bd8ed0f221e16036bf2fe54793d49827e8220c15ea9f6c2eb52f3c9653b"
+    },
+    {
+      "bytes": 753,
+      "mode": "100644",
+      "path": "tests/schemas/README.md",
+      "sha256": "364c5856a81a077bbfd1fc337e6325506fa206ce58a4ba2ee7ce1050bccdf4e4"
+    },
+    {
+      "bytes": 3408,
+      "mode": "100644",
+      "path": "tests/schemas/mcp.schema.json",
+      "sha256": "6539175bfcdf43085855183e86da40ea94b166547a72b47ae9a0a390516d3acb"
+    },
+    {
+      "bytes": 1805,
+      "mode": "100644",
+      "path": "tests/schemas/plugin.schema.json",
+      "sha256": "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883"
+    },
+    {
+      "bytes": 8188,
+      "mode": "100644",
+      "path": "tests/test_bundle.py",
+      "sha256": "938583f1e4bdf79ae2c9e1307a48ae37300fe5107f333439a9627b4564f5cb1c"
+    },
+    {
+      "bytes": 1657,
+      "mode": "100644",
+      "path": "tests/test_catalog_entry.py",
+      "sha256": "5c1b5d1f76f7f8588a6b74d88a669d41c27567a3c14819e08c08cd5d4d0c1002"
+    },
+    {
+      "bytes": 2792,
+      "mode": "100644",
+      "path": "tests/test_mcp_json.py",
+      "sha256": "9e51d9842f439589238a6343f0aafc2bf7d2de87b7a23a4223c80745e763b5c9"
+    },
+    {
+      "bytes": 1719,
+      "mode": "100644",
+      "path": "tests/test_plugin_json.py",
+      "sha256": "5849d16c7c2dc57613dd431921a6a983bf46218cb003910127c7e5d55d34d53e"
+    },
+    {
+      "bytes": 6973,
+      "mode": "100644",
+      "path": "tests/test_skills.py",
+      "sha256": "6717ba0491d27a84146736b3f7358d7e1bb0f78daf48502944c78e6000d484f3"
+    },
+    {
+      "bytes": 406,
+      "mode": "100644",
+      "path": "tests/vendor/PROVENANCE.md",
+      "sha256": "353cbe56b756720f74550aa1f23d4c18bd9796baa92f07fae763623f14532490"
+    },
+    {
+      "bytes": 10387,
+      "mode": "100644",
+      "path": "tests/vendor/validate_plugin_catalog.py",
+      "sha256": "b9a8dbc1e69d22f4ef3f8790751c8f25a9d17a5e3a1664a6883a3085befd8372"
+    }
+  ],
+  "input_manifest_sha256": "188494dcfa640da02cbdb4342a3be9eb9c52c0eab7c563d01eb73f09c15365d0",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "309110428ea5dd7a8c25a38026c15d0dad28bda54cc4fb5ea330b4f447291c52",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "docs/VERIFICATION.md",
+      "docs/catalog-entry.yaml.template",
+      "plugin.json",
+      "skills/kuma-setup/SKILL.md",
+      "tests/bundle_facts.py",
+      "tests/schemas/README.md",
+      "tests/test_bundle.py",
+      "tests/test_catalog_entry.py",
+      "tests/test_plugin_json.py",
+      "tests/vendor/PROVENANCE.md",
+      "tests/vendor/validate_plugin_catalog.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/nitishagar/hermes-kuma",
+    "sha": "e4a6c9db8d4e49c4827cc07632e46b8ec92f56df",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/nitishagar/hermes-kuma",
+  "original_sha": "e4a6c9db8d4e49c4827cc07632e46b8ec92f56df",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "fc10ae8be276e3a4b1c491678f4c8e14d36753d6c187f5839a0973e42f39c4de",
+      "bytes": 607,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "593efc87726db61180501cec6f236a0421b48922f940bacfb57918ebd9d05e9d",
+      "bytes": 63,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "309110428ea5dd7a8c25a38026c15d0dad28bda54cc4fb5ea330b4f447291c52",
+      "bytes": 1067,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "94b2576193814ba12615e337cbae1eeb2bdc2ae59c2126a6d9f39891cae31297",
+      "bytes": 5732,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/VERIFICATION.md",
+      "sha256": "650283166a33900a5eda56632f42611da5f1d27b05eda1dd49f3b1ad027f259e",
+      "bytes": 3841,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/catalog-entry.yaml.template",
+      "sha256": "884e7c5c6f73fa176b2347d8b5fcb6e09a135e81c60b8cc94444371e54024444",
+      "bytes": 1207,
+      "mode": "100644"
+    },
+    {
+      "path": "mcp.json",
+      "sha256": "7e5ba96d40fed6f655725efb1048da76ac57b08dfe0f60554ab27964968e684c",
+      "bytes": 247,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.json",
+      "sha256": "5a8a926cfa1e178e12fdad5679cf65a97657b8c94cd80e7412d85b90a5342f0a",
+      "bytes": 681,
+      "mode": "100644"
+    },
+    {
+      "path": "pytest.ini",
+      "sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead",
+      "bytes": 27,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/kuma-incident-review/SKILL.md",
+      "sha256": "924c67d50c241b24dfd29e40e92acbc529ddcf41b5252f26074e36efe67dd840",
+      "bytes": 2609,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/kuma-maintenance/SKILL.md",
+      "sha256": "4e0eef74d24c0fff5ac1f054f3a7af00f874c1099fb449fb552c228bde5e5b78",
+      "bytes": 3038,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/kuma-setup/SKILL.md",
+      "sha256": "099d9a3cebe7cfc38158e9d4ca8031c0fda6c869cb058db0551ba34afed2ee9c",
+      "bytes": 6513,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/kuma-status-digest/SKILL.md",
+      "sha256": "b31d1c91e35701aedcfe0fe6bc67f9526c06b66ad8e8a2116016453156b444b8",
+      "bytes": 2304,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/bundle_facts.py",
+      "sha256": "be25703e985ae3e6672d4f5ff3cae44b3dd5d513c3625fc317b2214b86d17ee2",
+      "bytes": 4259,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "43ac4e48e00c2df0178cb7774478454ea83a3cfbc36482ccc7bd621e1a19cba8",
+      "bytes": 519,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/tools.json",
+      "sha256": "9aed9bd8ed0f221e16036bf2fe54793d49827e8220c15ea9f6c2eb52f3c9653b",
+      "bytes": 2311,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/schemas/README.md",
+      "sha256": "043bf12e85e649358dfc2bfb5406c29e6e6194c8d1d58458873d586ed7fd4840",
+      "bytes": 749,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/schemas/mcp.schema.json",
+      "sha256": "6539175bfcdf43085855183e86da40ea94b166547a72b47ae9a0a390516d3acb",
+      "bytes": 3408,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/schemas/plugin.schema.json",
+      "sha256": "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883",
+      "bytes": 1805,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_bundle.py",
+      "sha256": "4ab0ec1231e40779c922aed3d20bb5910c90cab29fbed49992f103d768f054cd",
+      "bytes": 8194,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_catalog_entry.py",
+      "sha256": "c18bf5b71ac0ea0c4beb135f300d143df89b12f39e93cdd43d8d9bf77cb14631",
+      "bytes": 1659,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_mcp_json.py",
+      "sha256": "9e51d9842f439589238a6343f0aafc2bf7d2de87b7a23a4223c80745e763b5c9",
+      "bytes": 2792,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_plugin_json.py",
+      "sha256": "487c5aec265af251bf4821fea48b76a5fb16c5786520be11d4160f7cb8f49030",
+      "bytes": 1716,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_skills.py",
+      "sha256": "6717ba0491d27a84146736b3f7358d7e1bb0f78daf48502944c78e6000d484f3",
+      "bytes": 6973,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/vendor/PROVENANCE.md",
+      "sha256": "bed6414e4b03466c0f7e7d7cb08fae78a48116b088ae92fb29aa6f75e1c18cce",
+      "bytes": 402,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/vendor/validate_plugin_catalog.py",
+      "sha256": "70fb664131f9e54f223498dc859df1bec8f4ec171b7bb40a2f37099079fe9325",
+      "bytes": 10409,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "35863882f98e837b9dbced8d6dc7b23a60e4cb308b105146ae3457ccfbd9f6a4",
+  "pin_verification": {
+    "archive_bytes": 24715,
+    "archive_sha256": "cdcd14eb28cf719d626e5c98d0fdbdbf8670825aef71f58151c187ece7e36772",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "e4a6c9db8d4e49c4827cc07632e46b8ec92f56df",
+    "verified_commit_marker": "e4a6c9db8d4e49c4827cc07632e46b8ec92f56df"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "8f63e9085506166238d5d6bd54b901d110a96990efef9caa8d068a557b226549",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "fc10ae8be276e3a4b1c491678f4c8e14d36753d6c187f5839a0973e42f39c4de",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fc10ae8be276e3a4b1c491678f4c8e14d36753d6c187f5839a0973e42f39c4de",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "fc10ae8be276e3a4b1c491678f4c8e14d36753d6c187f5839a0973e42f39c4de",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "fc10ae8be276e3a4b1c491678f4c8e14d36753d6c187f5839a0973e42f39c4de"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "593efc87726db61180501cec6f236a0421b48922f940bacfb57918ebd9d05e9d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "593efc87726db61180501cec6f236a0421b48922f940bacfb57918ebd9d05e9d",
+        "source": ".gitignore",
+        "final_output_sha256": "593efc87726db61180501cec6f236a0421b48922f940bacfb57918ebd9d05e9d",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "593efc87726db61180501cec6f236a0421b48922f940bacfb57918ebd9d05e9d"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "309110428ea5dd7a8c25a38026c15d0dad28bda54cc4fb5ea330b4f447291c52",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "309110428ea5dd7a8c25a38026c15d0dad28bda54cc4fb5ea330b4f447291c52",
+        "source": "LICENSE",
+        "final_output_sha256": "309110428ea5dd7a8c25a38026c15d0dad28bda54cc4fb5ea330b4f447291c52",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "309110428ea5dd7a8c25a38026c15d0dad28bda54cc4fb5ea330b4f447291c52"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "c3393a83409d6a6fde5cf9195b529adb1b1df78bd05a7eefef0086436bbf0311",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "94b2576193814ba12615e337cbae1eeb2bdc2ae59c2126a6d9f39891cae31297",
+        "source": "README.md",
+        "final_output_sha256": "94b2576193814ba12615e337cbae1eeb2bdc2ae59c2126a6d9f39891cae31297",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "94b2576193814ba12615e337cbae1eeb2bdc2ae59c2126a6d9f39891cae31297"
+      },
+      {
+        "destination": "docs/VERIFICATION.md",
+        "input_sha256": "2d555a9f3363227f1f2f787b6c688f13f33ab1b5f841e48ee8940693f3486591",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "650283166a33900a5eda56632f42611da5f1d27b05eda1dd49f3b1ad027f259e",
+        "source": "docs/VERIFICATION.md",
+        "final_output_sha256": "650283166a33900a5eda56632f42611da5f1d27b05eda1dd49f3b1ad027f259e",
+        "cli_destination": "docs/VERIFICATION.md",
+        "previous_staging_sha256": "650283166a33900a5eda56632f42611da5f1d27b05eda1dd49f3b1ad027f259e"
+      },
+      {
+        "destination": "docs/catalog-entry.yaml.template",
+        "input_sha256": "9cf58c5a6b9edc25650203a5622c488a9dcf9c8541a0e3620cbbb4f002e636b3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6ebfca709b1ac17c421d2fa7011255bdf65f3216ac1e8131c2a600d6284543e0",
+        "source": "docs/catalog-entry.yaml.template",
+        "final_output_sha256": "884e7c5c6f73fa176b2347d8b5fcb6e09a135e81c60b8cc94444371e54024444",
+        "cli_destination": "docs/catalog-entry.yaml.template",
+        "previous_staging_sha256": "6ebfca709b1ac17c421d2fa7011255bdf65f3216ac1e8131c2a600d6284543e0"
+      },
+      {
+        "destination": "mcp.json",
+        "input_sha256": "7e5ba96d40fed6f655725efb1048da76ac57b08dfe0f60554ab27964968e684c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7e5ba96d40fed6f655725efb1048da76ac57b08dfe0f60554ab27964968e684c",
+        "source": "mcp.json",
+        "final_output_sha256": "7e5ba96d40fed6f655725efb1048da76ac57b08dfe0f60554ab27964968e684c",
+        "cli_destination": "mcp.json",
+        "previous_staging_sha256": "7e5ba96d40fed6f655725efb1048da76ac57b08dfe0f60554ab27964968e684c"
+      },
+      {
+        "destination": "plugin.json",
+        "input_sha256": "d47aaa0a96302694f012bef7f29f63776229476240ba5627ed20f40e5dce7afd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "924325dead13f4da5b6d382c5c4cd3e144fc3747e7968424f7d35821e151977c",
+        "source": "plugin.json",
+        "final_output_sha256": "5a8a926cfa1e178e12fdad5679cf65a97657b8c94cd80e7412d85b90a5342f0a",
+        "cli_destination": "plugin.json",
+        "previous_staging_sha256": "924325dead13f4da5b6d382c5c4cd3e144fc3747e7968424f7d35821e151977c"
+      },
+      {
+        "destination": "pytest.ini",
+        "input_sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead",
+        "source": "pytest.ini",
+        "final_output_sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead",
+        "cli_destination": "pytest.ini",
+        "previous_staging_sha256": "c809c969ec7e11b9ff37784e9c6fcc0b7c5148d168e18b05aed797e03fbd6ead"
+      },
+      {
+        "destination": "skills/kuma-incident-review/SKILL.md",
+        "input_sha256": "924c67d50c241b24dfd29e40e92acbc529ddcf41b5252f26074e36efe67dd840",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "924c67d50c241b24dfd29e40e92acbc529ddcf41b5252f26074e36efe67dd840",
+        "source": "skills/kuma-incident-review/SKILL.md",
+        "final_output_sha256": "924c67d50c241b24dfd29e40e92acbc529ddcf41b5252f26074e36efe67dd840",
+        "cli_destination": "skills/kuma-incident-review/SKILL.md",
+        "previous_staging_sha256": "924c67d50c241b24dfd29e40e92acbc529ddcf41b5252f26074e36efe67dd840"
+      },
+      {
+        "destination": "skills/kuma-maintenance/SKILL.md",
+        "input_sha256": "4e0eef74d24c0fff5ac1f054f3a7af00f874c1099fb449fb552c228bde5e5b78",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4e0eef74d24c0fff5ac1f054f3a7af00f874c1099fb449fb552c228bde5e5b78",
+        "source": "skills/kuma-maintenance/SKILL.md",
+        "final_output_sha256": "4e0eef74d24c0fff5ac1f054f3a7af00f874c1099fb449fb552c228bde5e5b78",
+        "cli_destination": "skills/kuma-maintenance/SKILL.md",
+        "previous_staging_sha256": "4e0eef74d24c0fff5ac1f054f3a7af00f874c1099fb449fb552c228bde5e5b78"
+      },
+      {
+        "destination": "skills/kuma-setup/SKILL.md",
+        "input_sha256": "61b8bf8ef825fad268feba48fc7059881d496a5c572ad1bdabfc5c90273da685",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "099d9a3cebe7cfc38158e9d4ca8031c0fda6c869cb058db0551ba34afed2ee9c",
+        "source": "skills/kuma-setup/SKILL.md",
+        "final_output_sha256": "099d9a3cebe7cfc38158e9d4ca8031c0fda6c869cb058db0551ba34afed2ee9c",
+        "cli_destination": "skills/kuma-setup/SKILL.md",
+        "previous_staging_sha256": "099d9a3cebe7cfc38158e9d4ca8031c0fda6c869cb058db0551ba34afed2ee9c"
+      },
+      {
+        "destination": "skills/kuma-status-digest/SKILL.md",
+        "input_sha256": "b31d1c91e35701aedcfe0fe6bc67f9526c06b66ad8e8a2116016453156b444b8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b31d1c91e35701aedcfe0fe6bc67f9526c06b66ad8e8a2116016453156b444b8",
+        "source": "skills/kuma-status-digest/SKILL.md",
+        "final_output_sha256": "b31d1c91e35701aedcfe0fe6bc67f9526c06b66ad8e8a2116016453156b444b8",
+        "cli_destination": "skills/kuma-status-digest/SKILL.md",
+        "previous_staging_sha256": "b31d1c91e35701aedcfe0fe6bc67f9526c06b66ad8e8a2116016453156b444b8"
+      },
+      {
+        "destination": "tests/bundle_facts.py",
+        "input_sha256": "52b1a549412c4b9c4c869afd3292007f5479fc6c13b130936a540935795b43b6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "be25703e985ae3e6672d4f5ff3cae44b3dd5d513c3625fc317b2214b86d17ee2",
+        "source": "tests/bundle_facts.py",
+        "final_output_sha256": "be25703e985ae3e6672d4f5ff3cae44b3dd5d513c3625fc317b2214b86d17ee2",
+        "cli_destination": "tests/bundle_facts.py",
+        "previous_staging_sha256": "be25703e985ae3e6672d4f5ff3cae44b3dd5d513c3625fc317b2214b86d17ee2"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "43ac4e48e00c2df0178cb7774478454ea83a3cfbc36482ccc7bd621e1a19cba8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "43ac4e48e00c2df0178cb7774478454ea83a3cfbc36482ccc7bd621e1a19cba8",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "43ac4e48e00c2df0178cb7774478454ea83a3cfbc36482ccc7bd621e1a19cba8",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "43ac4e48e00c2df0178cb7774478454ea83a3cfbc36482ccc7bd621e1a19cba8"
+      },
+      {
+        "destination": "tests/fixtures/tools.json",
+        "input_sha256": "9aed9bd8ed0f221e16036bf2fe54793d49827e8220c15ea9f6c2eb52f3c9653b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9aed9bd8ed0f221e16036bf2fe54793d49827e8220c15ea9f6c2eb52f3c9653b",
+        "source": "tests/fixtures/tools.json",
+        "final_output_sha256": "9aed9bd8ed0f221e16036bf2fe54793d49827e8220c15ea9f6c2eb52f3c9653b",
+        "cli_destination": "tests/fixtures/tools.json",
+        "previous_staging_sha256": "9aed9bd8ed0f221e16036bf2fe54793d49827e8220c15ea9f6c2eb52f3c9653b"
+      },
+      {
+        "destination": "tests/schemas/README.md",
+        "input_sha256": "364c5856a81a077bbfd1fc337e6325506fa206ce58a4ba2ee7ce1050bccdf4e4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "043bf12e85e649358dfc2bfb5406c29e6e6194c8d1d58458873d586ed7fd4840",
+        "source": "tests/schemas/README.md",
+        "final_output_sha256": "043bf12e85e649358dfc2bfb5406c29e6e6194c8d1d58458873d586ed7fd4840",
+        "cli_destination": "tests/schemas/README.md",
+        "previous_staging_sha256": "043bf12e85e649358dfc2bfb5406c29e6e6194c8d1d58458873d586ed7fd4840"
+      },
+      {
+        "destination": "tests/schemas/mcp.schema.json",
+        "input_sha256": "6539175bfcdf43085855183e86da40ea94b166547a72b47ae9a0a390516d3acb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6539175bfcdf43085855183e86da40ea94b166547a72b47ae9a0a390516d3acb",
+        "source": "tests/schemas/mcp.schema.json",
+        "final_output_sha256": "6539175bfcdf43085855183e86da40ea94b166547a72b47ae9a0a390516d3acb",
+        "cli_destination": "tests/schemas/mcp.schema.json",
+        "previous_staging_sha256": "6539175bfcdf43085855183e86da40ea94b166547a72b47ae9a0a390516d3acb"
+      },
+      {
+        "destination": "tests/schemas/plugin.schema.json",
+        "input_sha256": "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883",
+        "source": "tests/schemas/plugin.schema.json",
+        "final_output_sha256": "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883",
+        "cli_destination": "tests/schemas/plugin.schema.json",
+        "previous_staging_sha256": "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883"
+      },
+      {
+        "destination": "tests/test_bundle.py",
+        "input_sha256": "938583f1e4bdf79ae2c9e1307a48ae37300fe5107f333439a9627b4564f5cb1c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4ab0ec1231e40779c922aed3d20bb5910c90cab29fbed49992f103d768f054cd",
+        "source": "tests/test_bundle.py",
+        "final_output_sha256": "4ab0ec1231e40779c922aed3d20bb5910c90cab29fbed49992f103d768f054cd",
+        "cli_destination": "tests/test_bundle.py",
+        "previous_staging_sha256": "4ab0ec1231e40779c922aed3d20bb5910c90cab29fbed49992f103d768f054cd"
+      },
+      {
+        "destination": "tests/test_catalog_entry.py",
+        "input_sha256": "5c1b5d1f76f7f8588a6b74d88a669d41c27567a3c14819e08c08cd5d4d0c1002",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c18bf5b71ac0ea0c4beb135f300d143df89b12f39e93cdd43d8d9bf77cb14631",
+        "source": "tests/test_catalog_entry.py",
+        "final_output_sha256": "c18bf5b71ac0ea0c4beb135f300d143df89b12f39e93cdd43d8d9bf77cb14631",
+        "cli_destination": "tests/test_catalog_entry.py",
+        "previous_staging_sha256": "c18bf5b71ac0ea0c4beb135f300d143df89b12f39e93cdd43d8d9bf77cb14631"
+      },
+      {
+        "destination": "tests/test_mcp_json.py",
+        "input_sha256": "9e51d9842f439589238a6343f0aafc2bf7d2de87b7a23a4223c80745e763b5c9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9e51d9842f439589238a6343f0aafc2bf7d2de87b7a23a4223c80745e763b5c9",
+        "source": "tests/test_mcp_json.py",
+        "final_output_sha256": "9e51d9842f439589238a6343f0aafc2bf7d2de87b7a23a4223c80745e763b5c9",
+        "cli_destination": "tests/test_mcp_json.py",
+        "previous_staging_sha256": "9e51d9842f439589238a6343f0aafc2bf7d2de87b7a23a4223c80745e763b5c9"
+      },
+      {
+        "destination": "tests/test_plugin_json.py",
+        "input_sha256": "5849d16c7c2dc57613dd431921a6a983bf46218cb003910127c7e5d55d34d53e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3de8202bc9842ba3905a3ca1043cefb9fa9e69c309361a0442f63377f8fd838c",
+        "source": "tests/test_plugin_json.py",
+        "final_output_sha256": "487c5aec265af251bf4821fea48b76a5fb16c5786520be11d4160f7cb8f49030",
+        "cli_destination": "tests/test_plugin_json.py",
+        "previous_staging_sha256": "3de8202bc9842ba3905a3ca1043cefb9fa9e69c309361a0442f63377f8fd838c"
+      },
+      {
+        "destination": "tests/test_skills.py",
+        "input_sha256": "6717ba0491d27a84146736b3f7358d7e1bb0f78daf48502944c78e6000d484f3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6717ba0491d27a84146736b3f7358d7e1bb0f78daf48502944c78e6000d484f3",
+        "source": "tests/test_skills.py",
+        "final_output_sha256": "6717ba0491d27a84146736b3f7358d7e1bb0f78daf48502944c78e6000d484f3",
+        "cli_destination": "tests/test_skills.py",
+        "previous_staging_sha256": "6717ba0491d27a84146736b3f7358d7e1bb0f78daf48502944c78e6000d484f3"
+      },
+      {
+        "destination": "tests/vendor/PROVENANCE.md",
+        "input_sha256": "353cbe56b756720f74550aa1f23d4c18bd9796baa92f07fae763623f14532490",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bed6414e4b03466c0f7e7d7cb08fae78a48116b088ae92fb29aa6f75e1c18cce",
+        "source": "tests/vendor/PROVENANCE.md",
+        "final_output_sha256": "bed6414e4b03466c0f7e7d7cb08fae78a48116b088ae92fb29aa6f75e1c18cce",
+        "cli_destination": "tests/vendor/PROVENANCE.md",
+        "previous_staging_sha256": "bed6414e4b03466c0f7e7d7cb08fae78a48116b088ae92fb29aa6f75e1c18cce"
+      },
+      {
+        "destination": "tests/vendor/validate_plugin_catalog.py",
+        "input_sha256": "b9a8dbc1e69d22f4ef3f8790751c8f25a9d17a5e3a1664a6883a3085befd8372",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "70fb664131f9e54f223498dc859df1bec8f4ec171b7bb40a2f37099079fe9325",
+        "source": "tests/vendor/validate_plugin_catalog.py",
+        "final_output_sha256": "70fb664131f9e54f223498dc859df1bec8f4ec171b7bb40a2f37099079fe9325",
+        "cli_destination": "tests/vendor/validate_plugin_catalog.py",
+        "previous_staging_sha256": "70fb664131f9e54f223498dc859df1bec8f4ec171b7bb40a2f37099079fe9325"
+      }
+    ],
+    "manifest_sha256": "c696c5150f9d192a08f5e26da99c763d447a636a35abe1b333fe04f6ba48e6ff",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "docs/VERIFICATION.md": "docs/VERIFICATION.md",
+    "docs/catalog-entry.yaml.template": "docs/catalog-entry.yaml.template",
+    "mcp.json": "mcp.json",
+    "plugin.json": "plugin.json",
+    "pytest.ini": "pytest.ini",
+    "skills/kuma-incident-review/SKILL.md": "skills/kuma-incident-review/SKILL.md",
+    "skills/kuma-maintenance/SKILL.md": "skills/kuma-maintenance/SKILL.md",
+    "skills/kuma-setup/SKILL.md": "skills/kuma-setup/SKILL.md",
+    "skills/kuma-status-digest/SKILL.md": "skills/kuma-status-digest/SKILL.md",
+    "tests/bundle_facts.py": "tests/bundle_facts.py",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/fixtures/tools.json": "tests/fixtures/tools.json",
+    "tests/schemas/README.md": "tests/schemas/README.md",
+    "tests/schemas/mcp.schema.json": "tests/schemas/mcp.schema.json",
+    "tests/schemas/plugin.schema.json": "tests/schemas/plugin.schema.json",
+    "tests/test_bundle.py": "tests/test_bundle.py",
+    "tests/test_catalog_entry.py": "tests/test_catalog_entry.py",
+    "tests/test_mcp_json.py": "tests/test_mcp_json.py",
+    "tests/test_plugin_json.py": "tests/test_plugin_json.py",
+    "tests/test_skills.py": "tests/test_skills.py",
+    "tests/vendor/PROVENANCE.md": "tests/vendor/PROVENANCE.md",
+    "tests/vendor/validate_plugin_catalog.py": "tests/vendor/validate_plugin_catalog.py"
+  },
+  "verification": {
+    "manifest": "plugin.json",
+    "manifest_name": "kuma",
+    "python_files_compiled": 8,
+    "secret_findings": 0
+  },
+  "canonical_slug": "kuma",
+  "catalog_file": "src/plugin-catalog/kuma.yaml",
+  "identity": {
+    "catalog_id": "kuma",
+    "canonical_slug": "kuma",
+    "original_manifest_name": "kuma",
+    "rebranded_manifest_name": "kuma",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "b1109d7999c2abda088586f17e333261ea7f74508ea3fe96f57bde5d9f9e836b",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "docs/catalog-entry.yaml.template",
+          "after_path": "docs/catalog-entry.yaml.template",
+          "before_sha256": "6ebfca709b1ac17c421d2fa7011255bdf65f3216ac1e8131c2a600d6284543e0",
+          "after_sha256": "884e7c5c6f73fa176b2347d8b5fcb6e09a135e81c60b8cc94444371e54024444",
+          "before_bytes": 1217,
+          "after_bytes": 1207,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.json",
+          "after_path": "plugin.json",
+          "before_sha256": "924325dead13f4da5b6d382c5c4cd3e144fc3747e7968424f7d35821e151977c",
+          "after_sha256": "5a8a926cfa1e178e12fdad5679cf65a97657b8c94cd80e7412d85b90a5342f0a",
+          "before_bytes": 691,
+          "after_bytes": 681,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "tests/test_plugin_json.py",
+          "after_path": "tests/test_plugin_json.py",
+          "before_sha256": "3de8202bc9842ba3905a3ca1043cefb9fa9e69c309361a0442f63377f8fd838c",
+          "after_sha256": "487c5aec265af251bf4821fea48b76a5fb16c5786520be11d4160f7cb8f49030",
+          "before_bytes": 1721,
+          "after_bytes": 1716,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

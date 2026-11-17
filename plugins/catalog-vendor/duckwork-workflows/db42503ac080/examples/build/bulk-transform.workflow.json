@@ -1,0 +1,110 @@
+{
+  "grammar": "wf/1",
+  "name": "bulk-transform",
+  "description": "Same mechanical transformation over a DECLARED roster, applied lane-by-lane and audited against the roster. TEACHES FOUR SURFACES: (1) fan-out with a STATIC items list where each item carries its own goal (no {item} template needed); (2) the barrier (NO quorum) for a coverage job - every lane must answer or the audit names it; (3) an ancestor `inputs:` ref - the audit reads the manifest echo (a grandparent) explicitly, not via auto-injection; (4) deterministic self-verification: every lane must name the command+output that PROVES its transform landed - a claimed change without an observing command is a failed lane. Seed (run_context map): 'work_root' = a directory holding the files to transform (this example normalizes each listed file's name to lowercase and appends a stamped trailer line). The roster echo is the master manifest: the audit reconciles all_results against it and may NEVER claim more than it names.  CONTRACT-vs-COVERAGE reading law: the fan-out header's failed_items counts CONTRACT failures only (lanes that answered their schema), so an honest applied:false is a committed answer and keeps failed_items at 0 - turning that honest negative into a named coverage gap against the manifest is the AUDIT'S job, not an engine signal. A reader who confuses the two will misdiagnose the engine instead of reading the roster. Adapt items + the transform goal to your real fleet (renames, config migrations, format bumps).",
+  "provenance": {
+    "owner": "author-estate (peer-estate maintained)",
+    "source": "duckwork-workflows/examples/bulk-transform.workflow.json"
+  },
+  "defaults": {
+    "timeout": 600,
+    "max_turns": 8,
+    "context": "You are one lane of a bulk-transform workflow. Ground rules:\n- Touch ONLY the file named in your item goal, inside the declared work root. No other writes.\n- Self-report is not proof: your evidence field must carry a command you ran and what it printed (e.g. `ls` of the new name, `tail -1` of the trailer).\n- If the source file does not exist or the transform cannot be applied, say so honestly as applied=false with the reason - never simulate success and never create substitute files.\n- Reply with ONLY one fenced ```json block as your final message."
+  },
+  "nodes": [
+    {
+      "id": "roster",
+      "type": "echo",
+      "output": {
+        "manifest": [
+          "Alpha.cfg",
+          "beta-report.cfg",
+          "GAMMA.cfg"
+        ],
+        "note": "master manifest - the audit reconciles against THIS list; anything not named here did not exist for this run, and anything here with no lane answer is a named gap."
+      }
+    },
+    {
+      "id": "transform",
+      "type": "agent",
+      "after": [
+        "roster"
+      ],
+      "fanout": {
+        "items": [
+          {
+            "id": "alpha",
+            "goal": "In the work root {run.work_root}: rename the file 'Alpha.cfg' to lowercase 'alpha.cfg', then append the single trailer line 'normalized-by: bulk-transform' to it. Prove with ls of alpha.cfg and tail -1. Reply ONLY fenced json {\"file\": \"alpha.cfg\", \"applied\": true|false, \"evidence\": \"<command + what it printed>\"}"
+          },
+          {
+            "id": "beta",
+            "goal": "In the work root {run.work_root}: rename the file 'beta-report.cfg' to 'beta_report.cfg' (dash to underscore), then append the single trailer line 'normalized-by: bulk-transform' to it. Prove with ls of beta_report.cfg and tail -1. Reply ONLY fenced json {\"file\": \"beta_report.cfg\", \"applied\": true|false, \"evidence\": \"<command + what it printed>\"}"
+          },
+          {
+            "id": "gamma",
+            "goal": "In the work root {run.work_root}: rename the file 'GAMMA.cfg' to 'gamma.cfg', then append the single trailer line 'normalized-by: bulk-transform' to it. Prove with ls of gamma.cfg and tail -1. Reply ONLY fenced json {\"file\": \"gamma.cfg\", \"applied\": true|false, \"evidence\": \"<command + what it printed>\"}"
+          }
+        ],
+        "schema": {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string"
+            },
+            "applied": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "file",
+            "applied",
+            "evidence"
+          ]
+        }
+      }
+    },
+    {
+      "id": "audit",
+      "type": "agent",
+      "after": [
+        "transform"
+      ],
+      "inputs": [
+        "roster"
+      ],
+      "max_turns": 6,
+      "goal": "Reconcile the transform results (## Inputs: the fan-out payloads) against the master manifest (labelled roster - you receive it explicitly because it is a grandparent, not a direct parent). For EVERY manifest name: was there a lane answer, did it claim applied, does its evidence name an observing command? Independently spot-check the work root {run.work_root} yourself with ls - list what actually exists. The answer must name the incomplete set exactly when anything is missing, failed, or unsupported by evidence - never report a full roster you cannot see. Reply ONLY fenced json {\"complete\": true|false, \"per_file\": [\"<manifest name>: applied|failed|no-answer — evidence verdict\"], \"discrepancies\": [\"<what the filesystem shows that the lanes did not report, or 'none'>\"], \"verdict\": \"<one line the owner reads first>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "complete": {
+            "type": "boolean"
+          },
+          "per_file": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "discrepancies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verdict": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "complete",
+          "per_file",
+          "verdict"
+        ]
+      }
+    }
+  ]
+}

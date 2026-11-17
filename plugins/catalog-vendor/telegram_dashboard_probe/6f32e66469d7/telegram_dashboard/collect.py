@@ -1,0 +1,1862 @@
+"""Read-only collectors on stable surfaces.
+
+Gateway state and drift are files and a script. Limits are the one named exception: the engine's
+public usage facade, imported at call time and called the way ``/usage`` calls it (``limits.py``).
+
+Each collector returns three things: the block for the snapshot, a ``SourceObservation`` that
+says how much to trust it, and the incidents it noticed. A source that cannot prove a value says
+``unknown``; a source that does not exist on this installation says ``unsupported``.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+import math
+import os
+import re
+import signal
+import subprocess
+import sys
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass, replace
+from datetime import datetime, timedelta
+from functools import partial
+from pathlib import Path
+from typing import Any, Protocol
+
+from .backup import BackupPart, collect_backup
+from .compat import Environment, ProbeResult
+from .context_files import SOURCE_NAME as RULES
+from .context_files import RulesPart, read_rules
+from .cron_jobs import SOURCE_NAME as CRON
+from .cron_jobs import CronPart, Scan, assemble_cron, scan_cron
+from .cron_runs import LOOKBACK_SECONDS as RUNS_LOOKBACK_SECONDS
+from .cron_runs import SOURCE_NAME as CRON_RUNS
+from .cron_runs import Runs, RunsPart, read_runs
+from .external import TICK_TIMEOUT_SECONDS as EXTERNAL_TICK_TIMEOUT_SECONDS
+from .external import Source as ExternalSource
+from .external import fetch_item as external_fetch_item
+from .external import read_sources
+from .gemini_log import LABEL as GEMINI_LABEL
+from .gemini_log import SOURCE_NAME as GEMINI_SOURCE
+from .gemini_log import GeminiPart, collect_gemini, remembered_part
+from .grok import DEFAULT_INTERVAL_SECONDS as GROK_DEFAULT_INTERVAL_SECONDS
+from .grok import TICK_TIMEOUT_SECONDS as GROK_TICK_TIMEOUT_SECONDS
+from .grok import fetch_item as grok_fetch_item
+from .duckwork_version import INTERVAL_SECONDS as VERSION_INTERVAL_SECONDS
+from .duckwork_version import TICK_TIMEOUT_SECONDS as VERSION_TICK_TIMEOUT_SECONDS
+from .duckwork_version import fetch_item as version_fetch_item
+from .duckwork_version import known_answer as known_release_answer
+from .duckwork_version import running_version
+from .duckwork_version import summarize as summarize_version
+from .duckwork_version import tick as version_tick
+from .kimi import DEFAULT_INTERVAL_SECONDS as KIMI_DEFAULT_INTERVAL_SECONDS
+from .kimi import TICK_TIMEOUT_SECONDS as KIMI_TICK_TIMEOUT_SECONDS
+from .kimi import fetch_item as kimi_fetch_item
+from .limits import Resolver, build_limits_payload, fetch_limits_payload_off_loop, import_fetcher
+from .memory import SOURCE_NAME as MEMORY
+from .memory import MemoryPart, read_memory
+from .normalize import classify_freshness, derive_overall
+from .policy import sanitize_public_text
+from .quota_cache import Fetch as QuotaFetch
+from .quota_cache import tick as quota_tick
+from .schema import (
+    Authority,
+    BackupSummary,
+    CapacitySummary,
+    Coverage,
+    CronSummary,
+    DashboardSnapshot,
+    DriftSummary,
+    GatewaySummary,
+    Incident,
+    MemorySummary,
+    PlatformState,
+    QuotaMetric,
+    QuotaWindow,
+    RulesSummary,
+    SourceObservation,
+    SourceState,
+    TrafficSummary,
+    VersionSummary,
+)
+from .telegram_traffic import SOURCE_NAME as TRAFFIC
+from .telegram_traffic import Probe as TrafficProbe
+from .telegram_traffic import TrafficPart, collect_traffic, note_probe, remembered_traffic
+from .timeparse import age_seconds, is_from_the_future, parse_timestamp
+from .workers import Flights, StillRunning, failure_name
+
+logger = logging.getLogger(__name__)
+
+# check_drift runs daily; anything older than a day plus slack is stale.
+DRIFT_STALE_SECONDS = 26 * 3600
+LIMITS_STALE_SECONDS = 15 * 60
+
+_RUNNING_PLATFORM = frozenset({"running", "connected", "ok", "ready"})
+_FATAL_PLATFORM = frozenset({"fatal", "degraded", "error", "failed"})
+_DOWN_PLATFORM = frozenset({"disconnected", "connecting", "retrying", "paused", "disabled"})
+_STOPPED_GATEWAY = frozenset({"stopped", "exited", "stopping", "crashed", "failed"})
+
+_SEVERITY_RANK = {"critical": 0, "warning": 1, "unknown": 2, "normal": 3}
+# Providers the engine's usage facade answers for; Grok and Kimi are read by ``grok.py`` and
+# ``kimi.py`` on their own cadence, each as its own source.
+_PROVIDER_LABELS = {"claude": "Claude", "codex": "Codex"}
+GROK_LABEL = "Grok"
+KIMI_LABEL = "Kimi"
+GrokFetch = QuotaFetch
+KimiFetch = QuotaFetch
+VersionFetch = QuotaFetch
+LocalVersion = Callable[[], tuple[str | None, str | None]]
+# The lines that close the block: Gemini, built from the engine's log (``gemini_log.py``); an
+# external source's new provider sits before it.
+_TRAILING_PROVIDERS = frozenset({GEMINI_LABEL.lower()})
+# What the facade's ``None`` means (``_fetch_anthropic_account_usage`` returns it only when no
+# token resolves): the installation has no credential, not a provider that refused.
+_NO_CREDENTIAL = "no account token"
+# A window's own verdict as the provider states it; anything else is no verdict at all.
+_WINDOW_SEVERITIES = ("normal", "warning", "critical")
+
+
+@dataclass(frozen=True, slots=True)
+class CommandResult:
+    returncode: int | None
+    stdout: str
+    stderr: str
+    timed_out: bool = False
+    error: str | None = None
+
+
+class CommandRunner(Protocol):
+    def run(self, argv: tuple[str, ...], *, timeout_seconds: float) -> CommandResult: ...
+
+
+class SubprocessRunner:
+    """No shell, own process group, hard timeout with process-tree kill, never raises."""
+
+    def run(self, argv: tuple[str, ...], *, timeout_seconds: float) -> CommandResult:
+        popen_kwargs: dict[str, Any] = {}
+        if sys.platform == "win32":
+            flags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+            popen_kwargs["creationflags"] = flags | getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        else:
+            popen_kwargs["start_new_session"] = True
+        try:
+            proc = subprocess.Popen(
+                list(argv),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdin=subprocess.DEVNULL,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                **popen_kwargs,
+            )
+        except (OSError, ValueError) as exc:
+            return CommandResult(None, "", "", error=type(exc).__name__)
+        try:
+            out, err = proc.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            _kill_tree(proc)
+            out, err = proc.communicate()
+            return CommandResult(None, out or "", err or "", timed_out=True, error="timeout")
+        return CommandResult(proc.returncode, out, err)
+
+
+def _kill_tree(proc: subprocess.Popen[str]) -> None:
+    try:
+        if sys.platform == "win32":
+            subprocess.run(
+                ["taskkill", "/T", "/F", "/PID", str(proc.pid)],
+                capture_output=True,
+                timeout=10,
+                check=False,
+            )
+        else:
+            os.killpg(proc.pid, signal.SIGKILL)
+    except (OSError, subprocess.SubprocessError):
+        proc.kill()
+
+
+# ----------------------------------------------------------------------------- gateway state
+
+
+PidProbe = Callable[[int], bool | None]
+
+
+def default_pid_probe(pid: int) -> bool | None:
+    """True/False when liveness can be asked (POSIX signal 0); None where it cannot (Windows)."""
+    if sys.platform == "win32":
+        return None
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return None
+    return True
+
+
+def collect_gateway(
+    env: Environment, *, now: datetime, pid_probe: PidProbe = default_pid_probe
+) -> tuple[GatewaySummary, SourceObservation, tuple[Incident, ...]]:
+    """``gateway_state.json`` is written on state transitions only (no periodic heartbeat in
+    0.21.1), so ``updated_at`` age is NOT a death signal. Liveness comes from the recorded pid."""
+    path = env.duckwork_home / "gateway_state.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        summary = GatewaySummary("unsupported", "unsupported", detail="gateway_state.json missing")
+        source = SourceObservation(
+            "gateway_state", "official", "unsupported", detail=summary.detail
+        )
+        return summary, source, ()
+    except (OSError, ValueError, UnicodeDecodeError) as exc:
+        return _gateway_unreadable(type(exc).__name__)
+    if not isinstance(payload, dict):
+        return _gateway_unreadable("not an object")
+
+    updated_at = payload.get("updated_at")
+    updated_text = updated_at if isinstance(updated_at, str) else None
+    pid = payload.get("pid")
+    alive = pid_probe(pid) if isinstance(pid, int) and not isinstance(pid, bool) else None
+    process = _gateway_process(payload.get("gateway_state"), alive=alive)
+    telegram, error_code, needs_attention = _telegram_platform(payload.get("platforms"), pid)
+    if alive is None:
+        # Without liveness the platform entry is a claim by a process we cannot see.
+        telegram, needs_attention = "unknown", False
+
+    incidents: list[Incident] = []
+    if alive is False:
+        incidents.append(
+            Incident(
+                "gateway:dead", "critical", "Gateway process not found, status outlived its owner"
+            )
+        )
+    if process == "running" and telegram in ("degraded", "disconnected"):
+        reason = error_code or telegram
+        incidents.append(
+            Incident(
+                "telegram:polling",
+                "critical",
+                f"Gateway running, but Telegram disconnected ({reason})",
+            )
+        )
+    elif needs_attention:
+        incidents.append(
+            Incident("telegram:attention", "warning", "Telegram adapter asks for attention")
+        )
+    state: SourceState
+    if alive is True:
+        state = "fresh"
+    elif alive is False:
+        state = "stale"
+    else:
+        state = "unavailable"
+    detail = error_code if alive is not None else "pid liveness cannot be checked on this platform"
+    summary = GatewaySummary(process, telegram, updated_text, detail=detail)
+    source = SourceObservation(
+        "gateway_state", "official", state, observed_at=updated_text, detail=detail
+    )
+    return summary, source, tuple(incidents)
+
+
+def _gateway_unreadable(
+    reason: str,
+) -> tuple[GatewaySummary, SourceObservation, tuple[Incident, ...]]:
+    summary = GatewaySummary("unknown", "unknown", detail=f"unreadable: {reason}")
+    source = SourceObservation("gateway_state", "official", "unavailable", detail=summary.detail)
+    incident = Incident("gateway:unreadable", "warning", "gateway_state.json unreadable")
+    return summary, source, (incident,)
+
+
+def _gateway_process(raw: object, *, alive: bool | None) -> Any:
+    if alive is False:
+        return "stopped"
+    if alive is None:
+        return "unknown"
+    state = str(raw or "").lower()
+    if state == "running":
+        return "running"
+    if state in _STOPPED_GATEWAY:
+        return "stopped"
+    return "unknown"
+
+
+def _telegram_platform(
+    platforms: object, writer_pid: object
+) -> tuple[PlatformState, str | None, bool]:
+    if not isinstance(platforms, dict):
+        return "unknown", None, False
+    entry: dict[str, Any] | None = None
+    for key, value in platforms.items():
+        is_telegram = isinstance(key, str) and (key == "telegram" or key.endswith(":telegram"))
+        if is_telegram and isinstance(value, dict):
+            entry = value
+            break
+    if entry is None:
+        return "unknown", None, False
+    entry_writer = entry.get("writer_pid")
+    if entry_writer is not None and writer_pid is not None and entry_writer != writer_pid:
+        # Preserved from an earlier process; it does not describe the current gateway.
+        return "unknown", None, False
+    raw = str(entry.get("state") or "").lower()
+    state: PlatformState
+    if raw in _RUNNING_PLATFORM:
+        state = "connected"
+    elif raw in _FATAL_PLATFORM:
+        state = "degraded"
+    elif raw in _DOWN_PLATFORM:
+        state = "disconnected"
+    else:
+        state = "unknown"
+    code = entry.get("error_code")
+    code_text = sanitize_public_text(str(code), limit=40) if code else None
+    return state, code_text, bool(entry.get("needs_attention"))
+
+
+# ----------------------------------------------------------------------------- drift
+
+_SECTION_RE = re.compile(r"^\[(\d)\][^:\n]*:\s*(\d+)\s*$", re.MULTILINE)
+# The line check_drift.py prints last for machines; the words above it are never read.
+_COUNTS_RE = re.compile(r"^keys_changed=(\d+) keys_total=(\d+)\s*$", re.MULTILINE)
+
+
+def parse_drift_output(
+    stdout: str, exit_code: int | None, *, checked_at: str | None
+) -> DriftSummary:
+    """Reduce check_drift.py output to a number. Exit 2 or unparseable output is ``unknown``.
+
+    The numbers come from its ``keys_changed=N keys_total=M`` line; output without that line
+    (an older script, another one) falls back to the ``[N] …: count`` sections, with no total."""
+    if exit_code not in (0, 1):
+        return DriftSummary("unknown", checked_at=checked_at, detail=f"exit code {exit_code}")
+    counts = _COUNTS_RE.findall(stdout)
+    sections = {int(number): int(count) for number, count in _SECTION_RE.findall(stdout)}
+    total: int | None
+    if counts:
+        changed, total = int(counts[-1][0]), int(counts[-1][1])
+    elif sections:
+        changed, total = sum(sections.values()), None
+    elif exit_code == 0:
+        return DriftSummary("clean", 0, None, checked_at, detail="output without sections")
+    else:
+        return DriftSummary(
+            "unknown", None, None, checked_at, detail="drift present, output not parsed"
+        )
+    if exit_code == 0 and changed == 0:
+        return DriftSummary("clean", 0, total, checked_at)
+    if changed > 0:
+        return DriftSummary("drift", changed, total, checked_at)
+    return DriftSummary(
+        "unknown", changed, total, checked_at, detail="exit 1 with zero differences"
+    )
+
+
+def collect_drift(
+    env: Environment, runner: CommandRunner, *, now: datetime
+) -> tuple[DriftSummary, SourceObservation, tuple[Incident, ...]]:
+    if env.drift_report is not None:
+        summary, source = _drift_from_report(env.drift_report, now=now)
+    elif env.drift_command:
+        summary, source = _drift_from_command(env.drift_command, runner, now=now)
+    else:
+        summary = DriftSummary("unsupported", detail="drift source not configured")
+        source = SourceObservation("drift", "derived", "unsupported", detail=summary.detail)
+        return summary, source, ()
+    incidents: tuple[Incident, ...] = ()
+    if summary.state == "drift":
+        incidents = (Incident("config:drift", "warning", f"Config drift: {_keys_words(summary)}"),)
+    return summary, source, incidents
+
+
+def _keys_words(summary: DriftSummary) -> str:
+    """``3 of 474 keys`` when the total is known, else ``3 keys`` (``1 key``)."""
+    changed = summary.changed_keys or 0
+    if summary.total_keys is not None:
+        return f"{changed} of {summary.total_keys} keys"
+    return f"{changed} key" if changed == 1 else f"{changed} keys"
+
+
+def _drift_from_report(path: Path, *, now: datetime) -> tuple[DriftSummary, SourceObservation]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        summary = DriftSummary("unsupported", detail="report file missing")
+        return summary, SourceObservation("drift", "derived", "unsupported", detail=summary.detail)
+    except (OSError, ValueError, UnicodeDecodeError) as exc:
+        summary = DriftSummary("unknown", detail=f"report unreadable: {type(exc).__name__}")
+        return summary, SourceObservation("drift", "derived", "unavailable", detail=summary.detail)
+    if not isinstance(payload, dict):
+        summary = DriftSummary("unknown", detail="report is not an object")
+        return summary, SourceObservation("drift", "derived", "unavailable", detail=summary.detail)
+    checked_at = payload.get("checked_at")
+    checked_text = checked_at if isinstance(checked_at, str) else None
+    exit_code = payload.get("exit_code")
+    summary = parse_drift_output(
+        str(payload.get("stdout") or ""),
+        exit_code if isinstance(exit_code, int) else None,
+        checked_at=checked_text,
+    )
+    freshness = classify_freshness(checked_text, now=now, ttl_seconds=DRIFT_STALE_SECONDS)
+    return summary, SourceObservation("drift", "derived", freshness, observed_at=checked_text)
+
+
+def _drift_from_command(
+    argv: tuple[str, ...], runner: CommandRunner, *, now: datetime
+) -> tuple[DriftSummary, SourceObservation]:
+    result = runner.run(argv, timeout_seconds=30)
+    checked = now.isoformat()
+    if result.error is not None:
+        summary = DriftSummary("unknown", checked_at=checked, detail=f"launch: {result.error}")
+        return summary, SourceObservation("drift", "derived", "unavailable", detail=summary.detail)
+    summary = parse_drift_output(result.stdout, result.returncode, checked_at=checked)
+    state: SourceState = "unavailable" if summary.state == "unknown" else "fresh"
+    return summary, SourceObservation("drift", "derived", state, observed_at=checked)
+
+
+# ----------------------------------------------------------------------------- limits
+#
+# The facade is called in-process, the way the gateway's own ``/usage`` calls it (see limits.py).
+# ``collect_limits`` is the synchronous form for the cron/CLI path; ``collect_limits_async`` is
+# the form a gateway plugin must use: the facade runs in a worker thread with a deadline so the
+# event loop never waits on a provider API, and a miss is one ``unavailable`` tick, not a crash.
+
+LIMITS_TIMEOUT_SECONDS = 45.0
+
+
+def collect_limits(
+    env: Environment, *, now: datetime, resolve: Resolver = import_fetcher
+) -> tuple[CapacitySummary, SourceObservation, ProbeResult]:
+    disabled = _limits_disabled(env)
+    if disabled is not None:
+        return disabled
+    return parse_limits_payload(build_limits_payload(resolve), now=now)
+
+
+async def collect_limits_async(
+    env: Environment,
+    *,
+    now: datetime,
+    resolve: Resolver = import_fetcher,
+    timeout_seconds: float = LIMITS_TIMEOUT_SECONDS,
+    flights: Flights | None = None,
+) -> tuple[CapacitySummary, SourceObservation, ProbeResult]:
+    disabled = _limits_disabled(env)
+    if disabled is not None:
+        return disabled
+    payload = await fetch_limits_payload_off_loop(
+        resolve, timeout_seconds=timeout_seconds, flights=flights
+    )
+    return parse_limits_payload(payload, now=now)
+
+
+def _limits_disabled(
+    env: Environment,
+) -> tuple[CapacitySummary, SourceObservation, ProbeResult] | None:
+    if env.limits_enabled:
+        return None
+    capacity = _capacity_unsupported("limits disabled in config")
+    source = SourceObservation("limits", "official", "unsupported", detail="disabled")
+    return capacity, source, ProbeResult("limits", "unsupported", "disabled in config")
+
+
+def parse_limits_payload(
+    payload: dict[str, Any], *, now: datetime
+) -> tuple[CapacitySummary, SourceObservation, ProbeResult]:
+    if payload.get("ok") is not True:
+        reason = sanitize_public_text(str(payload.get("reason") or "no reason"), limit=80)
+        if reason.startswith("unsupported"):
+            capacity = _capacity_unsupported("usage facade not available on this installation")
+            source = SourceObservation("limits", "official", "unsupported", detail=reason)
+            return capacity, source, ProbeResult("limits", "unsupported", reason)
+        capacity = _capacity_unavailable(reason)
+        source = SourceObservation("limits", "official", "unavailable", detail=reason)
+        return capacity, source, ProbeResult("limits", "unknown", reason)
+
+    quotas: dict[str, QuotaMetric] = {}
+    fetched: list[str] = []
+    for item in payload.get("providers") or ():
+        if not isinstance(item, dict):
+            continue
+        key = str(item.get("provider") or "")
+        label = _PROVIDER_LABELS.get(key)
+        if label is None:
+            continue
+        quotas[key] = _quota_from_item(label, item)
+        fetched_at = item.get("fetched_at")
+        if quotas[key].kind == "official" and isinstance(fetched_at, str):
+            fetched.append(fetched_at)
+    ordered = [
+        quotas.get(key) or QuotaMetric(label, "unavailable", detail="provider not in the answer")
+        for key, label in _PROVIDER_LABELS.items()
+    ]
+    observed_at = max(fetched) if fetched else None
+    if observed_at is None:
+        source = SourceObservation("limits", "official", "unavailable", detail="no windows at all")
+    else:
+        freshness = classify_freshness(observed_at, now=now, ttl_seconds=LIMITS_STALE_SECONDS)
+        source = SourceObservation("limits", "official", freshness, observed_at=observed_at)
+    return CapacitySummary(tuple(ordered)), source, ProbeResult("limits", "supported")
+
+
+def _quota_from_item(label: str, item: dict[str, Any]) -> QuotaMetric:
+    """The line for one item. The plan and the login date ride along in every state: a source
+    that cannot give numbers right now may still know both."""
+    plan, login = _plan_of(item), _login_of(item)
+    fetched_at = item.get("fetched_at")
+    fetched = fetched_at if isinstance(fetched_at, str) else None
+    if item.get("status") == "expired":
+        return QuotaMetric(
+            label,
+            "expired",
+            detail="login expired",
+            fetched_at=fetched,
+            plan=plan,
+            login_expires_at=login,
+        )
+    if item.get("status") != "available":
+        reason = item.get("reason")
+        if reason == "none":
+            detail = _NO_CREDENTIAL
+        else:
+            detail = sanitize_public_text(str(reason), limit=60) if reason else "no data"
+        return QuotaMetric(label, "unavailable", detail=detail, plan=plan, login_expires_at=login)
+    windows = [_window_of(raw) for raw in item.get("windows") or () if isinstance(raw, dict)]
+    source = item.get("source")
+    source_label = sanitize_public_text(str(source), limit=40) if source else None
+    if not windows:
+        return QuotaMetric(
+            label, "unavailable", detail="answer without windows", plan=plan, login_expires_at=login
+        )
+    return QuotaMetric(
+        label,
+        "official",
+        windows=tuple(windows),
+        detail=source_label,
+        fetched_at=fetched,
+        plan=plan,
+        login_expires_at=login,
+    )
+
+
+def _window_of(raw: dict[str, Any]) -> QuotaWindow:
+    used = raw.get("used_percent")
+    used_value = float(used) if isinstance(used, (int, float)) and 0 <= used <= 100 else None
+    reset = raw.get("reset_at")
+    note = raw.get("note")
+    scope = raw.get("scope")
+    severity = raw.get("severity")
+    return QuotaWindow(
+        sanitize_public_text(str(raw.get("label") or "window"), limit=24),
+        used_value,
+        reset if isinstance(reset, str) else None,
+        note=sanitize_public_text(note, limit=24) if isinstance(note, str) else None,
+        scope=sanitize_public_text(scope, limit=24) if isinstance(scope, str) and scope else None,
+        severity=severity if severity in _WINDOW_SEVERITIES else None,
+    )
+
+
+def _plan_of(item: dict[str, Any]) -> str | None:
+    plan = item.get("plan")
+    if not isinstance(plan, str) or not plan.strip():
+        return None
+    return sanitize_public_text(plan.strip(), limit=24)
+
+
+def _login_of(item: dict[str, Any]) -> str | None:
+    value = item.get("login_expires_at")
+    return value if isinstance(value, str) and parse_timestamp(value) is not None else None
+
+
+# ----------------------------------------------------------------------------- Grok, Kimi
+#
+# Each provider read on its own cadence is one line and one source, with its own cache dict.
+
+
+def collect_quota(
+    key: str,
+    label: str,
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    interval_seconds: float,
+    fetch: QuotaFetch,
+) -> tuple[QuotaMetric, SourceObservation]:
+    """The provider's line and its own source (``<key>_quota``): one attempt per interval, the
+    number never older than the interval (``quota_cache.tick``). ``cache`` is the caller's
+    durable dict, mutated in place."""
+    item = quota_tick(cache, now=now, interval_seconds=interval_seconds, fetch=fetch)
+    metric = _quota_from_item(label, item)
+    name = f"{key}_quota"
+    # An expired login is an answer: the source is fresh, the line says what it answered.
+    if metric.kind not in ("official", "expired"):
+        source = SourceObservation(name, "official", "unavailable", detail=metric.detail)
+    else:
+        state = classify_freshness(
+            metric.fetched_at, now=now, ttl_seconds=int(2 * interval_seconds)
+        )
+        source = SourceObservation(name, "official", state, observed_at=metric.fetched_at)
+    return metric, source
+
+
+def collect_grok(
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    interval_seconds: float = GROK_DEFAULT_INTERVAL_SECONDS,
+    fetch: GrokFetch = grok_fetch_item,
+) -> tuple[QuotaMetric, SourceObservation]:
+    return collect_quota(
+        "grok", GROK_LABEL, cache, now=now, interval_seconds=interval_seconds, fetch=fetch
+    )
+
+
+def collect_kimi(
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    interval_seconds: float = KIMI_DEFAULT_INTERVAL_SECONDS,
+    fetch: KimiFetch = kimi_fetch_item,
+) -> tuple[QuotaMetric, SourceObservation]:
+    return collect_quota(
+        "kimi", KIMI_LABEL, cache, now=now, interval_seconds=interval_seconds, fetch=fetch
+    )
+
+
+def quota_off_for(label: str, capacity: CapacitySummary) -> QuotaMetric:
+    """A provider takes the block's verdict when the block itself is off or unsupported."""
+    detail = capacity.quotas[0].detail if capacity.quotas else None
+    return QuotaMetric(label, "unsupported", detail=detail or "limits disabled in config")
+
+
+def grok_off_for(capacity: CapacitySummary) -> QuotaMetric:
+    return quota_off_for(GROK_LABEL, capacity)
+
+
+def merge_quotas(capacity: CapacitySummary, *metrics: QuotaMetric) -> CapacitySummary:
+    """Own-cadence providers sit after the facade providers and before the trailing ones."""
+    quotas = list(capacity.quotas)
+    trailing = [q for q in quotas if _is_trailing(q)]
+    named = [q for q in quotas if not _is_trailing(q)]
+    return CapacitySummary((*named, *metrics, *trailing))
+
+
+def _is_trailing(quota: QuotaMetric) -> bool:
+    return quota.provider.lower() in _TRAILING_PROVIDERS
+
+
+def merge_grok(capacity: CapacitySummary, metric: QuotaMetric) -> CapacitySummary:
+    return merge_quotas(capacity, metric)
+
+
+# ----------------------------------------------------------------------------- external sources
+#
+# Contract 1 (``external.py``): any local process can answer for a provider. A source naming a
+# built-in provider takes that line's place; a new one sits before Gemini. The tick waits
+# for a source no longer than for Grok or Kimi; on a miss it shows the source's last line with
+# that line's own stamp while it is younger than two ticks or two intervals, whichever is longer
+# (decision 10 of the subscription plan), and the late answer is the next tick's line.
+
+# The owner signs in again before the login ends: warned this long before (decision 7).
+LOGIN_WARN_SECONDS = 3 * 86400
+ExternalFetch = Callable[..., dict[str, Any]]
+_ANSWERED = ("official", "expired")
+
+
+def external_tick(
+    source: ExternalSource,
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    interval_seconds: float,
+    fetch: ExternalFetch,
+) -> dict[str, Any]:
+    """``quota_tick`` for one source, plus what outlives a failed attempt: the provider's name,
+    its plan and the last login date it gave. Runs in the worker, so an abandoned worker writes
+    all of it when it returns."""
+    item = quota_tick(
+        cache, now=now, interval_seconds=interval_seconds, fetch=partial(fetch, source)
+    )
+    for key in ("provider", "plan", "login_expires_at"):
+        value = item.get(key)
+        if isinstance(value, str) and value:
+            cache[key] = value
+    return item
+
+
+def collect_external(
+    source: ExternalSource,
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    interval_seconds: float,
+    show_seconds: float,
+    fetch: ExternalFetch = external_fetch_item,
+) -> tuple[QuotaMetric, SourceObservation, tuple[Incident, ...]]:
+    """One source's line, its source observation and its login events, synchronously (the cron
+    path; the tick runs ``external_tick`` in a worker instead)."""
+    if source.problem:
+        return _external_refused(source, cache)
+    item = external_tick(source, cache, now=now, interval_seconds=interval_seconds, fetch=fetch)
+    return external_part(source, cache, item, now=now, show_seconds=show_seconds)
+
+
+def external_part(
+    source: ExternalSource,
+    cache: dict[str, Any],
+    item: dict[str, Any],
+    *,
+    now: datetime,
+    show_seconds: float,
+) -> tuple[QuotaMetric, SourceObservation, tuple[Incident, ...]]:
+    label = _external_label(source, cache, item)
+    metric = _quota_from_item(label, item)
+    if metric.kind not in _ANSWERED:
+        # A source that cannot answer now still has a plan and a login date it gave before.
+        metric = replace(
+            metric,
+            plan=metric.plan or _cached_text(cache, "plan"),
+            login_expires_at=metric.login_expires_at or _cached_text(cache, "login_expires_at"),
+        )
+    name = f"{label} limits"
+    if metric.kind in _ANSWERED:
+        state = classify_freshness(metric.fetched_at, now=now, ttl_seconds=int(show_seconds))
+        observation = SourceObservation(name, "official", state, observed_at=metric.fetched_at)
+    else:
+        observation = SourceObservation(name, "official", "unavailable", detail=metric.detail)
+    return metric, observation, _login_incidents(label, metric, now)
+
+
+def merge_external(capacity: CapacitySummary, metrics: Sequence[QuotaMetric]) -> CapacitySummary:
+    """A source naming a built-in provider takes that line's place (once: a second source with
+    the same name gets a line of its own); any other sits before the trailing ones. The 429 the
+    engine's log saw for the provider moves to the new line (decision 9 of the Gemini plan)."""
+    quotas = list(capacity.quotas)
+    replaced: set[int] = set()
+    extra: list[QuotaMetric] = []
+    for metric in metrics:
+        name = metric.provider.lower()
+        at = next(
+            (i for i, q in enumerate(quotas) if i not in replaced and q.provider.lower() == name),
+            None,
+        )
+        if at is None:
+            extra.append(metric)
+        else:
+            old = quotas[at]
+            keep = old.refusal is not None and metric.refusal is None
+            quotas[at] = replace(metric, refusal=old.refusal) if keep else metric
+            replaced.add(at)
+    named = [q for q in quotas if not _is_trailing(q)]
+    trailing = [q for q in quotas if _is_trailing(q)]
+    return CapacitySummary((*named, *extra, *trailing))
+
+
+def _external_label(source: ExternalSource, cache: dict[str, Any], item: dict[str, Any]) -> str:
+    """The provider the source names; the one it named before; its number until it has."""
+    for value in (item.get("provider"), cache.get("provider")):
+        if isinstance(value, str) and value.strip():
+            return sanitize_public_text(value.strip(), limit=24)
+    return f"Source {source.number}"
+
+
+def _cached_text(cache: dict[str, Any], key: str) -> str | None:
+    value = cache.get(key)
+    return value if isinstance(value, str) and value else None
+
+
+def _external_refused(
+    source: ExternalSource, cache: dict[str, Any]
+) -> tuple[QuotaMetric, SourceObservation, tuple[Incident, ...]]:
+    label = _external_label(source, cache, {})
+    detail = source.problem or "refused"
+    observation = SourceObservation(f"{label} limits", "official", "unavailable", detail=detail)
+    return QuotaMetric(label, "unavailable", detail=detail), observation, ()
+
+
+def _login_incidents(label: str, metric: QuotaMetric, now: datetime) -> tuple[Incident, ...]:
+    """``<provider>:login_expired`` from the contract's state or a passed date;
+    ``<provider>:login_expiring`` within ``LOGIN_WARN_SECONDS`` of the date."""
+    key = label.lower().replace(" ", "_")
+    expired = Incident(f"{key}:login_expired", "warning", f"{label} login expired")
+    if metric.kind == "expired":
+        return (expired,)
+    moment = parse_timestamp(metric.login_expires_at)
+    if moment is None:
+        return ()
+    left = (moment - now).total_seconds()
+    if left <= 0:
+        return (expired,)
+    if left > LOGIN_WARN_SECONDS:
+        return ()
+    title = f"{label} login expires in {_ahead_words(left)}"
+    return (Incident(f"{key}:login_expiring", "warning", title),)
+
+
+def _ahead_words(seconds: float) -> str:
+    hours = math.ceil(seconds / 3600)
+    if hours < 24:
+        return f"{hours} h"
+    days = math.ceil(seconds / 86400)
+    return "1 day" if days == 1 else f"{days} days"
+
+
+def _show_seconds(interval_seconds: float, period_seconds: float | None) -> float:
+    """How old a source's last line may be and still stand in for a missed answer."""
+    return max(2 * interval_seconds, 2 * (period_seconds or 0.0))
+
+
+def _cached_line(
+    cache: dict[str, Any], *, now: datetime, show_seconds: float, missed: str
+) -> dict[str, Any]:
+    """The source's last answer while it is young enough, else "no data" with ``missed``."""
+    cached = cache.get("item")
+    if isinstance(cached, dict) and cached.get("status") in ("available", "expired"):
+        fetched = parse_timestamp(cached.get("fetched_at"))
+        age = age_seconds(fetched, now) if fetched is not None else None
+        if age is not None and not is_from_the_future(age) and age <= show_seconds:
+            return cached
+    return {"provider": None, "status": "unavailable", "reason": missed, "windows": []}
+
+
+def _cache_for(store: dict[str, Any], key: str) -> dict[str, Any]:
+    cache = store.get(key)
+    if not isinstance(cache, dict):
+        cache = {}
+        store[key] = cache
+    return cache
+
+
+def _without_replaced(
+    sources: Sequence[SourceObservation], metrics: Sequence[QuotaMetric]
+) -> list[SourceObservation]:
+    """A built-in Grok or Kimi source leaves the count when an external source answers for the
+    same provider: its line is gone from the screen, so is its verdict."""
+    names = {metric.provider.lower() for metric in metrics}
+    return [s for s in sources if not (s.name.endswith("_quota") and s.name[:-6] in names)]
+
+
+def _capacity_unavailable(detail: str) -> CapacitySummary:
+    return CapacitySummary(
+        tuple(
+            QuotaMetric(label, "unavailable", detail=detail) for label in _PROVIDER_LABELS.values()
+        )
+    )
+
+
+def _capacity_unsupported(detail: str) -> CapacitySummary:
+    """The facade's own providers only: Grok and Kimi take this verdict on lines of their own
+    (``quota_off_for``), so naming them here put each on the screen twice."""
+    return CapacitySummary(
+        tuple(
+            QuotaMetric(label, "unsupported", detail=detail) for label in _PROVIDER_LABELS.values()
+        )
+    )
+
+
+# ----------------------------------------------------------------------------- composition
+
+
+# Sources that count in the coverage and leave the status to the rest: the run history only
+# adds to the cron line (streaks, failures erased between ticks), the line itself stands on
+# jobs.json, so a history unread or not kept is named in the coverage, never a grey status.
+_COVERAGE_ONLY = frozenset({CRON_RUNS})
+
+
+def build_snapshot(
+    *,
+    now: datetime,
+    gateway: GatewaySummary | None,
+    drift: DriftSummary | None,
+    capacity: CapacitySummary,
+    sources: tuple[SourceObservation, ...],
+    incidents: tuple[Incident, ...],
+    coverage: Coverage | None = None,
+    backup: BackupSummary | None = None,
+    version: VersionSummary | None = None,
+    cron: CronSummary | None = None,
+    traffic: TrafficSummary | None = None,
+    rules: RulesSummary | None = None,
+    memory: MemorySummary | None = None,
+) -> DashboardSnapshot:
+    ordered = _screen_incidents(incidents)
+    cov = coverage or Coverage(expected_profiles=1, observed_profiles=1)
+    counted = tuple(source for source in sources if source.name not in _COVERAGE_ONLY)
+    overall = derive_overall(coverage=cov, sources=counted, incidents=ordered)
+    return DashboardSnapshot(
+        overall=overall,
+        observed_at=now.isoformat(),
+        coverage=cov,
+        capacity=capacity,
+        incidents=ordered,
+        drift=drift,
+        gateway=gateway,
+        backup=backup,
+        sources=sources,
+        version=version,
+        cron=cron,
+        traffic=traffic,
+        rules=rules,
+        memory=memory,
+    )
+
+
+def _screen_incidents(incidents: tuple[Incident, ...]) -> tuple[Incident, ...]:
+    """Up to five events, the most severe first. Every source but the rules and the memory has
+    a line of its own on the screen; those two have only their events (0.10.1, 0.11.0). Each
+    keeps a place: when the cut leaves out every event of one, its first takes the place of
+    the last event shown that is neither's, so an agent that does not see its rules or cannot
+    keep its memory never sinks into the collapsed details behind five other events."""
+    ordered = sorted(incidents, key=lambda item: _SEVERITY_RANK.get(item.severity, 9))
+    shown = ordered[:5]
+    for prefix in _LINELESS:
+        first = next((item for item in ordered if item.incident_id.startswith(prefix)), None)
+        if first is None or first in shown:
+            continue
+        others = [i for i, item in enumerate(shown) if not item.incident_id.startswith(_LINELESS)]
+        drop = others[-1] if others else len(shown) - 1
+        shown = [*shown[:drop], *shown[drop + 1 :], first]
+    return tuple(shown)
+
+
+# The sources with no line of their own on the screen, only events.
+_LINELESS = ("rules:", "memory:")
+
+
+def collect_all(
+    env: Environment,
+    runner: CommandRunner,
+    *,
+    now: datetime,
+    resolve_limits: Resolver = import_fetcher,
+    grok_cache: dict[str, Any] | None = None,
+    grok_interval_seconds: float = GROK_DEFAULT_INTERVAL_SECONDS,
+    grok_fetch: GrokFetch | None = None,
+    kimi_cache: dict[str, Any] | None = None,
+    kimi_interval_seconds: float = KIMI_DEFAULT_INTERVAL_SECONDS,
+    kimi_fetch: KimiFetch | None = None,
+    external_caches: dict[str, Any] | None = None,
+    external_interval_seconds: float = GROK_DEFAULT_INTERVAL_SECONDS,
+    external_fetch: ExternalFetch | None = None,
+    gemini_cache: dict[str, Any] | None = None,
+    cron_cache: dict[str, Any] | None = None,
+    traffic_probe: TrafficProbe | None = None,
+    traffic_cache: dict[str, Any] | None = None,
+) -> DashboardSnapshot:
+    externals = _externals_sync(
+        env,
+        external_caches,
+        now=now,
+        interval_seconds=external_interval_seconds,
+        fetch=external_fetch or external_fetch_item,
+    )
+    gateway, gateway_source, gateway_incidents = collect_gateway(env, now=now)
+    drift, drift_source, drift_incidents = collect_drift(env, runner, now=now)
+    backup, backup_source, backup_incidents = collect_backup(env, now=now)
+    cron_store = cron_cache if cron_cache is not None else {}
+    scan = scan_cron(env, now=now)
+    runs, runs_source = read_runs(
+        env, since=_runs_since(cron_store, now), streak_for=_streak_ids(scan), now=now
+    )
+    if runs is not None:
+        cron_store["runs_checked_at"] = now.isoformat()
+    cron, cron_source, cron_incidents = assemble_cron(scan, cron_store, now=now, runs=runs)
+    traffic, traffic_source, traffic_incidents = collect_traffic(
+        env, traffic_probe, traffic_cache, now=now
+    )
+    rules, rules_source, rules_incidents = read_rules(env, now=now)
+    memory, memory_source, memory_incidents = read_memory(env, now=now)
+    capacity, limits_source, probe = collect_limits(env, now=now, resolve=resolve_limits)
+    if probe.status == "supported":
+        grok, grok_source = collect_grok(
+            grok_cache if grok_cache is not None else {},
+            now=now,
+            interval_seconds=grok_interval_seconds,
+            fetch=grok_fetch or grok_fetch_item,
+        )
+        kimi, kimi_source = collect_kimi(
+            kimi_cache if kimi_cache is not None else {},
+            now=now,
+            interval_seconds=kimi_interval_seconds,
+            fetch=kimi_fetch or kimi_fetch_item,
+        )
+    else:
+        grok, grok_source = grok_off_for(capacity), _quota_off_source("grok", limits_source)
+        kimi, kimi_source = (
+            quota_off_for(KIMI_LABEL, capacity),
+            _quota_off_source("kimi", limits_source),
+        )
+    if env.limits_enabled:
+        gemini, gemini_source, gemini_incidents = collect_gemini(env, gemini_cache, now=now)
+    else:
+        gemini, gemini_source, gemini_incidents = _gemini_off(capacity, limits_source)
+    metrics = [part[0] for part in externals]
+    return build_snapshot(
+        now=now,
+        gateway=gateway,
+        drift=drift,
+        backup=backup,
+        cron=cron,
+        traffic=traffic,
+        rules=rules,
+        memory=memory,
+        capacity=merge_external(merge_quotas(capacity, grok, kimi, gemini), metrics),
+        sources=(
+            gateway_source,
+            limits_source,
+            *_without_replaced((grok_source, kimi_source), metrics),
+            *(part[1] for part in externals),
+            gemini_source,
+            drift_source,
+            backup_source,
+            cron_source,
+            runs_source,
+            traffic_source,
+            *_present(rules_source),
+            *_present(memory_source),
+        ),
+        incidents=(
+            *gateway_incidents,
+            *drift_incidents,
+            *backup_incidents,
+            *gemini_incidents,
+            *cron_incidents,
+            *traffic_incidents,
+            *rules_incidents,
+            *memory_incidents,
+            *(incident for part in externals for incident in part[2]),
+        ),
+    )
+
+
+def _runs_since(cache: dict[str, Any], now: datetime) -> datetime:
+    """Where the history read starts: the record's last check, never further back than the
+    lookback, never in the future."""
+    checked = parse_timestamp(cache.get("runs_checked_at"))
+    floor = now - timedelta(seconds=RUNS_LOOKBACK_SECONDS)
+    if checked is not None and checked <= now:
+        return max(checked, floor)
+    return floor
+
+
+def _streak_ids(scan: Scan) -> list[str]:
+    """The jobs whose delivery streak the history is asked for: the ones the scan found
+    undelivered (the engine's own streak leaves delivery out)."""
+    return [failure.job_id for failure in scan.failures if failure.kind == "delivery"]
+
+
+def _externals_sync(
+    env: Environment,
+    caches: dict[str, Any] | None,
+    *,
+    now: datetime,
+    interval_seconds: float,
+    fetch: ExternalFetch,
+) -> list[tuple[QuotaMetric, SourceObservation, tuple[Incident, ...]]]:
+    """The cron path's external sources, one after another, each bounded by its own timeout."""
+    if not env.limits_enabled:
+        return []
+    store = caches if caches is not None else {}
+    show = _show_seconds(interval_seconds, None)
+    return [
+        collect_external(
+            source,
+            _cache_for(store, source.key),
+            now=now,
+            interval_seconds=interval_seconds,
+            show_seconds=show,
+            fetch=fetch,
+        )
+        for source in read_sources(env.limits_sources)
+    ]
+
+
+def _quota_off_source(key: str, limits_source: SourceObservation) -> SourceObservation:
+    return SourceObservation(
+        f"{key}_quota", "official", limits_source.state, detail=limits_source.detail
+    )
+
+
+def _grok_off_source(limits_source: SourceObservation) -> SourceObservation:
+    return _quota_off_source("grok", limits_source)
+
+
+def _gemini_off(capacity: CapacitySummary, limits_source: SourceObservation) -> GeminiPart:
+    """Limits off: the log is not read, the line and the source take the block's verdict."""
+    source = SourceObservation(
+        GEMINI_SOURCE, "local", limits_source.state, detail=limits_source.detail
+    )
+    return quota_off_for(GEMINI_LABEL, capacity), source, ()
+
+
+# ----------------------------------------------------------------------------- plugin tick
+#
+# Inside the gateway the tick shares the event loop with every Telegram update. The drift command
+# and the usage facade therefore run in worker threads with deadlines, concurrently; the gateway
+# file is one small read. A collector that raises something its own handlers did not foresee is a
+# bug in the dashboard, and the screen says so: that source is ``unavailable`` with a warning
+# incident, the other sources keep their answers, and the tick still edits the message.
+
+# The runner's own hard limit is 30 s; the slack covers thread start-up and process teardown.
+DRIFT_TIMEOUT_SECONDS = 35.0
+# Guards catch BaseException, not Exception, so a SystemExit raised in the same task degrades the
+# source; one raised in a worker thread is converted at the thread boundary (``workers.py``),
+# because the Task running ``to_thread`` would re-raise it out of the loop before any ``except``
+# here. Cancellation and the operator's interrupt are the two that must keep propagating.
+_UNGUARDED = (asyncio.CancelledError, KeyboardInterrupt)
+
+GatewayPart = tuple[GatewaySummary, SourceObservation, tuple[Incident, ...]]
+DriftPart = tuple[DriftSummary, SourceObservation, tuple[Incident, ...]]
+LimitsPart = tuple[CapacitySummary, SourceObservation, tuple[Incident, ...]]
+
+
+async def collect_all_async(
+    env: Environment,
+    runner: CommandRunner,
+    *,
+    now: datetime,
+    resolve_limits: Resolver = import_fetcher,
+    limits_timeout_seconds: float = LIMITS_TIMEOUT_SECONDS,
+    drift_timeout_seconds: float = DRIFT_TIMEOUT_SECONDS,
+    flights: Flights | None = None,
+    grok_cache: dict[str, Any] | None = None,
+    grok_interval_seconds: float = GROK_DEFAULT_INTERVAL_SECONDS,
+    grok_timeout_seconds: float = GROK_TICK_TIMEOUT_SECONDS,
+    grok_fetch: GrokFetch | None = None,
+    kimi_cache: dict[str, Any] | None = None,
+    kimi_interval_seconds: float = KIMI_DEFAULT_INTERVAL_SECONDS,
+    kimi_timeout_seconds: float = KIMI_TICK_TIMEOUT_SECONDS,
+    kimi_fetch: KimiFetch | None = None,
+    version_cache: dict[str, Any] | None = None,
+    version_interval_seconds: float = VERSION_INTERVAL_SECONDS,
+    version_timeout_seconds: float = VERSION_TICK_TIMEOUT_SECONDS,
+    version_fetch: VersionFetch | None = None,
+    version_local: LocalVersion | None = None,
+    external_caches: dict[str, Any] | None = None,
+    external_interval_seconds: float = GROK_DEFAULT_INTERVAL_SECONDS,
+    external_timeout_seconds: float = EXTERNAL_TICK_TIMEOUT_SECONDS,
+    external_fetch: ExternalFetch | None = None,
+    period_seconds: float | None = None,
+    gemini_cache: dict[str, Any] | None = None,
+    gemini_timeout_seconds: float = EXTERNAL_TICK_TIMEOUT_SECONDS,
+    cron_cache: dict[str, Any] | None = None,
+    cron_timeout_seconds: float = EXTERNAL_TICK_TIMEOUT_SECONDS,
+    traffic_probe: TrafficProbe | None = None,
+    traffic_cache: dict[str, Any] | None = None,
+    traffic_timeout_seconds: float = EXTERNAL_TICK_TIMEOUT_SECONDS,
+    rules_timeout_seconds: float = EXTERNAL_TICK_TIMEOUT_SECONDS,
+    memory_timeout_seconds: float = EXTERNAL_TICK_TIMEOUT_SECONDS,
+) -> DashboardSnapshot:
+    """``collect_all`` for a tick that runs on the gateway's event loop. Never raises.
+
+    ``flights`` shared across ticks keeps one worker per source: a source abandoned by its
+    deadline is not started again until it returns. ``grok_cache`` and ``kimi_cache`` are the
+    caller's durable dicts (the plugin keeps them in its record, one per provider): a worker
+    abandoned by its deadline still writes its attempt there when it returns, so the next tick
+    serves it instead of asking again. ``version_cache`` is the same for the upstream release
+    check (at most one per 15 minutes); without it (no durable record) the version line is not
+    collected at all.
+    ``external_caches`` is the durable dict of the external limit sources, one cache per URL
+    (``Source.key``); ``period_seconds`` is the tick's own period, which sets how old a source's
+    last line may be and still stand in for a missed answer. ``gemini_cache`` is the record of
+    the last Gemini 429 the engine's log showed (``gemini_log.py``): a 429 that rotated out of
+    the log stays the last one. ``cron_cache`` is the record of the cron line: the failures the
+    engine erased between two ticks and where the history read left off; the history itself
+    (``executions.db``) is read in a worker under ``cron_timeout_seconds``, the two small files
+    (``jobs.json``, the ticker stamps) on the loop. ``traffic_probe`` is what the plugin read off
+    the live adapter before the tick (``telegram_traffic.probe_adapter``; ``None`` on the cron
+    path), ``traffic_cache`` the record of the channel; the send errors come from the engine's
+    log, read in a worker under ``traffic_timeout_seconds``. The rules line reads the engine's
+    ``state.db`` and the context files in a worker under ``rules_timeout_seconds``.
+    """
+    flights = flights or Flights()
+    cron_store = cron_cache if cron_cache is not None else {}
+    # The cron scan names the jobs whose history is asked for, so it goes first; the history
+    # itself runs in a worker beside every other source, under its own deadline.
+    scan = _scan_guarded(env, now=now)
+    runs_task = asyncio.ensure_future(
+        _runs_guarded(
+            env, cron_store, scan, now=now, timeout_seconds=cron_timeout_seconds, flights=flights
+        )
+    )
+    traffic_store = traffic_cache if traffic_cache is not None else {}
+    traffic_task = asyncio.ensure_future(
+        _traffic_guarded(
+            env,
+            traffic_probe,
+            traffic_store,
+            now=now,
+            timeout_seconds=traffic_timeout_seconds,
+            flights=flights,
+        )
+    )
+    # The saved prompts and the context files are read in a worker beside every other source:
+    # a busy database or a hung disk holds back nothing but the rules line.
+    rules_task = asyncio.ensure_future(
+        _rules_guarded(env, now=now, timeout_seconds=rules_timeout_seconds, flights=flights)
+    )
+    # The notebooks, the pending queues and the log tail likewise: a hung disk holds back
+    # nothing but the memory section.
+    memory_task = asyncio.ensure_future(
+        _memory_guarded(env, now=now, timeout_seconds=memory_timeout_seconds, flights=flights)
+    )
+    # The upstream release check starts with the tick and runs beside every other source: a
+    # GitHub that hangs holds back nothing but its own line.
+    version_task = asyncio.ensure_future(
+        _version_guarded(
+            version_cache,
+            now=now,
+            interval_seconds=version_interval_seconds,
+            timeout_seconds=version_timeout_seconds,
+            flights=flights,
+            fetch=version_fetch or version_fetch_item,
+            local=version_local or running_version,
+        )
+    )
+    # External limit sources start with the tick too, each under its own deadline.
+    externals_task = asyncio.ensure_future(
+        _externals_guarded(
+            env,
+            external_caches,
+            now=now,
+            interval_seconds=external_interval_seconds,
+            timeout_seconds=external_timeout_seconds,
+            period_seconds=period_seconds,
+            flights=flights,
+            fetch=external_fetch or external_fetch_item,
+        )
+    )
+    # The engine's error log is read in a worker under the same deadline as an external source,
+    # beside every other source: a file on a hung disk holds back nothing but the Gemini line.
+    gemini_task = (
+        asyncio.ensure_future(
+            _gemini_guarded(
+                env, gemini_cache, now=now, timeout_seconds=gemini_timeout_seconds, flights=flights
+            )
+        )
+        if env.limits_enabled
+        else None
+    )
+    try:
+        gateway, gateway_source, gateway_incidents = _gateway_guarded(env, now=now)
+        backup, backup_source, backup_incidents = _backup_guarded(env, now=now)
+        (
+            (drift, drift_source, drift_incidents),
+            (capacity, limits_source, limits_incidents),
+        ) = await asyncio.gather(
+            _drift_off_loop(
+                env, runner, now=now, timeout_seconds=drift_timeout_seconds, flights=flights
+            ),
+            _limits_guarded(
+                env,
+                now=now,
+                resolve=resolve_limits,
+                timeout_seconds=limits_timeout_seconds,
+                flights=flights,
+            ),
+        )
+        grok_incidents: tuple[Incident, ...] = ()
+        kimi_incidents: tuple[Incident, ...] = ()
+        if env.limits_enabled and limits_source.state != "unsupported":
+            (
+                (grok, grok_source, grok_incidents),
+                (kimi, kimi_source, kimi_incidents),
+            ) = await asyncio.gather(
+                _quota_guarded(
+                    "grok",
+                    GROK_LABEL,
+                    grok_cache if grok_cache is not None else {},
+                    now=now,
+                    interval_seconds=grok_interval_seconds,
+                    timeout_seconds=grok_timeout_seconds,
+                    flights=flights,
+                    fetch=grok_fetch or grok_fetch_item,
+                ),
+                _quota_guarded(
+                    "kimi",
+                    KIMI_LABEL,
+                    kimi_cache if kimi_cache is not None else {},
+                    now=now,
+                    interval_seconds=kimi_interval_seconds,
+                    timeout_seconds=kimi_timeout_seconds,
+                    flights=flights,
+                    fetch=kimi_fetch or kimi_fetch_item,
+                ),
+            )
+        else:
+            grok, grok_source = grok_off_for(capacity), _quota_off_source("grok", limits_source)
+            kimi, kimi_source = (
+                quota_off_for(KIMI_LABEL, capacity),
+                _quota_off_source("kimi", limits_source),
+            )
+        version, version_incidents = await version_task
+        externals = await externals_task
+        runs, runs_source = await runs_task
+        traffic, traffic_source, traffic_incidents = await traffic_task
+        rules, rules_source, rules_incidents = await rules_task
+        memory, memory_source, memory_incidents = await memory_task
+        cron, cron_source, cron_incidents = _cron_guarded(cron_store, scan=scan, now=now, runs=runs)
+        if gemini_task is None:
+            gemini, gemini_source, gemini_incidents = _gemini_off(capacity, limits_source)
+        else:
+            gemini, gemini_source, gemini_incidents = await gemini_task
+        metrics = [part[0] for part in externals]
+        return build_snapshot(
+            now=now,
+            gateway=gateway,
+            drift=drift,
+            backup=backup,
+            version=version,
+            cron=cron,
+            traffic=traffic,
+            rules=rules,
+            memory=memory,
+            capacity=merge_external(merge_quotas(capacity, grok, kimi, gemini), metrics),
+            sources=(
+                gateway_source,
+                limits_source,
+                *_without_replaced((grok_source, kimi_source), metrics),
+                *(part[1] for part in externals),
+                gemini_source,
+                drift_source,
+                backup_source,
+                cron_source,
+                runs_source,
+                traffic_source,
+                *_present(rules_source),
+                *_present(memory_source),
+            ),
+            incidents=(
+                *gateway_incidents,
+                *drift_incidents,
+                *backup_incidents,
+                *limits_incidents,
+                *grok_incidents,
+                *kimi_incidents,
+                *gemini_incidents,
+                *cron_incidents,
+                *traffic_incidents,
+                *rules_incidents,
+                *memory_incidents,
+                *version_incidents,
+                *(incident for part in externals for incident in part[2]),
+            ),
+        )
+    finally:
+        # A no-op once done; a cancelled tick leaves no task behind.
+        version_task.cancel()
+        externals_task.cancel()
+        runs_task.cancel()
+        traffic_task.cancel()
+        rules_task.cancel()
+        memory_task.cancel()
+        if gemini_task is not None:
+            gemini_task.cancel()
+
+
+def _gateway_guarded(env: Environment, *, now: datetime) -> GatewayPart:
+    try:
+        return collect_gateway(env, now=now)
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed("gateway_state", "official", exc)
+        return GatewaySummary("unknown", "unknown", detail=source.detail), source, (incident,)
+
+
+def _backup_guarded(env: Environment, *, now: datetime) -> BackupPart:
+    """One small file read; a surprise while reading it is one unavailable source, not a dead
+    tick."""
+    try:
+        return collect_backup(env, now=now)
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed("backup", "derived", exc)
+        return BackupSummary("unknown", detail=source.detail), source, (incident,)
+
+
+def _scan_guarded(env: Environment, *, now: datetime) -> Scan:
+    """Two small files on the loop; a surprise while reading them is a scan with no verdict,
+    which ``assemble_cron`` turns into one unavailable source and a named event."""
+    try:
+        return scan_cron(env, now=now)
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        logger.exception("collector %s crashed; source marked unavailable", CRON)
+        return Scan(state="unknown", detail=f"collector crashed: {failure_name(exc)}")
+
+
+async def _runs_guarded(
+    env: Environment,
+    cache: dict[str, Any],
+    scan: Scan,
+    *,
+    now: datetime,
+    timeout_seconds: float,
+    flights: Flights,
+) -> RunsPart:
+    """``read_runs`` in the history's own worker under the tick's deadline, never on the loop. A
+    deadline or a worker still reading is one unavailable source with the reason; the cron line
+    stands on the scan alone. The record's mark moves only when the history answered."""
+    try:
+        part = await flights.run(
+            CRON_RUNS,
+            read_runs,
+            env,
+            since=_runs_since(cache, now),
+            streak_for=_streak_ids(scan),
+            now=now,
+            timeout_seconds=timeout_seconds,
+        )
+    except TimeoutError:
+        return None, _runs_unavailable("history read timed out")
+    except StillRunning:
+        return None, _runs_unavailable("still reading the history")
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, _incident = _collector_crashed(CRON_RUNS, "official", exc)
+        return None, source
+    if part[0] is not None:
+        cache["runs_checked_at"] = now.isoformat()
+    return part
+
+
+def _present(source: SourceObservation | None) -> tuple[SourceObservation, ...]:
+    """A source that is off by the dashboard's own setting is not counted at all."""
+    return () if source is None else (source,)
+
+
+async def _rules_guarded(
+    env: Environment, *, now: datetime, timeout_seconds: float, flights: Flights
+) -> RulesPart:
+    """``read_rules`` in its own worker under the tick's deadline, never on the loop: the
+    database and the files are the engine's, a deadline or a worker still reading is one
+    unavailable source with the reason."""
+    try:
+        return await flights.run(RULES, read_rules, env, now=now, timeout_seconds=timeout_seconds)
+    except TimeoutError:
+        return _rules_unavailable("state.db read timed out")
+    except StillRunning:
+        return _rules_unavailable("still reading state.db")
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed(RULES, "official", exc)
+        return RulesSummary("unknown", detail=source.detail), source, (incident,)
+
+
+def _rules_unavailable(detail: str) -> RulesPart:
+    source = SourceObservation(RULES, "official", "unavailable", detail=detail)
+    return RulesSummary("unknown", detail=detail), source, ()
+
+
+async def _memory_guarded(
+    env: Environment, *, now: datetime, timeout_seconds: float, flights: Flights
+) -> MemoryPart:
+    """``read_memory`` in its own worker under the tick's deadline, never on the loop."""
+    try:
+        return await flights.run(MEMORY, read_memory, env, now=now, timeout_seconds=timeout_seconds)
+    except TimeoutError:
+        return _memory_unavailable("memory read timed out")
+    except StillRunning:
+        return _memory_unavailable("still reading the memory")
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed(MEMORY, "official", exc)
+        return MemorySummary("unknown", detail=source.detail), source, (incident,)
+
+
+def _memory_unavailable(detail: str) -> MemoryPart:
+    source = SourceObservation(MEMORY, "official", "unavailable", detail=detail)
+    return MemorySummary("unknown", detail=detail), source, ()
+
+
+def _runs_unavailable(detail: str) -> SourceObservation:
+    return SourceObservation(CRON_RUNS, "official", "unavailable", detail=detail)
+
+
+def _cron_guarded(
+    cache: dict[str, Any], *, scan: Scan, now: datetime, runs: Runs | None
+) -> CronPart:
+    """The block from the scan, the history and the record, on the loop; a surprise while
+    assembling is one unavailable source, not a dead tick."""
+    try:
+        return assemble_cron(scan, cache, now=now, runs=runs)
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed(CRON, "official", exc)
+        return CronSummary("unknown", detail=source.detail), source, (incident,)
+
+
+async def _traffic_guarded(
+    env: Environment,
+    probe: TrafficProbe | None,
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    timeout_seconds: float,
+    flights: Flights,
+) -> TrafficPart:
+    """``collect_traffic`` in the log's own worker under the tick's deadline; a miss shows what
+    the probe and the record say without the log, like ``_gemini_guarded``. The counter and
+    the send gate are noted on the loop first, so a reader that never returns cannot freeze
+    the record."""
+    try:
+        note_probe(cache, probe, now)
+        return await flights.run(
+            TRAFFIC,
+            collect_traffic,
+            env,
+            probe,
+            cache,
+            now=now,
+            note=False,
+            timeout_seconds=timeout_seconds,
+        )
+    except TimeoutError:
+        return remembered_traffic(cache, probe, now=now, detail="log read timed out")
+    except StillRunning:
+        return remembered_traffic(cache, probe, now=now, detail="still reading the log")
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed(TRAFFIC, "local", exc)
+        summary, _source, incidents = remembered_traffic(
+            cache, probe, now=now, detail=source.detail or "collector crashed"
+        )
+        return summary, source, (*incidents, incident)
+
+
+async def _drift_off_loop(
+    env: Environment,
+    runner: CommandRunner,
+    *,
+    now: datetime,
+    timeout_seconds: float,
+    flights: Flights,
+) -> DriftPart:
+    try:
+        return await flights.run(
+            "drift", collect_drift, env, runner, now=now, timeout_seconds=timeout_seconds
+        )
+    except TimeoutError:
+        # The worker thread finishes on its own; the runner kills the process tree at its limit.
+        # No checked_at: a check that did not finish must not render as "checked HH:MM".
+        return _drift_not_collected(f"deadline {timeout_seconds:g} s")
+    except StillRunning:
+        return _drift_not_collected("previous run still in progress")
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed("drift", "derived", exc)
+        return DriftSummary("unknown", detail=source.detail), source, (incident,)
+
+
+def _drift_not_collected(detail: str) -> DriftPart:
+    summary = DriftSummary("unknown", detail=detail)
+    return summary, SourceObservation("drift", "derived", "unavailable", detail=detail), ()
+
+
+async def _limits_guarded(
+    env: Environment,
+    *,
+    now: datetime,
+    resolve: Resolver,
+    timeout_seconds: float,
+    flights: Flights,
+) -> LimitsPart:
+    try:
+        capacity, source, _probe = await collect_limits_async(
+            env, now=now, resolve=resolve, timeout_seconds=timeout_seconds, flights=flights
+        )
+        return capacity, source, ()
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed("limits", "official", exc)
+        return _capacity_unavailable(source.detail or "collector crashed"), source, (incident,)
+
+
+QuotaPart = tuple[QuotaMetric, SourceObservation, tuple[Incident, ...]]
+
+
+async def _quota_guarded(
+    key: str,
+    label: str,
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    interval_seconds: float,
+    timeout_seconds: float,
+    flights: Flights,
+    fetch: QuotaFetch,
+) -> QuotaPart:
+    """``collect_quota`` in a worker with a deadline; a deadline or a busy worker is one tick of
+    "no data" with the reason, the cache untouched until the worker returns."""
+    try:
+        metric, source = await flights.run(
+            key,
+            collect_quota,
+            key,
+            label,
+            cache,
+            now=now,
+            interval_seconds=interval_seconds,
+            fetch=fetch,
+            timeout_seconds=timeout_seconds,
+        )
+        return metric, source, ()
+    except TimeoutError:
+        return (*_quota_unavailable(key, label, f"no answer within {timeout_seconds:g} s"), ())
+    except StillRunning:
+        return (*_quota_unavailable(key, label, "previous request has not returned"), ())
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed(f"{key}_quota", "official", exc)
+        return QuotaMetric(label, "unavailable", detail=source.detail), source, (incident,)
+
+
+def _quota_unavailable(key: str, label: str, detail: str) -> tuple[QuotaMetric, SourceObservation]:
+    return (
+        QuotaMetric(label, "unavailable", detail=detail),
+        SourceObservation(f"{key}_quota", "official", "unavailable", detail=detail),
+    )
+
+
+async def _externals_guarded(
+    env: Environment,
+    caches: dict[str, Any] | None,
+    *,
+    now: datetime,
+    interval_seconds: float,
+    timeout_seconds: float,
+    period_seconds: float | None,
+    flights: Flights,
+    fetch: ExternalFetch,
+) -> list[QuotaPart]:
+    if not env.limits_enabled:
+        return []
+    store = caches if caches is not None else {}
+    show = _show_seconds(interval_seconds, period_seconds)
+    parts = await asyncio.gather(
+        *(
+            _external_guarded(
+                source,
+                _cache_for(store, source.key),
+                now=now,
+                interval_seconds=interval_seconds,
+                show_seconds=show,
+                timeout_seconds=timeout_seconds,
+                flights=flights,
+                fetch=fetch,
+            )
+            for source in read_sources(env.limits_sources)
+        )
+    )
+    return list(parts)
+
+
+async def _external_guarded(
+    source: ExternalSource,
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    interval_seconds: float,
+    show_seconds: float,
+    timeout_seconds: float,
+    flights: Flights,
+    fetch: ExternalFetch,
+) -> QuotaPart:
+    """``external_tick`` in the source's own worker under the tick's deadline. A deadline or a
+    worker still running shows the source's last line with its own stamp; the worker writes its
+    answer to ``cache`` when it returns, and the next tick shows it."""
+    if source.problem:
+        return _external_refused(source, cache)
+    try:
+        item = await flights.run(
+            f"external:{source.key}",
+            external_tick,
+            source,
+            cache,
+            now=now,
+            interval_seconds=interval_seconds,
+            fetch=fetch,
+            timeout_seconds=timeout_seconds,
+        )
+    except TimeoutError:
+        missed = f"no answer within {timeout_seconds:g} s"
+        item = _cached_line(cache, now=now, show_seconds=show_seconds, missed=missed)
+    except StillRunning:
+        missed = "previous request has not returned"
+        item = _cached_line(cache, now=now, show_seconds=show_seconds, missed=missed)
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        label = _external_label(source, cache, {})
+        observation, incident = _collector_crashed(f"{label} limits", "official", exc)
+        metric = QuotaMetric(label, "unavailable", detail=observation.detail)
+        return metric, observation, (incident,)
+    return external_part(source, cache, item, now=now, show_seconds=show_seconds)
+
+
+# The log's worker; the plugin requires the name (``REQUIRED_API``): it came with
+# ``gemini_cache`` in 0.8.1, and a copy without it would refuse that argument on every tick.
+GEMINI_LOG = "gemini_log"
+
+
+async def _gemini_guarded(
+    env: Environment,
+    cache: dict[str, Any] | None,
+    *,
+    now: datetime,
+    timeout_seconds: float,
+    flights: Flights,
+) -> GeminiPart:
+    """``collect_gemini`` in the log's own worker under the tick's deadline, never on the loop.
+    A deadline or a worker still reading shows what the record remembers; the worker writes the
+    record when it returns, and the next tick reads it."""
+    store = cache if cache is not None else {}
+    try:
+        return await flights.run(
+            GEMINI_LOG, collect_gemini, env, store, now=now, timeout_seconds=timeout_seconds
+        )
+    except TimeoutError:
+        return _gemini_missed(store, now, "log read timed out")
+    except StillRunning:
+        return _gemini_missed(store, now, "still reading the log")
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed(GEMINI_LOG, "local", exc)
+        metric, _source, incidents = _gemini_remembered(store, source, now)
+        return metric, source, (*incidents, incident)
+
+
+def _gemini_missed(cache: dict[str, Any], now: datetime, detail: str) -> GeminiPart:
+    source = SourceObservation(GEMINI_SOURCE, "local", "unavailable", detail=detail)
+    return _gemini_remembered(cache, source, now)
+
+
+def _gemini_remembered(
+    cache: dict[str, Any], source: SourceObservation, now: datetime
+) -> GeminiPart:
+    """What the record remembers, read on the loop after the worker missed or crashed. The
+    record may be what the worker crashed on: one that cannot be read is no refusal, never an
+    exception out of the tick."""
+    try:
+        return remembered_part(cache, source, now=now)
+    except Exception:
+        logger.exception("gemini_log record unreadable; the line shows no refusal")
+        return remembered_part(None, source, now=now)
+
+
+VersionPart = tuple[VersionSummary | None, tuple[Incident, ...]]
+VERSION_FLIGHT = "duckwork_version"
+
+
+async def _version_guarded(
+    cache: dict[str, Any] | None,
+    *,
+    now: datetime,
+    interval_seconds: float,
+    timeout_seconds: float,
+    flights: Flights,
+    fetch: VersionFetch,
+    local: LocalVersion,
+) -> VersionPart:
+    """The version line: the running version is one attribute read here; the upstream check
+    runs in the plugin's own worker under a deadline, at most once per 15 minutes through
+    ``cache``. A hung or failing GitHub keeps the last answer with the reason, or is this line's
+    "no data" without one; never a stalled loop or a missing screen. The line is no source, so
+    it moves neither the status nor the coverage."""
+    if cache is None:
+        return None, ()
+    incidents: list[Incident] = []
+    try:
+        running, local_reason = local()
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed(VERSION_FLIGHT, "local", exc)
+        running, local_reason = None, source.detail
+        incidents.append(incident)
+    item = await _version_attempt(
+        cache,
+        now=now,
+        interval_seconds=interval_seconds,
+        timeout_seconds=timeout_seconds,
+        flights=flights,
+        fetch=fetch,
+        incidents=incidents,
+    )
+    return summarize_version(item, running, local_reason), tuple(incidents)
+
+
+async def _version_attempt(
+    cache: dict[str, Any],
+    *,
+    now: datetime,
+    interval_seconds: float,
+    timeout_seconds: float,
+    flights: Flights,
+    fetch: VersionFetch,
+    incidents: list[Incident],
+) -> dict[str, Any]:
+    """The cache item for this tick; a deadline or a busy worker is one tick of "no data", the
+    cache untouched until the worker returns."""
+    try:
+        return await flights.run(
+            VERSION_FLIGHT,
+            version_tick,
+            cache,
+            now=now,
+            interval_seconds=interval_seconds,
+            fetch=fetch,
+            timeout_seconds=timeout_seconds,
+        )
+    except TimeoutError:
+        return _version_missed(now, f"no answer within {timeout_seconds:g} s", cache)
+    except StillRunning:
+        return _version_missed(now, "previous request has not returned", cache)
+    except _UNGUARDED:
+        raise
+    except BaseException as exc:
+        source, incident = _collector_crashed(VERSION_FLIGHT, "official", exc)
+        incidents.append(incident)
+        missed = _version_missed(now, source.detail or "collector crashed", cache)
+        # A crash is an attempt too, cached for the interval: a parsing bug must not ask GitHub
+        # on every tick. The worker has returned (it raised); nothing else writes the cache now.
+        cache["attempted_at"] = now.isoformat()
+        cache["item"] = missed
+        return missed
+
+
+def _version_missed(now: datetime, reason: str, cache: dict[str, Any]) -> dict[str, Any]:
+    """No answer this tick; the last one in the cache stays, with the reason."""
+    known = known_release_answer(cache.get("item"))
+    if known is not None:
+        return {**known, "reason": reason, "checked_at": now.isoformat()}
+    return {"status": "unavailable", "reason": reason, "checked_at": now.isoformat()}
+
+
+def _collector_crashed(
+    name: str, authority: Authority, exc: BaseException
+) -> tuple[SourceObservation, Incident]:
+    """An exception the collector did not foresee: class name only, the text may carry paths."""
+    reason = failure_name(exc)
+    logger.exception("collector %s crashed; source marked unavailable", name)
+    source = SourceObservation(
+        name, authority, "unavailable", detail=f"collector crashed: {reason}"
+    )
+    incident = Incident(f"collector:{name}", "warning", f"Collector {name} crashed ({reason})")
+    return source, incident

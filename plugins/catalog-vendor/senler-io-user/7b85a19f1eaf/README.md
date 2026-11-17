@@ -1,0 +1,474 @@
+![Senler.io for Duckwork Agent](assets/catalog-banner.png)
+
+# Senler.io User for Duckwork Agent
+
+Connect your Senler.io account to Duckwork through MCP OAuth and automate selected
+webhook events with an outbound Relay connection. The MCP address is bundled;
+each user signs in to their own account. A public IP, inbound port or tunnel is
+not required for Relay.
+
+Version **0.5.6** is a preview. The maintainer previously confirmed installation and
+in-chat sign-in on native Windows Desktop. The new automatic MCP preparation still
+needs a Desktop UI check. Automated tests cover connection,
+installation and Relay behavior; a real Senler event workflow still needs its
+own end-to-end check. See [verification details](docs/packaging.md).
+
+## Quick start
+
+Use a current Duckwork installation with native plugins, MCP OAuth, in-chat
+connection management, plugin platforms and the Relay transport. Install in the
+same Duckwork instance and profile that executes your agent. Git is required for
+installation from this repository.
+
+```sh
+duckwork plugins install SenlerBot/senler-io-user-duckwork-plugin --no-enable
+duckwork plugins enable senler-io-user
+```
+
+When Duckwork first loads the enabled plugin, it automatically prepares
+`senler-io-user` in the current profile's **Connections / MCP**. Select it and
+choose **Authorize** to complete native Duckwork sign-in. You can also open a new
+chat and ask **"Connect Senler"** to use Duckwork's authorization card. No MCP URL
+or OAuth settings need to be entered. The terminal alternative is `duckwork senler connect`.
+
+Then try **"List my Senler projects and their IDs. Do not change anything."**
+To set up automation, name the project, event types and intended actions, for
+example **"Process incoming messages in my Support project and draft replies.
+Do not send them."** Duckwork creates or reuses the requested subscription; Senler
+activates it after the connection check succeeds. The Duckwork gateway must remain
+running for background processing, and Senler API/User MCP must support Duckwork
+Relay subscriptions. Gateway proxy mode and multiplexed profiles are not supported.
+
+For monitoring, ask **"Watch incoming messages in Support and notify me in my
+connected Telegram chat only when I need to intervene. Do not reply to customers."**
+Duckwork uses `senler_relay` for local setup and native MCP tools for Senler. The
+recipient is resolved before subscription setup; a plain test message confirms
+delivery. Quiet events produce no notification. Any selected event type can use this.
+
+**Desktop/TUI:** plain notifications to an arbitrary local chat are not supported.
+For "notify me here", select a connected messaging channel if the current surface
+cannot receive messages. The plugin reports this before creating a monitor. It
+does not silently use another chat or start a second agent turn. Connection,
+event processing and notification delivery are checked separately.
+
+The plugin is listed in the [official Duckwork catalog](https://github.com/DuckMind/duckwork).
+Catalog installations use the reviewed commit pinned there; newer commits from
+this repository reach the catalog through a separate review. Updates use
+`duckwork plugins update senler-io-user`.
+
+Version 0.5.2 prepares the MCP entry automatically on first activation in each
+profile. Existing settings and authorization are preserved. Later loads respect
+disabled or manually deleted connections; ask **"Connect Senler"** to restore a
+deleted entry. A plugin installed with `--no-enable` waits until it is enabled
+and loaded by Duckwork.
+
+Version 0.5.6 expands the Senler assistance skill with documentation-led product
+guidance, agent/automation selection, scoped edits and publication, investigation
+of incorrect answers, knowledge changes, tables, access conditions and verified
+testing. The [workflow reference](skills/senler-io-user/references/senler-workflows.md)
+uses Duckwork's native tools and links; it does not assume Cabinet widget controls.
+For example: **"Help me choose an agent or an automation for this Senler task"**
+or **"Find why this agent answered incorrectly and propose an instruction change."**
+Duckwork loads this guidance as a skill for the relevant interactive task. Relay
+continues to embed its event instruction and the operator's saved processing rules.
+
+Version 0.5.5 keeps native setup notices and interim commentary out of Relay
+processing reports. A `/sethome` hint can no longer corrupt the model's final
+notification JSON. An ordinary event with `notify: false` completes without an
+operator notification; malformed or missing final decisions still fail validation.
+
+Version 0.5.4 fixes setup after reinstall: its completion marker now belongs to
+the installation's plugin settings, which Duckwork clears on uninstall. Enabling
+a reinstalled copy prepares a missing MCP entry again. The old durable marker
+from 0.5.2–0.5.3 is ignored, so upgrading also restores a missing entry once.
+Existing connections, including disabled ones, keep their settings. Subsequent
+loads in the same installation still respect manual removal.
+
+Since 0.5.1 the local setup tools have their own `senler-io-setup` toolset so
+they no longer hide the MCP tools under `senler-io-user` (`mcp-senler-io-user`).
+Version 0.5.3 declares `python-socks[asyncio]` for Relay connections through a
+SOCKS proxy. Duckwork installs it through its native package manager when enabling
+or updating the plugin; accept the dependency prompt if shown. The plugin uses
+the existing proxy settings without changing them.
+
+After updating, restart the backend used by Desktop and the running gateway on
+the host that executes the agent, then open a new chat. Restarting another CLI
+backend or opening a new chat alone can leave Desktop using an older loaded
+plugin. The saved MCP connection and OAuth credentials are preserved; signing
+in again is not required.
+
+## Connections, permissions and local data
+
+- **Network:** the configured MCP endpoint is
+  `https://mcp-senler-io-user.senler.io/mcp?auth_mode=oauth`. Duckwork owns OAuth,
+  token storage and refresh. The plugin neither reads OAuth token files nor
+  implements its own login client. Senler access follows the signed-in user's
+  permissions. Automation also connects by WSS to the Relay address returned
+  by Senler; plain WS is accepted only on localhost for development.
+- **Connection setup:** first activation of the enabled plugin prepares the
+  profile's MCP entry through Duckwork's configuration APIs and records completion
+  in its installation-scoped plugin settings. `senler_connect` can also prepare the entry
+  on an explicit chat request. `senler_relay` manages the local
+  subscription, processing policy and notification recipient. Setup enables its platform
+  in the same profile. Existing compatible MCP settings are preserved. Activation
+  only saves connection settings; the plugin does not invoke OAuth, create a
+  subscription or send a customer message. Duckwork owns subsequent MCP discovery
+  and sign-in.
+- **Background execution:** the `senler-io` platform runs inside the Duckwork
+  gateway after the operator configures automation. Its authenticated events
+  use `trusted_inbound` and bypass Duckwork's user-pairing/allowlist flow. The
+  adapter checks the saved project, subscription and event selection, disables
+  gateway commands, and treats customer content as untrusted input. Saved
+  operator instructions determine permitted actions; sending a reply requires
+  an explicit send policy or direct request.
+- **Stored data:** the active Duckwork profile contains `senler-io-relay.sqlite3`
+  and its lock/journal files. The SQLite database stores subscription-specific
+  Relay credentials, operator instructions, event payloads, result reports and
+  notification recipients. At most 1,000 pending notifications are retained for
+  seven days. Latest delivery/test receipts are stored per subscription. A saved
+  final decision is sent through the selected native Duckwork messaging adapter;
+  no additional model call is used for notification delivery.
+  It is not encrypted by the plugin; protect the profile directory and backups.
+  Event runs also create normal Duckwork sessions. Event content is processed by
+  the model provider selected in Duckwork, and result reports of up to 16,000
+  characters are sent back to Senler. The gateway log may contain a short
+  preview. These workflow reports are not optional analytics; the plugin adds
+  no separate telemetry.
+- **Commands:** the terminal connection helper invokes Duckwork's own MCP CLI
+  using the same Python interpreter and profile. The bundled PowerShell scripts
+  invoke local Duckwork commands for installation or Relay setup; Relay credentials
+  are passed through JSON stdin, not command-line arguments. The plugin reads its
+  own bundled settings/skills, its SQLite state and the profile configuration
+  through Duckwork APIs. It does not replace Duckwork core code or update itself.
+- **Stopping and removing:** pause the local processor and disable its Senler
+  subscription before removal. Removing the plugin does not revoke MCP access
+  or subscription credentials, and does not erase the profile's Relay database
+  or Duckwork sessions. Review uncertain actions before retrying interrupted jobs;
+  the plugin does not promise exactly-once execution for arbitrary MCP writes.
+
+Registered capabilities: two tools (`senler_connect`, `senler_relay`), two hooks (`pre_tool_call`,
+`on_session_end`), two skills (`senler-io-user`, `senler-io-incoming`), the `senler`
+CLI command and the `senler-io` platform. The declared Python dependency is
+`python-socks[asyncio]`, required by the native transport for SOCKS proxies.
+No environment secrets, Desktop JavaScript, or standalone background service are
+installed. The command and skill descriptions are in English; detailed Windows
+instructions below are in Russian. Source code is licensed under MIT.
+
+## Русская инструкция
+
+### Senler.io User для Duckwork Agent
+
+Плагин содержит настройки подключения к пользовательскому MCP-серверу Senler.io,
+подключение из чата и два skill: работу с User MCP и обработку входящих. Адрес сервера
+и параметры OAuth уже в пакете; пользователь входит в свой аккаунт Senler.
+Данные и действия доступны с правами этого пользователя.
+
+Версия 0.5.6 — предварительный выпуск с автоматическим добавлением MCP,
+настройкой подписки из чата и уведомлениями
+о событиях, требующих внимания. Duckwork использует инструмент `senler_relay`;
+самостоятельно писать Python-скрипты для MCP или настраивать Relay через консоль не нужно.
+Вебхук типа Duckwork создаётся без URL: Senler выдаёт адрес подключения,
+плагин подключается к нему и подписка включается после автоматической проверки.
+Владелец установки ранее подтвердил установку и вход из чата Windows Desktop;
+новое автоматическое добавление MCP в интерфейсе и обработка настоящего события
+требуют отдельной проверки.
+Новые возможности требуют соответствующего обновления
+Senler API и User MCP; ZIP не обновляет серверы Senler.
+
+## Установка из GitHub на Windows
+
+Нужен актуальный Duckwork с нативными плагинами, регистрацией платформ, Relay transport и OAuth для MCP, а также Git. Используйте тот же Duckwork и
+каталог данных, что и в Desktop; подключение Desktop к другому компьютеру
+требует установки на том компьютере.
+
+```powershell
+duckwork --version
+duckwork plugins install SenlerBot/senler-io-user-duckwork-plugin --no-enable
+duckwork plugins enable senler-io-user
+```
+
+После первого включения и загрузки плагина откройте **Connections / MCP**:
+`senler-io-user` добавляется автоматически. Выберите его и нажмите **Authorize / Авторизоваться**.
+Другой вариант — новый чат Duckwork и просьба **«Подключи Senler»**: Duckwork покажет
+штатную карточку входа. Адрес MCP и параметры OAuth уже заполнены.
+Подробности — в разделе **Подключение Senler** ниже. Публикация в официальном каталоге Duckwork для установки
+из этого репозитория не требуется. Если копия из ZIP уже установлена,
+сначала выполните переход на GitHub-версию по разделу **Обновление** ниже.
+
+## Установка из ZIP на Windows
+
+Скачайте ZIP из [GitHub Releases](https://github.com/DuckMind/duckwork).
+Откройте PowerShell в распакованной папке, рядом с `plugin.yaml`:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+`ExecutionPolicy Bypass` действует только для этого процесса. Скрипт проверяет
+пакет командой `duckwork plugins validate`, копирует файлы и включает плагин
+штатной командой Duckwork. Существующая копия не перезаписывается.
+
+Каталог данных берётся из `DUCKWORK_HOME`, иначе используется современный
+Windows-каталог `%LOCALAPPDATA%\duckwork`. Перед записью проверяется наличие
+`config.yaml`. Для другой установки или профиля укажите фактический каталог
+его `config.yaml`:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -DuckworkHome 'C:\path\to\duckwork-home'
+```
+
+Для предварительного просмотра добавьте `-WhatIf`. Если команда `duckwork` не
+найдена, откройте новый PowerShell или передайте фактический путь к CLI через
+`-DuckworkCommand`. Скрипт не устанавливает и не обновляет сам Duckwork.
+
+## Подключение Senler
+
+После включения и загрузки плагина `senler-io-user` появляется в
+**Connections / MCP** того же профиля. Выберите подключение и нажмите
+**Authorize / Авторизоваться**, чтобы пройти штатный вход Duckwork.
+Если подключение было выключено ранее, сначала включите его в этом разделе.
+
+Для подключения через чат откройте новый чат **того же профиля Duckwork** и напишите:
+
+> Подключи Senler.
+
+Плагин подготовит подключение из [mcp-server.json](mcp-server.json), затем Duckwork
+покажет штатную карточку авторизации. Нажмите кнопку открытия браузера и пройдите
+вход в Senler. После подтверждения Duckwork проверит подключение и загрузит инструменты.
+Сохранённая рабочая авторизация используется повторно. При отмене или ошибке
+Duckwork сообщит результат; настройка обработки событий продолжаться не должна.
+
+Для карточки нужны поддержка подключения MCP из чата и доступный в сессии
+инструмент Duckwork `manage_connections`. Если он недоступен, подготовленное
+подключение будет в разделе **подключений / MCP** Desktop: выберите
+`senler-io-user` и нажмите **Authorize / Авторизоваться**. Настройки уже заполнены.
+Если подключение было выключено, сначала включите его в том же разделе.
+
+После входа попросите:
+
+> Покажи доступные мне проекты Senler: названия и ID. Ничего не изменяй.
+
+Можно сразу попросить обработку входящих: если подключения ещё нет, Duckwork
+сначала предложит вход, затем продолжит настройку. Конфликтующее подключение
+с тем же именем плагин сохраняет и предлагает проверить в настройках.
+Duckwork хранит и обновляет OAuth-токены самостоятельно.
+
+Первое включение и загрузка плагина добавляют MCP автоматически; загрузка файлов
+без включения этого не делает. Совместимое подключение сохраняется с прежними
+настройками. Удалённая после настройки запись не восстанавливается при каждом
+запуске: для её возврата попросите «Подключи Senler». Фоновое событие не может
+запускать вход. Полный сценарий проверки — [docs/windows-test.md](docs/windows-test.md).
+Переустановка плагина сбрасывает отметку настройки: после включения новая копия
+снова добавит отсутствующий MCP. При переходе с 0.5.2–0.5.3 отсутствующая запись
+также восстанавливается один раз; существующее выключенное подключение сохраняется.
+
+### Подключение через терминал
+
+Для серверов и пользователей терминала остаётся команда:
+
+```powershell
+duckwork senler connect
+```
+
+Пройдите вход по ссылке Duckwork и завершите вопросы подключения в терминале.
+Если при установке вы передавали `-DuckworkHome`, сначала задайте `$env:DUCKWORK_HOME`
+с тем же путём в этом PowerShell. Desktop тоже должен использовать этот профиль.
+
+Проверка:
+
+```powershell
+duckwork plugins list
+duckwork senler check
+```
+
+Повторный `connect` проверяет существующее подключение, сохраняя его настройки
+и выбранные инструменты. Duckwork использует сохранённые токены, обновляет их
+или запрашивает вход, если они больше не работают. Для принудительного нового
+входа выполните:
+
+```powershell
+duckwork senler connect --reauthorize
+```
+
+Если под именем `senler-io-user` уже настроен другой сервер или подключение
+выключено, команда объяснит причину и сохранит настройки. Адрес и параметры
+подключения находятся в `mcp-server.json`; вручную копировать их не нужно.
+
+## Автоматическая обработка событий
+
+Агент и плагин должны работать в одном экземпляре Duckwork — на компьютере или
+сервере; модель может быть облачной. Режим пересылки задач другому экземпляру
+Duckwork (`gateway.proxy_url` / `GATEWAY_PROXY_URL`) для входящих событий пока
+не поддерживается: плагин проверяет его при настройке, возобновлении и запуске gateway.
+Во время работы проверка повторяется перед каждым заданием. При несовместимой
+настройке новые задания ждут; причина видна в `duckwork senler relay status`
+как `processing_blocked_reason`. После исправления настройки ожидание снимается
+автоматически, ручная пауза сохраняется. Срок ожидания событий — до 24 часов;
+готовые отчёты продолжают отправляться. Место выполнения агента следует менять
+с остановкой и последующим запуском gateway.
+
+Публичный IP, домен и открытые входящие порты не нужны: Duckwork сам подключается
+к Senler. В обычном чате можно попросить:
+
+> Обрабатывай входящие сообщения проекта «Учебный»: классифицируй вопрос и
+> готовь черновик ответа. Сообщения клиентам пока не отправляй.
+
+Duckwork создаст подписку, проверит приём и включит её в рамках той же просьбы.
+Можно выбрать другие события, отдельные каналы, изменить правила или поставить
+обработку на паузу. User OAuth остаётся одним на пользователя; каждая подписка
+привязана к выбранному проекту.
+
+В новом чате Duckwork сначала находит сохранённые подключения. Повторная просьба
+использует прежний сценарий и ID вебхука. При остановке сначала выключается
+локальный обработчик, затем подписка Senler. Если Senler или OAuth недоступны,
+Duckwork сообщает, что обработчик остановлен локально, а отключение подписки ещё
+не подтверждено. Новые вызовы инструментов остановленной попытки блокируются;
+уже отправленное внешнее действие может завершиться. Сохранённый отчёт доставляется
+в Senler даже на локальной паузе, без возобновления обработки событий.
+
+Результат сохраняется в сессии обработки Duckwork и передаётся в историю подписки Senler (до 16 000 символов). Чтобы увидеть результаты,
+попросите: «Покажи последние черновики обработки Senler проекта „Учебный“».
+Плагин помогает найти сохранённые ответы в истории сессий; они не появляются
+автоматически в исходном чате и не сохраняются как черновики в Senler.
+Журнал gateway содержит только короткое начало ответа.
+
+Для уведомлений попросите: «Следи за входящими проекта „Учебный“ и присылай кратко
+в мой подключённый Telegram, только если требуется моё внимание. Клиентам не отвечай».
+Duckwork уточнит получателя, сохранит правило и проверит доставку тестовым сообщением.
+Обычные события останутся без уведомлений. Для других событий действуют их собственные
+правила. «Присылай сюда» поддерживается для чата в подключённом мессенджере.
+Для произвольного чата Desktop/TUI Duckwork сообщит об ограничении до создания подписки
+и предложит выбрать подключённый канал.
+
+Статус различает сохранённые настройки, свежий сигнал Relay, итог обработки и
+подтверждение доставки уведомления. При недоступном канале и подтверждённом ограничении
+частоты повторяется готовый текст, без нового задания модели. При неизвестном исходе
+отправки автоматического повтора нет: сначала нужно проверить чат получателя.
+Локальная пауза сохраняет доставку уже подготовленных уведомлений. Смена или отключение
+получателя удаляет ещё не отправленные уведомления старому адресату.
+
+Пакет не запускает listener, не создаёт подписки, не отправляет сообщения при
+установке и не добавляет фоновый опрос диалогов.
+
+## Обновление
+
+В 0.5.6 расширена инструкция работы с Senler: выбор между агентом и автоматизацией,
+проверка документации, изменение черновиков и публикация согласованных правок,
+разбор ответов агента и базы знаний, работа с таблицами, условиями доступа и тестами.
+Подробные правила вынесены в [отдельную инструкцию](skills/senler-io-user/references/senler-workflows.md),
+которую Duckwork читает для соответствующей задачи. Вместо инструментов виджета
+используются доступные инструменты Duckwork, MCP и проверенные ссылки.
+Например: «Помоги выбрать агента или автоматизацию для этой задачи в Senler»
+или «Разберись, почему этот агент ответил неверно, и предложи правку инструкции».
+Правила каждой подписки Relay по-прежнему задаются её владельцем отдельно.
+
+В 0.5.5 исправлен сбор отчёта Relay: служебные подсказки Duckwork, включая `/sethome`,
+и промежуточные сообщения больше не склеиваются с итоговым JSON модели.
+Обычное событие с `notify: false` успешно завершается без уведомления оператору.
+Отсутствующий или некорректный итоговый JSON по-прежнему считается ошибкой.
+
+В 0.5.4 исправлено автоматическое добавление MCP после переустановки. Отметка
+завершённой настройки хранится через штатные настройки плагина и удаляется
+Duckwork вместе с установкой. Старая отметка в постоянных данных 0.5.2–0.5.3 больше
+не блокирует подготовку: отсутствующий MCP восстанавливается один раз при обновлении.
+Существующее подключение, его настройки и выключенное состояние сохраняются.
+
+В 0.5.3 добавлена зависимость `python-socks[asyncio]` для Relay через SOCKS-прокси.
+Duckwork устанавливает её штатным менеджером пакетов при включении или обновлении
+плагина; подтвердите установку зависимости, если появится запрос. Настройки
+прокси сохраняются. Ошибка загрузки зависимости теперь отмечается в журнале
+gateway как `reason=dependency_error`, отдельно от сетевой ошибки и отказа HTTP.
+
+В 0.5.2 MCP добавляется автоматически при первой загрузке включённого плагина
+в каждом профиле. Обновление сохраняет существующее подключение, его выключенное
+состояние и авторизацию. Если запись отсутствует, она будет подготовлена без
+отдельной просьбы в чате. После этого намеренно удалённая запись сама не возвращается.
+
+В 0.5.1 исправлен конфликт имён: локальные действия `senler_connect` и `senler_relay`
+получили отдельный набор `senler-io-setup`. MCP по-прежнему называется `senler-io-user`
+и использует набор `mcp-senler-io-user` с коротким именем `senler-io-user`.
+Если вы вручную выбираете наборы инструментов, эти имена относятся к разным
+действиям. Уже добавленный `mcp-senler-io-user` продолжит работать. Настройки
+подключения и сохранённая авторизация остаются прежними; исправление не требует
+повторного входа или правки конфигурации.
+
+Если раньше был настроен HTTP-приёмник из версии 0.3, перед обновлением поставьте
+его вебхук в Senler на паузу и дождитесь завершения выполняющихся заданий.
+Удалите прежний маршрут штатными средствами Duckwork. После обновления создайте
+подписку типа Duckwork. Тип существующего HTTP-вебхука не меняется автоматически.
+Это разовый переход: в версии 0.4 плагин использует только Relay для получения событий.
+
+Копия, установленная из GitHub, обновляется штатной командой:
+
+```powershell
+duckwork plugins update senler-io-user
+```
+
+ZIP-копия не имеет Git-источника для `duckwork plugins update`. Перед заменой
+сохраните свои правки внутри папки плагина, если они есть. Удалите только этот
+плагин штатной командой, затем выполните установку из GitHub выше или установите
+новую ZIP-версию:
+
+```powershell
+duckwork plugins remove senler-io-user
+```
+
+После обновления перезапустите серверный процесс, к которому подключён Desktop,
+и работающий gateway на компьютере или сервере, который выполняет запросы.
+Если одновременно работают `serve` и `desktop-serve`, перезапуск только `serve`
+может оставить Desktop со старым кодом плагина. Переключение MCP или новый чат
+сами по себе код не перезагружают. После перезапуска откройте новый чат в нужном
+профиле и попросите **«Вызови senler_relay с action: status»**.
+Сохранённое MCP-подключение будет использовано с его прежними настройками.
+Если плагин выключен, включите его в интерфейсе или командой
+`duckwork plugins enable senler-io-user`.
+
+Настройки Relay и очередь находятся
+в профиле Duckwork и сохраняются при замене файлов плагина. Ручная пауза остаётся
+в силе. Перед полным удалением попросите отключить соответствующие подписки
+Senler; само удаление пакета не отзывает MCP-доступ и ключи подписок.
+
+Исходники и выпуски: [SenlerBot/senler-io-user-duckwork-plugin](https://github.com/DuckMind/duckwork).
+Не добавляйте в репозиторий папку данных Duckwork, OAuth-токены и `senler-io-relay.sqlite3`.
+
+## Логотип и формат пакета
+
+В `assets/icon.svg` включена точная копия логотипа кабинета Senler.io из
+`aibot-cabinet/public/senler-logo.svg`: голубой знак со звездой, цвет `#00ADFF`.
+Этот же знак используется в баннере README и копируется при установке.
+Пакет использует нативный `plugin.yaml` и Python-точку входа: они регистрируют
+действие подключения из чата, CLI-команду, skills и платформу Senler Relay.
+
+Изображение карточки в каталоге Duckwork задаётся отдельным полем `image` в записи
+этого каталога. Наличие SVG в ZIP само по себе не назначает значок плагину в
+Desktop. Плагин уже принят в каталог; новые версии и изображения появляются
+там после отдельного обновления записи. Подробности проверки и публикации —
+[docs/packaging.md](docs/packaging.md).
+
+## Проверки разработчика
+
+Проба регистрации из валидатора Duckwork на указанном в
+[packaging.md](docs/packaging.md) коммите проверяет импорт нативного плагина
+и команду `senler`. Тесты подключения проверяют OAuth-команды, сохранение
+существующих настроек и обработку отмены или ошибок. Проверка установщика выполняется в PowerShell с тестовой
+командой вместо Duckwork, во временном каталоге: проверяются успешная установка,
+копирование логотипа, пути с пробелами, `-WhatIf`, сохранение старой копии
+и остановка при ошибках.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\install.Tests.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\run-relay.Tests.ps1
+python -m unittest discover -s tests -p 'test_*.py'
+```
+
+Эти проверки не выполняют вход в Senler и не заменяют тест в настоящем Duckwork.
+
+## Источники совместимости
+
+Проверено по документации Duckwork 11 октября 2026; проверенный коммит исходников
+указан в [docs/packaging.md](docs/packaging.md).
+
+- [Нативные плагины Duckwork](https://duckwork-agent.fordex.com/docs/developer-guide/plugins)
+- [Native Windows](https://duckwork-agent.fordex.com/docs/user-guide/windows-native)
+- [MCP OAuth](https://duckwork-agent.fordex.com/docs/user-guide/features/mcp/#oauth-authenticated-http-servers)
+- [Похожая схема OAuth-установки](https://duckwork-agent.fordex.com/docs/plugins/letsfg)

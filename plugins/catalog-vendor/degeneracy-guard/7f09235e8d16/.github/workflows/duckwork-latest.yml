@@ -1,0 +1,52 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: duckwork-latest
+
+# Same checks as tests.yml, against the current Duckwork main instead of the pinned commit.
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  duckwork-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Fordex/duckwork-agent
+          ref: main
+          path: .duckwork-agent
+          persist-credentials: false
+
+      - name: Duckwork commit under test
+        run: |
+          commit="$(git -C .duckwork-agent rev-parse HEAD)"
+          echo "Duckwork commit: $commit"
+          echo "Duckwork commit: \`$commit\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Duckwork and pytest
+        run: |
+          python -m pip install uv
+          uv venv -p "$(command -v python)" "$RUNNER_TEMP/duckwork-venv"
+          VIRTUAL_ENV="$RUNNER_TEMP/duckwork-venv" uv pip install -e .duckwork-agent pytest
+
+      # Plugin enabled through config.yaml in a temporary DUCKWORK_HOME; no network.
+      - name: duckwork plugins validate / doctor (no network)
+        run: |
+          sudo unshare --net -- sudo -u "$USER" env PATH="$PATH" HOME="$HOME" \
+            .github/scripts/duckwork-tools.sh "$RUNNER_TEMP/duckwork-venv/bin/duckwork"
+
+      # Tests run in an empty network namespace, so any network access fails.
+      - name: pytest (no network)
+        run: |
+          sudo unshare --net -- sudo -u "$USER" env PATH="$PATH" HOME="$HOME" \
+            "$RUNNER_TEMP/duckwork-venv/bin/python" -m pytest tests -v -rs

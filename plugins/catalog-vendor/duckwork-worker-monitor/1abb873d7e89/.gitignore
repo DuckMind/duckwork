@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Local secrets and runtime data — never commit
+.env
+.env.*
+!.env.example
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Tooling, editors, OS
+.codegraph/
+node_modules/
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Local orchestration context (machine specific)
+.duckwork.md

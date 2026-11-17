@@ -1,0 +1,114 @@
+{
+  "$schema": "https://duckwork-agent.fordex.com/schemas/plugin-marketplace/v1.json",
+  "schemaVersion": 1,
+  "id": "session-flow",
+  "name": "Session Flow",
+  "tagline": "Five UX features for the Duckwork Desktop session sidebar in one plain-ESM plugin",
+  "summary": "Ctrl+Scroll session cycling, Firefox-style session groups with project grouping, a session pane with list/grid views, sidebar-style content tabs, and personalization — five features in one plugin, all live-configurable from a built-in settings page.",
+  "description": "Session Flow turns Duckwork Desktop's session sidebar into something that *feels* like a real app:\n\n1. **Ctrl+Scroll = session cycling** — hold a modifier and wheel through your active sessions; a HUD shows position and title. Zoom surfaces keep their own behaviour.\n2. **Session pane with Firefox-style groups** — list or grid, groups collapse into a stack (spine/fanned/pill), optional auto-grouping by date/source/project folder. Drop a tab on a project header to move it. Live status icons (thinking / writing / tool / waiting / done / error). Search + quick filter bar. App quick-start row above the toolbar.\n3. **Sidebar-style UI tabs** — content-area tabs become rounded chips like the sidebar session rows. Live session info from the sidebar: working sessions get the travelling glow ring on their tab.\n4. **Personalization** — pick your own accent color and choose the pane surface (native sidebar / chat / none).\n\nAll live-configurable from a built-in settings page (EN + DE). The standalone full build in this repo adds chat line animation, composer glass and a chat background via documented Desktop-Bridge doors — it is not part of the catalog entry and is disclosed in the repo README.",
+  "version": "1.29.1",
+  "author": {
+    "name": "AGANTILA — Deniz Yilmaz",
+    "url": "https://agantila.com",
+    "contact": "info@agantila.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/agantila/session-flow",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agantila/session-flow.git"
+  },
+  "icon": "docs/marketing/heroes/sf-hero-a1-sessionpane-liste-16x9.png",
+  "banner": "docs/marketing/animation/sf-hyperframes-1920x1080-5s.gif",
+  "media": {
+    "showcase": [
+      "docs/marketing/heroes/sf-hero-a1-sessionpane-liste-16x9.png",
+      "docs/marketing/heroes/sf-hero-a2-sessionpane-grid-16x9.png",
+      "docs/marketing/heroes/sf-hero-a3-chat-kaskade-16x9.png",
+      "docs/marketing/heroes/sf-hero-a4-composer-glass-16x9.png",
+      "docs/marketing/heroes/sf-hero-a5-ctrlscroll-hud-16x9.png",
+      "docs/marketing/heroes/sf-hero-a6-contenttabs-16x9.png",
+      "docs/marketing/heroes/sf-hero-a7-settings-16x9.png",
+      "docs/marketing/heroes/sf-hero-a8-workspace-personal-16x9.png",
+      "docs/marketing/heroes/sf-hero-a9-sidebar-kanban-files-16x9.jpg",
+      "docs/marketing/heroes/sf-hero-a10-sidebar-grid-9x16.png"
+    ],
+    "social_crops_4x5": [
+      "docs/marketing/crops/sf-hero-a1-sessionpane-liste-4x5.png",
+      "docs/marketing/crops/sf-hero-a4-composer-glass-4x5.png",
+      "docs/marketing/crops/sf-hero-a7-settings-4x5.png"
+    ],
+    "components_1x1": "docs/marketing/components/",
+    "hyperframes_5s": {
+      "mp4": "docs/marketing/animation/sf-hyperframes-1920x1080-5s.mp4",
+      "webm": "docs/marketing/animation/sf-hyperframes-1920x1080-5s.webm",
+      "gif": "docs/marketing/animation/sf-hyperframes-1920x1080-5s.gif"
+    }
+  },
+  "categories": [
+    "ui",
+    "productivity",
+    "chat",
+    "sidebar",
+    "session-management"
+  ],
+  "tags": [
+    "chat-animation",
+    "ctrl-scroll",
+    "session-groups",
+    "glass-effect",
+    "ui-tabs",
+    "personalization",
+    "settings-page",
+    "kanban-aware",
+    "projects-aware"
+  ],
+  "platform": {
+    "name": "duckwork-desktop",
+    "minVersion": ">=0.21.5",
+    "pluginSdk": "@duckwork/plugin-sdk",
+    "runtime": "esm",
+    "singleFile": true,
+    "builds": {
+      "catalog": {
+        "entry": "desktop/plugin.js",
+        "note": "SDK-only build — the entry the Duckwork Plugin Catalog lists and loads at the pinned SHA (catalog rule 8)."
+      },
+      "full": {
+        "entry": "full/plugin.js",
+        "note": "Standalone build with all UI decorations (composer chip, glass, UI tabs, chat animation, chat background) — distributed via install.sh, not part of the catalog entry."
+      }
+    }
+  },
+  "install": {
+    "type": "file",
+    "entry": "desktop/plugin.js",
+    "commands": {
+      "linux": "./install.sh",
+      "linux-dev": "./install.sh --link",
+      "linux-catalog": "./install.sh --variant catalog"
+    },
+    "deepLink": "duckwork://plugin/install?repo=agantila/session-flow"
+  },
+  "permissions": [],
+  "dependencies": {
+    "runtime": [],
+    "peer": [
+      "react",
+      "react/jsx-runtime"
+    ]
+  },
+  "size": {
+    "pluginJs": "420922",
+    "pluginJsHuman": "≈ 411 KB (catalog) / ≈ 521 KB (full)"
+  },
+  "locales": [
+    "en",
+    "de"
+  ],
+  "testedOn": {
+    "host": "Linux (Wayland/KDE)",
+    "duckworkDesktop": "0.5.x"
+  },
+  "notes": "Two builds from one source: desktop/plugin.js (SDK-only catalog build, rule-8 clean — the entry the catalog loads) and full/plugin.js (standalone, all UI decorations, via install.sh). All 30 marketing images are reproducible from the HTML sources under docs/marketing/src/. Contact: info@agantila.com."
+}

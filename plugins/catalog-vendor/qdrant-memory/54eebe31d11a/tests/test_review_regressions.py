@@ -1,0 +1,208 @@
+"""Regression contracts for verified review findings and initialization cleanup."""
+
+from types import SimpleNamespace
+
+import pytest
+from qdrant_client import QdrantClient
+
+from qdrant_memory import create_provider
+from qdrant_memory.ledger import Ledger
+from qdrant_memory.migration import map_record, migrate
+from qdrant_memory.models import Scope
+from qdrant_memory.provider import QdrantMemoryProvider
+from scripts.evaluate import evaluate
+
+from .helpers import LLM, Embedder, config, runtime
+
+
+@pytest.mark.parametrize("status", ["PENDING", "FAILED"])
+def test_unchanged_migration_supersedes_older_open_write(tmp_path, status):
+    """Verify unchanged migration supersedes older open write."""
+    rt = runtime(tmp_path)
+    records = [{"id": "one", "memory": "current"}]
+    first = migrate(rt, records, "mem0-json", "fixture")
+    identifier = next(iter(first["records"]))
+    _, stale = map_record({"id": "one", "memory": "stale"}, Scope(**rt.cfg["scope"]))
+    key = rt.operation(identifier, "UPSERT", stale)
+    if status == "FAILED":
+        rt.ledger.failure("operations", key, ValueError("invalid"), terminal=True)
+    result = migrate(rt, records, "mem0-json", "fixture")
+    assert result["updated"] == 1
+    assert rt.ledger.row("operations", key)["status"] == "SUPERSEDED"
+    rt.ledger.retry_failed()
+    rt.recover()
+    assert next(rt.store.scroll()).payload["text"] == "current"
+    rt.store.close()
+    rt.ledger.close()
+
+
+def test_missing_migration_operation_fails_explicitly(tmp_path):
+    """Verify missing migration operation fails explicitly."""
+    rt = runtime(tmp_path)
+    records = [{"id": "one", "memory": "cats"}]
+    manifest = migrate(rt, records, "mem0-json", "fixture")
+    key = next(iter(manifest["records"].values()))["operation_key"]
+    with rt.ledger.db:
+        rt.ledger.db.execute("DELETE FROM operations WHERE idempotency_key=?", (key,))
+    with pytest.raises(ValueError, match="Missing migration operation"):
+        migrate(rt, records, "mem0-json", "fixture", resume=True, retry_failed=True)
+    retained = rt.ledger.manifests()[-1]
+    assert retained["failed"] == 1
+    assert retained["completed_at"] is None
+    rt.store.close()
+    rt.ledger.close()
+
+
+def test_open_operations_query_is_collection_scoped(tmp_path):
+    """Verify open operations query is collection scoped."""
+    own, other = Ledger(tmp_path, "own"), Ledger(tmp_path, "other")
+    own.enqueue_operation("same-point", "UPSERT", {})
+    assert own.has_open_operations("same-point")
+    assert not other.has_open_operations("same-point")
+    own.close()
+    other.close()
+
+
+def test_collector_registers_task_on_created_runtime_context(monkeypatch):
+    """Verify collector registers task on created runtime context."""
+    tasks = []
+    ctx = SimpleNamespace(register_memory_provider=lambda provider: None)
+    runtime_ctx = SimpleNamespace(
+        llm=LLM(), register_auxiliary_task=lambda *args, **kwargs: tasks.append((args, kwargs))
+    )
+    monkeypatch.setattr("duckwork_cli.plugins.PluginContext", lambda *args: runtime_ctx)
+    monkeypatch.setattr("duckwork_cli.plugins.get_plugin_manager", lambda: object())
+    provider = create_provider(ctx)
+    assert provider.context is runtime_ctx
+    assert tasks[0][0] == ("qdrant_memory_extraction",)
+
+
+@pytest.mark.parametrize("failure_stage", ["Ledger", "Runtime"])
+def test_initialization_releases_resources_after_setup_failure(
+    tmp_path, monkeypatch, failure_stage
+):
+    """Verify initialization releases resources after setup failure."""
+    closed = []
+    embedder = Embedder()
+    embedder.close = lambda: closed.append("embedder")
+    client = QdrantClient(path=str(tmp_path / "store"))
+    p = QdrantMemoryProvider(
+        SimpleNamespace(llm=LLM()), embedder=embedder, client=client, overrides=config()
+    )
+
+    def tracked_ledger(*args):
+        """Track closure while retaining a real SQLite ledger."""
+        ledger = Ledger(*args)
+        original = ledger.close
+
+        def close():
+            """Record closure and release the real ledger connection."""
+            closed.append("ledger")
+            original()
+
+        ledger.close = close
+        return ledger
+
+    monkeypatch.setattr("qdrant_memory.provider.Ledger", tracked_ledger)
+
+    def fail(*args, **kwargs):
+        """Inject a deterministic failure at the exercised boundary."""
+        raise RuntimeError("setup failed")
+
+    monkeypatch.setattr("qdrant_memory.provider." + failure_stage, fail)
+    with pytest.raises(RuntimeError, match="setup failed"):
+        p.initialize("session", duckwork_home=str(tmp_path))
+    assert "embedder" in closed
+    if failure_stage == "Runtime":
+        assert "ledger" in closed
+    # Local persistence can be reopened only if the original client was closed.
+    reopened = QdrantClient(path=str(tmp_path / "store"))
+    reopened.close()
+
+
+def test_retrieval_evaluation_handles_no_results():
+    """Verify retrieval evaluation handles no results."""
+    store = SimpleNamespace(upsert=lambda records: None, search=lambda *args, **kwargs: [])
+    result = evaluate(
+        {
+            "memories": [{"id": "one", "text": "猫"}],
+            "queries": [{"query": "猫", "relevant_ids": ["one"]}],
+        },
+        store,
+        Scope("user", None),
+    )
+    assert result["precision_at_1"] == 0
+    assert result["precision_at_5"] == 0
+    assert result["recall_at_1"] == 0
+    assert result["recall_at_5"] == 0
+    assert result["recall_at_10"] == 0
+    assert result["mrr"] == 0
+
+
+def test_retrieval_evaluation_normalizes_missing_and_null_categories():
+    """Group absent and null labels without breaking sorted mixed categories."""
+    store = SimpleNamespace(upsert=lambda records: None, search=lambda *args, **kwargs: [])
+    result = evaluate(
+        {
+            "memories": [{"id": "one", "text": "猫"}],
+            "queries": [
+                {"query": "first", "relevant_ids": ["one"]},
+                {"query": "second", "relevant_ids": ["one"], "category": None},
+                {"query": "third", "relevant_ids": ["one"], "category": "paraphrase"},
+            ],
+        },
+        store,
+        Scope("user", None),
+    )
+
+    assert list(result["by_category"]) == ["paraphrase", "uncategorized"]
+    assert result["by_category"]["uncategorized"]["queries"] == 2
+
+
+def test_retrieval_evaluation_reports_cutoffs_and_case_categories():
+    """Verify multi-label recall, precision cutoffs, MRR and category metrics."""
+    scope = Scope("user", None)
+    memories = [{"id": f"m{i}", "text": f"memory {i}"} for i in range(1, 7)]
+    rankings = {
+        "query one": ["m2", "m3", "m5"],
+        "query two": ["m1", "m2", "m6"],
+    }
+
+    class RankedStore:
+        """Return known rankings so metric math is deterministic."""
+
+        def upsert(self, records):
+            """Capture IDs assigned by the evaluator."""
+            self.rows = records
+
+        def search(self, query, _scope, *, top_k):
+            """Return a deterministic ranking of at most the requested length."""
+            ids = {item["text"]: identifier for identifier, item in self.rows}
+            return [
+                SimpleNamespace(id=ids[f"memory {item[1:]}"]) for item in rankings[query][:top_k]
+            ]
+
+    result = evaluate(
+        {
+            "memories": memories,
+            "queries": [
+                {
+                    "query": "query one",
+                    "relevant_ids": ["m2", "m5"],
+                    "category": "multi-relevant",
+                },
+                {"query": "query two", "relevant_ids": ["m6"], "category": "paraphrase"},
+            ],
+        },
+        RankedStore(),
+        scope,
+    )
+
+    assert result["recall_at_1"] == 0.25
+    assert result["recall_at_5"] == 1
+    assert result["recall_at_10"] == 1
+    assert result["precision_at_1"] == 0.5
+    assert result["precision_at_5"] == pytest.approx(0.3)
+    assert result["mrr"] == pytest.approx(2 / 3)
+    assert result["by_category"]["multi-relevant"]["recall_at_1"] == 0.5
+    assert result["by_category"]["paraphrase"]["mrr"] == pytest.approx(1 / 3)

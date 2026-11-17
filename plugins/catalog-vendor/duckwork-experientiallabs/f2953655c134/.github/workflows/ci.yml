@@ -1,0 +1,50 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    # Offline suite (integration/live are deselected by pyproject addopts).
+    # The tests import the real Duckwork packages, so each run clones
+    # duckwork-agent and syncs its locked dependency set (the same uv flow
+    # Duckwork' own CI uses), then runs pytest from the plugin checkout.
+    name: pytest (offline)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # github.workspace, not runner.temp: the runner context is not
+      # available in job-level env (only in step env/with).
+      DUCKWORK_AGENT_ROOT: ${{ github.workspace }}/duckwork-agent
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Clone duckwork-agent (declared floor release)
+        # requires_duckwork is ">=0.21.6": test against that release, not main,
+        # so CI proves the floor the manifest declares.
+        run: git clone --depth 1 --branch v0.21.6 https://github.com/DuckMind/duckwork "$DUCKWORK_AGENT_ROOT"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "${{ github.workspace }}/duckwork-agent/uv.lock"
+
+      - name: Sync duckwork-agent environment
+        # Python 3.14: Duckwork pins its core dependencies for 3.14 only.
+        # The dev group provides pytest; the core group provides httpx,
+        # ruamel.yaml and everything the plugin's import chain needs.
+        run: uv sync --locked --python 3.14 --group dev
+        working-directory: ${{ env.DUCKWORK_AGENT_ROOT }}
+
+      - name: Run plugin tests
+        run: '"$DUCKWORK_AGENT_ROOT/.venv/bin/python" -m pytest'

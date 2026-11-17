@@ -1,0 +1,768 @@
+#!/usr/bin/env python3
+"""Detect upstream schema drift for the duckwork-guide plugin (baseline-anchored).
+
+`checks.py` / `constants.py` encode knowledge of the Duckwork schema that upstream owns:
+plugin subcategory dirs, skill frontmatter fields, MCP server fields, and hook event
+names. When `Fordex/duckwork-agent` changes the files that define that schema, this
+plugin can silently go stale.
+
+This script diffs the watched schema files between a stored baseline commit
+(`.github/upstream-drift.baseline`) and upstream HEAD, asserts drift-prone facts
+(`DRIFT_FACTS`) and the CI install pin (located in `.github/workflows/`) against
+upstream, and files a GitHub issue on this repo listing the drift. It
+deduplicates (skips) if a drift issue is already open, and tells the reviewer to
+bump the baseline afterward. Runs in CI via
+`.github/workflows/upstream-drift.yml` (weekly + manual).
+
+Requires `git` + the `gh` CLI (both preinstalled on GitHub-hosted runners).
+
+## Scope
+
+This script files **upstream drift** — when Duckwork core changes a schema file
+or a fact this plugin encodes. The fix lands in this repo (constants.py /
+checks.py / SKILL.md). Plugin-side staleness (a count in README/AGENTS that
+no longer matches the tree, an unbumped skill version) is intentionally
+**out of scope**: CI already runs check_self_claim / check_no_mutation /
+check_skill_version_bump on every push, so those surface as red CI runs, not
+as weekly drift issues.
+"""
+
+import atexit
+import json
+import os
+import re
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "Fordex/duckwork-agent")
+WATCH_FILES = os.environ.get(
+    "WATCH_FILES",
+    "duckwork_cli/plugins.py tools/skills_tool.py agent/skill_utils.py "
+    "agent/skill_bundles.py agent/skill_commands.py tools/skills_hub.py "
+    "duckwork_constants.py tools/memory_tool.py tools/memory_tool_store.py "
+    "duckwork_cli/config_defaults.py skills/autonomous-ai-agents/duckwork-agent "
+    # File-level history watch for the credential-pool mapping: the value
+    # assertion was dropped (a secret-named expected value trips the
+    # clear-text-logging gate), so history review carries the coverage.
+    "agent/credential_pool.py duckwork_cli/auth.py",
+).split()
+BASELINE_FILE = Path(".github/upstream-drift.baseline")
+WORKFLOWS_DIR = Path(".github/workflows")
+ISSUE_TITLE_UPSTREAM = "Upstream schema drift detected — review checks.py"
+CLONE_PREFIX = "duckwork-agent-upstream-"
+
+# GitHub refuses issue bodies over 65,536 characters ("Body is too long").
+# The schema-drift log and the per-commit history list both grow with every
+# upstream merge, so cap each section (newest entries are kept) and keep a
+# hard ceiling on the assembled body as a safety net. Dry runs with
+# DRIFT_NO_CAP=1 skip all three caps for local review (see _uncapped).
+MAX_BODY_CHARS = 60_000
+SCHEMA_LOG_LIMIT_CHARS = 18_000
+HISTORY_LIST_LIMIT_CHARS = 40_000
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+
+import constants  # noqa: E402  (repo-root single source of truth)
+
+# Facts that drift across Duckwork versions. Each tuple: (label, upstream path,
+# extraction regex with one capture group, the duckwork-guide constant asserting
+# ground truth). The watched files above cover *schema* drift; this covers *fact*
+# drift in files we intentionally do not watch whole (mcp_tool*.py, config.py).
+#
+# Paths/patterns are anchored to upstream MAIN: the 2026-09 refactor split
+# tools/mcp_tool.py into mcp_tool_*.py siblings (tools/mcp_tool_schema.py now
+# defines MCP_TOOL_NAME_PREFIX, tools/mcp_tool_common.py the tool-call timeout),
+# so each fact targets the file that defines it there.
+DRIFT_FACTS = [
+    ("MCP tool-name prefix", "tools/mcp_tool_schema.py",
+     r'MCP_TOOL_NAME_PREFIX\s*=\s*"([^"]+)"', constants.MCP_TOOL_NAME_PREFIX),
+    ("MCP per-tool-call timeout default (s)", "tools/mcp_tool_common.py",
+     r'_DEFAULT_TOOL_TIMEOUT\s*=\s*(\d+)', str(constants.MCP_TIMEOUT_DEFAULT)),
+    ("MCP connect_timeout default (s)", "tools/mcp_tool.py",
+     r'_DEFAULT_CONNECT_TIMEOUT\s*=\s*(\d+)', str(constants.MCP_CONNECT_TIMEOUT_DEFAULT)),
+    ("MCP config key", "duckwork_cli/config.py",
+     r'"(mcp_servers)"', constants.CONFIG_MCP_SERVERS),
+    # Tuple-shaped so it matches both the loop form (for name in (...):) and the
+    # next()-generator form. The tempered dot (?:(?!\n\ndef ).) never crosses a
+    # top-level def, so the tuple must come from project_venv_dir() itself — a
+    # same-shaped tuple in a later function cannot mask a resolver change.
+    ("project_venv_dir() candidate order (venv wins when both exist)", "duckwork_constants.py",
+     r"(?s)def project_venv_dir\((?:(?!\n\ndef ).)*?\(((?:'|\")venv(?:'|\"),\s*(?:'|\")\.venv(?:'|\"))\)",
+     constants.PROJECT_VENV_ORDER),
+    # Memory facts (consumed by check_memory_hygiene). The delimiter regex
+    # requires a full newline (escaped or real — both literal shapes upstream
+    # has used) on EACH side of the captured character, matching "\n§\n"
+    # (releases through v0.21.0, tools/memory_tool.py) and the real-newline
+    # multi-line literal (main, tools/memory_tool_store.py). A bare "§" or a
+    # one-sided delimiter is drift: check_memory_hygiene() splits only on the
+    # exact "\n§\n" separator.
+    ("Memory entry delimiter (built-in stores)", "tools/memory_tool_store.py",
+     r'(?s)ENTRY_DELIMITER\s*=\s*"(?:\\n|\n)(.)(?:\\n|\n)"',
+     constants.MEMORY_ENTRY_DELIMITER),
+    ("MEMORY.md char limit default", "duckwork_cli/config_defaults.py",
+     r'"memory_char_limit":\s*(\d+)', str(constants.MEMORY_CHAR_LIMIT_DEFAULT)),
+    ("USER.md char limit default", "duckwork_cli/config_defaults.py",
+     r'"user_char_limit":\s*(\d+)', str(constants.USER_CHAR_LIMIT_DEFAULT)),
+    # Credential-pool facts (cited by diagnosing-providers Step 5 and the
+    # configuration guide's Credential pool section). Sibling discovery starts
+    # at _2 and stops at the first gap; custom pools carry the "custom:"
+    # prefix. (The openai-api key-env assertion was dropped: its expected
+    # value trips the clear-text-logging gate, and the claim stays
+    # hand-verified in the skill footers.)
+    ("Credential pool sibling-suffix start index", "agent/credential_pool.py",
+     r"(?s)def _env_key_var_candidates\(.*?\bn\s*=\s*(\d+)",
+     str(constants.CREDENTIAL_POOL_SIBLING_START)),
+    ("Credential pool custom-pool prefix", "agent/credential_pool.py",
+     r'CUSTOM_POOL_PREFIX\s*=\s*"([^"]+)"',
+     constants.CREDENTIAL_POOL_CUSTOM_PREFIX),
+]
+
+
+def read_baseline() -> str:
+    # utf-8-sig: the committed baseline is an editor-written text file that
+    # can carry a UTF-8 BOM, and plain utf-8 leaves a `\ufeff` on the front
+    # that survives .strip() — main() then passes `\ufeff<sha>` to
+    # `git log` and git rejects it as an unknown revision.
+    return BASELINE_FILE.read_text(encoding="utf-8-sig").strip()
+
+
+def _is_link_like(path: str) -> bool:
+    """True for symlinks and, on Windows, for junctions.
+
+    `os.path.islink` is False for a junction and `os.walk` descends into one
+    even with ``followlinks=False``, so the reparse tag is the portable test.
+    `os.path.isjunction` would do it but is 3.12+.
+    """
+    if os.path.islink(path):
+        return True
+    try:
+        attrs = os.lstat(path).st_file_attributes
+    except (AttributeError, OSError):
+        return False  # POSIX has no st_file_attributes
+    return bool(attrs & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
+
+
+def cleanup_clone_dir(dir_path: str) -> None:
+    """Remove the clone this run created; best effort, safe to call twice.
+
+    No `rm -rf`: that is POSIX-only, and on native Windows
+    `subprocess.run(["rm", ...])` raises `FileNotFoundError` before git is even
+    reached. Git also marks pack and commit-graph files read-only, which
+    `shutil.rmtree` cannot unlink on Windows, so clear the bit on regular files
+    first. Links are never followed - not at the clone path, not among the
+    entries - so a chmod cannot land outside the tree.
+    """
+    if _is_link_like(dir_path) or not os.path.isdir(dir_path):
+        return
+    for root, dirs, files in os.walk(dir_path):
+        dirs[:] = [d for d in dirs if not _is_link_like(os.path.join(root, d))]
+        for name in files:
+            path = os.path.join(root, name)
+            if _is_link_like(path):
+                continue
+            try:
+                os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+            except OSError:
+                pass
+    shutil.rmtree(dir_path, ignore_errors=True)
+
+
+def clone_upstream() -> str:
+    """Blobless partial clone of upstream `main` into a per-run temp dir.
+
+    A unique directory per run means the check never deletes a pre-existing tree
+    and no other local user can predict (and prepend a symlink to) the path.
+    """
+    dir_path = tempfile.mkdtemp(prefix=CLONE_PREFIX)
+    atexit.register(cleanup_clone_dir, dir_path)
+    subprocess.run(
+        [
+            "git", "clone", "--filter=blob:none", "--no-checkout",
+            "--single-branch", "--branch", "main",
+            f"https://github.com/{UPSTREAM_REPO}.git", dir_path,
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return dir_path
+
+
+def git(repo_dir: str, *args: str) -> tuple[str, str, int]:
+    proc = subprocess.run(
+        ["git", "-C", repo_dir, *args], capture_output=True, text=True,
+        encoding="utf-8", errors="replace",
+    )
+    return proc.stdout.strip(), proc.stderr.strip(), proc.returncode
+
+
+def git_log(repo_dir: str, ref_range: str, watched: list[str] | None = None) -> list[dict]:
+    """Return upstream commit records in ``ref_range``, one record per commit.
+
+    When ``watched`` is supplied, pass it as a Git pathspec so the history walk
+    returns only commits that touched a watched file. ``--name-only`` keeps the
+    filenames with each commit and avoids one subprocess per commit.
+
+    Each record is::
+
+        {"sha": str, "date": str, "subject": str, "files": [str]}
+
+    Parsing is line-based and tolerant: filename lines are attached to the
+    current commit, while a line that does not match the commit-header shape
+    is retained as a filename only when a commit is active. Only a transport
+    failure (non-zero exit) raises.
+    """
+    cmd = [
+        "git", "-C", repo_dir, "log",
+        "--format=%H%x1f%ci%x1f%s",
+        "--name-only", "--no-renames", "-r",
+        "--diff-merges=separate",
+        ref_range,
+    ]
+    if watched:
+        cmd.extend(["--", *watched])
+    proc = subprocess.run(cmd, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace")
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"git log failed (rc={proc.returncode}): "
+            f"{proc.stderr.strip() or 'unknown error'}"
+        )
+
+    records: list[dict] = []
+    by_sha: dict[str, dict] = {}
+    current: dict | None = None
+    for line in proc.stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split("\x1f")
+        if len(parts) >= 3:
+            sha, date, subject = parts[0].strip(), parts[1].strip(), parts[2].strip()
+            current = by_sha.get(sha)
+            if current is None:
+                current = {
+                    "sha": sha,
+                    "date": date,
+                    "subject": subject,
+                    "files": [],
+                }
+                by_sha[sha] = current
+                records.append(current)
+        elif current is not None:
+            if line not in current["files"]:
+                current["files"].append(line)
+    return records
+
+
+def verify_subcategory_dirs(repo_dir: str, head: str) -> tuple[list[str], str | None]:
+    """Every pinned plugin sub-category dir must exist upstream as a DIRECTORY.
+
+    `PLUGIN_SUBCATEGORY_DIRS` is a skip set, so a stale name is silently
+    harmless -- nothing to skip -- while a name upstream never had hides the
+    fact that the list is unverified. `observability` sat there from v2026.9.11
+    until 2026-10-19 with no corresponding `plugins/observability/` at the
+    baseline or at main, and no DRIFT_FACTS entry covered a directory listing,
+    so nothing would ever have flagged it.
+
+    One direction only, deliberately: every pinned name must be a real upstream
+    directory. The reverse cannot be asserted -- `kanban` and
+    `duckwork-achievements` are directories without a `plugin.yaml` that are
+    standalone plugins, not provider sub-categories, so "no plugin.yaml" would
+    misfire on them.
+
+    `-d` matters: without it a same-named FILE or SYMLINK would satisfy the
+    comparison while the documented directory layout is gone.
+
+    Returns `(mismatches, error)`. A lookup failure is an error, NOT a
+    mismatch: main must abort rather than file a drift issue it cannot
+    substantiate, which would occupy the shared dedup title and mask real
+    drift until closed.
+    """
+    listing, err, code = git(repo_dir, "ls-tree", "-d", "--name-only", f"{head}:plugins/")
+    if code != 0:
+        return [], f"could not list upstream plugins/: {err or 'unknown error'}"
+    upstream = {ln.strip() for ln in listing.splitlines() if ln.strip()}
+    missing = sorted(set(constants.PLUGIN_SUBCATEGORY_DIRS) - upstream)
+    if not missing:
+        return [], None
+    return [
+        f"plugin sub-category dirs: constants.PLUGIN_SUBCATEGORY_DIRS pins "
+        f"{missing}, which is not a directory under upstream plugins/ "
+        "(remove it, and update skills/diagnosing-plugins/SKILL.md)"
+    ], None
+
+
+def verify_facts(repo_dir: str, head: str) -> list[str]:
+    """Extract each watched fact from upstream HEAD and flag any mismatch."""
+    mismatches = []
+    for label, path, pattern, expected in DRIFT_FACTS:
+        content, err, code = git(repo_dir, "show", f"{head}:{path}")
+        if code != 0:
+            mismatches.append(
+                f"{label}: could not read upstream {path} ({err or 'unknown error'})"
+            )
+            continue
+        m = re.search(pattern, content)
+        if not m:
+            mismatches.append(f"{label}: pattern not found in upstream {path}")
+            continue
+        actual = m.group(1)
+        # A quote-style-only reformat (e.g. "venv" -> 'venv') is not drift.
+        if "'" in actual:
+            actual = actual.replace("'", '"')
+        if actual != expected:
+            mismatches.append(
+                f"{label}: upstream now `{actual}`, duckwork-guide asserts `{expected}` "
+                "(update constants.py and the matching SKILL.md)"
+            )
+    return mismatches
+
+
+# --- Upstream git history scan ---------------------------------------------
+#
+# A watched file can change without any of the DRIFT_FACTS moving — a refactor
+# that renames a function, adds a parameter, or moves a constant to a new file.
+# The baseline diff above only says "a file changed"; this layer says *what the
+# change was* at commit granularity. Every commit touching a watched path is
+# included in the issue body so a reviewer can inspect the full context rather
+# than relying on commit-subject keywords.
+
+
+def scan_upstream_history(repo_dir: str, base: str, head: str,
+                          watched: list[str]) -> tuple[list[dict], list[str]]:
+    """Walk upstream commits in ``base..head`` that touched *watched* files.
+
+    Returns ``(review_records, errors)``. *errors* is non-empty only when the
+    transport itself failed — a broken walk is a run failure, never a finding,
+    because filing an issue about a scan that did not run would dedup away the
+    next cycle's real alert.
+
+    The Git pathspec limits the walk to watched paths. Commits that touched none
+    of those paths are outside the drift scope and are never reported.
+    """
+    try:
+        records = git_log(repo_dir, f"{base}..{head}", watched)
+    except RuntimeError as exc:
+        return [], [f"upstream history scan failed: {exc}"]
+
+    return records, []
+
+
+# --- CI install pin ---------------------------------------------------------
+
+
+def read_pinned_tag() -> str | None:
+    """The Duckwork rev CI installs, or None.
+
+    Two pin forms are recognized, both scoped to the Duckwork source remote:
+    a `git clone --depth 1 --branch <tag>` line, or a `git fetch ... <sha>`
+    line (post-PM main pins predate the next release tag, so no tag exists
+    to name). The pin is not tied to one filename: CI has already moved the
+    clone line between workflow files once (#128), so the lookup scans the
+    files under `.github/workflows/` instead of reading a hardcoded path.
+    Only the Duckwork source remote carries the pin; unrelated or commented-out
+    clones are ignored. Exactly one distinct pin wins; none found, or
+    conflicting pins, returns None so the caller fails the run closed.
+    """
+    patterns = ("*.yml", "*.yaml")
+    tags: set[str] = set()
+    shas: set[str] = set()
+    for pattern in patterns:
+        for path in sorted(WORKFLOWS_DIR.glob(pattern)):
+            try:
+                text = path.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            # Executable lines only (optionally behind `- ` / `run: `).
+            lines = [
+                line for line in text.splitlines()
+                if line.strip() and not line.strip().startswith("#")
+            ]
+            # Anchored to executable lines (optionally behind `- ` / `run: `):
+            # a commented-out `# git clone ...` example is documentation, not an
+            # install, and must not join the pin set.
+            for m in re.finditer(
+                r"(?m)^[ \t]*(?:-\s*)?(?:run:\s*)?git clone --depth 1 --branch (\S+) (\S+)",
+                "\n".join(lines),
+            ):
+                tag, url = m.group(1), m.group(2)
+                # Only the Duckwork source clone carries the pin; an unrelated
+                # shallow clone in another workflow must not join the tag set.
+                if not url.rstrip("/").endswith(("duckwork-agent", "duckwork-agent.git")):
+                    continue
+                tags.add(tag)
+            # A fetch SHA counts only when attributable to the Duckwork remote:
+            # either the fetch names a remote previously added for a
+            # duckwork-agent URL in the same file, or the fetch line itself
+            # carries the URL. A bare prose mention of duckwork-agent — or an
+            # unrelated SHA fetch sharing the file — never joins the set.
+            # Only the executable portion of each line counts: a trailing
+            # inline comment (e.g. `# git remote add ...`) is not executable
+            # and must neither declare a remote nor bless a SHA.
+            # Remotes are keyed by checkout: an optional `git -C <dir>`
+            # prefix scopes the declaration, and a fetch matches only a
+            # remote declared for the same checkout (bare lines share the
+            # implicit checkout). A URL-direct fetch names its repo
+            # absolutely and needs no declaration.
+            duckwork_remotes: set[tuple[str | None, str]] = set()
+            for line in lines:
+                code = line.split("#", 1)[0]
+                m = re.search(
+                    r"\bgit\s+(?:-C\s+(?P<dir>\S+)\s+)?remote\s+(?:add|set-url)"
+                    r"\s+(\S+)\s+(\S+)", code,
+                )
+                if m and m.group(3).rstrip("/").endswith(
+                    ("duckwork-agent", "duckwork-agent.git")
+                ):
+                    duckwork_remotes.add((m.group("dir"), m.group(2)))
+            for line in lines:
+                m = re.search(
+                    r"\bgit\s+(?:-C\s+(?P<dir>\S+)\s+)?fetch\s+(?:-q\s+|(?:--depth\s+\S+\s+))*"
+                    r"(?P<remote>\S+)\s+(?P<sha>[0-9a-f]{40})\b",
+                    line.split("#", 1)[0],
+                )
+                if not m:
+                    continue
+                remote = m.group("remote")
+                if (m.group("dir"), remote) in duckwork_remotes or remote.rstrip("/").endswith(
+                    ("duckwork-agent", "duckwork-agent.git")
+                ):
+                    shas.add(m.group("sha"))
+    pins = tags | shas
+    return pins.pop() if len(pins) == 1 else None
+
+
+def _tag_key(tag: str) -> tuple[int, ...]:
+    """Sort key for CalVer tags like v2026.8.16 / v2026.8.16.2."""
+    return tuple(int(p) if p.isdigit() else 0 for p in tag.lstrip("v").split("."))
+
+
+def _run_ls_remote(runner=None, attempts: int = 3,
+                  delays: tuple[float, ...] = (0.0, 3.0, 10.0)):
+    """`git ls-remote --tags v*`, retried across transient transport failures.
+
+    The 2026-09-29 scheduled run failed end-to-end on a one-off ls-remote
+    flake (Actions run 36594772795), so a blip now costs a retry instead of
+    a failed (and report-less) week. Fail-closed is preserved: only a
+    successful listing returns a process; persistent failure returns None.
+    """
+    run = subprocess.run if runner is None else runner
+    cmd = ["git", "ls-remote", "--tags",
+           f"https://github.com/{UPSTREAM_REPO}.git", "refs/tags/v*"]
+    for attempt in range(max(1, attempts)):
+        if attempt:
+            delay = delays[attempt] if attempt < len(delays) else (delays[-1] if delays else 0.0)
+            if delay:
+                time.sleep(delay)
+        try:
+            proc = run(cmd, capture_output=True, text=True, timeout=60,
+                   encoding="utf-8", errors="replace")
+        except (subprocess.TimeoutExpired, OSError):
+            continue
+        if proc.returncode == 0:
+            return proc
+    return None
+
+
+def latest_upstream_tag() -> str | None:
+    """Latest `v*` tag on upstream via ls-remote (no tag fetch into the clone).
+
+    Listings are fetched with retries (see `_run_ls_remote`); a persistent
+    transport failure still returns None, so `verify_ci_pin` fails the run
+    closed rather than filing an unverified report.
+    """
+    proc = _run_ls_remote()
+    if proc is None:
+        return None
+    tags = []
+    for line in proc.stdout.splitlines():
+        ref = line.split("refs/tags/", 1)[-1].strip()
+        if ref.endswith("^{}") or not ref.startswith("v"):
+            continue
+        tags.append(ref)
+    return max(tags, key=_tag_key) if tags else None
+
+
+def verify_ci_pin() -> tuple[list[str], str | None]:
+    """Flag the CI install pin when upstream has published a newer tag.
+
+    Returns (mismatches, error). *error* is set when the check itself could
+    not run (unreadable pin, ls-remote failure). Infrastructure trouble must
+    fail the run — never flow into a drift issue: the canonical title would
+    then dedup away the next run's real alert.
+
+    A 40-hex SHA pin is deliberate (post-rework main predates the next tag)
+    and short-circuits clean: tag ordering cannot rank a SHA, so freshness
+    for SHA pins is a human decision recorded in the workflow comment, not
+    a weekly finding.
+    """
+    pinned = read_pinned_tag()
+    if not pinned:
+        return [], (
+            "could not read the pinned tag from the .github/workflows/ files "
+            "(expected exactly one clone pin)"
+        )
+    if re.fullmatch(r"[0-9a-f]{40}", pinned):
+        return [], None
+    latest = latest_upstream_tag()
+    if latest is None:
+        return [], "could not list upstream tags (git ls-remote failed)"
+    if _tag_key(latest) > _tag_key(pinned):
+        return [
+            f"CI install pin: the workflows install `{pinned}` but upstream's latest tag is "
+            f"`{latest}` — bump the CI install pin in `.github/workflows/` and re-verify "
+            "constants.py / the SKILL.md facts against that tag."
+        ], None
+    return [], None
+
+
+
+# --- Issue filing -----------------------------------------------------------
+
+
+def _uncapped() -> bool:
+    """True only for local dry runs: DRIFT_NO_CAP=1 requires DRIFT_DRY_RUN=1.
+
+    Uncapping the filing path would hand a >65,536-char body to
+    ``gh issue create``, which rejects it and leaves the drift unfiled,
+    so the uncapped report is dry-run-only — exactly what the omission
+    notes instruct.
+    """
+    return (os.environ.get("DRIFT_NO_CAP") == "1"
+            and os.environ.get("DRIFT_DRY_RUN") == "1")
+
+
+def _cap_chars(entries: list[str], limit: int, note: str) -> str:
+    """Join *entries*, keeping the newest leading ones under *limit* characters.
+
+    Entries arrive in git-log order (newest first), so the cap drops the oldest
+    records. *note* is rendered once at the end with the omitted count in
+    ``{omitted}``. Local dry runs (DRIFT_NO_CAP=1) skip the cap entirely.
+    """
+    if _uncapped():
+        return "\n".join(entries)
+    kept: list[str] = []
+    used = 0
+    for index, entry in enumerate(entries):
+        if used + len(entry) + 1 > limit:
+            kept.append(note.format(omitted=len(entries) - index))
+            break
+        kept.append(entry)
+        used += len(entry) + 1
+    return "\n".join(kept)
+
+
+def _fit_body(sections_text: str, footer: str) -> str:
+    """Trim *sections_text* so the assembled body, plus *footer*, fits.
+
+    The footer (compare link + baseline instructions) is the part a triager
+    needs most — reserve its space so the size guard can never drop it — and
+    end the trimmed sections with a note pointing at the uncapped local run.
+    """
+    note = ("\n\n[Body truncated to fit GitHub's issue-body limit; run the drift "
+            "tool locally with DRIFT_DRY_RUN=1 DRIFT_NO_CAP=1 for the full report.]")
+    budget = MAX_BODY_CHARS - len(footer) - len(note) - 4  # blank-line separators
+    trimmed = sections_text[:budget].rsplit("\n", 1)[0]
+    return trimmed + note + "\n\n" + footer
+
+
+def _list_open_issues(repo: str, title: str) -> list[dict]:
+    """Return open issues whose title exactly equals *title*.
+
+    Exact-title match only. A substring search ("Upstream schema drift") would
+    let an unrelated issue with that phrase in its body suppress a real alert;
+    a prefix match would let a renamed title silently stop deduping.
+    """
+    proc = subprocess.run(
+        [
+            "gh", "issue", "list", "--repo", repo, "--state", "open",
+            "--search", f'"{title}" in:title', "--json", "number,title",
+        ],
+        capture_output=True, text=True, timeout=30,
+        encoding="utf-8", errors="replace",
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"gh issue list failed for {title!r}: "
+            f"{proc.stderr.strip() or 'unknown error'}"
+        )
+    try:
+        issues = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        raise RuntimeError(
+            f"gh issue list returned invalid JSON for {title!r}: {proc.stdout[:200]!r}"
+        )
+    return [i for i in issues if i.get("title") == title]
+
+
+def _file_issue(repo: str, title: str, body: str, label: str) -> int:
+    """File an issue with *title* if no open issue with that exact title exists.
+
+    Returns 1 if an issue was created, 0 if it was skipped (already open).
+    Raises on transport failure — a broken gh call must fail the run, not
+    silently skip and report success.
+    """
+    existing = _list_open_issues(repo, title)
+    if existing:
+        print(f"Issue already open ({title!r}); skipping duplicate.")
+        return 0
+
+    proc = subprocess.run(
+        [
+            "gh", "issue", "create", "--repo", repo, "--title", title,
+            "--body", body, "--label", label,
+        ],
+        capture_output=True, text=True, timeout=60,
+        encoding="utf-8", errors="replace",
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"gh issue create failed for {title!r}: "
+            f"{proc.stderr.strip() or 'unknown error'}"
+        )
+    print(f"Opened issue: {title!r}")
+    return 1
+
+
+def main() -> int:
+    base = read_baseline()
+    repo_dir = clone_upstream()
+    head, _, _ = git(repo_dir, "rev-parse", "HEAD")
+
+    # --- Upstream side: schema drift + fact drift + pin freshness -----------
+    # All three share one dedup key (ISSUE_TITLE_UPSTREAM) because they are all
+    # "Duckwork core changed something this plugin encodes" — one open issue is
+    # enough to hold any combination of them.
+    log, err, code = git(repo_dir, "log", "--format=%h %ci %s", f"{base}..HEAD", "--", *WATCH_FILES)
+    if code != 0:
+        if "unknown revision" in err:
+            msg = f"baseline {base[:7]} not found upstream — please re-baseline `.github/upstream-drift.baseline`."
+        else:
+            msg = f"git log failed: {err or 'unknown error'}"
+        print(f"ERROR: {msg}", file=sys.stderr)
+        return 1
+
+    fact_mismatches = verify_facts(repo_dir, head)
+    subcat_mismatches, subcat_error = verify_subcategory_dirs(repo_dir, head)
+    if subcat_error:
+        # Transport failure, not drift. Filing an issue here would occupy the
+        # shared dedup title with an unsubstantiated finding and mask every
+        # real drift alert until it is closed.
+        print(f"ERROR: plugin sub-category dirs: {subcat_error}", file=sys.stderr)
+        return 1
+    fact_mismatches += subcat_mismatches
+    pin_mismatches, pin_error = verify_ci_pin()
+
+    # Walk the same range at commit granularity so the issue body can name the
+    # commits that touched the watched files, not just the files themselves.
+    history_records, history_errors = scan_upstream_history(repo_dir, base, head, WATCH_FILES)
+
+    upstream_sections = []
+    if log:
+        capped_log = _cap_chars(
+            log.splitlines(), SCHEMA_LOG_LIMIT_CHARS,
+            "... {omitted} older commits omitted (see the compare link below)."
+        )
+        upstream_sections.append(
+            "## Schema drift\n\n"
+            f"Watched files changed since baseline `{base[:7]}`:\n\n"
+            f"```\n{capped_log}\n```"
+        )
+    if history_records:
+        lines = []
+        for record in history_records:
+            files = ", ".join(f"`{path}`" for path in record["files"])
+            file_context = f" — files: {files}" if files else ""
+            lines.append(
+                f"- `{record['sha'][:7]}` {record['date'][:10]} "
+                f"{record['subject']}{file_context}"
+            )
+        upstream_sections.append(
+            "## Upstream commits touching watched files\n\n"
+            "These commits modified a file this plugin watches. Review each for "
+            "renames, moved constants, or signature changes that would break "
+            "`checks.py` / `constants.py`:\n\n"
+            + _cap_chars(
+                lines, HISTORY_LIST_LIMIT_CHARS,
+                "- ... and {omitted} older commits omitted (run the drift tool "
+                "with DRIFT_DRY_RUN=1 DRIFT_NO_CAP=1 locally for the full list)."
+            )
+        )
+    if fact_mismatches:
+        upstream_sections.append(
+            "## Fact drift\n\n" + "\n".join(f"- {m}" for m in fact_mismatches)
+        )
+    if pin_mismatches:
+        upstream_sections.append(
+            "## CI install pin behind upstream\n\n"
+            + "\n".join(f"- {m}" for m in pin_mismatches)
+        )
+    if pin_error:
+        upstream_sections.append(
+            f"Install-pin freshness could not be verified this cycle ({pin_error}) — "
+            "re-run the workflow when the network is healthy."
+        )
+
+    # --- Plugin-side staleness is intentionally handled by push CI ---------
+    # check_self_claim, check_no_mutation, and check_skill_version_bump already
+    # fail the repository before a weekly issue could add value.
+
+    if upstream_sections:
+        sections_text = "\n\n".join(upstream_sections)
+        footer = (
+            f"Compare: https://github.com/{UPSTREAM_REPO}/compare/{base[:7]}...{head[:7]}\n\n"
+            "Review the changes and update `checks.py` / `constants.py` / the SKILL.md files "
+            f"as needed. Then bump the baseline: edit `.github/upstream-drift.baseline` to `{head}`."
+        )
+        # Size guard: GitHub rejects bodies over 65,536 characters. Trim the
+        # sections at a line boundary but always keep the footer; DRIFT_NO_CAP=1
+        # (local runs) skips the guard entirely.
+        upstream_body = sections_text + "\n\n" + footer
+        if not _uncapped() and len(upstream_body) > MAX_BODY_CHARS:
+            upstream_body = _fit_body(sections_text, footer)
+    else:
+        upstream_body = ""
+
+    # --- Transport failures: fail the run, never file an issue ---------------
+    # A scan that could not run must not become a finding — filing an issue about
+    # it would dedup away the next cycle's real alert under the same title.
+    transport_errors = list(history_errors)
+    if pin_error:
+        transport_errors.append(
+            f"install-pin check failed ({pin_error}); no drift findings to report"
+        )
+    if transport_errors:
+        for e in transport_errors:
+            print(f"ERROR: {e}", file=sys.stderr)
+        return 1
+
+    # --- No findings: exit clean ---------------------------------------------
+    if not upstream_sections:
+        print(
+            f"No drift: watched files unchanged, facts verified, install pin current "
+            f"(baseline {base[:7]}, HEAD {head[:7]})."
+        )
+        return 0
+
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    dry_run = not repo or os.environ.get("DRIFT_DRY_RUN") == "1"
+    if dry_run:
+        print("UPSTREAM DRIFT DETECTED (dry-run, no issue opened):")
+        print(upstream_body)
+        return 0
+
+    # A duplicate issue is a successful no-op; only transport failures fail.
+    if upstream_sections:
+        _file_issue(repo, ISSUE_TITLE_UPSTREAM, upstream_body, "drift")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

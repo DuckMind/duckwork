@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "render-platform",
+  "version": "0.1.0",
+  "description": "Use Render skills and tools to deploy, debug, and manage applications.",
+  "author": {
+    "name": "Ojus Save",
+    "url": "https://github.com/ojusave"
+  },
+  "homepage": "https://github.com/DuckMind/duckwork",
+  "repository": "https://github.com/DuckMind/duckwork",
+  "license": "MIT",
+  "keywords": [
+    "render",
+    "deployment",
+    "debugging",
+    "monitoring",
+    "skills",
+    "mcp"
+  ],
+  "extensions": {
+    "com.fordex.duckwork": {
+      "servers": {
+        "render": {
+          "trust": "untrusted"
+        }
+      }
+    }
+  }
+}

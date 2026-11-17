@@ -1,0 +1,1681 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-plugin-guard",
+  "content_id": "6f2772df1a32",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 2872,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/beta-test.yml",
+      "sha256": "305361add605509e8af2d75765d85364326ca08b7ade405d780e534a51e0e934"
+    },
+    {
+      "bytes": 3335,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "7a0069337b9f2aae26bc18fb752b3c07f79a394c9e187010ab37f91b239fbf9a"
+    },
+    {
+      "bytes": 941,
+      "mode": "100644",
+      "path": ".github/workflows/codeql.yml",
+      "sha256": "fbc2e2605ff546d8df62ea474a244889f2b464358d7b02d557db087875a69567"
+    },
+    {
+      "bytes": 4500,
+      "mode": "100644",
+      "path": ".github/workflows/publish.yml",
+      "sha256": "1822effc10cb89f6e9d08ab94e14cf9b3f1a86491af0cda0aa6a94f39e25b6e8"
+    },
+    {
+      "bytes": 401,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "2260efa0ab828c97ab69ec3bef695b37a3825e45b39bf438eaff0cdb3560f468"
+    },
+    {
+      "bytes": 7620,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "e20fa951dff0ddec0ad7c747bbfce35fa96f2869f7141a5ea1566db007b84838"
+    },
+    {
+      "bytes": 2040,
+      "mode": "100644",
+      "path": "CODE_OF_CONDUCT.md",
+      "sha256": "6a33354228b9fa77310a14bd341c80406bab54966de12b0380b41ef504e72668"
+    },
+    {
+      "bytes": 2493,
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "e405b1702a41e1bb2317c76ad7aab354c7bde78fa1216f61f9c45b399c93a887"
+    },
+    {
+      "bytes": 1069,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "53c8354ff37f292301e0edd15024255bc036ef0869023320460ecb2e10c6e602"
+    },
+    {
+      "bytes": 302,
+      "mode": "100644",
+      "path": "MANIFEST.in",
+      "sha256": "55432f945bde4079e7189be8835c174e52fb64cfef9d007dc088d3339314e4f3"
+    },
+    {
+      "bytes": 13989,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "a864a543c041c34501364e3bacf709fa97e72c1a41866c18b88fea184ea70a6a"
+    },
+    {
+      "bytes": 2124,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "f10fa5dc9b8e436d7a8d8d915e834fe3c445efbc8cb8e08b31d60ffa1343731f"
+    },
+    {
+      "bytes": 492,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "ab40a2ca96b17c854d0af8893c07fa0153696afb29052a1e3d7dc65c5d5ed151"
+    },
+    {
+      "bytes": 1308,
+      "mode": "100644",
+      "path": "action.yml",
+      "sha256": "ef228e2e3d6742347cf504109ca451cad34092e86ecbf86f1b858d75b3390efd"
+    },
+    {
+      "bytes": 509356,
+      "mode": "100644",
+      "path": "docs/demo.gif",
+      "sha256": "10a071c1a736e4200106eba1a20168acb6148b2ea49f5144a86761ca1292456f"
+    },
+    {
+      "bytes": 5843,
+      "mode": "100644",
+      "path": "docs/demo.py",
+      "sha256": "9029d4268541b5a05cfe5c70772a2659d3c267de9065a21f0ca3fc4f2f24b428"
+    },
+    {
+      "bytes": 7034,
+      "mode": "100644",
+      "path": "docs/plugin-admission-boundary.md",
+      "sha256": "ecc2c739b1d89824aaa0ba1face099043d2afe28c1b3445ad057f609ed26e402"
+    },
+    {
+      "bytes": 3411,
+      "mode": "100644",
+      "path": "docs/releasing.md",
+      "sha256": "387e6812ff2a675a90cde850dde8a9579881060473eeb4010aa2976719fdf0a8"
+    },
+    {
+      "bytes": 4887,
+      "mode": "100644",
+      "path": "docs/social-card.svg",
+      "sha256": "90cbb9493b288322e182c442756bcf8e8442c7bac38e452900bb73aa1b37269b"
+    },
+    {
+      "bytes": 242,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "ee7ac4991d11e1aa504863582dd43da165e19f4dc0801dfc2371c7c32bb4b17e"
+    },
+    {
+      "bytes": 2040,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "18adb6bb8bbfcd812b8f340baa8e2b824a54a59fd0408be923707bdec76d505f"
+    },
+    {
+      "bytes": 311,
+      "mode": "100644",
+      "path": "src/__init__.py",
+      "sha256": "8e346e439e900d5fd5a2a06340a1b60244e12a36dbd5294c2fb468d87fd3c4b4"
+    },
+    {
+      "bytes": 211,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/__init__.py",
+      "sha256": "6bc5f8579d7c6ca3db992457b5ef6f93d134a118073acd92bc5935a4e4ebfefa"
+    },
+    {
+      "bytes": 48,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/__main__.py",
+      "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d"
+    },
+    {
+      "bytes": 8459,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/catalog.py",
+      "sha256": "2880863865412726f426f1dc9e4a6890f734671e26fd1f3f77b8f5f9f16eb287"
+    },
+    {
+      "bytes": 4178,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/cli.py",
+      "sha256": "62ea285b80bf3c62e11672f864dba1a6933d1eb014dd39110733d0657472334a"
+    },
+    {
+      "bytes": 8995,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/dependency_scan.py",
+      "sha256": "b839ee86bae58238081a4a52a5e45a1cf31b021f04b3071400dac76b17fb8992"
+    },
+    {
+      "bytes": 29885,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/hermes_plugin.py",
+      "sha256": "15636615bc4d7a4881a0f3f426c38c521ccfd5e7fbaa30d23d963ddef549525e"
+    },
+    {
+      "bytes": 20920,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/manifest.py",
+      "sha256": "548613bccfd48ba31d6076a3dda9210f9dd008e86eb7779f405089a0d5c7a559"
+    },
+    {
+      "bytes": 3573,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/models.py",
+      "sha256": "daa04fa22b456c9b63109cc4c99724aea944813ea1ae31ccc0e62194e0e81049"
+    },
+    {
+      "bytes": 4126,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/native_worker.py",
+      "sha256": "371a4166a10cdaf203c192a87044f1e77524ce1235fa8ea189b83e4124d61426"
+    },
+    {
+      "bytes": 60327,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/python_scan.py",
+      "sha256": "9fa35f8d64f3e22f9bea65160f873e6328d5bda716404e371a8adbf66a793d88"
+    },
+    {
+      "bytes": 6880,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/reporters.py",
+      "sha256": "7cda9114245e38d92c0327cbf738ffbb727fbf007cfea22baacb67f3fca85dc0"
+    },
+    {
+      "bytes": 14171,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/scanner.py",
+      "sha256": "99e06ab09ecd42e0767e8a537319bd127c802a6210cec6ebd7b696b119e5752e"
+    },
+    {
+      "bytes": 2753,
+      "mode": "100644",
+      "path": "src/hermes_plugin_guard/secret_scan.py",
+      "sha256": "d198d825613adeac81a0a0d718683e5beee16d4979af4717ca80a0c19dda5127"
+    },
+    {
+      "bytes": 242,
+      "mode": "100644",
+      "path": "src/plugin.yaml",
+      "sha256": "ee7ac4991d11e1aa504863582dd43da165e19f4dc0801dfc2371c7c32bb4b17e"
+    },
+    {
+      "bytes": 1314,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "db2c3b084b7c81210b4480d510b2d13f9e907b77b4b2c2817dceaed7e2957cc5"
+    },
+    {
+      "bytes": 48,
+      "mode": "100644",
+      "path": "tests/fixtures/risky_plugin/LICENSE",
+      "sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee"
+    },
+    {
+      "bytes": 90,
+      "mode": "100644",
+      "path": "tests/fixtures/risky_plugin/SECURITY.md",
+      "sha256": "18e790921ccf2450edceae32f816f98352ea5589fbc57782dac73bc7393c79bb"
+    },
+    {
+      "bytes": 1061,
+      "mode": "100644",
+      "path": "tests/fixtures/risky_plugin/__init__.py",
+      "sha256": "3979e712fdd7d83ed19836efd63285c3f827aabdb56aff46fcf2109b5a105b2d"
+    },
+    {
+      "bytes": 78,
+      "mode": "100644",
+      "path": "tests/fixtures/risky_plugin/credentials.json",
+      "sha256": "c9a99fdd90fd277572c8d85df9c5a7e44ade4071f87b4952f92a55318f726a89"
+    },
+    {
+      "bytes": 149,
+      "mode": "100644",
+      "path": "tests/fixtures/risky_plugin/plugin.yaml",
+      "sha256": "c6a64f23726b836fd06c022cad221934544187c6871382c214e8c73889a0e9b6"
+    },
+    {
+      "bytes": 70,
+      "mode": "100644",
+      "path": "tests/fixtures/risky_plugin/requirements.txt",
+      "sha256": "1d2c7b5e335cd0d8b1fd9f27ce6864facc6b0470272545bad9ce619977e329a0"
+    },
+    {
+      "bytes": 111,
+      "mode": "100644",
+      "path": "tests/fixtures/risky_plugin/tests/fixture_check.py",
+      "sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c"
+    },
+    {
+      "bytes": 48,
+      "mode": "100644",
+      "path": "tests/fixtures/safe_plugin/LICENSE",
+      "sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee"
+    },
+    {
+      "bytes": 79,
+      "mode": "100644",
+      "path": "tests/fixtures/safe_plugin/SECURITY.md",
+      "sha256": "9ea2888ae5a3b52bcb51767597b63a1ab13ea4a5c1f6efc3f1e8729766ce804e"
+    },
+    {
+      "bytes": 553,
+      "mode": "100644",
+      "path": "tests/fixtures/safe_plugin/__init__.py",
+      "sha256": "ac40c3d87f7bbf525002ff36e91167023bebd6d5d22e8d53b5c0284498505a0f"
+    },
+    {
+      "bytes": 287,
+      "mode": "100644",
+      "path": "tests/fixtures/safe_plugin/plugin.yaml",
+      "sha256": "980d12e4e3e6b3b883624ba5b2c7e6fec095a897804ef5a7e175ce702758e316"
+    },
+    {
+      "bytes": 111,
+      "mode": "100644",
+      "path": "tests/fixtures/safe_plugin/tests/fixture_check.py",
+      "sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c"
+    },
+    {
+      "bytes": 3310,
+      "mode": "100644",
+      "path": "tests/test_cli.py",
+      "sha256": "1e48d924c885b3b13d33e314aa03712f4ce6c82d854e39934dc37140df7cad7a"
+    },
+    {
+      "bytes": 6148,
+      "mode": "100644",
+      "path": "tests/test_dependency_scan.py",
+      "sha256": "4b062741d09c6a962122cf0627a9bca298d8d50f4bdb1fcf04afc25ec827683b"
+    },
+    {
+      "bytes": 19226,
+      "mode": "100644",
+      "path": "tests/test_hermes_plugin.py",
+      "sha256": "d5bf42acb29db3099d46ca426860522fcfa48662500db1fe069b5e9dea51373e"
+    },
+    {
+      "bytes": 13767,
+      "mode": "100644",
+      "path": "tests/test_manifest.py",
+      "sha256": "85e357a353bf40073fb1bd9a67d80c24b1f42b53ca02663847ad1ff8ca5ac945"
+    },
+    {
+      "bytes": 27850,
+      "mode": "100644",
+      "path": "tests/test_python_scan.py",
+      "sha256": "d39e170ec52eab6600cdc094ffd3b18c1f0b86e8740204a533f0025609ac307f"
+    },
+    {
+      "bytes": 5789,
+      "mode": "100644",
+      "path": "tests/test_reporters.py",
+      "sha256": "a8734f2a21216d19d47121fc20faa7057e9b3db2a39b67486b56131bf1ee140d"
+    },
+    {
+      "bytes": 15347,
+      "mode": "100644",
+      "path": "tests/test_scanner.py",
+      "sha256": "5eeea5df99a7e3721d3e22ae83940d58362e26dafaa2a9e784a53adb64a71632"
+    },
+    {
+      "bytes": 1513,
+      "mode": "100644",
+      "path": "tests/test_secret_scan.py",
+      "sha256": "913ef916fed5171439ddf02119c33a896655f2e9a38f9e650467c01bb47ef697"
+    }
+  ],
+  "input_manifest_sha256": "6f2772df1a328bad6f8dcf4c84dc2bb9562cb175ecdd9106d1260838877e4df1",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "53c8354ff37f292301e0edd15024255bc036ef0869023320460ecb2e10c6e602",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "tests/fixtures/risky_plugin/LICENSE",
+        "sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+        "source_path": "tests/fixtures/risky_plugin/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "tests/fixtures/safe_plugin/LICENSE",
+        "sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+        "source_path": "tests/fixtures/safe_plugin/LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/ISSUE_TEMPLATE/beta-test.yml",
+      ".github/workflows/ci.yml",
+      ".github/workflows/codeql.yml",
+      ".github/workflows/publish.yml",
+      "CHANGELOG.md",
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "SECURITY.md",
+      "__init__.py",
+      "action.yml",
+      "docs/demo.py",
+      "docs/plugin-admission-boundary.md",
+      "docs/releasing.md",
+      "docs/social-card.svg",
+      "plugin.yaml",
+      "pyproject.toml",
+      "src/__init__.py",
+      "src/duckwork_plugin_guard/__init__.py",
+      "src/duckwork_plugin_guard/catalog.py",
+      "src/duckwork_plugin_guard/cli.py",
+      "src/duckwork_plugin_guard/duckwork_plugin.py",
+      "src/duckwork_plugin_guard/manifest.py",
+      "src/duckwork_plugin_guard/models.py",
+      "src/duckwork_plugin_guard/native_worker.py",
+      "src/duckwork_plugin_guard/python_scan.py",
+      "src/duckwork_plugin_guard/reporters.py",
+      "src/duckwork_plugin_guard/scanner.py",
+      "src/plugin.yaml",
+      "tests/fixtures/safe_plugin/plugin.yaml",
+      "tests/test_cli.py",
+      "tests/test_dependency_scan.py",
+      "tests/test_duckwork_plugin.py",
+      "tests/test_manifest.py",
+      "tests/test_python_scan.py",
+      "tests/test_reporters.py",
+      "tests/test_scanner.py",
+      "tests/test_secret_scan.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/mauricemohr88-debug/hermes-plugin-guard",
+    "sha": "857d881be77249c192c5fefa8254db186a7abbca",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/mauricemohr88-debug/hermes-plugin-guard",
+  "original_sha": "857d881be77249c192c5fefa8254db186a7abbca",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/ISSUE_TEMPLATE/beta-test.yml",
+      "sha256": "8a3996c5927e527af6e04168a3d6aa04cee3308d58372a56c5120f7a64f1b3a0",
+      "bytes": 2880,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "7b08425c2abc07375291724113549b3de563649de3f8268e940ab0c2ecec91ea",
+      "bytes": 3369,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/codeql.yml",
+      "sha256": "04aa5e17dfdaed09d3e26ff0e49fb1698b27e42146db0f87361f1e110a3a012d",
+      "bytes": 943,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/publish.yml",
+      "sha256": "62dfed3180cf6dae55b1c67299a3d65ef053b137f1c25c1dea4ec373fdea7629",
+      "bytes": 4502,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "2260efa0ab828c97ab69ec3bef695b37a3825e45b39bf438eaff0cdb3560f468",
+      "bytes": 401,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "1886555cee272890dc4b3325c63e7869184284a87a12af7c29031860c5ce146e",
+      "bytes": 7292,
+      "mode": "100644"
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "sha256": "9163b180c56739d82d04ab79da7197f93bb63844a4cae4f888898b80334056f2",
+      "bytes": 1994,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "498521270cb2406dd8ea59d1f8b7288aa4a60fe4c3a9d27a668a4b617825a556",
+      "bytes": 2473,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "53c8354ff37f292301e0edd15024255bc036ef0869023320460ecb2e10c6e602",
+      "bytes": 1069,
+      "mode": "100644"
+    },
+    {
+      "path": "MANIFEST.in",
+      "sha256": "55432f945bde4079e7189be8835c174e52fb64cfef9d007dc088d3339314e4f3",
+      "bytes": 302,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "0f8ded6de1da244b51e95bd8553a1fd0a1a56d92c17d2d2f09e6c8a8f0fbd3c6",
+      "bytes": 13730,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "366b50c86338fb079282d8bd1f4d21b702a31dca65f0301451674fa6a9cf6cc9",
+      "bytes": 2080,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "b1a006238a7d3f7911be3508e73d5527f7a5b00a964efbd45a4d3775a56ec021",
+      "bytes": 504,
+      "mode": "100644"
+    },
+    {
+      "path": "action.yml",
+      "sha256": "b35438f8e2f620403d12cb2746993b93bb97e3597f1c9141336e0310998699ee",
+      "bytes": 1318,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/demo.gif",
+      "sha256": "10a071c1a736e4200106eba1a20168acb6148b2ea49f5144a86761ca1292456f",
+      "bytes": 509356,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/demo.py",
+      "sha256": "403212c72d95dac3d889a656da0897fe36a17f576871335e6c0710c31537631c",
+      "bytes": 5857,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/plugin-admission-boundary.md",
+      "sha256": "eda61eff087214acbe14502c5b85c5c1eeab22b01acaca1ff34213dd1cc1f874",
+      "bytes": 6990,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/releasing.md",
+      "sha256": "23f9fc928979bfcf4cf24f9367cb4137360ccac4f9e7cd915f34ba9c8e68025d",
+      "bytes": 3421,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/social-card.svg",
+      "sha256": "605ffe1164886fca95a135415547ffef247b6051bc6fc192a06be5045c41daaa",
+      "bytes": 4895,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "e46c29953579f89e78ac5aa91fc4968c7f815c94f53da23b561091b25433a3c3",
+      "bytes": 246,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "b15c611dd88c27b199d38f7f908739f1487ee7b04fa016fa675ca0beb7ce06e0",
+      "bytes": 1951,
+      "mode": "100644"
+    },
+    {
+      "path": "src/__init__.py",
+      "sha256": "4b1c67cb355ebda64524ab3c96dfab2466142cb87c686552140d8b0fcba11304",
+      "bytes": 321,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/__init__.py",
+      "sha256": "ecca0d90f15afd57c83a01b963ec49b75ea23280c32256af24a1ae1fe56c1a27",
+      "bytes": 213,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/__main__.py",
+      "sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+      "bytes": 48,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/catalog.py",
+      "sha256": "b43dddac310c35756b6c200d273a1f67f9a77482c6bef659e8aa37159c391a0b",
+      "bytes": 8469,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/cli.py",
+      "sha256": "82bb9168afa99aeb806c481b18437243b3d24589cfca600c248108192cfa649c",
+      "bytes": 4186,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/dependency_scan.py",
+      "sha256": "b839ee86bae58238081a4a52a5e45a1cf31b021f04b3071400dac76b17fb8992",
+      "bytes": 8995,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/duckwork_plugin.py",
+      "sha256": "e3968311663f58eef9e1d99f1c95190f80d150bdff889375cd39e7c6fb4f8eae",
+      "bytes": 29925,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/manifest.py",
+      "sha256": "d1a674cdd58422a5f291c1ad78fea899cceb2c68842cc8ec0dae19536d67b469",
+      "bytes": 20964,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/models.py",
+      "sha256": "3370ca767ff2b25904b5636614a81b0569e89cbc9227a8519220561b5abb0537",
+      "bytes": 3575,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/native_worker.py",
+      "sha256": "a181702d62320e6f5e95e978e452ffeed9c41e913b8acec01df89af219b9d6f7",
+      "bytes": 4132,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/python_scan.py",
+      "sha256": "855c504b235cdffaef3fd437d9b15a0c66a255c983e74dc930fd4f0b33853d7d",
+      "bytes": 60331,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/reporters.py",
+      "sha256": "c09f95453521c73184edef34ce3d88087224fed3543fa4204c96df186f9cf1f4",
+      "bytes": 6864,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/scanner.py",
+      "sha256": "4d008d130ed6dc5f094f694d8486987815a8cbcfa432d3d3c335033d1bcd8547",
+      "bytes": 14177,
+      "mode": "100644"
+    },
+    {
+      "path": "src/duckwork_plugin_guard/secret_scan.py",
+      "sha256": "d198d825613adeac81a0a0d718683e5beee16d4979af4717ca80a0c19dda5127",
+      "bytes": 2753,
+      "mode": "100644"
+    },
+    {
+      "path": "src/plugin.yaml",
+      "sha256": "e46c29953579f89e78ac5aa91fc4968c7f815c94f53da23b561091b25433a3c3",
+      "bytes": 246,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "db2c3b084b7c81210b4480d510b2d13f9e907b77b4b2c2817dceaed7e2957cc5",
+      "bytes": 1314,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/risky_plugin/LICENSE",
+      "sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+      "bytes": 48,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/risky_plugin/SECURITY.md",
+      "sha256": "18e790921ccf2450edceae32f816f98352ea5589fbc57782dac73bc7393c79bb",
+      "bytes": 90,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/risky_plugin/__init__.py",
+      "sha256": "3979e712fdd7d83ed19836efd63285c3f827aabdb56aff46fcf2109b5a105b2d",
+      "bytes": 1061,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/risky_plugin/credentials.json",
+      "sha256": "c9a99fdd90fd277572c8d85df9c5a7e44ade4071f87b4952f92a55318f726a89",
+      "bytes": 78,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/risky_plugin/plugin.yaml",
+      "sha256": "c6a64f23726b836fd06c022cad221934544187c6871382c214e8c73889a0e9b6",
+      "bytes": 149,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/risky_plugin/requirements.txt",
+      "sha256": "1d2c7b5e335cd0d8b1fd9f27ce6864facc6b0470272545bad9ce619977e329a0",
+      "bytes": 70,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/risky_plugin/tests/fixture_check.py",
+      "sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c",
+      "bytes": 111,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/safe_plugin/LICENSE",
+      "sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+      "bytes": 48,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/safe_plugin/SECURITY.md",
+      "sha256": "9ea2888ae5a3b52bcb51767597b63a1ab13ea4a5c1f6efc3f1e8729766ce804e",
+      "bytes": 79,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/safe_plugin/__init__.py",
+      "sha256": "ac40c3d87f7bbf525002ff36e91167023bebd6d5d22e8d53b5c0284498505a0f",
+      "bytes": 553,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/safe_plugin/plugin.yaml",
+      "sha256": "fe79be7e032870830e28fca12dd9feb5e8a74a1bfd1bc3ad7a241d1086dd91f7",
+      "bytes": 289,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/safe_plugin/tests/fixture_check.py",
+      "sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c",
+      "bytes": 111,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_cli.py",
+      "sha256": "a4c8e57fe8196ea179128933a457b756395553ba18902259a2786415b8530a48",
+      "bytes": 3312,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_dependency_scan.py",
+      "sha256": "8dc92005d731f5d78ebac93ed480633bf2d31ec216791a5b50a7e40016cb8e03",
+      "bytes": 6156,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_duckwork_plugin.py",
+      "sha256": "d207b3ec9e6ced50f2b63b913506e971b8bb1eec343f18a67ec550ba926ac321",
+      "bytes": 19388,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_manifest.py",
+      "sha256": "d6c8a9a0f3fd2b8d0714d4f0351139e6965798308213e579209b9865df2d4ca9",
+      "bytes": 13801,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_python_scan.py",
+      "sha256": "7b80b0ec09a6351506dd9e800154dc7eacc9249ed5d955e84e9e9d504d0f937d",
+      "bytes": 27852,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_reporters.py",
+      "sha256": "21c5fc1435e9cae068f518b5b1ca8deff0172b1400f65a9e722031b329540cd7",
+      "bytes": 5803,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_scanner.py",
+      "sha256": "0385d5d525fe0b9b5902489bb8656ed5464ef41b1f327037d1eb44dd3496079e",
+      "bytes": 15363,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_secret_scan.py",
+      "sha256": "adffef5b73b808e4bb531b618a817fad9ceed4dbaaaa0c27ce488123cdebb8de",
+      "bytes": 1515,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "193aac26132204b988f9e24b94f48a7aefdf58d36e0ad21ffe13b8e6963babf5",
+  "pin_verification": {
+    "archive_bytes": 515700,
+    "archive_sha256": "b3860c38ace7d0179ff3a57a1c5d0d4960a3bfa1b48a9e1275f970995a998614",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "857d881be77249c192c5fefa8254db186a7abbca",
+    "verified_commit_marker": "857d881be77249c192c5fefa8254db186a7abbca"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "809bb0bfdca525d2bb62b494086d4efba1fc4ac121157adb8aae7809b33fcc97",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/ISSUE_TEMPLATE/beta-test.yml",
+        "input_sha256": "305361add605509e8af2d75765d85364326ca08b7ade405d780e534a51e0e934",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8a3996c5927e527af6e04168a3d6aa04cee3308d58372a56c5120f7a64f1b3a0",
+        "source": ".github/ISSUE_TEMPLATE/beta-test.yml",
+        "final_output_sha256": "8a3996c5927e527af6e04168a3d6aa04cee3308d58372a56c5120f7a64f1b3a0",
+        "cli_destination": ".github/ISSUE_TEMPLATE/beta-test.yml",
+        "previous_staging_sha256": "8a3996c5927e527af6e04168a3d6aa04cee3308d58372a56c5120f7a64f1b3a0"
+      },
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "7a0069337b9f2aae26bc18fb752b3c07f79a394c9e187010ab37f91b239fbf9a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7b08425c2abc07375291724113549b3de563649de3f8268e940ab0c2ecec91ea",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "7b08425c2abc07375291724113549b3de563649de3f8268e940ab0c2ecec91ea",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "7b08425c2abc07375291724113549b3de563649de3f8268e940ab0c2ecec91ea"
+      },
+      {
+        "destination": ".github/workflows/codeql.yml",
+        "input_sha256": "fbc2e2605ff546d8df62ea474a244889f2b464358d7b02d557db087875a69567",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "04aa5e17dfdaed09d3e26ff0e49fb1698b27e42146db0f87361f1e110a3a012d",
+        "source": ".github/workflows/codeql.yml",
+        "final_output_sha256": "04aa5e17dfdaed09d3e26ff0e49fb1698b27e42146db0f87361f1e110a3a012d",
+        "cli_destination": ".github/workflows/codeql.yml",
+        "previous_staging_sha256": "04aa5e17dfdaed09d3e26ff0e49fb1698b27e42146db0f87361f1e110a3a012d"
+      },
+      {
+        "destination": ".github/workflows/publish.yml",
+        "input_sha256": "1822effc10cb89f6e9d08ab94e14cf9b3f1a86491af0cda0aa6a94f39e25b6e8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "62dfed3180cf6dae55b1c67299a3d65ef053b137f1c25c1dea4ec373fdea7629",
+        "source": ".github/workflows/publish.yml",
+        "final_output_sha256": "62dfed3180cf6dae55b1c67299a3d65ef053b137f1c25c1dea4ec373fdea7629",
+        "cli_destination": ".github/workflows/publish.yml",
+        "previous_staging_sha256": "62dfed3180cf6dae55b1c67299a3d65ef053b137f1c25c1dea4ec373fdea7629"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "2260efa0ab828c97ab69ec3bef695b37a3825e45b39bf438eaff0cdb3560f468",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2260efa0ab828c97ab69ec3bef695b37a3825e45b39bf438eaff0cdb3560f468",
+        "source": ".gitignore",
+        "final_output_sha256": "2260efa0ab828c97ab69ec3bef695b37a3825e45b39bf438eaff0cdb3560f468",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "2260efa0ab828c97ab69ec3bef695b37a3825e45b39bf438eaff0cdb3560f468"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "e20fa951dff0ddec0ad7c747bbfce35fa96f2869f7141a5ea1566db007b84838",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9bc237f1a824fb294260d09dcab881e9ebb085bd9658554f2469bb62358bb351",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "1886555cee272890dc4b3325c63e7869184284a87a12af7c29031860c5ce146e",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "9bc237f1a824fb294260d09dcab881e9ebb085bd9658554f2469bb62358bb351"
+      },
+      {
+        "destination": "CODE_OF_CONDUCT.md",
+        "input_sha256": "6a33354228b9fa77310a14bd341c80406bab54966de12b0380b41ef504e72668",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6a33354228b9fa77310a14bd341c80406bab54966de12b0380b41ef504e72668",
+        "source": "CODE_OF_CONDUCT.md",
+        "final_output_sha256": "9163b180c56739d82d04ab79da7197f93bb63844a4cae4f888898b80334056f2",
+        "cli_destination": "CODE_OF_CONDUCT.md",
+        "previous_staging_sha256": "6a33354228b9fa77310a14bd341c80406bab54966de12b0380b41ef504e72668"
+      },
+      {
+        "destination": "CONTRIBUTING.md",
+        "input_sha256": "e405b1702a41e1bb2317c76ad7aab354c7bde78fa1216f61f9c45b399c93a887",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "30031f1425674a37a3f2b1eee3cafe6520aa6d01de5e17171e4acdb52284ba11",
+        "source": "CONTRIBUTING.md",
+        "final_output_sha256": "498521270cb2406dd8ea59d1f8b7288aa4a60fe4c3a9d27a668a4b617825a556",
+        "cli_destination": "CONTRIBUTING.md",
+        "previous_staging_sha256": "30031f1425674a37a3f2b1eee3cafe6520aa6d01de5e17171e4acdb52284ba11"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "53c8354ff37f292301e0edd15024255bc036ef0869023320460ecb2e10c6e602",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "53c8354ff37f292301e0edd15024255bc036ef0869023320460ecb2e10c6e602",
+        "source": "LICENSE",
+        "final_output_sha256": "53c8354ff37f292301e0edd15024255bc036ef0869023320460ecb2e10c6e602",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "53c8354ff37f292301e0edd15024255bc036ef0869023320460ecb2e10c6e602"
+      },
+      {
+        "destination": "MANIFEST.in",
+        "input_sha256": "55432f945bde4079e7189be8835c174e52fb64cfef9d007dc088d3339314e4f3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "55432f945bde4079e7189be8835c174e52fb64cfef9d007dc088d3339314e4f3",
+        "source": "MANIFEST.in",
+        "final_output_sha256": "55432f945bde4079e7189be8835c174e52fb64cfef9d007dc088d3339314e4f3",
+        "cli_destination": "MANIFEST.in",
+        "previous_staging_sha256": "55432f945bde4079e7189be8835c174e52fb64cfef9d007dc088d3339314e4f3"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "a864a543c041c34501364e3bacf709fa97e72c1a41866c18b88fea184ea70a6a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7a7e4cc26b5495b707cc672cf9c88b8c7f9e2d0c6500c367868f417f84ba573a",
+        "source": "README.md",
+        "final_output_sha256": "0f8ded6de1da244b51e95bd8553a1fd0a1a56d92c17d2d2f09e6c8a8f0fbd3c6",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "7a7e4cc26b5495b707cc672cf9c88b8c7f9e2d0c6500c367868f417f84ba573a"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "f10fa5dc9b8e436d7a8d8d915e834fe3c445efbc8cb8e08b31d60ffa1343731f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "42a3b889e684cec378a3e60cb6933030f312e8c6e487d968900ceee0b0ad3d44",
+        "source": "SECURITY.md",
+        "final_output_sha256": "366b50c86338fb079282d8bd1f4d21b702a31dca65f0301451674fa6a9cf6cc9",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "42a3b889e684cec378a3e60cb6933030f312e8c6e487d968900ceee0b0ad3d44"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "ab40a2ca96b17c854d0af8893c07fa0153696afb29052a1e3d7dc65c5d5ed151",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b1a006238a7d3f7911be3508e73d5527f7a5b00a964efbd45a4d3775a56ec021",
+        "source": "__init__.py",
+        "final_output_sha256": "b1a006238a7d3f7911be3508e73d5527f7a5b00a964efbd45a4d3775a56ec021",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "b1a006238a7d3f7911be3508e73d5527f7a5b00a964efbd45a4d3775a56ec021"
+      },
+      {
+        "destination": "action.yml",
+        "input_sha256": "ef228e2e3d6742347cf504109ca451cad34092e86ecbf86f1b858d75b3390efd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b35438f8e2f620403d12cb2746993b93bb97e3597f1c9141336e0310998699ee",
+        "source": "action.yml",
+        "final_output_sha256": "b35438f8e2f620403d12cb2746993b93bb97e3597f1c9141336e0310998699ee",
+        "cli_destination": "action.yml",
+        "previous_staging_sha256": "b35438f8e2f620403d12cb2746993b93bb97e3597f1c9141336e0310998699ee"
+      },
+      {
+        "destination": "docs/demo.gif",
+        "input_sha256": "10a071c1a736e4200106eba1a20168acb6148b2ea49f5144a86761ca1292456f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "10a071c1a736e4200106eba1a20168acb6148b2ea49f5144a86761ca1292456f",
+        "source": "docs/demo.gif",
+        "final_output_sha256": "10a071c1a736e4200106eba1a20168acb6148b2ea49f5144a86761ca1292456f",
+        "cli_destination": "docs/demo.gif",
+        "previous_staging_sha256": "10a071c1a736e4200106eba1a20168acb6148b2ea49f5144a86761ca1292456f"
+      },
+      {
+        "destination": "docs/demo.py",
+        "input_sha256": "9029d4268541b5a05cfe5c70772a2659d3c267de9065a21f0ca3fc4f2f24b428",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "403212c72d95dac3d889a656da0897fe36a17f576871335e6c0710c31537631c",
+        "source": "docs/demo.py",
+        "final_output_sha256": "403212c72d95dac3d889a656da0897fe36a17f576871335e6c0710c31537631c",
+        "cli_destination": "docs/demo.py",
+        "previous_staging_sha256": "403212c72d95dac3d889a656da0897fe36a17f576871335e6c0710c31537631c"
+      },
+      {
+        "destination": "docs/plugin-admission-boundary.md",
+        "input_sha256": "ecc2c739b1d89824aaa0ba1face099043d2afe28c1b3445ad057f609ed26e402",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3ad3a7b906edabca6ad66de62e8653d1d375fb0ca19e4097bdd27c6f780cca0",
+        "source": "docs/plugin-admission-boundary.md",
+        "final_output_sha256": "eda61eff087214acbe14502c5b85c5c1eeab22b01acaca1ff34213dd1cc1f874",
+        "cli_destination": "docs/plugin-admission-boundary.md",
+        "previous_staging_sha256": "e3ad3a7b906edabca6ad66de62e8653d1d375fb0ca19e4097bdd27c6f780cca0"
+      },
+      {
+        "destination": "docs/releasing.md",
+        "input_sha256": "387e6812ff2a675a90cde850dde8a9579881060473eeb4010aa2976719fdf0a8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23f9fc928979bfcf4cf24f9367cb4137360ccac4f9e7cd915f34ba9c8e68025d",
+        "source": "docs/releasing.md",
+        "final_output_sha256": "23f9fc928979bfcf4cf24f9367cb4137360ccac4f9e7cd915f34ba9c8e68025d",
+        "cli_destination": "docs/releasing.md",
+        "previous_staging_sha256": "23f9fc928979bfcf4cf24f9367cb4137360ccac4f9e7cd915f34ba9c8e68025d"
+      },
+      {
+        "destination": "docs/social-card.svg",
+        "input_sha256": "90cbb9493b288322e182c442756bcf8e8442c7bac38e452900bb73aa1b37269b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "605ffe1164886fca95a135415547ffef247b6051bc6fc192a06be5045c41daaa",
+        "source": "docs/social-card.svg",
+        "final_output_sha256": "605ffe1164886fca95a135415547ffef247b6051bc6fc192a06be5045c41daaa",
+        "cli_destination": "docs/social-card.svg",
+        "previous_staging_sha256": "605ffe1164886fca95a135415547ffef247b6051bc6fc192a06be5045c41daaa"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "ee7ac4991d11e1aa504863582dd43da165e19f4dc0801dfc2371c7c32bb4b17e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e46c29953579f89e78ac5aa91fc4968c7f815c94f53da23b561091b25433a3c3",
+        "source": "plugin.yaml",
+        "final_output_sha256": "e46c29953579f89e78ac5aa91fc4968c7f815c94f53da23b561091b25433a3c3",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "e46c29953579f89e78ac5aa91fc4968c7f815c94f53da23b561091b25433a3c3"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "18adb6bb8bbfcd812b8f340baa8e2b824a54a59fd0408be923707bdec76d505f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a059fb015c8a04acec543e6c8ddc7a56e6f7a2008884ef737376d19730a82932",
+        "source": "pyproject.toml",
+        "final_output_sha256": "b15c611dd88c27b199d38f7f908739f1487ee7b04fa016fa675ca0beb7ce06e0",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "a059fb015c8a04acec543e6c8ddc7a56e6f7a2008884ef737376d19730a82932"
+      },
+      {
+        "destination": "src/__init__.py",
+        "input_sha256": "8e346e439e900d5fd5a2a06340a1b60244e12a36dbd5294c2fb468d87fd3c4b4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4b1c67cb355ebda64524ab3c96dfab2466142cb87c686552140d8b0fcba11304",
+        "source": "src/__init__.py",
+        "final_output_sha256": "4b1c67cb355ebda64524ab3c96dfab2466142cb87c686552140d8b0fcba11304",
+        "cli_destination": "src/__init__.py",
+        "previous_staging_sha256": "4b1c67cb355ebda64524ab3c96dfab2466142cb87c686552140d8b0fcba11304"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/__init__.py",
+        "input_sha256": "6bc5f8579d7c6ca3db992457b5ef6f93d134a118073acd92bc5935a4e4ebfefa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ecca0d90f15afd57c83a01b963ec49b75ea23280c32256af24a1ae1fe56c1a27",
+        "source": "src/hermes_plugin_guard/__init__.py",
+        "final_output_sha256": "ecca0d90f15afd57c83a01b963ec49b75ea23280c32256af24a1ae1fe56c1a27",
+        "cli_destination": "src/duckwork_plugin_guard/__init__.py",
+        "previous_staging_sha256": "ecca0d90f15afd57c83a01b963ec49b75ea23280c32256af24a1ae1fe56c1a27"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/__main__.py",
+        "input_sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "source": "src/hermes_plugin_guard/__main__.py",
+        "final_output_sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "cli_destination": "src/duckwork_plugin_guard/__main__.py",
+        "previous_staging_sha256": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/catalog.py",
+        "input_sha256": "2880863865412726f426f1dc9e4a6890f734671e26fd1f3f77b8f5f9f16eb287",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b43dddac310c35756b6c200d273a1f67f9a77482c6bef659e8aa37159c391a0b",
+        "source": "src/hermes_plugin_guard/catalog.py",
+        "final_output_sha256": "b43dddac310c35756b6c200d273a1f67f9a77482c6bef659e8aa37159c391a0b",
+        "cli_destination": "src/duckwork_plugin_guard/catalog.py",
+        "previous_staging_sha256": "b43dddac310c35756b6c200d273a1f67f9a77482c6bef659e8aa37159c391a0b"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/cli.py",
+        "input_sha256": "62ea285b80bf3c62e11672f864dba1a6933d1eb014dd39110733d0657472334a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "82bb9168afa99aeb806c481b18437243b3d24589cfca600c248108192cfa649c",
+        "source": "src/hermes_plugin_guard/cli.py",
+        "final_output_sha256": "82bb9168afa99aeb806c481b18437243b3d24589cfca600c248108192cfa649c",
+        "cli_destination": "src/duckwork_plugin_guard/cli.py",
+        "previous_staging_sha256": "82bb9168afa99aeb806c481b18437243b3d24589cfca600c248108192cfa649c"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/dependency_scan.py",
+        "input_sha256": "b839ee86bae58238081a4a52a5e45a1cf31b021f04b3071400dac76b17fb8992",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b839ee86bae58238081a4a52a5e45a1cf31b021f04b3071400dac76b17fb8992",
+        "source": "src/hermes_plugin_guard/dependency_scan.py",
+        "final_output_sha256": "b839ee86bae58238081a4a52a5e45a1cf31b021f04b3071400dac76b17fb8992",
+        "cli_destination": "src/duckwork_plugin_guard/dependency_scan.py",
+        "previous_staging_sha256": "b839ee86bae58238081a4a52a5e45a1cf31b021f04b3071400dac76b17fb8992"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/duckwork_plugin.py",
+        "input_sha256": "15636615bc4d7a4881a0f3f426c38c521ccfd5e7fbaa30d23d963ddef549525e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3968311663f58eef9e1d99f1c95190f80d150bdff889375cd39e7c6fb4f8eae",
+        "source": "src/hermes_plugin_guard/hermes_plugin.py",
+        "final_output_sha256": "e3968311663f58eef9e1d99f1c95190f80d150bdff889375cd39e7c6fb4f8eae",
+        "cli_destination": "src/duckwork_plugin_guard/duckwork_plugin.py",
+        "previous_staging_sha256": "e3968311663f58eef9e1d99f1c95190f80d150bdff889375cd39e7c6fb4f8eae"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/manifest.py",
+        "input_sha256": "548613bccfd48ba31d6076a3dda9210f9dd008e86eb7779f405089a0d5c7a559",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d1a674cdd58422a5f291c1ad78fea899cceb2c68842cc8ec0dae19536d67b469",
+        "source": "src/hermes_plugin_guard/manifest.py",
+        "final_output_sha256": "d1a674cdd58422a5f291c1ad78fea899cceb2c68842cc8ec0dae19536d67b469",
+        "cli_destination": "src/duckwork_plugin_guard/manifest.py",
+        "previous_staging_sha256": "d1a674cdd58422a5f291c1ad78fea899cceb2c68842cc8ec0dae19536d67b469"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/models.py",
+        "input_sha256": "daa04fa22b456c9b63109cc4c99724aea944813ea1ae31ccc0e62194e0e81049",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3370ca767ff2b25904b5636614a81b0569e89cbc9227a8519220561b5abb0537",
+        "source": "src/hermes_plugin_guard/models.py",
+        "final_output_sha256": "3370ca767ff2b25904b5636614a81b0569e89cbc9227a8519220561b5abb0537",
+        "cli_destination": "src/duckwork_plugin_guard/models.py",
+        "previous_staging_sha256": "3370ca767ff2b25904b5636614a81b0569e89cbc9227a8519220561b5abb0537"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/native_worker.py",
+        "input_sha256": "371a4166a10cdaf203c192a87044f1e77524ce1235fa8ea189b83e4124d61426",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a181702d62320e6f5e95e978e452ffeed9c41e913b8acec01df89af219b9d6f7",
+        "source": "src/hermes_plugin_guard/native_worker.py",
+        "final_output_sha256": "a181702d62320e6f5e95e978e452ffeed9c41e913b8acec01df89af219b9d6f7",
+        "cli_destination": "src/duckwork_plugin_guard/native_worker.py",
+        "previous_staging_sha256": "a181702d62320e6f5e95e978e452ffeed9c41e913b8acec01df89af219b9d6f7"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/python_scan.py",
+        "input_sha256": "9fa35f8d64f3e22f9bea65160f873e6328d5bda716404e371a8adbf66a793d88",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "855c504b235cdffaef3fd437d9b15a0c66a255c983e74dc930fd4f0b33853d7d",
+        "source": "src/hermes_plugin_guard/python_scan.py",
+        "final_output_sha256": "855c504b235cdffaef3fd437d9b15a0c66a255c983e74dc930fd4f0b33853d7d",
+        "cli_destination": "src/duckwork_plugin_guard/python_scan.py",
+        "previous_staging_sha256": "855c504b235cdffaef3fd437d9b15a0c66a255c983e74dc930fd4f0b33853d7d"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/reporters.py",
+        "input_sha256": "7cda9114245e38d92c0327cbf738ffbb727fbf007cfea22baacb67f3fca85dc0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5a33bb695f3af488d469d86a3f8f8d658429bd01762a2e315b5b55f2de1ccd7e",
+        "source": "src/hermes_plugin_guard/reporters.py",
+        "final_output_sha256": "c09f95453521c73184edef34ce3d88087224fed3543fa4204c96df186f9cf1f4",
+        "cli_destination": "src/duckwork_plugin_guard/reporters.py",
+        "previous_staging_sha256": "5a33bb695f3af488d469d86a3f8f8d658429bd01762a2e315b5b55f2de1ccd7e"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/scanner.py",
+        "input_sha256": "99e06ab09ecd42e0767e8a537319bd127c802a6210cec6ebd7b696b119e5752e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4d008d130ed6dc5f094f694d8486987815a8cbcfa432d3d3c335033d1bcd8547",
+        "source": "src/hermes_plugin_guard/scanner.py",
+        "final_output_sha256": "4d008d130ed6dc5f094f694d8486987815a8cbcfa432d3d3c335033d1bcd8547",
+        "cli_destination": "src/duckwork_plugin_guard/scanner.py",
+        "previous_staging_sha256": "4d008d130ed6dc5f094f694d8486987815a8cbcfa432d3d3c335033d1bcd8547"
+      },
+      {
+        "destination": "src/duckwork_plugin_guard/secret_scan.py",
+        "input_sha256": "d198d825613adeac81a0a0d718683e5beee16d4979af4717ca80a0c19dda5127",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d198d825613adeac81a0a0d718683e5beee16d4979af4717ca80a0c19dda5127",
+        "source": "src/hermes_plugin_guard/secret_scan.py",
+        "final_output_sha256": "d198d825613adeac81a0a0d718683e5beee16d4979af4717ca80a0c19dda5127",
+        "cli_destination": "src/duckwork_plugin_guard/secret_scan.py",
+        "previous_staging_sha256": "d198d825613adeac81a0a0d718683e5beee16d4979af4717ca80a0c19dda5127"
+      },
+      {
+        "destination": "src/plugin.yaml",
+        "input_sha256": "ee7ac4991d11e1aa504863582dd43da165e19f4dc0801dfc2371c7c32bb4b17e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e46c29953579f89e78ac5aa91fc4968c7f815c94f53da23b561091b25433a3c3",
+        "source": "src/plugin.yaml",
+        "final_output_sha256": "e46c29953579f89e78ac5aa91fc4968c7f815c94f53da23b561091b25433a3c3",
+        "cli_destination": "src/plugin.yaml",
+        "previous_staging_sha256": "e46c29953579f89e78ac5aa91fc4968c7f815c94f53da23b561091b25433a3c3"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "db2c3b084b7c81210b4480d510b2d13f9e907b77b4b2c2817dceaed7e2957cc5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "db2c3b084b7c81210b4480d510b2d13f9e907b77b4b2c2817dceaed7e2957cc5",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "db2c3b084b7c81210b4480d510b2d13f9e907b77b4b2c2817dceaed7e2957cc5",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "db2c3b084b7c81210b4480d510b2d13f9e907b77b4b2c2817dceaed7e2957cc5"
+      },
+      {
+        "destination": "tests/fixtures/risky_plugin/LICENSE",
+        "input_sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+        "source": "tests/fixtures/risky_plugin/LICENSE",
+        "final_output_sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+        "cli_destination": "tests/fixtures/risky_plugin/LICENSE",
+        "previous_staging_sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee"
+      },
+      {
+        "destination": "tests/fixtures/risky_plugin/SECURITY.md",
+        "input_sha256": "18e790921ccf2450edceae32f816f98352ea5589fbc57782dac73bc7393c79bb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "18e790921ccf2450edceae32f816f98352ea5589fbc57782dac73bc7393c79bb",
+        "source": "tests/fixtures/risky_plugin/SECURITY.md",
+        "final_output_sha256": "18e790921ccf2450edceae32f816f98352ea5589fbc57782dac73bc7393c79bb",
+        "cli_destination": "tests/fixtures/risky_plugin/SECURITY.md",
+        "previous_staging_sha256": "18e790921ccf2450edceae32f816f98352ea5589fbc57782dac73bc7393c79bb"
+      },
+      {
+        "destination": "tests/fixtures/risky_plugin/__init__.py",
+        "input_sha256": "3979e712fdd7d83ed19836efd63285c3f827aabdb56aff46fcf2109b5a105b2d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3979e712fdd7d83ed19836efd63285c3f827aabdb56aff46fcf2109b5a105b2d",
+        "source": "tests/fixtures/risky_plugin/__init__.py",
+        "final_output_sha256": "3979e712fdd7d83ed19836efd63285c3f827aabdb56aff46fcf2109b5a105b2d",
+        "cli_destination": "tests/fixtures/risky_plugin/__init__.py",
+        "previous_staging_sha256": "3979e712fdd7d83ed19836efd63285c3f827aabdb56aff46fcf2109b5a105b2d"
+      },
+      {
+        "destination": "tests/fixtures/risky_plugin/credentials.json",
+        "input_sha256": "c9a99fdd90fd277572c8d85df9c5a7e44ade4071f87b4952f92a55318f726a89",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c9a99fdd90fd277572c8d85df9c5a7e44ade4071f87b4952f92a55318f726a89",
+        "source": "tests/fixtures/risky_plugin/credentials.json",
+        "final_output_sha256": "c9a99fdd90fd277572c8d85df9c5a7e44ade4071f87b4952f92a55318f726a89",
+        "cli_destination": "tests/fixtures/risky_plugin/credentials.json",
+        "previous_staging_sha256": "c9a99fdd90fd277572c8d85df9c5a7e44ade4071f87b4952f92a55318f726a89"
+      },
+      {
+        "destination": "tests/fixtures/risky_plugin/plugin.yaml",
+        "input_sha256": "c6a64f23726b836fd06c022cad221934544187c6871382c214e8c73889a0e9b6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c6a64f23726b836fd06c022cad221934544187c6871382c214e8c73889a0e9b6",
+        "source": "tests/fixtures/risky_plugin/plugin.yaml",
+        "final_output_sha256": "c6a64f23726b836fd06c022cad221934544187c6871382c214e8c73889a0e9b6",
+        "cli_destination": "tests/fixtures/risky_plugin/plugin.yaml",
+        "previous_staging_sha256": "c6a64f23726b836fd06c022cad221934544187c6871382c214e8c73889a0e9b6"
+      },
+      {
+        "destination": "tests/fixtures/risky_plugin/requirements.txt",
+        "input_sha256": "1d2c7b5e335cd0d8b1fd9f27ce6864facc6b0470272545bad9ce619977e329a0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1d2c7b5e335cd0d8b1fd9f27ce6864facc6b0470272545bad9ce619977e329a0",
+        "source": "tests/fixtures/risky_plugin/requirements.txt",
+        "final_output_sha256": "1d2c7b5e335cd0d8b1fd9f27ce6864facc6b0470272545bad9ce619977e329a0",
+        "cli_destination": "tests/fixtures/risky_plugin/requirements.txt",
+        "previous_staging_sha256": "1d2c7b5e335cd0d8b1fd9f27ce6864facc6b0470272545bad9ce619977e329a0"
+      },
+      {
+        "destination": "tests/fixtures/risky_plugin/tests/fixture_check.py",
+        "input_sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c",
+        "source": "tests/fixtures/risky_plugin/tests/fixture_check.py",
+        "final_output_sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c",
+        "cli_destination": "tests/fixtures/risky_plugin/tests/fixture_check.py",
+        "previous_staging_sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c"
+      },
+      {
+        "destination": "tests/fixtures/safe_plugin/LICENSE",
+        "input_sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+        "source": "tests/fixtures/safe_plugin/LICENSE",
+        "final_output_sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee",
+        "cli_destination": "tests/fixtures/safe_plugin/LICENSE",
+        "previous_staging_sha256": "278e89acaf4deabad8f3cfcfb58c5a803a5c06c78e790df85df5b560e9a4b1ee"
+      },
+      {
+        "destination": "tests/fixtures/safe_plugin/SECURITY.md",
+        "input_sha256": "9ea2888ae5a3b52bcb51767597b63a1ab13ea4a5c1f6efc3f1e8729766ce804e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9ea2888ae5a3b52bcb51767597b63a1ab13ea4a5c1f6efc3f1e8729766ce804e",
+        "source": "tests/fixtures/safe_plugin/SECURITY.md",
+        "final_output_sha256": "9ea2888ae5a3b52bcb51767597b63a1ab13ea4a5c1f6efc3f1e8729766ce804e",
+        "cli_destination": "tests/fixtures/safe_plugin/SECURITY.md",
+        "previous_staging_sha256": "9ea2888ae5a3b52bcb51767597b63a1ab13ea4a5c1f6efc3f1e8729766ce804e"
+      },
+      {
+        "destination": "tests/fixtures/safe_plugin/__init__.py",
+        "input_sha256": "ac40c3d87f7bbf525002ff36e91167023bebd6d5d22e8d53b5c0284498505a0f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ac40c3d87f7bbf525002ff36e91167023bebd6d5d22e8d53b5c0284498505a0f",
+        "source": "tests/fixtures/safe_plugin/__init__.py",
+        "final_output_sha256": "ac40c3d87f7bbf525002ff36e91167023bebd6d5d22e8d53b5c0284498505a0f",
+        "cli_destination": "tests/fixtures/safe_plugin/__init__.py",
+        "previous_staging_sha256": "ac40c3d87f7bbf525002ff36e91167023bebd6d5d22e8d53b5c0284498505a0f"
+      },
+      {
+        "destination": "tests/fixtures/safe_plugin/plugin.yaml",
+        "input_sha256": "980d12e4e3e6b3b883624ba5b2c7e6fec095a897804ef5a7e175ce702758e316",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fe79be7e032870830e28fca12dd9feb5e8a74a1bfd1bc3ad7a241d1086dd91f7",
+        "source": "tests/fixtures/safe_plugin/plugin.yaml",
+        "final_output_sha256": "fe79be7e032870830e28fca12dd9feb5e8a74a1bfd1bc3ad7a241d1086dd91f7",
+        "cli_destination": "tests/fixtures/safe_plugin/plugin.yaml",
+        "previous_staging_sha256": "fe79be7e032870830e28fca12dd9feb5e8a74a1bfd1bc3ad7a241d1086dd91f7"
+      },
+      {
+        "destination": "tests/fixtures/safe_plugin/tests/fixture_check.py",
+        "input_sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c",
+        "source": "tests/fixtures/safe_plugin/tests/fixture_check.py",
+        "final_output_sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c",
+        "cli_destination": "tests/fixtures/safe_plugin/tests/fixture_check.py",
+        "previous_staging_sha256": "4fc7d7b501be182a6f4a9505ab826ae1638770ad08376137030519894ac6f94c"
+      },
+      {
+        "destination": "tests/test_cli.py",
+        "input_sha256": "1e48d924c885b3b13d33e314aa03712f4ce6c82d854e39934dc37140df7cad7a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a4c8e57fe8196ea179128933a457b756395553ba18902259a2786415b8530a48",
+        "source": "tests/test_cli.py",
+        "final_output_sha256": "a4c8e57fe8196ea179128933a457b756395553ba18902259a2786415b8530a48",
+        "cli_destination": "tests/test_cli.py",
+        "previous_staging_sha256": "a4c8e57fe8196ea179128933a457b756395553ba18902259a2786415b8530a48"
+      },
+      {
+        "destination": "tests/test_dependency_scan.py",
+        "input_sha256": "4b062741d09c6a962122cf0627a9bca298d8d50f4bdb1fcf04afc25ec827683b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8dc92005d731f5d78ebac93ed480633bf2d31ec216791a5b50a7e40016cb8e03",
+        "source": "tests/test_dependency_scan.py",
+        "final_output_sha256": "8dc92005d731f5d78ebac93ed480633bf2d31ec216791a5b50a7e40016cb8e03",
+        "cli_destination": "tests/test_dependency_scan.py",
+        "previous_staging_sha256": "8dc92005d731f5d78ebac93ed480633bf2d31ec216791a5b50a7e40016cb8e03"
+      },
+      {
+        "destination": "tests/test_duckwork_plugin.py",
+        "input_sha256": "d5bf42acb29db3099d46ca426860522fcfa48662500db1fe069b5e9dea51373e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d207b3ec9e6ced50f2b63b913506e971b8bb1eec343f18a67ec550ba926ac321",
+        "source": "tests/test_hermes_plugin.py",
+        "final_output_sha256": "d207b3ec9e6ced50f2b63b913506e971b8bb1eec343f18a67ec550ba926ac321",
+        "cli_destination": "tests/test_duckwork_plugin.py",
+        "previous_staging_sha256": "d207b3ec9e6ced50f2b63b913506e971b8bb1eec343f18a67ec550ba926ac321"
+      },
+      {
+        "destination": "tests/test_manifest.py",
+        "input_sha256": "85e357a353bf40073fb1bd9a67d80c24b1f42b53ca02663847ad1ff8ca5ac945",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d6c8a9a0f3fd2b8d0714d4f0351139e6965798308213e579209b9865df2d4ca9",
+        "source": "tests/test_manifest.py",
+        "final_output_sha256": "d6c8a9a0f3fd2b8d0714d4f0351139e6965798308213e579209b9865df2d4ca9",
+        "cli_destination": "tests/test_manifest.py",
+        "previous_staging_sha256": "d6c8a9a0f3fd2b8d0714d4f0351139e6965798308213e579209b9865df2d4ca9"
+      },
+      {
+        "destination": "tests/test_python_scan.py",
+        "input_sha256": "d39e170ec52eab6600cdc094ffd3b18c1f0b86e8740204a533f0025609ac307f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7b80b0ec09a6351506dd9e800154dc7eacc9249ed5d955e84e9e9d504d0f937d",
+        "source": "tests/test_python_scan.py",
+        "final_output_sha256": "7b80b0ec09a6351506dd9e800154dc7eacc9249ed5d955e84e9e9d504d0f937d",
+        "cli_destination": "tests/test_python_scan.py",
+        "previous_staging_sha256": "7b80b0ec09a6351506dd9e800154dc7eacc9249ed5d955e84e9e9d504d0f937d"
+      },
+      {
+        "destination": "tests/test_reporters.py",
+        "input_sha256": "a8734f2a21216d19d47121fc20faa7057e9b3db2a39b67486b56131bf1ee140d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "21c5fc1435e9cae068f518b5b1ca8deff0172b1400f65a9e722031b329540cd7",
+        "source": "tests/test_reporters.py",
+        "final_output_sha256": "21c5fc1435e9cae068f518b5b1ca8deff0172b1400f65a9e722031b329540cd7",
+        "cli_destination": "tests/test_reporters.py",
+        "previous_staging_sha256": "21c5fc1435e9cae068f518b5b1ca8deff0172b1400f65a9e722031b329540cd7"
+      },
+      {
+        "destination": "tests/test_scanner.py",
+        "input_sha256": "5eeea5df99a7e3721d3e22ae83940d58362e26dafaa2a9e784a53adb64a71632",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0385d5d525fe0b9b5902489bb8656ed5464ef41b1f327037d1eb44dd3496079e",
+        "source": "tests/test_scanner.py",
+        "final_output_sha256": "0385d5d525fe0b9b5902489bb8656ed5464ef41b1f327037d1eb44dd3496079e",
+        "cli_destination": "tests/test_scanner.py",
+        "previous_staging_sha256": "0385d5d525fe0b9b5902489bb8656ed5464ef41b1f327037d1eb44dd3496079e"
+      },
+      {
+        "destination": "tests/test_secret_scan.py",
+        "input_sha256": "913ef916fed5171439ddf02119c33a896655f2e9a38f9e650467c01bb47ef697",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "adffef5b73b808e4bb531b618a817fad9ceed4dbaaaa0c27ce488123cdebb8de",
+        "source": "tests/test_secret_scan.py",
+        "final_output_sha256": "adffef5b73b808e4bb531b618a817fad9ceed4dbaaaa0c27ce488123cdebb8de",
+        "cli_destination": "tests/test_secret_scan.py",
+        "previous_staging_sha256": "adffef5b73b808e4bb531b618a817fad9ceed4dbaaaa0c27ce488123cdebb8de"
+      }
+    ],
+    "manifest_sha256": "31e220676060b2b32408a757e26d6b8ebd1c0a2d6717c10605b316cfa3675083",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/ISSUE_TEMPLATE/beta-test.yml": ".github/ISSUE_TEMPLATE/beta-test.yml",
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".github/workflows/codeql.yml": ".github/workflows/codeql.yml",
+    ".github/workflows/publish.yml": ".github/workflows/publish.yml",
+    ".gitignore": ".gitignore",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md": "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md": "CONTRIBUTING.md",
+    "LICENSE": "LICENSE",
+    "MANIFEST.in": "MANIFEST.in",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "__init__.py": "__init__.py",
+    "action.yml": "action.yml",
+    "docs/demo.gif": "docs/demo.gif",
+    "docs/demo.py": "docs/demo.py",
+    "docs/plugin-admission-boundary.md": "docs/plugin-admission-boundary.md",
+    "docs/releasing.md": "docs/releasing.md",
+    "docs/social-card.svg": "docs/social-card.svg",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "src/__init__.py": "src/__init__.py",
+    "src/hermes_plugin_guard/__init__.py": "src/hermes_plugin_guard/__init__.py",
+    "src/hermes_plugin_guard/__main__.py": "src/hermes_plugin_guard/__main__.py",
+    "src/hermes_plugin_guard/catalog.py": "src/hermes_plugin_guard/catalog.py",
+    "src/hermes_plugin_guard/cli.py": "src/hermes_plugin_guard/cli.py",
+    "src/hermes_plugin_guard/dependency_scan.py": "src/hermes_plugin_guard/dependency_scan.py",
+    "src/hermes_plugin_guard/hermes_plugin.py": "src/hermes_plugin_guard/hermes_plugin.py",
+    "src/hermes_plugin_guard/manifest.py": "src/hermes_plugin_guard/manifest.py",
+    "src/hermes_plugin_guard/models.py": "src/hermes_plugin_guard/models.py",
+    "src/hermes_plugin_guard/native_worker.py": "src/hermes_plugin_guard/native_worker.py",
+    "src/hermes_plugin_guard/python_scan.py": "src/hermes_plugin_guard/python_scan.py",
+    "src/hermes_plugin_guard/reporters.py": "src/hermes_plugin_guard/reporters.py",
+    "src/hermes_plugin_guard/scanner.py": "src/hermes_plugin_guard/scanner.py",
+    "src/hermes_plugin_guard/secret_scan.py": "src/hermes_plugin_guard/secret_scan.py",
+    "src/plugin.yaml": "src/plugin.yaml",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/fixtures/risky_plugin/LICENSE": "tests/fixtures/risky_plugin/LICENSE",
+    "tests/fixtures/risky_plugin/SECURITY.md": "tests/fixtures/risky_plugin/SECURITY.md",
+    "tests/fixtures/risky_plugin/__init__.py": "tests/fixtures/risky_plugin/__init__.py",
+    "tests/fixtures/risky_plugin/credentials.json": "tests/fixtures/risky_plugin/credentials.json",
+    "tests/fixtures/risky_plugin/plugin.yaml": "tests/fixtures/risky_plugin/plugin.yaml",
+    "tests/fixtures/risky_plugin/requirements.txt": "tests/fixtures/risky_plugin/requirements.txt",
+    "tests/fixtures/risky_plugin/tests/fixture_check.py": "tests/fixtures/risky_plugin/tests/fixture_check.py",
+    "tests/fixtures/safe_plugin/LICENSE": "tests/fixtures/safe_plugin/LICENSE",
+    "tests/fixtures/safe_plugin/SECURITY.md": "tests/fixtures/safe_plugin/SECURITY.md",
+    "tests/fixtures/safe_plugin/__init__.py": "tests/fixtures/safe_plugin/__init__.py",
+    "tests/fixtures/safe_plugin/plugin.yaml": "tests/fixtures/safe_plugin/plugin.yaml",
+    "tests/fixtures/safe_plugin/tests/fixture_check.py": "tests/fixtures/safe_plugin/tests/fixture_check.py",
+    "tests/test_cli.py": "tests/test_cli.py",
+    "tests/test_dependency_scan.py": "tests/test_dependency_scan.py",
+    "tests/test_hermes_plugin.py": "tests/test_hermes_plugin.py",
+    "tests/test_manifest.py": "tests/test_manifest.py",
+    "tests/test_python_scan.py": "tests/test_python_scan.py",
+    "tests/test_reporters.py": "tests/test_reporters.py",
+    "tests/test_scanner.py": "tests/test_scanner.py",
+    "tests/test_secret_scan.py": "tests/test_secret_scan.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-plugin-guard",
+    "python_files_compiled": 29,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-plugin-guard",
+  "catalog_file": "src/plugin-catalog/duckwork-plugin-guard.yaml",
+  "identity": {
+    "catalog_id": "hermes-plugin-guard",
+    "canonical_slug": "duckwork-plugin-guard",
+    "original_manifest_name": "hermes-plugin-guard",
+    "rebranded_manifest_name": "duckwork-plugin-guard",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "afefdad2372d81bd80d1405c8374c7baf281bdc1bfd9c1f34f0c7ee609585af0",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "CHANGELOG.md",
+          "after_path": "CHANGELOG.md",
+          "before_sha256": "9bc237f1a824fb294260d09dcab881e9ebb085bd9658554f2469bb62358bb351",
+          "after_sha256": "1886555cee272890dc4b3325c63e7869184284a87a12af7c29031860c5ce146e",
+          "before_bytes": 7654,
+          "after_bytes": 7292,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "CODE_OF_CONDUCT.md",
+          "after_path": "CODE_OF_CONDUCT.md",
+          "before_sha256": "6a33354228b9fa77310a14bd341c80406bab54966de12b0380b41ef504e72668",
+          "after_sha256": "9163b180c56739d82d04ab79da7197f93bb63844a4cae4f888898b80334056f2",
+          "before_bytes": 2040,
+          "after_bytes": 1994,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "CONTRIBUTING.md",
+          "after_path": "CONTRIBUTING.md",
+          "before_sha256": "30031f1425674a37a3f2b1eee3cafe6520aa6d01de5e17171e4acdb52284ba11",
+          "after_sha256": "498521270cb2406dd8ea59d1f8b7288aa4a60fe4c3a9d27a668a4b617825a556",
+          "before_bytes": 2499,
+          "after_bytes": 2473,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "7a7e4cc26b5495b707cc672cf9c88b8c7f9e2d0c6500c367868f417f84ba573a",
+          "after_sha256": "daead5c8d6df25234ed5ebc5f5d38a44cdb9973e9caae01fd5b287903e3f9561",
+          "before_bytes": 14088,
+          "after_bytes": 13656,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "SECURITY.md",
+          "after_path": "SECURITY.md",
+          "before_sha256": "42a3b889e684cec378a3e60cb6933030f312e8c6e487d968900ceee0b0ad3d44",
+          "after_sha256": "366b50c86338fb079282d8bd1f4d21b702a31dca65f0301451674fa6a9cf6cc9",
+          "before_bytes": 2126,
+          "after_bytes": 2080,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "docs/plugin-admission-boundary.md",
+          "after_path": "docs/plugin-admission-boundary.md",
+          "before_sha256": "e3ad3a7b906edabca6ad66de62e8653d1d375fb0ca19e4097bdd27c6f780cca0",
+          "after_sha256": "eda61eff087214acbe14502c5b85c5c1eeab22b01acaca1ff34213dd1cc1f874",
+          "before_bytes": 7106,
+          "after_bytes": 6990,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "a059fb015c8a04acec543e6c8ddc7a56e6f7a2008884ef737376d19730a82932",
+          "after_sha256": "b15c611dd88c27b199d38f7f908739f1487ee7b04fa016fa675ca0beb7ce06e0",
+          "before_bytes": 2062,
+          "after_bytes": 1951,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "src/duckwork_plugin_guard/reporters.py",
+          "after_path": "src/duckwork_plugin_guard/reporters.py",
+          "before_sha256": "5a33bb695f3af488d469d86a3f8f8d658429bd01762a2e315b5b55f2de1ccd7e",
+          "after_sha256": "c09f95453521c73184edef34ce3d88087224fed3543fa4204c96df186f9cf1f4",
+          "before_bytes": 6886,
+          "after_bytes": 6864,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    },
+    {
+      "revision": "r46-external-package-wire-review",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "34a4abc5ce05b7171582e219a6581124086cee45a1ee35012cf842e670a6a6d0",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "daead5c8d6df25234ed5ebc5f5d38a44cdb9973e9caae01fd5b287903e3f9561",
+          "after_sha256": "0f8ded6de1da244b51e95bd8553a1fd0a1a56d92c17d2d2f09e6c8a8f0fbd3c6",
+          "before_bytes": 13656,
+          "after_bytes": 13730,
+          "operation": "preserve-external-package-and-wire-contract",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained."
+    }
+  ],
+  "preserved_identity_evidence": {
+    ".github/workflows/publish.yml": [
+      {
+        "value": "https://pypi.org/p/hermes-plugin-guard",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      }
+    ],
+    "README.md": [
+      {
+        "value": "git+https://github.com/mauricemohr88-debug/hermes-plugin-guard.git@v0.2.1",
+        "reason": "external npm/PyPI Git dependency source coordinate; renaming would request a different package"
+      },
+      {
+        "value": "https://pypi.org/project/hermes-plugin-guard/",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      },
+      {
+        "value": "git+https://github.com/mauricemohr88-debug/hermes-plugin-guard.git@v0.2.1",
+        "reason": "external npm/PyPI Git dependency source coordinate; renaming would request a different package"
+      }
+    ],
+    "docs/plugin-admission-boundary.md": [
+      {
+        "value": "https://pypi.org/project/hermes-plugin-guard/",
+        "reason": "external npm/PyPI registry package coordinate; renaming would request a different package"
+      }
+    ]
+  }
+}

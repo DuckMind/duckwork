@@ -1,0 +1,1479 @@
+"""HTTP client for yantrikdb-server.
+
+Thin wrapper over the YantrikDB REST API (port 7438 by default). The
+plugin never manages the server process — the user runs yantrikdb-server
+themselves and the client connects to it.
+
+Config resolution matches the mem0 pattern:
+  1. Environment variables (YANTRIKDB_URL / YANTRIKDB_TOKEN / YANTRIKDB_NAMESPACE /
+     YANTRIKDB_TOP_K / YANTRIKDB_READ_TIMEOUT / YANTRIKDB_CONNECT_TIMEOUT /
+     YANTRIKDB_RETRY_TOTAL / YANTRIKDB_MAX_TEXT_LEN /
+     YANTRIKDB_OWNER_SCOPING / YANTRIKDB_INCLUDE_BASE_NAMESPACE_RECALL /
+     YANTRIKDB_INCLUDE_LEGACY_ACTOR_NAMESPACE_RECALL /
+     YANTRIKDB_IDENTITY_MAP_PATH / YANTRIKDB_IDENTITY_MAP_JSON)
+  2. $DUCKWORK_HOME/yantrikdb.json (overrides individual keys when present)
+
+Errors are mapped into a small taxonomy so the provider can decide which
+conditions trip the circuit breaker and which are deterministic caller
+mistakes.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import time
+import uuid
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import requests
+from requests import Response, Session
+from requests.adapters import HTTPAdapter
+
+try:
+    from urllib3.util.retry import Retry  # type: ignore[import-untyped]
+except ImportError:  # pragma: no cover — urllib3 ships with requests
+    Retry = None  # type: ignore[assignment,misc]
+
+logger = logging.getLogger(__name__)
+
+DEFAULT_URL = "http://localhost:7438"
+DEFAULT_NAMESPACE = "duckwork"
+DEFAULT_TOP_K = 10
+DEFAULT_READ_TIMEOUT = 15.0
+DEFAULT_CONNECT_TIMEOUT = 5.0
+DEFAULT_RETRY_TOTAL = 3
+DEFAULT_MAX_TEXT_LEN = 25000  # matches Honcho's message cap
+
+_USER_AGENT = "duckwork-yantrikdb-plugin/0.1"
+
+# Names already warned about by _warn_if_process_env_ignored (once per process).
+_IGNORED_ENV_WARNED: set[str] = set()
+
+
+def _profile_env(name: str, default: str = "") -> str:
+    """Read a profile-scoped YantrikDB setting without crossing Duckwork profiles.
+
+    A multiplexed Duckwork gateway keeps the launch/default profile's .env in
+    os.environ; the active profile's values live in agent.secret_scope. So
+    under multiplexing, read through the scope. Everywhere else (a
+    single-profile gateway, packaging, standalone tests) read os.environ
+    exactly as before.
+
+    Multiplexing is the only case that goes through the scope. Duckwork 0.19.0
+    treats an installed scope as authoritative even without multiplexing (a
+    miss returns the default, never os.environ) and installs a .env-only
+    scope around every cron job, while duckwork-agent main falls through to
+    os.environ. Staying off the scope outside multiplexing keeps a
+    single-profile setup's config identical to before on every Duckwork
+    version, whichever code paths happen to install a scope.
+
+    Do not catch UnscopedSecretError here. In multiplex mode an unscoped read
+    must fail closed rather than borrow another profile's value.
+    """
+    try:
+        from agent.secret_scope import get_secret, is_multiplex_active
+    except (ImportError, AttributeError):
+        return os.environ.get(name, default)
+    if not is_multiplex_active():
+        return os.environ.get(name, default)
+
+    value = get_secret(name, default)
+    _warn_if_process_env_ignored(name)
+    return default if value is None else value
+
+
+def _warn_if_process_env_ignored(name: str) -> None:
+    """Say so when multiplexing hides a YantrikDB setting from this profile.
+
+    Under ``gateway.multiplex_profiles`` a scoped read returns the default for
+    a name missing from the profile's .env, even when the process environment
+    sets it (docker ``-e``, systemd ``Environment=``, or the launch profile's
+    .env). For ``YANTRIKDB_MODE`` that silently swaps an http backend for an
+    empty embedded store, so the drop has to be visible. Logs the name only,
+    never the value: the value may be a token. Only called under multiplexing.
+    """
+    if name in _IGNORED_ENV_WARNED or name not in os.environ:
+        return
+    try:
+        from agent.secret_scope import current_secret_scope
+    except (ImportError, AttributeError):
+        return
+    scope = current_secret_scope()
+    if scope is None or name in scope:
+        return
+    _IGNORED_ENV_WARNED.add(name)
+    logger.warning(
+        "%s is set in the gateway process environment but not in this "
+        "profile's .env. With gateway.multiplex_profiles on, each profile "
+        "reads YantrikDB settings only from its own .env, so the default is "
+        "used here. Add %s to this profile's .env to keep it.",
+        name, name,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
+
+@dataclass
+class YantrikDBConfig:
+    # Backend selector — "embedded" (default in v0.2.0+) or "http"
+    mode: str = "embedded"
+    # HTTP-only fields
+    url: str = DEFAULT_URL
+    token: str = ""
+    connect_timeout: float = DEFAULT_CONNECT_TIMEOUT
+    read_timeout: float = DEFAULT_READ_TIMEOUT
+    retry_total: int = DEFAULT_RETRY_TOTAL
+    # Embedded-only fields
+    db_path: str = ""               # default $DUCKWORK_HOME/yantrikdb-memory.db
+    embedder_name: str = ""         # bundled potion-2M when empty; "potion-base-8M" / "potion-base-32M" for tier 2/3
+    embedder_class: str = ""        # dotted python path "pkg.module.Class" — instantiated and passed to db.set_embedder(); for custom embedders
+    embedder_model2vec: str = ""    # HF model id for built-in Model2VecEmbedder loader (v0.4.2+); dim auto-probed
+    embedder_huggingface: str = ""  # HF model id for built-in SentenceTransformerEmbedder loader (v0.4.2+); dim auto-probed
+    embedding_dim: int = 0          # output dim; required for embedder_name and embedder_class paths, ignored for the two auto-probe paths above (bundled potion-2M is dim=64)
+    # maintenance_cadence (v0.12.0): consolidate during long-running sessions.
+    #
+    # Consolidation and the gap→task loop both hang off `on_session_end`, and
+    # Duckwork fires that only at REAL session boundaries — CLI exit, `/reset`,
+    # gateway session expiry — explicitly never per turn. For an agent that
+    # runs continuously (a Pi on 24/7, a Telegram or Discord gateway) those
+    # boundaries can be hours or days apart, so the substrate's background work
+    # simply never ran for exactly the deployments that accumulate the most to
+    # consolidate.
+    #
+    # So run the same pass on a cadence too: after `maintenance_cadence_turns`
+    # turns, provided at least `maintenance_min_interval_seconds` have passed.
+    # Both conditions matter — turns alone would fire during a burst of rapid
+    # messages, and time alone would fire on an idle session with nothing new.
+    # Runs in the background, one at a time, and never on the turn's critical
+    # path.
+    #
+    # Set maintenance_cadence_turns=0 to restore pre-0.12 behaviour
+    # (session-end only).
+    maintenance_cadence_turns: int = 40
+    maintenance_min_interval_seconds: int = 1800
+    # constitution (v0.14.0): the operator's standing rules.
+    #
+    # Until now exactly one channel in this plugin carried always-injected
+    # RULES rather than facts: a knowledge pack's constitution. Which meant a
+    # third party could install standing rules into someone's agent and the
+    # person who owns it could not. That asymmetry is the wrong way round.
+    #
+    # Rules live in a FILE, not the substrate, and there is deliberately no
+    # tool to edit them:
+    #   - an agent must not be able to rewrite its own guardrails, and a tool
+    #     is exactly that capability
+    #   - guardrails should survive a corrupted, empty or unreachable memory;
+    #     rules stored in the thing they constrain are not guardrails
+    #   - a file is greppable, diffable and reviewable, which is what you want
+    #     of the sentences that outrank everything else
+    #
+    # Empty path or missing file = nothing injected, no behaviour change.
+    constitution_path: str = ""      # default: $DUCKWORK_HOME/yantrikdb-constitution.md
+    # Bounded so a runaway file cannot eat the window — but NOT scaled by the
+    # adaptive budget. Every other block yields as context fills; rules must
+    # not, because a tight window is exactly when an agent starts cutting
+    # corners. Bound it, never shrink it.
+    constitution_max_chars: int = 1500
+    # fleet_view (v0.13.0): see the whole fleet, not just this agent.
+    #
+    # Duckwork users run N agents, not one. Each gets its own namespace
+    # ({base}:{workspace}:{identity}) so nothing contaminates anything else —
+    # but that also means every surface this plugin offers is single-agent.
+    # An operator running twenty agents has no way to ask "what is my fleet
+    # working on", "which agent is stuck", or "has anyone already learned
+    # this". The isolation is right; the missing thing is a view ACROSS it.
+    #
+    # OFF by default, and deliberately: reading sibling namespaces crosses the
+    # boundary this plugin otherwise defends, so it is an operator's decision.
+    # It also REFUSES to run when owner_scoping is on — under owner scoping
+    # sibling namespaces are other PEOPLE, not other agents, and a "fleet
+    # overview" that quietly enumerates a user's family members would be the
+    # exact identity-contamination failure the scoping exists to prevent.
+    fleet_view_enabled: bool = False
+    # Records scanned per overview. The scan is the cost, so bound it.
+    fleet_scan_limit: int = 400
+    # packs (v0.11.0): attachable expertise. Engine 0.11.0+.
+    #
+    # A pack is a sealed, signed database of knowledge and rules that a host
+    # mounts to gain and unmounts to give back, leaving the host byte-for-byte
+    # as it was. `mount_pack` is deliberately transient — merely mounting never
+    # writes to your database — while `install_pack` copies it beside the db
+    # and re-mounts on every open.
+    #
+    # OFF by default. This is a new capability that changes what the agent
+    # knows, and mounting somebody else's knowledge is a decision an operator
+    # makes, not a default they discover. Same precedent as skills_enabled.
+    packs_enabled: bool = False
+    # Packs to mount on initialize, comma-separated paths or bare filenames
+    # resolved against the engine's pack directory. Mounted transiently and
+    # unmounted on shutdown, so a session that ends leaves nothing behind.
+    auto_mount_packs: str = ""
+    # `pack_context()` returns each mounted pack's coverage index and
+    # constitution rules — the block the engine wants every consumer to inject
+    # verbatim so packs behave identically everywhere. It goes in the system
+    # prompt, which means it competes with the conversation: cap it, and let
+    # the adaptive budget scale it like every other optional block.
+    surface_pack_context: bool = True
+    pack_context_max_chars: int = 2000
+    # adaptive_prompt_budget (v0.10.0): inject less when context is tight.
+    #
+    # Duckwork calls on_turn_start(turn, message, **kwargs) every turn and passes
+    # runtime context including `remaining_tokens`. Everything this plugin adds
+    # to the system prompt — recall hits, skill bodies, conflicts, hygiene, the
+    # verbatim buffer, the agenda — competes for the same window as the
+    # conversation itself, and the cost of memory is worst exactly when the
+    # window is nearly full. A fixed budget is therefore wrong in both
+    # directions: wasteful early, harmful late.
+    #
+    # When the host tells us what's left, scale the optional blocks down as the
+    # window fills, and stop injecting extras entirely under the low watermark
+    # so the remaining space belongs to the conversation. When the host says
+    # nothing (older Duckwork, or a caller that omits the kwarg) nothing changes —
+    # this is strictly additive, never a guess.
+    adaptive_prompt_budget: bool = True
+    prompt_budget_high_watermark: int = 40000   # above this: full injection
+    prompt_budget_low_watermark: int = 12000    # below this: essentials only
+    # capture_delegations (v0.10.0): record what sub-agents did.
+    #
+    # Duckwork delegates work to child agents and calls on_delegation(task,
+    # result, child_session_id) when one returns. Nothing in the memory
+    # provider interface obliges anyone to use it, and no other provider
+    # does — so today a sub-agent investigates something, reports back, the
+    # child session ends, and everything it learned is gone. The parent's
+    # memory never sees it, and the next session cannot recall it, because
+    # only the conversation transcript ever held it.
+    #
+    # We store the (task, result) pair as an episodic memory in the PARENT's
+    # namespace, stamped with the child session id, so delegated findings
+    # become recallable exactly like anything else the agent learned.
+    # Bounded by delegation_max_len per field so a verbose sub-agent cannot
+    # flood the substrate.
+    capture_delegations: bool = True
+    delegation_max_len: int = 4000
+    # tool_profile (v0.10.0): how many tools the model sees every turn.
+    #
+    #   "core" (default) — the 7 tools an agent actually reaches for. ~1.1k
+    #       tokens of schema per request.
+    #   "full"           — all 18. Trigger consumers, observability,
+    #       extraction stats, hygiene, gaps, verbatim buffer.
+    #
+    # Tool schemas are re-sent on EVERY request, so the surface is a running
+    # per-turn cost, not a one-off. At 18 tools this plugin billed ~3.6k
+    # tokens/turn — 3.6x the largest of the other Duckwork memory providers
+    # (2-5 tools) — and a wide surface also degrades selection: the more
+    # near-synonymous tools a model sees, the more often it picks the wrong
+    # one. The dropped tools are not deleted, and nothing about them is
+    # disabled: the maintenance they cover runs automatically (`think()` on
+    # session end) or surfaces in the system prompt (conflicts, hygiene,
+    # agenda) without the model having to call anything.
+    # Set YANTRIKDB_TOOL_PROFILE=full to expose everything.
+    tool_profile: str = "core"
+    # share_engine (v0.9.3): reuse ONE in-process engine per (db_path +
+    # embedder config) instead of constructing a fresh one per provider.
+    # Duckwork builds a provider per agent/session and they all resolve to the
+    # same $DUCKWORK_HOME/yantrikdb-memory.db, so without this a host running N
+    # agents opens the same database N times — each engine spawning its own
+    # materializer workers + compactor. Measured on a 32-logical-CPU box with
+    # 4k records: 6 engines idled at 15.3% of the machine (135 OS threads) vs
+    # 3.7% (52 threads) for one shared engine — a 4.13x idle-CPU reduction.
+    # Set YANTRIKDB_SHARE_ENGINE=false to restore per-provider engines.
+    share_engine: bool = True
+    # Shared fields
+    namespace: str = DEFAULT_NAMESPACE
+    top_k: int = DEFAULT_TOP_K
+    max_text_len: int = DEFAULT_MAX_TEXT_LEN
+    auto_think_on_session_end: bool = True
+    # v0.4.15+ — after session-end think() emits triggers, automatically
+    # acknowledge each pending trigger so the queue doesn't accumulate
+    # across sessions for users who don't implement a consumer loop. Uses
+    # `acknowledge` not `act_on`/`dismiss` because no action was actually
+    # taken — `acknowledge` is the honest semantics for "agent saw it,
+    # moving on." Opt-in; default off so existing deployments are
+    # unchanged. Closes #22.
+    auto_acknowledge_triggers: bool = False
+    sync_user_messages: bool = True
+    # Duckwork-specific owner scoping. When enabled, the provider appends a
+    # stable owner shard to the effective namespace, so one Duckwork gateway can
+    # isolate memories for multiple users without requiring YantrikDB core
+    # provenance columns. Actor->owner aliases live in the plugin/app config.
+    owner_scoping: bool = False
+    # When owner_scoping is on, also recall from the base namespace so existing
+    # pre-scoping memories behave as shared/global legacy memory. Writes still
+    # go only to the owner-scoped namespace.
+    include_base_namespace_recall: bool = True
+    # When owner_scoping is on and an identity map merges multiple actors into
+    # one owner, recall old per-actor owner namespaces too. This preserves
+    # memories written before aliases were introduced.
+    include_legacy_actor_namespace_recall: bool = True
+    identity_map_path: str = ""
+    identity_map_json: str = ""
+    # v0.3.0+ skills surface — opt-in. Disabled by default so adding the
+    # plugin to an existing Duckwork install doesn't change the tool schema
+    # the model sees. Users enable explicitly when they want the agentic
+    # skill loop (define / search / outcome). When disabled, the three
+    # skill schemas are hidden from get_tool_schemas() and any direct
+    # call to a skill tool short-circuits with a clear error.
+    skills_enabled: bool = False
+    # v0.4.17+ — when the agent defines a skill via `yantrikdb_skill_define`,
+    # persist the (skill_id, type, ts) tuple so the NEXT session's system
+    # prompt can surface "the agent learned these skills recently" to the
+    # incoming model. Closes the silent-crystallization gap: today the model
+    # writes a skill, the session ends, and no future session knows it exists
+    # unless it happens to call skill_search with the right query. Default
+    # on — it's the wow moment.
+    surface_recent_skills: bool = True
+
+    # v0.5.0+ Wave A — active memory. The substrate stops waiting for the
+    # agent to call tools and starts shaping every turn automatically.
+    #
+    # A1 (recall auto-injection): Duckwork already calls prefetch() per turn
+    # and joins the result into context. v0.5 adds a min-score filter and a
+    # token-budget cap so noisy/long results don't blow the prompt.
+    auto_recall_min_score: float = 0.4
+    auto_recall_token_budget: int = 600
+    # A2 (skill auto-attach): queue_prefetch also runs skill_search; if any
+    # skill matches the user message with similarity >= threshold, its body
+    # surfaces in system_prompt_block(). The right procedure appears when
+    # relevant — the agent doesn't need to remember skill_search exists.
+    auto_skill_attach: bool = True
+    auto_skill_min_score: float = 0.55
+    auto_skill_max_bodies: int = 2
+    # A3 (pending-conflict surface): conflicts() unresolved entries appear
+    # in system_prompt_block() so the agent sees contradictions without
+    # being asked to look. Polled in the prefetch background thread, cached
+    # to avoid hammering on every turn.
+    surface_pending_conflicts: bool = True
+    pending_conflicts_poll_seconds: float = 60.0
+    pending_conflicts_max_surfaced: int = 3
+
+    # v0.5.0+ Wave B — auto-extraction of facts from conversation.
+    #
+    # sync_turn() v1 deliberately stored only user messages whole because
+    # "storing LLM output as fact amplifies hallucination" (HANDOFF §10.1).
+    # Wave B extracts FACTS from those user messages (and user-confirmed
+    # assistant assertions) into candidate records — certainty<=0.4,
+    # source=extracted, hidden from default recall until think()
+    # canonicalizes them. Substrate gains candidates fast; user-visible
+    # recall stays high-confidence.
+    #
+    # tier=cheap: regex + light NER, zero new deps, runs <1ms per turn.
+    # tier=embedding (deferred to v0.5.1): cluster turn vs prior recall
+    #   hits to strengthen / contradict closest match.
+    # tier=llm (deferred to v0.5.1): call user's configured Duckwork model
+    #   for free-form fact extraction.
+    extraction_enabled: bool = True
+    extraction_tier: str = "cheap"
+    extraction_certainty: float = 0.4
+    # Default recall hides certainty<0.5 candidates so unpromoted noise
+    # doesn't outrank canonical memories. Users who want to see candidates
+    # opt in (per-call recall arg also overrides this).
+    recall_includes_candidates: bool = False
+
+    # v0.5.0+ Wave E — cross-agent shared brain (OPT-IN, default off).
+    #
+    # A user's coding agent learns "Pranab prefers tabs"; their WhatsApp
+    # agent automatically knows. When shared_brain_namespace is set,
+    # explicit yantrikdb_remember writes are MIRRORED to that namespace
+    # in addition to the agent's local namespace, tagged with
+    # metadata.source=f"agent:{agent_name}" so each contributing agent
+    # is traceable. Recalls union the local + shared namespaces;
+    # think() canonicalization runs over both as usual.
+    #
+    # Scope intentionally narrow in v1: only explicit remember writes
+    # are mirrored. Skills, extracted candidates, compression summaries
+    # stay agent-local — the user explicitly chooses what gets shared.
+    # This sidesteps coordination headaches around agent-specific
+    # skill outcomes leaking across agent boundaries.
+    #
+    # Single-agent users see ZERO behaviour change with default empty.
+    shared_brain_namespace: str = ""
+    # Human-readable agent name used to tag shared-brain writes. Defaults
+    # blank — provider auto-derives from agent_workspace when blank, so
+    # this is mostly a manual override for explicit branding.
+    agent_name: str = ""
+
+    # v0.6.0+ Wave F — self-tuning recall (OPT-IN, default off).
+    #
+    # The engine ranks recall; the plugin keeps a local per-rid feedback
+    # ledger ($DUCKWORK_HOME/yantrikdb-recall-feedback.json) recording how
+    # often each memory was surfaced and how often it was explicitly
+    # reinforced (agent passed its rid back via recall(reinforce=[...])
+    # after the memory proved useful). When enabled, _do_recall applies a
+    # small, capped boost to reinforced memories and re-sorts BEFORE the
+    # top_k cut, so memories that keep proving useful climb over time.
+    #
+    # Surfaced-only frequency is deliberately NOT a positive boost — that
+    # would entrench whatever already ranks high. Only explicit
+    # reinforcement moves ranking. Surfaced counts feed the hygiene
+    # "low-usefulness" signal (surfaced often, reinforced never).
+    #
+    # Default OFF → single recall callers see ZERO behaviour change.
+    self_tuning_recall: bool = False
+    # Maximum score boost a fully-reinforced memory can receive. Capped so
+    # reinforcement nudges ranking without overriding semantic relevance.
+    self_tuning_max_boost: float = 0.15
+
+    # v0.6.0+ Wave G — proactive memory hygiene surfacing (OPT-IN, default
+    # off). When on, system_prompt_block appends a compact hygiene digest
+    # (open conflicts + low-usefulness candidates) so the agent sees
+    # cleanup opportunities without being asked. The yantrikdb_hygiene
+    # tool works regardless of this flag; the flag only controls passive
+    # surfacing. Default OFF → no prompt-budget change for existing users.
+    surface_hygiene: bool = False
+    hygiene_max_surfaced: int = 3
+
+    # v0.7.0+ Wave J — conversation buffer (engine 0.9+ working memory).
+    #
+    # When enabled, sync_turn also records each user/assistant turn into the
+    # engine's bounded, verbatim ring buffer (record_turn). Unlike the
+    # semantic store this is a cheap last-N-turns transcript that survives
+    # Duckwork compression — so the exact recent exchange is always
+    # recoverable via recent_turns. Default ON (cheap, additive); set
+    # YANTRIKDB_CONVERSATION_BUFFER_ENABLED=false to disable.
+    conversation_buffer_enabled: bool = True
+    conversation_buffer_max_turns: int = 10
+    # Passive surfacing of the verbatim buffer into system_prompt_block —
+    # OPT-IN (default off) since it costs prompt budget. Most useful
+    # post-compression, where the semantic store has the gist but the exact
+    # last turns would otherwise be gone.
+    surface_conversation_buffer: bool = False
+    conversation_buffer_surface_limit: int = 6
+
+    # v0.8.0+ — the self-directing substrate. Turns the discrete v0.7
+    # primitives (knowledge_gaps + tasks + hygiene + conflicts) into a loop:
+    # the memory notices what it doesn't know, queues the work, and hands the
+    # agent its own agenda.
+    #
+    # ON BY DEFAULT since v0.10.0. Through v0.9.x this shipped opt-in, which
+    # meant the capability the plugin is *for* was invisible to anyone who
+    # installed it and didn't read the README — the default install was a
+    # competent memory store and nothing more. Both halves are bounded
+    # (`gap_task_max` new tasks per session, `agenda_max_items` lines of
+    # prompt) and the gap gate is demand-aggregated, so a single
+    # low-confidence recall can never mint a task. Set
+    # YANTRIKDB_AUTO_GAP_TASKS=false / YANTRIKDB_SURFACE_AGENDA=false to
+    # restore the pre-0.10 behaviour.
+    #
+    # auto_gap_tasks: on session end, run knowledge_gaps() and create a task
+    # for each recurring gap that doesn't already have one — so the agent's
+    # unanswered questions become durable, actionable to-dos.
+    auto_gap_tasks: bool = True
+    # gap_detection (v0.15.0): master switch for everything derived from
+    # knowledge_gaps(). DEFAULT OFF, and that is a correction rather than a
+    # preference — see gap_max_avg_top_score below for the measurement.
+    #
+    # Re-enable once the engine ships a gap signal that discriminates; until
+    # then the surfaces below are silent whether this is on or off, and an
+    # honest off beats a silent on. Set YANTRIKDB_GAP_DETECTION=true to
+    # restore the previous behaviour if you have calibrated your own
+    # threshold against your own corpus.
+    gap_detection: bool = False
+    gap_task_max: int = 3            # cap new gap-tasks created per session
+    gap_task_min_count: int = 3      # a gap must recur >= this to become a task
+    # Max average top recall score for a query to count as a "gap".
+    #
+    # RECALIBRATED in v0.12.2 for engine 0.12.1, which changed how scores are
+    # composed: recency used to ADD up to +0.5 to every fresh record, and now
+    # MULTIPLIES relevance bounded to +12.5%. Retrieval got better (benchmark
+    # MRR 0.928 -> 0.946) but absolute scores roughly halved — avg-top3 median
+    # 1.138 -> 0.510 on the same corpus. The old 0.5 default flagged 0/37
+    # benchmark queries as gaps on 0.11.3 and **17/37 on 0.12.1**, so the
+    # self-directing loop (on by default since v0.10) would have minted tasks
+    # for questions the memory answers correctly at rank 1.
+    #
+    # 0.30 is measured, not guessed: on 0.12.1 it flags 0/37 well-answered
+    # queries while still catching genuinely unanswerable ones. The two
+    # distributions overlap (answered min 0.320, unanswerable max 0.441), so
+    # no threshold separates them cleanly — this errs toward missing a gap
+    # rather than inventing one, because a missed gap costs nothing visible
+    # while a false task costs the user's attention and trust. The recurrence
+    # requirement (gap_task_min_count) is the second filter behind it.
+    #
+    # tests/test_gap_calibration.py re-measures this against the benchmark
+    # corpus, so the next scoring change fails loudly instead of silently
+    # filling somebody's agenda.
+    #
+    # v0.15.0 — WHY gap_detection NOW DEFAULTS OFF. The overlap noted above
+    # ("no threshold separates them cleanly") turned out to understate it.
+    # Measured on engine 0.13.0 against a 4,353-record corpus:
+    #
+    #   queries flagged as a gap at 0.30 ............ 0 / 20
+    #   deliberate nonsense NOT flagged ............. 3 / 4
+    #     "zzqx wobble frangible" ......... avg 0.4810
+    #     "quantum tarpaulin metric" ...... avg 0.3707
+    #     "grommet fitzwilliam parsnip" ... avg 0.3023
+    #
+    # Gibberish scores as high as real questions, so the detector is not
+    # erring toward silence as v0.12.2 intended — it is silent, and its
+    # silence carries no information. An operator reads that as "no gaps".
+    #
+    # The defect is the INSTRUMENT, not the number. A threshold compared
+    # against the COMPOSITE score inherits terms — importance, recency,
+    # decay — that describe how to weight a result once you have decided to
+    # return it, not whether memory holds anything near the question. v0.12.2
+    # recalibrated the value and left the instrument; recalibrating again
+    # would just move the same bug to a new constant and expire it on the
+    # next scoring change.
+    #
+    # Deliberately NOT replaced with a similarity threshold here: on the same
+    # corpus, nonsense reached max_similarity 0.653 against 0.624 for real
+    # queries, so that swap is unproven and might only relocate the defect.
+    # The engine is gating a `min_similarity` candidate on evidence; this
+    # plugin adopts it if and when it separates. benchmarks/gap_floor_check.py
+    # reproduces all of the above against any database in one command.
+    gap_max_avg_top_score: float = 0.30
+    # surface_agenda: prepend a compact "## Your memory's agenda" block to
+    # system_prompt_block — top open tasks + unresolved knowledge gaps — so
+    # every session opens with what the memory still needs.
+    surface_agenda: bool = True
+    agenda_max_items: int = 5
+
+    @classmethod
+    def from_env(cls) -> YantrikDBConfig:
+        return cls(
+            mode=_profile_env("YANTRIKDB_MODE", "embedded").strip().lower(),
+            url=_profile_env("YANTRIKDB_URL", DEFAULT_URL).rstrip("/"),
+            token=_profile_env("YANTRIKDB_TOKEN", ""),
+            db_path=_profile_env("YANTRIKDB_DB_PATH", ""),
+            embedder_name=_profile_env("YANTRIKDB_EMBEDDER", ""),
+            embedder_class=_profile_env("YANTRIKDB_EMBEDDER_CLASS", ""),
+            embedder_model2vec=_profile_env("YANTRIKDB_EMBEDDER_MODEL2VEC", ""),
+            embedder_huggingface=_profile_env("YANTRIKDB_EMBEDDER_HF", ""),
+            embedding_dim=_parse_int(_profile_env("YANTRIKDB_EMBEDDING_DIM"), 0),
+            share_engine=_parse_bool(
+                _profile_env("YANTRIKDB_SHARE_ENGINE"), default=True,
+            ),
+            tool_profile=(
+                _profile_env("YANTRIKDB_TOOL_PROFILE", "core").strip().lower()
+                or "core"
+            ),
+            capture_delegations=_parse_bool(
+                _profile_env("YANTRIKDB_CAPTURE_DELEGATIONS"), default=True,
+            ),
+            maintenance_cadence_turns=_parse_int(
+                _profile_env("YANTRIKDB_MAINTENANCE_CADENCE_TURNS"), 40,
+            ),
+            maintenance_min_interval_seconds=_parse_int(
+                _profile_env("YANTRIKDB_MAINTENANCE_MIN_INTERVAL_SECONDS"), 1800,
+            ),
+            constitution_path=_profile_env("YANTRIKDB_CONSTITUTION_PATH", ""),
+            constitution_max_chars=_parse_int(
+                _profile_env("YANTRIKDB_CONSTITUTION_MAX_CHARS"), 1500,
+            ),
+            fleet_view_enabled=_parse_bool(
+                _profile_env("YANTRIKDB_FLEET_VIEW"), default=False,
+            ),
+            fleet_scan_limit=_parse_int(
+                _profile_env("YANTRIKDB_FLEET_SCAN_LIMIT"), 400,
+            ),
+            packs_enabled=_parse_bool(
+                _profile_env("YANTRIKDB_PACKS_ENABLED"), default=False,
+            ),
+            auto_mount_packs=_profile_env("YANTRIKDB_AUTO_MOUNT_PACKS", ""),
+            surface_pack_context=_parse_bool(
+                _profile_env("YANTRIKDB_SURFACE_PACK_CONTEXT"), default=True,
+            ),
+            pack_context_max_chars=_parse_int(
+                _profile_env("YANTRIKDB_PACK_CONTEXT_MAX_CHARS"), 2000,
+            ),
+            adaptive_prompt_budget=_parse_bool(
+                _profile_env("YANTRIKDB_ADAPTIVE_PROMPT_BUDGET"), default=True,
+            ),
+            prompt_budget_high_watermark=_parse_int(
+                _profile_env("YANTRIKDB_PROMPT_BUDGET_HIGH"), 40000,
+            ),
+            prompt_budget_low_watermark=_parse_int(
+                _profile_env("YANTRIKDB_PROMPT_BUDGET_LOW"), 12000,
+            ),
+            delegation_max_len=_parse_int(
+                _profile_env("YANTRIKDB_DELEGATION_MAX_LEN"), 4000,
+            ),
+            skills_enabled=_parse_bool(
+                _profile_env("YANTRIKDB_SKILLS_ENABLED"), default=False,
+            ),
+            auto_think_on_session_end=_parse_bool(
+                _profile_env("YANTRIKDB_AUTO_THINK_ON_SESSION_END"), default=True,
+            ),
+            auto_acknowledge_triggers=_parse_bool(
+                _profile_env("YANTRIKDB_AUTO_ACKNOWLEDGE_TRIGGERS"), default=False,
+            ),
+            surface_recent_skills=_parse_bool(
+                _profile_env("YANTRIKDB_SURFACE_RECENT_SKILLS"), default=True,
+            ),
+            auto_recall_min_score=_parse_float(
+                _profile_env("YANTRIKDB_AUTO_RECALL_MIN_SCORE"), 0.4,
+            ),
+            auto_recall_token_budget=_parse_int(
+                _profile_env("YANTRIKDB_AUTO_RECALL_TOKEN_BUDGET"), 600,
+            ),
+            auto_skill_attach=_parse_bool(
+                _profile_env("YANTRIKDB_AUTO_SKILL_ATTACH"), default=True,
+            ),
+            auto_skill_min_score=_parse_float(
+                _profile_env("YANTRIKDB_AUTO_SKILL_MIN_SCORE"), 0.55,
+            ),
+            auto_skill_max_bodies=_parse_int(
+                _profile_env("YANTRIKDB_AUTO_SKILL_MAX_BODIES"), 2,
+            ),
+            surface_pending_conflicts=_parse_bool(
+                _profile_env("YANTRIKDB_SURFACE_PENDING_CONFLICTS"), default=True,
+            ),
+            pending_conflicts_poll_seconds=_parse_float(
+                _profile_env("YANTRIKDB_PENDING_CONFLICTS_POLL_SECONDS"), 60.0,
+            ),
+            pending_conflicts_max_surfaced=_parse_int(
+                _profile_env("YANTRIKDB_PENDING_CONFLICTS_MAX_SURFACED"), 3,
+            ),
+            extraction_enabled=_parse_bool(
+                _profile_env("YANTRIKDB_EXTRACTION_ENABLED"), default=True,
+            ),
+            extraction_tier=_profile_env(
+                "YANTRIKDB_EXTRACTION_TIER", "cheap",
+            ).strip().lower(),
+            extraction_certainty=_parse_float(
+                _profile_env("YANTRIKDB_EXTRACTION_CERTAINTY"), 0.4,
+            ),
+            recall_includes_candidates=_parse_bool(
+                _profile_env("YANTRIKDB_RECALL_INCLUDES_CANDIDATES"),
+                default=False,
+            ),
+            shared_brain_namespace=_profile_env(
+                "YANTRIKDB_SHARED_BRAIN_NAMESPACE", "",
+            ).strip(),
+            agent_name=_profile_env("YANTRIKDB_AGENT_NAME", "").strip(),
+            self_tuning_recall=_parse_bool(
+                _profile_env("YANTRIKDB_SELF_TUNING_RECALL"), default=False,
+            ),
+            self_tuning_max_boost=_parse_float(
+                _profile_env("YANTRIKDB_SELF_TUNING_MAX_BOOST"), 0.15,
+            ),
+            surface_hygiene=_parse_bool(
+                _profile_env("YANTRIKDB_SURFACE_HYGIENE"), default=False,
+            ),
+            hygiene_max_surfaced=_parse_int(
+                _profile_env("YANTRIKDB_HYGIENE_MAX_SURFACED"), 3,
+            ),
+            conversation_buffer_enabled=_parse_bool(
+                _profile_env("YANTRIKDB_CONVERSATION_BUFFER_ENABLED"),
+                default=True,
+            ),
+            conversation_buffer_max_turns=_parse_int(
+                _profile_env("YANTRIKDB_CONVERSATION_BUFFER_MAX_TURNS"), 10,
+            ),
+            surface_conversation_buffer=_parse_bool(
+                _profile_env("YANTRIKDB_SURFACE_CONVERSATION_BUFFER"),
+                default=False,
+            ),
+            conversation_buffer_surface_limit=_parse_int(
+                _profile_env("YANTRIKDB_CONVERSATION_BUFFER_SURFACE_LIMIT"), 6,
+            ),
+            gap_detection=_parse_bool(
+                _profile_env("YANTRIKDB_GAP_DETECTION"), default=False,
+            ),
+            auto_gap_tasks=_parse_bool(
+                _profile_env("YANTRIKDB_AUTO_GAP_TASKS"), default=True,
+            ),
+            gap_task_max=_parse_int(
+                _profile_env("YANTRIKDB_GAP_TASK_MAX"), 3,
+            ),
+            gap_task_min_count=_parse_int(
+                _profile_env("YANTRIKDB_GAP_TASK_MIN_COUNT"), 3,
+            ),
+            gap_max_avg_top_score=_parse_float(
+                _profile_env("YANTRIKDB_GAP_MAX_AVG_TOP_SCORE"), 0.30,
+            ),
+            surface_agenda=_parse_bool(
+                _profile_env("YANTRIKDB_SURFACE_AGENDA"), default=True,
+            ),
+            agenda_max_items=_parse_int(
+                _profile_env("YANTRIKDB_AGENDA_MAX_ITEMS"), 5,
+            ),
+            sync_user_messages=_parse_bool(
+                _profile_env("YANTRIKDB_SYNC_USER_MESSAGES"), default=True,
+            ),
+            owner_scoping=_parse_bool(
+                _profile_env("YANTRIKDB_OWNER_SCOPING"), default=False,
+            ),
+            include_base_namespace_recall=_parse_bool(
+                _profile_env("YANTRIKDB_INCLUDE_BASE_NAMESPACE_RECALL"),
+                default=True,
+            ),
+            include_legacy_actor_namespace_recall=_parse_bool(
+                _profile_env("YANTRIKDB_INCLUDE_LEGACY_ACTOR_NAMESPACE_RECALL"),
+                default=True,
+            ),
+            identity_map_path=_profile_env("YANTRIKDB_IDENTITY_MAP_PATH", ""),
+            identity_map_json=_profile_env("YANTRIKDB_IDENTITY_MAP_JSON", ""),
+            namespace=_profile_env("YANTRIKDB_NAMESPACE", DEFAULT_NAMESPACE),
+            top_k=_parse_int(_profile_env("YANTRIKDB_TOP_K"), DEFAULT_TOP_K),
+            connect_timeout=_parse_float(
+                _profile_env("YANTRIKDB_CONNECT_TIMEOUT"), DEFAULT_CONNECT_TIMEOUT,
+            ),
+            read_timeout=_parse_float(
+                _profile_env("YANTRIKDB_READ_TIMEOUT"), DEFAULT_READ_TIMEOUT,
+            ),
+            retry_total=_parse_int(
+                _profile_env("YANTRIKDB_RETRY_TOTAL"), DEFAULT_RETRY_TOTAL,
+            ),
+            max_text_len=_parse_int(
+                _profile_env("YANTRIKDB_MAX_TEXT_LEN"), DEFAULT_MAX_TEXT_LEN,
+            ),
+        )
+
+    @classmethod
+    def load(cls, duckwork_home: Path | None = None) -> YantrikDBConfig:
+        """Load config from env, then overlay with $DUCKWORK_HOME/yantrikdb.json.
+
+        Mirrors the mem0 pattern — env provides defaults, the JSON file is an
+        optional override for individual keys.
+        """
+        cfg = cls.from_env()
+        path = _resolve_config_path(duckwork_home)
+        if path is None or not path.exists():
+            return cfg
+        try:
+            overrides = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as e:
+            logger.warning("Failed to read %s: %s — using env config", path, e)
+            return cfg
+        if not isinstance(overrides, dict):
+            return cfg
+        int_fields = {
+            "top_k", "retry_total", "max_text_len", "embedding_dim",
+            "auto_recall_token_budget", "auto_skill_max_bodies",
+            "pending_conflicts_max_surfaced",
+        }
+        float_fields = {
+            "connect_timeout", "read_timeout",
+            "auto_recall_min_score", "auto_skill_min_score",
+            "pending_conflicts_poll_seconds",
+            "extraction_certainty",
+        }
+        bool_fields = {
+            "skills_enabled",
+            "auto_think_on_session_end",
+            "auto_acknowledge_triggers",
+            "surface_recent_skills",
+            "auto_skill_attach",
+            "surface_pending_conflicts",
+            "extraction_enabled",
+            "recall_includes_candidates",
+            "sync_user_messages",
+            "owner_scoping",
+            "include_base_namespace_recall",
+            "include_legacy_actor_namespace_recall",
+        }
+        for key, val in overrides.items():
+            if val in (None, ""):
+                continue
+            if not hasattr(cfg, key):
+                continue
+            if key == "url" and isinstance(val, str):
+                setattr(cfg, key, val.rstrip("/"))
+            elif key in int_fields:
+                setattr(cfg, key, _parse_int(val, getattr(cfg, key)))
+            elif key in float_fields:
+                setattr(cfg, key, _parse_float(val, getattr(cfg, key)))
+            elif key in bool_fields:
+                setattr(cfg, key, _parse_bool(val, default=getattr(cfg, key)))
+            else:
+                # Coerce by the DEFAULT's runtime type. The hand-maintained
+                # name sets above were frozen at v0.5; every knob added
+                # since fell through to raw setattr — so a yantrikdb.json
+                # carrying "gap_detection": "false" set the truthy STRING
+                # "false" and silently ENABLED the feature the operator
+                # disabled, and a string cadence raised TypeError inside
+                # on_turn_start every turn (2026-08-15 downstream audit).
+                current = getattr(cfg, key)
+                if isinstance(current, bool):
+                    setattr(cfg, key, _parse_bool(val, default=current))
+                elif isinstance(current, int) and not isinstance(current, bool):
+                    setattr(cfg, key, _parse_int(val, current))
+                elif isinstance(current, float):
+                    setattr(cfg, key, _parse_float(val, current))
+                else:
+                    setattr(cfg, key, val)
+        return cfg
+
+
+def _parse_int(raw: Any, default: int) -> int:
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return default
+
+
+def _parse_bool(raw: Any, *, default: bool) -> bool:
+    """Parse a bool from env var or JSON string. Accepts the usual truthy/falsy spellings.
+
+    Truthy:  "1", "true", "yes", "on", "enabled"
+    Falsy:   "0", "false", "no", "off", "disabled"
+    Anything else (or None) → ``default``.
+    """
+    if raw is None:
+        return default
+    if isinstance(raw, bool):
+        return raw
+    s = str(raw).strip().lower()
+    if s in ("1", "true", "yes", "on", "enabled"):
+        return True
+    if s in ("0", "false", "no", "off", "disabled"):
+        return False
+    return default
+
+
+def _parse_float(raw: Any, default: float) -> float:
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        return default
+
+
+def _resolve_config_path(duckwork_home: Path | None) -> Path | None:
+    if duckwork_home is not None:
+        return Path(duckwork_home) / "yantrikdb.json"
+    try:
+        from duckwork_constants import get_duckwork_home  # type: ignore
+
+        return get_duckwork_home() / "yantrikdb.json"
+    except ImportError:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Text hygiene
+# ---------------------------------------------------------------------------
+
+def truncate_text(text: str, max_len: int) -> str:
+    """Truncate at a word boundary when possible, preserving a trailing ellipsis.
+
+    Oversize memory bodies would otherwise fail with a 400 from the server.
+    We truncate client-side with a visible marker so the agent (and anyone
+    reading the recall result) can see that the body was clipped.
+    """
+    if max_len <= 0 or len(text) <= max_len:
+        return text
+    marker = " …[truncated]"
+    budget = max_len - len(marker)
+    if budget <= 0:
+        return text[:max_len]
+    cut = text.rfind(" ", 0, budget)
+    if cut < int(budget * 0.8):
+        cut = budget
+    return text[:cut].rstrip() + marker
+
+
+# ---------------------------------------------------------------------------
+# Errors
+# ---------------------------------------------------------------------------
+
+class YantrikDBError(Exception):
+    """Base for all yantrikdb client errors."""
+
+
+class YantrikDBAuthError(YantrikDBError):
+    """401 / 403 — token missing, expired, or revoked."""
+
+
+class YantrikDBClientError(YantrikDBError):
+    """4xx — request was rejected (bad shape, quota, not found)."""
+
+
+class YantrikDBServerError(YantrikDBError):
+    """5xx — server failed to process the request."""
+
+
+class YantrikDBTransientError(YantrikDBError):
+    """Network error, timeout, 429, or 503 — retry later."""
+
+
+# ---------------------------------------------------------------------------
+# Client
+# ---------------------------------------------------------------------------
+
+class YantrikDBClient:
+    """HTTP client for yantrikdb-server.
+
+    - Session-pooled ``requests.Session`` for keep-alive.
+    - Bounded retries on 5xx and connection blips via urllib3.
+    - Exceptions mapped to the taxonomy above so callers can decide what
+      trips a circuit breaker (transient/server/auth) versus what does not
+      (4xx client mistakes).
+    - Each request is tagged with a short ``req_id`` and logged at DEBUG
+      with the operation and latency, so operators can correlate slow or
+      failing calls in the Duckwork log stream.
+    """
+
+    def __init__(self, config: YantrikDBConfig, session: Session | None = None):
+        self.config = config
+        self._session = session if session is not None else self._build_session(config)
+        # v0.9.1 — cached /v1/health capability probe for idempotency keys.
+        # None = not yet probed; True/False after the first check.
+        self._idem_cap: bool | None = None
+
+    @staticmethod
+    def _build_session(config: YantrikDBConfig) -> Session:
+        s = requests.Session()
+        if Retry is None:
+            return s
+        retry = Retry(
+            total=max(0, config.retry_total),
+            connect=min(config.retry_total, 2),
+            read=min(config.retry_total, 2),
+            backoff_factor=0.5,
+            status_forcelist=(500, 502, 504),
+            # POST removed 2026-08-15: retrying non-idempotent /v1/remember
+            # (and relate/task/skill writes) on a 5xx transparently REPLAYS
+            # the write — a server that committed and died mid-response got
+            # the memory silently duplicated, and the plugin's hook writes
+            # carry no idempotency key. Connect-level errors still retry
+            # safely (the request never reached the server).
+            allowed_methods=frozenset(("GET", "DELETE")),
+            respect_retry_after_header=True,
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(
+            max_retries=retry, pool_connections=4, pool_maxsize=8,
+        )
+        s.mount("http://", adapter)
+        s.mount("https://", adapter)
+        return s
+
+    def _headers(self) -> dict[str, str]:
+        headers = {"Content-Type": "application/json", "User-Agent": _USER_AGENT}
+        if self.config.token:
+            headers["Authorization"] = f"Bearer {self.config.token}"
+        return headers
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        body: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        url = f"{self.config.url}{path}"
+        req_id = uuid.uuid4().hex[:8]
+        started = time.perf_counter()
+        try:
+            resp = self._session.request(
+                method,
+                url,
+                json=body,
+                params=params,
+                headers=self._headers(),
+                timeout=(self.config.connect_timeout, self.config.read_timeout),
+            )
+        except requests.Timeout as e:
+            self._log_failure(req_id, method, path, started, f"timeout: {e}")
+            raise YantrikDBTransientError(f"Timeout contacting {url}: {e}") from e
+        except requests.ConnectionError as e:
+            self._log_failure(req_id, method, path, started, f"conn: {e}")
+            raise YantrikDBTransientError(f"Connection error: {e}") from e
+        except requests.RequestException as e:
+            self._log_failure(req_id, method, path, started, f"req: {e}")
+            raise YantrikDBError(f"Request failed: {e}") from e
+
+        latency_ms = (time.perf_counter() - started) * 1000
+        logger.debug(
+            "yantrikdb req=%s %s %s status=%s duration_ms=%.1f",
+            req_id, method, path, resp.status_code, latency_ms,
+        )
+        return _parse_response(resp)
+
+    @staticmethod
+    def _log_failure(
+        req_id: str, method: str, path: str, started: float, reason: str,
+    ) -> None:
+        latency_ms = (time.perf_counter() - started) * 1000
+        logger.debug(
+            "yantrikdb req=%s %s %s FAIL duration_ms=%.1f reason=%s",
+            req_id, method, path, latency_ms, reason,
+        )
+
+    # -- Endpoints --
+
+    def health(self) -> dict[str, Any]:
+        return self._request("GET", "/v1/health")
+
+    def remember(
+        self,
+        text: str,
+        *,
+        namespace: str | None = None,
+        importance: float = 0.6,
+        domain: str | None = None,
+        memory_type: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        # Honest surface (ecosystem agreement #6): forward an idempotency key
+        # only if the server advertises support (v0.9.1 capability probe);
+        # otherwise REFUSE loudly rather than forward-and-silently-drop.
+        if idempotency_key and not self._supports_idempotency_key():
+            raise YantrikDBClientError(
+                "idempotency keys are not supported by this yantrikdb-server "
+                "(its /v1/health capabilities do not advertise "
+                "'idempotency_key'). Upgrade the server, use embedded mode "
+                "(yantrikdb>=0.10.0), or omit the key."
+            )
+        safe_text = truncate_text(text, self.config.max_text_len)
+        body: dict[str, Any] = {
+            "text": safe_text,
+            "namespace": namespace or self.config.namespace,
+            "importance": float(importance),
+        }
+        if domain:
+            body["domain"] = domain
+        if memory_type:
+            body["memory_type"] = memory_type
+        if metadata:
+            body["metadata"] = metadata
+        if idempotency_key:
+            body["idempotency_key"] = idempotency_key
+        # Server returns 200 {stored:false, idempotency_conflict:true, rid} on
+        # a same-key/divergent-text conflict (byte-identical to embedded), so
+        # the response flows through unchanged; a same-key/same-text hit
+        # returns the original rid. A follower-write 503 (leader redirect)
+        # maps to a transient via _parse_response.
+        return self._request("POST", "/v1/remember", body)
+
+    def _supports_idempotency_key(self) -> bool:
+        """Cached /v1/health probe for the ``idempotency_key`` capability.
+
+        Only forward a key the server actually advertises (agreement #6),
+        never assume. Probed once, cached for the client's lifetime. Handles
+        both capability shapes — a list of feature strings, or a
+        ``{feature: bool}`` map.
+        """
+        if self._idem_cap is not None:
+            return self._idem_cap
+        supported = False
+        try:
+            caps = (self._request("GET", "/v1/health") or {}).get("capabilities")
+            if isinstance(caps, dict):
+                supported = bool(caps.get("idempotency_key"))
+            elif isinstance(caps, (list, tuple)):
+                supported = "idempotency_key" in caps
+        except YantrikDBError:
+            supported = False  # can't confirm → refuse, never assume support
+        self._idem_cap = supported
+        return supported
+
+    def recall(
+        self,
+        query: str,
+        *,
+        namespace: str | None = None,
+        top_k: int | None = None,
+        memory_type: str | None = None,
+        domain: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "query": query,
+            "namespace": namespace or self.config.namespace,
+            "top_k": int(top_k or self.config.top_k),
+        }
+        if memory_type:
+            body["memory_type"] = memory_type
+        if domain:
+            body["domain"] = domain
+        return self._request("POST", "/v1/recall", body)
+
+    def forget(self, rid: str) -> dict[str, Any]:
+        return self._request("POST", "/v1/forget", {"rid": rid})
+
+    def think(
+        self,
+        *,
+        run_consolidation: bool = True,
+        run_conflict_scan: bool = True,
+        run_pattern_mining: bool = False,
+        run_personality: bool = False,
+        consolidation_limit: int | None = None,
+    ) -> dict[str, Any]:
+        # No `namespace` in the body — the server's /v1/think parser never
+        # read it, so sending it only ever looked like scoping. Kept in
+        # lockstep with the embedded backend so the two cannot drift; see
+        # the note on EmbeddedYantrikDBClient.think and issue #87.
+        body: dict[str, Any] = {
+            "run_consolidation": run_consolidation,
+            "run_conflict_scan": run_conflict_scan,
+            "run_pattern_mining": run_pattern_mining,
+            "run_personality": run_personality,
+        }
+        if consolidation_limit is not None:
+            body["consolidation_limit"] = int(consolidation_limit)
+        return self._request("POST", "/v1/think", body)
+
+    def conflicts(self, *, namespace: str | None = None) -> dict[str, Any]:
+        params = {"namespace": namespace} if namespace else None
+        return self._request("GET", "/v1/conflicts", params=params)
+
+    # ----- Trigger lifecycle (v0.4.13+) ------------------------------
+    #
+    # Embedded backend wraps the engine's get_pending_triggers /
+    # acknowledge_trigger / dismiss_trigger / act_on_trigger methods
+    # directly. HTTP backend depends on yantrikdb-server exposing
+    # /v1/triggers/* endpoints; those aren't shipped yet (filed
+    # upstream), so HTTP-mode callers receive a clean 404 from the
+    # server until that lands.
+
+    def pending_triggers(self, *, limit: int = 10) -> dict[str, Any]:
+        params: dict[str, Any] = {"limit": int(limit)}
+        return self._request("GET", "/v1/triggers/pending", params=params)
+
+    def acknowledge_trigger(self, trigger_id: str) -> dict[str, Any]:
+        return self._request(
+            "POST", f"/v1/triggers/{trigger_id}/acknowledge", {},
+        )
+
+    def dismiss_trigger(self, trigger_id: str) -> dict[str, Any]:
+        return self._request(
+            "POST", f"/v1/triggers/{trigger_id}/dismiss", {},
+        )
+
+    def act_on_trigger(self, trigger_id: str) -> dict[str, Any]:
+        return self._request(
+            "POST", f"/v1/triggers/{trigger_id}/act", {},
+        )
+
+    def resolve_conflict(
+        self,
+        conflict_id: str,
+        *,
+        strategy: str,
+        winner_rid: str | None = None,
+        new_text: str | None = None,
+        resolution_note: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {"strategy": strategy}
+        if winner_rid:
+            body["winner_rid"] = winner_rid
+        if new_text:
+            body["new_text"] = new_text
+        if resolution_note:
+            body["resolution_note"] = resolution_note
+        return self._request(
+            "POST", f"/v1/conflicts/{conflict_id}/resolve", body,
+        )
+
+    def relate(
+        self,
+        entity: str,
+        target: str,
+        relationship: str,
+        *,
+        weight: float | None = None,
+        namespace: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "entity": entity,
+            "target": target,
+            "relationship": relationship,
+        }
+        if namespace:
+            body["namespace"] = namespace
+        if weight is not None:
+            body["weight"] = float(weight)
+        return self._request("POST", "/v1/relate", body)
+
+    def stats(self, *, namespace: str | None = None) -> dict[str, Any]:
+        params = {"namespace": namespace} if namespace else None
+        return self._request("GET", "/v1/stats", params=params)
+
+    # -- Record listing (engine 0.8+/0.9+) ----------------------------
+    #
+    # Structured (non-semantic) scan over a namespace. Each record carries
+    # engine-truth fields (importance, access_count, last_access,
+    # storage_tier, …) used by the v0.7 hygiene scan. HTTP mode depends on
+    # yantrikdb-server exposing /v1/records; older servers return 404,
+    # which the provider treats as "engine scan unavailable" and falls back.
+
+    def list_records(
+        self,
+        *,
+        namespace: str | None = None,
+        limit: int = 50,
+        order: str = "asc",
+        domain: str | None = None,
+        since_rid: str | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {"limit": int(limit), "order": order}
+        if namespace:
+            params["namespace"] = namespace
+        if domain:
+            params["domain"] = domain
+        if since_rid:
+            params["since_rid"] = since_rid
+        return self._request("GET", "/v1/records", params=params)
+
+    # -- Knowledge gaps (engine 0.9+) ---------------------------------
+    #
+    # The substrate's "known unknowns": queries asked often (>= min_count)
+    # but answered poorly (avg top score <= max_avg_top_score). Engine-
+    # global (not namespace-scoped). HTTP mode depends on yantrikdb-server
+    # exposing /v1/knowledge_gaps; older servers 404 → "not available."
+
+    def pack_action(
+        self,
+        action: str,
+        *,
+        path: str | None = None,
+        pack_id: str | None = None,
+        allow_unverified_embedder: bool = False,
+    ) -> dict[str, Any]:
+        """Packs are an embedded-mode capability (v0.11.0).
+
+        A pack is a file mounted into a local database. In http mode the
+        database lives on the server, so mounting is an operator action there,
+        not something a client can do down the wire — yantrikdb-server has no
+        pack endpoints. Refuse clearly instead of pretending: silently
+        returning empty would read as "no packs are mounted", which is a
+        different and misleading claim.
+        """
+        raise YantrikDBClientError(
+            "packs are only available in embedded mode; this session is in "
+            "http mode, where packs are mounted on the server by its operator "
+            "(yantrikdb-server exposes no pack endpoints).",
+        )
+
+    def pack_context(self) -> dict[str, Any]:
+        """No packs over HTTP — see ``pack_action``. ``None`` is honest here:
+        this client has no mounted packs and cannot mount any."""
+        return {"context": None}
+
+    def pack_namespaces(self) -> list[str]:
+        """No packs over HTTP, so nothing to widen recall into."""
+        return []
+
+    def knowledge_gaps(
+        self,
+        *,
+        min_count: int = 3,
+        max_avg_top_score: float = 0.4,
+        limit: int = 20,
+        namespace: str | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {
+            "min_count": int(min_count),
+            "max_avg_top_score": float(max_avg_top_score),
+            "limit": int(limit),
+        }
+        # engine 0.9.3+ scopes demand per namespace; pass it through so gaps
+        # come from THIS agent's namespace, not the global/default one.
+        if namespace:
+            params["namespace"] = namespace
+        return self._request("GET", "/v1/knowledge_gaps", params=params)
+
+    # -- Conversation buffer (engine 0.9+) ----------------------------
+    #
+    # Bounded, verbatim last-N-turns working memory, namespace-scoped.
+    # Complements the semantic store: survives Duckwork compression and is
+    # cheaper than recall for "what did we just say." HTTP mode depends on
+    # yantrikdb-server exposing /v1/conversation/*; older servers 404.
+
+    def record_turn(
+        self,
+        role: str,
+        content: str,
+        *,
+        namespace: str | None = None,
+        max_turns: int = 10,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "role": role, "content": content, "max_turns": int(max_turns),
+        }
+        if namespace:
+            body["namespace"] = namespace
+        return self._request("POST", "/v1/conversation/turns", body)
+
+    def recent_turns(
+        self, *, namespace: str | None = None, limit: int = 10,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {"limit": int(limit)}
+        if namespace:
+            params["namespace"] = namespace
+        return self._request("GET", "/v1/conversation/recent", params=params)
+
+    def clear_turns(self, *, namespace: str | None = None) -> dict[str, Any]:
+        body = {"namespace": namespace} if namespace else {}
+        return self._request("POST", "/v1/conversation/clear", body)
+
+    # -- Tasks (engine 0.9+) ------------------------------------------
+    #
+    # A flat, namespace-scoped chore store (title + status + priority +
+    # optional subtask parent). Distinct from engine-generated triggers and
+    # from ephemeral host TODOs — these are durable, agent-authored tasks.
+    # HTTP mode depends on yantrikdb-server exposing /v1/tasks; older
+    # servers 404 → "not available."
+
+    def task_add(
+        self,
+        title: str,
+        *,
+        namespace: str | None = None,
+        priority: str = "medium",
+        parent_id: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {"title": title, "priority": priority}
+        if namespace:
+            body["namespace"] = namespace
+        if parent_id:
+            body["parent_id"] = parent_id
+        return self._request("POST", "/v1/tasks", body)
+
+    def task_list(
+        self, *, namespace: str | None = None, status: str | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, Any] = {}
+        if namespace:
+            params["namespace"] = namespace
+        if status:
+            params["status"] = status
+        return self._request("GET", "/v1/tasks", params=params or None)
+
+    def task_get(self, task_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/tasks/{task_id}")
+
+    def task_update(
+        self, task_id: str, *, status: str | None = None,
+        priority: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {}
+        if status:
+            body["status"] = status
+        if priority:
+            body["priority"] = priority
+        return self._request("PATCH", f"/v1/tasks/{task_id}", body)
+
+    def task_delete(self, task_id: str) -> dict[str, Any]:
+        return self._request("DELETE", f"/v1/tasks/{task_id}")
+
+    # -- Skills (v0.3.0+) ---------------------------------------------
+    #
+    # The HTTP path delegates to yantrikdb-server's wrapper endpoints,
+    # which handle schema validation server-side. The plugin still
+    # validates client-side via embedded.validate_skill_define_args
+    # before calling — defense in depth, and gives users early errors
+    # without a network round-trip on simple shape mistakes.
+
+    def skill_search(
+        self,
+        query: str,
+        *,
+        top_k: int | None = None,
+        applies_to: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "query": query,
+            "top_k": int(top_k or self.config.top_k),
+        }
+        if applies_to:
+            body["applies_to"] = applies_to
+        return self._request("POST", "/v1/skills/search", body)
+
+    def skill_define(
+        self,
+        skill_id: str,
+        body: str,
+        skill_type: str,
+        applies_to: list[str],
+        *,
+        triggers: list[str] | None = None,
+        on_conflict: str = "reject",
+        version: str | None = None,
+        supersedes_skill_id: str | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "skill_id": skill_id,
+            "body": body,
+            "skill_type": skill_type,
+            "applies_to": list(applies_to),
+            "on_conflict": on_conflict,
+        }
+        if triggers:
+            payload["triggers"] = list(triggers)
+        if version:
+            payload["version"] = version
+        if supersedes_skill_id:
+            payload["supersedes_skill_id"] = supersedes_skill_id
+        return self._request("POST", "/v1/skills/define", payload)
+
+    def skill_outcome(
+        self,
+        skill_id: str,
+        succeeded: bool,
+        *,
+        note: str | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"succeeded": bool(succeeded)}
+        if note:
+            payload["note"] = note
+        return self._request(
+            "POST", f"/v1/skills/{skill_id}/outcome", payload,
+        )
+
+    def close(self) -> None:
+        try:
+            self._session.close()
+        except Exception as e:  # pragma: no cover
+            logger.debug("Session close failed: %s", e)
+
+
+# ---------------------------------------------------------------------------
+# Response parsing
+# ---------------------------------------------------------------------------
+
+def _parse_response(resp: Response) -> dict[str, Any]:
+    status = resp.status_code
+    if status in (401, 403):
+        raise YantrikDBAuthError(f"{status}: {_safe_error_text(resp)}")
+    if status in (429, 503):
+        raise YantrikDBTransientError(f"{status}: {_safe_error_text(resp)}")
+    if 400 <= status < 500:
+        raise YantrikDBClientError(f"{status}: {_safe_error_text(resp)}")
+    if status >= 500:
+        raise YantrikDBServerError(f"{status}: {_safe_error_text(resp)}")
+
+    if not resp.content:
+        return {}
+    try:
+        data = resp.json()
+    except ValueError:
+        return {"raw": resp.text}
+    return data if isinstance(data, dict) else {"data": data}
+
+
+def _safe_error_text(resp: Response) -> str:
+    try:
+        data = resp.json()
+    except ValueError:
+        data = None
+    if isinstance(data, dict) and "error" in data:
+        return str(data["error"])[:500]
+    text = (resp.text or "").strip()
+    return text[:500] if text else f"HTTP {resp.status_code}"
+
+
+__all__ = [
+    "DEFAULT_MAX_TEXT_LEN",
+    "DEFAULT_NAMESPACE",
+    "DEFAULT_RETRY_TOTAL",
+    "DEFAULT_TOP_K",
+    "DEFAULT_URL",
+    "YantrikDBAuthError",
+    "YantrikDBClient",
+    "YantrikDBClientError",
+    "YantrikDBConfig",
+    "YantrikDBError",
+    "YantrikDBServerError",
+    "YantrikDBTransientError",
+    "truncate_text",
+]

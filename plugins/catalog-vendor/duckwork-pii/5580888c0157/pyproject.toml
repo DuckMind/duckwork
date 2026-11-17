@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=77,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-pii"
+version = "0.1.0.dev2"
+description = "Local Presidio PII redaction plugin for Duckwork Agent"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "presidio-analyzer>=2.2,<3",
+    "spacy>=3.8,<3.9",
+    "tldextract>=5,<6",
+]
+
+[project.entry-points."duckwork_agent.plugins"]
+duckwork-pii = "duckwork_pii"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["duckwork_pii*"]
+
+[dependency-groups]
+dev = [
+    "duckwork-agent>=0.19.0",
+]

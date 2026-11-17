@@ -1,0 +1,296 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "quote-ask",
+  "content_id": "a094085603f6",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1068,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "d94f465152ac2c6c5e112e7353a00b3de1271b395f15cb9f76218f43c8098d50"
+    },
+    {
+      "bytes": 3010,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "b1621b798ab130eb01e44964166477cb7a2214509522186aa8c426b48c1901b0"
+    },
+    {
+      "bytes": 18460,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "2ceee5961427daba19eecb3b4342ddbf3fffc418a1c0b8eae2fb602724911ee1"
+    },
+    {
+      "bytes": 784,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "92905466c1ce3f6d00861a6866628fa670bb7f42cbc9ed95b76e51679220012d"
+    },
+    {
+      "bytes": 7646,
+      "mode": "100644",
+      "path": "tests/plugin.test.mjs",
+      "sha256": "b4ee0f36293f940d57033f73794af642655d47185bd9cbedc2ea29e0e66c5c73"
+    },
+    {
+      "bytes": 1187,
+      "mode": "100644",
+      "path": "tests/stub-sdk.mjs",
+      "sha256": "59058b108bbbffa330af4288a2c1277371085c140d457c1beb261b16e06b7fda"
+    },
+    {
+      "bytes": 388,
+      "mode": "100644",
+      "path": "tests/vitest.config.mjs",
+      "sha256": "ea0d2a73f53d21cc798f5b11d537252e8090d2575998ada148d20a60d20c8afa"
+    }
+  ],
+  "input_manifest_sha256": "a094085603f675a3aa85c3a4e4f00007c3ce3847732f22c5024e119ca1460738",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "d94f465152ac2c6c5e112e7353a00b3de1271b395f15cb9f76218f43c8098d50",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "desktop/plugin.js",
+      "plugin.yaml",
+      "tests/stub-sdk.mjs",
+      "tests/vitest.config.mjs"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/freefate258/quote-ask",
+    "sha": "194f1715a623f2ca185469047452365e36cb8972",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/freefate258/quote-ask",
+  "original_sha": "194f1715a623f2ca185469047452365e36cb8972",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": "LICENSE",
+      "sha256": "d94f465152ac2c6c5e112e7353a00b3de1271b395f15cb9f76218f43c8098d50",
+      "bytes": 1068,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "60765688b7962a3fb653db7ec0f26d45cab46ccc30c50dfc8cfbb022e31f0d43",
+      "bytes": 3026,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "ebd0fb24eedd24cdb10d22f881d1254a162c6be1afe3db5061eec2dffdfc7a6e",
+      "bytes": 18466,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "6d431dd6d9da99021f52bb469bf0e3ca39ba066fcc0686dfac2b81b2525d9785",
+      "bytes": 788,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/plugin.test.mjs",
+      "sha256": "b4ee0f36293f940d57033f73794af642655d47185bd9cbedc2ea29e0e66c5c73",
+      "bytes": 7646,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/stub-sdk.mjs",
+      "sha256": "fe7e5910a8e584ac689e8f096ddde85d4f299c1b38b28d728504895f92fa4760",
+      "bytes": 1189,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/vitest.config.mjs",
+      "sha256": "e07172c7b597c3eb8adcd1815a4f2deddd7123205f6d436f7a360f526ceb6c27",
+      "bytes": 390,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "575ba57ad596474dc08cad4ea9a9ea48f482dd03496923d9437b10dfac1d2a8d",
+  "pin_verification": {
+    "archive_bytes": 11323,
+    "archive_sha256": "1730a6d20ef2a3d707a106beaa68922f88ab92bbd2cc3a17c8194f1c737bedba",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "194f1715a623f2ca185469047452365e36cb8972",
+    "verified_commit_marker": "194f1715a623f2ca185469047452365e36cb8972"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "357400b2da7d14d484a9c7357c7e525a46f2e6123cab1d4522eb9cf52480241e",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "LICENSE",
+        "input_sha256": "d94f465152ac2c6c5e112e7353a00b3de1271b395f15cb9f76218f43c8098d50",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "d94f465152ac2c6c5e112e7353a00b3de1271b395f15cb9f76218f43c8098d50",
+        "source": "LICENSE",
+        "final_output_sha256": "d94f465152ac2c6c5e112e7353a00b3de1271b395f15cb9f76218f43c8098d50",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "d94f465152ac2c6c5e112e7353a00b3de1271b395f15cb9f76218f43c8098d50"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "b1621b798ab130eb01e44964166477cb7a2214509522186aa8c426b48c1901b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "60765688b7962a3fb653db7ec0f26d45cab46ccc30c50dfc8cfbb022e31f0d43",
+        "source": "README.md",
+        "final_output_sha256": "60765688b7962a3fb653db7ec0f26d45cab46ccc30c50dfc8cfbb022e31f0d43",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "60765688b7962a3fb653db7ec0f26d45cab46ccc30c50dfc8cfbb022e31f0d43"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "2ceee5961427daba19eecb3b4342ddbf3fffc418a1c0b8eae2fb602724911ee1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ebd0fb24eedd24cdb10d22f881d1254a162c6be1afe3db5061eec2dffdfc7a6e",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "ebd0fb24eedd24cdb10d22f881d1254a162c6be1afe3db5061eec2dffdfc7a6e",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "ebd0fb24eedd24cdb10d22f881d1254a162c6be1afe3db5061eec2dffdfc7a6e"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "92905466c1ce3f6d00861a6866628fa670bb7f42cbc9ed95b76e51679220012d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6d431dd6d9da99021f52bb469bf0e3ca39ba066fcc0686dfac2b81b2525d9785",
+        "source": "plugin.yaml",
+        "final_output_sha256": "6d431dd6d9da99021f52bb469bf0e3ca39ba066fcc0686dfac2b81b2525d9785",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "6d431dd6d9da99021f52bb469bf0e3ca39ba066fcc0686dfac2b81b2525d9785"
+      },
+      {
+        "destination": "tests/plugin.test.mjs",
+        "input_sha256": "b4ee0f36293f940d57033f73794af642655d47185bd9cbedc2ea29e0e66c5c73",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b4ee0f36293f940d57033f73794af642655d47185bd9cbedc2ea29e0e66c5c73",
+        "source": "tests/plugin.test.mjs",
+        "final_output_sha256": "b4ee0f36293f940d57033f73794af642655d47185bd9cbedc2ea29e0e66c5c73",
+        "cli_destination": "tests/plugin.test.mjs",
+        "previous_staging_sha256": "b4ee0f36293f940d57033f73794af642655d47185bd9cbedc2ea29e0e66c5c73"
+      },
+      {
+        "destination": "tests/stub-sdk.mjs",
+        "input_sha256": "59058b108bbbffa330af4288a2c1277371085c140d457c1beb261b16e06b7fda",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fe7e5910a8e584ac689e8f096ddde85d4f299c1b38b28d728504895f92fa4760",
+        "source": "tests/stub-sdk.mjs",
+        "final_output_sha256": "fe7e5910a8e584ac689e8f096ddde85d4f299c1b38b28d728504895f92fa4760",
+        "cli_destination": "tests/stub-sdk.mjs",
+        "previous_staging_sha256": "fe7e5910a8e584ac689e8f096ddde85d4f299c1b38b28d728504895f92fa4760"
+      },
+      {
+        "destination": "tests/vitest.config.mjs",
+        "input_sha256": "ea0d2a73f53d21cc798f5b11d537252e8090d2575998ada148d20a60d20c8afa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e07172c7b597c3eb8adcd1815a4f2deddd7123205f6d436f7a360f526ceb6c27",
+        "source": "tests/vitest.config.mjs",
+        "final_output_sha256": "e07172c7b597c3eb8adcd1815a4f2deddd7123205f6d436f7a360f526ceb6c27",
+        "cli_destination": "tests/vitest.config.mjs",
+        "previous_staging_sha256": "e07172c7b597c3eb8adcd1815a4f2deddd7123205f6d436f7a360f526ceb6c27"
+      }
+    ],
+    "manifest_sha256": "db29c6ae6d380bae3d04e27c71bae5481bc28600fd811a56de96c0ed9a87c024",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "plugin.yaml": "plugin.yaml",
+    "tests/plugin.test.mjs": "tests/plugin.test.mjs",
+    "tests/stub-sdk.mjs": "tests/stub-sdk.mjs",
+    "tests/vitest.config.mjs": "tests/vitest.config.mjs"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "quote-ask",
+    "python_files_compiled": 0,
+    "secret_findings": 0
+  },
+  "canonical_slug": "quote-ask",
+  "catalog_file": "src/plugin-catalog/quote-ask.yaml",
+  "identity": {
+    "catalog_id": "quote-ask",
+    "canonical_slug": "quote-ask",
+    "original_manifest_name": "quote-ask",
+    "rebranded_manifest_name": "quote-ask",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "d2f732d128c2b5811ec01d263963d5fce00db12009022b62b22ef295c307189d",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

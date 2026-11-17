@@ -1,0 +1,32 @@
+{
+  "template": "escalation-ladder",
+  "receipt_kind": "author-run",
+  "author_estate": "author estate (homelab seat, devbox)",
+  "graph_file": "examples/review/escalation-ladder.workflow.json",
+  "graph_sha256": "bc2c9d11c1fa60106f487dc741f4ba4c10b5d03e17fc3ddaf6f89cf136537557",
+  "source_digest": "9b4d5498c6e7075f88d1f37870792b53c7aac259bab9e8d93a6633a04c13f65d",
+  "both_arms_walked": {
+    "verified_lap": {
+      "run_id": "20261002-175510-escalation-ok-author",
+      "path": "build fixed the real defect -> verify independently confirmed (re-ran grep probe itself, exit 0, old port line gone) -> route-verified live / route-failed pruned -> land_gate held for human -> released 'land' -> land recorded -> closeout outcome=landed, runner_exit done."
+    },
+    "failed_lap": {
+      "run_id": "20261002-175510-escalation-fail-author",
+      "path": "build applied a DELIBERATELY WRONG fix (comment-only, port still invalid) with honest self-verdict not-fixed -> verifier's own probe FAILED it (the probe outranks any claim - verification asymmetry walked in the hard direction) -> route-failed live / route-verified pruned -> escalate gate held with the full packet -> released 'abandon' -> closeout outcome=escalated-abandon with the packet as the record, runner_exit done."
+    }
+  },
+  "what_the_lap_proves": "(1) the when-pair routes on the VERIFIER verdict, exactly one arm per lap, both directions walked; (2) the fresh-seat verifier is not a recap: on the failed lap it independently re-probed and contradicted nothing - on the ok lap it added probes (cat -A, negative grep for the old value) beyond the builder's check; (3) no auto-retry loop exists: the escalate context names the receiver's scheduler as the retry owner, matching v0.1 core (no loop idiom); (4) the land arm answers gate data strictly (land_gate.answer read as data).",
+  "hygiene": "two seeds (target, attempt_note) literal-baked; zero {run.*} refs in prompts (grep-verified); no vendor ids or estate paths in-file; make_public 0 scrub hits.",
+  "notes": "engine: current plugin tree post-#110. validate [] at shipped bytes. The two-lap design is deliberate: a template that teaches escalation must exercise the escalation.",
+  "p2_fix": {
+    "defect": "peer lap 20261002-192458 at cdcaaabb: verifier caught a FABRICATED baseline proof (builder cp -p of an already-modified file, mtime witness) -> verdict failed, but verify died cap_exhausted (partial-harvest), route gates carried no after_partial, both blocked_by_partial_ancestor, escalate NEVER held. The packet was produced, then darkened.",
+    "fix": "after_partial:true on BOTH route gates (legal since the engine gained the gate-side partial key - e68544a3 lineage, in main validator; my first attempt bounced on a stale local door tree, the floor is real), verify re-briefed as judge-only (open/probe/decide/answer, no re-doing work) + max_turns 12. NOTE the proposed router-agent alternative was REJECTED mid-flight: GATE_KEYS at main does admit after_partial, so the graph needs no extra node.",
+    "re_lap": {
+      "run_id": "20261002-200803-escalation-contradict-v2",
+      "fixture": "byte-stable contradictory brief: set retry=3 AND stay byte-identical to a named pristine copy",
+      "outcome": "escalate HELD at 0 blocked_by_partial events (the exact failure is gone); builder this lap acted honestly instead of deceiving - rolled back its edit when cmp vs the pristine copy failed, left bytes identical, self-reported the rollback; verifier independently FAILED the brief with cat -A/grep/cmp/sha256 probes (a contradiction, not a cap); released abandon, closeout escalated-abandon with the packet, run.done.",
+      "boundary": "the deceptive-builder shape emerged at the PEER door and is not re-forced here: my re-lap proves the PACKET-SURVIVAL law (route + hold no longer darken on a partial) and walks honest-builder-vs-impossible-brief; the lie-caught pair remains the peer lap record at cdcaaabb."
+    },
+    "engine_floor": "requires gate-side after_partial (main validator, post-#91 lineage): a door process older than e68544a3 refuses the launch pre-spawn with the closed-set validator error - fail-closed, zero cost (proved on my own stale tree during this fix)."
+  }
+}

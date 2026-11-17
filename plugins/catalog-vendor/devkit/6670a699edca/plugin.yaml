@@ -1,0 +1,14 @@
+name: devkit
+version: 0.3.0
+manifest_version: 2
+api_version: 1
+license: MIT
+requires_duckwork: ">=0.22.0"
+description: Per-session scratchpad buffers (default home for drafts), cleaned up with their session
+provides_tools:
+  - scratchpad
+provides_hooks:
+  - pre_llm_call
+tags: [scratchpad, dev]
+config_schema:
+  idle_days: {type: float, default: 90, description: "Remove a session's scratchpad after this many idle days (matches Duckwork' 90-day session auto-prune)"}

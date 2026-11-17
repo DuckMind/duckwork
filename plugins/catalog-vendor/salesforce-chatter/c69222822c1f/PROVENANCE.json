@@ -1,0 +1,618 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "salesforce-chatter",
+  "content_id": "c69222822c1f",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357"
+    },
+    {
+      "bytes": 25232,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "e09e6ce4fb516cad12155300b8f04b4164e4df249711cda23c0a9975d41edb93"
+    },
+    {
+      "bytes": 54,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357"
+    },
+    {
+      "bytes": 25846,
+      "mode": "100644",
+      "path": "adapter.py",
+      "sha256": "293074db872a632ca9191f76f3589aea83d061886ba2256a248833e49dfc525e"
+    },
+    {
+      "bytes": 1698,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "81d7785e18aea605f9749cbc1770cf9de57c83100eb42426770ef41901a73c25"
+    },
+    {
+      "bytes": 521,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "f85ede8732537d51264415fc811ebe3a0bb34e591a938e07a5b99b65d2fba0b9"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "sfchatter/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 6539,
+      "mode": "100644",
+      "path": "sfchatter/client.py",
+      "sha256": "9516c811623154fd13d5eeb52021183a986b6288395d347c126086c078146614"
+    },
+    {
+      "bytes": 3830,
+      "mode": "100644",
+      "path": "sfchatter/inbox.py",
+      "sha256": "e746a6661a1c441ec869fb36d44c1b6631e322100df6e2b04a1d90e7e28897d8"
+    },
+    {
+      "bytes": 2712,
+      "mode": "100644",
+      "path": "sfchatter/media.py",
+      "sha256": "12f2634c3932f6b5856738e23d91113a0805634e1cd9fe9ac2a97d37619be8be"
+    },
+    {
+      "bytes": 4172,
+      "mode": "100644",
+      "path": "sfchatter/preview.py",
+      "sha256": "a5d3ab185f92c40fae268ad871a151e37d9b58740888e53ceaf2112763968369"
+    },
+    {
+      "bytes": 10253,
+      "mode": "100644",
+      "path": "sfchatter/richtext.py",
+      "sha256": "8e93d8d40613885b2a0ec0898b5aec5d47bbdf5650c100f186b7744e4e179b6a"
+    },
+    {
+      "bytes": 8529,
+      "mode": "100644",
+      "path": "sfchatter/scanner.py",
+      "sha256": "9798c8b019f5985b5c8ffcd803905870240fb3f8c7c49495434f474f1e952e5e"
+    },
+    {
+      "bytes": 2980,
+      "mode": "100644",
+      "path": "sfchatter/segments.py",
+      "sha256": "6a429f1942b0e7b5625c99143463b255e2d43826b4b9537d4da1f7ea6287eef4"
+    },
+    {
+      "bytes": 6304,
+      "mode": "100644",
+      "path": "sfchatter/settings.py",
+      "sha256": "875cf9c8eeee030d811154bfe4fe4b8a74d03c8c4ead6e8b924d2e60de43dbcf"
+    }
+  ],
+  "input_manifest_sha256": "c69222822c1f441b4a71fbebd147a7ea1805f31b1b03a4d737f8c676201ae00b",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+        "source_path": "salesforce_chatter/LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "adapter.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "sfchatter/inbox.py",
+      "sfchatter/media.py",
+      "sfchatter/preview.py",
+      "sfchatter/richtext.py",
+      "sfchatter/segments.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/zenplace-system/hermes-plugin-salesforce-chatter",
+    "sha": "16ff469ffb1484e37053315e799846d3c4d7c9d8",
+    "subdir": "salesforce_chatter"
+  },
+  "original_repo": "https://github.com/zenplace-system/hermes-plugin-salesforce-chatter",
+  "original_sha": "16ff469ffb1484e37053315e799846d3c4d7c9d8",
+  "original_subdir": "salesforce_chatter",
+  "output_files": [
+    {
+      "path": "LICENSE",
+      "sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "f240845501c43c963a776e0d52ddf4b12134103e95f4e9d65aa76ca699dfee95",
+      "bytes": 25328,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6",
+      "bytes": 54,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "adapter.py",
+      "sha256": "9be2bc4efe58a33486eba962a44dac49b39ae239bf94755ea84f7671d511ce1e",
+      "bytes": 25852,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "9255c18bd83a5a1afc6cd06e233dc94de887ef6e6f99f485ed7c3d695c470f20",
+      "bytes": 1673,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "ef46a2fd877bc68eefb0a734a2bd8923f26fbc3942b0ddc51f73f4fc8770b848",
+      "bytes": 463,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/client.py",
+      "sha256": "9516c811623154fd13d5eeb52021183a986b6288395d347c126086c078146614",
+      "bytes": 6539,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/inbox.py",
+      "sha256": "8a2afb7fcd00f0e0c1a788fdc94ceb333ceded0fe0aa9acdfb674d04ca08969c",
+      "bytes": 3832,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/media.py",
+      "sha256": "ada6d0269479da8ba3eda10bbf8c63af46051e246afd237b6b788c1095aaa1e2",
+      "bytes": 2714,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/preview.py",
+      "sha256": "a9724f69de44532f848b2db074ef5938136e26c0f535e7f7599de2f4e50bfb49",
+      "bytes": 4176,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/richtext.py",
+      "sha256": "9e357d6b539f5d05103be62c347769a058f6842f3f35e4c1d8aa16cb91ef1345",
+      "bytes": 10257,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/scanner.py",
+      "sha256": "9798c8b019f5985b5c8ffcd803905870240fb3f8c7c49495434f474f1e952e5e",
+      "bytes": 8529,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/segments.py",
+      "sha256": "3e51ca93cd118f5134cb3a99dbf682be2d42f96ff837f7a1becaef987746012b",
+      "bytes": 2982,
+      "mode": "100644"
+    },
+    {
+      "path": "sfchatter/settings.py",
+      "sha256": "875cf9c8eeee030d811154bfe4fe4b8a74d03c8c4ead6e8b924d2e60de43dbcf",
+      "bytes": 6304,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "af361d39bcd033e2617c769cbec51d7283987d433583b8d1f885fcf6d24a8a78",
+  "pin_verification": {
+    "archive_bytes": 48645,
+    "archive_sha256": "80ca71ba0cc85423fa2507b773478036cec61670933c4e73d5b07ac30708a6a0",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "16ff469ffb1484e37053315e799846d3c4d7c9d8",
+    "verified_commit_marker": "16ff469ffb1484e37053315e799846d3c4d7c9d8"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "17ae9834fe9510351bb9f427f825e431bc7681bc52616d38d0d4961f53e38508",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "LICENSE",
+        "input_sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+        "source": "LICENSE",
+        "final_output_sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "e09e6ce4fb516cad12155300b8f04b4164e4df249711cda23c0a9975d41edb93",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "22088d5269c21ea6e7a612db1d68be6d6ec66d211170666def56ab8db3ec5b4b",
+        "source": "README.md",
+        "final_output_sha256": "f240845501c43c963a776e0d52ddf4b12134103e95f4e9d65aa76ca699dfee95",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "22088d5269c21ea6e7a612db1d68be6d6ec66d211170666def56ab8db3ec5b4b"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6",
+        "source": "__init__.py",
+        "final_output_sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "1792e361eab0aea87bc38b61e2e200f55b885fcaf0ae1897d332d3bdffa722e6"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "26a07e25e3a253afb689ee5d063c755749644bfe09b3c4ce90326adbdbbca357"
+      },
+      {
+        "destination": "adapter.py",
+        "input_sha256": "293074db872a632ca9191f76f3589aea83d061886ba2256a248833e49dfc525e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9be2bc4efe58a33486eba962a44dac49b39ae239bf94755ea84f7671d511ce1e",
+        "source": "adapter.py",
+        "final_output_sha256": "9be2bc4efe58a33486eba962a44dac49b39ae239bf94755ea84f7671d511ce1e",
+        "cli_destination": "adapter.py",
+        "previous_staging_sha256": "9be2bc4efe58a33486eba962a44dac49b39ae239bf94755ea84f7671d511ce1e"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "81d7785e18aea605f9749cbc1770cf9de57c83100eb42426770ef41901a73c25",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c2abd8c1fe623dfa8b1fdf8b627a3a3b8bbe0e2cac9f8b9c3cda11ec396909c3",
+        "source": "plugin.yaml",
+        "final_output_sha256": "9255c18bd83a5a1afc6cd06e233dc94de887ef6e6f99f485ed7c3d695c470f20",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "c2abd8c1fe623dfa8b1fdf8b627a3a3b8bbe0e2cac9f8b9c3cda11ec396909c3"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "f85ede8732537d51264415fc811ebe3a0bb34e591a938e07a5b99b65d2fba0b9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6e1f947fde0536bd4020eba68562deec5b6c23c21a933430fca438af1113d409",
+        "source": "pyproject.toml",
+        "final_output_sha256": "ef46a2fd877bc68eefb0a734a2bd8923f26fbc3942b0ddc51f73f4fc8770b848",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "6e1f947fde0536bd4020eba68562deec5b6c23c21a933430fca438af1113d409"
+      },
+      {
+        "destination": "sfchatter/__init__.py",
+        "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "sfchatter/__init__.py",
+        "final_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cli_destination": "sfchatter/__init__.py",
+        "previous_staging_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "destination": "sfchatter/client.py",
+        "input_sha256": "9516c811623154fd13d5eeb52021183a986b6288395d347c126086c078146614",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9516c811623154fd13d5eeb52021183a986b6288395d347c126086c078146614",
+        "source": "sfchatter/client.py",
+        "final_output_sha256": "9516c811623154fd13d5eeb52021183a986b6288395d347c126086c078146614",
+        "cli_destination": "sfchatter/client.py",
+        "previous_staging_sha256": "9516c811623154fd13d5eeb52021183a986b6288395d347c126086c078146614"
+      },
+      {
+        "destination": "sfchatter/inbox.py",
+        "input_sha256": "e746a6661a1c441ec869fb36d44c1b6631e322100df6e2b04a1d90e7e28897d8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8a2afb7fcd00f0e0c1a788fdc94ceb333ceded0fe0aa9acdfb674d04ca08969c",
+        "source": "sfchatter/inbox.py",
+        "final_output_sha256": "8a2afb7fcd00f0e0c1a788fdc94ceb333ceded0fe0aa9acdfb674d04ca08969c",
+        "cli_destination": "sfchatter/inbox.py",
+        "previous_staging_sha256": "8a2afb7fcd00f0e0c1a788fdc94ceb333ceded0fe0aa9acdfb674d04ca08969c"
+      },
+      {
+        "destination": "sfchatter/media.py",
+        "input_sha256": "12f2634c3932f6b5856738e23d91113a0805634e1cd9fe9ac2a97d37619be8be",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ada6d0269479da8ba3eda10bbf8c63af46051e246afd237b6b788c1095aaa1e2",
+        "source": "sfchatter/media.py",
+        "final_output_sha256": "ada6d0269479da8ba3eda10bbf8c63af46051e246afd237b6b788c1095aaa1e2",
+        "cli_destination": "sfchatter/media.py",
+        "previous_staging_sha256": "ada6d0269479da8ba3eda10bbf8c63af46051e246afd237b6b788c1095aaa1e2"
+      },
+      {
+        "destination": "sfchatter/preview.py",
+        "input_sha256": "a5d3ab185f92c40fae268ad871a151e37d9b58740888e53ceaf2112763968369",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a9724f69de44532f848b2db074ef5938136e26c0f535e7f7599de2f4e50bfb49",
+        "source": "sfchatter/preview.py",
+        "final_output_sha256": "a9724f69de44532f848b2db074ef5938136e26c0f535e7f7599de2f4e50bfb49",
+        "cli_destination": "sfchatter/preview.py",
+        "previous_staging_sha256": "a9724f69de44532f848b2db074ef5938136e26c0f535e7f7599de2f4e50bfb49"
+      },
+      {
+        "destination": "sfchatter/richtext.py",
+        "input_sha256": "8e93d8d40613885b2a0ec0898b5aec5d47bbdf5650c100f186b7744e4e179b6a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9e357d6b539f5d05103be62c347769a058f6842f3f35e4c1d8aa16cb91ef1345",
+        "source": "sfchatter/richtext.py",
+        "final_output_sha256": "9e357d6b539f5d05103be62c347769a058f6842f3f35e4c1d8aa16cb91ef1345",
+        "cli_destination": "sfchatter/richtext.py",
+        "previous_staging_sha256": "9e357d6b539f5d05103be62c347769a058f6842f3f35e4c1d8aa16cb91ef1345"
+      },
+      {
+        "destination": "sfchatter/scanner.py",
+        "input_sha256": "9798c8b019f5985b5c8ffcd803905870240fb3f8c7c49495434f474f1e952e5e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9798c8b019f5985b5c8ffcd803905870240fb3f8c7c49495434f474f1e952e5e",
+        "source": "sfchatter/scanner.py",
+        "final_output_sha256": "9798c8b019f5985b5c8ffcd803905870240fb3f8c7c49495434f474f1e952e5e",
+        "cli_destination": "sfchatter/scanner.py",
+        "previous_staging_sha256": "9798c8b019f5985b5c8ffcd803905870240fb3f8c7c49495434f474f1e952e5e"
+      },
+      {
+        "destination": "sfchatter/segments.py",
+        "input_sha256": "6a429f1942b0e7b5625c99143463b255e2d43826b4b9537d4da1f7ea6287eef4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3e51ca93cd118f5134cb3a99dbf682be2d42f96ff837f7a1becaef987746012b",
+        "source": "sfchatter/segments.py",
+        "final_output_sha256": "3e51ca93cd118f5134cb3a99dbf682be2d42f96ff837f7a1becaef987746012b",
+        "cli_destination": "sfchatter/segments.py",
+        "previous_staging_sha256": "3e51ca93cd118f5134cb3a99dbf682be2d42f96ff837f7a1becaef987746012b"
+      },
+      {
+        "destination": "sfchatter/settings.py",
+        "input_sha256": "875cf9c8eeee030d811154bfe4fe4b8a74d03c8c4ead6e8b924d2e60de43dbcf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "875cf9c8eeee030d811154bfe4fe4b8a74d03c8c4ead6e8b924d2e60de43dbcf",
+        "source": "sfchatter/settings.py",
+        "final_output_sha256": "875cf9c8eeee030d811154bfe4fe4b8a74d03c8c4ead6e8b924d2e60de43dbcf",
+        "cli_destination": "sfchatter/settings.py",
+        "previous_staging_sha256": "875cf9c8eeee030d811154bfe4fe4b8a74d03c8c4ead6e8b924d2e60de43dbcf"
+      }
+    ],
+    "manifest_sha256": "9e0729f0f6db4f05ca93456d40ee2ec401d06d9ee8aad5db719ad7bfe100a94e",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "LICENSE": "salesforce_chatter/LICENSE",
+    "README.md": "salesforce_chatter/README.md",
+    "__init__.py": "salesforce_chatter/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "adapter.py": "salesforce_chatter/adapter.py",
+    "plugin.yaml": "salesforce_chatter/plugin.yaml",
+    "pyproject.toml": "salesforce_chatter/pyproject.toml",
+    "sfchatter/__init__.py": "salesforce_chatter/sfchatter/__init__.py",
+    "sfchatter/client.py": "salesforce_chatter/sfchatter/client.py",
+    "sfchatter/inbox.py": "salesforce_chatter/sfchatter/inbox.py",
+    "sfchatter/media.py": "salesforce_chatter/sfchatter/media.py",
+    "sfchatter/preview.py": "salesforce_chatter/sfchatter/preview.py",
+    "sfchatter/richtext.py": "salesforce_chatter/sfchatter/richtext.py",
+    "sfchatter/scanner.py": "salesforce_chatter/sfchatter/scanner.py",
+    "sfchatter/segments.py": "salesforce_chatter/sfchatter/segments.py",
+    "sfchatter/settings.py": "salesforce_chatter/sfchatter/settings.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "salesforce-chatter",
+    "python_files_compiled": 11,
+    "secret_findings": 0
+  },
+  "canonical_slug": "salesforce-chatter",
+  "catalog_file": "src/plugin-catalog/salesforce-chatter.yaml",
+  "identity": {
+    "catalog_id": "salesforce-chatter",
+    "canonical_slug": "salesforce-chatter",
+    "original_manifest_name": "salesforce-chatter",
+    "rebranded_manifest_name": "salesforce-chatter",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "ec331007703f2a23318e2a9dad4bbc2a776598f9a88a8257e4a6e0a14e8c5080",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "22088d5269c21ea6e7a612db1d68be6d6ec66d211170666def56ab8db3ec5b4b",
+          "after_sha256": "b70fca112a6c1d9d5d648eb6f1414180ad8faa32282aa1b3d7d24ac8fe545e1b",
+          "before_bytes": 25326,
+          "after_bytes": 25324,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "c2abd8c1fe623dfa8b1fdf8b627a3a3b8bbe0e2cac9f8b9c3cda11ec396909c3",
+          "after_sha256": "9255c18bd83a5a1afc6cd06e233dc94de887ef6e6f99f485ed7c3d695c470f20",
+          "before_bytes": 1704,
+          "after_bytes": 1673,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "pyproject.toml",
+          "after_path": "pyproject.toml",
+          "before_sha256": "6e1f947fde0536bd4020eba68562deec5b6c23c21a933430fca438af1113d409",
+          "after_sha256": "ef46a2fd877bc68eefb0a734a2bd8923f26fbc3942b0ddc51f73f4fc8770b848",
+          "before_bytes": 525,
+          "after_bytes": 463,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "sfchatter/preview.py",
+          "after_path": "sfchatter/preview.py",
+          "before_sha256": "a9724f69de44532f848b2db074ef5938136e26c0f535e7f7599de2f4e50bfb49",
+          "after_sha256": "6cb66a0e39889d6aef10bbfca180e943e1c3113c7b5189d50721949168979ceb",
+          "before_bytes": 4176,
+          "after_bytes": 4172,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    },
+    {
+      "revision": "r46-external-package-wire-review",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "d29fa1a396e79a42c75e208fc8f45ef6e97770d0ae8219431bccb1bfb8512709",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "b70fca112a6c1d9d5d648eb6f1414180ad8faa32282aa1b3d7d24ac8fe545e1b",
+          "after_sha256": "f240845501c43c963a776e0d52ddf4b12134103e95f4e9d65aa76ca699dfee95",
+          "before_bytes": 25324,
+          "after_bytes": 25328,
+          "operation": "preserve-external-package-and-wire-contract",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "sfchatter/preview.py",
+          "after_path": "sfchatter/preview.py",
+          "before_sha256": "6cb66a0e39889d6aef10bbfca180e943e1c3113c7b5189d50721949168979ceb",
+          "after_sha256": "a9724f69de44532f848b2db074ef5938136e26c0f535e7f7599de2f4e50bfb49",
+          "before_bytes": 4172,
+          "after_bytes": 4176,
+          "operation": "preserve-external-package-and-wire-contract",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "README.md": [
+      {
+        "value": "nousresearch/hermes-sandbox:desktop",
+        "reason": "external container-registry API image coordinate; no replacement image is published by this task"
+      },
+      {
+        "value": "[MIT](https://github.com/zenplace-system/hermes-plugin-salesforce-chatter/blob/main/LICENSE). Copyright (c) 2026 zenplace Inc.",
+        "reason": "immutable copyright line"
+      }
+    ],
+    "sfchatter/preview.py": [
+      {
+        "value": "nousresearch/hermes-sandbox:desktop",
+        "reason": "external container-registry API image coordinate; no replacement image is published by this task"
+      }
+    ]
+  }
+}

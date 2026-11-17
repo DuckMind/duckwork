@@ -1,0 +1,215 @@
+# memory-rewind
+
+Automatic version history for a Duckwork agent's own knowledge — `memories/MEMORY.md`,
+`memories/USER.md`, `SOUL.md` and the `skills/` tree (including curator-archived
+skills) — with commands to browse, diff and restore any past version.
+
+Duckwork rewrites these files while it works: the `memory` tool edits the memory store,
+`skill_manage` creates and edits skills, the curator archives and consolidates them.
+None of those writes keeps a history, so a truncated `MEMORY.md`, a skill edited into
+a broken state, or an archived skill that will not come back has nothing to roll back
+to. memory-rewind records every change as it happens and lets you put any file or
+skill back exactly as it was.
+
+## Install
+
+```bash
+duckwork plugins install AhmetArif0/duckwork-memory-rewind#memory-rewind --enable
+```
+
+Requires Duckwork **0.21.5 or newer** and `git` on `PATH`. Restart a running gateway
+(`duckwork gateway restart`) so it loads the plugin. History starts with the next session.
+
+## Use
+
+```bash
+duckwork memory-rewind log                        # recent versions of everything
+duckwork memory-rewind log memory                 # versions of memories/MEMORY.md
+duckwork memory-rewind log skills/research/arxiv  # versions of one skill
+duckwork memory-rewind show <version> user        # memories/USER.md at a version
+duckwork memory-rewind diff <version> memory      # what changed since a version
+duckwork memory-rewind restore <version> memory   # put MEMORY.md back (asks first)
+duckwork memory-rewind restore <version> skills/research/arxiv --yes
+duckwork memory-rewind snapshot -m "before cleanup"
+duckwork memory-rewind status
+duckwork memory-rewind forget --yes               # delete the whole history
+```
+
+`memory`, `user` and `soul` are shortcuts for `memories/MEMORY.md`,
+`memories/USER.md` and `SOUL.md`. Versions are the ids printed by `log`
+(`HEAD`, `HEAD~1`, … also work). Commands act on the active profile
+(`duckwork -p <profile> memory-rewind …`).
+
+`log` shows what produced each version:
+
+```text
+$ duckwork memory-rewind log user
+3f2a9c1b7e  2026-09-27 14:05  after memory  (1 file)
+    via   memory: remove, add (user)
+    from  telegram, session 20260927_140012_ab12cd
+    M  memories/USER.md
+```
+
+`via` names the tool call: the tool, its actions, and the memory target or skill
+names, with `[error]` (or `[blocked]`, `[timeout]`, …) when the call did not succeed.
+`from` names the session and, when Duckwork reported it, the platform.
+
+### From a chat
+
+`/memory-history` shows the same history from any chat: Telegram, Discord and other
+gateway platforms, the Desktop app, the TUI and the CLI chat. It is read-only.
+
+```text
+/memory-history                          the last 10 versions
+/memory-history user                     versions of USER.md (also memory, soul, skills/<path>)
+/memory-history <version> [target]       what that version changed
+```
+
+Viewing never records a version. Restoring stays a host command; the version view prints
+the exact `duckwork memory-rewind restore …` line to run. Replies are plain text and at most
+3,000 characters, and a reply never includes host paths or raw git errors.
+
+Every restore records the current state first and prints the command that undoes it.
+Built-in memory is loaded when a session starts, so a restored `MEMORY.md`/`USER.md`
+takes effect in the next session (`/new`).
+
+## What is recorded
+
+| Recorded | Never recorded |
+|---|---|
+| `memories/MEMORY.md`, `memories/USER.md` | `.env`, `auth.json`, keys and certificates, database files |
+| `SOUL.md` | `skills/.hub/` (hub lock, audit log, cache, quarantined skills) |
+| `skills/**`, including `skills/.archive/` | `skills/.usage.json`, curator ledger, state and backups, bundled-skill manifest |
+| | Duckwork lock files (`skills/.locks/`, `skills/.usage.json.lock`) |
+| | symlinks, embedded git repositories, caches, files larger than `max_file_kb` |
+
+A version is recorded when a session starts and when each turn starts (baselines
+before anything can change), after each `memory` or `skill_manage` call (and file edits
+that target these paths), and at the end of each turn to catch changes the turn made
+outside tools (terminal edits). Unchanged state records nothing. Each version notes the
+tool calls and sessions behind it; the file list shows what actually changed. Changes
+made between turns, such as a staged write approved with `/memory approve`, a curator
+run or an edit in the Desktop app, land in the next `session start` or `turn start`
+version, which names no call or session.
+
+History is a bare git repository at
+`~/.duckwork/plugin-data/memory-rewind/history.git` (per profile). It is isolated from
+your own git setup: your global config, hooks and signing are never used.
+
+## Settings
+
+Set in the Desktop **Plugins** tab, or in `config.yaml`:
+
+```yaml
+plugins:
+  entries:
+    memory-rewind:
+      settings:
+        enabled: true        # record new versions automatically
+        track_skills: true   # version skills/ (including .archive)
+        track_soul: true     # version SOUL.md
+        max_file_kb: 1024    # skip larger files
+```
+
+## Security and footprint
+
+- **No network access**, no downloads, no self-update, and no Python dependencies
+  (standard library only). The only external program is the local `git` binary.
+- **What it registers:** the hooks `on_session_start`, `pre_llm_call`, `post_tool_call`
+  and `on_session_end`, the `duckwork memory-rewind` command, and one read-only slash
+  command, `/memory-history`. It gives the model no tools. `register()` only
+  registers; it does no I/O. The `pre_llm_call` callback declares only the session id
+  and platform, so Duckwork never passes it the user message or the conversation, and it
+  returns nothing, so nothing is added to the prompt.
+- **What it reads:** `memories/MEMORY.md`, `memories/USER.md`, `SOUL.md` and `skills/`
+  (minus the exclusions above), plus its own settings. It never opens `.env`,
+  `auth.json`, databases or `skills/.hub/`. From hook payloads it keeps only the tool
+  name, action names, memory target, skill names, call outcome, session id and platform,
+  never message or file content.
+- **What it writes:** only `$DUCKWORK_HOME/plugin-data/memory-rewind/` (the history
+  repository and an index cache). Tracked files are written only when you run
+  `restore`, and `forget` deletes only the history.
+- **How git runs:** against its own bare repository, with your global and system git
+  config, hooks, signing and pager ignored, literal pathspecs, a 60-second timeout,
+  and background `gc` detaching disabled.
+- **When it runs:** a synchronous baseline when a session starts and when each turn
+  starts (about 40 ms once history exists; the very first one records the whole skills
+  tree and took 0.7 s on a 1,100-file tree), and background snapshots after
+  `memory`/`skill_manage` calls and at the end of each turn. On exit, a queued
+  snapshot gets up to 5 seconds to finish.
+
+## Privacy
+
+History keeps what the files contained. If you ask the agent to forget something,
+the removal is recorded, but older versions still contain it. Versions also note session
+ids, platforms and skill names. A `/memory-history` reply in a group chat is visible to
+everyone in it, including what a version changed in memory. Run
+`duckwork memory-rewind forget --yes` to delete the history for the active profile.
+
+## Limits
+
+- External memory providers (Honcho, Mem0, …) store data outside these files and are
+  not covered.
+- Restore is a command you run on the host; the agent has no tool to rewrite history or
+  restore, and `/memory-history` cannot restore.
+- Snapshots after a call and at turn end run in the background and usually land within a
+  fraction of a second. A change something else makes in that window, or while a turn is
+  running, is recorded with that call or turn.
+
+## How it works
+
+See [docs/DESIGN.md](https://github.com/DuckMind/duckwork).
+
+## Development
+
+```bash
+python -m pytest tests/                                   # unit tests (no Duckwork needed)
+PYTHONPATH=/path/to/duckwork-agent python -m pytest tests/  # plus end-to-end tests against Duckwork
+```
+
+The end-to-end tests load the plugin through Duckwork' real plugin manager, drive the real
+memory tool and hook dispatch, run the `duckwork` CLI, and check that separate profiles
+keep separate histories.
+
+## Changes
+
+- **1.3.2**: **Fix:** `restore` could replace what a running agent had just written. It
+  now applies only the plan it showed: it holds the memory tool's own lock on `MEMORY.md`
+  or `USER.md` while it checks and writes, and it refuses when a file changed after the
+  plan was made (for example, a gateway session stored a memory while you read the plan;
+  run the command again to see the new plan). For a memory file the plan also lists the
+  entries the restore brings back and the entries it removes: restoring the file to bring
+  back one deleted entry also removes the entries added after that version.
+- **1.3.1**: **Fix:** importing a Duckwork backup (`duckwork import`, also what the dashboard's
+  import runs) put the backup's copy of the history back over the live one. Every version
+  recorded after the backup, including the state right before the import, dropped out of
+  `log`, and git later deleted it for good. Each version now leaves a small marker, so
+  those versions stay in the history and the import itself is recorded as a change that
+  `restore` can undo. This protects any import made after 1.3.1 has run once (a session
+  start is enough), whichever version made the backup.
+  The design-notes link on the plugin page works again.
+- **1.3.0**: **Fix:** changes made outside the agent's turns were credited to whatever
+  came next. With `memory.write_approval` on, a write approved with `/memory approve`
+  appeared as the agent's next memory call (for example `via memory: remove` on a
+  version that added an entry), and a skill the curator archived appeared as the next
+  session's work. Each turn now starts with a baseline, and the session-start baseline
+  names no session, so these changes land in a `turn start` or `session start` version
+  that names no call or session.
+- **1.2.0**: `/memory-history` shows the history from any chat surface (gateway platforms,
+  Desktop, TUI, CLI chat): recent versions, the versions of one file or skill, and what a
+  version changed. It is read-only and follows the profile of the chat it runs in.
+  **Fix:** some edits were missed. If an edit kept a file's size and landed in the same
+  second as the previous snapshot, it could go unrecorded, and the newest version then
+  kept the old content.
+- **1.1.0**: `log` shows what produced each version: the tool call (tool, actions,
+  memory target or skill names, and the outcome when it did not succeed) and the
+  session and platform. Duckwork' skill lock files and curator/Termux state files are no
+  longer recorded. Before, every `skill_manage` call added a version holding only a
+  lock file. Older versions that contain them never restore them. After upgrading,
+  the first new version lists them as removed from the history; the files on disk
+  are not touched.
+- **1.0.0**: first release.
+
+## License
+
+MIT

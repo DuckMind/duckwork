@@ -1,0 +1,17 @@
+name: empiriolabs
+kind: model-provider
+version: "1.0.0"
+description: "EmpirioLabs AI model provider: chat models with tool calling from the live EmpirioLabs AI catalog"
+author: EmpirioLabs AI
+license: MIT
+homepage: https://empiriolabs.ai
+requires_duckwork: ">=0.21.6"
+requires_env:
+  - name: EMPIRIOLABS_API_KEY
+    description: "EmpirioLabs AI API key"
+    secret: true
+    url: https://platform.empiriolabs.ai/dashboard/api-keys
+optional_env:
+  - name: EMPIRIOLABS_BASE_URL
+    description: "API base URL override (default https://api.empiriolabs.ai/v1)"
+    password: false

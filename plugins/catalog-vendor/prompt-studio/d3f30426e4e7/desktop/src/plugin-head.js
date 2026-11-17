@@ -1,0 +1,39 @@
+import {
+  atom,
+  Codicon,
+  COMPOSER_AREAS,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  GlyphSpinner,
+  host,
+  Kbd,
+  KEYBINDS_AREA,
+  ModelCatalogMenu,
+  ModelMenuCloseContext,
+  PALETTE_AREA,
+  reasoningEffortLabel,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Tip,
+  usePluginI18n,
+  useValue
+} from '@duckwork/plugin-sdk'
+// Names that only the oldest supported Duckwork (0.21.5, plugin.yaml requires_duckwork) exports (ListRow/ToggleRow) are
+// read from the namespace, never imported by name: on an older Desktop a named import of a missing export
+// fails to link and the whole plugin fails to load, so it could not even ask the user to update.
+// See tests/desktop/sdk-compat.test.mjs and the SDK-2 test of studio-flow.test.mjs (loads the plugin without them).
+import * as duckworkSdk from '@duckwork/plugin-sdk'
+import { jsx, jsxs } from 'react/jsx-runtime'
+import { Component, Fragment, useEffect, useState } from 'react'
+
+const ID = 'prompt-studio'
+

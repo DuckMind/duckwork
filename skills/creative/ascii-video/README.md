@@ -2,7 +2,7 @@
 
 Renders any content as colored ASCII character video. Audio, video, images, text, or pure math in, MP4/GIF/PNG sequence out. Full RGB color per character cell, 1080p 24fps default. No GPU.
 
-Built for [Duckwork Agent](https://github.com/DuckMind/duckwork). Usable in any coding agent. Canonical source lives here; synced to [`&#78;ousResearch/&#104;ermes-agent/skills/creative/ascii-video`](https://github.com/DuckMind/duckwork/tree/main/skills/creative/ascii-video) via PR.
+Built for [Duckwork Agent](https://github.com/DuckMind/duckwork). Usable in any coding agent. Canonical source lives here; synced to [`DuckMind/duckwork/skills/creative/ascii-video`](https://github.com/DuckMind/duckwork/tree/main/skills/creative/ascii-video) via PR.
 
 ## What this is
 

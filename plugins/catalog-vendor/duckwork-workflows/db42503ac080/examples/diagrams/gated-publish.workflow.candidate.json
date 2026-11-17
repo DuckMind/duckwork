@@ -1,0 +1,155 @@
+{
+  "cards": [
+    {
+      "dot": "cyan",
+      "items": [
+        "Drafting is cheap and fast, publishing is gated and strong: seat tiering maps to consequence, not to stage order",
+        "The judge's answer is routed by grammar \u2014 complementary when-gates make rewrite and publish mutually exclusive",
+        "Nothing publishes from agent discretion; the gate's committed value is the only key"
+      ],
+      "title": "Why it works"
+    },
+    {
+      "dot": "rose",
+      "items": [
+        "3 human gate, 2 branch gates, 3 agents: draft -> approve -> publish | rewrite",
+        "Built from the shipped approve-publish seed: same branch grammar with real payloads on both arms",
+        "Derived from this example's bytes by scripts/graph_diagram.py"
+      ],
+      "title": "Contract"
+    }
+  ],
+  "diagram_type": "workflow",
+  "edges": [
+    {
+      "from": "draft",
+      "id": "draft-approve",
+      "to": "approve",
+      "variant": "default"
+    },
+    {
+      "from": "approve",
+      "id": "approve-publish_gate",
+      "to": "publish_gate",
+      "variant": "security"
+    },
+    {
+      "from": "approve",
+      "id": "approve-rewrite_gate",
+      "to": "rewrite_gate",
+      "variant": "security"
+    },
+    {
+      "from": "publish_gate",
+      "id": "publish_gate-publish",
+      "to": "publish",
+      "variant": "default"
+    },
+    {
+      "from": "rewrite_gate",
+      "id": "rewrite_gate-rewrite",
+      "to": "rewrite",
+      "variant": "default"
+    }
+  ],
+  "lanes": [
+    {
+      "id": "work",
+      "label": "Agents",
+      "variant": "normal"
+    },
+    {
+      "id": "gates",
+      "label": "Gates",
+      "variant": "normal"
+    }
+  ],
+  "meta": {
+    "output": "examples/diagrams/gated-publish.html",
+    "quality_profile": "standard",
+    "subtitle": "Human-gated publish, built from the shipped approve-publish seed: draft -> human approval gate -> branch on th",
+    "title": "gated-publish"
+  },
+  "nodes": [
+    {
+      "col": 0,
+      "id": "draft",
+      "label": "Draft",
+      "lane": "work",
+      "sublabel": "you are the seat",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 1,
+      "id": "approve",
+      "label": "Approve",
+      "lane": "gates",
+      "sublabel": "publish the drafted",
+      "tag": "human hold",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "publish_gate",
+      "label": "Publish Gate",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104
+    },
+    {
+      "col": 2,
+      "id": "rewrite_gate",
+      "label": "Rewrite Gate",
+      "lane": "gates",
+      "sublabel": "every s",
+      "tag": "branch",
+      "type": "security",
+      "width": 104,
+      "yOffset": 92
+    },
+    {
+      "col": 3,
+      "id": "publish",
+      "label": "Publish",
+      "lane": "work",
+      "sublabel": "you are the seat",
+      "type": "backend",
+      "width": 104
+    },
+    {
+      "col": 3,
+      "id": "rewrite",
+      "label": "Rewrite",
+      "lane": "work",
+      "sublabel": "the judge s decision",
+      "type": "backend",
+      "width": 104,
+      "yOffset": 92
+    }
+  ],
+  "phases": [
+    {
+      "fromCol": 0,
+      "id": "roots",
+      "label": "entry",
+      "toCol": 0
+    },
+    {
+      "fromCol": 1,
+      "id": "mid",
+      "label": "hand-offs",
+      "toCol": 2
+    },
+    {
+      "fromCol": 3,
+      "id": "out",
+      "label": "terminus",
+      "toCol": 3
+    }
+  ],
+  "schema_version": 2
+}

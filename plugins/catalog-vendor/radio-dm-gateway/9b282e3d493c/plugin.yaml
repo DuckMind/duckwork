@@ -1,0 +1,52 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: radio-dm-gateway
+version: 0.1.0
+manifest_version: 2
+requires_duckwork: ">=0.21.4"
+python_dependencies:
+  - "meshtastic>=2.7.9,<3"
+kind: platform
+description: >-
+  Talk to Duckwork over a radio, built on the Meshtastic® Python API.
+  Meshtastic® is a registered trademark of Meshtastic LLC. This site is not
+  affiliated with or endorsed by the Meshtastic project. An allowlisted
+  direct message is answered only when pkiEncrypted
+  is true. An empty allowlist answers nobody. Channel packets are never
+  answered, because a channel key can impersonate a sender. Unsolicited
+  sends are refused. This plugin registers no cron job and does not give
+  cron a radio sender. A cron job the agent creates stays until duckwork cron
+  remove. TCP only.
+author: TakeshiTGAL
+license: GPL-3.0-only
+homepage: https://github.com/DuckMind/duckwork
+tags: [lora, radio, gateway]
+requires_env:
+  - name: MESHTASTIC_URL
+    description: "One radio. tcp://radio.example:4403. serial:// and ble:// are refused. No userinfo, path, or query on tcp."
+    prompt: "Meshtastic URL"
+    secret: false
+    password: false
+optional_env:
+  - name: MESHTASTIC_ALLOWED_NODES
+    description: "Comma-separated node ids (!aabbccdd or decimal). Empty answers nobody. An unreadable id refuses the connection. There is no allow-all switch."
+    prompt: "Allowed node ids (or empty)"
+    secret: false
+    password: false
+  - name: MESHTASTIC_CHUNK_BYTES
+    description: "UTF-8 bytes per radio text. Default 200. Clamped to 64-200. Tool arguments cannot raise it."
+    prompt: "Bytes per chunk"
+    password: false
+  - name: MESHTASTIC_MAX_CHUNKS
+    description: "How many texts one reply may use. Default 4. Clamped to 1-8."
+    prompt: "Max chunks"
+    password: false
+  - name: MESHTASTIC_MIN_GAP_SECONDS
+    description: "Minimum seconds between radio sends. Default 20. Clamped to 10-3600."
+    prompt: "Seconds between sends"
+    password: false
+  - name: MESHTASTIC_MAX_PER_HOUR
+    description: "Maximum radio sends in a rolling hour on this adapter. Default 12. Cannot be set above 30. Duckwork reconnect builds a new adapter and connects that new one. The hourly count and the seen packet ids live on the adapter, so the new one starts them over and a retransmission can be answered again. Connecting again on the same adapter does not clear them. The same adapter keeps only the last 100 packet ids, so an older retransmission can be answered again."
+    prompt: "Sends per hour"
+    password: false
+config_schema: {}
+provides_tools: []

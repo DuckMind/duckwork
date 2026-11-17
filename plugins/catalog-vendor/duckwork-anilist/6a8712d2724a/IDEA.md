@@ -1,0 +1,1 @@
+Duckwork anilist plugin.

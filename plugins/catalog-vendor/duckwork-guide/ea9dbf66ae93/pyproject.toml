@@ -1,0 +1,24 @@
+[project]
+name = "duckwork-guide"
+version = "0.8.11"
+description = "Self-diagnosis and troubleshooting for Duckwork Agent: read-only health checks and evidence-backed playbooks"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0,<7",
+]
+
+[tool.mypy]
+# Floor of the CI matrix (3.11 tracks upstream's .python-version): the static
+# target must be the OLDEST supported version so 3.12-only constructs fail
+# here instead of only in the 3.11 CI leg.
+python_version = "3.11"
+check_untyped_defs = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+# The Duckwork plugin API is loosely typed: `ctx` is passed in, and check
+# envelopes are heterogeneous dicts. Requiring full annotations would add noise
+# without value at this size; enable stricter flags later if desired.
+disallow_untyped_defs = false

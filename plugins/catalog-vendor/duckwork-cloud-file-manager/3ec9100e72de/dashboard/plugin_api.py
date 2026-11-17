@@ -1,0 +1,1279 @@
+"""Cloud File Manager backend, mounted by the Duckwork dashboard at ``/api/plugins/duckwork-cloud-file-manager/``.
+
+The dashboard loads this file by path (no parent package), so the whole backend lives in this one module.
+Authentication and the per-request profile scope come from the dashboard; this module adds none of its own.
+"""
+
+from __future__ import annotations
+
+import base64
+import binascii
+from collections import deque
+from dataclasses import dataclass, replace
+import errno
+import fnmatch
+from functools import wraps
+import hashlib
+import importlib.util
+import json
+import math
+import os
+from pathlib import Path
+import re
+import secrets
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+from threading import Lock
+import time
+from typing import Annotated
+import unicodedata
+
+from fastapi import APIRouter, Query
+from pydantic import BaseModel, Field, StrictInt
+
+PLUGIN_NAME = "duckwork-cloud-file-manager"
+VERSION = "0.5.0"
+
+router = APIRouter()
+
+CHUNK_BYTES = 4 * 1024 * 1024
+MAX_CHUNK_BYTES = 8 * 1024 * 1024
+EDIT_MAX_BYTES = 1024 * 1024
+EDIT_EXTS = {".md", ".markdown", ".txt"}
+PREVIEW_MAX_BYTES = 10 * 1024 * 1024
+TEXT_PREVIEW_MAX_BYTES = 1024 * 1024
+PREVIEW_IMAGE_MIME = {
+    "png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg", "gif": "image/gif",
+    "webp": "image/webp", "bmp": "image/bmp", "ico": "image/x-icon", "svg": "image/svg+xml",
+}
+PREVIEW_PDF_EXTS = {"pdf"}
+PREVIEW_TEXT_EXTS = set(
+    "json jsonl ndjson yaml yml toml ini cfg conf properties csv tsv log xml html htm css scss less "
+    "js mjs cjs ts tsx jsx py rb go rs java kt swift c h cc cpp hpp cs php sh bash zsh fish ps1 sql r "
+    "lua pl dart scala vue svelte graphql proto tf diff patch rst tex adoc srt vtt".split()
+)
+SCAN_LIMIT = 20000
+LIST_CACHE_SECONDS = 5
+_LIST_CACHE: dict = {}
+_LIST_CACHE_LOCK = Lock()
+_LIST_GEN = 0  # bumped by every clear: a scan that overlapped a write never stores its result
+SEARCH_VISIT_LIMIT = 1_000_000
+SEARCH_SECONDS = 5.0
+TEMP_RE = re.compile(r"^\.cfm-[0-9a-f]{32}\.part$")
+DRIVE_TEMP_RE = re.compile(r"^\.cfm-[0-9a-f]{32}\.dir$")
+DRIVE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{10,200}$")
+# The Drive scripts, Google's client libraries and the gws CLI need only these. The gateway's own environment also
+# holds the agent's provider keys and tokens.
+DRIVE_ENV = frozenset({
+    "PATH", "HOME", "TMPDIR", "LANG", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "DUCKWORK_GWS_BIN",
+    "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "no_proxy", "all_proxy",
+    "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE", "HTTPLIB2_CA_CERTS",
+    # Python's own settings, so the scripts import and print as the gateway's library check expects.
+    "PYTHONPATH", "PYTHONHOME", "PYTHONUTF8", "PYTHONIOENCODING",
+    # Windows: its temp folders, and the system root that sockets need.
+    "TEMP", "TMP", "SYSTEMROOT",
+})
+_DRIVE_CACHE = {}
+_DRIVE_LOCK = Lock()
+UPLOAD_RE = re.compile(r"^[0-9a-f]{32}$")
+DEVICE_RE = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$", re.I)
+SEARCH_SKIP = {".git", "node_modules", "__pycache__", ".venv", "venv", ".tox", ".mypy_cache", ".cache"}
+_LAST_SWEEP = {}
+_SWEEP_LOCK = Lock()
+_FINISHED: dict = {}
+_FINISHED_LOCK = Lock()
+_FINISH_LOCKS = {}  # upload_id -> [Lock, holders]: a retry racing its in-flight original waits, then replays
+_SAVE_LOCK = Lock()  # one save at a time per gateway: saves are rare and short, and no alias or new inode can slip past
+
+
+class GuardError(Exception):
+    def __init__(self, code: str, message: str, **details):
+        super().__init__(message)
+        self.code, self.message, self.details = code, message, details
+
+
+_DENIED = ("permission_denied", "The agent's user isn't allowed to open or change this.")
+_NO_SPACE = ("no_space", "The agent's machine is out of disk space.")
+_ERRNO_CODES = {errno.EACCES: _DENIED, errno.EPERM: _DENIED, errno.ENOSPC: _NO_SPACE,
+                errno.EROFS: ("read_only", "This location is read-only.")}
+if hasattr(errno, "EDQUOT"):  # not defined on Windows
+    _ERRNO_CODES[errno.EDQUOT] = _NO_SPACE
+
+
+def _protocol(fn):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except GuardError as exc:
+            return {"ok": False, "code": exc.code, "message": exc.message, **exc.details}
+        except OSError as exc:
+            code, message = _ERRNO_CODES.get(exc.errno, ("io_error", "The filesystem operation failed."))
+            return {"ok": False, "code": code, "message": message}
+    return wrapped
+
+
+def _load_config():
+    try:
+        from duckwork_cli.config import load_config
+    except ImportError:
+        return {}
+    return load_config()
+
+
+def _duckwork_homes():
+    homes = {Path.home() / ".duckwork"}
+    if os.environ.get("DUCKWORK_HOME"):
+        homes.add(Path(os.environ["DUCKWORK_HOME"]))
+    try:
+        from duckwork_constants import get_duckwork_home, get_process_duckwork_home, get_default_duckwork_root
+    except ImportError:
+        return homes
+    return homes | {Path(get_duckwork_home()), Path(get_process_duckwork_home()), Path(get_default_duckwork_root())}
+
+
+def _dict(value):
+    return value if isinstance(value, dict) else {}
+
+
+def _settings(cfg):
+    return _dict(_dict(_dict(_dict(cfg.get("plugins")).get("entries")).get(PLUGIN_NAME)).get("settings"))
+
+
+def _max_bytes(cfg):
+    mb = _settings(cfg).get("max_file_mb", 100)
+    valid = type(mb) is int or (type(mb) is float and math.isfinite(mb))
+    return (int(mb) if valid and mb >= 1 else 100) * 1024 * 1024
+
+
+@dataclass(frozen=True)
+class Protection:
+    homes: tuple[str, ...]
+    excluded: frozenset[tuple[int, int]]
+
+
+@dataclass(frozen=True)
+class Root:
+    id: str
+    label: str
+    path: Path
+    protection: Protection | None = None
+    is_home: bool | None = None
+
+
+def _identity(path):
+    try:
+        info = path.stat()
+        return (info.st_dev, info.st_ino) if stat.S_ISDIR(info.st_mode) else None
+    except OSError:
+        return None
+
+
+def _excluded(homes=None):
+    homes = _duckwork_homes() if homes is None else homes
+    return {identity for path in homes if (identity := _identity(Path(path))) is not None}
+
+
+def _canonical(path):
+    value = os.path.realpath(path)
+    if sys.platform == "darwin":
+        value = unicodedata.normalize("NFD", value)
+    return value.casefold() if sys.platform in {"darwin", "win32"} else value
+
+
+def _protection():
+    homes = _duckwork_homes()
+    return Protection(tuple(_canonical(home) for home in homes), frozenset(_excluded(homes)))
+
+
+def _home_path(path, protection):
+    return _canonical(path) in protection.homes
+
+
+def _roots(cfg=None):
+    cfg = _dict(_load_config()) if cfg is None else cfg
+    protection = _protection()
+    home_identity = _identity(Path.home())
+    configured = _settings(cfg).get("roots")
+    if isinstance(configured, list) and configured:
+        roots = []
+        excluded = protection.excluded
+        for index, value in enumerate(configured):
+            if not isinstance(value, str) or not _encodable(value):
+                continue
+            path = Path(value)
+            if not path.is_absolute() or not path.is_dir() or Path(os.path.realpath(path)).parent == Path(os.path.realpath(path)):
+                continue
+            identity = _identity(path)
+            if identity in excluded or _home_path(path, protection):
+                continue
+            roots.append(Root(f"r{index}", path.name or str(path), path, protection,
+                              identity is not None and identity == home_identity))
+        return roots
+    terminal = _dict(cfg.get("terminal"))
+    workspace = Path.home()
+    for value in (terminal.get("cwd"), os.environ.get("TERMINAL_CWD"), os.environ.get("MESSAGING_CWD")):
+        if not isinstance(value, str) or not value or not _encodable(value) or value in {".", "auto", "cwd"}:
+            continue
+        path = Path(value).expanduser()
+        if path.is_absolute() and path.is_dir() and Path(os.path.realpath(path)).parent != Path(os.path.realpath(path)):
+            workspace = path
+            break
+    if _identity(workspace) in protection.excluded or _home_path(workspace, protection):
+        workspace = workspace / "workspace"
+        if not workspace.is_dir():
+            workspace.mkdir(exist_ok=True)
+            _clear_list_cache()
+    if Path(os.path.realpath(workspace)).parent == Path(os.path.realpath(workspace)):
+        raise GuardError("protected", "A filesystem root cannot be exposed.")
+    identity = _identity(workspace)
+    root = Root("workspace", "Workspace", workspace, protection,
+                identity is not None and identity == home_identity)
+    _resolve(root, "", for_write=False)
+    return [root]
+
+
+def _supported(cfg):
+    return str(_dict(cfg.get("terminal")).get("backend") or "local").lower() == "local"
+
+
+def _request_root(root_id):
+    cfg = _dict(_load_config())
+    if not _supported(cfg):
+        raise GuardError("unsupported_backend", "Files are available only with the local terminal backend.")
+    for root in _roots(cfg):
+        if root.id == root_id:
+            return root, cfg
+    raise GuardError("unknown_root", "The requested root is unavailable.")
+
+
+def _encodable(value):
+    try:
+        value.encode("utf-8")
+        value.encode(sys.getfilesystemencoding())
+        return True
+    except UnicodeError:
+        return False
+
+
+def _segments(rel):
+    if not _encodable(rel) or "\x00" in rel or rel.startswith(("/", "~")) or Path(rel).is_absolute():
+        raise GuardError("bad_path", "Use a valid relative path.")
+    parts = []
+    for segment in rel.split("/"):
+        if segment in {"", "."}:
+            continue
+        if segment == "..":
+            raise GuardError("bad_path", "Parent traversal is not allowed.")
+        parts.append(segment)
+    return parts
+
+
+def _portable(segment):
+    if (any(ord(c) < 32 or ord(c) == 127 for c in segment) or "\\" in segment
+            or any(c in segment for c in ':*?"<>|') or segment.endswith((".", " "))
+            or DEVICE_RE.fullmatch(segment.split(".", 1)[0]) or len(segment.encode("utf-8")) > 255):
+        raise GuardError("bad_path", "The path contains an invalid name to create.")
+
+
+def _inside(path, root):
+    try:
+        return os.path.commonpath((str(path), str(root))) == str(root)
+    except ValueError:
+        return False
+
+
+def _contained(path, root):
+    """Return an inside path in root's spelling; folded spelling alone never grants access."""
+    if _inside(path, root):
+        return path
+    if not _inside(_canonical(path), _canonical(root)):
+        return None
+    depth = len(root.parts)
+    ancestor = Path(*path.parts[:depth])
+    identity = _identity(root)
+    if identity is None or _identity(ancestor) != identity:
+        return None
+    return root.joinpath(*path.parts[depth:])
+
+
+def _home_root(root):
+    if root.is_home is not None:
+        return root.is_home
+    identity = _identity(root.path)
+    return identity is not None and identity == _identity(Path.home())
+
+
+def _check_protected(target, realroot, protection=None):
+    canonical_target, canonical_root = _canonical(target), _canonical(realroot)
+    if protection is None:
+        protection = Protection(tuple(_canonical(home) for home in _duckwork_homes()), frozenset(_excluded()))
+    for canonical_home in protection.homes:
+        # R1 permits a scoped root strictly inside a home, but never that home itself.
+        scoped_inside = canonical_root != canonical_home and _inside(canonical_root, canonical_home)
+        if not scoped_inside and _inside(canonical_target, canonical_home):
+            raise GuardError("protected", "The Duckwork home is protected.")
+    excluded = protection.excluded
+    identity = _identity(target)
+    if identity is not None and identity in excluded:
+        raise GuardError("protected", "The Duckwork home is protected.")
+    ancestor = target
+    while not ancestor.exists() and ancestor != ancestor.parent:
+        ancestor = ancestor.parent
+    ancestor = _contained(ancestor, realroot)
+    while ancestor is not None and _inside(ancestor, realroot):
+        identity = _identity(ancestor)
+        if identity is not None and identity in excluded:
+            raise GuardError("protected", "The Duckwork home is protected.")
+        if ancestor == realroot:
+            break
+        ancestor = ancestor.parent
+
+
+def _home_dot(root, resolved, realroot):
+    resolved = _contained(resolved, realroot)
+    return (_home_root(root) and resolved is not None and resolved != realroot
+            and resolved.relative_to(realroot).parts[0].startswith("."))
+
+
+def _resolve(root: Root, rel: str, *, for_write: bool) -> Path:
+    parts = _segments(rel)
+    realroot = Path(os.path.realpath(root.path))
+    candidate = root.path
+    for part in parts:
+        candidate = candidate / part
+        try:
+            info = os.lstat(candidate)
+        except FileNotFoundError:
+            _portable(part)
+            continue
+        except NotADirectoryError:
+            raise GuardError("exists_file" if for_write else "not_a_dir", "A parent path is not a directory.")
+        except OSError as exc:
+            if exc.errno == errno.ENAMETOOLONG:
+                _portable(part)
+            raise
+        if stat.S_ISLNK(info.st_mode) and _contained(Path(os.path.realpath(candidate)), realroot) is None:
+            raise GuardError("outside_root", "The path leaves the selected root.")
+    resolved = _contained(Path(os.path.realpath(candidate)), realroot)
+    if resolved is None:
+        raise GuardError("outside_root", "The path leaves the selected root.")
+    _check_protected(resolved, realroot, root.protection)
+    if _home_root(root) and parts and parts[0].startswith("."):
+        raise GuardError("protected", "Hidden entries in the home root are protected.")
+    if _home_dot(root, resolved, realroot):
+        raise GuardError("protected", "Hidden entries in the home root are protected.")
+    if for_write:
+        try:
+            if stat.S_ISLNK(os.lstat(candidate).st_mode):
+                raise GuardError("is_link", "Writing to a symbolic link is not allowed.")
+        except FileNotFoundError:
+            pass
+    return candidate
+
+
+def _rel(root, path):
+    value = path.relative_to(root.path).as_posix()
+    return "" if value == "." else value
+
+
+def _entry(root, path):
+    if not _encodable(str(path)) or TEMP_RE.fullmatch(path.name.lower()) or DRIVE_TEMP_RE.fullmatch(path.name):
+        return None
+    if _home_root(root) and (_rel(root, path).split("/")[0].startswith(".")
+            or (path.name.startswith(".") and _identity(path.parent) == _identity(root.path))):
+        return None
+    try:
+        link_info = os.lstat(path)
+        link = stat.S_ISLNK(link_info.st_mode)
+        realpath = Path(os.path.realpath(path))
+        realroot = Path(os.path.realpath(root.path))
+        contained = _contained(realpath, realroot)
+        outside = link and contained is None
+        realpath = contained if contained is not None else realpath
+        _check_protected(realpath, realroot, root.protection)
+        if _home_dot(root, realpath, realroot):
+            return None
+        info = path.stat() if link and not outside else link_info
+        is_dir = stat.S_ISDIR(info.st_mode)
+        return {"name": path.name, "rel": _rel(root, path), "abs": str(path),
+                "is_dir": is_dir and not outside, "size": None if is_dir and not outside else info.st_size,
+                "mtime": info.st_mtime, "link_outside": outside}
+    except (OSError, GuardError):
+        return None
+
+
+def _mkdir(root, rel):
+    final = _resolve(root, rel, for_write=True)
+    created = False
+    for n in range(1, len(parts := _segments(rel)) + 1):
+        current_rel = "/".join(parts[:n])
+        current = _resolve(root, current_rel, for_write=False)
+        if current.is_dir():
+            continue
+        # The upload sweep deletes stale folders with the import staging name: never create one.
+        if TEMP_RE.fullmatch(parts[n - 1].lower()) or DRIVE_TEMP_RE.fullmatch(parts[n - 1]):
+            raise GuardError("bad_path", "This name is reserved for Cloud Files' temporary files.")
+        try:
+            os.mkdir(current)
+            _clear_list_cache()
+            created = n == len(parts)
+        except FileExistsError:
+            if not current.is_dir():
+                raise GuardError("exists_file", "A file already occupies the folder path.")
+        # Re-check with live protection, not the request snapshot: a home missing at request start has no
+        # identity in the snapshot, and this folder may have just become it.
+        _resolve(replace(root, protection=None), current_rel, for_write=False)
+    final = _resolve(root, rel, for_write=True)
+    if not final.is_dir():
+        raise GuardError("exists_file", "A file already occupies the folder path.")
+    return final, created
+
+
+class Target(BaseModel):
+    root: str
+    path: str
+
+
+class SizedTarget(Target):
+    size: Annotated[StrictInt, Field(ge=0)]
+
+
+class UploadTarget(Target):
+    upload_id: str
+
+
+class Chunk(UploadTarget):
+    offset: Annotated[StrictInt, Field(ge=0)]
+    data: str
+
+
+class Finish(UploadTarget):
+    size: Annotated[StrictInt, Field(ge=0)]
+
+
+class FileSave(Target):
+    base_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    text: str
+
+
+def _edit_suffix(target):
+    if target.suffix.lower() not in EDIT_EXTS:
+        raise GuardError("not_editable", "Only Markdown and text files can be edited.")
+
+
+def _edit_size(size):
+    if size > EDIT_MAX_BYTES:
+        raise GuardError("too_large", "The file exceeds the editor size limit.", max_bytes=EDIT_MAX_BYTES)
+
+
+def _edit_stat(target, *, expected=None, size_check=_edit_size):
+    info = os.lstat(target)
+    if expected is not None and (stat.S_ISLNK(info.st_mode)
+            or (info.st_dev, info.st_ino) != (expected.st_dev, expected.st_ino)):
+        raise GuardError("changed", "The file changed while saving.")
+    if stat.S_ISLNK(info.st_mode):
+        raise GuardError("is_link", "Editing a symbolic link is not allowed.")
+    if not stat.S_ISREG(info.st_mode):
+        raise GuardError("not_a_file", "The selected path is not a regular file.")
+    if info.st_nlink > 1:
+        raise GuardError("hard_link", "Editing a hard-linked file is not allowed.")
+    if os.path.ismount(target):  # a file mounted in from elsewhere (for example a Docker bind mount)
+        raise GuardError("mount_point", "Editing a mounted file is not allowed.")
+    if size_check is not None:
+        size_check(info.st_size)
+    return info
+
+
+def _edit_read(target, *, size_check=_edit_size, read_limit=None):
+    before = _edit_stat(target, size_check=size_check)
+    fd = os.open(target, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+                 | getattr(os, "O_BINARY", 0))
+    try:
+        info = os.fstat(fd)
+        if ((info.st_dev, info.st_ino) != (before.st_dev, before.st_ino)
+                or not stat.S_ISREG(info.st_mode)):
+            raise GuardError("changed", "The file changed while opening.")
+        chunks, remaining = [], EDIT_MAX_BYTES + 1 if read_limit is None else read_limit
+        while remaining:
+            chunk = os.read(fd, min(remaining, 65536))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b"".join(chunks)
+        after = os.fstat(fd)
+        # A writer that changed the file in place during the read would leave a torn text.
+        if (after.st_size, after.st_mtime_ns) != (info.st_size, info.st_mtime_ns):
+            raise GuardError("changed", "The file changed while it was being read.")
+        if size_check is not None:
+            size_check(len(raw))
+        return raw, info
+    finally:
+        os.close(fd)
+
+
+@router.get("/file")
+@_protocol
+def read_file(root: str, path: str):
+    selected, _ = _request_root(root)
+    target = _resolve(selected, path, for_write=False)
+    _edit_suffix(target)
+    try:
+        raw, info = _edit_read(target)
+    except FileNotFoundError:
+        raise GuardError("not_found", "The file no longer exists.")
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        raise GuardError("not_text", "The file is not valid UTF-8 text.")
+    return {"ok": True, "text": text, "sha256": hashlib.sha256(raw).hexdigest(),
+            "size": info.st_size, "mtime": info.st_mtime}
+
+
+def _preview_size(size):
+    if size > PREVIEW_MAX_BYTES:
+        raise GuardError("too_large", "The file exceeds the preview size limit.",
+                         max_bytes=PREVIEW_MAX_BYTES, size=size)
+
+
+@router.get("/file/preview")
+@_protocol
+def preview_file(root: str, path: str):
+    selected, _ = _request_root(root)
+    target = _resolve(selected, path, for_write=False)
+    ext = target.suffix.lower().lstrip(".")
+    if ext in PREVIEW_TEXT_EXTS:
+        kind, mime = "text", None
+    elif ext in PREVIEW_IMAGE_MIME:
+        kind, mime = "image", PREVIEW_IMAGE_MIME[ext]
+    elif ext in PREVIEW_PDF_EXTS:
+        kind, mime = "pdf", "application/pdf"
+    else:
+        raise GuardError("not_previewable", "This file type cannot be previewed.")
+    try:
+        raw, info = _edit_read(
+            target, size_check=None if kind == "text" else _preview_size,
+            read_limit=(TEXT_PREVIEW_MAX_BYTES if kind == "text" else PREVIEW_MAX_BYTES) + 1,
+        )
+    except FileNotFoundError:
+        raise GuardError("not_found", "The file no longer exists.")
+    result = {"ok": True, "kind": kind, "size": info.st_size, "mtime": info.st_mtime}
+    if kind == "text":
+        if b"\0" in raw[:8192]:
+            raise GuardError("not_text", "The file is not text.")
+        result.update(text=raw[:TEXT_PREVIEW_MAX_BYTES].decode("utf-8", errors="replace"),
+                      truncated=info.st_size > TEXT_PREVIEW_MAX_BYTES or len(raw) > TEXT_PREVIEW_MAX_BYTES)
+    else:
+        result.update(mime=mime, data=base64.b64encode(raw).decode("ascii"))
+    return result
+
+
+@router.post("/file/save")
+@_protocol
+def save_file(body: FileSave):
+    root, _ = _request_root(body.root)
+    target = _resolve(root, body.path, for_write=True)
+    _edit_suffix(target)
+    try:
+        data = body.text.encode("utf-8")
+    except UnicodeEncodeError:
+        raise GuardError("not_text", "The text cannot be saved as UTF-8.")
+    _edit_size(len(data))
+    with _SAVE_LOCK:
+        return _save_file(root, target, body, data)
+
+
+def _sync_dir(path):
+    # Best effort: make the rename itself durable where the platform allows syncing a folder.
+    try:
+        fd = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    except OSError:
+        return
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
+def _save_file(root, target, body, data):
+    try:
+        raw, current = _edit_read(target)
+    except FileNotFoundError:
+        raise GuardError("gone", "The file no longer exists.")
+    digest = hashlib.sha256(raw).hexdigest()
+    if digest != body.base_sha256:
+        details = {"sha256": digest}
+        try:
+            details["text"] = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            pass
+        raise GuardError("conflict", "The file has changed since it was opened.", **details)
+    temp = target.parent / f".cfm-{secrets.token_hex(16)}.part"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+    fd = os.open(temp, flags, 0o600)
+    try:
+        try:
+            remaining = memoryview(data)
+            while remaining:
+                written = os.write(fd, remaining)
+                if written == 0:
+                    raise OSError("No write progress")
+                remaining = remaining[written:]
+            if hasattr(os, "fchmod"):
+                os.fchmod(fd, current.st_mode & 0o7777)
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        try:
+            # Detect a replaced final entry before _resolve, without translating any guard code.
+            _edit_stat(target, expected=current)
+            _resolve(root, body.path, for_write=True)
+            _edit_stat(target, expected=current)
+        except FileNotFoundError:
+            raise GuardError("changed", "The file disappeared while saving.")
+        os.replace(temp, target)
+        _clear_list_cache()
+        _sync_dir(target.parent)
+        info = os.lstat(target)
+        return {"ok": True, "sha256": hashlib.sha256(data).hexdigest(),
+                "size": info.st_size, "mtime": info.st_mtime}
+    except BaseException:
+        try:
+            os.unlink(temp)
+        except FileNotFoundError:
+            pass
+        raise
+
+
+def _upload_target(root, rel):
+    target = _resolve(root, rel, for_write=True)
+    if target == root.path:
+        raise GuardError("bad_path", "An upload path must include a filename.")
+    return target
+
+
+def _temp(body, *, required=True):
+    if not UPLOAD_RE.fullmatch(body.upload_id):
+        raise GuardError("bad_upload_id", "The upload identifier is invalid.")
+    root, cfg = _request_root(body.root)
+    target = _upload_target(root, body.path)
+    temp = target.parent / f".cfm-{body.upload_id}.part"
+    try:
+        info = os.lstat(temp)
+        if stat.S_ISREG(info.st_mode):
+            return root, cfg, target, temp, info
+    except FileNotFoundError:
+        pass
+    if required:
+        raise GuardError("gone", "The upload is no longer available.")
+    return root, cfg, target, temp, None
+
+
+def _too_large(cap):
+    raise GuardError("too_large", "The file exceeds the upload size limit.", max_file_bytes=cap)
+
+
+@router.get("/available")
+def available() -> dict:
+    """Desktop feature detection: 200 here means the backend is installed, enabled and mounted."""
+    return {"ok": True, "plugin": PLUGIN_NAME, "version": VERSION}
+
+
+@router.get("/roots")
+@_protocol
+def roots():
+    cfg = _dict(_load_config())
+    notes = _dict(_settings(cfg).get("folder_notes"))
+    notes = {k: v for k, v in notes.items() if isinstance(k, str) and isinstance(v, str) and len(k) <= 200 and len(v) <= 200}
+    result = []
+    for root in _roots(cfg):
+        kept = {}
+        for name, note in notes.items():
+            try:
+                if len(_segments(name)) != 1 or name in {"", "."} or "/" in name:
+                    continue
+                path = _resolve(root, name, for_write=False)
+                if path.is_dir() and _entry(root, path) is not None:
+                    kept[name] = note
+            except GuardError:
+                continue
+        result.append({"id": root.id, "label": root.label, "path": str(root.path), "notes": kept})
+    supported = _supported(cfg)
+    response = {"ok": True, "supported": supported, "reason": None if supported else "The terminal backend is not local.",
+            "roots": result, "max_file_bytes": _max_bytes(cfg), "chunk_bytes": CHUNK_BYTES, "highlights": ["docs", "uploads"]}
+    configured = _settings(cfg).get("roots")
+    if isinstance(configured, list) and configured and not result:
+        response.update(code="no_roots", reason="None of the folders in Cloud Files settings can be shown on this machine. "
+                        "Check the paths in the plugin's settings.")
+    return response
+
+
+@router.get("/list")
+@_protocol
+def list_files(root: str, path: str = "", offset: int = Query(0, ge=0), limit: int = Query(500, ge=1, le=2000),
+               sort: str = Query("name")):
+    if sort not in {"name", "mtime"}:
+        raise GuardError("bad_sort", "Sort by name or mtime.")
+    selected, _ = _request_root(root)
+    folder = _resolve(selected, path, for_write=False)
+    if not folder.is_dir():
+        raise GuardError("not_a_dir", "The selected path is not a directory.")
+    rel_folder = _rel(selected, folder)
+    key = _list_key(selected, folder)
+    with _LIST_CACHE_LOCK:
+        now = time.monotonic()
+        for old in [k for k, v in _LIST_CACHE.items() if now - v[0] >= LIST_CACHE_SECONDS]:
+            del _LIST_CACHE[old]
+        cached = _LIST_CACHE.get(key) if key is not None else None
+        generation = _LIST_GEN
+    if cached is not None:
+        entries, truncated = cached[1:]
+    else:
+        # Scan without the lock, so a slow folder holds up no other listing and no write.
+        entries, truncated = _scan_folder(selected, folder, rel_folder)
+        if key is not None:
+            with _LIST_CACHE_LOCK:
+                if generation == _LIST_GEN:  # no plugin write since the scan began
+                    _LIST_CACHE[key] = (time.monotonic(), entries, truncated)
+                    while len(_LIST_CACHE) > 8:
+                        del _LIST_CACHE[next(iter(_LIST_CACHE))]
+    if sort == "mtime":
+        entries = sorted(entries, key=lambda e: (-(e["mtime"] if e["mtime"] is not None else -math.inf),
+                                                 e["name"].lower(), e["name"], e["rel"]))
+    return {"ok": True, "root": root, "path": rel_folder, "entries": entries[offset:offset + limit],
+            "total": len(entries), "truncated": truncated, "applied_sort": sort}
+
+
+def _clear_list_cache():
+    global _LIST_GEN
+    with _LIST_CACHE_LOCK:
+        _LIST_GEN += 1
+        _LIST_CACHE.clear()
+
+
+def _list_key(root, folder):
+    if LIST_CACHE_SECONDS <= 0:
+        return None
+    info = os.stat(folder)
+    return (str(root.path), root.id, root.protection, root.is_home, str(folder), os.path.realpath(folder), info.st_dev, info.st_ino,
+            info.st_mtime_ns, info.st_ctime_ns, SCAN_LIMIT)
+
+
+def _scan_folder(selected, folder, rel_folder):
+    """Hoist folder guards; links and unusual entries retain the full _entry path."""
+    protection = selected.protection
+    canon_root = _canonical(selected.path)
+    canon_folder = _canonical(folder)
+    home = _home_root(selected)
+    at_home = home and _identity(folder) == _identity(selected.path)
+    homes = [h for h in protection.homes if not (canon_root != h and _inside(canon_root, h))] if protection else []
+    prefix = rel_folder + "/" if rel_folder else ""
+    entries, truncated = [], False
+    with os.scandir(folder) as scan:
+        for n, item in enumerate(scan):
+            if n >= SCAN_LIMIT:
+                truncated = True
+                break
+            name = item.name
+            if protection is None:
+                entry = _entry(selected, Path(item.path))
+                if entry is not None:
+                    entries.append(entry)
+                continue
+            if not _encodable(item.path) or TEMP_RE.fullmatch(name.lower()) or DRIVE_TEMP_RE.fullmatch(name):
+                continue
+            if home and ((prefix or name).split("/")[0].startswith(".") or (at_home and name.startswith("."))):
+                continue
+            try:
+                info = item.stat(follow_symlinks=False)
+            except OSError:
+                continue
+            # Windows reports a junction as a plain folder with no identity: folders there take the full path.
+            if not (stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode)) or (
+                    sys.platform == "win32" and stat.S_ISDIR(info.st_mode)):
+                entry = _entry(selected, Path(item.path))
+                if entry is not None:
+                    entries.append(entry)
+                continue
+            canon_name = unicodedata.normalize("NFD", name) if sys.platform == "darwin" else name
+            if sys.platform in {"darwin", "win32"}:
+                canon_name = canon_name.casefold()
+            canon_target = os.path.join(canon_folder, canon_name)
+            if any(_inside(canon_target, h) for h in homes):
+                continue
+            is_dir = stat.S_ISDIR(info.st_mode)
+            if is_dir and (info.st_dev, info.st_ino) in protection.excluded:
+                continue
+            entries.append({"name": name, "rel": prefix + name, "abs": item.path, "is_dir": is_dir,
+                            "size": None if is_dir else info.st_size, "mtime": info.st_mtime, "link_outside": False})
+    entries.sort(key=lambda e: (not e["is_dir"], e["name"].lower(), e["name"]))
+    return entries, truncated
+
+
+@router.get("/search")
+@_protocol
+def search(root: str, q: str, limit: int = Query(100, ge=1, le=200), path: str = ""):
+    selected, _ = _request_root(root)
+    q = q.strip()
+    if not q or len(q) > 200:
+        raise GuardError("bad_query", "Use a search query between 1 and 200 characters.")
+    folder = _resolve(selected, path, for_write=False)
+    if not folder.is_dir():
+        raise GuardError("not_a_dir", "Search a folder.")
+    queue, results, visited, skipped = deque([folder]), [], 0, 0
+    started = time.monotonic()
+    pattern, lower = "*" in q or "?" in q, q.lower()
+    home = _home_root(selected)
+    root_identity = _identity(selected.path) if home else None
+
+    def done(reason):
+        return {"ok": True, "results": results, "truncated": reason is not None, "reason": reason,
+                "visited": visited, "skipped": skipped}
+
+    def cap():
+        # Visits before time, as in v0.3.0; also between folders, since empty or unreadable ones have no entries.
+        if visited >= SEARCH_VISIT_LIMIT:
+            return "visits"
+        return "time" if time.monotonic() - started >= SEARCH_SECONDS else None
+
+    while queue:
+        if reason := cap():
+            return done(reason)
+        folder = queue.popleft()
+        try:
+            folder = _resolve(selected, _rel(selected, folder), for_write=False)
+            at_root = home and (_rel(selected, folder) == "" or _identity(folder) == root_identity)
+            with os.scandir(folder) as scan:
+                for item in scan:
+                    if reason := cap():
+                        return done(reason)
+                    visited += 1
+                    name = item.name
+                    # Mirror _entry's name exclusions without metadata work.
+                    if not _encodable(item.path) or TEMP_RE.fullmatch(name.lower()) or DRIVE_TEMP_RE.fullmatch(name):
+                        continue
+                    hidden = name.startswith(".")
+                    if hidden and at_root:
+                        continue
+                    excluded = name in SEARCH_SKIP or (hidden and not q.startswith("."))
+                    if fnmatch.fnmatch(name.lower(), lower) if pattern else lower in name.lower():
+                        entry = _entry(selected, Path(item.path))
+                        if entry is not None and not (entry["is_dir"] and excluded):
+                            results.append(entry)
+                            if len(results) >= limit:
+                                return done("results")
+                    if not excluded:
+                        try:
+                            descend = item.is_dir(follow_symlinks=False)
+                        except OSError:
+                            descend = False
+                        # Each queued folder is fully guarded on pop; symlinks are never queued.
+                        if descend:
+                            queue.append(Path(item.path))
+        except GuardError as exc:
+            if exc.code != "protected":
+                skipped += 1
+        except OSError:
+            skipped += 1
+    return done("visits" if visited >= SEARCH_VISIT_LIMIT else None)
+
+
+@router.post("/mkdir")
+@_protocol
+def mkdir(body: Target):
+    root, _ = _request_root(body.root)
+    path, created = _mkdir(root, body.path)
+    _clear_list_cache()
+    return {"ok": True, "created": created, "entry": _entry(root, path)}
+
+
+def _sweep(parent):
+    key, now = os.path.realpath(parent), time.monotonic()
+    with _SWEEP_LOCK:
+        if now - _LAST_SWEEP.get(key, float("-inf")) < 3600:
+            return
+        _LAST_SWEEP[key] = now
+    cutoff = time.time() - 24 * 3600
+    try:
+        with os.scandir(parent) as scan:
+            for item in scan:
+                part, directory = TEMP_RE.fullmatch(item.name), DRIVE_TEMP_RE.fullmatch(item.name)
+                if not (part or directory):  # exact case: only names this plugin creates
+                    continue
+                try:
+                    info = os.lstat(item.path)
+                    if info.st_mtime >= cutoff:
+                        continue
+                    if part and stat.S_ISREG(info.st_mode):
+                        os.unlink(item.path)
+                        _clear_list_cache()
+                    elif directory and stat.S_ISDIR(info.st_mode):
+                        shutil.rmtree(item.path)
+                        _clear_list_cache()
+                except OSError:
+                    pass
+    except OSError:  # even opening/iterating a write-only folder must never block an upload
+        pass
+
+
+@router.post("/uploads/start")
+@_protocol
+def upload_start(body: SizedTarget):
+    root, cfg = _request_root(body.root)
+    cap = _max_bytes(cfg)
+    if body.size > cap:
+        _too_large(cap)
+    target = _upload_target(root, body.path)
+    if not target.parent.is_dir():
+        _mkdir(root, _rel(root, target.parent))
+    target = _resolve(root, body.path, for_write=True)
+    _sweep(target.parent)
+    upload_id = secrets.token_hex(16)
+    temp = target.parent / f".cfm-{upload_id}.part"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+    os.close(os.open(temp, flags, 0o666))
+    _clear_list_cache()
+    return {"ok": True, "upload_id": upload_id, "chunk_bytes": CHUNK_BYTES, "max_file_bytes": cap}
+
+
+@router.post("/uploads/chunk")
+@_protocol
+def upload_chunk(body: Chunk):
+    _, cfg, _, temp, info = _temp(body)
+    if len(body.data) > (MAX_CHUNK_BYTES * 4) // 3 + 8:
+        raise GuardError("chunk_too_large", "The upload chunk is too large.")
+    try:
+        decoded = base64.b64decode(body.data, validate=True)
+    except (binascii.Error, ValueError):
+        raise GuardError("bad_data", "The chunk must contain valid base64 data.")
+    if len(decoded) > MAX_CHUNK_BYTES:
+        raise GuardError("chunk_too_large", "The upload chunk is too large.")
+    if body.offset > info.st_size:
+        raise GuardError("offset", "The offset is beyond the uploaded bytes.", size=info.st_size)
+    if body.offset + len(decoded) > _max_bytes(cfg):
+        _too_large(_max_bytes(cfg))
+    fd = os.open(temp, os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0))
+    try:
+        os.lseek(fd, body.offset, os.SEEK_SET)
+        remaining = memoryview(decoded)
+        while remaining:
+            written = os.write(fd, remaining)
+            if written == 0:
+                raise OSError("No write progress")
+            remaining = remaining[written:]
+    finally:
+        os.close(fd)
+    return {"ok": True, "size": os.lstat(temp).st_size}
+
+
+def _final_name(name, number):
+    if number == 0:
+        return name
+    path = Path(name)
+    suffix, stem = path.suffix, path.stem
+    tail = f" ({number}){suffix}"
+    budget = 255 - len(tail.encode("utf-8"))
+    if budget <= 0:
+        raise GuardError("no_free_name", "The filename suffix leaves no room for a collision name.")
+    stem = stem.encode("utf-8")[:budget].decode("utf-8", errors="ignore")
+    if not stem:
+        raise GuardError("no_free_name", "The filename suffix leaves no room for a collision name.")
+    return stem + tail
+
+
+@router.post("/uploads/finish")
+@_protocol
+def upload_finish(body: Finish):
+    with _FINISHED_LOCK:
+        slot = _FINISH_LOCKS.setdefault(body.upload_id, [Lock(), 0])
+        slot[1] += 1
+    try:
+        with slot[0]:
+            return _finish(body)
+    finally:
+        with _FINISHED_LOCK:
+            slot[1] -= 1
+            if not slot[1]:
+                _FINISH_LOCKS.pop(body.upload_id, None)
+
+
+def _finish(body):
+    root, _ = _request_root(body.root)
+    with _FINISHED_LOCK:
+        record = _FINISHED.get(body.upload_id)
+    if record and (record["root"], record["path"], record["size"]) == (str(root.path), body.path, body.size):
+        # Check the temp independently of the final name: a replaced final symlink must return gone.
+        temp = (root.path / body.path).parent / f".cfm-{body.upload_id}.part"
+        try:
+            _resolve(root, _rel(root, temp), for_write=False)
+            os.lstat(temp)
+        except (FileNotFoundError, GuardError):
+            candidate = record["candidate"]
+            try:
+                if record["expires"] > time.monotonic():
+                    _resolve(root, _rel(root, candidate), for_write=False)
+                    info = os.lstat(candidate)
+                    if stat.S_ISREG(info.st_mode) and (info.st_dev, info.st_ino) == record["identity"]:
+                        return {"ok": True, "entry": _entry(root, candidate), "renamed": record["renamed"]}
+            except (OSError, GuardError):
+                pass
+            raise GuardError("gone", "The upload is no longer available.")
+    root, _, target, temp, info = _temp(body)
+    if info.st_size != body.size:
+        raise GuardError("size_mismatch", "The uploaded size differs from the expected size.", size=info.st_size)
+    result = _publish(root, target, temp)
+    try:  # the replay record is best-effort: never turn a published upload into an error
+        candidate = root.path / result["entry"]["rel"]
+        info = os.lstat(candidate)
+    except (OSError, TypeError):
+        return result
+    with _FINISHED_LOCK:
+        now = time.monotonic()
+        for upload_id in list(_FINISHED):
+            if _FINISHED[upload_id]["expires"] <= now:
+                del _FINISHED[upload_id]
+        _FINISHED[body.upload_id] = {"root": str(root.path), "path": body.path, "size": body.size,
+                                     "candidate": candidate, "renamed": result["renamed"],
+                                     "identity": (info.st_dev, info.st_ino), "expires": now + 3600}
+        while len(_FINISHED) > 10000:
+            del _FINISHED[next(iter(_FINISHED))]
+    return result
+
+
+def _publish(root, target, temp):
+    for number in range(1000):
+        name = _final_name(target.name, number)
+        if TEMP_RE.fullmatch(name.lower()) or DRIVE_TEMP_RE.fullmatch(name):
+            continue
+        candidate = target.parent / name
+        try:
+            _resolve(root, _rel(root, candidate), for_write=False)
+        except GuardError:
+            continue
+        try:
+            fd = os.open(candidate, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o666)
+        except FileExistsError:
+            continue
+        reserved = os.fstat(fd)
+        os.close(fd)
+        try:
+            os.replace(temp, candidate)
+            _clear_list_cache()
+        except OSError:
+            try:
+                current = os.lstat(candidate)
+                if (current.st_dev, current.st_ino) == (reserved.st_dev, reserved.st_ino) and current.st_size == 0:
+                    os.unlink(candidate)
+            except FileNotFoundError:
+                pass
+            raise
+        return {"ok": True, "entry": _entry(root, candidate), "renamed": candidate.name != target.name}
+    raise GuardError("no_free_name", "No unused filename is available.")
+
+
+@router.post("/uploads/abort")
+@_protocol
+def upload_abort(body: UploadTarget):
+    _, _, _, temp, info = _temp(body, required=False)
+    if info is not None:
+        try:
+            os.unlink(temp)
+            _clear_list_cache()
+        except FileNotFoundError:
+            pass
+    return {"ok": True}
+
+
+def _drive_home():
+    from duckwork_constants import get_duckwork_home
+    return Path(get_duckwork_home())
+
+
+def _drive_skill(skills):
+    # Absolute, so a relative override still names the script once its folder is the working directory.
+    path = (skills / "productivity/google-workspace/scripts").absolute()
+    if (path / "setup.py").is_file() and (path / "google_api.py").is_file():
+        return path / "setup.py", path / "google_api.py"
+    return None
+
+
+def _drive_scripts():
+    # A fixed order: the agent's own copy, then the copy bundled with Duckwork. Never a search under skills/.
+    found = _drive_skill(_drive_home() / "skills")
+    if found is None:
+        import duckwork_constants
+        bundled = Path(duckwork_constants.__file__).resolve().parent / "skills"
+        if hasattr(duckwork_constants, "get_bundled_skills_dir"):  # newer Duckwork honours package-manager overrides
+            bundled = Path(duckwork_constants.get_bundled_skills_dir(bundled))
+        found = _drive_skill(bundled)
+    return found
+
+
+def _drive_run(args, timeout):
+    scripts = _drive_scripts()
+    script, *command = args
+    script = Path(script)
+    # Read-only toward Drive: only these commands may ever run (explicit, since `python -O` strips asserts).
+    if scripts is None or not ((script == scripts[0] and command == ["--check"])
+            or (script == scripts[1] and len(command) >= 2 and command[0] == "drive"
+                and command[1] in {"search", "get", "download"})):
+        raise GuardError("drive_error", "The Drive command is not allowed.")
+    env = {key: value for key, value in os.environ.items() if key in DRIVE_ENV or key.startswith("LC_")}
+    env["DUCKWORK_HOME"] = str(_drive_home())
+    # File-backed capture keeps a noisy CLI from filling process memory.
+    with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
+        result = subprocess.run([sys.executable, str(script), *command], shell=False, cwd=script.parent,
+                                env=env, stdout=out, stderr=err, timeout=timeout)
+        out.seek(0)
+        result.stdout = out.read(8 * 1024 * 1024 + 1)
+        if len(result.stdout) > 8 * 1024 * 1024:
+            raise GuardError("drive_error", "Drive output exceeds the response limit.")
+        result.stdout = result.stdout.decode("utf-8", errors="replace")
+        err.seek(0)
+        result.stderr = err.read(8 * 1024 * 1024).decode("utf-8", errors="replace")
+    return result
+
+
+@router.get("/drive/available")
+def drive_available():
+    home = str(_drive_home())
+    with _DRIVE_LOCK:
+        now = time.monotonic()
+        if home in _DRIVE_CACHE and now - _DRIVE_CACHE[home][0] < 60:
+            return dict(_DRIVE_CACHE[home][1])
+        reason = None
+        try:
+            scripts = _drive_scripts()
+            if scripts is None:
+                reason = "no_skill"
+            else:
+                try:
+                    libs = all(importlib.util.find_spec(lib) is not None for lib in
+                               ("google.oauth2", "googleapiclient"))
+                except (ImportError, ValueError):
+                    libs = False
+                if not libs:
+                    reason = "no_google_libs"
+                else:
+                    result = _drive_run([scripts[0], "--check"], 10)
+                    if result.returncode:
+                        reason = "not_signed_in" if "NOT_AUTHENTICATED" in result.stdout else "error"
+                    elif any(line.strip() == "- https://www.googleapis.com/auth/drive"
+                             for line in result.stdout.splitlines()):
+                        reason = "no_drive_scope"
+        except (OSError, GuardError, subprocess.TimeoutExpired):
+            reason = "error"
+        body = {"ok": True, "available": reason is None}
+        if reason:
+            body["reason"] = reason
+        _DRIVE_CACHE[home] = (time.monotonic(), body)
+        return dict(body)
+
+
+def _drive_command(command, timeout=30, *, json_output=True):
+    if not drive_available()["available"]:
+        raise GuardError("unavailable", "Google Drive is unavailable.")
+    scripts = _drive_scripts()
+    if scripts is None:
+        raise GuardError("unavailable", "Google Drive is unavailable.")
+    try:
+        result = _drive_run([scripts[1], "drive", *command], timeout)
+        if result.returncode:
+            raise ValueError("CLI failed")
+        return json.loads(result.stdout) if json_output else None
+    except subprocess.TimeoutExpired:
+        raise GuardError("timeout", "The Drive operation timed out.")
+    except (OSError, ValueError):
+        raise GuardError("drive_error", "The Drive operation failed.")
+
+
+def _drive_id(value, *, folder=False):
+    if not (folder and value == "root") and not DRIVE_ID_RE.fullmatch(value):
+        raise GuardError("bad_id", "The Drive identifier is invalid.")
+
+
+@router.get("/drive/list")
+@_protocol
+def drive_list(folder: str = "root", q: str = ""):
+    _drive_id(folder, folder=True)
+    if len(q) > 200 or any(unicodedata.category(c) == "Cc" for c in q):
+        raise GuardError("bad_query", "Use a query of at most 200 characters without controls.")
+    escaped = q.replace("\\", "\\\\").replace("'", "\\'")
+    query = f"name contains '{escaped}' and trashed = false" if q else f"'{folder}' in parents and trashed = false"
+    raw = _drive_command(["search", query, "--max", "200", "--raw-query"])
+    try:
+        if not isinstance(raw, list):
+            raise ValueError("Expected items")
+        items = [{"id": v["id"], "name": v["name"], "mime": v["mimeType"],
+                  "is_folder": v["mimeType"] == "application/vnd.google-apps.folder",
+                  "size": int(v["size"]) if v.get("size") is not None else None,
+                  "mtime": v.get("modifiedTime")} for v in raw]
+        items.sort(key=lambda v: (not v["is_folder"], v["name"].casefold()))
+    except (KeyError, TypeError, ValueError, AttributeError):
+        raise GuardError("drive_error", "Drive returned invalid file metadata.")
+    return {"ok": True, "items": items, "truncated": len(items) >= 200}
+
+
+class DriveImport(BaseModel):
+    id: str
+    root: str
+    dest: str = "uploads/drive"
+
+
+@router.post("/drive/import")
+@_protocol
+def drive_import(body: DriveImport):
+    _drive_id(body.id)
+    root, cfg = _request_root(body.root)
+    dest, _ = _mkdir(root, body.dest)
+    _sweep(dest)
+    metadata = _drive_command(["get", body.id])
+    try:
+        name, mime = metadata["name"], metadata["mimeType"]
+        if not isinstance(name, str) or not isinstance(mime, str):
+            raise ValueError("Invalid metadata")
+        size = int(metadata["size"]) if metadata.get("size") is not None else None
+    except (KeyError, TypeError, ValueError):
+        raise GuardError("drive_error", "Drive returned invalid file metadata.")
+    if mime == "application/vnd.google-apps.folder":
+        raise GuardError("is_folder", "Choose one file, not a folder.")
+    cap = _max_bytes(cfg)
+    if size is not None and size > cap:
+        _too_large(cap)
+    name = "".join("_" if c in '/\\:*?"<>|' or unicodedata.category(c) == "Cc" else c for c in name)
+    name = name.rstrip(". ") or "drive-file"
+    if DEVICE_RE.fullmatch(name.split(".", 1)[0]):  # the same device rule as _portable, renamed not refused
+        name = "_" + name
+    name = name.encode("utf-8")[:255].decode("utf-8", errors="ignore").rstrip(". ") or "drive-file"
+    extension = {"document": ".pdf", "presentation": ".pdf", "spreadsheet": ".csv", "drawing": ".png"}.get(
+        mime.removeprefix("application/vnd.google-apps."), "") if mime.startswith("application/vnd.google-apps.") else ""
+    if extension and not name.casefold().endswith(extension):
+        name = name.encode("utf-8")[:255 - len(extension)].decode("utf-8", errors="ignore") + extension
+    tmp_rel = _rel(root, dest / f".cfm-{secrets.token_hex(16)}.dir")
+    live = replace(root, protection=None)
+    tempdir = _resolve(live, tmp_rel, for_write=True)
+    os.mkdir(tempdir)
+    _clear_list_cache()
+    try:
+        _resolve(live, tmp_rel, for_write=True)
+        _drive_command(["download", body.id, "--output", str(tempdir / "download")], 300, json_output=False)
+        _resolve(live, tmp_rel, for_write=True)
+        files = list(tempdir.iterdir())
+        if len(files) != 1 or not stat.S_ISREG(os.lstat(files[0]).st_mode):
+            raise GuardError("drive_error", "Drive must download exactly one regular file.")
+        if os.lstat(files[0]).st_size > cap:
+            _too_large(cap)
+        target = _resolve(live, _rel(root, dest / name), for_write=True)
+        return _publish(live, target, files[0])
+    finally:
+        try:
+            shutil.rmtree(tempdir)
+            _clear_list_cache()
+        except OSError:  # cleanup is incidental; never turn a published import into a failure
+            pass

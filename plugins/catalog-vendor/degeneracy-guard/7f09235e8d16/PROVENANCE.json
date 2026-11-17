@@ -1,0 +1,2017 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "degeneracy-guard",
+  "content_id": "7f09235e8d16",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 843,
+      "mode": "100755",
+      "path": ".github/scripts/hermes-tools.sh",
+      "sha256": "f1f3bdbec1cd47cd12353d4defb866060cb45946af6f1c219e01463b82930286"
+    },
+    {
+      "bytes": 1645,
+      "mode": "100644",
+      "path": ".github/workflows/hermes-latest.yml",
+      "sha256": "ef325870dff859a80bbff5b255fdddcdf91b9535ef44dc3647f38d5e327a8b11"
+    },
+    {
+      "bytes": 2373,
+      "mode": "100644",
+      "path": ".github/workflows/tests.yml",
+      "sha256": "f538dbcefb00975aba810a6391443972eabbe1247bfc3e93cf9c071932fad70c"
+    },
+    {
+      "bytes": 53,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "a89c5830cdd7b5b5d099cd0c7b86bad5c454a45b127d6cd3d9764cb71ec57827"
+    },
+    {
+      "bytes": 11358,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "bytes": 58,
+      "mode": "100644",
+      "path": "NOTICE",
+      "sha256": "02c961e8cfe8b06f3d7a912139d265aed4cef278b62bbfd5df8b2beca7b4acf9"
+    },
+    {
+      "bytes": 17385,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "d3b586774b0bc6d0717875626d93d9bb9880ef64a94492445385a1272578a52a"
+    },
+    {
+      "bytes": 6300,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "58c7935435422c007cc80c9148c3516c6041e5686e54ff2b9c1565dea676a85e"
+    },
+    {
+      "bytes": 18082,
+      "mode": "100644",
+      "path": "loop_detector.py",
+      "sha256": "e0041da4aa05195b85e8cacc8a8e71a9649c0c740ce76d87832f792f44bc1c3e"
+    },
+    {
+      "bytes": 1975,
+      "mode": "100644",
+      "path": "paths.py",
+      "sha256": "0921d0d06bdc70d0b019f9e972140a0c7ea49c77c5ac8722861a25f3877624d7"
+    },
+    {
+      "bytes": 487,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "a7ccf4ae25fdbf5c5e8ccb6cdb68f9f6f18dff30b72b2c9124b45956068d413e"
+    },
+    {
+      "bytes": 51,
+      "mode": "100644",
+      "path": "requirements.txt",
+      "sha256": "d4120e7148acac560b4402c8216f1e9f2857871c6bc55256d3f6640c030fc1d9"
+    },
+    {
+      "bytes": 3593,
+      "mode": "100644",
+      "path": "session_length_guard.py",
+      "sha256": "f0c08ca17a37000aa804a89de92c6968d5dbc619c20f5ba577b8d2e129a1ddfc"
+    },
+    {
+      "bytes": 1289,
+      "mode": "100644",
+      "path": "tests/_pkg.py",
+      "sha256": "5a65d0aa9ab7b2c03dd0b8ab42b3068a2935ef8a4807f86ae1292631bdbc6942"
+    },
+    {
+      "bytes": 181,
+      "mode": "100644",
+      "path": "tests/conftest.py",
+      "sha256": "39687deb418857225851d01530838f82b1cb92a7f7de5659155410f81cd44376"
+    },
+    {
+      "bytes": 4260,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/01-same-sentence-60.txt",
+      "sha256": "e5e4bbc291de2f8c581fbf2d38cd076677a32a1fdb14a292486090f593a6d6ee"
+    },
+    {
+      "bytes": 3550,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/02-same-paragraph-25.txt",
+      "sha256": "f603a606c2d52d31e2a8711f0148dd90ae915ec19c5fa6900d683e7138ba4dbf"
+    },
+    {
+      "bytes": 1530,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/03-two-sentence-loop.txt",
+      "sha256": "5b236bf489b8d145793c836001f49f4ca92f328e44097810247cb6cd68cc6933"
+    },
+    {
+      "bytes": 680,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/04-cycle-three-lines.txt",
+      "sha256": "27e968c0a62db7c914533b10fc4026a755690c32b3ccb76b385ef74cea1de243"
+    },
+    {
+      "bytes": 3930,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/05-prose-with-wrap.txt",
+      "sha256": "028378ee56a62f97ff96d32083cfe9204832cddcf2d28dd1a7f0d9dc70fef90f"
+    },
+    {
+      "bytes": 2205,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/06-code-looking-loop.txt",
+      "sha256": "8f9945952fa09c50ddc1c4ae0741de4f5b89f12f5bd051d2917f2584f4137f0c"
+    },
+    {
+      "bytes": 2750,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/07-chinese-sentence-loop.txt",
+      "sha256": "4fcd745a94d6d3d7b68c2dc8116d40a0450e40784f47a601f48d4c5afef779f9"
+    },
+    {
+      "bytes": 2750,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/08-mixed-prose-loop.txt",
+      "sha256": "0e4528a69f411223e3bbbe2692969475bc7646c5678e72ad3f9cb88f04ce4b64"
+    },
+    {
+      "bytes": 2025,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/09-word-salad-loop.txt",
+      "sha256": "08e9461cbc261cf8b34156f0f192d176f2926c299b0fa993f51a4fc6e7528bd2"
+    },
+    {
+      "bytes": 2292,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/10-json-broken-loop.txt",
+      "sha256": "a715884f2d4ebfea6ca87db6244702df327da25ed4d17b3fc4c5f9959bd07979"
+    },
+    {
+      "bytes": 2299,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/oos-chinese_loop.txt",
+      "sha256": "3e720f5636411889a95ad24db0192b638bcda3bc72416f989245136662d642eb"
+    },
+    {
+      "bytes": 1708,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/oos-code_loop.txt",
+      "sha256": "28b74eb5a28052aeeb57f1296d6fcbc90a0c2a890d37b555274c8c98aefc76bc"
+    },
+    {
+      "bytes": 1919,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/oos-para_cycle.txt",
+      "sha256": "1a18b8a25a275f27ae0aaf11dec5ddc28c7f0815e879ca207890e03c954c8c24"
+    },
+    {
+      "bytes": 2606,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/oos-sentence_loop.txt",
+      "sha256": "b58fc0d1c17e6d67fc75dbe98159b7538813093848e68f7a41f385108b12d1fb"
+    },
+    {
+      "bytes": 340,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/oos-short_line_tail.txt",
+      "sha256": "da77b8ecb7a14f0bba620e4b58526f21f6c02b4c951b99fd2e5753b6da47d2da"
+    },
+    {
+      "bytes": 919,
+      "mode": "100644",
+      "path": "tests/corpus/degeneracy/oos-two_line_cycle.txt",
+      "sha256": "91e465a6aeea56c26aa7437741b363320a2d1989a8812ecda72495a9ac28c3d7"
+    },
+    {
+      "bytes": 294,
+      "mode": "100644",
+      "path": "tests/corpus/legit/01-html-table-empty-rows.txt",
+      "sha256": "415baaf9495468c77b9f8ced0db8a941a64f2b3648549717b6cc701421d25e34"
+    },
+    {
+      "bytes": 395,
+      "mode": "100644",
+      "path": "tests/corpus/legit/02-json-array-eight-flags.txt",
+      "sha256": "d68a1585b9a19687f17ddf68ecc08f108354ad6fc8e073aa7d4854f2f954c7ec"
+    },
+    {
+      "bytes": 452,
+      "mode": "100644",
+      "path": "tests/corpus/legit/03-matrix-sixteen-zero-rows.txt",
+      "sha256": "5b8a95a28f373687dc977335f21fd74617cddd7c1161eb1a0d360e4936fbd336"
+    },
+    {
+      "bytes": 328,
+      "mode": "100644",
+      "path": "tests/corpus/legit/04-csv-forty-zero-rows.txt",
+      "sha256": "f6fe1aeb722a224bb3d03a0c7a39d03fa2f4a4b4bbb90499023029624f916468"
+    },
+    {
+      "bytes": 389,
+      "mode": "100644",
+      "path": "tests/corpus/legit/05-markdown-table-twelve-rows.txt",
+      "sha256": "dc113fc1e83f73b6ab242dae01f736382e71924edb10038925e6712d24c496fa"
+    },
+    {
+      "bytes": 225,
+      "mode": "100644",
+      "path": "tests/corpus/legit/06-yaml-list-twenty-ids.txt",
+      "sha256": "dfb28dfb0aa312e973a1167c6b3b1dfc334d1c7670809d54d17829e55ab83210"
+    },
+    {
+      "bytes": 1107,
+      "mode": "100644",
+      "path": "tests/corpus/legit/07-json-nested-config.txt",
+      "sha256": "9b7cc71a0118411710686c34889b17f5361d56861a7640eeffab14e88519e71e"
+    },
+    {
+      "bytes": 921,
+      "mode": "100644",
+      "path": "tests/corpus/legit/08-csv-metrics-thirty-rows.txt",
+      "sha256": "8d897b6a3c09b7eea3035e4316b86d2735b726369ad9f9303597104e265b7a00"
+    },
+    {
+      "bytes": 291,
+      "mode": "100644",
+      "path": "tests/corpus/legit/09-pytest-parametrize-fixture.txt",
+      "sha256": "37faf9ad14408d50bc46d47f2c1c3eeac25cda7feb14f3f9eda9f88cce6c7578"
+    },
+    {
+      "bytes": 224,
+      "mode": "100644",
+      "path": "tests/corpus/legit/10-lockfile-block.txt",
+      "sha256": "6addacfa327a07fbe7440b705e383967a6c7c0d00d74ea5e89b4ea59499d2a91"
+    },
+    {
+      "bytes": 3170,
+      "mode": "100644",
+      "path": "tests/corpus/legit/11-log-lines-sixty.txt",
+      "sha256": "b16334cdb9aa38cf793c451a396f4f20020ccbdf291740caa72f23e07a3bf453"
+    },
+    {
+      "bytes": 233,
+      "mode": "100644",
+      "path": "tests/corpus/legit/12-svg-path-long.txt",
+      "sha256": "617146d991377f62c9a17ef7bc8f61c71ed6fc45a6d763ca4c12d11ba28ce90a"
+    },
+    {
+      "bytes": 203,
+      "mode": "100644",
+      "path": "tests/corpus/legit/13-separator-lines.txt",
+      "sha256": "c442c179de1fe2f6482d6ea039fcf7501128d1d092f8a496d04b6562aa8f536c"
+    },
+    {
+      "bytes": 910,
+      "mode": "100644",
+      "path": "tests/corpus/legit/14-generated-stub-code.txt",
+      "sha256": "b67d74e14cace26636b1d30f22bf302dbcd9762ec5ff3869e8ac5c00bbaa1f1a"
+    },
+    {
+      "bytes": 1031,
+      "mode": "100644",
+      "path": "tests/corpus/legit/15-sql-insert-values.txt",
+      "sha256": "27ed7fb1aa7dd1d159ca89b50b52840ccc5d9dd945fd814575b803862162c690"
+    },
+    {
+      "bytes": 921,
+      "mode": "100644",
+      "path": "tests/corpus/legit/16-chart-data-points.txt",
+      "sha256": "a6cda7907b3ca7d47712215b1f4b2b78f5ef8c3b137519918f6f7e052086e442"
+    },
+    {
+      "bytes": 485,
+      "mode": "100644",
+      "path": "tests/corpus/legit/17-html-select-options.txt",
+      "sha256": "2e4898077840aa8c0515d2633b0390de57e44378669a2c804c90ff72555eb406"
+    },
+    {
+      "bytes": 545,
+      "mode": "100644",
+      "path": "tests/corpus/legit/18-json-matrix-nested.txt",
+      "sha256": "b3e02520517d69f35e87cc32adbd22a1aeaf5b18acc48d7c1ee794fc9e74cd3f"
+    },
+    {
+      "bytes": 1200,
+      "mode": "100644",
+      "path": "tests/corpus/legit/19-csv-timestamps-fifty.txt",
+      "sha256": "1eb11ca1f3c513779293a8ffda5e26f83a9d6d5f9667de523409f0fb37a39f36"
+    },
+    {
+      "bytes": 411,
+      "mode": "100644",
+      "path": "tests/corpus/legit/20-markdown-checklist.txt",
+      "sha256": "20ac5bd9ceb6ccbb264f93bce743a3fe863ca3ba20aa5681aa2ea271fb911c23"
+    },
+    {
+      "bytes": 712,
+      "mode": "100644",
+      "path": "tests/corpus/legit/21-yaml-k8s-multi-doc.txt",
+      "sha256": "f16879fd58de732d12790ea48a881ddf2462408549c3d30c7d7cc221f4c9f3d1"
+    },
+    {
+      "bytes": 1009,
+      "mode": "100644",
+      "path": "tests/corpus/legit/22-svg-rect-grid.txt",
+      "sha256": "9d79601d256497a2eb6faecd37b939282cc962f67825f5178e8637db1aef3c29"
+    },
+    {
+      "bytes": 2150,
+      "mode": "100644",
+      "path": "tests/corpus/legit/23-jsonl-log-lines.txt",
+      "sha256": "7ffcbad66a4889c44ee840570494ac589de05838fabfbcff853bb868b4281839"
+    },
+    {
+      "bytes": 560,
+      "mode": "100644",
+      "path": "tests/corpus/legit/24-ascii-art-box.txt",
+      "sha256": "faaa36fd0b390aad1388b12167c95c8a8b5a77082f8b526cc367f3fe3a0da531"
+    },
+    {
+      "bytes": 379,
+      "mode": "100644",
+      "path": "tests/corpus/legit/25-import-block.txt",
+      "sha256": "c4e32f962bca3eff56921d2ff504e6413ffaed814d1b4e0d242ab5cbb0c3422c"
+    },
+    {
+      "bytes": 2415,
+      "mode": "100644",
+      "path": "tests/corpus/legit/26-quoted-line-in-document.txt",
+      "sha256": "ed61cbb8dd073ceda1242d619acbf147530305da7454443516e00092421ffa24"
+    },
+    {
+      "bytes": 1695,
+      "mode": "100644",
+      "path": "tests/corpus/legit/27-html-table-forty-empty-rows.txt",
+      "sha256": "7df319f1e8b1c41bdf41394f80a1405d8da78c188d59b00c4706d6b1676f21f7"
+    },
+    {
+      "bytes": 915,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-c_array.txt",
+      "sha256": "eae185fb347f3093c951ac1c93ce2489d2446cdafbf937ec5d39159636028247"
+    },
+    {
+      "bytes": 1589,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-css_rules.txt",
+      "sha256": "eb6d712f815cd0debf02523c4303c59b08f6dc6eae06415fb86fa76684c47860"
+    },
+    {
+      "bytes": 309,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-env_file.txt",
+      "sha256": "4410ea0bb5015f3a08019a89a0142368a1fb0d5543b189c3b9ac3cf4580108c5"
+    },
+    {
+      "bytes": 1159,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-log_identical.txt",
+      "sha256": "a40e15eedcbfe54e988ff1d9dd9d80d6341fbfcf8757ee6ceb8a5b278c7c69e5"
+    },
+    {
+      "bytes": 329,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-markdown_checklist.txt",
+      "sha256": "810734e2b314509ae4c1e90d0370d22e185a855937dd89bfbce94f0c5fa1bc6a"
+    },
+    {
+      "bytes": 1180,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-python_list_dicts.txt",
+      "sha256": "8fb24be1704e6bdc6d26b425d3f241973b53386f9e8e44e422a7ded90cf79954"
+    },
+    {
+      "bytes": 1359,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-sql_identical.txt",
+      "sha256": "71f0b4a926f8b9efd9131f8eebbb299f28031399fe26f9a544258aea04bc2e8c"
+    },
+    {
+      "bytes": 2449,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-sql_inserts.txt",
+      "sha256": "23d0695149e2912ae128c2e85bbceb42dc84d2bbd0d066595f72c1892f2d2d20"
+    },
+    {
+      "bytes": 314,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-test_param.txt",
+      "sha256": "01417147f8fc8c4f05d3d63b055c0ee1f8e6e6db89ed471a9160e282353e3c58"
+    },
+    {
+      "bytes": 799,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-toml_tables.txt",
+      "sha256": "1d5af0369b6db80fd66a86e87680b711ad0b080baface1e69c58c37a33cdf7fa"
+    },
+    {
+      "bytes": 644,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-xml_rows.txt",
+      "sha256": "4b75c38290a20b3f2d24b0b46f7949a6e9bbeef7c0b56bfa67bf41fd57debbfe"
+    },
+    {
+      "bytes": 1056,
+      "mode": "100644",
+      "path": "tests/corpus/legit/oos-yaml_identical.txt",
+      "sha256": "fa94b5bea394f7340c23b3a1de63a759dd84961f839fe1f3e3fbc2f98596b1a8"
+    },
+    {
+      "bytes": 187,
+      "mode": "100644",
+      "path": "tests/pytest.ini",
+      "sha256": "0b6878577c7c12b7502e588da2901923db470a7ed282fcccfe0d6e96d28bae4e"
+    },
+    {
+      "bytes": 2939,
+      "mode": "100644",
+      "path": "tests/test_degeneracy_guard.py",
+      "sha256": "573b05adc4fde95bc0ca2e4bebe2e63630ad6a687fc4b4757428b15cba29e9d8"
+    },
+    {
+      "bytes": 13193,
+      "mode": "100644",
+      "path": "tests/test_hermes_contract.py",
+      "sha256": "46f3be066bf1f69c3c790025b1638c7792a05ed6d7115b8f728d4504640c2d53"
+    },
+    {
+      "bytes": 1991,
+      "mode": "100644",
+      "path": "tests/test_incidents.py",
+      "sha256": "972d16278a424e22cd5f61e4f1a957ade55aac2e85036d80f4285d786439af35"
+    },
+    {
+      "bytes": 2102,
+      "mode": "100644",
+      "path": "tests/test_stream_cost.py",
+      "sha256": "c8171957e1be0adff5956f0c88f91071979a3b9285a7317029f8f73177e45511"
+    },
+    {
+      "bytes": 4782,
+      "mode": "100644",
+      "path": "tests/test_tool_arg_rule.py",
+      "sha256": "b116b4313025ec74ad59205b6bba1385eb96f6f1805d268b5ef79956ac7147b1"
+    },
+    {
+      "bytes": 5134,
+      "mode": "100644",
+      "path": "tool_arg_guard.py",
+      "sha256": "59f495aa7d42b949c33da721fa6e83a61f71e2897e406e55ac7341e8c08ac645"
+    }
+  ],
+  "input_manifest_sha256": "7f09235e8d1632bf17ae878ee0b3a67763d41e36df727962aa1e5fb3714b6f7d",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "NOTICE",
+        "sha256": "02c961e8cfe8b06f3d7a912139d265aed4cef278b62bbfd5df8b2beca7b4acf9",
+        "source_path": "NOTICE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/scripts/duckwork-tools.sh",
+      ".github/workflows/duckwork-latest.yml",
+      ".github/workflows/tests.yml",
+      "README.md",
+      "__init__.py",
+      "loop_detector.py",
+      "paths.py",
+      "plugin.yaml",
+      "tests/_pkg.py",
+      "tests/test_degeneracy_guard.py",
+      "tests/test_duckwork_contract.py",
+      "tests/test_tool_arg_rule.py",
+      "tool_arg_guard.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      ".github/scripts/duckwork-tools.sh",
+      ".github/workflows/duckwork-latest.yml",
+      ".github/workflows/tests.yml",
+      "README.md",
+      "__init__.py",
+      "loop_detector.py",
+      "paths.py",
+      "plugin.yaml",
+      "tests/_pkg.py",
+      "tests/test_degeneracy_guard.py",
+      "tests/test_duckwork_contract.py",
+      "tests/test_tool_arg_rule.py",
+      "tool_arg_guard.py"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/simin-yuan/hermes-degeneracy-guard",
+    "sha": "ffc28d0ab9ac6b6c0cbb118ed5fb0c06909a3dc1",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/simin-yuan/hermes-degeneracy-guard",
+  "original_sha": "ffc28d0ab9ac6b6c0cbb118ed5fb0c06909a3dc1",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/scripts/duckwork-tools.sh",
+      "sha256": "667ab4c2a2cafb009402180dfb90a3c89714b823d277fb8fea2b6efdef5096ad",
+      "bytes": 1007,
+      "mode": "100755"
+    },
+    {
+      "path": ".github/workflows/duckwork-latest.yml",
+      "sha256": "640d5f249c0a8e653d1b03dd9cff1df7fecdf18c86fafb9f2a67e5d65ac5094d",
+      "bytes": 1819,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/tests.yml",
+      "sha256": "9b354d1ac6d09db049d5f1951e8f72a0084fe6aeb42cd323b85593537ed64200",
+      "bytes": 2547,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "a89c5830cdd7b5b5d099cd0c7b86bad5c454a45b127d6cd3d9764cb71ec57827",
+      "bytes": 53,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "mode": "100644"
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "02c961e8cfe8b06f3d7a912139d265aed4cef278b62bbfd5df8b2beca7b4acf9",
+      "bytes": 58,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "546b571e73c34fb08d0f402707281108eee0fe9d0d1450aeca99ed3de6f67901",
+      "bytes": 17553,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "4bd1293777900d3afa038106b0430a134c654354a5ffb06ff5506dc35fab9dd5",
+      "bytes": 6450,
+      "mode": "100644"
+    },
+    {
+      "path": "loop_detector.py",
+      "sha256": "0e2545b290f600487150eb006caa14bbdd3591f7124167d3ba376523a0742b51",
+      "bytes": 18226,
+      "mode": "100644"
+    },
+    {
+      "path": "paths.py",
+      "sha256": "ee4c2261f34a8af6e623dcbb0a733f6d56706da2e6199921e35828d0513ae953",
+      "bytes": 2125,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "9d1c0c64f923d5179a727e8435da84ae644be650200e4e09ef135a3e30f90b49",
+      "bytes": 631,
+      "mode": "100644"
+    },
+    {
+      "path": "requirements.txt",
+      "sha256": "d4120e7148acac560b4402c8216f1e9f2857871c6bc55256d3f6640c030fc1d9",
+      "bytes": 51,
+      "mode": "100644"
+    },
+    {
+      "path": "session_length_guard.py",
+      "sha256": "f0c08ca17a37000aa804a89de92c6968d5dbc619c20f5ba577b8d2e129a1ddfc",
+      "bytes": 3593,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/_pkg.py",
+      "sha256": "06f8d0122496bf8c0d03312c5c0530d13103496bf460f4317603872548b3751c",
+      "bytes": 1437,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "39687deb418857225851d01530838f82b1cb92a7f7de5659155410f81cd44376",
+      "bytes": 181,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/01-same-sentence-60.txt",
+      "sha256": "e5e4bbc291de2f8c581fbf2d38cd076677a32a1fdb14a292486090f593a6d6ee",
+      "bytes": 4260,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/02-same-paragraph-25.txt",
+      "sha256": "f603a606c2d52d31e2a8711f0148dd90ae915ec19c5fa6900d683e7138ba4dbf",
+      "bytes": 3550,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/03-two-sentence-loop.txt",
+      "sha256": "5b236bf489b8d145793c836001f49f4ca92f328e44097810247cb6cd68cc6933",
+      "bytes": 1530,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/04-cycle-three-lines.txt",
+      "sha256": "27e968c0a62db7c914533b10fc4026a755690c32b3ccb76b385ef74cea1de243",
+      "bytes": 680,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/05-prose-with-wrap.txt",
+      "sha256": "028378ee56a62f97ff96d32083cfe9204832cddcf2d28dd1a7f0d9dc70fef90f",
+      "bytes": 3930,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/06-code-looking-loop.txt",
+      "sha256": "8f9945952fa09c50ddc1c4ae0741de4f5b89f12f5bd051d2917f2584f4137f0c",
+      "bytes": 2205,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/07-chinese-sentence-loop.txt",
+      "sha256": "4fcd745a94d6d3d7b68c2dc8116d40a0450e40784f47a601f48d4c5afef779f9",
+      "bytes": 2750,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/08-mixed-prose-loop.txt",
+      "sha256": "0e4528a69f411223e3bbbe2692969475bc7646c5678e72ad3f9cb88f04ce4b64",
+      "bytes": 2750,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/09-word-salad-loop.txt",
+      "sha256": "08e9461cbc261cf8b34156f0f192d176f2926c299b0fa993f51a4fc6e7528bd2",
+      "bytes": 2025,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/10-json-broken-loop.txt",
+      "sha256": "a715884f2d4ebfea6ca87db6244702df327da25ed4d17b3fc4c5f9959bd07979",
+      "bytes": 2292,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/oos-chinese_loop.txt",
+      "sha256": "3e720f5636411889a95ad24db0192b638bcda3bc72416f989245136662d642eb",
+      "bytes": 2299,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/oos-code_loop.txt",
+      "sha256": "28b74eb5a28052aeeb57f1296d6fcbc90a0c2a890d37b555274c8c98aefc76bc",
+      "bytes": 1708,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/oos-para_cycle.txt",
+      "sha256": "1a18b8a25a275f27ae0aaf11dec5ddc28c7f0815e879ca207890e03c954c8c24",
+      "bytes": 1919,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/oos-sentence_loop.txt",
+      "sha256": "b58fc0d1c17e6d67fc75dbe98159b7538813093848e68f7a41f385108b12d1fb",
+      "bytes": 2606,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/oos-short_line_tail.txt",
+      "sha256": "da77b8ecb7a14f0bba620e4b58526f21f6c02b4c951b99fd2e5753b6da47d2da",
+      "bytes": 340,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/degeneracy/oos-two_line_cycle.txt",
+      "sha256": "91e465a6aeea56c26aa7437741b363320a2d1989a8812ecda72495a9ac28c3d7",
+      "bytes": 919,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/01-html-table-empty-rows.txt",
+      "sha256": "415baaf9495468c77b9f8ced0db8a941a64f2b3648549717b6cc701421d25e34",
+      "bytes": 294,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/02-json-array-eight-flags.txt",
+      "sha256": "d68a1585b9a19687f17ddf68ecc08f108354ad6fc8e073aa7d4854f2f954c7ec",
+      "bytes": 395,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/03-matrix-sixteen-zero-rows.txt",
+      "sha256": "5b8a95a28f373687dc977335f21fd74617cddd7c1161eb1a0d360e4936fbd336",
+      "bytes": 452,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/04-csv-forty-zero-rows.txt",
+      "sha256": "f6fe1aeb722a224bb3d03a0c7a39d03fa2f4a4b4bbb90499023029624f916468",
+      "bytes": 328,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/05-markdown-table-twelve-rows.txt",
+      "sha256": "dc113fc1e83f73b6ab242dae01f736382e71924edb10038925e6712d24c496fa",
+      "bytes": 389,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/06-yaml-list-twenty-ids.txt",
+      "sha256": "dfb28dfb0aa312e973a1167c6b3b1dfc334d1c7670809d54d17829e55ab83210",
+      "bytes": 225,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/07-json-nested-config.txt",
+      "sha256": "9b7cc71a0118411710686c34889b17f5361d56861a7640eeffab14e88519e71e",
+      "bytes": 1107,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/08-csv-metrics-thirty-rows.txt",
+      "sha256": "8d897b6a3c09b7eea3035e4316b86d2735b726369ad9f9303597104e265b7a00",
+      "bytes": 921,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/09-pytest-parametrize-fixture.txt",
+      "sha256": "37faf9ad14408d50bc46d47f2c1c3eeac25cda7feb14f3f9eda9f88cce6c7578",
+      "bytes": 291,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/10-lockfile-block.txt",
+      "sha256": "6addacfa327a07fbe7440b705e383967a6c7c0d00d74ea5e89b4ea59499d2a91",
+      "bytes": 224,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/11-log-lines-sixty.txt",
+      "sha256": "b16334cdb9aa38cf793c451a396f4f20020ccbdf291740caa72f23e07a3bf453",
+      "bytes": 3170,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/12-svg-path-long.txt",
+      "sha256": "617146d991377f62c9a17ef7bc8f61c71ed6fc45a6d763ca4c12d11ba28ce90a",
+      "bytes": 233,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/13-separator-lines.txt",
+      "sha256": "c442c179de1fe2f6482d6ea039fcf7501128d1d092f8a496d04b6562aa8f536c",
+      "bytes": 203,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/14-generated-stub-code.txt",
+      "sha256": "b67d74e14cace26636b1d30f22bf302dbcd9762ec5ff3869e8ac5c00bbaa1f1a",
+      "bytes": 910,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/15-sql-insert-values.txt",
+      "sha256": "27ed7fb1aa7dd1d159ca89b50b52840ccc5d9dd945fd814575b803862162c690",
+      "bytes": 1031,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/16-chart-data-points.txt",
+      "sha256": "a6cda7907b3ca7d47712215b1f4b2b78f5ef8c3b137519918f6f7e052086e442",
+      "bytes": 921,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/17-html-select-options.txt",
+      "sha256": "2e4898077840aa8c0515d2633b0390de57e44378669a2c804c90ff72555eb406",
+      "bytes": 485,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/18-json-matrix-nested.txt",
+      "sha256": "b3e02520517d69f35e87cc32adbd22a1aeaf5b18acc48d7c1ee794fc9e74cd3f",
+      "bytes": 545,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/19-csv-timestamps-fifty.txt",
+      "sha256": "1eb11ca1f3c513779293a8ffda5e26f83a9d6d5f9667de523409f0fb37a39f36",
+      "bytes": 1200,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/20-markdown-checklist.txt",
+      "sha256": "20ac5bd9ceb6ccbb264f93bce743a3fe863ca3ba20aa5681aa2ea271fb911c23",
+      "bytes": 411,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/21-yaml-k8s-multi-doc.txt",
+      "sha256": "f16879fd58de732d12790ea48a881ddf2462408549c3d30c7d7cc221f4c9f3d1",
+      "bytes": 712,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/22-svg-rect-grid.txt",
+      "sha256": "9d79601d256497a2eb6faecd37b939282cc962f67825f5178e8637db1aef3c29",
+      "bytes": 1009,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/23-jsonl-log-lines.txt",
+      "sha256": "7ffcbad66a4889c44ee840570494ac589de05838fabfbcff853bb868b4281839",
+      "bytes": 2150,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/24-ascii-art-box.txt",
+      "sha256": "faaa36fd0b390aad1388b12167c95c8a8b5a77082f8b526cc367f3fe3a0da531",
+      "bytes": 560,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/25-import-block.txt",
+      "sha256": "c4e32f962bca3eff56921d2ff504e6413ffaed814d1b4e0d242ab5cbb0c3422c",
+      "bytes": 379,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/26-quoted-line-in-document.txt",
+      "sha256": "ed61cbb8dd073ceda1242d619acbf147530305da7454443516e00092421ffa24",
+      "bytes": 2415,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/27-html-table-forty-empty-rows.txt",
+      "sha256": "7df319f1e8b1c41bdf41394f80a1405d8da78c188d59b00c4706d6b1676f21f7",
+      "bytes": 1695,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-c_array.txt",
+      "sha256": "eae185fb347f3093c951ac1c93ce2489d2446cdafbf937ec5d39159636028247",
+      "bytes": 915,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-css_rules.txt",
+      "sha256": "eb6d712f815cd0debf02523c4303c59b08f6dc6eae06415fb86fa76684c47860",
+      "bytes": 1589,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-env_file.txt",
+      "sha256": "4410ea0bb5015f3a08019a89a0142368a1fb0d5543b189c3b9ac3cf4580108c5",
+      "bytes": 309,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-log_identical.txt",
+      "sha256": "a40e15eedcbfe54e988ff1d9dd9d80d6341fbfcf8757ee6ceb8a5b278c7c69e5",
+      "bytes": 1159,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-markdown_checklist.txt",
+      "sha256": "810734e2b314509ae4c1e90d0370d22e185a855937dd89bfbce94f0c5fa1bc6a",
+      "bytes": 329,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-python_list_dicts.txt",
+      "sha256": "8fb24be1704e6bdc6d26b425d3f241973b53386f9e8e44e422a7ded90cf79954",
+      "bytes": 1180,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-sql_identical.txt",
+      "sha256": "71f0b4a926f8b9efd9131f8eebbb299f28031399fe26f9a544258aea04bc2e8c",
+      "bytes": 1359,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-sql_inserts.txt",
+      "sha256": "23d0695149e2912ae128c2e85bbceb42dc84d2bbd0d066595f72c1892f2d2d20",
+      "bytes": 2449,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-test_param.txt",
+      "sha256": "01417147f8fc8c4f05d3d63b055c0ee1f8e6e6db89ed471a9160e282353e3c58",
+      "bytes": 314,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-toml_tables.txt",
+      "sha256": "1d5af0369b6db80fd66a86e87680b711ad0b080baface1e69c58c37a33cdf7fa",
+      "bytes": 799,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-xml_rows.txt",
+      "sha256": "4b75c38290a20b3f2d24b0b46f7949a6e9bbeef7c0b56bfa67bf41fd57debbfe",
+      "bytes": 644,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/corpus/legit/oos-yaml_identical.txt",
+      "sha256": "fa94b5bea394f7340c23b3a1de63a759dd84961f839fe1f3e3fbc2f98596b1a8",
+      "bytes": 1056,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/pytest.ini",
+      "sha256": "0b6878577c7c12b7502e588da2901923db470a7ed282fcccfe0d6e96d28bae4e",
+      "bytes": 187,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_degeneracy_guard.py",
+      "sha256": "7bcc4a717c81181147cac57da47986db891d5ab543171e2d94df4d01c2b69954",
+      "bytes": 3087,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_duckwork_contract.py",
+      "sha256": "4b2208cd09772afa136ac2ff6d4f3c524f2287a374f917b8227c50e28bdb8a21",
+      "bytes": 13403,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_incidents.py",
+      "sha256": "972d16278a424e22cd5f61e4f1a957ade55aac2e85036d80f4285d786439af35",
+      "bytes": 1991,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_stream_cost.py",
+      "sha256": "c8171957e1be0adff5956f0c88f91071979a3b9285a7317029f8f73177e45511",
+      "bytes": 2102,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tool_arg_rule.py",
+      "sha256": "b83177837a106820db04e5b99a3e416c934239503e2ce8ebfe09fe65c1418d06",
+      "bytes": 4926,
+      "mode": "100644"
+    },
+    {
+      "path": "tool_arg_guard.py",
+      "sha256": "decbbe3b703ae0004a034aaabc833a68123b56fdc1804a64838f4d087982ba7d",
+      "bytes": 5278,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "16052ac45c01584c157385dfa6f02b3996676344504c3d3ef3c8fa2d92797fec",
+  "pin_verification": {
+    "archive_bytes": 41375,
+    "archive_sha256": "c35ef22ab32eeac41e86998af2b1f4161605c64abbeab804f58b8dbaef7bf34e",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "ffc28d0ab9ac6b6c0cbb118ed5fb0c06909a3dc1",
+    "verified_commit_marker": "ffc28d0ab9ac6b6c0cbb118ed5fb0c06909a3dc1"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "d0f725eacea1830282f2c609b81dc189a62bf4d98c91e47f5beb998482baee6b",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/scripts/duckwork-tools.sh",
+        "input_sha256": "f1f3bdbec1cd47cd12353d4defb866060cb45946af6f1c219e01463b82930286",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "9cf5339e5c746b59b036b1315f9e7794ad3547591dcbede6f019c38fa7a0688b",
+        "source": ".github/scripts/hermes-tools.sh",
+        "final_output_sha256": "667ab4c2a2cafb009402180dfb90a3c89714b823d277fb8fea2b6efdef5096ad",
+        "cli_destination": ".github/scripts/duckwork-tools.sh",
+        "previous_staging_sha256": "667ab4c2a2cafb009402180dfb90a3c89714b823d277fb8fea2b6efdef5096ad"
+      },
+      {
+        "destination": ".github/workflows/duckwork-latest.yml",
+        "input_sha256": "ef325870dff859a80bbff5b255fdddcdf91b9535ef44dc3647f38d5e327a8b11",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d826500bcd642f6ac5c8b85a8db1af9bf8346628a5797882f67d831ea9def512",
+        "source": ".github/workflows/hermes-latest.yml",
+        "final_output_sha256": "640d5f249c0a8e653d1b03dd9cff1df7fecdf18c86fafb9f2a67e5d65ac5094d",
+        "cli_destination": ".github/workflows/duckwork-latest.yml",
+        "previous_staging_sha256": "640d5f249c0a8e653d1b03dd9cff1df7fecdf18c86fafb9f2a67e5d65ac5094d"
+      },
+      {
+        "destination": ".github/workflows/tests.yml",
+        "input_sha256": "f538dbcefb00975aba810a6391443972eabbe1247bfc3e93cf9c071932fad70c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3eb433c0e4802086faf3de01e6440b6f248e7a6e1680ca3934e6a740c7bb6625",
+        "source": ".github/workflows/tests.yml",
+        "final_output_sha256": "9b354d1ac6d09db049d5f1951e8f72a0084fe6aeb42cd323b85593537ed64200",
+        "cli_destination": ".github/workflows/tests.yml",
+        "previous_staging_sha256": "9b354d1ac6d09db049d5f1951e8f72a0084fe6aeb42cd323b85593537ed64200"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "a89c5830cdd7b5b5d099cd0c7b86bad5c454a45b127d6cd3d9764cb71ec57827",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a89c5830cdd7b5b5d099cd0c7b86bad5c454a45b127d6cd3d9764cb71ec57827",
+        "source": ".gitignore",
+        "final_output_sha256": "a89c5830cdd7b5b5d099cd0c7b86bad5c454a45b127d6cd3d9764cb71ec57827",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "a89c5830cdd7b5b5d099cd0c7b86bad5c454a45b127d6cd3d9764cb71ec57827"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "source": "LICENSE",
+        "final_output_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "destination": "NOTICE",
+        "input_sha256": "02c961e8cfe8b06f3d7a912139d265aed4cef278b62bbfd5df8b2beca7b4acf9",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "02c961e8cfe8b06f3d7a912139d265aed4cef278b62bbfd5df8b2beca7b4acf9",
+        "source": "NOTICE",
+        "final_output_sha256": "02c961e8cfe8b06f3d7a912139d265aed4cef278b62bbfd5df8b2beca7b4acf9",
+        "cli_destination": "NOTICE",
+        "previous_staging_sha256": "02c961e8cfe8b06f3d7a912139d265aed4cef278b62bbfd5df8b2beca7b4acf9"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "d3b586774b0bc6d0717875626d93d9bb9880ef64a94492445385a1272578a52a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6cd5dfff2123f0f68cba4568e744b47cb47d81a3b7678236b2cdcc002dbc096f",
+        "source": "README.md",
+        "final_output_sha256": "546b571e73c34fb08d0f402707281108eee0fe9d0d1450aeca99ed3de6f67901",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "dc5680d28555c477ead9051d97a61dd9a3a7cb7b69bd49ed21cecce798916c8d"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "58c7935435422c007cc80c9148c3516c6041e5686e54ff2b9c1565dea676a85e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "547ec0de632bc9a8031e764e44228f9a0ba223e18de41a47d2156e64f219446e",
+        "source": "__init__.py",
+        "final_output_sha256": "4bd1293777900d3afa038106b0430a134c654354a5ffb06ff5506dc35fab9dd5",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "4bd1293777900d3afa038106b0430a134c654354a5ffb06ff5506dc35fab9dd5"
+      },
+      {
+        "destination": "loop_detector.py",
+        "input_sha256": "e0041da4aa05195b85e8cacc8a8e71a9649c0c740ce76d87832f792f44bc1c3e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c04bf9f38f3ccb3c0bb5a7c8ede228326d96b0bdafb12a4a4640e140881c0317",
+        "source": "loop_detector.py",
+        "final_output_sha256": "0e2545b290f600487150eb006caa14bbdd3591f7124167d3ba376523a0742b51",
+        "cli_destination": "loop_detector.py",
+        "previous_staging_sha256": "0e2545b290f600487150eb006caa14bbdd3591f7124167d3ba376523a0742b51"
+      },
+      {
+        "destination": "paths.py",
+        "input_sha256": "0921d0d06bdc70d0b019f9e972140a0c7ea49c77c5ac8722861a25f3877624d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "28f129b69645df20c58da72b7837bae23cc4ae7f422e937d95e063ca032e1376",
+        "source": "paths.py",
+        "final_output_sha256": "ee4c2261f34a8af6e623dcbb0a733f6d56706da2e6199921e35828d0513ae953",
+        "cli_destination": "paths.py",
+        "previous_staging_sha256": "ee4c2261f34a8af6e623dcbb0a733f6d56706da2e6199921e35828d0513ae953"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "a7ccf4ae25fdbf5c5e8ccb6cdb68f9f6f18dff30b72b2c9124b45956068d413e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "abc431c9fe1fdd3fb7866bd1ba832af717291b09f87802f00de9fc015fd87c85",
+        "source": "plugin.yaml",
+        "final_output_sha256": "9d1c0c64f923d5179a727e8435da84ae644be650200e4e09ef135a3e30f90b49",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "9d1c0c64f923d5179a727e8435da84ae644be650200e4e09ef135a3e30f90b49"
+      },
+      {
+        "destination": "requirements.txt",
+        "input_sha256": "d4120e7148acac560b4402c8216f1e9f2857871c6bc55256d3f6640c030fc1d9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d4120e7148acac560b4402c8216f1e9f2857871c6bc55256d3f6640c030fc1d9",
+        "source": "requirements.txt",
+        "final_output_sha256": "d4120e7148acac560b4402c8216f1e9f2857871c6bc55256d3f6640c030fc1d9",
+        "cli_destination": "requirements.txt",
+        "previous_staging_sha256": "d4120e7148acac560b4402c8216f1e9f2857871c6bc55256d3f6640c030fc1d9"
+      },
+      {
+        "destination": "session_length_guard.py",
+        "input_sha256": "f0c08ca17a37000aa804a89de92c6968d5dbc619c20f5ba577b8d2e129a1ddfc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f0c08ca17a37000aa804a89de92c6968d5dbc619c20f5ba577b8d2e129a1ddfc",
+        "source": "session_length_guard.py",
+        "final_output_sha256": "f0c08ca17a37000aa804a89de92c6968d5dbc619c20f5ba577b8d2e129a1ddfc",
+        "cli_destination": "session_length_guard.py",
+        "previous_staging_sha256": "f0c08ca17a37000aa804a89de92c6968d5dbc619c20f5ba577b8d2e129a1ddfc"
+      },
+      {
+        "destination": "tests/_pkg.py",
+        "input_sha256": "5a65d0aa9ab7b2c03dd0b8ab42b3068a2935ef8a4807f86ae1292631bdbc6942",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c228b8b9ca1a78e888f324cf2c29226432faff410a67ab3de2e3f6a24ab1c57b",
+        "source": "tests/_pkg.py",
+        "final_output_sha256": "06f8d0122496bf8c0d03312c5c0530d13103496bf460f4317603872548b3751c",
+        "cli_destination": "tests/_pkg.py",
+        "previous_staging_sha256": "06f8d0122496bf8c0d03312c5c0530d13103496bf460f4317603872548b3751c"
+      },
+      {
+        "destination": "tests/conftest.py",
+        "input_sha256": "39687deb418857225851d01530838f82b1cb92a7f7de5659155410f81cd44376",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "39687deb418857225851d01530838f82b1cb92a7f7de5659155410f81cd44376",
+        "source": "tests/conftest.py",
+        "final_output_sha256": "39687deb418857225851d01530838f82b1cb92a7f7de5659155410f81cd44376",
+        "cli_destination": "tests/conftest.py",
+        "previous_staging_sha256": "39687deb418857225851d01530838f82b1cb92a7f7de5659155410f81cd44376"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/01-same-sentence-60.txt",
+        "input_sha256": "e5e4bbc291de2f8c581fbf2d38cd076677a32a1fdb14a292486090f593a6d6ee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e5e4bbc291de2f8c581fbf2d38cd076677a32a1fdb14a292486090f593a6d6ee",
+        "source": "tests/corpus/degeneracy/01-same-sentence-60.txt",
+        "final_output_sha256": "e5e4bbc291de2f8c581fbf2d38cd076677a32a1fdb14a292486090f593a6d6ee",
+        "cli_destination": "tests/corpus/degeneracy/01-same-sentence-60.txt",
+        "previous_staging_sha256": "e5e4bbc291de2f8c581fbf2d38cd076677a32a1fdb14a292486090f593a6d6ee"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/02-same-paragraph-25.txt",
+        "input_sha256": "f603a606c2d52d31e2a8711f0148dd90ae915ec19c5fa6900d683e7138ba4dbf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f603a606c2d52d31e2a8711f0148dd90ae915ec19c5fa6900d683e7138ba4dbf",
+        "source": "tests/corpus/degeneracy/02-same-paragraph-25.txt",
+        "final_output_sha256": "f603a606c2d52d31e2a8711f0148dd90ae915ec19c5fa6900d683e7138ba4dbf",
+        "cli_destination": "tests/corpus/degeneracy/02-same-paragraph-25.txt",
+        "previous_staging_sha256": "f603a606c2d52d31e2a8711f0148dd90ae915ec19c5fa6900d683e7138ba4dbf"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/03-two-sentence-loop.txt",
+        "input_sha256": "5b236bf489b8d145793c836001f49f4ca92f328e44097810247cb6cd68cc6933",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b236bf489b8d145793c836001f49f4ca92f328e44097810247cb6cd68cc6933",
+        "source": "tests/corpus/degeneracy/03-two-sentence-loop.txt",
+        "final_output_sha256": "5b236bf489b8d145793c836001f49f4ca92f328e44097810247cb6cd68cc6933",
+        "cli_destination": "tests/corpus/degeneracy/03-two-sentence-loop.txt",
+        "previous_staging_sha256": "5b236bf489b8d145793c836001f49f4ca92f328e44097810247cb6cd68cc6933"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/04-cycle-three-lines.txt",
+        "input_sha256": "27e968c0a62db7c914533b10fc4026a755690c32b3ccb76b385ef74cea1de243",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "27e968c0a62db7c914533b10fc4026a755690c32b3ccb76b385ef74cea1de243",
+        "source": "tests/corpus/degeneracy/04-cycle-three-lines.txt",
+        "final_output_sha256": "27e968c0a62db7c914533b10fc4026a755690c32b3ccb76b385ef74cea1de243",
+        "cli_destination": "tests/corpus/degeneracy/04-cycle-three-lines.txt",
+        "previous_staging_sha256": "27e968c0a62db7c914533b10fc4026a755690c32b3ccb76b385ef74cea1de243"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/05-prose-with-wrap.txt",
+        "input_sha256": "028378ee56a62f97ff96d32083cfe9204832cddcf2d28dd1a7f0d9dc70fef90f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "028378ee56a62f97ff96d32083cfe9204832cddcf2d28dd1a7f0d9dc70fef90f",
+        "source": "tests/corpus/degeneracy/05-prose-with-wrap.txt",
+        "final_output_sha256": "028378ee56a62f97ff96d32083cfe9204832cddcf2d28dd1a7f0d9dc70fef90f",
+        "cli_destination": "tests/corpus/degeneracy/05-prose-with-wrap.txt",
+        "previous_staging_sha256": "028378ee56a62f97ff96d32083cfe9204832cddcf2d28dd1a7f0d9dc70fef90f"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/06-code-looking-loop.txt",
+        "input_sha256": "8f9945952fa09c50ddc1c4ae0741de4f5b89f12f5bd051d2917f2584f4137f0c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8f9945952fa09c50ddc1c4ae0741de4f5b89f12f5bd051d2917f2584f4137f0c",
+        "source": "tests/corpus/degeneracy/06-code-looking-loop.txt",
+        "final_output_sha256": "8f9945952fa09c50ddc1c4ae0741de4f5b89f12f5bd051d2917f2584f4137f0c",
+        "cli_destination": "tests/corpus/degeneracy/06-code-looking-loop.txt",
+        "previous_staging_sha256": "8f9945952fa09c50ddc1c4ae0741de4f5b89f12f5bd051d2917f2584f4137f0c"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/07-chinese-sentence-loop.txt",
+        "input_sha256": "4fcd745a94d6d3d7b68c2dc8116d40a0450e40784f47a601f48d4c5afef779f9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4fcd745a94d6d3d7b68c2dc8116d40a0450e40784f47a601f48d4c5afef779f9",
+        "source": "tests/corpus/degeneracy/07-chinese-sentence-loop.txt",
+        "final_output_sha256": "4fcd745a94d6d3d7b68c2dc8116d40a0450e40784f47a601f48d4c5afef779f9",
+        "cli_destination": "tests/corpus/degeneracy/07-chinese-sentence-loop.txt",
+        "previous_staging_sha256": "4fcd745a94d6d3d7b68c2dc8116d40a0450e40784f47a601f48d4c5afef779f9"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/08-mixed-prose-loop.txt",
+        "input_sha256": "0e4528a69f411223e3bbbe2692969475bc7646c5678e72ad3f9cb88f04ce4b64",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0e4528a69f411223e3bbbe2692969475bc7646c5678e72ad3f9cb88f04ce4b64",
+        "source": "tests/corpus/degeneracy/08-mixed-prose-loop.txt",
+        "final_output_sha256": "0e4528a69f411223e3bbbe2692969475bc7646c5678e72ad3f9cb88f04ce4b64",
+        "cli_destination": "tests/corpus/degeneracy/08-mixed-prose-loop.txt",
+        "previous_staging_sha256": "0e4528a69f411223e3bbbe2692969475bc7646c5678e72ad3f9cb88f04ce4b64"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/09-word-salad-loop.txt",
+        "input_sha256": "08e9461cbc261cf8b34156f0f192d176f2926c299b0fa993f51a4fc6e7528bd2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "08e9461cbc261cf8b34156f0f192d176f2926c299b0fa993f51a4fc6e7528bd2",
+        "source": "tests/corpus/degeneracy/09-word-salad-loop.txt",
+        "final_output_sha256": "08e9461cbc261cf8b34156f0f192d176f2926c299b0fa993f51a4fc6e7528bd2",
+        "cli_destination": "tests/corpus/degeneracy/09-word-salad-loop.txt",
+        "previous_staging_sha256": "08e9461cbc261cf8b34156f0f192d176f2926c299b0fa993f51a4fc6e7528bd2"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/10-json-broken-loop.txt",
+        "input_sha256": "a715884f2d4ebfea6ca87db6244702df327da25ed4d17b3fc4c5f9959bd07979",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a715884f2d4ebfea6ca87db6244702df327da25ed4d17b3fc4c5f9959bd07979",
+        "source": "tests/corpus/degeneracy/10-json-broken-loop.txt",
+        "final_output_sha256": "a715884f2d4ebfea6ca87db6244702df327da25ed4d17b3fc4c5f9959bd07979",
+        "cli_destination": "tests/corpus/degeneracy/10-json-broken-loop.txt",
+        "previous_staging_sha256": "a715884f2d4ebfea6ca87db6244702df327da25ed4d17b3fc4c5f9959bd07979"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/oos-chinese_loop.txt",
+        "input_sha256": "3e720f5636411889a95ad24db0192b638bcda3bc72416f989245136662d642eb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3e720f5636411889a95ad24db0192b638bcda3bc72416f989245136662d642eb",
+        "source": "tests/corpus/degeneracy/oos-chinese_loop.txt",
+        "final_output_sha256": "3e720f5636411889a95ad24db0192b638bcda3bc72416f989245136662d642eb",
+        "cli_destination": "tests/corpus/degeneracy/oos-chinese_loop.txt",
+        "previous_staging_sha256": "3e720f5636411889a95ad24db0192b638bcda3bc72416f989245136662d642eb"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/oos-code_loop.txt",
+        "input_sha256": "28b74eb5a28052aeeb57f1296d6fcbc90a0c2a890d37b555274c8c98aefc76bc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "28b74eb5a28052aeeb57f1296d6fcbc90a0c2a890d37b555274c8c98aefc76bc",
+        "source": "tests/corpus/degeneracy/oos-code_loop.txt",
+        "final_output_sha256": "28b74eb5a28052aeeb57f1296d6fcbc90a0c2a890d37b555274c8c98aefc76bc",
+        "cli_destination": "tests/corpus/degeneracy/oos-code_loop.txt",
+        "previous_staging_sha256": "28b74eb5a28052aeeb57f1296d6fcbc90a0c2a890d37b555274c8c98aefc76bc"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/oos-para_cycle.txt",
+        "input_sha256": "1a18b8a25a275f27ae0aaf11dec5ddc28c7f0815e879ca207890e03c954c8c24",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1a18b8a25a275f27ae0aaf11dec5ddc28c7f0815e879ca207890e03c954c8c24",
+        "source": "tests/corpus/degeneracy/oos-para_cycle.txt",
+        "final_output_sha256": "1a18b8a25a275f27ae0aaf11dec5ddc28c7f0815e879ca207890e03c954c8c24",
+        "cli_destination": "tests/corpus/degeneracy/oos-para_cycle.txt",
+        "previous_staging_sha256": "1a18b8a25a275f27ae0aaf11dec5ddc28c7f0815e879ca207890e03c954c8c24"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/oos-sentence_loop.txt",
+        "input_sha256": "b58fc0d1c17e6d67fc75dbe98159b7538813093848e68f7a41f385108b12d1fb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b58fc0d1c17e6d67fc75dbe98159b7538813093848e68f7a41f385108b12d1fb",
+        "source": "tests/corpus/degeneracy/oos-sentence_loop.txt",
+        "final_output_sha256": "b58fc0d1c17e6d67fc75dbe98159b7538813093848e68f7a41f385108b12d1fb",
+        "cli_destination": "tests/corpus/degeneracy/oos-sentence_loop.txt",
+        "previous_staging_sha256": "b58fc0d1c17e6d67fc75dbe98159b7538813093848e68f7a41f385108b12d1fb"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/oos-short_line_tail.txt",
+        "input_sha256": "da77b8ecb7a14f0bba620e4b58526f21f6c02b4c951b99fd2e5753b6da47d2da",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "da77b8ecb7a14f0bba620e4b58526f21f6c02b4c951b99fd2e5753b6da47d2da",
+        "source": "tests/corpus/degeneracy/oos-short_line_tail.txt",
+        "final_output_sha256": "da77b8ecb7a14f0bba620e4b58526f21f6c02b4c951b99fd2e5753b6da47d2da",
+        "cli_destination": "tests/corpus/degeneracy/oos-short_line_tail.txt",
+        "previous_staging_sha256": "da77b8ecb7a14f0bba620e4b58526f21f6c02b4c951b99fd2e5753b6da47d2da"
+      },
+      {
+        "destination": "tests/corpus/degeneracy/oos-two_line_cycle.txt",
+        "input_sha256": "91e465a6aeea56c26aa7437741b363320a2d1989a8812ecda72495a9ac28c3d7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "91e465a6aeea56c26aa7437741b363320a2d1989a8812ecda72495a9ac28c3d7",
+        "source": "tests/corpus/degeneracy/oos-two_line_cycle.txt",
+        "final_output_sha256": "91e465a6aeea56c26aa7437741b363320a2d1989a8812ecda72495a9ac28c3d7",
+        "cli_destination": "tests/corpus/degeneracy/oos-two_line_cycle.txt",
+        "previous_staging_sha256": "91e465a6aeea56c26aa7437741b363320a2d1989a8812ecda72495a9ac28c3d7"
+      },
+      {
+        "destination": "tests/corpus/legit/01-html-table-empty-rows.txt",
+        "input_sha256": "415baaf9495468c77b9f8ced0db8a941a64f2b3648549717b6cc701421d25e34",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "415baaf9495468c77b9f8ced0db8a941a64f2b3648549717b6cc701421d25e34",
+        "source": "tests/corpus/legit/01-html-table-empty-rows.txt",
+        "final_output_sha256": "415baaf9495468c77b9f8ced0db8a941a64f2b3648549717b6cc701421d25e34",
+        "cli_destination": "tests/corpus/legit/01-html-table-empty-rows.txt",
+        "previous_staging_sha256": "415baaf9495468c77b9f8ced0db8a941a64f2b3648549717b6cc701421d25e34"
+      },
+      {
+        "destination": "tests/corpus/legit/02-json-array-eight-flags.txt",
+        "input_sha256": "d68a1585b9a19687f17ddf68ecc08f108354ad6fc8e073aa7d4854f2f954c7ec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d68a1585b9a19687f17ddf68ecc08f108354ad6fc8e073aa7d4854f2f954c7ec",
+        "source": "tests/corpus/legit/02-json-array-eight-flags.txt",
+        "final_output_sha256": "d68a1585b9a19687f17ddf68ecc08f108354ad6fc8e073aa7d4854f2f954c7ec",
+        "cli_destination": "tests/corpus/legit/02-json-array-eight-flags.txt",
+        "previous_staging_sha256": "d68a1585b9a19687f17ddf68ecc08f108354ad6fc8e073aa7d4854f2f954c7ec"
+      },
+      {
+        "destination": "tests/corpus/legit/03-matrix-sixteen-zero-rows.txt",
+        "input_sha256": "5b8a95a28f373687dc977335f21fd74617cddd7c1161eb1a0d360e4936fbd336",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5b8a95a28f373687dc977335f21fd74617cddd7c1161eb1a0d360e4936fbd336",
+        "source": "tests/corpus/legit/03-matrix-sixteen-zero-rows.txt",
+        "final_output_sha256": "5b8a95a28f373687dc977335f21fd74617cddd7c1161eb1a0d360e4936fbd336",
+        "cli_destination": "tests/corpus/legit/03-matrix-sixteen-zero-rows.txt",
+        "previous_staging_sha256": "5b8a95a28f373687dc977335f21fd74617cddd7c1161eb1a0d360e4936fbd336"
+      },
+      {
+        "destination": "tests/corpus/legit/04-csv-forty-zero-rows.txt",
+        "input_sha256": "f6fe1aeb722a224bb3d03a0c7a39d03fa2f4a4b4bbb90499023029624f916468",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f6fe1aeb722a224bb3d03a0c7a39d03fa2f4a4b4bbb90499023029624f916468",
+        "source": "tests/corpus/legit/04-csv-forty-zero-rows.txt",
+        "final_output_sha256": "f6fe1aeb722a224bb3d03a0c7a39d03fa2f4a4b4bbb90499023029624f916468",
+        "cli_destination": "tests/corpus/legit/04-csv-forty-zero-rows.txt",
+        "previous_staging_sha256": "f6fe1aeb722a224bb3d03a0c7a39d03fa2f4a4b4bbb90499023029624f916468"
+      },
+      {
+        "destination": "tests/corpus/legit/05-markdown-table-twelve-rows.txt",
+        "input_sha256": "dc113fc1e83f73b6ab242dae01f736382e71924edb10038925e6712d24c496fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dc113fc1e83f73b6ab242dae01f736382e71924edb10038925e6712d24c496fa",
+        "source": "tests/corpus/legit/05-markdown-table-twelve-rows.txt",
+        "final_output_sha256": "dc113fc1e83f73b6ab242dae01f736382e71924edb10038925e6712d24c496fa",
+        "cli_destination": "tests/corpus/legit/05-markdown-table-twelve-rows.txt",
+        "previous_staging_sha256": "dc113fc1e83f73b6ab242dae01f736382e71924edb10038925e6712d24c496fa"
+      },
+      {
+        "destination": "tests/corpus/legit/06-yaml-list-twenty-ids.txt",
+        "input_sha256": "dfb28dfb0aa312e973a1167c6b3b1dfc334d1c7670809d54d17829e55ab83210",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dfb28dfb0aa312e973a1167c6b3b1dfc334d1c7670809d54d17829e55ab83210",
+        "source": "tests/corpus/legit/06-yaml-list-twenty-ids.txt",
+        "final_output_sha256": "dfb28dfb0aa312e973a1167c6b3b1dfc334d1c7670809d54d17829e55ab83210",
+        "cli_destination": "tests/corpus/legit/06-yaml-list-twenty-ids.txt",
+        "previous_staging_sha256": "dfb28dfb0aa312e973a1167c6b3b1dfc334d1c7670809d54d17829e55ab83210"
+      },
+      {
+        "destination": "tests/corpus/legit/07-json-nested-config.txt",
+        "input_sha256": "9b7cc71a0118411710686c34889b17f5361d56861a7640eeffab14e88519e71e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9b7cc71a0118411710686c34889b17f5361d56861a7640eeffab14e88519e71e",
+        "source": "tests/corpus/legit/07-json-nested-config.txt",
+        "final_output_sha256": "9b7cc71a0118411710686c34889b17f5361d56861a7640eeffab14e88519e71e",
+        "cli_destination": "tests/corpus/legit/07-json-nested-config.txt",
+        "previous_staging_sha256": "9b7cc71a0118411710686c34889b17f5361d56861a7640eeffab14e88519e71e"
+      },
+      {
+        "destination": "tests/corpus/legit/08-csv-metrics-thirty-rows.txt",
+        "input_sha256": "8d897b6a3c09b7eea3035e4316b86d2735b726369ad9f9303597104e265b7a00",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8d897b6a3c09b7eea3035e4316b86d2735b726369ad9f9303597104e265b7a00",
+        "source": "tests/corpus/legit/08-csv-metrics-thirty-rows.txt",
+        "final_output_sha256": "8d897b6a3c09b7eea3035e4316b86d2735b726369ad9f9303597104e265b7a00",
+        "cli_destination": "tests/corpus/legit/08-csv-metrics-thirty-rows.txt",
+        "previous_staging_sha256": "8d897b6a3c09b7eea3035e4316b86d2735b726369ad9f9303597104e265b7a00"
+      },
+      {
+        "destination": "tests/corpus/legit/09-pytest-parametrize-fixture.txt",
+        "input_sha256": "37faf9ad14408d50bc46d47f2c1c3eeac25cda7feb14f3f9eda9f88cce6c7578",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "37faf9ad14408d50bc46d47f2c1c3eeac25cda7feb14f3f9eda9f88cce6c7578",
+        "source": "tests/corpus/legit/09-pytest-parametrize-fixture.txt",
+        "final_output_sha256": "37faf9ad14408d50bc46d47f2c1c3eeac25cda7feb14f3f9eda9f88cce6c7578",
+        "cli_destination": "tests/corpus/legit/09-pytest-parametrize-fixture.txt",
+        "previous_staging_sha256": "37faf9ad14408d50bc46d47f2c1c3eeac25cda7feb14f3f9eda9f88cce6c7578"
+      },
+      {
+        "destination": "tests/corpus/legit/10-lockfile-block.txt",
+        "input_sha256": "6addacfa327a07fbe7440b705e383967a6c7c0d00d74ea5e89b4ea59499d2a91",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6addacfa327a07fbe7440b705e383967a6c7c0d00d74ea5e89b4ea59499d2a91",
+        "source": "tests/corpus/legit/10-lockfile-block.txt",
+        "final_output_sha256": "6addacfa327a07fbe7440b705e383967a6c7c0d00d74ea5e89b4ea59499d2a91",
+        "cli_destination": "tests/corpus/legit/10-lockfile-block.txt",
+        "previous_staging_sha256": "6addacfa327a07fbe7440b705e383967a6c7c0d00d74ea5e89b4ea59499d2a91"
+      },
+      {
+        "destination": "tests/corpus/legit/11-log-lines-sixty.txt",
+        "input_sha256": "b16334cdb9aa38cf793c451a396f4f20020ccbdf291740caa72f23e07a3bf453",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b16334cdb9aa38cf793c451a396f4f20020ccbdf291740caa72f23e07a3bf453",
+        "source": "tests/corpus/legit/11-log-lines-sixty.txt",
+        "final_output_sha256": "b16334cdb9aa38cf793c451a396f4f20020ccbdf291740caa72f23e07a3bf453",
+        "cli_destination": "tests/corpus/legit/11-log-lines-sixty.txt",
+        "previous_staging_sha256": "b16334cdb9aa38cf793c451a396f4f20020ccbdf291740caa72f23e07a3bf453"
+      },
+      {
+        "destination": "tests/corpus/legit/12-svg-path-long.txt",
+        "input_sha256": "617146d991377f62c9a17ef7bc8f61c71ed6fc45a6d763ca4c12d11ba28ce90a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "617146d991377f62c9a17ef7bc8f61c71ed6fc45a6d763ca4c12d11ba28ce90a",
+        "source": "tests/corpus/legit/12-svg-path-long.txt",
+        "final_output_sha256": "617146d991377f62c9a17ef7bc8f61c71ed6fc45a6d763ca4c12d11ba28ce90a",
+        "cli_destination": "tests/corpus/legit/12-svg-path-long.txt",
+        "previous_staging_sha256": "617146d991377f62c9a17ef7bc8f61c71ed6fc45a6d763ca4c12d11ba28ce90a"
+      },
+      {
+        "destination": "tests/corpus/legit/13-separator-lines.txt",
+        "input_sha256": "c442c179de1fe2f6482d6ea039fcf7501128d1d092f8a496d04b6562aa8f536c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c442c179de1fe2f6482d6ea039fcf7501128d1d092f8a496d04b6562aa8f536c",
+        "source": "tests/corpus/legit/13-separator-lines.txt",
+        "final_output_sha256": "c442c179de1fe2f6482d6ea039fcf7501128d1d092f8a496d04b6562aa8f536c",
+        "cli_destination": "tests/corpus/legit/13-separator-lines.txt",
+        "previous_staging_sha256": "c442c179de1fe2f6482d6ea039fcf7501128d1d092f8a496d04b6562aa8f536c"
+      },
+      {
+        "destination": "tests/corpus/legit/14-generated-stub-code.txt",
+        "input_sha256": "b67d74e14cace26636b1d30f22bf302dbcd9762ec5ff3869e8ac5c00bbaa1f1a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b67d74e14cace26636b1d30f22bf302dbcd9762ec5ff3869e8ac5c00bbaa1f1a",
+        "source": "tests/corpus/legit/14-generated-stub-code.txt",
+        "final_output_sha256": "b67d74e14cace26636b1d30f22bf302dbcd9762ec5ff3869e8ac5c00bbaa1f1a",
+        "cli_destination": "tests/corpus/legit/14-generated-stub-code.txt",
+        "previous_staging_sha256": "b67d74e14cace26636b1d30f22bf302dbcd9762ec5ff3869e8ac5c00bbaa1f1a"
+      },
+      {
+        "destination": "tests/corpus/legit/15-sql-insert-values.txt",
+        "input_sha256": "27ed7fb1aa7dd1d159ca89b50b52840ccc5d9dd945fd814575b803862162c690",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "27ed7fb1aa7dd1d159ca89b50b52840ccc5d9dd945fd814575b803862162c690",
+        "source": "tests/corpus/legit/15-sql-insert-values.txt",
+        "final_output_sha256": "27ed7fb1aa7dd1d159ca89b50b52840ccc5d9dd945fd814575b803862162c690",
+        "cli_destination": "tests/corpus/legit/15-sql-insert-values.txt",
+        "previous_staging_sha256": "27ed7fb1aa7dd1d159ca89b50b52840ccc5d9dd945fd814575b803862162c690"
+      },
+      {
+        "destination": "tests/corpus/legit/16-chart-data-points.txt",
+        "input_sha256": "a6cda7907b3ca7d47712215b1f4b2b78f5ef8c3b137519918f6f7e052086e442",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a6cda7907b3ca7d47712215b1f4b2b78f5ef8c3b137519918f6f7e052086e442",
+        "source": "tests/corpus/legit/16-chart-data-points.txt",
+        "final_output_sha256": "a6cda7907b3ca7d47712215b1f4b2b78f5ef8c3b137519918f6f7e052086e442",
+        "cli_destination": "tests/corpus/legit/16-chart-data-points.txt",
+        "previous_staging_sha256": "a6cda7907b3ca7d47712215b1f4b2b78f5ef8c3b137519918f6f7e052086e442"
+      },
+      {
+        "destination": "tests/corpus/legit/17-html-select-options.txt",
+        "input_sha256": "2e4898077840aa8c0515d2633b0390de57e44378669a2c804c90ff72555eb406",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2e4898077840aa8c0515d2633b0390de57e44378669a2c804c90ff72555eb406",
+        "source": "tests/corpus/legit/17-html-select-options.txt",
+        "final_output_sha256": "2e4898077840aa8c0515d2633b0390de57e44378669a2c804c90ff72555eb406",
+        "cli_destination": "tests/corpus/legit/17-html-select-options.txt",
+        "previous_staging_sha256": "2e4898077840aa8c0515d2633b0390de57e44378669a2c804c90ff72555eb406"
+      },
+      {
+        "destination": "tests/corpus/legit/18-json-matrix-nested.txt",
+        "input_sha256": "b3e02520517d69f35e87cc32adbd22a1aeaf5b18acc48d7c1ee794fc9e74cd3f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b3e02520517d69f35e87cc32adbd22a1aeaf5b18acc48d7c1ee794fc9e74cd3f",
+        "source": "tests/corpus/legit/18-json-matrix-nested.txt",
+        "final_output_sha256": "b3e02520517d69f35e87cc32adbd22a1aeaf5b18acc48d7c1ee794fc9e74cd3f",
+        "cli_destination": "tests/corpus/legit/18-json-matrix-nested.txt",
+        "previous_staging_sha256": "b3e02520517d69f35e87cc32adbd22a1aeaf5b18acc48d7c1ee794fc9e74cd3f"
+      },
+      {
+        "destination": "tests/corpus/legit/19-csv-timestamps-fifty.txt",
+        "input_sha256": "1eb11ca1f3c513779293a8ffda5e26f83a9d6d5f9667de523409f0fb37a39f36",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1eb11ca1f3c513779293a8ffda5e26f83a9d6d5f9667de523409f0fb37a39f36",
+        "source": "tests/corpus/legit/19-csv-timestamps-fifty.txt",
+        "final_output_sha256": "1eb11ca1f3c513779293a8ffda5e26f83a9d6d5f9667de523409f0fb37a39f36",
+        "cli_destination": "tests/corpus/legit/19-csv-timestamps-fifty.txt",
+        "previous_staging_sha256": "1eb11ca1f3c513779293a8ffda5e26f83a9d6d5f9667de523409f0fb37a39f36"
+      },
+      {
+        "destination": "tests/corpus/legit/20-markdown-checklist.txt",
+        "input_sha256": "20ac5bd9ceb6ccbb264f93bce743a3fe863ca3ba20aa5681aa2ea271fb911c23",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "20ac5bd9ceb6ccbb264f93bce743a3fe863ca3ba20aa5681aa2ea271fb911c23",
+        "source": "tests/corpus/legit/20-markdown-checklist.txt",
+        "final_output_sha256": "20ac5bd9ceb6ccbb264f93bce743a3fe863ca3ba20aa5681aa2ea271fb911c23",
+        "cli_destination": "tests/corpus/legit/20-markdown-checklist.txt",
+        "previous_staging_sha256": "20ac5bd9ceb6ccbb264f93bce743a3fe863ca3ba20aa5681aa2ea271fb911c23"
+      },
+      {
+        "destination": "tests/corpus/legit/21-yaml-k8s-multi-doc.txt",
+        "input_sha256": "f16879fd58de732d12790ea48a881ddf2462408549c3d30c7d7cc221f4c9f3d1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f16879fd58de732d12790ea48a881ddf2462408549c3d30c7d7cc221f4c9f3d1",
+        "source": "tests/corpus/legit/21-yaml-k8s-multi-doc.txt",
+        "final_output_sha256": "f16879fd58de732d12790ea48a881ddf2462408549c3d30c7d7cc221f4c9f3d1",
+        "cli_destination": "tests/corpus/legit/21-yaml-k8s-multi-doc.txt",
+        "previous_staging_sha256": "f16879fd58de732d12790ea48a881ddf2462408549c3d30c7d7cc221f4c9f3d1"
+      },
+      {
+        "destination": "tests/corpus/legit/22-svg-rect-grid.txt",
+        "input_sha256": "9d79601d256497a2eb6faecd37b939282cc962f67825f5178e8637db1aef3c29",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9d79601d256497a2eb6faecd37b939282cc962f67825f5178e8637db1aef3c29",
+        "source": "tests/corpus/legit/22-svg-rect-grid.txt",
+        "final_output_sha256": "9d79601d256497a2eb6faecd37b939282cc962f67825f5178e8637db1aef3c29",
+        "cli_destination": "tests/corpus/legit/22-svg-rect-grid.txt",
+        "previous_staging_sha256": "9d79601d256497a2eb6faecd37b939282cc962f67825f5178e8637db1aef3c29"
+      },
+      {
+        "destination": "tests/corpus/legit/23-jsonl-log-lines.txt",
+        "input_sha256": "7ffcbad66a4889c44ee840570494ac589de05838fabfbcff853bb868b4281839",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7ffcbad66a4889c44ee840570494ac589de05838fabfbcff853bb868b4281839",
+        "source": "tests/corpus/legit/23-jsonl-log-lines.txt",
+        "final_output_sha256": "7ffcbad66a4889c44ee840570494ac589de05838fabfbcff853bb868b4281839",
+        "cli_destination": "tests/corpus/legit/23-jsonl-log-lines.txt",
+        "previous_staging_sha256": "7ffcbad66a4889c44ee840570494ac589de05838fabfbcff853bb868b4281839"
+      },
+      {
+        "destination": "tests/corpus/legit/24-ascii-art-box.txt",
+        "input_sha256": "faaa36fd0b390aad1388b12167c95c8a8b5a77082f8b526cc367f3fe3a0da531",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "faaa36fd0b390aad1388b12167c95c8a8b5a77082f8b526cc367f3fe3a0da531",
+        "source": "tests/corpus/legit/24-ascii-art-box.txt",
+        "final_output_sha256": "faaa36fd0b390aad1388b12167c95c8a8b5a77082f8b526cc367f3fe3a0da531",
+        "cli_destination": "tests/corpus/legit/24-ascii-art-box.txt",
+        "previous_staging_sha256": "faaa36fd0b390aad1388b12167c95c8a8b5a77082f8b526cc367f3fe3a0da531"
+      },
+      {
+        "destination": "tests/corpus/legit/25-import-block.txt",
+        "input_sha256": "c4e32f962bca3eff56921d2ff504e6413ffaed814d1b4e0d242ab5cbb0c3422c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c4e32f962bca3eff56921d2ff504e6413ffaed814d1b4e0d242ab5cbb0c3422c",
+        "source": "tests/corpus/legit/25-import-block.txt",
+        "final_output_sha256": "c4e32f962bca3eff56921d2ff504e6413ffaed814d1b4e0d242ab5cbb0c3422c",
+        "cli_destination": "tests/corpus/legit/25-import-block.txt",
+        "previous_staging_sha256": "c4e32f962bca3eff56921d2ff504e6413ffaed814d1b4e0d242ab5cbb0c3422c"
+      },
+      {
+        "destination": "tests/corpus/legit/26-quoted-line-in-document.txt",
+        "input_sha256": "ed61cbb8dd073ceda1242d619acbf147530305da7454443516e00092421ffa24",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ed61cbb8dd073ceda1242d619acbf147530305da7454443516e00092421ffa24",
+        "source": "tests/corpus/legit/26-quoted-line-in-document.txt",
+        "final_output_sha256": "ed61cbb8dd073ceda1242d619acbf147530305da7454443516e00092421ffa24",
+        "cli_destination": "tests/corpus/legit/26-quoted-line-in-document.txt",
+        "previous_staging_sha256": "ed61cbb8dd073ceda1242d619acbf147530305da7454443516e00092421ffa24"
+      },
+      {
+        "destination": "tests/corpus/legit/27-html-table-forty-empty-rows.txt",
+        "input_sha256": "7df319f1e8b1c41bdf41394f80a1405d8da78c188d59b00c4706d6b1676f21f7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7df319f1e8b1c41bdf41394f80a1405d8da78c188d59b00c4706d6b1676f21f7",
+        "source": "tests/corpus/legit/27-html-table-forty-empty-rows.txt",
+        "final_output_sha256": "7df319f1e8b1c41bdf41394f80a1405d8da78c188d59b00c4706d6b1676f21f7",
+        "cli_destination": "tests/corpus/legit/27-html-table-forty-empty-rows.txt",
+        "previous_staging_sha256": "7df319f1e8b1c41bdf41394f80a1405d8da78c188d59b00c4706d6b1676f21f7"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-c_array.txt",
+        "input_sha256": "eae185fb347f3093c951ac1c93ce2489d2446cdafbf937ec5d39159636028247",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "eae185fb347f3093c951ac1c93ce2489d2446cdafbf937ec5d39159636028247",
+        "source": "tests/corpus/legit/oos-c_array.txt",
+        "final_output_sha256": "eae185fb347f3093c951ac1c93ce2489d2446cdafbf937ec5d39159636028247",
+        "cli_destination": "tests/corpus/legit/oos-c_array.txt",
+        "previous_staging_sha256": "eae185fb347f3093c951ac1c93ce2489d2446cdafbf937ec5d39159636028247"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-css_rules.txt",
+        "input_sha256": "eb6d712f815cd0debf02523c4303c59b08f6dc6eae06415fb86fa76684c47860",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "eb6d712f815cd0debf02523c4303c59b08f6dc6eae06415fb86fa76684c47860",
+        "source": "tests/corpus/legit/oos-css_rules.txt",
+        "final_output_sha256": "eb6d712f815cd0debf02523c4303c59b08f6dc6eae06415fb86fa76684c47860",
+        "cli_destination": "tests/corpus/legit/oos-css_rules.txt",
+        "previous_staging_sha256": "eb6d712f815cd0debf02523c4303c59b08f6dc6eae06415fb86fa76684c47860"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-env_file.txt",
+        "input_sha256": "4410ea0bb5015f3a08019a89a0142368a1fb0d5543b189c3b9ac3cf4580108c5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4410ea0bb5015f3a08019a89a0142368a1fb0d5543b189c3b9ac3cf4580108c5",
+        "source": "tests/corpus/legit/oos-env_file.txt",
+        "final_output_sha256": "4410ea0bb5015f3a08019a89a0142368a1fb0d5543b189c3b9ac3cf4580108c5",
+        "cli_destination": "tests/corpus/legit/oos-env_file.txt",
+        "previous_staging_sha256": "4410ea0bb5015f3a08019a89a0142368a1fb0d5543b189c3b9ac3cf4580108c5"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-log_identical.txt",
+        "input_sha256": "a40e15eedcbfe54e988ff1d9dd9d80d6341fbfcf8757ee6ceb8a5b278c7c69e5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a40e15eedcbfe54e988ff1d9dd9d80d6341fbfcf8757ee6ceb8a5b278c7c69e5",
+        "source": "tests/corpus/legit/oos-log_identical.txt",
+        "final_output_sha256": "a40e15eedcbfe54e988ff1d9dd9d80d6341fbfcf8757ee6ceb8a5b278c7c69e5",
+        "cli_destination": "tests/corpus/legit/oos-log_identical.txt",
+        "previous_staging_sha256": "a40e15eedcbfe54e988ff1d9dd9d80d6341fbfcf8757ee6ceb8a5b278c7c69e5"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-markdown_checklist.txt",
+        "input_sha256": "810734e2b314509ae4c1e90d0370d22e185a855937dd89bfbce94f0c5fa1bc6a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "810734e2b314509ae4c1e90d0370d22e185a855937dd89bfbce94f0c5fa1bc6a",
+        "source": "tests/corpus/legit/oos-markdown_checklist.txt",
+        "final_output_sha256": "810734e2b314509ae4c1e90d0370d22e185a855937dd89bfbce94f0c5fa1bc6a",
+        "cli_destination": "tests/corpus/legit/oos-markdown_checklist.txt",
+        "previous_staging_sha256": "810734e2b314509ae4c1e90d0370d22e185a855937dd89bfbce94f0c5fa1bc6a"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-python_list_dicts.txt",
+        "input_sha256": "8fb24be1704e6bdc6d26b425d3f241973b53386f9e8e44e422a7ded90cf79954",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8fb24be1704e6bdc6d26b425d3f241973b53386f9e8e44e422a7ded90cf79954",
+        "source": "tests/corpus/legit/oos-python_list_dicts.txt",
+        "final_output_sha256": "8fb24be1704e6bdc6d26b425d3f241973b53386f9e8e44e422a7ded90cf79954",
+        "cli_destination": "tests/corpus/legit/oos-python_list_dicts.txt",
+        "previous_staging_sha256": "8fb24be1704e6bdc6d26b425d3f241973b53386f9e8e44e422a7ded90cf79954"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-sql_identical.txt",
+        "input_sha256": "71f0b4a926f8b9efd9131f8eebbb299f28031399fe26f9a544258aea04bc2e8c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "71f0b4a926f8b9efd9131f8eebbb299f28031399fe26f9a544258aea04bc2e8c",
+        "source": "tests/corpus/legit/oos-sql_identical.txt",
+        "final_output_sha256": "71f0b4a926f8b9efd9131f8eebbb299f28031399fe26f9a544258aea04bc2e8c",
+        "cli_destination": "tests/corpus/legit/oos-sql_identical.txt",
+        "previous_staging_sha256": "71f0b4a926f8b9efd9131f8eebbb299f28031399fe26f9a544258aea04bc2e8c"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-sql_inserts.txt",
+        "input_sha256": "23d0695149e2912ae128c2e85bbceb42dc84d2bbd0d066595f72c1892f2d2d20",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23d0695149e2912ae128c2e85bbceb42dc84d2bbd0d066595f72c1892f2d2d20",
+        "source": "tests/corpus/legit/oos-sql_inserts.txt",
+        "final_output_sha256": "23d0695149e2912ae128c2e85bbceb42dc84d2bbd0d066595f72c1892f2d2d20",
+        "cli_destination": "tests/corpus/legit/oos-sql_inserts.txt",
+        "previous_staging_sha256": "23d0695149e2912ae128c2e85bbceb42dc84d2bbd0d066595f72c1892f2d2d20"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-test_param.txt",
+        "input_sha256": "01417147f8fc8c4f05d3d63b055c0ee1f8e6e6db89ed471a9160e282353e3c58",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "01417147f8fc8c4f05d3d63b055c0ee1f8e6e6db89ed471a9160e282353e3c58",
+        "source": "tests/corpus/legit/oos-test_param.txt",
+        "final_output_sha256": "01417147f8fc8c4f05d3d63b055c0ee1f8e6e6db89ed471a9160e282353e3c58",
+        "cli_destination": "tests/corpus/legit/oos-test_param.txt",
+        "previous_staging_sha256": "01417147f8fc8c4f05d3d63b055c0ee1f8e6e6db89ed471a9160e282353e3c58"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-toml_tables.txt",
+        "input_sha256": "1d5af0369b6db80fd66a86e87680b711ad0b080baface1e69c58c37a33cdf7fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1d5af0369b6db80fd66a86e87680b711ad0b080baface1e69c58c37a33cdf7fa",
+        "source": "tests/corpus/legit/oos-toml_tables.txt",
+        "final_output_sha256": "1d5af0369b6db80fd66a86e87680b711ad0b080baface1e69c58c37a33cdf7fa",
+        "cli_destination": "tests/corpus/legit/oos-toml_tables.txt",
+        "previous_staging_sha256": "1d5af0369b6db80fd66a86e87680b711ad0b080baface1e69c58c37a33cdf7fa"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-xml_rows.txt",
+        "input_sha256": "4b75c38290a20b3f2d24b0b46f7949a6e9bbeef7c0b56bfa67bf41fd57debbfe",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4b75c38290a20b3f2d24b0b46f7949a6e9bbeef7c0b56bfa67bf41fd57debbfe",
+        "source": "tests/corpus/legit/oos-xml_rows.txt",
+        "final_output_sha256": "4b75c38290a20b3f2d24b0b46f7949a6e9bbeef7c0b56bfa67bf41fd57debbfe",
+        "cli_destination": "tests/corpus/legit/oos-xml_rows.txt",
+        "previous_staging_sha256": "4b75c38290a20b3f2d24b0b46f7949a6e9bbeef7c0b56bfa67bf41fd57debbfe"
+      },
+      {
+        "destination": "tests/corpus/legit/oos-yaml_identical.txt",
+        "input_sha256": "fa94b5bea394f7340c23b3a1de63a759dd84961f839fe1f3e3fbc2f98596b1a8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fa94b5bea394f7340c23b3a1de63a759dd84961f839fe1f3e3fbc2f98596b1a8",
+        "source": "tests/corpus/legit/oos-yaml_identical.txt",
+        "final_output_sha256": "fa94b5bea394f7340c23b3a1de63a759dd84961f839fe1f3e3fbc2f98596b1a8",
+        "cli_destination": "tests/corpus/legit/oos-yaml_identical.txt",
+        "previous_staging_sha256": "fa94b5bea394f7340c23b3a1de63a759dd84961f839fe1f3e3fbc2f98596b1a8"
+      },
+      {
+        "destination": "tests/pytest.ini",
+        "input_sha256": "0b6878577c7c12b7502e588da2901923db470a7ed282fcccfe0d6e96d28bae4e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0b6878577c7c12b7502e588da2901923db470a7ed282fcccfe0d6e96d28bae4e",
+        "source": "tests/pytest.ini",
+        "final_output_sha256": "0b6878577c7c12b7502e588da2901923db470a7ed282fcccfe0d6e96d28bae4e",
+        "cli_destination": "tests/pytest.ini",
+        "previous_staging_sha256": "0b6878577c7c12b7502e588da2901923db470a7ed282fcccfe0d6e96d28bae4e"
+      },
+      {
+        "destination": "tests/test_degeneracy_guard.py",
+        "input_sha256": "573b05adc4fde95bc0ca2e4bebe2e63630ad6a687fc4b4757428b15cba29e9d8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a0b3dce62ceaf7aec6d2ce66f5a950635cf50329043f951e223b4f40c5f821d2",
+        "source": "tests/test_degeneracy_guard.py",
+        "final_output_sha256": "7bcc4a717c81181147cac57da47986db891d5ab543171e2d94df4d01c2b69954",
+        "cli_destination": "tests/test_degeneracy_guard.py",
+        "previous_staging_sha256": "7bcc4a717c81181147cac57da47986db891d5ab543171e2d94df4d01c2b69954"
+      },
+      {
+        "destination": "tests/test_duckwork_contract.py",
+        "input_sha256": "46f3be066bf1f69c3c790025b1638c7792a05ed6d7115b8f728d4504640c2d53",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8bf77b3d1f08d179c9d4bf3b9c9763703deb55917e8dafbe07b6191038b8174b",
+        "source": "tests/test_hermes_contract.py",
+        "final_output_sha256": "4b2208cd09772afa136ac2ff6d4f3c524f2287a374f917b8227c50e28bdb8a21",
+        "cli_destination": "tests/test_duckwork_contract.py",
+        "previous_staging_sha256": "4b2208cd09772afa136ac2ff6d4f3c524f2287a374f917b8227c50e28bdb8a21"
+      },
+      {
+        "destination": "tests/test_incidents.py",
+        "input_sha256": "972d16278a424e22cd5f61e4f1a957ade55aac2e85036d80f4285d786439af35",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "972d16278a424e22cd5f61e4f1a957ade55aac2e85036d80f4285d786439af35",
+        "source": "tests/test_incidents.py",
+        "final_output_sha256": "972d16278a424e22cd5f61e4f1a957ade55aac2e85036d80f4285d786439af35",
+        "cli_destination": "tests/test_incidents.py",
+        "previous_staging_sha256": "972d16278a424e22cd5f61e4f1a957ade55aac2e85036d80f4285d786439af35"
+      },
+      {
+        "destination": "tests/test_stream_cost.py",
+        "input_sha256": "c8171957e1be0adff5956f0c88f91071979a3b9285a7317029f8f73177e45511",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c8171957e1be0adff5956f0c88f91071979a3b9285a7317029f8f73177e45511",
+        "source": "tests/test_stream_cost.py",
+        "final_output_sha256": "c8171957e1be0adff5956f0c88f91071979a3b9285a7317029f8f73177e45511",
+        "cli_destination": "tests/test_stream_cost.py",
+        "previous_staging_sha256": "c8171957e1be0adff5956f0c88f91071979a3b9285a7317029f8f73177e45511"
+      },
+      {
+        "destination": "tests/test_tool_arg_rule.py",
+        "input_sha256": "b116b4313025ec74ad59205b6bba1385eb96f6f1805d268b5ef79956ac7147b1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2b7caa43112ebc251302af3989bcd10889fad2c21fe99b08275016952947a7ba",
+        "source": "tests/test_tool_arg_rule.py",
+        "final_output_sha256": "b83177837a106820db04e5b99a3e416c934239503e2ce8ebfe09fe65c1418d06",
+        "cli_destination": "tests/test_tool_arg_rule.py",
+        "previous_staging_sha256": "b83177837a106820db04e5b99a3e416c934239503e2ce8ebfe09fe65c1418d06"
+      },
+      {
+        "destination": "tool_arg_guard.py",
+        "input_sha256": "59f495aa7d42b949c33da721fa6e83a61f71e2897e406e55ac7341e8c08ac645",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7553d0455878060ffafa0d83f08d10c818e74271d4b4ac77d1a50035e96c03be",
+        "source": "tool_arg_guard.py",
+        "final_output_sha256": "decbbe3b703ae0004a034aaabc833a68123b56fdc1804a64838f4d087982ba7d",
+        "cli_destination": "tool_arg_guard.py",
+        "previous_staging_sha256": "decbbe3b703ae0004a034aaabc833a68123b56fdc1804a64838f4d087982ba7d"
+      }
+    ],
+    "manifest_sha256": "1f47c6096c88b40c9d680d7a7f067f3bb1cef1a041bfcd4edc5fd61a737fa274",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/scripts/hermes-tools.sh": ".github/scripts/hermes-tools.sh",
+    ".github/workflows/hermes-latest.yml": ".github/workflows/hermes-latest.yml",
+    ".github/workflows/tests.yml": ".github/workflows/tests.yml",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "NOTICE": "NOTICE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "loop_detector.py": "loop_detector.py",
+    "paths.py": "paths.py",
+    "plugin.yaml": "plugin.yaml",
+    "requirements.txt": "requirements.txt",
+    "session_length_guard.py": "session_length_guard.py",
+    "tests/_pkg.py": "tests/_pkg.py",
+    "tests/conftest.py": "tests/conftest.py",
+    "tests/corpus/degeneracy/01-same-sentence-60.txt": "tests/corpus/degeneracy/01-same-sentence-60.txt",
+    "tests/corpus/degeneracy/02-same-paragraph-25.txt": "tests/corpus/degeneracy/02-same-paragraph-25.txt",
+    "tests/corpus/degeneracy/03-two-sentence-loop.txt": "tests/corpus/degeneracy/03-two-sentence-loop.txt",
+    "tests/corpus/degeneracy/04-cycle-three-lines.txt": "tests/corpus/degeneracy/04-cycle-three-lines.txt",
+    "tests/corpus/degeneracy/05-prose-with-wrap.txt": "tests/corpus/degeneracy/05-prose-with-wrap.txt",
+    "tests/corpus/degeneracy/06-code-looking-loop.txt": "tests/corpus/degeneracy/06-code-looking-loop.txt",
+    "tests/corpus/degeneracy/07-chinese-sentence-loop.txt": "tests/corpus/degeneracy/07-chinese-sentence-loop.txt",
+    "tests/corpus/degeneracy/08-mixed-prose-loop.txt": "tests/corpus/degeneracy/08-mixed-prose-loop.txt",
+    "tests/corpus/degeneracy/09-word-salad-loop.txt": "tests/corpus/degeneracy/09-word-salad-loop.txt",
+    "tests/corpus/degeneracy/10-json-broken-loop.txt": "tests/corpus/degeneracy/10-json-broken-loop.txt",
+    "tests/corpus/degeneracy/oos-chinese_loop.txt": "tests/corpus/degeneracy/oos-chinese_loop.txt",
+    "tests/corpus/degeneracy/oos-code_loop.txt": "tests/corpus/degeneracy/oos-code_loop.txt",
+    "tests/corpus/degeneracy/oos-para_cycle.txt": "tests/corpus/degeneracy/oos-para_cycle.txt",
+    "tests/corpus/degeneracy/oos-sentence_loop.txt": "tests/corpus/degeneracy/oos-sentence_loop.txt",
+    "tests/corpus/degeneracy/oos-short_line_tail.txt": "tests/corpus/degeneracy/oos-short_line_tail.txt",
+    "tests/corpus/degeneracy/oos-two_line_cycle.txt": "tests/corpus/degeneracy/oos-two_line_cycle.txt",
+    "tests/corpus/legit/01-html-table-empty-rows.txt": "tests/corpus/legit/01-html-table-empty-rows.txt",
+    "tests/corpus/legit/02-json-array-eight-flags.txt": "tests/corpus/legit/02-json-array-eight-flags.txt",
+    "tests/corpus/legit/03-matrix-sixteen-zero-rows.txt": "tests/corpus/legit/03-matrix-sixteen-zero-rows.txt",
+    "tests/corpus/legit/04-csv-forty-zero-rows.txt": "tests/corpus/legit/04-csv-forty-zero-rows.txt",
+    "tests/corpus/legit/05-markdown-table-twelve-rows.txt": "tests/corpus/legit/05-markdown-table-twelve-rows.txt",
+    "tests/corpus/legit/06-yaml-list-twenty-ids.txt": "tests/corpus/legit/06-yaml-list-twenty-ids.txt",
+    "tests/corpus/legit/07-json-nested-config.txt": "tests/corpus/legit/07-json-nested-config.txt",
+    "tests/corpus/legit/08-csv-metrics-thirty-rows.txt": "tests/corpus/legit/08-csv-metrics-thirty-rows.txt",
+    "tests/corpus/legit/09-pytest-parametrize-fixture.txt": "tests/corpus/legit/09-pytest-parametrize-fixture.txt",
+    "tests/corpus/legit/10-lockfile-block.txt": "tests/corpus/legit/10-lockfile-block.txt",
+    "tests/corpus/legit/11-log-lines-sixty.txt": "tests/corpus/legit/11-log-lines-sixty.txt",
+    "tests/corpus/legit/12-svg-path-long.txt": "tests/corpus/legit/12-svg-path-long.txt",
+    "tests/corpus/legit/13-separator-lines.txt": "tests/corpus/legit/13-separator-lines.txt",
+    "tests/corpus/legit/14-generated-stub-code.txt": "tests/corpus/legit/14-generated-stub-code.txt",
+    "tests/corpus/legit/15-sql-insert-values.txt": "tests/corpus/legit/15-sql-insert-values.txt",
+    "tests/corpus/legit/16-chart-data-points.txt": "tests/corpus/legit/16-chart-data-points.txt",
+    "tests/corpus/legit/17-html-select-options.txt": "tests/corpus/legit/17-html-select-options.txt",
+    "tests/corpus/legit/18-json-matrix-nested.txt": "tests/corpus/legit/18-json-matrix-nested.txt",
+    "tests/corpus/legit/19-csv-timestamps-fifty.txt": "tests/corpus/legit/19-csv-timestamps-fifty.txt",
+    "tests/corpus/legit/20-markdown-checklist.txt": "tests/corpus/legit/20-markdown-checklist.txt",
+    "tests/corpus/legit/21-yaml-k8s-multi-doc.txt": "tests/corpus/legit/21-yaml-k8s-multi-doc.txt",
+    "tests/corpus/legit/22-svg-rect-grid.txt": "tests/corpus/legit/22-svg-rect-grid.txt",
+    "tests/corpus/legit/23-jsonl-log-lines.txt": "tests/corpus/legit/23-jsonl-log-lines.txt",
+    "tests/corpus/legit/24-ascii-art-box.txt": "tests/corpus/legit/24-ascii-art-box.txt",
+    "tests/corpus/legit/25-import-block.txt": "tests/corpus/legit/25-import-block.txt",
+    "tests/corpus/legit/26-quoted-line-in-document.txt": "tests/corpus/legit/26-quoted-line-in-document.txt",
+    "tests/corpus/legit/27-html-table-forty-empty-rows.txt": "tests/corpus/legit/27-html-table-forty-empty-rows.txt",
+    "tests/corpus/legit/oos-c_array.txt": "tests/corpus/legit/oos-c_array.txt",
+    "tests/corpus/legit/oos-css_rules.txt": "tests/corpus/legit/oos-css_rules.txt",
+    "tests/corpus/legit/oos-env_file.txt": "tests/corpus/legit/oos-env_file.txt",
+    "tests/corpus/legit/oos-log_identical.txt": "tests/corpus/legit/oos-log_identical.txt",
+    "tests/corpus/legit/oos-markdown_checklist.txt": "tests/corpus/legit/oos-markdown_checklist.txt",
+    "tests/corpus/legit/oos-python_list_dicts.txt": "tests/corpus/legit/oos-python_list_dicts.txt",
+    "tests/corpus/legit/oos-sql_identical.txt": "tests/corpus/legit/oos-sql_identical.txt",
+    "tests/corpus/legit/oos-sql_inserts.txt": "tests/corpus/legit/oos-sql_inserts.txt",
+    "tests/corpus/legit/oos-test_param.txt": "tests/corpus/legit/oos-test_param.txt",
+    "tests/corpus/legit/oos-toml_tables.txt": "tests/corpus/legit/oos-toml_tables.txt",
+    "tests/corpus/legit/oos-xml_rows.txt": "tests/corpus/legit/oos-xml_rows.txt",
+    "tests/corpus/legit/oos-yaml_identical.txt": "tests/corpus/legit/oos-yaml_identical.txt",
+    "tests/pytest.ini": "tests/pytest.ini",
+    "tests/test_degeneracy_guard.py": "tests/test_degeneracy_guard.py",
+    "tests/test_hermes_contract.py": "tests/test_hermes_contract.py",
+    "tests/test_incidents.py": "tests/test_incidents.py",
+    "tests/test_stream_cost.py": "tests/test_stream_cost.py",
+    "tests/test_tool_arg_rule.py": "tests/test_tool_arg_rule.py",
+    "tool_arg_guard.py": "tool_arg_guard.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "degeneracy-guard",
+    "python_files_compiled": 12,
+    "secret_findings": 0
+  },
+  "canonical_slug": "degeneracy-guard",
+  "catalog_file": "src/plugin-catalog/degeneracy-guard.yaml",
+  "identity": {
+    "catalog_id": "degeneracy-guard",
+    "canonical_slug": "degeneracy-guard",
+    "original_manifest_name": "degeneracy-guard",
+    "rebranded_manifest_name": "degeneracy-guard",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "173041145b706e532416afdc7a2a0ae48c636743c655a47d37a8d0ee9c48011e",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "dc5680d28555c477ead9051d97a61dd9a3a7cb7b69bd49ed21cecce798916c8d",
+          "after_sha256": "546b571e73c34fb08d0f402707281108eee0fe9d0d1450aeca99ed3de6f67901",
+          "before_bytes": 17626,
+          "after_bytes": 17553,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

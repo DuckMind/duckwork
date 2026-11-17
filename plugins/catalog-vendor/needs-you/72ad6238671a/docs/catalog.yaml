@@ -1,0 +1,23 @@
+# Canonical catalog pin lives in Fordex/duckwork-agent plugin-catalog/needs-you.yaml.
+
+name: needs-you
+repo: https://github.com/DuckMind/duckwork
+sha: baca1ceb69d7363960b699e197572d17025cc20e
+description: Duckwork is waiting — full Desktop page for pending approvals.
+  Queue, chip, OS notify. Redacted previews only. No API keys.
+maintainer: aydnOktay
+tier: community
+category: desktop
+requires_duckwork: ">=0.21"
+docs_url: https://github.com/DuckMind/duckwork
+version: "0.1.0"
+platforms: []
+capabilities:
+  provides_tools:
+  - needs_you_list
+  - needs_you_clear
+  provides_hooks:
+  - pre_approval_request
+  - post_approval_response
+  provides_middleware: []
+  requires_env: []

@@ -1,0 +1,1046 @@
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pytest
+
+# ---------------------------------------------------------------------------
+# _resolve_config_path
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_default_path_no_duckwork_constants(monkeypatch, tmp_path):
+    """Fallback to ~/.duckwork/ when duckwork_constants is not importable."""
+    # Isolate from the user's actual home directory (which may have .d/)
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
+    _mods = {k: v for k, v in sys.modules.items() if k != "duckwork_constants"}
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setitem(sys.modules, "duckwork_constants", {})
+        mp.delitem(sys.modules, "duckwork_constants", raising=False)
+
+        from config import _resolve_config_path
+
+        result = _resolve_config_path()
+    assert result == tmp_path / ".duckwork" / "custom-dangerous-patterns"
+
+
+def test_resolve_path_with_duckwork_constants(mock_duckwork_constants, tmp_duckwork_home):
+    """Uses duckwork_constants.get_duckwork_home() when available."""
+    from config import _resolve_config_path
+
+    result = _resolve_config_path()
+    assert result == tmp_duckwork_home / "custom-dangerous-patterns"
+
+
+def test_resolve_path_env_var(monkeypatch, tmp_path):
+    """DUCKWORK_CUSTOM_PATTERNS_PATH env var takes precedence."""
+    custom_path = tmp_path / "custom.yaml"
+    monkeypatch.setenv("DUCKWORK_CUSTOM_PATTERNS_PATH", str(custom_path))
+
+    from config import _resolve_config_path
+
+    result = _resolve_config_path()
+    assert result == custom_path
+
+
+# ---------------------------------------------------------------------------
+# _load_yaml
+# ---------------------------------------------------------------------------
+
+
+def test_load_yaml_missing_file(tmp_path):
+    """Missing file returns None."""
+    from config import _load_yaml
+
+    result = _load_yaml(tmp_path / "nonexistent.yaml")
+    assert result is None
+
+
+def test_load_yaml_valid(config_with_content):
+    """Valid YAML file returns parsed dict."""
+    from config import _load_yaml
+
+    result = _load_yaml(config_with_content)
+    assert isinstance(result, dict)
+    assert "patterns" in result
+    assert "allow_patterns" in result
+
+
+def test_load_yaml_invalid_syntax(tmp_path):
+    """Invalid YAML returns None."""
+    path = tmp_path / "bad.yaml"
+    path.write_text("{{{{ invalid: yaml", encoding="utf-8")
+
+    from config import _load_yaml
+
+    result = _load_yaml(path)
+    assert result is None
+
+
+def test_load_yaml_not_a_dict(tmp_path):
+    """Non-dict YAML returns None."""
+    path = tmp_path / "scalar.yaml"
+    path.write_text("just a string", encoding="utf-8")
+
+    from config import _load_yaml
+
+    result = _load_yaml(path)
+    assert result is None
+
+
+# ---------------------------------------------------------------------------
+# _validate_pattern
+# ---------------------------------------------------------------------------
+
+
+def test_validate_pattern_valid():
+    """Valid pattern dict returns normalized entry."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"pattern": r"\bvultr\b", "description": "Vultr CLI", "examples": ["vultr list"]},
+        0,
+        "patterns",
+    )
+    assert result is not None
+    assert result["pattern"] == r"\bvultr\b"
+    assert result["description"] == "Vultr CLI"
+    assert result["examples"] == ["vultr list"]
+    assert result["enabled"] is True  # default
+    assert result["group"] == ""  # default
+
+
+def test_validate_pattern_disabled():
+    """Pattern with enabled: false is preserved as disabled."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"pattern": r"\bvultr\b", "description": "Vultr CLI", "enabled": False},
+        0,
+        "patterns",
+    )
+    assert result is not None
+    assert result["enabled"] is False
+
+
+def test_validate_pattern_with_group():
+    """Pattern with group tag preserves the group."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"pattern": r"\bvultr\b", "description": "Vultr CLI", "group": "cloud"},
+        0,
+        "patterns",
+    )
+    assert result is not None
+    assert result["group"] == "cloud"
+
+
+def test_validate_pattern_enabled_non_bool_defaults_true():
+    """Non-bool enabled value defaults to True."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"pattern": r"\bvultr\b", "description": "Vultr CLI", "enabled": "yes"},
+        0,
+        "patterns",
+    )
+    assert result is not None
+    assert result["enabled"] is True
+
+
+def test_validate_pattern_protected():
+    """Pattern with protected: true preserves the flag."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"pattern": r"\bvultr\b", "description": "Vultr CLI", "protected": True},
+        0,
+        "patterns",
+    )
+    assert result is not None
+    assert result["protected"] is True
+
+
+def test_validate_pattern_protected_defaults_false():
+    """Pattern without protected field defaults to False."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"pattern": r"\bvultr\b", "description": "Vultr CLI"},
+        0,
+        "patterns",
+    )
+    assert result is not None
+    assert result["protected"] is False
+
+
+def test_validate_pattern_not_a_dict():
+    """Non-dict entry returns None."""
+    from config import _validate_pattern
+
+    result = _validate_pattern("not a dict", 0, "patterns")
+    assert result is None
+
+
+def test_validate_pattern_missing_pattern():
+    """Missing pattern field returns None."""
+    from config import _validate_pattern
+
+    result = _validate_pattern({"description": "no pattern here"}, 0, "patterns")
+    assert result is None
+
+
+def test_validate_pattern_empty_pattern():
+    """Empty pattern string returns None."""
+    from config import _validate_pattern
+
+    result = _validate_pattern({"pattern": ""}, 0, "patterns")
+    assert result is None
+
+
+def test_validate_pattern_invalid_regex():
+    """Invalid regex returns None."""
+    from config import _validate_pattern
+
+    result = _validate_pattern({"pattern": "[invalid"}, 0, "patterns")
+    assert result is None
+
+
+def test_validate_pattern_glob_only():
+    """Glob without pattern auto-generates the regex."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"glob": "echo hello", "description": "Echo hello"},
+        0,
+        "patterns",
+    )
+    assert result is not None
+    assert result["pattern"] == r"\becho(?!/)\s+hello\b"
+    assert result["glob"] == "echo hello"
+    assert result["description"] == "Echo hello"
+
+
+def test_validate_pattern_glob_and_pattern():
+    """When both glob and pattern are present, pattern is used as-is."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {
+            "glob": "echo hello",
+            "pattern": r"\banother\s+pattern\b",
+            "description": "Custom pattern",
+        },
+        0,
+        "patterns",
+    )
+    assert result is not None
+    # Pattern should be the explicit one, not auto-generated from glob
+    assert result["pattern"] == r"\banother\s+pattern\b"
+    assert result["glob"] == "echo hello"
+
+
+def test_validate_pattern_glob_no_pattern_both_missing():
+    """Neither glob nor pattern returns None."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"description": "nothing here"},
+        0,
+        "patterns",
+    )
+    assert result is None
+
+
+def test_validate_pattern_glob_empty_string_no_pattern():
+    """Glob is empty string, no pattern, returns None."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"glob": "", "description": "empty glob"},
+        0,
+        "patterns",
+    )
+    assert result is None
+
+
+def test_validate_pattern_glob_non_string():
+    """Glob non-string value is ignored."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"glob": True, "pattern": r"\bvultr\b", "description": "Vultr"},
+        0,
+        "patterns",
+    )
+    assert result is not None
+    assert result["pattern"] == r"\bvultr\b"
+    # Non-string glob should not be stored
+    assert "glob" not in result
+
+
+def test_validate_pattern_glob_on_allow_patterns():
+    """Glob-only entry works for allow patterns too."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"glob": "echo allow", "description": "Allow echo"},
+        0,
+        "allow_patterns",
+    )
+    assert result is not None
+    assert result["pattern"] == r"\becho(?!/)\s+allow\b"
+    assert result["glob"] == "echo allow"
+
+
+def test_validate_pattern_glob_on_deny_patterns():
+    """Glob-only entry works for deny patterns too."""
+    from config import _validate_pattern
+
+    result = _validate_pattern(
+        {"glob": "echo deny", "description": "Deny echo"},
+        0,
+        "deny_patterns",
+    )
+    assert result is not None
+    assert result["pattern"] == r"\becho(?!/)\s+deny\b"
+    assert result["glob"] == "echo deny"
+
+
+# ---------------------------------------------------------------------------
+# _validate_config
+# ---------------------------------------------------------------------------
+
+
+def test_validate_config_full(sample_config):
+    """Full valid config returns all three pattern lists."""
+    from config import _validate_config
+
+    result = _validate_config(sample_config)
+    assert len(result["patterns"]) == 2
+    assert len(result["allow_patterns"]) == 1
+    assert len(result["deny_patterns"]) == 0
+
+
+def test_validate_config_with_deny_patterns():
+    """Config with deny_patterns validates correctly."""
+    from config import _validate_config
+
+    raw = {
+        "deny_patterns": [
+            {"pattern": r"\bruby\s+-e\s+.*system\b", "description": "Ruby system exec"},
+        ],
+    }
+    result = _validate_config(raw)
+    assert len(result["deny_patterns"]) == 1
+    assert result["deny_patterns"][0]["description"] == "Ruby system exec"
+
+
+def test_validate_config_deny_not_list():
+    """deny_patterns field that is not a list logs warning, returns empty."""
+    from config import _validate_config
+
+    result = _validate_config({"deny_patterns": "not a list"})
+    assert result["deny_patterns"] == []
+
+
+def test_validate_config_empty():
+    """Empty config returns empty lists."""
+    from config import _validate_config
+
+    result = _validate_config({})
+    assert result == {"patterns": [], "allow_patterns": [], "deny_patterns": []}
+
+
+def test_validate_config_patterns_not_list():
+    """patterns field that is not a list logs warning, returns empty."""
+    from config import _validate_config
+
+    result = _validate_config({"patterns": "not a list"})
+    assert result["patterns"] == []
+
+
+def test_validate_config_allow_not_list():
+    """allow_patterns field that is not a list logs warning, returns empty."""
+    from config import _validate_config
+
+    result = _validate_config({"allow_patterns": "not a list"})
+    assert result["allow_patterns"] == []
+
+
+# ---------------------------------------------------------------------------
+# load_config
+# ---------------------------------------------------------------------------
+
+
+def test_load_config_missing_defaults(reset_config_cache, mock_duckwork_constants):
+    """Missing config file returns empty pattern lists."""
+    from config import load_config
+
+    result = load_config()
+    assert result == {"patterns": [], "allow_patterns": [], "deny_patterns": []}
+
+
+def test_load_config_with_valid_config(
+    reset_config_cache, config_with_content, mock_duckwork_constants,
+):
+    """Valid config returns loaded patterns."""
+    from config import load_config
+
+    result = load_config()
+    assert len(result["patterns"]) == 2
+    assert len(result["allow_patterns"]) == 1
+
+
+def test_load_config_caching(reset_config_cache, mock_duckwork_constants, config_with_content):
+    """Second call without force=True returns cached result."""
+    from config import load_config
+
+    _first = load_config()
+    second = load_config()
+    assert second is _first
+
+
+def test_load_config_force_true(reset_config_cache, mock_duckwork_constants, config_with_content):
+    """force=True bypasses cache."""
+    from config import load_config
+
+    _first = load_config()
+
+    import config as cfg
+
+    cfg._config_cache = {"patterns": [], "allow_patterns": []}
+    forced = load_config(force=True)
+    assert len(forced["patterns"]) == 2
+
+
+def test_load_config_env_var_override(reset_config_cache, tmp_path, monkeypatch):
+    """Config loaded from env var override path."""
+    custom_path = tmp_path / "custom.yaml"
+    custom_path.write_text(
+        """
+patterns:
+  - pattern: '\\bgcloud\\b'
+    description: 'GCP CLI'
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DUCKWORK_CUSTOM_PATTERNS_PATH", str(custom_path))
+
+    from config import load_config
+
+    result = load_config(integrity_check=False)
+    assert len(result["patterns"]) == 1
+    assert result["patterns"][0]["description"] == "GCP CLI"
+
+
+# ---------------------------------------------------------------------------
+# Hash / integrity (v0.2.0)
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_hash_path():
+    """Hash file is alongside config in the same directory."""
+    from pathlib import Path
+
+    from config import _resolve_hash_path
+
+    config_path = Path("/home/user/.duckwork/custom-dangerous-patterns.yaml")
+    result = _resolve_hash_path(config_path)
+    assert result == Path("/home/user/.duckwork/.custom-patterns-hash")
+
+
+def test_compute_config_hash():
+    """Same text produces same hash, different text produces different hash."""
+    from config import _compute_config_hash
+
+    h1 = _compute_config_hash("patterns:\n  - pattern: test")
+    h2 = _compute_config_hash("patterns:\n  - pattern: test")
+    h3 = _compute_config_hash("patterns:\n  - pattern: other")
+    assert h1 == h2
+    assert h1 != h3
+    assert len(h1) == 64  # SHA-256 hex digest
+
+
+def test_load_hash_data_missing(tmp_path):
+    """Missing hash file returns empty dict."""
+    from config import _load_hash_data
+
+    result = _load_hash_data(tmp_path / "nonexistent.json")
+    assert result == {}
+
+
+def test_load_hash_data_valid(tmp_path):
+    """Valid hash file returns parsed data."""
+    from config import _load_hash_data
+
+    hash_path = tmp_path / "hash.json"
+    hash_path.write_text('{"config_hash": "abc123"}', encoding="utf-8")
+    result = _load_hash_data(hash_path)
+    assert result == {"config_hash": "abc123"}
+
+
+def test_save_and_load_hash_data_roundtrip(tmp_path):
+    """Saved hash data can be loaded back."""
+    from config import _load_hash_data, _save_hash_data
+
+    hash_path = tmp_path / "hash.json"
+    data = {"config_hash": "def456", "protected": {"key": "hash"}}
+    _save_hash_data(hash_path, data)
+    loaded = _load_hash_data(hash_path)
+    assert loaded == data
+
+
+def test_check_protected_patterns_missing(caplog):
+    """Missing protected pattern logs CRITICAL."""
+    from config import _check_protected_patterns
+
+    validated = {"patterns": []}
+    previous = {"protected": {"Critical Pattern": "somehash"}}
+
+    with caplog.at_level("CRITICAL"):
+        _check_protected_patterns(validated, previous)
+
+    assert any("PROTECTED PATTERN MISSING" in r.message for r in caplog.records)
+    assert any("Critical Pattern" in r.message for r in caplog.records)
+
+
+def test_check_protected_patterns_modified(caplog):
+    """Modified protected pattern regex logs CRITICAL."""
+    import hashlib
+
+    from config import _check_protected_patterns
+
+    validated = {
+        "patterns": [
+            {
+                "pattern": r"\bnewpattern\b",
+                "description": "Critical Pattern",
+                "protected": True,
+                "enabled": True,
+            }
+        ]
+    }
+    previous = {
+        "protected": {
+            "0:Critical Pattern": hashlib.sha256(
+                br"\bOldPattern\b"
+            ).hexdigest()
+        }
+    }
+
+    with caplog.at_level("CRITICAL"):
+        _check_protected_patterns(validated, previous)
+
+    assert any("PROTECTED PATTERN MODIFIED" in r.message for r in caplog.records)
+
+
+def test_check_protected_patterns_unchanged(caplog):
+    """Unchanged protected pattern logs nothing."""
+    import hashlib
+
+    from config import _check_protected_patterns
+
+    validated = {
+        "patterns": [
+            {
+                "pattern": r"\bvultr\b",
+                "description": "Vultr CLI",
+                "protected": True,
+                "enabled": True,
+            }
+        ]
+    }
+    previous = {
+        "protected": {
+            "0:Vultr CLI": hashlib.sha256(br"\bvultr\b").hexdigest()
+        }
+    }
+
+    with caplog.at_level("CRITICAL"):
+        _check_protected_patterns(validated, previous)
+
+    assert not any("PROTECTED" in r.message for r in caplog.records)
+
+
+def test_check_protected_patterns_no_previous(caplog):
+    """No previous protected patterns logs nothing."""
+    from config import _check_protected_patterns
+
+    validated = {
+        "patterns": [
+            {
+                "pattern": r"\bvultr\b",
+                "description": "Vultr CLI",
+                "protected": True,
+                "enabled": True,
+            }
+        ]
+    }
+
+    with caplog.at_level("CRITICAL"):
+        _check_protected_patterns(validated, {})
+
+    assert not any("PROTECTED" in r.message for r in caplog.records)
+
+
+def test_check_config_integrity_hash_changed(caplog, tmp_path):
+    """Changed config hash logs WARNING on second run."""
+    import json
+
+    from config import _check_config_integrity
+
+    config_path = tmp_path / "config.yaml"
+    hash_path = tmp_path / ".custom-patterns-hash"
+    raw_text = "patterns:\n  - pattern: test"
+    validated = {"patterns": [{}], "allow_patterns": [], "deny_patterns": []}
+
+    # Simulate a previous session with a different config hash
+    hash_data = {
+        "config_hash": "0000111122223333",
+        "pattern_counts": {"patterns": 0, "allow_patterns": 0, "deny_patterns": 0},
+    }
+    hash_path.write_text(json.dumps(hash_data), encoding="utf-8")
+
+    with caplog.at_level("WARNING"):
+        _check_config_integrity(config_path, raw_text, validated, True)
+
+    assert any("CONFIG CHANGED" in r.message for r in caplog.records)
+
+
+def test_check_config_integrity_first_run_no_warning(caplog, tmp_path):
+    """First run (no previous hash) logs nothing about changes."""
+    from config import _check_config_integrity
+
+    config_path = tmp_path / "config.yaml"
+    raw_text = "patterns: []"
+    validated = {"patterns": [], "allow_patterns": [], "deny_patterns": []}
+
+    with caplog.at_level("WARNING"):
+        _check_config_integrity(config_path, raw_text, validated, True)
+
+    assert not any("CONFIG CHANGED" in r.message for r in caplog.records)
+
+
+def test_check_config_integrity_disabled(caplog, tmp_path):
+    """integrity_check=False skips all checks."""
+    from config import _check_config_integrity
+
+    config_path = tmp_path / "config.yaml"
+    raw_text = "patterns: []"
+    validated = {"patterns": [], "allow_patterns": [], "deny_patterns": []}
+
+    with caplog.at_level("WARNING"):
+        _check_config_integrity(config_path, raw_text, validated, False)
+
+    assert not caplog.records
+
+
+def test_load_config_with_integrity_check(
+    reset_config_cache, config_with_content, mock_duckwork_constants,
+):
+    """load_config runs integrity checks by default."""
+    from config import load_config
+
+    result = load_config()
+    assert len(result["patterns"]) == 2
+
+
+def test_load_config_skip_integrity(reset_config_cache, config_with_content, mock_duckwork_constants):
+    """load_config skips integrity when integrity_check=False."""
+    from config import load_config
+
+    result = load_config(integrity_check=False)
+    assert len(result["patterns"]) == 2
+
+
+def test_load_raw_config_text_single_file(tmp_path):
+    from config import _load_raw_config_text
+
+    path = tmp_path / "config.yaml"
+    path.write_text("patterns:\n  - pattern: test", encoding="utf-8")
+    result = _load_raw_config_text(path)
+    assert "test" in result
+
+
+def test_load_raw_config_text_directory(tmp_path):
+    from config import _load_raw_config_text
+
+    d = tmp_path / "config.d"
+    d.mkdir()
+    (d / "10-cloud.yaml").write_text("patterns:\n  - pattern: aws", encoding="utf-8")
+    (d / "00-base.yaml").write_text("patterns:\n  - pattern: base", encoding="utf-8")
+    result = _load_raw_config_text(d)
+    assert "base" in result
+    assert "aws" in result
+    assert result.index("base") < result.index("aws")
+
+
+def test_load_raw_config_text_empty_dir(tmp_path):
+    from config import _load_raw_config_text
+
+    d = tmp_path / "empty.d"
+    d.mkdir()
+    assert _load_raw_config_text(d) == ""
+
+
+def test_load_raw_config_text_missing(tmp_path):
+    from config import _load_raw_config_text
+
+    assert _load_raw_config_text(tmp_path / "nonexistent") == ""
+
+
+def test_integrity_check_directory_mode(
+    reset_config_cache, mock_duckwork_constants, tmp_duckwork_home, caplog,
+):
+    import json
+
+    from config import load_config
+
+    config_dir = tmp_duckwork_home / "custom-dangerous-patterns"
+    config_dir.mkdir()
+    (config_dir / "10-test.yaml").write_text(
+        "patterns:\n  - pattern: '\\btest\\b'\n    description: 'Test pattern'\n",
+        encoding="utf-8",
+    )
+
+    hash_path = tmp_duckwork_home / ".custom-patterns-hash"
+    hash_path.write_text(
+        json.dumps({
+            "config_hash": "aaaa",
+            "pattern_counts": {"patterns": 0, "allow_patterns": 0, "deny_patterns": 0},
+        }),
+        encoding="utf-8",
+    )
+
+    with caplog.at_level("WARNING"):
+        result = load_config()
+
+    assert len(result["patterns"]) == 1
+    assert any("CONFIG CHANGED" in r.message for r in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# Directory config (v0.2.0)
+# ---------------------------------------------------------------------------
+
+
+def test_load_yaml_directory_mode(tmp_path):
+    """Directory with *.yaml files merges them in alphabetical order."""
+    from config import _load_yaml
+
+    d = tmp_path / "config.d"
+    d.mkdir()
+    (d / "00-block.yaml").write_text(
+        "patterns:\n  - pattern: '\\\\bvultr\\\\b'\n    description: 'Vultr CLI'",
+        encoding="utf-8",
+    )
+    (d / "10-allow.yaml").write_text(
+        "allow_patterns:\n  - pattern: '\\\\bvultr\\\\s+info\\\\b'\n    description: 'Vultr info'",
+        encoding="utf-8",
+    )
+
+    result = _load_yaml(d)
+    assert result is not None
+    assert len(result["patterns"]) == 1
+    assert len(result["allow_patterns"]) == 1
+    assert result["patterns"][0]["description"] == "Vultr CLI"
+
+
+def test_load_yaml_directory_empty(tmp_path):
+    """Empty directory returns None."""
+    from config import _load_yaml
+
+    d = tmp_path / "empty.d"
+    d.mkdir()
+    result = _load_yaml(d)
+    assert result is None
+
+
+def test_load_yaml_directory_merges_lists(tmp_path):
+    """Multiple files with the same key append their list entries."""
+    from config import _load_yaml
+
+    d = tmp_path / "config.d"
+    d.mkdir()
+    (d / "00-block.yaml").write_text(
+        "patterns:\n  - pattern: '\\\\bvultr\\\\b'\n    description: 'Vultr CLI'",
+        encoding="utf-8",
+    )
+    (d / "10-more.yaml").write_text(
+        "patterns:\n  - pattern: '\\\\baws\\\\b'\n    description: 'AWS CLI'",
+        encoding="utf-8",
+    )
+
+    result = _load_yaml(d)
+    assert result is not None
+    assert len(result["patterns"]) == 2
+    assert result["patterns"][0]["description"] == "Vultr CLI"
+    assert result["patterns"][1]["description"] == "AWS CLI"
+
+
+# ---------------------------------------------------------------------------
+# Combined mode: file + sibling .d/ directory)
+# ---------------------------------------------------------------------------
+
+
+def test_load_yaml_combined_sibling_file_and_dir(tmp_path):
+    """Directory mode with a sibling .yaml file merges both locations.
+
+    Both ~/.duckwork/custom-dangerous-patterns.yaml and
+    ~/.duckwork/custom-dangerous-patterns/ exist. The sibling file's
+    entries form the baseline; directory files are merged on top.
+    """
+    from config import _load_yaml
+
+    # Create the sibling .yaml file
+    sibling = tmp_path / "custom-dangerous-patterns.yaml"
+    sibling.write_text(
+        "patterns:\n"
+        "  - pattern: '\\\\bvultr\\\\b'\n"
+        "    description: 'Vultr CLI (from file)'\n"
+        "allow_patterns: []\n"
+        "deny_patterns: []\n",
+        encoding="utf-8",
+    )
+
+    # Create the .d/ directory with its own patterns
+    d = tmp_path / "custom-dangerous-patterns"
+    d.mkdir()
+    (d / "10-cloud.yaml").write_text(
+        "patterns:\n"
+        "  - pattern: '\\\\baws\\\\b'\n"
+        "    description: 'AWS CLI (from dir)'\n"
+        "allow_patterns:\n"
+        "  - pattern: '\\\\baws\\\\s+info\\\\b'\n"
+        "    description: 'AWS info (from dir)'\n",
+        encoding="utf-8",
+    )
+
+    result = _load_yaml(d)
+    assert result is not None
+    # Should have patterns from both locations
+    assert len(result["patterns"]) == 2
+    descriptions = {e["description"] for e in result["patterns"]}
+    assert "Vultr CLI (from file)" in descriptions
+    assert "AWS CLI (from dir)" in descriptions
+    # allow_patterns from dir only
+    assert len(result["allow_patterns"]) == 1
+    assert result["allow_patterns"][0]["description"] == "AWS info (from dir)"
+
+
+def test_load_yaml_combined_dir_overrides_file_on_dedup(tmp_path):
+    """When the same pattern exists in both file and dir, dir wins (last)."""
+    from config import _load_yaml
+
+    # Sibling file has the pattern enabled
+    sibling = tmp_path / "custom-dangerous-patterns.yaml"
+    sibling.write_text(
+        "patterns:\n"
+        "  - pattern: '\\\\bduplicate\\\\b'\n"
+        "    description: 'Duplicate (from file)'\n"
+        "    enabled: true\n",
+        encoding="utf-8",
+    )
+
+    # Directory has the same pattern but disabled
+    d = tmp_path / "custom-dangerous-patterns"
+    d.mkdir()
+    (d / "99-custom.yaml").write_text(
+        "patterns:\n"
+        "  - pattern: '\\\\bduplicate\\\\b'\n"
+        "    description: 'Duplicate (from dir)'\n"
+        "    enabled: false\n",
+        encoding="utf-8",
+    )
+
+    result = _load_yaml(d)
+    assert result is not None
+    assert len(result["patterns"]) == 1
+    # Dir entry wins (last occurrence)
+    assert result["patterns"][0]["description"] == "Duplicate (from dir)"
+    assert result["patterns"][0]["enabled"] is False
+
+
+def test_load_yaml_combined_dir_only_no_sibling(tmp_path):
+    """Directory mode without a sibling file loads only the directory."""
+    from config import _load_yaml
+
+    d = tmp_path / "custom-dangerous-patterns"
+    d.mkdir()
+    (d / "10-test.yaml").write_text(
+        "patterns:\n"
+        "  - pattern: '\\\\btest\\\\b'\n"
+        "    description: 'Test pattern'\n",
+        encoding="utf-8",
+    )
+
+    result = _load_yaml(d)
+    assert result is not None
+    assert len(result["patterns"]) == 1
+    assert result["patterns"][0]["description"] == "Test pattern"
+
+
+# ---------------------------------------------------------------------------
+# _pattern_key / _dedup_entries with glob-only entries
+# ---------------------------------------------------------------------------
+
+
+def test_dedup_entries_glob_only_preserves_all():
+    """Glob-only entries are not collapsed during dedup.
+
+    When entries have ``glob`` but no ``pattern``, the fallback in
+    ``_pattern_key`` uses the glob string as the key, so all entries
+    survive dedup instead of being treated as duplicates with empty
+    key.
+    """
+    from config import _dedup_entries
+
+    entries = [
+        {"glob": "echo hello", "description": "Echo hello"},
+        {"glob": "echo world", "description": "Echo world"},
+        {"glob": "echo foo", "description": "Echo foo"},
+    ]
+    result = _dedup_entries(entries)
+    assert len(result) == 3
+
+
+def test_dedup_entries_mixed_glob_and_pattern_preserves_all():
+    """Mix of glob-only and pattern-only entries are all preserved."""
+    from config import _dedup_entries
+
+    entries = [
+        {"glob": "echo hello", "description": "From glob"},
+        {"pattern": r"\becho\b", "description": "From pattern"},
+    ]
+    result = _dedup_entries(entries)
+    assert len(result) == 2
+
+
+def test_dedup_entries_glob_only_collapses_identical_globs():
+    """Exact same glob string is still deduped (last wins)."""
+    from config import _dedup_entries
+
+    entries = [
+        {"glob": "echo hello", "description": "First"},
+        {"glob": "echo hello", "description": "Second"},
+    ]
+    result = _dedup_entries(entries)
+    assert len(result) == 1
+    assert result[0]["description"] == "Second"
+
+
+def test_resolve_config_path_combined_mode(tmp_path, monkeypatch):
+    """When both file and dir exist, resolve_config_path returns the dir."""
+    import types
+
+    # Create sibling file
+    (tmp_path / "custom-dangerous-patterns.yaml").write_text(
+        "patterns: []\n", encoding="utf-8"
+    )
+    # Create sibling dir
+    (tmp_path / "custom-dangerous-patterns").mkdir()
+    (tmp_path / "custom-dangerous-patterns" / "test.yaml").write_text(
+        "patterns: []\n", encoding="utf-8"
+    )
+
+    mock_constants = types.ModuleType("duckwork_constants")
+    mock_constants.get_duckwork_home = lambda: tmp_path
+    monkeypatch.setitem(sys.modules, "duckwork_constants", mock_constants)
+
+    # Clear cached config path by reimporting
+    import config as cfg_mod
+    monkeypatch.setitem(sys.modules, "config", cfg_mod)
+    from config import _resolve_config_path
+
+    result = _resolve_config_path()
+    # In combined mode, directory is returned so writes go to 99-custom.yaml
+    assert result == tmp_path / "custom-dangerous-patterns"
+
+
+def test_validate_config_keeps_retired_allow_patterns(caplog):
+    """Retired allow entries stay LOADED so list/remove/enable can still see them.
+
+    They used to be dropped at load time, which made them invisible -- the
+    opposite of what retirement needs. Nothing is enforced either way now, so
+    keeping them is both safe and necessary for the operator to clean up.
+    """
+    import logging
+
+    from config import _validate_config
+
+    raw = {
+        "allow_patterns": [
+            {"pattern": ".*", "description": "Allow everything"},
+            {"pattern": r"\bvultr\s+account\s+info\b", "description": "Vultr info"},
+        ],
+        "deny_patterns": [{"pattern": ".*", "description": "Deny everything"}],
+    }
+    with caplog.at_level(logging.ERROR, logger="config"):
+        result = _validate_config(raw)
+    assert [e["description"] for e in result["allow_patterns"]] == [
+        "Allow everything",
+        "Vultr info",
+    ]
+    assert len(result["deny_patterns"]) == 1
+    assert not any("REFUSING" in rec.getMessage() for rec in caplog.records)
+
+
+def test_validate_config_catch_all_allow_disabled_entry_is_kept(caplog):
+    """A disabled catch-all allow entry is inert, so it stays visible to list/remove/enable."""
+    import logging
+
+    from config import _validate_config
+
+    raw = {"allow_patterns": [{"pattern": ".*", "description": "Paused", "enabled": False}]}
+    with caplog.at_level(logging.ERROR, logger="config"):
+        result = _validate_config(raw)
+    assert [e["description"] for e in result["allow_patterns"]] == ["Paused"]
+    assert result["allow_patterns"][0]["enabled"] is False
+    assert not any("REFUSING" in rec.getMessage() for rec in caplog.records)
+
+
+def test_validate_config_normalizes_retired_allow_pattern(caplog):
+    """Retired allow patterns are still normalized like any other entry."""
+    import logging
+
+    from config import _validate_config
+
+    raw = {"allow_patterns": [{"pattern": ".*  ", "description": "Padded"}]}
+    with caplog.at_level(logging.ERROR, logger="config"):
+        result = _validate_config(raw)
+    assert [e["pattern"] for e in result["allow_patterns"]] == [".*"]
+    assert not any("REFUSING" in rec.getMessage() for rec in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# Allow-pattern retirement notice (0.5.0)
+# ---------------------------------------------------------------------------
+
+
+def test_allow_retirement_notice_none_when_absent():
+    """No allow patterns -> no notice (the common case must stay quiet)."""
+    from config import allow_pattern_retirement_notice
+
+    assert allow_pattern_retirement_notice({"allow_patterns": []}, Path("/tmp/x.yaml")) is None
+
+
+def test_allow_retirement_notice_counts_active_and_total():
+    """The notice must quantify what stopped being enforced, and say what to do."""
+    from config import allow_pattern_retirement_notice
+
+    config = {
+        "allow_patterns": [
+            {"pattern": "a", "description": "A"},
+            {"pattern": "b", "description": "B", "enabled": False},
+        ]
+    }
+    notice = allow_pattern_retirement_notice(config, Path("/tmp/my.yaml"))
+    assert notice is not None
+    assert "1 active of 2 total" in notice
+    assert "/tmp/my.yaml" in notice
+    assert "command_allowlist" in notice
+    assert "remove --type allow" in notice

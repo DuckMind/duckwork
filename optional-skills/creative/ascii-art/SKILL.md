@@ -158,7 +158,7 @@ boxes -l                                       # List all 70+ designs
 ```bash
 python -m pyfiglet "DUCKWORK" -f slant | boxes -d stone
 # Or without pyfiglet installed:
-curl -s "https://asciified.thelicato.io/api/v2/ascii?text=%48ERMES&font=Slant" | boxes -d stone
+curl -s "https://asciified.thelicato.io/api/v2/ascii?text=DUCKWORK&font=Slant" | boxes -d stone
 ```
 
 ## Tool 5: TOIlet (Colored Text Art)

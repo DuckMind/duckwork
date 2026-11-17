@@ -1,0 +1,130 @@
+# Vault View
+
+![Vault View — Markdown, images and links in Duckwork Desktop](assets/banner.png)
+
+**Votre vault compatible avec Obsidian, directement dans Duckwork Desktop.**
+
+[English](README.md) · [Français](README.fr.md)
+
+[![Version v0.5.0](https://img.shields.io/badge/version-v0.5.0-2563eb)](https://github.com/DuckMind/duckwork)
+[![Installer dans Duckwork Desktop](https://img.shields.io/badge/Installer%20dans-Duckwork%20Desktop-2563eb)](duckwork://plugin/install?repo=ergocogn/duckwork-desktop-plugin-vault-view)
+
+![Vault View affichant une note Markdown liée, l’explorateur, le plan et le graphe dans Duckwork Desktop](screenshots/vault-view-light.png)
+
+Vault View intègre votre base de connaissances Markdown à la conversation. Retrouvez une note, demandez à Duckwork de la créer ou de la mettre à jour, suivez ses liens et gardez plusieurs notes ouvertes dans un espace conçu pour un vault plutôt que dans un simple aperçu de fichier.
+
+## Nouveautés de la version 0.5.0
+
+- Un workspace facultatif par conversation conserve ses onglets ouverts et fermés, sa note active, la navigation, l’état d’édition, les aperçus et les brouillons. Plusieurs onglets peuvent rester épinglés globalement entre les conversations.
+- Une sélection explicite peut être citée dans la conversation Duckwork active depuis la lecture, l’éditeur visuel ou la source Markdown. Cette action insère un bloc de citation sans conserver la sélection.
+- Une carte d’espace vide permet de créer ou d’ouvrir directement une note, et le bouton global Vault View reste disponible même sans note ouverte.
+- Les barres d’outils reviennent à la ligne selon la largeur réelle du panneau et les contrôles, menus, dialogues, focus et cartes utilisent les variables du thème Duckwork.
+- L’ancien état des onglets est migré vers un stockage versionné des workspaces sans modifier les notes ni les pièces jointes.
+
+## Corrections précédentes de la revue catalogue en 0.4.8 et 0.4.7
+
+- Le plugin reste dans sa propre interface, utilise les API publiques de workspace et conserve son point d’entrée pour l’installation directe.
+- Les aperçus web utilisent le confinement du SDK et nécessitent Duckwork >=0.21.5.
+- Le guidage de navigation de l’agent et les images distantes ont des réglages indépendants, tous deux désactivés par défaut.
+- Les erreurs, dialogues, messages de passerelle et valeurs de formatage sont disponibles en anglais et en français.
+- Lecture fiable des longues notes et enregistrement vérifié.
+- Navigation accélérée avec caches bornés et lecture progressive.
+- Mise en forme Markdown pendant l’édition, source préservée, recherche par tags et colonnes adaptatives.
+- Aperçus d’images différés, affichage en détail et aperçu des pièces jointes image/texte/code.
+- Onglets de notes partagés, annuler/rétablir et journal privé des pannes.
+
+Les miniatures utilisent ffmpeg si disponible, avec repli vers l’image originale. Le transport des fichiers nécessite des utilitaires Unix/WSL. L’ouverture directe dans Obsidian est temporairement masquée ; l’ouverture externe dépend de la configuration hôte/backend. La validation native des lancements Windows/macOS reste incomplète.
+
+Voir [CHANGELOG.md](CHANGELOG.md) et le guide public de contribution pour les IA [AGENTS.md](AGENTS.md).
+
+## Rechercher. Créer. Naviguer.
+
+| Rechercher dans le vault | Créer et modifier | Explorer les liens |
+| --- | --- | --- |
+| Recherchez des notes, parcourez les dossiers, filtrez les tags et consultez les liens. | Écrivez directement ou demandez à Duckwork d’utiliser son intégration Obsidian CLI configurée. | Suivez les wikilinks, utilisez Précédent et Suivant, ouvrez des onglets ou naviguez dans le graphe. |
+
+![Paramètres de Vault View avec détection du vault, choix de la langue et contrôles de confidentialité](screenshots/vault-view-settings.png)
+
+## Fonctionnalités
+
+- Lecture visuelle et édition Markdown
+- Création, renommage, déplacement et suppression de notes et dossiers
+- Recherche, explorateur, plan, tags, backlinks, liens sortants et graphe du vault
+- Wikilinks, callouts Obsidian et images locales
+- Plusieurs onglets avec leur propre historique de navigation
+- Citation explicite d’un passage sélectionné vers la conversation active
+- Workspaces facultatifs par conversation (désactivés par défaut), avec plusieurs onglets épinglés globaux
+- Barres d’outils responsive selon la largeur réelle du panneau Vault View
+- Actualisation automatique après une modification par Duckwork, Obsidian CLI ou un autre éditeur
+- Compatibilité avec les thèmes Duckwork clairs et sombres
+- Interface en français, en anglais ou suivant automatiquement la langue de Duckwork Desktop
+- Commandes principalement représentées par des icônes, avec libellés et infobulles traduits
+
+## Fonctionnement avec Duckwork
+
+L’agent Duckwork continue d’utiliser son intégration Obsidian CLI existante pour les opérations sur les notes. Vault View fournit l’affichage destiné à l’utilisateur et remplace l’aperçu générique pour les tâches liées à Obsidian. Il peut afficher une note, en ouvrir plusieurs simultanément ou rester masqué pour une opération en arrière-plan.
+
+Le `plugin.js` à la racine reste le point d’entrée autonome. `plugin.yaml` contient uniquement les métadonnées du catalogue ; `desktop/plugin.js` est une copie identique pour l’installation depuis le catalogue. Aucun composant Python, outil Agent ou dépendance d’exécution n’est ajouté.
+
+## Installation
+
+Vault View est un Desktop Plugin Duckwork autonome. Il ne nécessite ni compilation, ni paquet npm, ni composant Python.
+
+#Le `plugin.js` à la racine reste le point d’entrée autonome. `plugin.yaml` contient uniquement les métadonnées du catalogue ; `desktop/plugin.js` est une copie identique pour l’installation depuis le catalogue. Aucun composant Python, outil Agent ou dépendance d’exécution n’est ajouté.
+
+## Installation en un clic
+
+Ouvrez cette page sur l’ordinateur où Duckwork Desktop est installé, puis sélectionnez **Installer dans Duckwork Desktop** :
+
+[**Installer Vault View dans Duckwork Desktop**](duckwork://plugin/install?repo=ergocogn/duckwork-desktop-plugin-vault-view)
+
+Duckwork demande une confirmation avant l’installation. Si ce lien n’est pas pris en charge par votre version de Duckwork Desktop, utilisez l’installation manuelle ci-dessous.
+
+#Le `plugin.js` à la racine reste le point d’entrée autonome. `plugin.yaml` contient uniquement les métadonnées du catalogue ; `desktop/plugin.js` est une copie identique pour l’installation depuis le catalogue. Aucun composant Python, outil Agent ou dépendance d’exécution n’est ajouté.
+
+## Installation manuelle
+
+1. Copiez ce dépôt dans le dossier actif des plugins Duckwork Desktop sous le nom `vault-view`.
+2. Vérifiez que le point d’entrée est `$DUCKWORK_HOME/desktop-plugins/vault-view/plugin.js`.
+3. Rechargez les Desktop Plugins dans les paramètres Duckwork.
+4. Activez **Vault View**.
+
+Utilisez le dossier indiqué par Duckwork Desktop. L’application Desktop et son backend peuvent utiliser des emplacements différents, notamment avec WSL ou une machine virtuelle.
+
+## Configuration
+
+Vault View recherche automatiquement le vault déjà configuré dans Duckwork par `WIKI_PATH`. Si aucun vault `.obsidian` valide n’est trouvé, sélectionnez sa racine dans les paramètres.
+
+Le réglage de langue propose **Suivre Duckwork Desktop**, **English** et **Français**. Le même panneau permet de restaurer les onglets, d’activer les workspaces par conversation, de réinitialiser les panneaux et d’activer facultativement le partage de métadonnées sur la note active. Les workspaces par conversation sont désactivés par défaut ; une fois activés, chaque conversation conserve ses onglets ouverts ou fermés et ses brouillons, tandis que les onglets épinglés restent visibles partout.
+
+La sélection d’un texte dans une note active l’action de citation dans la barre supérieure et ajoute **Copier la sélection** et **Citer la sélection dans la conversation** au menu contextuel de la note. La citation résulte toujours d’une action explicite, cible la conversation Duckwork actuellement active et la sélection n’est jamais stockée.
+
+## Confidentialité
+
+- Les fichiers du vault restent sur le système de fichiers local configuré.
+- Aucun jeton, identifiant, chemin personnel ou contenu de note n’est intégré au plugin.
+- Le contenu complet d’une note n’est jamais joint automatiquement à l’agent.
+- Le partage facultatif de la note active est désactivé par défaut et ne transmet que des métadonnées légères.
+- Les images distantes sont bloquées par défaut. Leur activation envoie des requêtes à leurs fournisseurs, sans référent. Ouvrir explicitement un lien web contacte son site via le composant isolé du SDK ou le navigateur externe.
+- Les indications de navigation à l’agent sont une option indépendante et traduite.
+- Le chemin du vault reste dans le stockage local privé de Vault View.
+
+Les captures utilisent un vault de démonstration synthétique. Elles ne contiennent aucun chemin personnel, aucune conversation privée ni note réelle ; leurs métadonnées PNG ont été supprimées.
+
+## Compatibilité
+
+- Duckwork Desktop >=0.21.5 avec prise en charge des Desktop Plugins
+- Vault Markdown local compatible avec Obsidian
+- Windows, macOS ou Linux, à condition que le backend Duckwork actif puisse accéder au vault
+
+## Support et contributions
+
+Utilisez les [GitHub Issues](https://github.com/DuckMind/duckwork) pour le support, les bugs et les propositions. Consultez [CONTRIBUTING.md](CONTRIBUTING.md), [SUPPORT.md](SUPPORT.md) et [SECURITY.md](SECURITY.md) avant de partager des journaux ou des captures.
+
+## Projet indépendant
+
+Vault View est un projet communautaire indépendant publié par ergoCogn sàrl. Il n’est ni affilié, ni sponsorisé, ni approuvé par Dynalist Inc., l’éditeur d’Obsidian, ou par Fordex, le mainteneur d’Duckwork. Les noms de produits servent uniquement à décrire la compatibilité.
+
+## Licence
+
+[MIT](LICENSE) © 2026 ergoCogn sàrl

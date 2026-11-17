@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "mixar": {
+      "type": "stdio",
+      "command": "./bin/mixar-mcp",
+      "args": [],
+      "env": {
+        "HOME": "${HOME}",
+        "MIXAR_MCP_LAUNCHER": "${MIXAR_MCP_LAUNCHER}",
+        "MIXAR_MCP_DISCOVERY_DIR": "${MIXAR_MCP_DISCOVERY_DIR}"
+      }
+    }
+  }
+}

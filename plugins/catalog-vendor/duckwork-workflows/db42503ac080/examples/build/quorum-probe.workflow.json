@@ -1,0 +1,102 @@
+{
+  "grammar": "wf/1",
+  "name": "quorum-probe",
+  "description": "Redundant-probe pair teaching the FOLDED speed/coverage contrast in ONE file. DEFAULT SHAPE - probe_race: a fan-out racing three self-contained system probes with an EXPLICIT quorum of 2: the first two children that commit close the node and the engine SIGKILLs the straggler (sleep-marshal is the slow probe by design). A quorum-cancelled item carries error_class 'cancelled', is excluded from the failure math, and its record keeps the honest cancel evidence (whether it had output on disk at the quorum moment). The report node must then state the incomplete set EXACTLY - quorum speed is legal only when the report never claims a full roster. FOLDED COUNTER-SHAPE - probe_coverage: the same redundant probes WITHOUT quorum: the fan-out is a barrier (waits for every item; it still COMMITS at majority, so one dead lane cannot darken the node), and the reconcile synth node reconciles what actually answered against an explicit master source catalog (the 'catalog' echo node enumerates every declared lane). A lane that never answers therefore surfaces as a NAMED COVERAGE GAP, never as silent loss. The dead lane is built in as an honest simulation: archive-lane answers nothing at all - its goal forbids any JSON, so the dead probe fails its reply contract exactly like a real dead lane; an obs that self-declares offline is judged a gap whatever the item's status says. The synth chain is budgeted to survive its own harvest law: reconcile/report carry a judge-only-no-exploration directive with turns to spare, and report opts into the partial-harvest edge (after_partial) so a harvest-on-death partial cannot darken the leaf. Every launch runs BOTH shapes side by side: quorum buys latency and concedes coverage; barrier + catalog reconciliation concedes latency and buys verifiable completeness - the two are contrasts of each other, not alternatives to choose between. The two fan-outs are INDEPENDENT shapes with their own rosters: each synth reads only its shape's catalog block - cross-reading is the folded-template trap. Probes are self-contained commands (uname, date, df, sleep) any unknown estate can run; no seeds required.",
+  "provenance": {
+    "owner": "duckwork-workflows",
+    "source": "duckwork-workflows/examples/quorum-probe.workflow.json"
+  },
+  "nodes": [
+    {
+      "id": "catalog",
+      "type": "echo",
+      "output": {
+        "coverage_lanes": ["disk-space", "machine-arch", "archive-lane"],
+        "declared": 3,
+        "law": "master source catalog for the BARRIER shape (probe_coverage): every declared lane must be answered by a done/partial item of probe_coverage whose envelope carries a REAL observation, or be reported by reconcile as a named coverage gap - never a silent loss. The race shape (probe_race) is an independent contrast with its own roster (host-kernel, utc-clock, sleep-marshal) that this catalog does NOT govern."
+      }
+    },
+    {
+      "id": "probe_race",
+      "type": "agent",
+      "max_turns": 4,
+      "timeout": 600,
+      "fanout": {
+        "quorum": 2,
+        "schema": {
+          "type": "object",
+          "required": ["lane", "obs"]
+        },
+        "goal": "Probe lane '{lane}'. Run EXACTLY this one command with your terminal tool: {cmd} Then reply with ONLY fenced json {\"lane\": \"{lane}\", \"obs\": \"<first line of stdout, verbatim>\"} and nothing else.",
+        "items": [
+          {
+            "lane": "host-kernel",
+            "cmd": "uname -s"
+          },
+          {
+            "lane": "utc-clock",
+            "cmd": "date -u +%FT%TZ"
+          },
+          {
+            "lane": "sleep-marshal",
+            "goal": "Probe lane 'sleep-marshal' (the straggler by design - this is a deliberate slow-probe simulation). Step 1: run EXACTLY this one command with your terminal tool, giving it up to 400 seconds: sleep 360; uname -n Step 2: reply with ONLY fenced json {\"lane\": \"sleep-marshal\", \"obs\": \"<first line of stdout, verbatim>\"} and nothing else. If you are killed before answering, that is the expected outcome of this lane."
+          }
+        ]
+      }
+    },
+    {
+      "id": "probe_coverage",
+      "type": "agent",
+      "max_turns": 6,
+      "timeout": 600,
+      "fanout": {
+        "schema": {
+          "type": "object",
+          "required": ["lane", "obs"]
+        },
+        "goal": "Probe lane '{lane}'. Run EXACTLY this one command with your terminal tool: {cmd} Then reply with ONLY fenced json {\"lane\": \"{lane}\", \"obs\": \"<first line of stdout, verbatim>\"} and nothing else. Before you reply, self-check: the fenced json is valid, lane is exactly '{lane}', and obs is a verbatim stdout line - fix and re-check if not.",
+        "items": [
+          {
+            "lane": "disk-space",
+            "cmd": "df -k / | tail -1"
+          },
+          {
+            "lane": "machine-arch",
+            "cmd": "uname -m"
+          },
+          {
+            "lane": "archive-lane",
+            "goal": "This lane is a DELIBERATE SIMULATED DEAD PROBE named 'archive-lane'. Do NOT run any command. Reply with ONLY this plain text and NOTHING else: LANE OFFLINE: archive-lane answers nothing. FORBIDDEN: do not construct any fenced json or JSON-shaped envelope, in any shape - the contract for this reply is plain text and only plain text. An honest dead lane answers nothing and fails its json contract; do not try to satisfy one."
+          }
+        ]
+      }
+    },
+    {
+      "id": "reconcile",
+      "type": "agent",
+      "after": ["catalog", "probe_coverage"],
+      "max_turns": 8,
+      "timeout": 600,
+      "inputs": ["catalog.coverage_lanes", "probe_coverage.all_results"],
+      "schema": {
+        "type": "object",
+        "required": ["covered", "coverage_gaps", "verdict"]
+      },
+      "goal": "You are the coverage synth: NO quorum was set on probe_coverage, so nothing was cancelled - but a barrier still loses items to honest failure, and silent loss is the crime. Under ## Inputs you have catalog.coverage_lanes (the MASTER SOURCE CATALOG - the full set of lanes declared for THIS barrier shape; the race shape has its own roster and is not yours to judge) and probe_coverage.all_results (every dispatched item WITH its status). For EACH declared lane decide answered vs gap: a lane counts as answered ONLY if some item in all_results has status done or partial AND its output.lane equals that lane name AND its output.obs is a real observation - an obs that announces the lane is offline, answers nothing, or otherwise self-declares non-answer (e.g. starts with 'LANE OFFLINE') is a gap, not an answer, whatever the item's status field says. A lane missing from all_results entirely is a gap. Never infer a lane answered because the NODE itself committed. Reply with ONLY fenced json {\"covered\": [<answered lane names>], \"coverage_gaps\": [<declared lane names with no committed answer>], \"verdict\": \"<one line: if coverage_gaps is non-empty it MUST start with 'COVERAGE GAP' and name every gapped lane; else 'all N declared lanes answered'>\"} and nothing else. Do not explore or verify beyond ## Inputs - judge only what is given, then answer once."
+    },
+    {
+      "id": "report",
+      "type": "agent",
+      "after": ["probe_race", "reconcile"],
+      "after_partial": true,
+      "max_turns": 8,
+      "timeout": 600,
+      "inputs": ["probe_race.all_results", "reconcile"],
+      "schema": {
+        "type": "object",
+        "required": ["quorum_shape", "coverage_shape", "honest_statement"]
+      },
+      "goal": "Report the folded contrast HONESTLY from the committed evidence under ## Inputs. From probe_race.all_results: first read the roster that was ACTUALLY dispatched from the all_results items (do not assume it); list every lane and its terminal status - done lanes vs lanes cancelled at the quorum moment (quote each cancelled item's recorded cancel evidence); the node committed on quorum 2/3, so the race answer is an INCOMPLETE SET and must be stated as one - never claim the full roster was answered. From reconcile: copy its covered/coverage_gaps/verdict verbatim - the coverage shape pays latency to prove completeness, and a dead lane must read as a loud named gap, never as a quiet shrink of the roster. Reply with ONLY fenced json {\"quorum_shape\": {\"dispatched\": [<lanes actually present in all_results>], \"done\": [<lane names>], \"cancelled_at_quorum\": [<lane names>]}, \"coverage_shape\": {\"covered\": [<lane names>], \"coverage_gaps\": [<lane names>], \"verdict\": \"<reconcile verdict verbatim>\"}, \"honest_statement\": \"<one paragraph stating BOTH incomplete sets exactly: which race lanes never answered and why (quorum cancel), and which coverage lanes are gaps and why (dead lane)>\"} and nothing else. Do not explore or verify beyond ## Inputs - report only what is given, then answer once."
+    }
+  ]
+}

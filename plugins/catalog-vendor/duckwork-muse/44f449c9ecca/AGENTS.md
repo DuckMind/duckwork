@@ -1,0 +1,3 @@
+# Development contract
+
+Independent Duckwork plugin; never patch Duckwork core. Keep all installed state within the active profile. Prefer stdlib and native Duckwork APIs. Do not add mandatory providers, feature selectors, telemetry or self-updaters. Do not copy private Muse exports or personal data. Keep docs/DESIGN.md and README consistent with implemented behavior. Tests must use temporary homes, never the developer's live Duckwork. Installation must not rewrite SOUL or native memory. Treat shared file and background-task races as correctness issues. Release only after unit, native integration and official plugin validation pass.

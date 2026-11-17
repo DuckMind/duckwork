@@ -1,0 +1,52 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - name: Backend and snapshot tests (stdlib)
+        run: python -m unittest discover -s tests -v
+      - name: Layout tests (node, no dependencies)
+        run: node tests/layout.test.mjs
+      - name: Desktop half parses
+        run: node --check desktop/plugin.js
+
+  duckwork-validate:
+    # The same check the plugin catalog runs at admission, against the oldest supported Duckwork.
+    runs-on: ubuntu-latest
+    env:
+      DUCKWORK_REF: v2026.9.24 # Duckwork 0.21.5, matches requires_duckwork in plugin.yaml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: plugin
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: ${{ env.DUCKWORK_REF }}
+          path: duckwork-agent
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+      - name: Install Duckwork
+        run: pip install -e ./duckwork-agent
+      - name: duckwork plugins validate
+        run: duckwork plugins validate plugin
+      - name: duckwork plugins doctor
+        run: duckwork plugins doctor --ci plugin

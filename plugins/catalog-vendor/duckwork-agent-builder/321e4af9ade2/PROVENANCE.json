@@ -1,0 +1,808 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/itsflownium/hermes-agent-builder/6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6/docs/banner.png": "docs/banner.png",
+      "https://raw.githubusercontent.com/itsflownium/hermes-agent-builder/6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6/docs/builder.png": "docs/builder.png",
+      "https://raw.githubusercontent.com/itsflownium/hermes-agent-builder/6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6/docs/compare.png": "docs/compare.png"
+    },
+    "image": "docs/banner.png",
+    "omitted": [],
+    "screenshots": [
+      "docs/builder.png",
+      "docs/compare.png"
+    ],
+    "deduplicated": [
+      {
+        "before_path": "_catalog_assets/docs/banner.png",
+        "after_path": "docs/banner.png",
+        "before_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "after_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "before_bytes": 36903,
+        "after_bytes": 36903,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      },
+      {
+        "before_path": "_catalog_assets/docs/builder.png",
+        "after_path": "docs/builder.png",
+        "before_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "after_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "before_bytes": 307006,
+        "after_bytes": 307006,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      },
+      {
+        "before_path": "_catalog_assets/docs/compare.png",
+        "after_path": "docs/compare.png",
+        "before_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "after_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "before_bytes": 384950,
+        "after_bytes": 384950,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      }
+    ]
+  },
+  "catalog_id": "hermes-agent-builder",
+  "content_id": "321e4af9ade2",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 58,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "97546331b290d1009d06a12e58ad49563b0d6c723276b47cec97179fd2f97ad1"
+    },
+    {
+      "bytes": 1090,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "e2207e33b108858aeaa2e8785cb4ef6e75befabfa882ec3f73a85c6846f42c1e"
+    },
+    {
+      "bytes": 6526,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "e5af804217acea7318c33aadd0a29a339cd0ed12651c59f6e630d625a323ae27"
+    },
+    {
+      "bytes": 3190,
+      "mode": "100644",
+      "path": "VALIDATION.md",
+      "sha256": "1ad1b9d3fc04e858236d782b95ce7ae67f3a60287fe87a3cd0a127ce5f7ca344"
+    },
+    {
+      "bytes": 2189,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "a76b18f98083886699fe09f5c32ce853534d167c68524fd3bd24c6f9b5ee2c62"
+    },
+    {
+      "bytes": 36903,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/banner.png",
+      "sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978"
+    },
+    {
+      "bytes": 307006,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/builder.png",
+      "sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729"
+    },
+    {
+      "bytes": 384950,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/compare.png",
+      "sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1"
+    },
+    {
+      "bytes": 23262,
+      "mode": "100644",
+      "path": "builder.py",
+      "sha256": "0b5cf575b5e41073258eff4d5da35922ccfceda7161f57fe9e1af798650878fb"
+    },
+    {
+      "bytes": 85,
+      "mode": "100644",
+      "path": "dashboard/manifest.json",
+      "sha256": "e310dfe3a200c7f220417fccc87dc8ce0fa8a4ba9d054ce457bdabfb53ae3631"
+    },
+    {
+      "bytes": 1293,
+      "mode": "100644",
+      "path": "dashboard/plugin_api.py",
+      "sha256": "e2169d11c3a2607a884cdd493faa50fd13ba824ab64a72b5a1505ecebccacf4a"
+    },
+    {
+      "bytes": 652,
+      "mode": "100644",
+      "path": "desktop/logo.svg",
+      "sha256": "c0a6b1a6a8d07fb7e89efe892532039feae65239dd4045f78b922f5165e651b0"
+    },
+    {
+      "bytes": 47502,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "504f8c20a820a0927b6e9d298db7b6dcd5eff37bb18dcb1211b0968b8702117b"
+    },
+    {
+      "bytes": 36903,
+      "mode": "100644",
+      "path": "docs/banner.png",
+      "sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978"
+    },
+    {
+      "bytes": 307006,
+      "mode": "100644",
+      "path": "docs/builder.png",
+      "sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729"
+    },
+    {
+      "bytes": 384950,
+      "mode": "100644",
+      "path": "docs/compare.png",
+      "sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1"
+    },
+    {
+      "bytes": 59848,
+      "mode": "100644",
+      "path": "docs/demo-poster.jpg",
+      "sha256": "b75d45fbef9ba1455dddacf74834bd05c14d03d0a3533cf8ee969e9495584457"
+    },
+    {
+      "bytes": 5493025,
+      "mode": "100644",
+      "path": "docs/demo.mp4",
+      "sha256": "5c68c2a6f7a10ad4a49c6d03760cfcad8498675fd97d4e116c6bcdc893b27cae"
+    },
+    {
+      "bytes": 11923,
+      "mode": "100644",
+      "path": "docs/logo.png",
+      "sha256": "d904396c9ee8688b168717dbd3a17369588f962b17a8e0da3f10672037c4cf5d"
+    },
+    {
+      "bytes": 652,
+      "mode": "100644",
+      "path": "docs/logo.svg",
+      "sha256": "c0a6b1a6a8d07fb7e89efe892532039feae65239dd4045f78b922f5165e651b0"
+    },
+    {
+      "bytes": 1724,
+      "mode": "100644",
+      "path": "examples/launch-brief.md",
+      "sha256": "357830293346e4056c83bba96f049104ec2369fc1ba1c93edb95117ce84e9a2a"
+    },
+    {
+      "bytes": 3505,
+      "mode": "100644",
+      "path": "install.py",
+      "sha256": "dd2f919e8a91fc1301f1c7fefc7a6420919ba48813098a9156322af6e5cd506e"
+    },
+    {
+      "bytes": 300,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "e651fb711b8c0a795d500aeecc8dbebfa462489621ee1392dbcf4eca42cf6fef"
+    },
+    {
+      "bytes": 823,
+      "mode": "100644",
+      "path": "skills/agent-building/SKILL.md",
+      "sha256": "a27f1adaab42615bbc7c87b5b8fb3b236c49a356648f737e0e0c6e403be91990"
+    },
+    {
+      "bytes": 12159,
+      "mode": "100644",
+      "path": "tests/test_builder.py",
+      "sha256": "f92cc95806d83649114236c0cd859d02daac50093111f5e5d0a715a22b572b2e"
+    }
+  ],
+  "input_manifest_sha256": "321e4af9ade21552c073d30629f138af565cb2d19cdbed7da66d8bc06a52a2d5",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "e2207e33b108858aeaa2e8785cb4ef6e75befabfa882ec3f73a85c6846f42c1e",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "VALIDATION.md",
+      "__init__.py",
+      "builder.py",
+      "dashboard/manifest.json",
+      "dashboard/plugin_api.py",
+      "desktop/logo.svg",
+      "desktop/plugin.js",
+      "docs/logo.svg",
+      "examples/launch-brief.md",
+      "install.py",
+      "plugin.yaml",
+      "skills/agent-building/SKILL.md",
+      "tests/test_builder.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/itsflownium/hermes-agent-builder",
+    "sha": "6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/itsflownium/hermes-agent-builder",
+  "original_sha": "6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "97546331b290d1009d06a12e58ad49563b0d6c723276b47cec97179fd2f97ad1",
+      "bytes": 58,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "e2207e33b108858aeaa2e8785cb4ef6e75befabfa882ec3f73a85c6846f42c1e",
+      "bytes": 1090,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "276d3a4548b3ee7552aebbba23821f9450226cd44b3a2453f22227a2e32cf208",
+      "bytes": 6569,
+      "mode": "100644"
+    },
+    {
+      "path": "VALIDATION.md",
+      "sha256": "b85d118cbbba6b85a60fcba452d9d4195f797ffd857964cb0c49ee16f7054e89",
+      "bytes": 3204,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "7d934324cc9cd7313099eff49ee42589eeeccd3f254188da17fe5d85098b0203",
+      "bytes": 2199,
+      "mode": "100644"
+    },
+    {
+      "path": "builder.py",
+      "sha256": "6adb1cf3642c9d2c9781cd02ed30c3c7617da2037d748586e22283fc457f9ff5",
+      "bytes": 23318,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/manifest.json",
+      "sha256": "d4cdabda383c851ddd1fc1574215a0567452cf15570111d855c165a66a2e3cc2",
+      "bytes": 89,
+      "mode": "100644"
+    },
+    {
+      "path": "dashboard/plugin_api.py",
+      "sha256": "a7331e6bf6cc91048625a3d1a9ffe3e97701efc2be506ba02c96bafc826d1c6e",
+      "bytes": 1301,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/logo.svg",
+      "sha256": "3802e53b80c4651d2485aa15a53fa07fab90ed036036f557e679bfbe9a88a4a3",
+      "bytes": 654,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "2edee7658e3a4d780686a7a35adef3933d65c82cee1825cf1d9945f9205e1480",
+      "bytes": 47564,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/banner.png",
+      "sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+      "bytes": 36903,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/builder.png",
+      "sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+      "bytes": 307006,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/compare.png",
+      "sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+      "bytes": 384950,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/demo-poster.jpg",
+      "sha256": "b75d45fbef9ba1455dddacf74834bd05c14d03d0a3533cf8ee969e9495584457",
+      "bytes": 59848,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/demo.mp4",
+      "sha256": "5c68c2a6f7a10ad4a49c6d03760cfcad8498675fd97d4e116c6bcdc893b27cae",
+      "bytes": 5493025,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/logo.png",
+      "sha256": "d904396c9ee8688b168717dbd3a17369588f962b17a8e0da3f10672037c4cf5d",
+      "bytes": 11923,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/logo.svg",
+      "sha256": "3802e53b80c4651d2485aa15a53fa07fab90ed036036f557e679bfbe9a88a4a3",
+      "bytes": 654,
+      "mode": "100644"
+    },
+    {
+      "path": "examples/launch-brief.md",
+      "sha256": "78e21458aa1535cbf7c956993be7342dccbf17af8eef6c362c9f3744278a9bd7",
+      "bytes": 1738,
+      "mode": "100644"
+    },
+    {
+      "path": "install.py",
+      "sha256": "724cc0e0aaba3d51372c1360172db1ab72d96ebb86de2dffd5c342c61f4271e8",
+      "bytes": 3545,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "b7598e940a2a75a78390725db1c5f7f4f98f3bc06ef55614c84aaf1e8bf0413d",
+      "bytes": 304,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/agent-building/SKILL.md",
+      "sha256": "f65acf04bc12c49e0380791c6bbf5494074d0059a2e7a3cd0cc6ae6b0935c8e7",
+      "bytes": 829,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_builder.py",
+      "sha256": "5e11faf7d8c160a505989f3a1255a1c960a344a5a6f5b3170ec14abcd98b9ad8",
+      "bytes": 12205,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "2b0a0a067888d1348c2a460f952de33a4bf58b582fe00d0c129bf8366a5bfbe9",
+  "pin_verification": {
+    "archive_bytes": 6106279,
+    "archive_sha256": "91d0c2211b78294ae85d6e0d4c171b6e4310315ca36bfcdfe00b373b16299af0",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6",
+    "verified_commit_marker": "6ed39da7c7054587cbe2a42e60c3e9cbe4969cf6"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "a3fc680c51bee3187861285c2b7d92f304ff6794592e2be2d60478f61fc8e2d7",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "97546331b290d1009d06a12e58ad49563b0d6c723276b47cec97179fd2f97ad1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "97546331b290d1009d06a12e58ad49563b0d6c723276b47cec97179fd2f97ad1",
+        "source": ".gitignore",
+        "final_output_sha256": "97546331b290d1009d06a12e58ad49563b0d6c723276b47cec97179fd2f97ad1",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "97546331b290d1009d06a12e58ad49563b0d6c723276b47cec97179fd2f97ad1"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "e2207e33b108858aeaa2e8785cb4ef6e75befabfa882ec3f73a85c6846f42c1e",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "e2207e33b108858aeaa2e8785cb4ef6e75befabfa882ec3f73a85c6846f42c1e",
+        "source": "LICENSE",
+        "final_output_sha256": "e2207e33b108858aeaa2e8785cb4ef6e75befabfa882ec3f73a85c6846f42c1e",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "e2207e33b108858aeaa2e8785cb4ef6e75befabfa882ec3f73a85c6846f42c1e"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "e5af804217acea7318c33aadd0a29a339cd0ed12651c59f6e630d625a323ae27",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2fd404434163050371d829136e398e6e2ab0514ad6b1ecc17e0f00f9dbf8b9bd",
+        "source": "README.md",
+        "final_output_sha256": "276d3a4548b3ee7552aebbba23821f9450226cd44b3a2453f22227a2e32cf208",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "2fd404434163050371d829136e398e6e2ab0514ad6b1ecc17e0f00f9dbf8b9bd"
+      },
+      {
+        "destination": "VALIDATION.md",
+        "input_sha256": "1ad1b9d3fc04e858236d782b95ce7ae67f3a60287fe87a3cd0a127ce5f7ca344",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b85d118cbbba6b85a60fcba452d9d4195f797ffd857964cb0c49ee16f7054e89",
+        "source": "VALIDATION.md",
+        "final_output_sha256": "b85d118cbbba6b85a60fcba452d9d4195f797ffd857964cb0c49ee16f7054e89",
+        "cli_destination": "VALIDATION.md",
+        "previous_staging_sha256": "b85d118cbbba6b85a60fcba452d9d4195f797ffd857964cb0c49ee16f7054e89"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "a76b18f98083886699fe09f5c32ce853534d167c68524fd3bd24c6f9b5ee2c62",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7d934324cc9cd7313099eff49ee42589eeeccd3f254188da17fe5d85098b0203",
+        "source": "__init__.py",
+        "final_output_sha256": "7d934324cc9cd7313099eff49ee42589eeeccd3f254188da17fe5d85098b0203",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "7d934324cc9cd7313099eff49ee42589eeeccd3f254188da17fe5d85098b0203"
+      },
+      {
+        "destination": "docs/banner.png",
+        "input_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "source": "_catalog_assets/docs/banner.png",
+        "final_output_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "cli_destination": "_catalog_assets/docs/banner.png",
+        "previous_staging_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "docs/builder.png",
+        "input_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "source": "_catalog_assets/docs/builder.png",
+        "final_output_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "cli_destination": "_catalog_assets/docs/builder.png",
+        "previous_staging_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "docs/compare.png",
+        "input_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "source": "_catalog_assets/docs/compare.png",
+        "final_output_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "cli_destination": "_catalog_assets/docs/compare.png",
+        "previous_staging_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "builder.py",
+        "input_sha256": "0b5cf575b5e41073258eff4d5da35922ccfceda7161f57fe9e1af798650878fb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6adb1cf3642c9d2c9781cd02ed30c3c7617da2037d748586e22283fc457f9ff5",
+        "source": "builder.py",
+        "final_output_sha256": "6adb1cf3642c9d2c9781cd02ed30c3c7617da2037d748586e22283fc457f9ff5",
+        "cli_destination": "builder.py",
+        "previous_staging_sha256": "6adb1cf3642c9d2c9781cd02ed30c3c7617da2037d748586e22283fc457f9ff5"
+      },
+      {
+        "destination": "dashboard/manifest.json",
+        "input_sha256": "e310dfe3a200c7f220417fccc87dc8ce0fa8a4ba9d054ce457bdabfb53ae3631",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d4cdabda383c851ddd1fc1574215a0567452cf15570111d855c165a66a2e3cc2",
+        "source": "dashboard/manifest.json",
+        "final_output_sha256": "d4cdabda383c851ddd1fc1574215a0567452cf15570111d855c165a66a2e3cc2",
+        "cli_destination": "dashboard/manifest.json",
+        "previous_staging_sha256": "d4cdabda383c851ddd1fc1574215a0567452cf15570111d855c165a66a2e3cc2"
+      },
+      {
+        "destination": "dashboard/plugin_api.py",
+        "input_sha256": "e2169d11c3a2607a884cdd493faa50fd13ba824ab64a72b5a1505ecebccacf4a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a7331e6bf6cc91048625a3d1a9ffe3e97701efc2be506ba02c96bafc826d1c6e",
+        "source": "dashboard/plugin_api.py",
+        "final_output_sha256": "a7331e6bf6cc91048625a3d1a9ffe3e97701efc2be506ba02c96bafc826d1c6e",
+        "cli_destination": "dashboard/plugin_api.py",
+        "previous_staging_sha256": "a7331e6bf6cc91048625a3d1a9ffe3e97701efc2be506ba02c96bafc826d1c6e"
+      },
+      {
+        "destination": "desktop/logo.svg",
+        "input_sha256": "c0a6b1a6a8d07fb7e89efe892532039feae65239dd4045f78b922f5165e651b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3802e53b80c4651d2485aa15a53fa07fab90ed036036f557e679bfbe9a88a4a3",
+        "source": "desktop/logo.svg",
+        "final_output_sha256": "3802e53b80c4651d2485aa15a53fa07fab90ed036036f557e679bfbe9a88a4a3",
+        "cli_destination": "desktop/logo.svg",
+        "previous_staging_sha256": "3802e53b80c4651d2485aa15a53fa07fab90ed036036f557e679bfbe9a88a4a3"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "504f8c20a820a0927b6e9d298db7b6dcd5eff37bb18dcb1211b0968b8702117b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2edee7658e3a4d780686a7a35adef3933d65c82cee1825cf1d9945f9205e1480",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "2edee7658e3a4d780686a7a35adef3933d65c82cee1825cf1d9945f9205e1480",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "2edee7658e3a4d780686a7a35adef3933d65c82cee1825cf1d9945f9205e1480"
+      },
+      {
+        "destination": "docs/banner.png",
+        "input_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "source": "docs/banner.png",
+        "final_output_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+        "cli_destination": "docs/banner.png",
+        "previous_staging_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978"
+      },
+      {
+        "destination": "docs/builder.png",
+        "input_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "source": "docs/builder.png",
+        "final_output_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+        "cli_destination": "docs/builder.png",
+        "previous_staging_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729"
+      },
+      {
+        "destination": "docs/compare.png",
+        "input_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "source": "docs/compare.png",
+        "final_output_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+        "cli_destination": "docs/compare.png",
+        "previous_staging_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1"
+      },
+      {
+        "destination": "docs/demo-poster.jpg",
+        "input_sha256": "b75d45fbef9ba1455dddacf74834bd05c14d03d0a3533cf8ee969e9495584457",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b75d45fbef9ba1455dddacf74834bd05c14d03d0a3533cf8ee969e9495584457",
+        "source": "docs/demo-poster.jpg",
+        "final_output_sha256": "b75d45fbef9ba1455dddacf74834bd05c14d03d0a3533cf8ee969e9495584457",
+        "cli_destination": "docs/demo-poster.jpg",
+        "previous_staging_sha256": "b75d45fbef9ba1455dddacf74834bd05c14d03d0a3533cf8ee969e9495584457"
+      },
+      {
+        "destination": "docs/demo.mp4",
+        "input_sha256": "5c68c2a6f7a10ad4a49c6d03760cfcad8498675fd97d4e116c6bcdc893b27cae",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5c68c2a6f7a10ad4a49c6d03760cfcad8498675fd97d4e116c6bcdc893b27cae",
+        "source": "docs/demo.mp4",
+        "final_output_sha256": "5c68c2a6f7a10ad4a49c6d03760cfcad8498675fd97d4e116c6bcdc893b27cae",
+        "cli_destination": "docs/demo.mp4",
+        "previous_staging_sha256": "5c68c2a6f7a10ad4a49c6d03760cfcad8498675fd97d4e116c6bcdc893b27cae"
+      },
+      {
+        "destination": "docs/logo.png",
+        "input_sha256": "d904396c9ee8688b168717dbd3a17369588f962b17a8e0da3f10672037c4cf5d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d904396c9ee8688b168717dbd3a17369588f962b17a8e0da3f10672037c4cf5d",
+        "source": "docs/logo.png",
+        "final_output_sha256": "d904396c9ee8688b168717dbd3a17369588f962b17a8e0da3f10672037c4cf5d",
+        "cli_destination": "docs/logo.png",
+        "previous_staging_sha256": "d904396c9ee8688b168717dbd3a17369588f962b17a8e0da3f10672037c4cf5d"
+      },
+      {
+        "destination": "docs/logo.svg",
+        "input_sha256": "c0a6b1a6a8d07fb7e89efe892532039feae65239dd4045f78b922f5165e651b0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3802e53b80c4651d2485aa15a53fa07fab90ed036036f557e679bfbe9a88a4a3",
+        "source": "docs/logo.svg",
+        "final_output_sha256": "3802e53b80c4651d2485aa15a53fa07fab90ed036036f557e679bfbe9a88a4a3",
+        "cli_destination": "docs/logo.svg",
+        "previous_staging_sha256": "3802e53b80c4651d2485aa15a53fa07fab90ed036036f557e679bfbe9a88a4a3"
+      },
+      {
+        "destination": "examples/launch-brief.md",
+        "input_sha256": "357830293346e4056c83bba96f049104ec2369fc1ba1c93edb95117ce84e9a2a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "78e21458aa1535cbf7c956993be7342dccbf17af8eef6c362c9f3744278a9bd7",
+        "source": "examples/launch-brief.md",
+        "final_output_sha256": "78e21458aa1535cbf7c956993be7342dccbf17af8eef6c362c9f3744278a9bd7",
+        "cli_destination": "examples/launch-brief.md",
+        "previous_staging_sha256": "78e21458aa1535cbf7c956993be7342dccbf17af8eef6c362c9f3744278a9bd7"
+      },
+      {
+        "destination": "install.py",
+        "input_sha256": "dd2f919e8a91fc1301f1c7fefc7a6420919ba48813098a9156322af6e5cd506e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "724cc0e0aaba3d51372c1360172db1ab72d96ebb86de2dffd5c342c61f4271e8",
+        "source": "install.py",
+        "final_output_sha256": "724cc0e0aaba3d51372c1360172db1ab72d96ebb86de2dffd5c342c61f4271e8",
+        "cli_destination": "install.py",
+        "previous_staging_sha256": "724cc0e0aaba3d51372c1360172db1ab72d96ebb86de2dffd5c342c61f4271e8"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "e651fb711b8c0a795d500aeecc8dbebfa462489621ee1392dbcf4eca42cf6fef",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b7598e940a2a75a78390725db1c5f7f4f98f3bc06ef55614c84aaf1e8bf0413d",
+        "source": "plugin.yaml",
+        "final_output_sha256": "b7598e940a2a75a78390725db1c5f7f4f98f3bc06ef55614c84aaf1e8bf0413d",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "b7598e940a2a75a78390725db1c5f7f4f98f3bc06ef55614c84aaf1e8bf0413d"
+      },
+      {
+        "destination": "skills/agent-building/SKILL.md",
+        "input_sha256": "a27f1adaab42615bbc7c87b5b8fb3b236c49a356648f737e0e0c6e403be91990",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f65acf04bc12c49e0380791c6bbf5494074d0059a2e7a3cd0cc6ae6b0935c8e7",
+        "source": "skills/agent-building/SKILL.md",
+        "final_output_sha256": "f65acf04bc12c49e0380791c6bbf5494074d0059a2e7a3cd0cc6ae6b0935c8e7",
+        "cli_destination": "skills/agent-building/SKILL.md",
+        "previous_staging_sha256": "f65acf04bc12c49e0380791c6bbf5494074d0059a2e7a3cd0cc6ae6b0935c8e7"
+      },
+      {
+        "destination": "tests/test_builder.py",
+        "input_sha256": "f92cc95806d83649114236c0cd859d02daac50093111f5e5d0a715a22b572b2e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5e11faf7d8c160a505989f3a1255a1c960a344a5a6f5b3170ec14abcd98b9ad8",
+        "source": "tests/test_builder.py",
+        "final_output_sha256": "5e11faf7d8c160a505989f3a1255a1c960a344a5a6f5b3170ec14abcd98b9ad8",
+        "cli_destination": "tests/test_builder.py",
+        "previous_staging_sha256": "5e11faf7d8c160a505989f3a1255a1c960a344a5a6f5b3170ec14abcd98b9ad8"
+      }
+    ],
+    "manifest_sha256": "9d0225e551377f8cebae0d1a2c9b59a026022157f6ea02d0216041c7bfe6a677",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "VALIDATION.md": "VALIDATION.md",
+    "__init__.py": "__init__.py",
+    "_catalog_assets/docs/banner.png": "docs/banner.png",
+    "_catalog_assets/docs/builder.png": "docs/builder.png",
+    "_catalog_assets/docs/compare.png": "docs/compare.png",
+    "builder.py": "builder.py",
+    "dashboard/manifest.json": "dashboard/manifest.json",
+    "dashboard/plugin_api.py": "dashboard/plugin_api.py",
+    "desktop/logo.svg": "desktop/logo.svg",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "docs/banner.png": "docs/banner.png",
+    "docs/builder.png": "docs/builder.png",
+    "docs/compare.png": "docs/compare.png",
+    "docs/demo-poster.jpg": "docs/demo-poster.jpg",
+    "docs/demo.mp4": "docs/demo.mp4",
+    "docs/logo.png": "docs/logo.png",
+    "docs/logo.svg": "docs/logo.svg",
+    "examples/launch-brief.md": "examples/launch-brief.md",
+    "install.py": "install.py",
+    "plugin.yaml": "plugin.yaml",
+    "skills/agent-building/SKILL.md": "skills/agent-building/SKILL.md",
+    "tests/test_builder.py": "tests/test_builder.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-agent-builder",
+    "python_files_compiled": 5,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-agent-builder",
+  "catalog_file": "src/plugin-catalog/duckwork-agent-builder.yaml",
+  "identity": {
+    "catalog_id": "hermes-agent-builder",
+    "canonical_slug": "duckwork-agent-builder",
+    "original_manifest_name": "hermes-agent-builder",
+    "rebranded_manifest_name": "duckwork-agent-builder",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "502c8cec6f65485efaea6a57044809a07b1ee225ae907b537b9303769f2dac45",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "2fd404434163050371d829136e398e6e2ab0514ad6b1ecc17e0f00f9dbf8b9bd",
+          "after_sha256": "276d3a4548b3ee7552aebbba23821f9450226cd44b3a2453f22227a2e32cf208",
+          "before_bytes": 6584,
+          "after_bytes": 6569,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "_catalog_assets/docs/banner.png",
+          "after_path": "docs/banner.png",
+          "before_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+          "after_sha256": "a47ebb15f329008d5d288c39bb7255773dc2a888ff38e9f90582f51db428a978",
+          "before_bytes": 36903,
+          "after_bytes": 36903,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "_catalog_assets/docs/builder.png",
+          "after_path": "docs/builder.png",
+          "before_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+          "after_sha256": "e5013946b541703d106ca8128ddc3020fed9213f07e77b82db6b8e23d8d8f729",
+          "before_bytes": 307006,
+          "after_bytes": 307006,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "_catalog_assets/docs/compare.png",
+          "after_path": "docs/compare.png",
+          "before_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+          "after_sha256": "2bbdd3f70aa3cca60abe23f0409aa3b77e264dc28171206a311d7212653941f1",
+          "before_bytes": 384950,
+          "after_bytes": 384950,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

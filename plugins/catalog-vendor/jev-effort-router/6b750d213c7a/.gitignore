@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Environments
+.venv/
+venv/
+
+# Test and tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Secrets — the plugin reads OPENROUTER_API_KEY from the environment only
+.env
+.env.*
+!.env.example
+
+# Local runtime artefacts (runtime data lives under DUCKWORK_HOME/plugin-data/)
+routes.jsonl
+*.jsonl.tmp
+
+# BMad Method — local agent tooling and planning workspace, never published
+_bmad/
+_bmad-output/
+.agents/
+.claude/skills/
+.duckwork/
+skills-lock.json

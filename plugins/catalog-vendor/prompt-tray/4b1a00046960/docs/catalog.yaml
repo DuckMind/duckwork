@@ -1,0 +1,20 @@
+# Canonical catalog pin lives in Fordex/duckwork-agent plugin-catalog/prompt-tray.yaml.
+
+name: prompt-tray
+repo: https://github.com/DuckMind/duckwork
+sha: REPLACE_WITH_40_CHAR_COMMIT
+description: Saved chat prompts — click a tray item to insert it into the Duckwork
+  composer. Review / Plan / Explain defaults, then your own. No API keys.
+maintainer: aydnOktay
+tier: community
+category: desktop
+requires_duckwork: ">=0.21"
+docs_url: https://github.com/DuckMind/duckwork
+version: "0.1.0"
+platforms: []
+capabilities:
+  provides_tools:
+  - prompt_tray_list
+  provides_hooks: []
+  provides_middleware: []
+  requires_env: []

@@ -1,0 +1,39 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          repository: Fordex/duckwork-agent
+          ref: d923a5eb487a17c0a68801bba9ef0f56c81040a8 # Duckwork 0.22.2
+          path: .duckwork-source
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /apps/desktop/src/lib/preview-targets.ts
+            /apps/desktop/src/lib/path-compare.ts
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+        env:
+          DUCKWORK_SOURCE_ROOT: .duckwork-source

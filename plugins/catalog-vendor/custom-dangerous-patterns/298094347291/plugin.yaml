@@ -1,0 +1,23 @@
+name: custom-dangerous-patterns
+version: "0.5.1"
+# The pre_tool_call "approve" action (which block patterns rely on) only exists
+# from Duckwork 0.18.1; older cores ignore an unknown action and the command runs
+# ungated. tools.approval_detection (imported at patterns.py) first ships in
+# 0.21.4, below which matching degrades to the plugin's own normalizer. Duckwork
+# enforces this by skipping the plugin before import, with a warning.
+requires_duckwork: ">=0.21.4"
+manifest_version: 2
+description: >-
+  Add custom dangerous command patterns to Duckwork's built-in approval
+  system. Users define regex patterns in YAML; the plugin enforces them
+  through Duckwork's native pre_tool_call hook, so custom block patterns
+  raise the standard Allow/Deny approval request on every surface (CLI,
+  TUI, desktop, and chat channels) and deny patterns block immediately.
+  The plugin modifies no Duckwork internals.
+provides_hooks:
+  - pre_tool_call
+author: Stephen Cross
+license: MIT
+python_dependencies:
+  - "ruamel.yaml>=0.18,<0.20"
+  - "rich>=13.0.0,<14"

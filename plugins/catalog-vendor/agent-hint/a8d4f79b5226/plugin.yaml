@@ -1,0 +1,72 @@
+name: agent-hint
+version: "0.5.1"
+author: dachaimahogany
+description: "Gives the inference engine a machine-readable view of the agent session behind each
+  request: adds a standard X-Agent-Hint header (base64url JSON) to main LLM requests and can report
+  agent_status lifecycle events out of band. Never touches the request body, stdlib-only, removable,
+  off by default."
+requires_duckwork: ">=0.21.6"
+tags: [agent-hint, inference-engine, scheduling, observability, middleware]
+
+# 声明的能力必须与 register(ctx) 的真实注册一一对应（上游能力探针会校验）。
+provides_hooks:
+  - on_session_start
+  - on_session_end
+  - on_session_finalize
+  - pre_tool_call
+  - post_tool_call
+  - pre_approval_request
+  - post_approval_response
+  - subagent_start
+  - subagent_stop
+  - post_api_request
+provides_middleware:
+  - llm_request
+
+# 所有键均为可选（默认值即安全缺省）；优先级：plugins.entries.agent-hint.settings > AGENT_HINT_<KEY> 环境变量 > 内置缺省。
+config_schema:
+  enabled:
+    type: bool
+    required: false
+    description: "Master switch. Default false: no header is injected and no events are sent
+      (the middleware and every hook return early)."
+  agent_type:
+    type: str
+    required: false
+    description: "Value written to session.agent_type (the agent/role label). Default: duckwork.
+      Set per role in multi-agent deployments."
+  priority_level:
+    required: false
+    description: "priority.level (integer; <= 0 omits the whole priority block). Default: 3."
+  priority_reason:
+    type: str
+    required: false
+    description: "priority.reason text. Default: user_waiting."
+  status_sink:
+    type: str
+    required: false
+    description: "Event transport: ndjson | http | none. Default: none (nothing written locally,
+      no network). Setting status_url makes http the default."
+  status_url:
+    type: str
+    required: false
+    description: "Target URL for the http sink (JSON POST). Empty = no network requests at all."
+  finalize_on:
+    type: str
+    required: false
+    description: "When to emit the finalize event: session_end | session_finalize.
+      Default: session_end."
+  suspend_after_s:
+    required: false
+    description: "Emit a suspend event once an approval has been pending this many seconds
+      (integer; 0 = disabled). Default: 0."
+  cache_pin_end:
+    required: false
+    description: "Value used for cache_control.pin.range.end (integer; 0 = omit the range).
+      Default: 1."
+  next_action_map:
+    type: str
+    required: false
+    description: "Generic prediction.next_action mapping (JSON string), e.g.
+      {\"research_\": [\"analysis_run\", 8, \"tool\"], \"__default__\": [null, 0, \"tool\"]}.
+      Empty (the default) omits next_action and remaining_calls entirely."

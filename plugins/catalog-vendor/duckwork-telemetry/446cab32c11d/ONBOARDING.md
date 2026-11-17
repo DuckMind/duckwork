@@ -1,0 +1,2344 @@
+# duckwork-telemetry — Design & Implementation Notes
+
+> **Onboarding document for new contributors.** This file captures every
+> non-obvious design decision made from v0.1 through v0.4.0. Reading the code
+> without this context risks re-learning hard-won findings from the Duckwork Agent
+> source. Start here.
+
+---
+
+## Table of Contents
+
+1. [What This Plugin Does](#what-this-plugin-does)
+2. [Module Map](#module-map)
+3. [The Duckwork Plugin Model (what we can and can't do)](#the-duckwork-plugin-model)
+4. [Hook Pipeline](#hook-pipeline)
+5. [Hook kwargs Reference](#hook-kwargs-reference)
+6. [Database Layer](#database-layer)
+7. [Pricing Engine](#pricing-engine)
+8. [Budget Engine](#budget-engine)
+9. [Pricing Auto-Refresh](#pricing-auto-refresh)
+10. [Subagent Architecture](#subagent-architecture)
+11. [Test Isolation Contract](#test-isolation-contract)
+12. [Design Decisions by Version](#design-decisions-by-version)
+13. [Metrics: Real vs Estimated](#metrics-real-vs-estimated)
+14. [CI/CD Pipeline](#cicd-pipeline)
+15. [Known Limitations](#known-limitations)
+16. [PluginContext API](#plugincontext-api)
+17. [Valid Hooks Reference](#valid-hooks-reference)
+18. [Dashboard Plugin Surface](#dashboard-plugin-surface)
+19. [Duckwork Session Storage (transcripts and artifacts)](#duckwork-session-storage-transcripts-and-artifacts)
+20. [Dashboard i18n (EN/RU toggle)](#dashboard-i18n-enru-toggle)
+
+---
+
+## What This Plugin Does
+
+Duckwork Agent runs autonomously — across sessions, platforms (CLI, cron, Telegram,
+Discord), and subagents — which means it can keep spending even when you're not
+watching. `duckwork-telemetry` lives **inside the runtime** as a Duckwork plugin and
+does two things:
+
+1. **Captures telemetry** (tokens, cost, latency, tool calls, session metadata)
+   and persists it to a local SQLite database.
+2. **Enforces budget guardrails** before the next tool call is made — soft alerts
+   injected into the conversation, hard blocks that abort tool calls when limits
+   are exceeded, and cron-job pausing for future runs.
+
+**Design principle:** observability is invisible to the model. Everything goes
+through hooks. The only user-facing surface is `/stats`, `/budget`, and `/setup`.
+Errors are swallowed in every hook — the plugin must never take down a session.
+
+### Runtime modes
+
+The plugin setting `plugins.entries.duckwork-telemetry.settings.mode` controls
+whether budget behavior is active:
+
+- `enforce` (default): enable the budget guardrails and setup behavior described
+  below. Missing `mode`, invalid values, and older Duckwork hosts without
+  `ctx.get_config` all resolve to `enforce` so upgrades never silently drop
+  blocking.
+- `observe`: collect and report telemetry; do not create budget.yaml
+  automatically, inject budget notices, block tools, or pause cron jobs. The
+  budget file watcher still runs so `/budget` hot-reloads. When a `budget.yaml`
+  is present, `/budget` and the dashboard budget panel say limits are not
+  enforced.
+
+The mode is read during plugin registration. Changing it requires restarting the
+Duckwork process that owns the plugin.
+
+This plugin was built for the [Duckwork Agent Challenge](https://github.com/DuckMind/duckwork)
+and addresses [Fordex/duckwork-agent#6642](https://github.com/DuckMind/duckwork).
+
+---
+
+## Module Map
+
+```
+duckwork-telemetry/
+├── __init__.py          ← Plugin entry point. Registers all 10 hooks + 3 slash
+│                          commands. Contains the cron regex, approx-token store,
+│                          and the fallback estimation logic for usage=None.
+├── db.py                ← SQLite persistence layer. Schema v1→v3 migrations,
+│                          per-thread connections, WAL mode, write API and
+│                          read/budget query API.
+├── pricing.py           ← Cost estimation engine. Priority-chain lookup
+│                          (custom YAML `_subscription`/`:free` → core snapshot
+│                          → remaining custom/built-in → prefix match).
+│                          All 5 token components. Google-symmetric normalization.
+├── pricing_refresh.py   ← Auto-refresh from remote pricing APIs. PricingSource
+│                          ABC, OpenRouterSource, GoogleAISource. Merge strategy
+│                          preserves manual overrides.
+├── budget.py            ← Budget verdict engine. Window math in local tz,
+│                          verdict cache, anti-spam ledger, tool-gate helpers,
+│                          /budget command, burn-rate forecast.
+├── stats.py             ← /stats command implementation. All subcommands:
+│                          summary, cron, providers, models, raw, efficiency,
+│                          smells.
+├── smell_detector.py    ← AI smell detection. Read-only heuristics over existing
+│                          runs/tool_calls that flag session anti-patterns
+│                          (context rotation, loop traps, tool thrashing, high
+│                          error rate, massive sessions). See `§ Agent Intelligence`.
+├── moa.py               ← Mixture-of-Agents awareness. Resolves the `provider=
+│                          "moa"` virtual-provider preset to its aggregator's
+│                          real provider/model so the call is priced/attributed
+│                          correctly. See `§ Mixture of Agents (MoA)`.
+├── setup_wizard.py      ← /setup command + auto-setup on first load. Generates
+│                          pricing.yaml and budget.yaml with defaults.
+├── plugin.yaml          ← Plugin metadata: name, version, declared hooks.
+│                          `provides_hooks` is declarative only (the loader does
+│                          NOT filter against it). Keep it accurate so it matches
+│                          the code, but enabling/disabling a hook is done in
+│                          `__init__.py`. See `§ Plugin Discovery Gotcha` for the
+│                          `name`-collision trap that bit us with PR #44.
+├── dashboard/
+│   ├── index.html       ← Standalone SPA. Vendored Chart.js, no build step, no auth.
+│   └── serve.py         ← stdlib HTTP server, port 8765, --host flag.
+├── tests/
+│   ├── conftest.py      ← Autouse DUCKWORK_HOME isolation (see Test Isolation).
+│   └── test_*.py        ← 262 tests. All in-memory SQLite, no live gateway.
+├── config.example.yaml  ← Annotated pricing.yaml example.
+└── budget.example.yaml  ← Annotated budget.yaml example.
+```
+
+---
+
+## The Duckwork Plugin Model
+
+Before reading the hook logic, understand the constraint space that was
+discovered by auditing the Duckwork Agent source:
+
+### What a plugin CAN do
+
+| Mechanism | Effect |
+|-----------|--------|
+| `pre_tool_call` returning `{"action":"block","message":...}` | Aborts the tool call. Returns error to model instead. The current in-flight model response is already complete and will be billed. |
+| `cron.jobs.pause_job(job_id, reason)` | Prevents the cron job from running again. Does not stop the current run. |
+| `pre_llm_call` returning `{"context": "..."}` | Injects text into the conversation context before the API call. Used for soft budget alerts. |
+| Any read from the DB | Fully available in any hook via `db.py`. |
+
+### What a plugin CANNOT do
+
+| Attempted action | Why it doesn't work |
+|-----------------|---------------------|
+| Abort an in-flight model API call | No hook fires after the call starts and before it ends. `pre_api_request` and `pre_llm_call` both fire BEFORE; their return value cannot abort. |
+| Get token data from `pre_llm_call` | This hook fires once per turn but before any API call. No token data is available here. |
+| Get token data from `post_llm_call` | This hook fires after the tool loop. No token data. Wrong hook for cost capture. |
+
+**Source references** (verified against duckwork-agent source):
+- `pre_llm_call` return: `agent/conversation_loop.py:687-722` (context injection only)
+- `pre_api_request` return: `agent/conversation_loop.py:1235-1255` (return discarded)
+- `pre_tool_call` block: `duckwork_cli/plugins.py:1666-1707` ✅
+- `cron.jobs.pause_job`: `cron/scheduler.py` ✅
+
+---
+
+## Hook Pipeline
+
+The plugin registers 12 Duckwork hooks. Here is what each
+one does and why it was chosen:
+
+```
+Hook                    Purpose
+────────────────────────────────────────────────────────────────────────────
+on_session_start        Create runs row, extract cron_job_id from session_id.
+                        Fired ONCE per new session (not per turn).
+
+pre_api_request         Stash approx_input_tokens keyed by (session_id, call_count)
+                        for the fallback estimator when usage=None.
+
+post_api_request        PRIMARY TOKEN SOURCE. One call per individual API call
+                        within a turn. Carries the usage dict with real token
+                        counts. Calculates cost, records llm_calls row, updates
+                        runs totals.
+
+api_request_error       Captures 404 "model removed / unavailable" errors to
+                        power the model-unavailable alert. NO token data.
+
+post_tool_call          Records tool name, success/failure, latency. Also records
+                        a proxy row for delegate_task/subagent calls (no token
+                        data there, just a count).
+
+post_llm_call           Fires once per turn after the tool loop. NO token data.
+                        Used only to keep runs.ended_at current during multi-turn
+                        interactive sessions.
+
+subagent_start          Records the parent→child delegation edge (subagent_edges)
+                        so subagent cost attributes to the root cron_job. Fires
+                        synchronously before the child dispatches. NO token data.
+
+subagent_stop           Records a synthetic tool_call row ("delegate_task/subagent")
+                        for proxy count of subagent invocations, and finalizes the
+                        subagent_edges row (stopped_at + child_status). NO token data.
+
+on_session_end          Fires at the end of every run_conversation() call. Sets
+                        final status: ok / error / interrupted.
+
+on_session_finalize     Safety net for true session teardown (CLI atexit, gateway
+                        expiry). Ensures status is "ok" if not already set.
+
+pre_llm_call            (1) Attaches sender_id to the run for per-sender budgets.
+                        (2) Injects one-time-per-window soft budget alert into
+                        the conversation context (`enforce` mode only).
+                        (3) Injects one-shot free→paid transition warning when
+                        the current model was previously seen as free but is
+                        now incurring cost.
+
+pre_tool_call           Hard budget enforcement. Returns {"action":"block",...}
+                        if any scope is in hard breach. Also triggers cron pause.
+                        Only registered in `enforce` mode (the default); in
+                        `observe` mode the hook is never registered.
+```
+
+**Why `post_api_request` is the primary token hook:** Duckwork can make multiple
+API calls per turn (retries, tool-call rounds, reasoning). Only `post_api_request`
+fires per individual API call and carries the `usage` dict. The `pre_/post_llm_call`
+hooks fire once per turn and have no token data. This design was discovered from
+the source (not guessable from the hook names alone).
+
+**Why not capture budget in `post_api_request`:** Token counts have just been
+recorded but verdict cache is stale. The tool-gate in `pre_tool_call` is the
+right place — it fires synchronously before the next tool and has a fresh view
+of accumulated spend.
+
+---
+
+## Hook kwargs Reference
+
+These are the actual kwargs confirmed from the Duckwork Agent source. Only the
+ones used by this plugin are listed; unknown kwargs are absorbed by `**_kw`.
+
+### `on_session_start`
+Source: `agent/conversation_loop.py:295-300`
+```python
+session_id: str      # unique; cron format: "cron_{job_id}_{YYYYMMDD_HHMMSS}"
+model: str           # active model name
+platform: str        # "cli" | "cron" | "telegram" | "discord" | ...
+```
+Fired **once** at the start of a brand-new session (not on each turn of an
+interactive session, not on session continuation).
+
+### `pre_llm_call`
+Source: `agent/conversation_loop.py:702-711`
+```python
+session_id: str
+user_message: str
+conversation_history: list
+is_first_turn: bool
+model: str
+platform: str
+sender_id: str
+```
+Fires once per turn (before the API call loop). Return value used for context
+injection only. **NO token data.**
+
+### `pre_api_request`
+Source: `agent/conversation_loop.py:1235-1253`
+```python
+task_id: str
+session_id: str
+api_call_count: int       # 0-indexed within this turn
+approx_input_tokens: int  # APPROXIMATE (character-based estimate)
+request_messages: list
+model: str
+provider: str
+base_url: str
+...
+```
+Fires before each individual API call. `approx_input_tokens` is used only as a
+fallback estimator when `usage=None` in `post_api_request`.
+
+### `post_api_request`  ← PRIMARY hook for tokens/cost/latency
+Source: `agent/conversation_loop.py:3463-3482`
+```python
+task_id: str
+session_id: str
+platform: str
+model: str
+provider: str             # verbatim from gateway — NOT normalized
+api_call_count: int
+api_duration: float       # seconds; multiply by 1000 for ms
+finish_reason: str
+response_model: str       # model name as reported by the provider response
+usage: dict | None        # CanonicalUsage (see below) or None when unavailable
+assistant_content_chars: int
+assistant_tool_call_count: int
+```
+
+`usage` dict (from `agent/usage_pricing.py::CanonicalUsage`):
+```python
+{
+  "input_tokens": int,        # non-cached input tokens
+  "output_tokens": int,
+  "cache_read_tokens": int,
+  "cache_write_tokens": int,
+  "reasoning_tokens": int,
+  "request_count": int,
+  "prompt_tokens": int,       # = input + cache_read + cache_write
+  "total_tokens": int,        # = prompt + output
+}
+```
+`usage` is **None** when the provider returns no usage info (some streaming
+providers, ACP mode). The fallback estimator in `__init__.py` kicks in,
+tokens are estimated from `approx_input_tokens + assistant_content_chars/4`,
+and the row is flagged `estimated=1`.
+
+**IMPORTANT:** `prompt_tokens` is intentionally **ignored** in cost calculation
+to avoid double-counting. `prompt_tokens = input + cache_read + cache_write`, so
+using it plus the individual components would count them twice.
+
+### `post_tool_call`
+Source: `model_tools.py:994-1005`
+```python
+tool_name: str
+args: dict
+result: str        # JSON string (or plain text) returned by the tool
+task_id: str
+session_id: str
+tool_call_id: str
+duration_ms: int
+```
+Success/failure detection: attempt `json.loads(result)` and check for an
+`"error"` key. If that fails (not valid JSON), fall back to
+`result.startswith('{"error"')`. This is robust to tools that return plain text.
+
+### `on_session_end`
+Source: `agent/conversation_loop.py:4692-4700`
+```python
+session_id: str
+completed: bool
+interrupted: bool
+model: str
+platform: str
+```
+Fires at the end of every `run_conversation()` call — once per turn in
+interactive CLI sessions, once per cron job execution. Status derivation:
+`interrupted` → `"interrupted"`, `completed` → `"ok"`, else → `"error"`.
+
+### `on_session_finalize`
+Source: `cli.py:955`, `gateway/run.py:9646`
+```python
+session_id: str | None
+platform: str
+```
+Fires on true session teardown. Safety net: sets status to `"ok"` if not already
+set (the `on_session_end` → `on_session_finalize` sequence ensures at least one
+of them fires).
+
+### `subagent_start`
+Source: `tools/delegate_tool.py` (`_build_child_agent`)
+```python
+parent_session_id: str
+parent_turn_id: str
+parent_subagent_id: str
+child_session_id: str
+child_subagent_id: str   # format: "sa-{i}-{uuid8}"
+child_role: str
+child_goal: str
+```
+Fires **synchronously** in `_build_child_agent`, BEFORE the child is
+dispatched asynchronously — so the parent→child edge is persisted before the
+child's own first `post_api_request` can race it. Now consumed by the plugin:
+`db.record_subagent_start` inserts a `subagent_edges` row keyed on
+`child_session_id` (schema v11, issue #49).
+
+### `subagent_stop`
+Source: `tools/delegate_tool.py` — the `_invoke_hook("subagent_stop", …)` call
+(exact line drifts across upstream commits; match by symbol, not line number).
+```python
+parent_session_id: str
+parent_turn_id: str
+child_session_id: str
+child_role: str
+child_summary: str
+child_status: str    # "completed" | "failed" | "error" | "interrupted" | "timeout"
+duration_ms: int
+```
+**Carries `child_session_id`** — verified in `tools/delegate_tool.py`'s
+`subagent_stop` invocation (`child_session_id=getattr(_child_agent, "session_id", None)`). An earlier
+version of this doc claimed `subagent_stop` had no child session id; that was
+stale and is corrected here. It does **not** carry `child_subagent_id`, and
+still has **no token or cost data**. We record a synthetic `tool_calls` row
+with `tool_name="delegate_task/subagent"` for proxy count, and
+`db.record_subagent_stop` finalizes the matching `subagent_edges` row
+(`stopped_at` + `child_status`) — `child_session_id` is the correlation key
+that ties this hook back to `subagent_start`.
+
+---
+
+## Database Layer
+
+### Design choices
+
+**SQLite, not Postgres/external:** The plugin runs inside the gateway process
+with no server setup. SQLite is the only zero-dependency option that survives
+gateway restarts and has ACID guarantees. No network hop.
+
+**WAL mode:** Duckwork cron jobs run in a `ThreadPoolExecutor`, so multiple jobs
+write concurrently from different threads. WAL allows one writer + concurrent
+readers simultaneously. This is the standard SQLite high-concurrency pattern.
+
+**Per-thread connections:** `threading.local()` — each thread opens its own
+connection to the same WAL DB file. The alternative (a single connection
+protected by a `threading.Lock`) would serialize all writes and bottleneck
+parallel cron jobs.
+
+**`_schema_lock` DDL guard:** Even with per-thread connections, SQLite DDL
+(`CREATE TABLE`, `ALTER TABLE`) raises `SQLITE_LOCKED` if two threads try to
+migrate simultaneously on a fresh DB. `busy_timeout` does NOT retry `SQLITE_LOCKED`
+errors. Holding a Python `threading.Lock()` while running `_ensure_schema` is
+cheap and eliminates the race.
+
+**`busy_timeout=30000` before `PRAGMA journal_mode=WAL`:** Switching an empty
+(or freshly opened) DB to WAL requires a brief exclusive lock. If `busy_timeout`
+is not set first and another thread connects at the same time, the WAL switch
+fails immediately with "database is locked". The 30s timeout covers CI
+environments with slow or network-backed filesystems.
+
+**`synchronous=NORMAL`:** Safe for WAL mode (SQLite docs confirm this). Faster
+than `FULL` while maintaining durability on unclean shutdown at the WAL
+checkpoint level.
+
+### Schema evolution
+
+Migrations run on first connect per thread. Idempotent: check `schema_version`
+table before applying.
+
+| Version | What was added |
+|---------|---------------|
+| v1 | Base tables: `runs`, `llm_calls`, `tool_calls`, `schema_version` |
+| v2 | `llm_calls`: `cache_read_tokens`, `cache_write_tokens`, `reasoning_tokens`, `estimated`. `runs`: `parent_session_id`, `estimated_llm_calls` |
+| v3 | `runs.sender_id`. New table: `budget_alerts` (anti-spam ledger) |
+| v4 | `runs`: `cache_read_tokens`, `cache_write_tokens` (per-session/cron cache breakdown) |
+| v5 | New table: `known_free_models` (free→paid transition tracking) |
+| v6 | New table: `free_paid_transitions` (historical free→paid flips for the widget rendered inside `TelemetryPage`) |
+| v7 | `llm_calls.provider_assumed` flag + `runs.provider_assumed_calls` counter (provider-assumed pricing visibility, issue #42) |
+| v8 | New table: `model_unavailable_alerts` (404s captured via `api_request_error` — model removed/deprecated by provider) |
+| v9 | Repair pass — re-adds any column from v2/v3/v4/v7 that was silently skipped by the old blanket `except OperationalError: pass` pattern when an `ALTER TABLE` hit a transient `SQLITE_LOCKED` (cross-process cron contention). Uses `_add_column_if_missing`; idempotent. |
+| v10 | MoA (Mixture-of-Agents) attribution: `llm_calls.moa_preset` (preset name for a MoA aggregator call; NULL otherwise) + `runs.moa_calls` (per-session counter). See `§ Mixture of Agents (MoA)`. |
+| v11 | New table `subagent_edges` (parent→child delegation tree) + `idx_subagent_edges_parent`. Attributes async/nested subagent cost to `per_cron_job` via a recursive CTE at query time. (#49) |
+| v12 | Add `runs.profile` (per-profile cost attribution) + `idx_runs_profile`. Captured from `ctx.profile_name` at `on_session_start`, backfilled in `pre_llm_call` (first non-null wins). Adds the `per_profile` budget scope. |
+| v13 | Repair pass — re-creates `subagent_edges` (+ `idx_subagent_edges_parent`) via `CREATE TABLE IF NOT EXISTS`. Heals DBs upgraded from a build that numbered a *different* migration as v11: the per-profile branch shipped `runs.profile` as v11 before #56 settled `subagent_edges` on v11, so those DBs have `version=11` applied but no table, and v11's early-return skips creation forever. No-op on clean v11 DBs. |
+| v14 | New table: `pricing_snapshots` (append-per-change history of the tariffs Duckwork core resolves per `(provider, model)`, with provenance: `source` / `source_url` / `pricing_version` / `fetched_at`). Captured from `agent.usage_pricing.get_pricing_entry` via `core_pricing.py` in the `post_api_request` hook; storage-only (no surface yet). + `idx_pricing_snapshots_model`. |
+| v15 | `pricing_snapshots.resolved_model` — Canonical model name captured when a dated id was normalized to resolve against the core `/models` catalog; NULL when the raw name resolved directly. |
+| v16 | New tables: `endpoint_payload_cache` and `model_efficiency_cache` for standalone-dashboard caches; cache writers share the plugin DB's WAL + 30s busy-timeout posture. |
+| v17 | Data-only repair (issue #89): deletes `known_free_models` rows with no evidence of being genuinely free (no wildcard `provider=''`, and no `llm_calls` row for the same model+provider with `cost_usd = 0` AND tokens > 0), plus their `free_paid_transitions` rows. No shape change. |
+
+`_SCHEMA_VERSION` in `db.py` is the latest applied version — keep it in lockstep
+with the highest `_migrate_vN`. `test_schema_idempotent` asserts the count of
+`schema_version` rows equals `_SCHEMA_VERSION`, so adding a migration without
+bumping the constant (or vice versa) fails CI.
+
+### Adding a column or table — mandatory checklist
+
+Any PR that adds, removes, renames, or retypes a column or table **MUST**
+follow this checklist. Skipping a step has already wedged user DBs in
+production once (the v7 `provider_assumed` incident); the rules below exist
+specifically to prevent the recurrence.
+
+1. **Write a new `_migrate_vN`.** Never edit `_ensure_schema` to alter the
+   shape of an existing table — that only runs on fresh DBs, so every
+   upgrading user keeps the old shape. New shape ⇒ new migration function.
+2. **Bump `_SCHEMA_VERSION` to N** in `db.py` (kept in lockstep —
+   `test_schema_idempotent` enforces this).
+3. **Use `_add_column_if_missing`** for `ALTER TABLE ADD COLUMN`. Do **not**
+   write a raw `ALTER` with a `try/except OperationalError: pass` — that is
+   exactly the pattern that caused the v7 incident. The helper is idempotent
+   (re-running it on an already-migrated DB is a no-op) and lets transient
+   errors propagate so the migration is not marked applied prematurely.
+4. **Guard `CREATE TABLE` with `IF NOT EXISTS`.** Same idempotency reason.
+5. **Reads must tolerate the column being absent** if the code path can run
+   *before* `_ensure_schema()` (rare, but `_get_conn` is the only entry —
+   audit any new entry point that bypasses it).
+6. **Writes that reference the new column must come AFTER the migration is
+   registered.** If you add the column in v9 but the matching `INSERT`/`UPDATE`
+   was deployed in the same release, you are fine — `_ensure_schema` runs at
+   connect, before any write. But if you reference the column from a `SELECT`
+   query in `stats.py` or a dashboard endpoint and the migration silently
+   skipped, the query returns nothing or errors — write a test that exercises
+   the upgrade path from the *previous* schema version (see
+   `test_migrate_v9_repairs_missing_column_from_wedged_v7` as the template).
+7. **Add a row to the migration table above** with `What was added` filled in
+   and a link to the issue / PR.
+8. **Add a per-version assertion test**: `test_schema_vN_columns` or
+   `test_schema_vN_recorded` (see existing tests as the pattern).
+9. **Never drop or rename a column in a single migration.** SQLite before
+   3.35 has no `DROP COLUMN`, and even modern SQLite forbids it inside a
+   transaction with foreign keys. If a column truly must go, do it across
+   two releases: deprecate (stop writing) in vN, then remove (table-rebuild
+   migration) in vN+1 only after verifying no installed version still
+   writes it.
+10. **Never reuse a `_SCHEMA_VERSION` number.** Forward-only. If a migration
+    was buggy in production, write `_migrate_v(N+1)` to repair it (the v9
+    repair pass is the canonical example) — never edit `_migrate_vN`
+    in-place to fix the bug, because users who already ran the buggy version
+    have `schema_version=N` and will skip the corrected code.
+
+### Migration ALTER contract (post-v9)
+
+Never wrap an `ALTER TABLE ADD COLUMN` in a blanket
+`except sqlite3.OperationalError: pass` followed by an unconditional
+`INSERT INTO schema_version`. `OperationalError` also covers
+`SQLITE_LOCKED` (which `busy_timeout` does **not** retry across processes — the
+`_schema_lock` only protects threads of the same process; cron jobs run in
+separate processes and *will* contend on first connect after an upgrade) and
+I/O errors. Swallowing those and then marking the version applied permanently
+wedges the DB without raising. Use `_add_column_if_missing` instead — it checks
+`pragma_table_info` first and lets any real `OperationalError` propagate, so
+the surrounding migration is NOT marked applied and the next connect retries.
+This was the root cause of the v7 `provider_assumed` silent-skip incident.
+
+### `_ensure_run_row` — lazy insert (added v0.3.1)
+
+**Problem:** For sessions that start on a running gateway BEFORE the plugin is
+enabled (or on session continuation where `on_session_start` doesn't fire), the
+`UPDATE runs WHERE session_id = ?` calls in `record_llm_call` and `end_run` were
+silent no-ops — no row existed. `/stats` and `/budget` under-reported.
+
+**Solution:** `_ensure_run_row(session_id, ts)` does `INSERT OR IGNORE INTO runs
+(session_id, started_at, status) VALUES (?, ?, 'running')` before every UPDATE.
+If the row already exists (happy path from `on_session_start`), it's a no-op.
+
+**Called by:** `record_llm_call` and `end_run`. Not needed in `start_run` (it
+already uses `INSERT OR IGNORE`).
+
+### `runs` table key columns
+
+| Column | Notes |
+|--------|-------|
+| `session_id` | PK. CLI: `{YYYYMMDD_HHMMSS}_{uuid6}`. Cron: `cron_{job_id}_{YYYYMMDD_HHMMSS}`. |
+| `cron_job_id` | Extracted from `session_id` via anchored regex (see Cron regex below). NULL for non-cron. |
+| `estimated_llm_calls` | Count of calls where provider returned `usage=None`. Used for budget degradation. |
+| `parent_session_id` | Dormant by design — kept in the schema but never populated. Parent→child attribution is handled by the separate `subagent_edges` table (v11) instead; see `§ Subagent Architecture`. |
+| `sender_id` | Set from `pre_llm_call.sender_id`. First non-null wins (`COALESCE(sender_id, ?)`). |
+| `profile` | Set from `ctx.profile_name` (the only profile-identity surface Duckwork exposes to plugins — NOT encoded in `session_id`, no `DUCKWORK_PROFILE` env var). Captured at `on_session_start`, backfilled in `pre_llm_call` via `db.set_profile` (`COALESCE(profile, ?)`, first non-null wins). Powers the `per_profile` budget scope. NULL for pre-v12 rows and sessions whose profile could not be resolved. |
+| `model` / `provider` | Set from first `record_llm_call`. `COALESCE(model, ?)` so they're never overwritten. |
+
+---
+
+## Pricing Engine
+
+### Lookup priority chain
+
+`estimate_cost(usage, model, provider="", core_price=None)` resolves a price by
+trying these in order:
+
+1. **Custom YAML** (`~/.duckwork/telemetry/pricing.yaml`, `models:` section),
+   **only** when the entry is `_subscription: true` (a declared flat rate) or
+   the model id ends in `:free` — these two are the only entries that outrank
+   a core-sourced snapshot, because the core has no way to know about a user's
+   flat-rate deal, and there is no verified guarantee the core resolves a
+   `:free`-suffixed id to `$0` rather than its paid base rate.
+2. **Core-sourced snapshot** (`core_price`) — the tariff Duckwork core itself
+   resolved for this exact `(provider, model)` pair, read from the
+   `pricing_snapshots` table (a local SQLite read — the caller in
+   `post_api_request` passes it in; see § Core-sourced pricing snapshots
+   below). Present only once a snapshot has been captured for the pair; a
+   cold-start (never-seen) pair has none yet.
+3. **Custom YAML** (any remaining entry — a plain hand-added override or an
+   auto-fetched OpenRouter entry) — exact match, case-insensitive.
+4. **Built-in table** (`_DEFAULT_PRICING`) — exact match.
+5. **Prefix fallback** — scans all of the above plus `_PREFIX_PRICING`,
+   **longest prefix wins**.
+6. **Google symmetric form** — if the above misses, tries `gemini-X` ↔
+   `google/gemini-X`.
+7. **Unknown** → returns `$0.00`, logs a one-time WARNING.
+
+**`:free` suffix rule (issue #32, #54):** OpenRouter advertises free-tier
+variants with a `:free` suffix (e.g. `nvidia/nemotron-3-ultra-550b-a55b:free`).
+These are `$0` by definition. The rule sits in `_lookup_form` **before** both
+the prefix scan and `core_price`, for two reasons: (1) otherwise a suffixed
+free id inherits its paid base's price via prefix (or, now, via a core
+snapshot resolved for the paid base) — billing a free call as paid; (2)
+returning an explicit zero dict (not the unknown-model `None`) makes the call
+resolve as known-free — no estimated-price warning, and it's recorded in
+`known_free_models` so the free→paid alert fires when the gateway later drops
+the `:free` suffix. A user's explicit `:free` entry (step 1) still overrides
+the rule.
+
+Every candidate below step 2 is still filtered by the **provider-aware guard**
+(below); `core_price` needs no such guard — it was already resolved for this
+exact `provider` by the caller.
+
+**Why longest-prefix-wins:** `gpt-4o-mini` must not be matched by `gpt-4o` or
+`gpt-4`. `o1-mini` must not be matched by `o1`. The sorted-by-length approach
+(candidates sorted by `-len(prefix)`) ensures specific prefixes take precedence.
+
+### Provider-aware lookup guard (added v0.4.1, issue #24)
+
+**Problem:** `pricing.yaml` is auto-populated from the OpenRouter catalog —
+every fetched entry carries `_source: openrouter`. But the same model name can
+be served by a *different* provider at a *different* price. Two real cases:
+
+- **Fordex Portal** serves `qwen3.7-plus` (bare id) on a flat subscription ($0),
+  while OpenRouter lists `qwen/qwen3.7-plus` (prefixed) at a real per-token rate.
+- **NVIDIA NIM** serves `nvidia/nemotron-3-super-120b-a12b` at $0.10/$0.50 while
+  OpenRouter lists the **same exact id** at $0.09/$0.45 (a true key collision).
+
+A provider-blind, model-name-only lookup silently costs a Fordex/NIM call with the
+OpenRouter rate — a plausible-but-wrong number. `_source` was decorative until
+this guard made it load-bearing.
+
+**Rule** (`_source_eligible(source, provider)`):
+
+| Entry source | Eligible for which calls |
+|--------------|--------------------------|
+| `_source: openrouter` | only `provider==""` (backward-compat/unknown) or a provider containing `"openrouter"` |
+| no `_source` (`_DEFAULT_PRICING`, `_PREFIX_PRICING`, hand-added overrides) | **always** (provider-neutral) |
+| other named source (e.g. `google-ai`) | **always** (direct-provider rate, reasonable for any caller of that id) |
+
+`provider` is the verbatim string from `post_api_request` (e.g. `"fordex"`,
+`"openrouter"`; NIM **canonicalizes to `"nvidia"`** — aliases `nim`/`nvidia-nim`/
+`nemotron` are normalized by Duckwork `normalize_provider()` before the hook fires,
+verified against `duckwork_cli/providers.py`).
+
+**Inverted safe-default for the lookup path (added v0.6.1, issue #42):** the
+guard's original failure mode was "fail to zero" — if the only candidate was a
+source-ineligible OpenRouter entry, the lookup returned `None` and the call
+recorded `cost=0`. For a cost-tracking plugin this is the *worst* failure: a
+real paid call (e.g. Fordex Portal reselling `moonshotai/kimi-k2.6` at the
+OpenRouter rate) silently reads as zero spend. The lookup now **errs on the side
+of recording cost**: when no eligible candidate matches but a source-ineligible
+one would have, `_lookup_form` returns that price tagged `_provider_assumed:
+True`, and `estimate_cost` logs a **one-time WARNING per `(model, provider)`
+pair** advising the user to pin the rate. Eligible matches, `_DEFAULT_PRICING`
+seeds, the `:free` rule, and source-neutral / `_subscription` overrides all win
+*first* — the assumed fallback only fires when the sole available price is one
+the guard would otherwise reject. This means a genuine flat-sub / wrong-rate
+collision must be protected by a source-neutral `_subscription` (or hand-added)
+entry; without one, the call now over-counts-with-warning instead of
+under-counting-silently — the deliberately safer default for a cost tracker.
+
+**Why NIM seeds live in `_DEFAULT_PRICING` (code), not the YAML:** for the
+same-id collision, the OpenRouter entry in `models:` is excluded for a
+`provider="nvidia"` call, and the lookup falls through to the source-neutral
+seed in `_DEFAULT_PRICING`. Keeping seeds in code also makes them immune to an
+OpenRouter sync overwriting the shared key. The `:free` promo variants
+(`nvidia/...:free`) carry no seed — they resolve to `$0.00` via the **`:free`
+suffix rule** above (issues #12/#32). (Before that rule existed, a `:free` variant
+of any *seeded* model was mis-priced at the seed's paid rate via prefix match — the
+earlier "resolve to $0 via the unknown-model fallback" claim only held for models
+with no seeded paid base.)
+
+### Pricing metadata tags (`_`-prefixed)
+
+Three `_`-prefixed keys live on pricing entries and are **stripped from the
+price dict** by `_load_custom_pricing` (captured into parallel structures
+`model_sources` / `subscription_models` so the price math never sees them):
+
+| Tag | Meaning | Effect |
+|-----|---------|--------|
+| `_source` | Which source wrote the entry (`openrouter`, `google-ai`, ...) | Drives the provider-aware guard |
+| `_estimated_price` | OpenRouter model with no fixed price (negative→$0) | Counted by `estimated_price_share`; degrades hard budget verdicts to soft under `warn_only` |
+| `_subscription` | A **declared** $0 (flat-sub / free-tier) rate, hand-added | Distinguishes a genuine $0 from a lookup miss; tracked in `_meta.subscription_models`; **excluded** from `estimated_price_models` |
+
+A fourth key, `_provider_assumed`, is **not** a stored YAML tag — it is a
+runtime-only marker synthesized by `_lookup_form` (issue #42) when a
+source-ineligible entry is applied as a best-effort estimate. It rides on the
+resolved price dict purely so `estimate_cost` can fire its one-time
+provider-assumed warning; `_load_custom_pricing` never reads or writes it.
+
+The marker is also **surfaced** (not just logged): `post_api_request` calls
+`pricing.is_provider_assumed(model, provider)` and persists a per-call boolean
+to the DB — `llm_calls.provider_assumed` plus a `runs.provider_assumed_calls`
+counter (schema **v6**, `db._migrate_v6`). It mirrors the per-call `estimated`
+flag end to end: `/stats providers` shows an `Asm%` column, and the dashboard
+(both the standalone `serve.py` and the Duckwork plugin) exposes it as an `Asm?`
+column in Requests and an `Assumed` count in Providers (`provider_assumed_calls`
+/ `provider_assumed_pct` in the API). **Deliberately unlike `_estimated_price`,
+a provider-assumed cost does NOT degrade budget verdicts** — the resold-at-the-
+same-rate case is usually the *correct* number, so it counts as real spend for
+enforcement (the issue's "err on the side of recording cost"); the flag exists
+only to make the assumption visible so the user can pin the rate.
+
+**Adding a subscription/flat-rate model:** enter it under the provider's
+**native (bare) id** with `input: 0.0`, `output: 0.0`, `_subscription: true`.
+The bare id is never returned by OpenRouter, so it never collides with an
+auto-fetched entry and survives every refresh untouched.
+
+**`/stats models` $0 classification (three-way).** The Notes column disambiguates
+every `$0.00` row so the footer never nags about a deliberate zero.
+`stats._models_block` splits them, in order:
+
+1. `subscription/free-tier` — exact-id membership in `subscription_models` (a
+   declared `_subscription` entry).
+2. `free tier` — `pricing.is_explicitly_priced(model, provider)` is True but it is
+   not a declared subscription: a `:free` suffix id (resolved to $0 by the rule
+   above) or a built-in $0 seed. Known-free, not a lookup miss.
+3. `no price entry` — genuine unknown (`is_explicitly_priced` is False).
+
+**Gotcha — `_subscription` is the wrong tool for a `:free`-served model.** When the
+gateway serves the model with a `:free` suffix — and gateways send **dated** ids,
+e.g. `tencent/hy3-20260706:free` — the `:free` rule already resolves it to $0,
+records it known-free, and arms the free→paid alert, so **no `pricing.yaml` entry is
+needed** and the row shows as `free tier`. `_subscription` is only for a model served
+free under a **bare native id** (no `:free`), and the entry must match the **exact id
+the gateway records**: a non-dated key (`tencent/hy3:free`) never matches the dated
+id, so it neither prices nor labels the row. Both the cost lookup
+(`subscription_models` / custom exact match) and the stats label key on the exact
+recorded id — there is no prefix or date-stripping normalization for either.
+
+### Google-symmetric normalization (added v0.4.0)
+
+**Problem:** The gateway reports model IDs differently depending on routing path:
+- Direct Google AI: `gemini-3.5-flash` (no prefix)
+- Via OpenRouter: `google/gemini-3.5-flash`
+
+A single pricing YAML entry would only cover one form. Having the user maintain
+both was error-prone.
+
+**Solution:** `_google_alt_form(model_lc)` maps the pair symmetrically:
+- `gemini-X` → try also `google/gemini-X`
+- `google/gemini-X` → try also `gemini-X`
+
+**Deliberately google-specific:** `anthropic/`, `meta-llama/`, `openrouter/` are
+NOT normalized. On OpenRouter, `anthropic/claude-sonnet-4-6` costs differently
+than direct Anthropic — stripping the prefix would give wrong prices.
+
+### Per-component cost split (R1)
+
+Cost is computed as:
+```
+(input_tokens × input_price
+ + output_tokens × output_price
+ + cache_read_tokens × cache_read_price
+ + cache_write_tokens × cache_write_price
+ + reasoning_tokens × reasoning_price) / 1_000_000
+```
+
+`prompt_tokens` is **intentionally ignored** — it equals `input + cache_read + cache_write`
+in the Duckwork canonical usage dict, so using it would double-count those components.
+
+Cache prices are derived from multipliers when not explicit:
+- `cache_read = input × 0.10` (configurable in YAML `defaults:`)
+- `cache_write = input × 1.25`
+- `reasoning` defaults to `output` price
+
+### Cache-invalidation on hot-reload
+
+`_custom_pricing` is a module-level `None`-initialized cache. `reload_custom_pricing()`
+sets it back to `None`, forcing the next read to re-parse the YAML. This is
+called by the auto-refresh cycle and by the `/setup` command, so new prices
+take effect immediately without a gateway restart.
+
+### Core-sourced pricing snapshots
+
+`pricing.py` (above) computes *cost* from our own `pricing.yaml`. Separately, the
+plugin records the *tariffs Duckwork core itself resolves*, so we have an auditable
+ground truth with provenance to diff against `pricing.yaml` (the Faro
+over-estimate is the motivating case) and to feed the manual pricing editor.
+
+**Also the primary cost source now.** `estimate_cost()` consults the latest
+row of this same table (via `db.get_latest_pricing_snapshot`, a local read —
+no network) *before* falling through to `pricing.yaml`/`_DEFAULT_PRICING`. See
+§ Pricing Engine → Lookup priority chain above for the full precedence. This
+means `pricing drift`/`pricing backfill` are no longer required to keep costs
+accurate — they remain useful for *auditing* `pricing.yaml` itself (e.g. to
+patch the fallback tier a cold-start pair still uses) but are not the primary
+mechanism anymore.
+
+- **`core_pricing.py` is the only module that imports the Duckwork core**
+  (`agent.usage_pricing.get_pricing_entry`). The import is lazy (inside the call)
+  and fail-open: `resolve()` returns `None` on any failure — core absent (the
+  isolated test suite has no `agent.*`), unknown model, or endpoint fetch error —
+  and never raises. It normalizes `PricingEntry` to a JSON-safe dict: `Decimal`
+  rates → `float`, `CostSource` (a `Literal` string) → `str`, `fetched_at` `datetime` → ISO.
+- **Capture happens in `post_api_request`**, the only hook that carries `base_url`
+  and `api_mode` (verified against `agent/conversation_loop.py`). It is throttled
+  in-memory to at most one resolve per `(provider, model)` per
+  `_PRICING_SNAPSHOT_TTL_S` (6h) per process, because `get_pricing_entry` can do a
+  `/models` network fetch for custom endpoints.
+- **`pricing_snapshots` is append-per-change** (`db.record_pricing_snapshot`): a
+  new row lands only when a rate field, `pricing_version`, or `source` differs
+  from the latest stored row for that pair. Context-only fields (`base_url`,
+  `api_mode`, `source_url`, `fetched_at`) do not trigger a row.
+- **Dated model names are canonicalized on miss.** The provider `/models` catalog lists
+  canonical (undated) ids, so a dated call like `deepseek/deepseek-v4-pro-20260423` resolves to
+  `None`. When the raw name misses, capture retries under
+  `core_pricing.canonical_model_name()` (strips a trailing `-YYYYMMDD`, incl. before `:free`).
+  The snapshot is stored under the **raw dated name** (`model`) with the canonical name in
+  `resolved_model` (NULL when the raw name resolved directly). Safe because `resolve()` is
+  fail-open: a wrong strip → `None` → no row. Verified on the VPS: the dominant
+  `deepseek/deepseek-v4-pro-20260423` was priced by the plugin via the generic family prefix
+  (0.27/1.1) while the core's real rate was 0.435/0.87. Since #121 unprefixed DeepSeek ids
+  have explicit DeepSeek-direct built-ins; vendor-qualified `deepseek/...` ids are aggregator
+  ids and intentionally keep the pre-#121 fallback, relying on the core snapshot.
+- **Caveat:** `post_api_request` carries no `api_key`, so a private
+  OpenAI-compatible endpoint with no cached `/models` metadata resolves to `None`
+  (no snapshot). Fordex / OpenRouter / official-docs models resolve without a
+  per-call fetch.
+- **Drift computation shipped** (see below). Surfacing snapshots in the dashboard
+  (a tab rendered inside `TelemetryPage`) remains a follow-up.
+
+#### Backfill (`duckwork telemetry pricing backfill`)
+
+Live capture only records a snapshot when a model is actually called, and it keys
+off `effective_model = response_model or model` — on fordex the provider returns the
+**canonical** id, so historical **dated** ids (e.g. `deepseek/deepseek-v4-pro-20260423`)
+that dominate `llm_calls` get no live snapshot. `duckwork telemetry pricing backfill`
+seeds coverage for them:
+
+- Enumerates distinct `(provider, model)` in `llm_calls` with no `pricing_snapshots`
+  row (`db.models_needing_pricing_snapshot`).
+- Resolves each via `core_pricing.resolve_with_fallback` (the shared helper the live
+  `post_api_request` capture also uses — dated ids retry under the canonical name).
+- **Dry-run by default**; `--apply` writes, `--json` for machine output.
+
+It is a **coverage seed, not historical reconstruction**: rows carry the tariff the
+core resolves *today* (`captured_at` = now, real provenance), stored under the raw
+model name plus `resolved_model` when the canonical fallback was used. Fail-open and
+idempotent — re-running skips already-covered keys; unresolvable models (no core
+price) are retried each run and captured automatically once the core can price them.
+No schema change; backfilled rows are indistinguishable from same-day live captures.
+
+#### Drift detection (`duckwork telemetry pricing drift`)
+
+`pricing.yaml` is the plugin's cost source; `pricing_snapshots` is the core's
+ground truth. Drift detection diffs them so an over-priced local entry (the Faro
+case) surfaces instead of silently inflating cost:
+
+- Reads the latest snapshot per `(provider, model)` via
+  `db.list_latest_pricing_snapshots`, collapsed to the canonical write-key
+  (`resolved_model or model`, latest-id wins on collision).
+- Resolves each model's local rate via `pricing._resolve_pricing` (provider-aware)
+  and flags **input/output** drift beyond `--threshold` (default 1%). Cache/
+  reasoning are derived and `request_cost` has no `pricing.yaml` analog, so they
+  are intentionally excluded. A zero snapshot rate vs. a non-zero local price is
+  always drift (the per-side percentage is reported as undefined).
+- `_subscription: true` entries are skipped (a declared $0 is intentional).
+  `_provider_assumed` best-effort guesses are treated as "no local price", not
+  drift, since they were never pinned for that provider.
+- **Coverage-gap aware:** reuses `db.models_needing_pricing_snapshot` — if models
+  in `llm_calls` have no snapshot, the report says so and points at
+  `pricing backfill`, so drift never gives a false all-clear. The gap count is
+  DB-wide; the human-facing nudge is suppressed when `--model` scopes the run.
+- **Dry-run by default**; `--apply` merges the snapshot input/output rates back
+  into `pricing.yaml` (never clobber), tags each repaired entry `_source:
+  core-snapshot`, and hot-reloads. Because `pricing.yaml` is keyed by model only,
+  a model that drifted under two providers is written once — the **most recent
+  snapshot wins** (highest `snapshot_id`), so a stale older capture from one
+  provider never overwrites a fresher one from another sharing the same API
+  (issue #84); a conflicting older rate is logged and skipped. Routes through
+  `paths.get_pricing_path()` (resolved at call time, so `DUCKWORK_TELEMETRY_HOME`
+  outranks `DUCKWORK_HOME` — same as every other pricing.yaml reader/writer).
+  `--model` limits to one canonical model; `--json` for machine output. No schema
+  change.
+
+Note: `pricing_refresh.py` (the remote-source auto-refresh) previously used a
+module-level `PRICING_FILE` constant computed from `DUCKWORK_HOME` at import time —
+it ignored `DUCKWORK_TELEMETRY_HOME` and could freeze a stale path. Fixed to resolve
+`paths.get_pricing_path()` at call time, matching `pricing.py` and `pricing_drift`.
+Remaining follow-up: `__init__.py::_try_pricing_refresh` still derives its 24h
+`.pricing_refresh` throttle sentinel from `DUCKWORK_HOME` directly, so on a
+consolidated (`DUCKWORK_TELEMETRY_HOME`) install each profile keeps its own timer and
+may trigger redundant remote refreshes — harmless (all merge into the one shared
+file), but should also route through `paths.get_telemetry_home()`.
+
+---
+
+## Budget Engine
+
+### The enforcement reality (A4 audit finding)
+
+The budget engine was designed AFTER auditing what Duckwork hooks can actually do.
+The audit classified every enforcement primitive:
+
+| Primitive | Blocks? | Mechanism |
+|-----------|---------|-----------|
+| `pre_llm_call` return | ❌ No | Context injection only |
+| `pre_api_request` return | ❌ No | Return discarded |
+| `pre_approval_request` / `post_approval_response` | ❌ No | "observers only" |
+| `pre_tool_call` return `{"action":"block",…}` | ✅ Yes | Aborts tool, sends error to model |
+| `cron.jobs.pause_job(job_id, reason)` | ✅ Yes (future runs) | Pauses cron job |
+
+**Consequence:** there is NO true mid-call abort. When a hard breach is detected:
+1. The current in-flight model response completes (and is billed).
+2. The next tool call is blocked by `pre_tool_call`.
+3. The agent loop eventually terminates because it can't execute tools.
+4. For cron: the job is paused for future runs.
+
+**Soft alert** (once per window): context injected via `pre_llm_call`.  
+**Hard gate** (every tool call): `pre_tool_call` returns `{"action":"block",…}`.
+
+### Verdict cache (TTL = 5s)
+
+`pre_tool_call` fires on **every** tool call — potentially dozens per turn.
+Re-querying SQLite on each call would be expensive. A 5-second TTL cache is
+safe because spend only changes when a new `post_api_request` is recorded
+(which can't happen while a tool call is running synchronously).
+
+The cache is keyed by `(scope, scope_id)`. A `reload_config()` call clears it
+(e.g., after `/budget set`).
+
+### Setting budgets (`/budget set`)
+
+`_set_budget(scope, window, usd, scope_id="")` persists a limit to `budget.yaml`
+and hot-reloads. With a `scope_id` it writes `per_<scope>.overrides.<id>`; without
+one it writes the scope's shared `default` bucket. `global` takes no id. The
+id-override form is **generic** across `cron_job` / `sender` / `profile` — the read
+side (`_resolve_limits`) already resolved `overrides.<id> or default` for all of
+them, so `set` just fills the same shape. Surface asymmetry (intentional): the chat
+form takes the id as a positional after the scope
+(`/budget set <scope> [<id>] <window> <usd>`), while the standalone CLI uses a
+`--id` flag — argparse can't express an optional *middle* positional, and the CLI
+already validates `window`/`usd` as typed positionals. Writes are atomic (temp
+file + `os.replace`), then `reload_config()` clears the verdict cache.
+
+### Reading budgets (`/budget` status block)
+
+`_status_block()` does not enumerate scope ids from `budget.yaml` — it asks the
+DB which ids actually had activity, via `db.list_cron_job_ids(since30)` /
+`list_sender_ids(since30)` / `list_profile_ids(since30)`, where `since30 =
+_days_ago_utc(30)`. Each section (`Cron jobs:` / `Senders:` / `Profiles:`) is
+rendered only when its list is non-empty, then each id is resolved through the
+same `check(scope, scope_id)` verdict path `/budget set` and `/budget forecast`
+use, so a scope's `default`/`overrides.<id>` limit renders identically across
+all three commands.
+
+**Consequence:** a scope with a configured limit but no runs in the last 30
+days renders no section at all — `budget.yaml` having an entry is not enough.
+This is why the "No budgets configured" fallback guard checks `g is None and
+not cron_ids and not senders and not profiles` — every enumerated list has to
+be empty, not just the absence of a `budget.yaml` file, or the fallback would
+wrongly claim nothing is configured while a stale/inactive scope still has a
+limit set.
+
+### Anti-spam ledger (`budget_alerts` table)
+
+Soft alerts fire **once per window per scope** — not on every `pre_llm_call`.
+`try_budget_alert()` does `INSERT OR IGNORE` into `budget_alerts` and returns
+`True` only on first insert (checked via `rowcount > 0`). The UNIQUE constraint
+on `(scope, scope_id, window, period_key, level)` is the database-level guarantee.
+
+### Verdict degradation
+
+When spend rests on estimated rows (`estimated=1` or `_estimated_price: true`
+models), a hard verdict **degrades to soft** under `on_estimated.mode: warn_only`
+(the default). Rationale: you shouldn't block work based on numbers that might
+be significantly wrong.
+
+`on_estimated.mode: enforce` opts into strict enforcement regardless.
+
+### Window math: local timezone
+
+Daily/monthly windows are computed in the user's local timezone. A cron job at
+11:59 PM and another at 12:01 AM count against different daily windows. The start
+timestamp is converted back to UTC ISO before querying the DB (the DB stores UTC).
+
+### Scope resolution
+
+| Scope | How spend is aggregated |
+|-------|------------------------|
+| `global` | All `runs` rows in the window |
+| `per_cron_job` | `runs WHERE cron_job_id = ?`, plus every descendant reachable through `subagent_edges` (recursive CTE) — includes delegated subagent spend |
+| `per_sender` | `runs WHERE sender_id = ?` |
+| `per_profile` | `runs WHERE profile = ?` — NULL-profile runs excluded |
+
+`per_cron_job` seeds from the cron job's own root session(s) and walks
+`subagent_edges` down to every descendant, so delegated (async/nested)
+subagent spend is now attributed back to the cron job that started the
+chain (schema v11, issue #49). `global` still sums every `runs` row
+unconditionally, so `per_cron_job` only *regroups* the same cost rows —
+there is no double counting. See `§ Subagent Architecture`.
+
+**Profile attribution — known limitations**
+- **Multiplexed-gateway accuracy:** `profile` is captured from `ctx.profile_name`,
+  which the core derives from the `DUCKWORK_HOME` ContextVar. In a multiplexed gateway
+  (one process serving many profiles), the value is correct only if the core
+  propagated that ContextVar into the thread that fires the hook. If it did not, a run
+  may be tagged with the wrong profile (typically `default`). Dedicated per-profile
+  processes (per-profile gateway/cron) are not affected — they resolve the profile
+  from the process's own `DUCKWORK_HOME`.
+- **NULL profile:** pre-v12 rows and any session whose profile could not be resolved
+  keep `profile = NULL`; these are excluded from `per_profile` spend and budgets.
+
+---
+
+## Free→Paid Model Transition Alert
+
+When a model that was previously seen as free (explicit $0 in pricing) starts
+incurring cost, the plugin injects a one-shot warning into the conversation so
+the operator is aware of the change.
+
+### Detection flow (live)
+
+1. `post_api_request` fires with `cost == 0.0` AND `is_free_model(model,
+   provider)` returns `True` (explicit input=0 AND output=0; a paid model's zero-token $0 call no longer qualifies — issue #89) → `record_free_model(model, provider)` inserts the
+   pair into `known_free_models` (INSERT OR IGNORE).
+2. A later `post_api_request` fires with `cost > 0.0`. The plugin checks
+   `is_known_free_model(model, provider)` — if `True`, it queues a pending alert
+   in `_pending_free_paid_alerts: dict[str, tuple[str, float]]` (module-level in
+   `__init__.py`), mapping `session_id → (model, cost)`.
+3. The next `pre_llm_call` for that session pops the pending alert and injects a
+   one-shot warning into the conversation context. The alert fires exactly once per
+   detection event (pop-on-consume).
+
+`pre_llm_call` now handles two independent injection paths: budget alerts (one per
+window per scope, anti-spam via `budget_alerts` table) and free→paid alerts (one
+per detection event, state held in `_pending_free_paid_alerts`).
+
+### Dashboard persistence (`free_paid_transitions`, schema v6)
+
+The in-memory `_pending_free_paid_alerts` dict is ephemeral — consumed by
+`pre_llm_call` and lost on plugin reload. To give the dashboard a historical
+view of "which models flipped", every detection in `post_api_request` also
+calls `db.record_free_paid_transition(model, provider, session_id, cost)`
+which `INSERT OR IGNORE`s into the v6 `free_paid_transitions` table.
+PRIMARY KEY `(model, provider)` — only the FIRST flip is recorded; later
+paid calls on the same pair are no-ops. The dashboard endpoint
+`GET /tier-transitions?window_hours=72` reads from this table (read-only,
+`PRAGMA query_only=ON`). The widget (`TierTransitionsWidget`) is rendered
+**inside `TelemetryPage`**, NOT via `registerSlot`: no shell slot in the
+catalogue known at the time fit a "tier change" surface, and registering an
+unknown slot name is a silent no-op. (The catalogue has since grown —
+`header-banner` may now fit. See
+[Dashboard Plugin Surface](#dashboard-plugin-surface) § Slot catalogue.) The widget hides itself when no
+transitions fall in the window, so the page is unchanged during the happy
+path.
+
+### `known_free_models` table schema
+
+```
+model       TEXT  — model identifier (as received from post_api_request)
+provider    TEXT  — provider identifier, or '' for wildcard rows
+first_seen_at TEXT — ISO-8601 UTC timestamp of first $0 observation
+PRIMARY KEY (model, provider)
+```
+
+Every `(model, provider)` pair that is ever seen at an explicit $0 cost is
+recorded here. A `provider=''` wildcard row is used for the backfill path (see
+below).
+
+### `is_known_free_model` lookup semantics
+
+`is_known_free_model(model, provider)` returns `True` if either of these rows
+exists in `known_free_models`:
+
+- An exact `(model, provider)` row (live-recorded pair)
+- A wildcard `(model, '')` row (backfill-seeded pair)
+
+The wildcard covers sessions from before the model was first seen live, and
+handles cases where the same model is served by multiple providers and all are
+expected to be free.
+
+### Backfill mechanism (pre-v5 upgrade path)
+
+On every plugin load, `register()` calls `get_known_free_models()` (from
+`pricing.py`) to retrieve all models with explicit `input=0.0` AND `output=0.0`
+in the pricing table, then calls `backfill_known_free_models(models)` (from
+`db.py`) which inserts `(model, provider='')` wildcard rows for each — INSERT OR
+IGNORE, so it's safe to call on every load. Users who upgrade from pre-v5 get
+immediate coverage without needing to replay historical sessions.
+
+### `is_explicitly_priced` distinction
+
+`is_explicitly_priced(model, provider) -> bool` in `pricing.py` returns `True`
+only when the model has an explicit pricing entry in the pricing table (even if
+that entry is $0). This distinguishes a genuine free model from an unknown model
+that fell through to the `$0.00` unknown-model fallback. Without this guard, any
+unrecognized model would be recorded as "free" and trigger spurious alerts when
+the pricing table is later populated.
+
+### Id-change transitions (`is_free_tier_transition`, issue #32)
+
+A `known_free_models` row is keyed on the model id seen at $0. But some providers
+move a model from free to paid by **changing the id** — dropping a `:free` suffix
+(or renaming the promo to its paid base) — so the first paid call arrives under a
+different id than the recorded `:free` row, and a plain `is_known_free_model`
+lookup misses.
+
+`is_free_tier_transition(model, provider)` in `db.py` bridges that gap. For an
+incoming paid `model` it returns `True` if a stored `<id>:free` row matches via
+either:
+
+1. **Bare rename** — `model + ":free"` is a known-free row
+   (`nvidia/nemotron-3-ultra` ← `nvidia/nemotron-3-ultra:free`).
+2. **Suffixed paid id** — a stored `<base>:free` whose `<base>` is a prefix of
+   `model` at a token boundary (`-`, `:`, `/`, `_`), so
+   `nvidia/nemotron-3-ultra-550b-a55b` ← `nvidia/nemotron-3-ultra:free` but an
+   unrelated `…-ultrablend` does not false-positive.
+
+`post_api_request` checks `is_known_free_model(...) OR is_free_tier_transition(...)`
+on the `cost > 0.0` branch. The concrete case: the `nvidia/nemotron-3-ultra:free`
+promo ends 2026-06-18 and bills as `nvidia/nemotron-3-ultra`; the paid price is
+seeded in `_DEFAULT_PRICING` so `cost > 0` once billing starts, and the reverse
+lookup connects the paid id back to the recorded `:free` row to fire the alert.
+
+**No user-side config is required** (changed by issue #32): while the promo is
+live, the `:free` id resolves to `$0` via the `:free` suffix rule and is recorded
+as known-free automatically — so the `:free` row exists for the reverse lookup to
+match, with no `_subscription` entry needed. This holds for whichever free form
+the gateway sends: the short `nvidia/nemotron-3-ultra:free` (matched on the paid
+side by **bare rename**) and the OpenRouter long form
+`nvidia/nemotron-3-ultra-550b-a55b:free` (matched by **bare rename** of its own
+suffix-dropped paid id `…-550b-a55b`). An explicit `_subscription` entry is still
+honored and overrides the rule, but is no longer necessary.
+
+---
+
+## Pricing Auto-Refresh
+
+### Architecture
+
+`PricingSource` is an ABC with a single `fetch() -> dict[str, dict]` method.
+Two concrete sources ship:
+
+| Source | Mechanism | Frequency |
+|--------|-----------|-----------|
+| `OpenRouterSource` | HTTP GET to `openrouter.ai/api/v1/models` (no auth) | Every 24h |
+| `GoogleAISource` | Constant table in code (`LAST_VERIFIED = "2026-06-05"`) | Manual quarterly |
+
+`GoogleAISource` is a constant because Google has no structured pricing API.
+The `LAST_VERIFIED` date is an explicit reminder to bump it quarterly.
+
+### Merge strategy
+
+The `refresh_pricing()` function:
+1. Loads existing `pricing.yaml`
+2. Fetches all sources
+3. **Never overwrites manual entries** — detects them via `_meta.auto_models`
+   (a set of model IDs that were auto-fetched in a previous cycle)
+4. Updates auto-fetched models when prices change
+5. Writes `_meta.auto_models`, `_meta.estimated_price_models`, `_meta.last_refresh`
+
+**Manual entry detection:** if a model is in `models:` but NOT in
+`_meta.auto_models`, it's considered manual — preserved and logged as an
+override warning if the remote price differs.
+
+### Estimated-price models
+
+OpenRouter represents models without fixed pricing (auto-routing, experimental)
+with **negative prices** in their API. The plugin normalizes these to `$0.00`
+and flags them with `_estimated_price: true`. The budget engine checks for these
+models via `estimated_price_share()` and degrades hard verdicts under `warn_only`.
+
+### Sentinel file
+
+The 24h refresh cadence is tracked via a sentinel file at
+`~/.duckwork/telemetry/.pricing_refresh`. Touch it to force a refresh on next
+plugin load. Delete it to trigger auto-refresh.
+
+---
+
+## Subagent Architecture
+
+Duckwork creates child `AIAgent` instances for `delegate_task`. Each child:
+- Auto-generates its own `session_id` (format: `{YYYYMMDD_HHMMSS}_{uuid6}`)
+- Calls `run_conversation()` which fires the full hook lifecycle
+- Records its own `runs` row independently
+
+**Verified finding (A3, superseded by #49):** the `delegate_task` result in
+`model_tools.py:999` (`{results:[{tokens, model, api_calls, status, ...}],
+total_duration_seconds}`) still carries no child `session_id`. But
+`subagent_start` fires with both `parent_session_id` and `child_session_id`
+before the child ever dispatches, and `subagent_stop` **does** carry
+`child_session_id` (verified in `tools/delegate_tool.py`'s `subagent_stop`
+invocation; an earlier version of this doc claimed otherwise — that was stale). That pair is enough
+to build the full delegation tree without touching the `delegate_task` result
+at all.
+
+**How attribution works now (schema v11, issue #49):** every `subagent_start`
+records a `subagent_edges` row — `child_session_id → parent_session_id`, plus
+role, subagent ids, and a start timestamp (`db.record_subagent_start`).
+`subagent_stop` finalizes that row with `stopped_at` + `child_status`
+(`db.record_subagent_stop`), backfilling a missing edge from its own kwargs in
+the rare case `subagent_start` was never seen. `db.spend_by_scope("cron_job",
+...)` seeds from the cron job's own root session(s) and walks the edge tree
+down with a recursive CTE, summing cost over the root plus every descendant —
+so both async and nested delegation resolve back to the root cron job.
+`global` still sums every `runs` row unconditionally, so `per_cron_job` only
+*regroups* the same cost rows; there is no double counting.
+
+**`runs.parent_session_id` stays dormant, on purpose.** `subagent_edges` is
+the single source of truth for the delegation tree, and it's a persistent
+table, so there's no in-memory map to leak or lose on restart. The dormant
+column is not being repurposed.
+
+**Phase-1 boundary:** this closes the *reporting/aggregation* gap only. A
+detached child still self-enforces its own budget only against `global`
+while it runs — an in-path stop for a runaway async child mid-flight
+(pausing it before it racks up more cost) is a planned Phase 2, not part of
+this change. `db.unattributed_child_cost` is a query-time diagnostic that
+flags child spend recorded in `subagent_edges` whose parent has no matching
+`runs` row, so the chain can't resolve to a real root; surfaced in `/stats`.
+
+---
+
+## Mixture of Agents (MoA)
+
+MoA is a Duckwork **virtual provider** (added upstream after v0.7). A named MoA
+*preset* bundles:
+
+- **`reference_models`** — a list of `{provider, model}` slots (proposers). They
+  run first, without tools, on a trimmed advisory view of the conversation.
+- **`aggregator`** — a single `{provider, model}` slot. It is the **acting
+  model**: it writes the assistant response and emits tool calls, using the
+  reference outputs as private context.
+
+Config lives in `config.yaml` under `moa:` (`duckwork_cli/moa_config.py`,
+`resolve_moa_preset`). Verified against `Fordex/duckwork-agent@main`.
+
+### How MoA surfaces to telemetry (the two-path problem)
+
+There are **two** execution paths, and they behave differently:
+
+| Path | Trigger | What runs | What fires `post_api_request` |
+|------|---------|-----------|-------------------------------|
+| **Preset-as-model** | `/model <preset> --provider moa` | `MoAClient` facade: references + aggregator via auxiliary `call_llm`; the aggregator response is returned as the main model response | **Once**, with `provider="moa"`, `model="<preset>"`, `response_model`=aggregator id, `usage`=**aggregator only** |
+| **`/moa <prompt>` one-shot** | `decode_moa_turn` in `conversation_loop.py:827` | references + aggregator via auxiliary `call_llm`, output injected as context; then the **real main model** runs normally | fires for the **real main model**, not MoA |
+
+**The hard constraint (verified):** reference-model and one-shot-aggregator
+calls go through `agent/auxiliary_client.py::call_llm`, which contains **no hook
+dispatch** (no `invoke_hook`). So:
+
+- **Reference-model tokens are never captured** — a hook-*dispatch* gap
+  (`call_llm` invokes no hook at all), not a missing-kwarg gap. Contrast with
+  the old subagent per-cron-job gap: that one was a missing-kwarg problem and
+  is now solved via `subagent_edges` (schema v11, issue #49) — see
+  `§ Subagent Architecture`. This one is structural: with no hook firing,
+  there's no kwarg to add.
+- In the preset-as-model path, the **aggregator** *is* captured (it becomes the
+  main response), but the hook reports `provider="moa"` and `model="<preset>"` —
+  neither is a real, priceable identifier.
+
+### What the plugin does (`moa.py`, schema v10)
+
+`post_api_request` detects `provider == "moa"` and resolves the preset
+(`model` kwarg = preset name) via `moa.resolve_preset()` →
+`duckwork_cli.moa_config.resolve_moa_preset` (reads Duckwork' live config;
+`load_config()` honors `DUCKWORK_HOME`, so it respects test isolation). Then:
+
+1. **Re-attribute provider.** The call is recorded under the aggregator's
+   **real** provider (e.g. `openrouter`), not `moa`. Without this the
+   provider-aware pricing guard rejects the aggregator's true rate and falls
+   back to a noisy `provider_assumed` estimate.
+2. **Re-attribute model.** `effective_model = response_model or <aggregator
+   model> or model` — never the bare preset name.
+3. **Tag the row.** `llm_calls.moa_preset = "<preset>"` and `runs.moa_calls++`
+   (schema v10) so `/stats` and the dashboard can flag that the recorded cost is
+   a **lower bound** (references untracked).
+
+If the preset can't be resolved (no `duckwork_cli`, unknown preset), the call
+falls back to the raw hook values (`provider="moa"`) but is **still recorded**
+and still tagged with the preset — never dropped, never crashes (the resolver
+swallows every error).
+
+### What is NOT done (and why)
+
+- **Reference cost is not estimated.** No token counts are available for
+  reference calls, and the display callbacks (`moa.reference`/`moa.aggregating`)
+  route through `tool_progress_callback`, not a plugin hook. A rough opt-in
+  estimate (aggregator input tokens × each reference's price) is a possible
+  future phase, explicitly flagged `estimated=1`; deliberately deferred to keep
+  the "real vs estimated" contract honest.
+- **Budgets:** the aggregator cost counts as real spend (correct). Because it is
+  now attributed to the aggregator's real provider, it is no longer
+  `provider_assumed`, so it enforces normally instead of degrading.
+
+---
+
+## Agent Intelligence (efficiency · smells · forecast)
+
+Three analytical capabilities layered on top of the telemetry that is **already
+captured**. None of them collect new data and none of them change the schema —
+they are pure `SELECT`-side reads over `runs`, `llm_calls`, and `tool_calls`, so
+there is no `_migrate_vN` for this feature. All three inject a `now`/injectable
+parameter where time matters so tests stay deterministic.
+
+### Efficiency score (0-100)
+
+`db.efficiency_runs()` (behind `/stats efficiency` and the CLI) scores each
+completed session. `dashboard/plugin_api._compute_efficiency()` mirrors the same
+formula for the plugin dashboard's `/efficiency` endpoint.
+
+```
+output_contribution = min(60, (tokens_out / max(tokens_in, 1)) * 40)
+error_penalty       = 30 if status == 'error'
+                      10 if status == 'interrupted'
+                       0 otherwise
+turn_penalty        = min(30, api_calls * 1.5)
+score               = clamp(0, 100, 40 + output_contribution
+                                       - error_penalty - turn_penalty)
+```
+
+- **Status semantics are source-verified.** The only non-`running` run statuses
+  the plugin ever writes are `ok`, `error`, and `interrupted` (`__init__.py`
+  session end). `error` is the real failure status and carries the heavy 30-point
+  penalty. `failed`/`cancelled` are **subagent `child_status`** values, not run
+  statuses, so they never reach this query — do not key the penalty on them.
+- The query reads the **100 most recent** completed (`status != 'running'`)
+  sessions in the window, scores them in Python, then ranks best-first. With more
+  than 100 sessions the ranking is over the recent slice, not the global best.
+- **Calibration caveat:** real multi-turn sessions resend context each turn, so
+  `tokens_in >> tokens_out` and `output_contribution` usually lands well under
+  40. Read the score as a *relative* signal within a window, not an absolute
+  grade. The same sessions flagged as `context_rotation` smells will always score
+  low here — that overlap is expected.
+- **Maintenance caveat:** the formula lives in two places (`db.efficiency_runs`
+  and `plugin_api._compute_efficiency`) because the plugin dashboard surface
+  shares no Python with the core package (see `§ Dashboard Plugin Surface`). Keep
+  them in lockstep; a single source of truth is a wanted follow-up.
+
+### AI smell detection
+
+`smell_detector.py` (behind `/stats smells`) runs five independent heuristics.
+Each returns a list of `{smell, severity, session_id, detail, …}` dicts.
+
+| Smell | Severity | Threshold |
+|-------|----------|-----------|
+| `context_rotation` | high | `tokens_in > 1,000` AND `tokens_out / tokens_in < 0.10` |
+| `loop_trap` | medium | `> 10` tool calls AND one tool name is `> 80%` of them |
+| `tool_thrashing` | high | `> 20` tool calls AND failure rate `> 30%` (`tool_calls.ok = 0`) |
+| `high_error_rate` | warning / high | sessions with `status = 'error'`; **high** when `> 30%` of the window's sessions errored |
+| `massive_session` | warning | `(tokens_in + tokens_out) > 100,000` OR `api_calls > 50` |
+
+- `detect_all()` concatenates the detectors and sorts by severity
+  (`high > medium > warning`) then smell type. `detect_by_session()` regroups the
+  same findings under each `session_id`.
+- Detection is **best-effort**: a detector that raises is logged at `debug`
+  (`duckwork_telemetry` logger) and skipped, so one broken query never takes down
+  the whole `/stats smells` command.
+- `loop_trap` aggregates per session in Python because SQLite cannot reference a
+  `SELECT` alias for the top-tool-ratio check inside the same query.
+- `high_error_rate` matches only `status = 'error'` — the sole failure status a
+  run ever carries (see the efficiency note; `failed` is a subagent
+  `child_status`, never a run status).
+
+### Burn-rate forecast
+
+`budget.burn_rate_projection()` (behind `/budget forecast`, the CLI, and the
+standalone dashboard route `/api/budget/forecast` in `serve.py`) projects whether
+a scope is on track to breach its configured limit.
+
+- `db.daily_spend_series()` returns one row per calendar day (UTC) for the last
+  `lookback_days` (default 14), bucketing `runs.cost_usd` by
+  `substr(started_at, 1, 10)` and **zero-filling** days with no spend so gaps do
+  not bias the average.
+- `avg_daily = mean(series)`, then
+  `projected_total = spent_so_far + avg_daily * remaining_days_in_window`, where
+  `spent_so_far` comes from `db.spend_by_scope()` since the window start.
+- `status` uses the same thresholds as `/budget`: `hard` (≥ 100%), `soft`
+  (≥ 80%), else `ok`. A scope with no configured limit for the window returns
+  `{"enabled": False}`.
+- It is a **read-only projection** — no network calls, no state mutation.
+- Scopes exposed: `global` / `cron_job` / `sender` / `profile` (the CLI and slash
+  command validate all four; `_resolve_limits` maps `profile` → the `per_profile`
+  budget config key).
+
+### Dashboard surfaces
+
+All three features are wired into **both** dashboards. Because neither dashboard
+surface may import the package (`serve.py` runs standalone via `python serve.py`;
+`plugin_api.py` is loaded by the Duckwork shell via `spec_from_file_location`),
+each **reimplements** the scoring/detection/projection logic inline against its
+own read-only connection — the same forced-duplication tradeoff already accepted
+for the efficiency score.
+
+| Surface | Efficiency | Smells | Forecast |
+|---------|-----------|--------|----------|
+| **Standalone** (`serve.py` + `index.html`) | `GET /api/efficiency` → Breakdown-tab table | `GET /api/smells` → Error-tab table | `GET /api/budget/forecast` → Home-tab panel |
+| **Plugin** (`plugin_api.py` + `dist/index.js`) | `GET /efficiency` → Efficiency sub-tab | `GET /smells` → top-of-page alert widget | `GET /forecast` → inside the Budgets panel |
+
+The plugin smells/forecast widgets render **nothing** on the happy path (no
+smells / no configured limit), matching the `ModelUnavailableWidget` convention.
+Note: the standalone `/api/budget/forecast` maps the config-key scopes
+(`per_cron_job`/`per_sender`/`per_profile`) to the engine scopes before
+projecting — the previous `from . import budget` version raised `ImportError`
+under the standalone loader and never resolved a non-global limit.
+
+#### Per-profile scoping (plugin surface)
+
+The plugin dashboard is legible about scope: every surface either respects a
+selected profile or is explicitly labeled Global.
+
+- **Profile-scoped endpoints** accept an optional `?profile=<name>` query param
+  (empty = all profiles, unchanged): `/summary`, `/runs`, `/requests`,
+  `/providers`, `/cron`, `/token-breakdown`, and — added here — `/efficiency`
+  and `/smells`. All filter on `runs.profile` (`smells` qualifies it as
+  `r.profile` in its `tool_calls JOIN runs` queries).
+- **`/budget`** emits per-profile scope entries alongside the global ones when
+  `budgets.per_profile` is configured — one per profile present in `runs`, per
+  window, with `scope: "profile:<name>/<window>"` and a `scope_id` field.
+  Limits resolve override-else-default; this is **display only** (creating
+  per-profile limits stays a `budget.yaml`/CLI concern). The engine already
+  modeled `per_profile`; this wired it into the read endpoint.
+- **Frontend** (`dist/index.js`): in-page tabs (Efficiency, Smells, …) share the
+  Telemetry tab's single profile `<select>`. The two off-page slot widgets —
+  `sessions:top` (last-run) and `cron:top` (cron-7d) — cannot see that selector
+  (separate shell pages), so each carries its own `MiniProfileSelect` fed by
+  `/profiles`. A `ScopeBadge` labels each surface: the profile name /
+  "All profiles" on scoped surfaces, "Global" on genuinely-global ones.
+- **Stays Global** (labeled, not scoped): the burn-rate forecast (the plugin
+  `/forecast` has no scope param), tier-change and model-unavailable widgets.
+  `model_unavailable_alerts` has no profile/session column, so scoping it would
+  need a schema migration — out of scope.
+
+---
+
+## Cron Job Identification
+
+There is **no `cron_job_id` kwarg** in any hook.
+
+The extraction strategy: when `platform == "cron"`, the `session_id` follows
+the format `cron_{job_id}_{YYYYMMDD_HHMMSS}` (confirmed in
+`cron/scheduler.py:1392`).
+
+**Anchored regex (R4):** `^cron_(?P<job_id>.+)_\d{8}_\d{6}$`
+
+A naive `split("_")[1]` would break on job IDs that contain underscores
+(e.g., `cron_my_job_2_20260101_120000` → `job_id` would be `my` instead of `my_job_2`).
+The regex captures everything between the leading `cron_` and the trailing
+`_{8digits}_{6digits}`.
+
+On mismatch, a WARNING is logged and `cron_job_id` is set to NULL — surfaced
+loudly rather than silently wrong. The comment `# If this test breaks...` is an
+intentional canary.
+
+---
+
+## Test Isolation Contract
+
+**Tests never read or write the real `~/.duckwork`.** This is enforced, not just convention.
+
+### The `isolate_duckwork_home` fixture
+
+An autouse pytest fixture in `conftest.py` redirects `DUCKWORK_HOME` to a fresh
+per-test temp directory. `HOME` and `USERPROFILE` are also pinned to the same
+temp dir as a safety net for any `Path.home()` fallback.
+
+### The poison-file test (`test_isolation.py`)
+
+`test_isolation.py` plants a poisoned sentinel file in a decoy home directory and
+asserts that no code path reads it. This is a fail-closed check: any new code that
+reaches outside `DUCKWORK_HOME` will break this test before it breaks production data.
+
+**Rule for new code:** always locate Duckwork files via `os.environ.get("DUCKWORK_HOME",
+Path.home() / ".duckwork")`, never via `Path.home()` directly.
+
+### Pricing fixture
+
+`tests/fixtures/pricing.yaml` is a committed fixture used by pricing tests.
+This prevents test results from depending on whatever `~/.duckwork/telemetry/pricing.yaml`
+your machine happens to have. New tests that need specific pricing data should
+seed it in the per-test temp dir, not rely on real files.
+
+### Where do tests write?
+
+```
+/tmp/pytest-of-<user>/pytest-<N>/<test_name><i>/telemetry/{telemetry.db,pricing.yaml,...}
+```
+
+pytest's built-in `tmp_path` fixture mints this per test. Override the base dir
+with `pytest --basetemp=DIR`.
+
+### `DUCKWORK_TELEMETRY_HOME` neutralization
+
+`DUCKWORK_TELEMETRY_HOME` outranks `DUCKWORK_HOME` when resolving telemetry paths. The autouse
+`isolate_duckwork_home` fixture (`conftest.py`) therefore DELETES `DUCKWORK_TELEMETRY_HOME` per
+test, so a developer's ambient value cannot override the tmp redirect and leak the suite into
+the real `~/.duckwork/telemetry`. Enforced by
+`tests/test_isolation.py::test_conftest_neutralizes_ambient_telemetry_home`.
+
+---
+
+## Design Decisions by Version
+
+### v0.1.0 — Initial scaffold
+
+- 9 hooks registered (no `subagent_stop` yet).
+- SQLite schema v1: `runs`, `llm_calls`, `tool_calls`.
+- `post_api_request` identified as the primary token hook (not `post_llm_call`).
+- Cron ID anchored-regex extraction (R4) decided upfront.
+
+### v0.2.0 — Budget + Dashboard
+
+- **Budget engine** added. The A1-A4 audit (see [The Duckwork Plugin Model](#the-duckwork-plugin-model) above) drove the design:
+  tool-gate is the only real enforcement mechanism.
+- **Schema v2 migration:** added `cache_read_tokens`, `cache_write_tokens`,
+  `reasoning_tokens`, `estimated` on `llm_calls`; `parent_session_id`,
+  `estimated_llm_calls` on `runs`.
+- **Subagent stop** hook added. Decision: record proxy `tool_call` row only,
+  never attempt to attribute tokens (would double-count).
+- **`budget_alerts` table** (schema v3 migration): anti-spam ledger for
+  one-time-per-window alerts.
+- **Dashboard:** stdlib HTTP server, zero external deps. `--host 0.0.0.0` flag
+  for headless deployments, with explicit warning on non-loopback binding.
+- **Provider label = verbatim:** stored as-is from `post_api_request.provider`.
+  NOT normalized. Everything routed through OpenRouter shows as "openrouter".
+  This was a deliberate decision — the routing path is meaningful observability data.
+
+### v0.3.0 — Setup wizard
+
+- **Auto-setup on first load:** if `pricing.yaml` or `budget.yaml` are missing,
+  the plugin generates defaults non-interactively. Guarded by
+  `DUCKWORK_TELEMETRY_NO_SETUP=1` for CI/tests.
+- **`/setup` slash command:** three modes — `auto` (fetches OpenRouter), `minimal`
+  (built-in defaults only), `skip`.
+- **Pricing auto-refresh** from OpenRouter API. `PricingSource` ABC for
+  extensibility. `_meta.auto_models` to detect and preserve manual overrides.
+
+### v0.3.1 — Gemini pricing + orphan-run fix
+
+- **Gemini 3.x/2.5 family added** to `_DEFAULT_PRICING` and `_PREFIX_PRICING`.
+- **Deprecated Gemini entries removed**: `gemini-1.5-*`, `gemini-2.0-*` (sunset).
+- **Generic `gemini` prefix removed** from `_PREFIX_PRICING` (was Flash 1.5
+  pricing for any unknown Gemini variant — silently mis-priced new models by
+  ~6.5×). Unknown Gemini variants now surface as `unknown-model` warnings.
+- **`_ensure_run_row` lazy insert (orphan-run fix):** sessions that join a
+  running gateway after the plugin loads never receive `on_session_start`.
+  All subsequent UPDATE calls were silent no-ops. Fix: `INSERT OR IGNORE`
+  stub row before every UPDATE in `record_llm_call` and `end_run`.
+
+### v0.4.0 — Google AI pricing source + symmetric lookup
+
+- **`GoogleAISource`** in `pricing_refresh.py`: direct Google AI Studio pricing
+  as a constant table (no structured API). `LAST_VERIFIED` date for manual
+  quarterly refresh. Registered alongside `OpenRouterSource`.
+- **Symmetric Google lookup** in `pricing._lookup_base`: `gemini-X` and
+  `google/gemini-X` resolve to the same entry. Two-pass: try the literal ID
+  first, then `_google_alt_form(model_lc)`. This is deliberately Google-specific
+  — other provider prefixes carry distinct pricing semantics and must not be stripped.
+
+### v0.4.1 — Provider-aware pricing + NVIDIA NIM seeds
+
+- **Provider-aware lookup guard** (issue #24): `estimate_cost` gains an optional
+  `provider` arg threaded through `_resolve_pricing` → `_lookup_base` →
+  `_lookup_form`. `_source_eligible` rejects an `_source: openrouter` entry for a
+  non-OpenRouter call so the OpenRouter rate never leaks onto a Fordex/NIM call.
+  `provider=""` preserves the old provider-blind behaviour (backward compatible).
+  See [Provider-aware lookup guard](#provider-aware-lookup-guard-added-v041-issue-24).
+- **`_subscription` tag** (Option A for Fordex flat-sub): declared $0, kept distinct
+  from a lookup miss and from `_estimated_price`. Tracked in
+  `_meta.subscription_models`.
+- **NVIDIA NIM seeds** (issue #12 Phase 1): five Nemotron models added to
+  `_DEFAULT_PRICING` (source-neutral, immune to OpenRouter sync). The same-id
+  OpenRouter collision is resolved by the guard falling through to the seed.
+  Phase 2 (`NVIDIANIMPricingSource` API auto-sync) was deliberately dropped — NIM
+  bills against account tier, not a uniform public per-token list, so the seed
+  table is the durable answer.
+- **`_SCHEMA_VERSION` bump 3→4**: the `_migrate_v4` migration (cache tokens on
+  `runs`) shipped without bumping the constant, leaving `test_schema_idempotent`
+  red. Fixed here as part of documenting schema v4.
+
+### v0.5.0 — Free→paid model transition alert (issue #16, Block A)
+
+- **`known_free_models` table** (schema v5): records every `(model, provider)`
+  pair seen at explicit $0 cost. INSERT OR IGNORE — append-only, never deleted.
+- **`is_explicitly_priced(model, provider)`** in `pricing.py`: distinguishes a
+  genuine $0 entry from an unknown-model `$0.00` fallback. Without this, every
+  unrecognized model would be flagged as "free" and generate spurious alerts.
+- **`record_free_model` / `is_known_free_model`** in `db.py`: write and read
+  the `known_free_models` table respectively. `is_known_free_model` checks both
+  the exact `(model, provider)` row and a wildcard `(model, '')` row.
+- **Backfill on load**: `register()` seeds `known_free_models` with `provider=''`
+  wildcard rows for all explicitly-$0 models from the pricing table. INSERT OR
+  IGNORE, runs every load. Covers pre-v5 installs automatically.
+- **`_pending_free_paid_alerts`** (module-level `dict` in `__init__.py`): maps
+  `session_id → (model, cost)`. Populated by `post_api_request` when a
+  previously-free model is seen at cost > 0. Consumed (popped) by `pre_llm_call`.
+- **`pre_llm_call`** now handles two injection paths: budget soft-alerts (anti-spam
+  via `budget_alerts` table) and free→paid one-shot alert (pop-on-consume from
+  `_pending_free_paid_alerts`). Both inject via the `{"context": "..."}` return.
+- **253 tests** (was 233): `test_init.py` gained free→paid detection, queueing,
+  injection, and backfill tests; `test_db.py` and `test_pricing.py` gained
+  corresponding unit tests.
+
+### v0.5.1 — Free→paid id-change handling (issue #32)
+
+- **`is_free_tier_transition(model, provider)`** in `db.py`: reverse-looks-up a
+  stored `<id>:free` row when a provider moves a model to paid under a *different*
+  id (dropped `:free` suffix or suffixed paid id at a token boundary). Wired into
+  `post_api_request` as `is_known_free_model(...) OR is_free_tier_transition(...)`.
+- **`:free` suffix → $0 rule** in `_lookup_form`: any `…:free` id resolves to an
+  explicit `$0` before the prefix scan (see *Lookup priority chain*). This both
+  (a) stops a seeded model's `:free` variant from being mis-billed at its paid rate
+  via prefix, and (b) records the `:free` id as known-free with no estimated-price
+  warning — so the transition alert seeds itself with **no user config**. This
+  *replaced* the earlier design's manual-`_subscription` requirement. It also
+  surfaced and fixed a latent bug: `nvidia/nemotron-3-super-120b-a12b:free` (a
+  pre-existing 0.4.1 seed) had been resolving to the paid `$0.09/$0.45` rate.
+- **`nvidia/nemotron-3-ultra` paid seed** in `_DEFAULT_PRICING` (OpenRouter rate,
+  NIM-direct pending). Catches the bare id (exact) and the `…-550b-a55b` form
+  (prefix), making `cost > 0` after the 2026-06-18 promo end — which fires the
+  alert. The free `…:free` forms are unaffected (handled by the suffix rule above).
+- **263 tests** (was 253): `test_db.py` gained 7 `is_free_tier_transition` cases;
+  `test_pricing.py` gained the ultra paid-seed + `:free`-suffix → $0 (bare and
+  OpenRouter-long-form), `super:free` regression, and explicit-override cases.
+
+### v0.8.0 — Mixture-of-Agents (MoA) attribution
+
+- **`moa.py`** (new module): resolves the `provider="moa"` virtual-provider
+  preset to its aggregator's real `provider`/`model` via
+  `duckwork_cli.moa_config.resolve_moa_preset`. Defensive — swallows every error
+  and falls back to the raw hook values.
+- **`post_api_request`** now detects MoA calls and records them under the
+  aggregator's real provider/model (fixing the `provider_assumed` misfire) and
+  tags the row with the preset name.
+- **Schema v10** (`_migrate_v10`): `llm_calls.moa_preset` + `runs.moa_calls`.
+- **Reference-model tokens remain uncaptured** (auxiliary `call_llm` fires no
+  hooks) — documented as a Known Limitation; MoA cost is a lower bound and is
+  flagged as such in `/stats` and both dashboards.
+- Verified against `agent/moa_loop.py`, `agent/auxiliary_client.py`,
+  `agent/agent_init.py`, `agent/conversation_loop.py`, `duckwork_cli/moa_config.py`.
+
+---
+
+### v0.8.0 — Agent intelligence (efficiency · smells · forecast, PR #40)
+
+- **`smell_detector.py`** (new module): five read-only anti-pattern heuristics
+  over existing telemetry. See `§ Agent Intelligence`.
+- **`db.efficiency_runs`** + **`stats._efficiency_block`** + plugin dashboard
+  `/efficiency`: per-session efficiency score (0-100). Error penalty keyed on the
+  real run statuses `error`/`interrupted` (source-verified against `__init__.py`
+  session end — **not** the subagent-only `failed`/`cancelled`).
+- **`db.daily_spend_series`** + **`budget.burn_rate_projection`** +
+  `/budget forecast` + standalone `/api/budget/forecast`: moving-window burn-rate
+  projection toward the configured limit; read-only, no state mutation.
+- **No schema change** — all three are pure reads over `runs`/`llm_calls`/
+  `tool_calls`, so there is no `_migrate_vN`.
+- Run-status strings confirmed against `__init__.py` session-end logic, whose
+  `on_session_end` kwargs are sourced from `agent/conversation_loop.py`.
+
+---
+
+## Metrics: Real vs Estimated
+
+| Metric | Status | Source |
+|--------|--------|--------|
+| Tokens in (non-cached) | ✅ Real | `post_api_request.usage.input_tokens` |
+| Tokens out | ✅ Real | `post_api_request.usage.output_tokens` |
+| Cache read tokens | ✅ Real | `post_api_request.usage.cache_read_tokens` |
+| Cache write tokens | ✅ Real | `post_api_request.usage.cache_write_tokens` |
+| Reasoning tokens | ✅ Real | `post_api_request.usage.reasoning_tokens` |
+| API call latency | ✅ Real | `post_api_request.api_duration` (seconds → ms) |
+| Tool call latency | ✅ Real | `post_tool_call.duration_ms` |
+| Model name | ✅ Real | `post_api_request.response_model or model` |
+| Provider name | ✅ Real (verbatim) | `post_api_request.provider` |
+| Platform | ✅ Real | `on_session_start.platform` |
+| Cron job ID | ✅ Real (parsed) | `session_id` regex extraction |
+| Session duration | ✅ Real (wall time) | `started_at` → `ended_at` (last turn) |
+| Tool success/failure | ✅ Real | Parse `result` JSON for `"error"` key |
+| Subagent count | ✅ Real (proxy) | `subagent_stop` hook count |
+| Cost (USD) | ⚠️ Estimated | Local pricing table × token counts |
+| Tokens when `usage=None` | ⚠️ Estimated, flagged | `approx_input_tokens + chars/4`, row marked `estimated=1` |
+| Subagent cost (global) | ✅ Real | Child runs fire own hooks → independent `runs` rows |
+| Subagent cost (per-cron-job) | ✅ Real (attributed) | `subagent_edges` (v11) + recursive CTE in `db.spend_by_scope("cron_job", ...)` |
+| MoA aggregator cost | ✅ Real (re-attributed) | Aggregator usage from `post_api_request`, priced under the aggregator's real provider/model resolved from the preset (`moa.py`) |
+| MoA reference-model cost | ❌ Not available | References run via auxiliary `call_llm`, which fires no hooks — tokens unrecoverable (recorded MoA cost is a lower bound) |
+
+**Cost is always an estimate** — computed from a local pricing table, not from
+a provider billing API. Users can override prices via `~/.duckwork/telemetry/pricing.yaml`.
+
+---
+
+## CI/CD Pipeline
+
+### CI (`.github/workflows/ci.yml`)
+
+Runs on push and PR to `main`. Jobs:
+
+1. **`lint`** — `ruff format --check .` then `ruff check .` (Python 3.12)
+2. **`test`** — `pytest tests/ -v --tb=short`, matrix Python 3.8–3.12.
+   `needs: lint` so a format miss fails the whole matrix.
+
+Local equivalent (matches CI exactly):
+```bash
+ruff format --check . && ruff check . && pytest tests/ -v
+```
+
+### Release (`.github/workflows/release.yml`)
+
+Triggered on push of a `v*.*.*` tag. Steps:
+1. Verify that the tag version matches `pyproject.toml` `[project].version`.
+   If they differ, the release fails. Both `__init__.py.__version__` and
+   `plugin.yaml.version` must also be bumped (this check only covers `pyproject.toml`
+   vs the tag — see RELEASING.md for the full checklist).
+2. Create GitHub Release (no build artifact — Duckwork installs directly from the repo).
+
+### Pre-commit hook
+
+`.githooks/pre-commit` runs the same three checks (format + lint + tests).
+Enable with `git config core.hooksPath .githooks`.
+
+---
+
+## Known Limitations
+
+### Enforcement gaps
+
+- **No true mid-call abort.** The in-flight response completes and is billed.
+  The tool-gate stops *further* work, not the current call.
+- **Text-only sessions.** A session generating only text (no tool calls) never
+  hits `pre_tool_call`. No enforcement possible. A `pre_llm_call` abort for
+  cron jobs would require Duckwork to honor it (it currently doesn't).
+- **`on_estimated.mode: warn_only` is the default.** Hard verdicts based on
+  estimated data degrade to soft. Users with reliable providers should set
+  `mode: enforce`.
+
+### Subagent attribution
+
+- `per_cron_job` budgets now attribute delegated (async/nested) subagent
+  spend back to the cron job that started the delegation chain, via the
+  `subagent_edges` table and a recursive CTE in `db.spend_by_scope` (schema
+  v11, issue #49). `global` remains the cap that captures literally
+  everything, including any edge that fails to resolve.
+- `runs.parent_session_id` stays dormant by design — `subagent_edges` is the
+  persistent, single source of truth for the delegation tree, so there is no
+  need to populate the column retroactively.
+- **Phase-1 boundary:** this is reporting/aggregation correctness only. A
+  detached async child still self-enforces only against `global` while it
+  runs; in-path enforcement that pauses a runaway child mid-flight is a
+  planned Phase 2. `db.unattributed_child_cost` flags, at query time, child
+  spend whose parent edge never resolves to a real root.
+
+### MoA reference-model tokens
+
+- A MoA turn runs N reference models plus the aggregator per iteration, but only
+  the **aggregator** fires a hook. Reference-model tokens are never captured
+  (auxiliary `call_llm` fires no hooks), so a MoA session's recorded cost is a
+  **lower bound**. `/stats` and the dashboard flag MoA calls (`moa_calls` /
+  `moa_preset`) so the gap is visible. See `§ Mixture of Agents (MoA)`.
+
+### MoA one-shot (`/moa <prompt>`) is entirely invisible — by Duckwork' design
+
+- The `/moa` slash command (the one-shot path, `decode_moa_turn` →
+  `conversation_loop.py:827`) runs **both** the reference models **and** the
+  aggregator through the auxiliary `call_llm` path, then injects their synthesis
+  as context into the **real** main model call. Only that final main-model call
+  fires `post_api_request`. So on this path telemetry records **zero** MoA
+  cost — not even the aggregator — and the `moa_calls` / `moa_preset` markers are
+  never set. This is not a plugin gap we can close: no hook fires for either MoA
+  call type here (verified against `agent/moa_loop.py::aggregate_moa_context`
+  and `agent/auxiliary_client.py`, which has no hook dispatch).
+- The re-attribution in v10 (`moa.py`) therefore applies **only** to the
+  preset-as-model path (`/model <preset> --provider moa`), where the aggregator
+  *is* the returned main response and does fire the hook. Selecting a preset as
+  your model is the only way MoA usage reaches telemetry at all.
+
+### Pricing
+
+- Auto-refresh covers OpenRouter models (via API) and Google AI Studio (static
+  table). Anthropic, OpenAI direct-API pricing requires manual `pricing.yaml`
+  entries or a new `PricingSource` subclass.
+- `GoogleAISource` is a constant table. It will drift without manual quarterly
+  updates. See `LAST_VERIFIED` in `pricing_refresh.py::GoogleAISource`.
+- Gemini tiered-pricing models (`gemini-2.5-pro`, `gemini-3.1-pro-preview`) use
+  the ≤200k context tier. Usage above 200k is undercounted.
+
+### DB retention
+
+`telemetry.db` grows without bound. No automatic purge. For >100K rows, consider
+manual cleanup.
+
+---
+
+## User Config Files
+
+```
+~/.duckwork/telemetry/
+├── telemetry.db          ← SQLite (WAL, schema v5)
+├── telemetry.log         ← Plugin log (DEBUG+, includes one-time warnings)
+├── pricing.yaml          ← User price overrides + auto-refreshed models
+├── budget.yaml           ← Guardrails config
+└── .pricing_refresh      ← Sentinel: mtime = last successful refresh
+```
+
+All paths derived from `os.environ.get("DUCKWORK_HOME", Path.home() / ".duckwork")`.
+**Never use `Path.home()` directly** — breaks test isolation.
+
+---
+
+## Canonical telemetry home (`DUCKWORK_TELEMETRY_HOME`)
+
+Telemetry file locations resolve through `paths.py`:
+
+- `paths.get_telemetry_home()` — PURE resolver (never creates the dir), precedence:
+  1. `DUCKWORK_TELEMETRY_HOME` — opt-in shared cost-center dir, if set
+  2. `DUCKWORK_HOME` — this profile's Duckwork home
+  3. `~/.duckwork` — default
+  …always under a `telemetry/` subdir.
+- `paths.get_db_path()` — `telemetry.db`; the ONLY getter that creates the telemetry dir
+  (the DB writes there).
+- `paths.get_budget_path()` / `paths.get_pricing_path()` — `budget.yaml` / `pricing.yaml`;
+  pure (no mkdir), so an absent/unwritable canonical home never turns a config read into a
+  crash (absence of `budget.yaml` = "budgets disabled").
+
+When `DUCKWORK_TELEMETRY_HOME` is set, every profile/process/cron shares one `telemetry.db`,
+one `budget.yaml`, and one `pricing.yaml` — the single-pane cost center. When unset, behavior
+is unchanged (each `DUCKWORK_HOME` keeps its own, still profile-tagged, telemetry dir).
+
+**Governs telemetry files only.** `state.db` and `cron/` are NOT relocated — they stay on
+`DUCKWORK_HOME`.
+
+**Package vs dashboard.** The package runtime (`db.py`, `budget.py`, `pricing.py`) routes
+through `paths.py` (`db.py`/`pricing.py` use a `try: from . import paths / except ImportError:
+import paths` dual-mode import because some tests bare-import them). The dashboard surfaces
+(`dashboard/plugin_api.py`, `dashboard/serve.py`) are loaded outside the package and are
+code-isolated (`tests/test_dashboard_plugin_isolation.py`), so they replicate the precedence
+inline rather than importing `paths.py`. This PR updated `serve.py` (telemetry DB);
+`plugin_api.py` follows in the dashboard PR.
+
+### Dashboard profile awareness (plugin surface)
+
+`dashboard/plugin_api.py` reads the canonical telemetry home (inline `DUCKWORK_TELEMETRY_HOME`
+precedence — self-contained, no `paths.py` import). Its aggregate endpoints accept an optional
+`profile` query param: `runs`-based endpoints filter `AND profile = ?`; `llm_calls`-based
+endpoints filter `AND session_id IN (SELECT session_id FROM runs WHERE profile = ?)` (a
+correlated subquery — avoids a JOIN and the runs/llm_calls column-name ambiguity). `/profiles`
+returns the distinct non-null profiles. The `dist/index.js` `TelemetryPage` renders a selector
+(shown only when profiles exist) that threads `&profile=` into each panel. Shared-mode only —
+there is no cross-DB reading (consolidate via `DUCKWORK_TELEMETRY_HOME` first). `/budget` and the
+slot widgets are not profile-filtered.
+
+**Gotcha — no `X | None` on FastAPI route params.** The `profile` query param is declared
+`profile: str = ""` (not `str | None = None`). FastAPI evaluates route-parameter annotations at
+decoration time (`get_type_hints`), and `str | None` raises `TypeError` on Python 3.8/3.9 (this
+repo targets `>=3.8`) — even with `from __future__ import annotations`. `Optional[str]` avoids
+that but ruff `UP045` would demand `X | None` back. `str = ""` is annotated, ruff-clean,
+cross-version-safe, and falsy-when-absent (the helpers gate on `if profile:`), so it's the
+correct shape for optional query params in this file.
+
+### Command: `telemetry sync-profiles`
+
+Points every Duckwork profile at one shared telemetry home so all profiles read the same
+`pricing.yaml` / `budget.yaml` and write to the same `telemetry.db` (the consolidation
+`DUCKWORK_TELEMETRY_HOME` enables). Lives in `sync_profiles.py` (self-contained, no intra-package
+imports) + a subcommand in `telemetry_cli.py` (`_handle_sync_profiles`). No schema change.
+
+Verified per-profile model (source: `Fordex/duckwork-agent@main`, 2026-07-08): each profile
+is an independent `DUCKWORK_HOME` at `~/.duckwork/profiles/<name>/` (the `default` profile is
+`~/.duckwork`), with its own `config.yaml`, `.env`, and `plugins/`. Duckwork core loads `<home>/.env`
+via python-dotenv (`override=True`) after resolving the profile and BEFORE loading plugins, so
+`DUCKWORK_TELEMETRY_HOME` written there reaches that profile's process — no user-side sourcing.
+
+```bash
+duckwork telemetry sync-profiles            # dry-run (default): shows the plan, mutates nothing
+duckwork telemetry sync-profiles --apply    # RUN FROM THE DEFAULT PROFILE (shared home = ~/.duckwork)
+```
+
+- The ONLY file mutated is each profile's `.env` — a single `DUCKWORK_TELEMETRY_HOME` line,
+  written atomically (tmp + `os.replace`). Idempotent; other lines and comments are kept and an
+  existing `export ` prefix on the key is preserved (line endings are normalized to `\n`).
+- `config.yaml` is **read-only**: the command warns when a profile has not enabled the plugin
+  (`plugins.enabled`) but NEVER edits it. Auto-enable and plugin-symlinking were deliberately
+  dropped — the repo has no comment-preserving YAML writer, and enabling is a one-line manual
+  step (`duckwork plugins enable duckwork-telemetry --profile <name>`).
+- **Non-default guard:** enumeration is default `~/.duckwork` + `~/.duckwork/profiles/*/`; the target
+  defaults to the current resolved home (`DUCKWORK_TELEMETRY_HOME` > `DUCKWORK_HOME` > `~/.duckwork`).
+  If run from a named profile, `--apply` refuses unless `--yes` is passed — review the dry-run
+  first. The profile that already *is* the shared home is skipped. (Enumeration is always rooted
+  at the invoking home, so running from a named profile only ever sees that profile's own
+  subtree — another reason to run from the default profile.)
+- Flags: `--telemetry-home PATH` overrides the shared home; `[names...]` limits to specific
+  profiles; `--json` emits a machine-readable report.
+- Going-forward only: it does not backfill telemetry rows already siloed in a profile's own
+  pre-consolidation DB.
+
+---
+
+## PluginContext API
+
+```python
+ctx.register_hook(hook_name: str, callback: Callable) -> None
+ctx.register_command(name: str, handler: Callable, description: str = "", args_hint: str = "") -> None
+ctx.register_cli_command(
+    name: str,
+    help: str,
+    setup_fn: Callable,
+    handler_fn: Callable | None = None,
+    description: str = "",
+) -> None
+ctx.register_tool(name, toolset, schema, handler, ...) -> None
+```
+
+Handler signature for slash commands: `fn(raw_args: str) -> str | None`
+(sync or async — both supported).
+
+### `register_cli_command` details (verified against `duckwork_cli/plugins.py`)
+
+Creates a `duckwork <name> ...` terminal subcommand (distinct from in-session slash
+commands, which use `register_command`).
+
+- **`setup_fn`** — receives an `argparse` subparser (the `ArgumentParser` object added
+  by `add_subparsers().add_parser(name, ...)`). Use it to call `.add_argument()` or
+  add further sub-subparsers. Return value is ignored.
+- **`handler_fn`** — if provided, registered via `subparser.set_defaults(func=handler_fn)`.
+  When Duckwork dispatches the command it calls `args.func(args)`, so `handler_fn`
+  receives the parsed `argparse.Namespace`. If `None`, the caller is expected to wire
+  `set_defaults(func=...)` itself inside `setup_fn`.
+- **`description`** — optional long description stored in the command registry; not
+  passed to argparse automatically.
+- **Return value** — `None`. Registers metadata in `_manager._cli_commands[name]`;
+  does not immediately add to the live parser (the manager wires parsers at startup).
+
+---
+
+## Valid Hooks Reference
+
+All hooks available in `VALID_HOOKS` (`duckwork_cli/plugins.py`):
+
+```
+pre_tool_call, post_tool_call, transform_terminal_output, transform_tool_result,
+transform_llm_output, pre_llm_call, post_llm_call, pre_api_request, post_api_request,
+api_request_error, on_session_start, on_session_end, on_session_finalize,
+on_session_reset, subagent_start, subagent_stop, pre_gateway_dispatch,
+pre_approval_request, post_approval_response
+```
+
+Hooks not used (and why):
+- `transform_*` — output mutation, not needed for telemetry
+- `on_session_reset` — fired by `/reset`; would be useful for clearing session
+  state without restart, but not yet wired
+- `pre_gateway_dispatch` / `pre_approval_request` / `post_approval_response` —
+  documented as "observers only"; cannot block or modify
+
+### Plugin Discovery Gotcha — duplicate `name` in `~/.duckwork/plugins/` silently shadows
+
+Duckwork' loader (`duckwork_cli/plugins.py::discover_plugins`) recursively scans every
+subdirectory of `~/.duckwork/plugins/` for a `plugin.yaml`, parses each one, and
+indexes them by their declared `name`. **Two directories whose manifests share the
+same `name` collide on that key — the later one parsed wins, the earlier one is
+dropped without any warning or error.** Filesystem order decides who "wins"
+(alphabetical in practice), so a backup directory left next to the active plugin
+will usually shadow it.
+
+This bit us with `api_request_error` (issue #43, PR #44). The server had:
+
+```
+~/.duckwork/plugins/
+├── duckwork-telemetry/                    ← current (v0.7.0, has the fix)
+└── duckwork-telemetry.bak.1781730291/     ← old backup, both declare name: duckwork-telemetry
+```
+
+The `.bak` was loaded instead of the active dir. Its older `__init__.py` did not
+call `register_hook("api_request_error", ...)`, so `has_hook("api_request_error")`
+returned False and the dispatcher in `run_agent.py::_invoke_api_request_error_hook`
+silently short-circuited on every 404. Editing `plugin.yaml` or `__init__.py` in
+the active dir had zero effect — Duckwork was reading the other dir entirely.
+
+**Rules of thumb:**
+- Never keep a backup of a plugin **inside** `~/.duckwork/plugins/`. Move it out
+  (`mv ~/.duckwork/plugins/foo.bak ~/foo.bak`) or rename its `name:` in the manifest
+  so it gets a distinct key.
+- The `provides_hooks` list in `plugin.yaml` is **declarative only** — the loader
+  does not filter registrations against it. Keep it accurate anyway so the
+  manifest matches the code, but do not rely on adding/removing entries there to
+  enable/disable a hook.
+- To verify which path Duckwork is actually loading, run with debug logging and
+  look for the `Loading plugin '<name>' ... path=<dir>` line:
+
+```bash
+cd ~/.duckwork/duckwork-agent && python3 -c "
+import logging; logging.basicConfig(level=logging.DEBUG)
+from duckwork_cli import plugins as p; p.discover_plugins()
+print('api_request_error registered:', p.has_hook('api_request_error'))
+" 2>&1 | grep -E "Loading plugin 'duckwork-telemetry'|api_request_error registered"
+```
+
+### `api_request_error` — model-unavailable detection (issue #43)
+
+Fires at the moment of a non-retryable client error from
+`agent/conversation_loop.py`, before the exception is diluted into the
+`RuntimeError` that surfaces in `cron.scheduler`. Verified kwargs:
+
+| kwarg            | Notes                                                                |
+|------------------|----------------------------------------------------------------------|
+| `session_id`     | The active session                                                   |
+| `api_kwargs`     | Dict; the requested model id lives in `api_kwargs["model"]`          |
+| `error_type`     | Exception class name, e.g. `"NotFoundError"` for a 404               |
+| `error_message`  | Full message including the status code and the model id              |
+| `status_code`    | HTTP status (404 for model-not-found)                                |
+| `retryable`      | False for 404s                                                       |
+| `reason`         | Classifier enum, e.g. `"model_not_found"`                            |
+| `retry_count`, `max_retries`, `task_id`, `turn_id`, `api_request_id`, `api_call_count`, `api_start_time` | Other context fields, kept via `**_kw` |
+
+The plugin filters to `status_code == 404 AND retryable is False` and:
+
+1. Upserts `model_unavailable_alerts` keyed on `(model, provider)`. Repeated
+   404s bump `occurrences` and refresh `last_seen_at`; `first_seen_at` is
+   preserved.
+2. Queues a pending entry in `_pending_model_unavailable_alerts[session_id]`
+   so the next `pre_llm_call` injects a one-shot warning that names the
+   model, provider, status, and occurrence count.
+
+Sibling to free→paid: same family of provider-side changes (deprecation,
+`:free` promo end) but the call fails entirely instead of just billing.
+
+---
+
+*Source references verified against `git clone --depth=1 https://github.com/DuckMind/duckwork`.*  
+*Inspected: `duckwork_cli/plugins.py`, `agent/conversation_loop.py`, `model_tools.py`,*
+*`cron/scheduler.py`, `tools/delegate_tool.py`, `agent/usage_pricing.py`.*
+
+---
+
+## Dashboard Plugin Surface
+
+In addition to the standalone HTML dashboard (`dashboard/serve.py`, port 8765),
+`duckwork-telemetry` also ships as a plugin for the official Duckwork web
+dashboard. The two surfaces co-exist; they share the SQLite DB but **zero
+Python code**.
+
+### File layout (verified against the Duckwork loader)
+
+The Duckwork dashboard discovers plugins by scanning
+`~/.duckwork/plugins/<name>/dashboard/manifest.json`
+(`duckwork_cli/web_server.py::_discover_dashboard_plugins`, lines 11333-11434
+of `Fordex/duckwork-agent@main`). Because this repo is cloned into
+`~/.duckwork/plugins/duckwork-telemetry/`, the plugin files MUST live inside
+`dashboard/` — the same directory as `serve.py` and `index.html`. The
+discovery rule is non-negotiable.
+
+```
+dashboard/
+├── serve.py         ← standalone surface (stdlib http.server, port 8765)
+├── index.html       ← standalone SPA (vendored Chart.js, CDN fallback)
+├── manifest.json    ← plugin manifest
+├── plugin_api.py    ← plugin backend (FastAPI APIRouter; loaded by Duckwork)
+└── dist/index.js    ← plugin frontend (IIFE; no build step)
+```
+
+### Why a single file for the plugin backend
+
+The Duckwork loader imports `plugin_api.py` via
+`importlib.util.spec_from_file_location(module_name, api_path)`
+(`duckwork_cli/web_server.py:11856-11881`). The module is **not** registered
+as part of any package, so relative imports (`from . import _db`) fail at
+load time. Hence `plugin_api.py` is self-contained — all DB helpers,
+budget math, and FastAPI routes live in one file. No `_db.py` sibling.
+
+### Why the standalone and plugin share no code
+
+The user contract is: the standalone dashboard MUST keep working unchanged
+when the plugin evolves. Co-locating in `dashboard/` was forced by the
+loader, but the two are independent products:
+
+| Surface | Entry point | Server | Auth |
+|---------|-------------|--------|------|
+| Standalone | `dashboard/serve.py` | stdlib `BaseHTTPRequestHandler` | none (loopback default) |
+| Plugin | `dashboard/plugin_api.py` | Duckwork FastAPI app | Duckwork session cookie |
+
+`tests/test_dashboard_plugin_isolation.py` enforces:
+- `plugin_api.py` does not import `serve` (in any module form).
+- `serve.py` does not import `plugin_api`.
+- No third Python file in `dashboard/` is imported by both surfaces (would
+  re-couple them).
+- Manifest `version` equals the package `__version__` (lockstep release).
+
+### Read-only DB access
+
+`plugin_api.py` opens `telemetry.db` with `PRAGMA query_only=ON`. The
+plugin is observability-only — capture still flows through the runtime
+hooks (`__init__.py`). The test `test_db_connection_is_read_only` asserts
+that any `INSERT` via the plugin connection raises `OperationalError`.
+
+### Manifest contract
+
+```json
+{
+  "name": "duckwork-telemetry",
+  "label": "Telemetry",
+  "icon": "Activity",
+  "version": "<must equal __version__>",
+  "tab": { "path": "/telemetry", "position": "after:analytics" },
+  "slots": ["sessions:top", "cron:top", "header-right", "analytics:bottom"],
+  "entry": "dist/index.js",
+  "api": "plugin_api.py"
+}
+```
+
+Verified fields:
+- `tab.position` accepts `"end"`, `"after:<path>"`, `"before:<path>"`
+  (`web_server.py:11382-11391`).
+- `slots` is **documentation only**. The real binding happens in the JS
+  bundle via `window.__DUCKWORK_PLUGINS__.registerSlot(...)`
+  (extending-the-dashboard.md § *Augmenting built-in pages*).
+- `api` is validated by `_safe_plugin_api_relpath` (`web_server.py:11296-11330`);
+  absolute paths or `..` traversal cause backend mount to be skipped (the
+  static assets still load). This is fix for GHSA-5qr3-c538-wm9j.
+
+### Slot catalogue (verified 2026-08-24)
+
+The shell renders `<PluginSlot name="..." />` only for the names below. Source:
+`website/docs/user-guide/features/extending-the-dashboard.md` § *Slot catalogue*
+(upstream lines 577-604 at time of writing — prefer the section heading over the
+line numbers, which move).
+
+**Shell-wide** — render anywhere in the app chrome:
+
+| Slot | Location |
+|------|----------|
+| `backdrop` | Inside the `<Backdrop />` layer stack, above the noise layer. |
+| `header-left` | Before the Duckwork brand in the top bar. |
+| `header-right` | Before the theme/language switchers in the top bar. |
+| `header-banner` | Full-width strip below the nav. |
+| `sidebar` | Cockpit sidebar rail — **only rendered when `layoutVariant === "cockpit"`**. |
+| `pre-main` | Above the route outlet (inside `<main>`). |
+| `post-main` | Below the route outlet (inside `<main>`). |
+| `footer-left` / `footer-right` | Footer cell content (replaces the default). |
+| `overlay` | Fixed-position layer above everything else. |
+
+**Page-scoped** — `:top` and `:bottom` on each built-in page:
+
+`sessions:*` · `analytics:*` · `logs:*` · `cron:*` · `skills:*` · `config:*` ·
+`env:*` · `docs:*` · `chat:*`
+
+`logs:top` sits above the filter toolbar and `logs:bottom` below the log viewer;
+`docs:top` sits above the iframe; `chat:*` is only active when embedded chat is
+enabled. Everything else is the plain top/bottom of the page content area.
+
+> **This list grew.** Until 2026-08-24 this section recorded four slots and
+> called them "the entire verified catalogue". That was true when written and
+> silently stopped being true. Treat any slot list in this repo as a snapshot,
+> re-verify against the upstream section before designing around it, and update
+> the date above when you do.
+
+### Slot widgets we register
+
+| Slot | Widget |
+|------|--------|
+| `sessions:top` | Last-run summary card (cost · tokens · model). |
+| `cron:top` | 7-day cron cost + failure badge. |
+| `header-right` | 24h spend + budget level (variant=destructive on hard breach). |
+| `analytics:bottom` | Daily cost line chart (vendored Chart.js served locally; CDN fallback only). |
+
+Four of the twenty-eight available slots. `manifest.json` lists the same four,
+but that field is documentation only — the binding happens in `dist/index.js`
+via `registerSlot()`.
+
+### Slot names are NOT free-form — verify before adding new ones
+
+The shell only renders slots whose names appear in the catalogue above.
+Registering an unknown slot via `registerSlot()` is a silent no-op: the widget
+loads but nothing on the page ever mounts it. **Do not invent slot names** —
+`alerts:top` and `warnings:top`, for instance, do not exist.
+
+If you need a visible surface and no slot fits, render the widget **inside
+`TelemetryPage`** (the plugin's own tab) — that page is fully under our control.
+
+> **Revisit candidate.** The free→paid transitions widget renders inside
+> `TelemetryPage` on the recorded rationale that "no shell slot fits a tier
+> change surface". `header-banner` — a full-width strip below the nav — now
+> exists and is plausibly that surface. The decision predates it; re-evaluate
+> before assuming it still holds.
+
+Re-verify the catalogue against upstream before adding a slot:
+
+```
+https://github.com/DuckMind/duckwork
+```
+
+Note the path: the doc lives under `website/docs/user-guide/features/`, not
+`docs/`. A wrong path here 404s silently, which is exactly how the old
+four-slot list survived long past its expiry.
+
+The SDK does not currently expose an `useActiveSession` hook, so
+`sessions:top` shows the most recent run instead of the per-row session.
+When that hook lands upstream, swap the implementation — the backend
+endpoint `/session/{session_id}` is already in place.
+
+### Chart.js delivery
+
+Chart.js is vendored locally at `dashboard/vendor/chart.umd.min.js` and served
+by the standalone dashboard itself first. `index.html` falls back to
+`cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js` only if the local
+asset fails to load. This removes the main failure mode behind `Chart is not
+defined` on offline, filtered, or flaky networks while keeping a fallback path
+for manual recovery.
+
+The dashboard still has no build step — the vendored asset is a checked-in
+static file, not a bundler output.
+
+### Update path
+
+Both surfaces are upgraded with a single `git pull` in
+`~/.duckwork/plugins/duckwork-telemetry`. The manifest version is pinned to
+`__version__` by `test_plugin_version_matches_package`, so a release tag
+implicitly ships both surfaces in lockstep.
+
+---
+
+## Duckwork Session Storage (transcripts and artifacts)
+
+Telemetry's own database records *what a session cost*, never *what it produced*:
+`tool_calls` stores `tool_name, ok, latency_ms` and nothing else — no arguments, no
+results, no paths. Any feature that wants to surface a session's output must read
+Duckwork' own state. This section documents that state so nobody re-derives it wrong.
+
+Verified 2026-08-21 against `Fordex/duckwork-agent@main` and a real `~/.duckwork`.
+
+### `sessions/` is a flat directory — there is no per-session folder
+
+```
+DUCKWORK_HOME/sessions/
+├── sessions.json                  ← session index
+└── request_dump_*.json            ← per-request payload dumps
+```
+
+That is the whole layout. A real home was inspected: 34 files, **0 subdirectories**.
+
+- `gateway/config.py` defines `sessions_dir = get_duckwork_home() / "sessions"`.
+- `gateway/session.py` documents the legacy transcript path as
+  `sessions_dir / f"{session_id}.json"` — a **file**, and it also explains why
+  `session_id` passes a strict guard: it is interpolated straight into a filename.
+
+**Never assume `sessions/<session_id>/` exists.** Code written against that shape
+returns empty for every session and looks like "no data" rather than a bug. This
+already cost one implementation (PR #80, reverted).
+
+`request_dump_*.json` holds full request payloads including system prompts. It must
+never be served by either dashboard surface.
+
+### Transcripts live in `state.db`
+
+`DUCKWORK_HOME/state.db` (SQLite, WAL) is the transcript store:
+
+| Table | Shape |
+|-------|-------|
+| `sessions` | `id` (PK, the session id), `source`, `model`, `system_prompt`, `parent_session_id`, `started_at`, `ended_at`, token counters |
+| `messages` | `session_id` FK, `role`, `content`, `tool_calls`, `tool_name`, `timestamp`, `token_count`, `active`, `compacted` — plus `messages_fts` full-text mirrors |
+
+`idx_messages_session` covers `(session_id, timestamp)`, so per-session reads are cheap
+even on a large DB (135 MB observed). Upstream `tests/gateway/test_load_transcript_db_only.py`
+confirms the DB is the source of truth, not the legacy JSON file.
+
+**Per profile:** each profile home carries its own `state.db` at
+`DUCKWORK_HOME/profiles/<name>/state.db` (verified on disk). Resolve which one to open
+from `runs.profile` (schema v12): `NULL` → the root `state.db`, otherwise the profile's.
+Telemetry consolidates rows into the root DB, so a run in the root telemetry DB may
+still have its transcript in a profile home.
+
+### Joining telemetry to Duckwork sessions
+
+`runs.session_id` matches `state.db`'s `sessions.id` verbatim — same format for both
+interactive (`20260704_150355_99b11196`) and cron (`cron_<job>_<ts>`) runs.
+
+The join is **lossy by design**: measured on a real pair of databases, 104 of 191
+telemetry runs still existed in `state.db` (54%). Telemetry is append-only and Duckwork
+prunes sessions, so older runs have no transcript and never will. This is the same
+asymmetry `serve.py::_active_duckwork_session_ids()` already handles when it soft-hides
+deleted sessions.
+
+### Artifacts are transcript references, not stored files
+
+Duckwork has **no artifact store**. Its own desktop Artifacts tab
+(`apps/desktop/src/app/artifacts/artifact-utils.ts`) derives artifacts by parsing
+session messages for:
+
+- `MEDIA:` tags and `Screenshot path:` lines
+- markdown image and link references
+- tool-result keys — `output_path`, `saved_to`, `screenshot_path`, `files_created`,
+  `generated_file`, `artifact_*`, `local_path`, ...
+- absolute, relative and Windows path patterns in message text
+
+Every hit is a **reference** to a file wherever the tool happened to write it — usually
+the session's working directory, sometimes a cache, sometimes already deleted. Any
+telemetry surface that lists artifacts inherits that: paths are untrusted, may not
+exist, and live outside any directory this plugin controls. Serving their contents is a
+separate security problem from listing them (allowlisted roots, symlinks resolved before
+the decision, size caps, a real bytes endpoint).
+
+### Rules for reading `state.db`
+
+`state.db` is Duckwork' private schema, not a plugin API. It carries no compatibility
+promise and can change on any upgrade.
+
+- Open read-only (`file:...?mode=ro`); never create it, never write, never migrate it.
+- Access columns defensively and degrade to an empty result on any schema drift,
+  missing file, or lock — a missing transcript is not an error state for telemetry.
+- Keep the connection short-lived: a live Duckwork is writing to the same WAL.
+- Cover schema drift in tests explicitly, the same way the migration tests cover
+  upgrade paths.
+
+---
+
+## Dashboard i18n (EN/RU toggle)
+
+Standalone dashboard (`dashboard/index.html`) is EN-first with a deterministic
+EN→RU toggle (no backend, no build step, no new deps).
+
+### Source of truth
+
+- **Dictionary file:** `dashboard/i18n_ru.js` — EN keys (source), RU overlay.
+  Pretty-printed one key per line, loaded via `<script src="i18n_ru.js">`
+  before `dashboard/i18n.js` (shipped `i18n_t`/`__DYN`/`__RU` logic, shared by
+  the page and `dashboard/i18n.test.js` via `vm`). Served as static assets by
+  `serve.py` (its `Handler.do_GET` serves any file under `SCRIPT_DIR` via
+  `super().do_GET()`; no extra route needed). If `/i18n_ru.js` 404s, the
+  `__RU` guard (`(typeof i18nRU !== 'undefined' && i18nRU) || {}`) keeps the
+  dashboard working with the EN source itself as fallback.
+- **Key format:** EN string is the key, RU string is the value. Example:
+  `"Home": "Главная"`. Dynamic keys embed `${0}`, `${1}` placeholders:
+  `"Window: ${0} → ${1} (${2})": "Окно: ${0} → ${1} (${2})"`.
+- **Fallback:** missing RU entry → return the EN source verbatim (visible gap,
+  never silent). Do not add a RU-only key — every key must be a valid EN source.
+
+### Static vs dynamic
+
+- **Static keys** (`k.indexOf('${') === -1`): direct `__RU[en]` lookup.
+- **Dynamic keys** (`${N}`): regex fallback. The placeholder is escaped via
+  `k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\$\\\{[^}]*\\\}/g, '(.*)')`
+  — note the escaped `\$` (the unescaped `$` is a regex end-anchor and breaks the
+  fallback; the bug caused 89/297 dynamic strings to stay untranslated). Captured
+  groups are substituted with a **function** replacement
+  `out.replace('${' + i + '}', () => g)` so a literal `$&` in the provider/model
+  name does not expand to the whole match.
+- **Leaf text only:** translate inner text (`Model:`, `Tokens`, `Home`), not
+  HTML/SVG blobs. The 136 markup-keyed entries (notably the `<rect>` chart case)
+  were refactored to build structure once and translate leaves; `dashboard/i18n.test.js`
+  asserts no key contains `<` and checks a chart leaf (`Model: Other`).
+
+### Persistence and chrome
+
+- **Default:** `__dashLang = 'en'` (`document.documentElement.lang` synced on load
+  and on toggle). `<html lang="en">` and `<title>duckwork-telemetry dashboard</title>`
+  are English by default — the EN source is the document language.
+- **Persistence key:** `duckwork_telemetry_lang` in `localStorage` (un-namespaced
+  from the generic `dashboard_lang` to avoid collision). Survives reload.
+- **No `location.reload()`:** `__swapLang()` does an in-place re-render
+  (`__syncLangBtn()` → `__applyStaticI18n()` → `loadAll({showShell:false})`),
+  preserving drilldown/filters/scroll. `__applyStaticI18n` snapshots original
+  text/attr/title in `__staticI18nOrig` so switching EN→RU→EN restores verbatim.
+- **Badge class from raw value:** `badge(raw, map, label)` resolves `class` from the
+  raw status (`ok`/`error`/`interrupted`/`running`) and renders `label` separately.
+  `statusBadge(raw)` maps `ok:'OK'` (Latin, not Cyrillic `ОК`) via `statusLabelsRU`;
+  the EN path is identity (as on main) and RU is the only override, so casing
+  stays uniform. Extra statuses `timeout`/`failed`/`cancelled`
+  were removed — only the four real run statuses remain (subagent `child_status`
+  never reaches runs).
+
+### Tests
+
+`dashboard/i18n.test.js` (`node --test dashboard/i18n.test.js`, no deps) loads the
+shipped `dashboard/i18n.js` + `dashboard/i18n_ru.js` via `vm` (no local copy of
+`i18n_t` — drift fails CI by construction) and asserts: A1 (`OK`→`Успех` RU,
+`OK`→`OK` EN) and A2 (`Total: … tokens`→`Итого`), shadowing for every dynamic key
+(`V0`/`V1` substitution, most-specific-first), coverage of every static
+`i18n_t` literal in `index.html`, `$&` safety, and chart-leaf labels. CI runs it
+as `Dashboard i18n tests`.
+
+### Known limitation
+
+Only the standalone dashboard (`dashboard/index.html`) is localized; the plugin
+widget (`dashboard/dist/index.js`) stays English, so running both surfaces gives
+a mixed-language UI.

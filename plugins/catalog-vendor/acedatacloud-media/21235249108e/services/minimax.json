@@ -1,0 +1,91 @@
+{
+  "service": "minimax",
+  "title": "Ace Data Cloud MiniMax H3",
+  "kind": "video",
+  "description": "MiniMax H3 text-to-video and first-frame animation through your Ace Data Cloud account.",
+  "tool_prefix": "acedatacloud_minimax",
+  "generate_path": "/minimax/videos",
+  "task_path": "/minimax/tasks",
+  "defaults": {
+    "model": "MiniMax-H3",
+    "resolution": "768P",
+    "duration": 4,
+    "ratio": "16:9"
+  },
+  "generate_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "prompt"
+    ],
+    "properties": {
+      "ratio": {
+        "type": "string",
+        "enum": [
+          "adaptive",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "maxLength": 4000
+      },
+      "duration": {
+        "type": "integer",
+        "minimum": 4,
+        "maximum": 15
+      },
+      "prompt": {
+        "type": "string",
+        "maxLength": 4000
+      },
+      "model": {
+        "type": "string",
+        "enum": [
+          "MiniMax-H3"
+        ],
+        "maxLength": 4000
+      },
+      "resolution": {
+        "type": "string",
+        "enum": [
+          "768P",
+          "2K"
+        ],
+        "maxLength": 4000
+      },
+      "first_frame_url": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 2048
+      }
+    }
+  },
+  "task_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "task_id"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "maxLength": 128,
+        "pattern": "[A-Za-z0-9_-]+"
+      },
+      "wait_seconds": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 60
+      }
+    }
+  },
+  "generate_name": "acedatacloud_minimax_generate",
+  "tools": [
+    "acedatacloud_minimax_generate",
+    "acedatacloud_minimax_task"
+  ],
+  "toolset": "acedatacloud-minimax"
+}

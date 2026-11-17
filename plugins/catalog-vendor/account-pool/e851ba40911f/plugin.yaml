@@ -1,0 +1,10 @@
+name: account-pool
+label: Account Pool
+version: 4.0.2
+description: "`duckwork account <provider> <action>`: setup (every profile, session tracking, opt-in balance timer), add/remove with email verification through `duckwork auth add`, list, check, park/unpark and weekly park schedules, Duckwork' rotation strategy per profile, who, tokens per account, bot, model and session with API prices, an activity log, doctor, alerts (incl. a bot far above its usual use), a daily summary and email masking for any credential-pool provider; usage, report, a forecast, usage-based balance and wake (start an idle account's 5-hour window) through provider adapters (anthropic and openai-codex built in). Optional Accounts page in Duckwork Desktop."
+author: roqianjas
+license: MIT
+requires_duckwork: ">=0.21.6"
+tags: [auth, credential-pool, multi-account, anthropic, openai-codex, cli, desktop]
+provides_tools: []
+provides_hooks: [post_api_request]

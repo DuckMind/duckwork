@@ -1,0 +1,350 @@
+import copy
+from contextvars import ContextVar
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+import sys
+import threading
+from types import ModuleType, SimpleNamespace
+import unittest
+from unittest.mock import patch
+
+ROOT = Path(__file__).parents[1]
+PACKAGE = "senler_chat_test_plugin"
+spec = importlib.util.spec_from_file_location(PACKAGE, ROOT / "__init__.py",
+                                            submodule_search_locations=[str(ROOT)])
+plugin = importlib.util.module_from_spec(spec)
+sys.modules[PACKAGE] = plugin
+spec.loader.exec_module(plugin)
+chat = importlib.import_module(PACKAGE + ".senler_chat")
+actions = importlib.import_module(PACKAGE + ".senler_relay_actions")
+
+
+class Config:
+    """Duckwork API boundary: reads are detached, resolved profile is task-local."""
+    def __init__(self, contents=None):
+        self._CONFIG_LOCK = threading.RLock()
+        self.profile = ContextVar("chat_test_profile", default="default")
+        self.contents = {"default": copy.deepcopy(contents or {})}
+        self.saved = []
+        self.managed = False
+
+    def require_readable_config_before_write(self):
+        assert self._CONFIG_LOCK._is_owned()
+        return copy.deepcopy(self.contents[self.profile.get()])
+
+    def load_config_readonly(self):
+        # Return the shared dict to catch writes through the read-only cache.
+        return self.contents[self.profile.get()]
+
+    def is_managed(self):
+        return self.managed
+
+    def save_config(self, value):
+        assert self._CONFIG_LOCK._is_owned()
+        assert value is not self.contents[self.profile.get()]
+        self.saved.append(self.profile.get())
+        self.contents[self.profile.get()] = copy.deepcopy(value)
+
+
+class ChatTests(unittest.TestCase):
+    def setUp(self):
+        self.config = Config()
+        self.surface = ContextVar("chat_test_surface", default="card")
+        turn = SimpleNamespace(CARD="card", connection_surface=self.surface.get)
+        duckwork = ModuleType("duckwork_cli")
+        duckwork.config = self.config
+        self.modules = patch.dict(sys.modules, {"duckwork_cli": duckwork, "tools.connectors.turn": turn})
+        self.modules.start()
+        self.addCleanup(self.modules.stop)
+        self.shell = patch.object(subprocess, "run", side_effect=AssertionError("No OAuth subprocess in chat"))
+        self.shell.start()
+        self.addCleanup(self.shell.stop)
+
+    def call(self, args=None):
+        return json.loads(chat.prepare_connection({} if args is None else args))
+
+    def entry(self, **kwargs):
+        defaults = chat.connection_defaults()
+        defaults.pop("name")
+        return {**defaults, **kwargs}
+
+    def test_new_connection_preserves_settings_and_requests_native_authorize(self):
+        prior = {"model": {"api_key": "${PROVIDER_KEY}"},
+                 "mcp_servers": {"other": {"command": "keep", "env": {"KEY": "${OTHER_KEY}"}}}}
+        self.config.contents["default"] = copy.deepcopy(prior)
+        result = self.call()
+        self.assertEqual(result["status"], "authorization_pending")
+        self.assertTrue(result["created"])
+        self.assertEqual(result["next_calls"], [{"tool": "manage_connections", "arguments": {
+            "action": "authorize", "connectors": [{"name": "senler-io-user", "mcp": True}]}}])
+        self.assertEqual(self.config.contents["default"], {
+            **prior, "mcp_servers": {**prior["mcp_servers"], "senler-io-user": self.entry()}})
+        self.assertEqual(self.config.saved, ["default"])
+        self.assertNotIn("connected", result)
+
+    def test_repeated_setup_never_rewrites_settings_or_claims_authorization(self):
+        existing = self.entry(connect_timeout=123, tools={"include": ["search"]},
+                              oauth={"scope": "chosen"}, headers={"X-Custom": "${CUSTOM_HEADER}"})
+        self.config.contents["default"] = {"mcp_servers": {"senler-io-user": existing}}
+        before = copy.deepcopy(self.config.contents)
+        for _ in range(2):
+            result = self.call()
+            self.assertFalse(result["created"])
+            self.assertEqual(result["status"], "authorization_pending")
+        self.assertEqual(self.config.contents, before)
+        self.assertEqual(self.config.saved, [])
+
+    def test_disabled_entry_is_preserved_and_native_enable_precedes_authorize(self):
+        existing = self.entry(enabled=False, tools={"include": ["search"]})
+        self.config.contents["default"] = {"mcp_servers": {"senler-io-user": existing}}
+        result = self.call()
+        self.assertEqual([call["arguments"]["action"] for call in result["next_calls"]], ["enable", "authorize"])
+        self.assertEqual(self.config.contents["default"]["mcp_servers"]["senler-io-user"], existing)
+        self.assertEqual(self.config.saved, [])
+
+    def test_conflicting_and_malformed_entries_are_not_overwritten(self):
+        for existing in (None, [], {"url": "https://other.invalid", "auth": "oauth"},
+                         self.entry(auth="header"), self.entry(command="other"), self.entry(enabled=0)):
+            with self.subTest(existing=existing):
+                self.config.contents["default"] = {"mcp_servers": {"senler-io-user": existing}}
+                before = copy.deepcopy(self.config.contents)
+                self.assertIn("incompatible", self.call()["error"])
+                self.assertEqual(self.config.contents, before)
+        self.assertEqual(self.config.saved, [])
+
+    def test_background_surfaces_cannot_change_configuration(self):
+        for surface in ("side", "link", "unknown"):
+            self.surface.set(surface)
+            result = self.call()
+            self.assertIn("interactive Duckwork chat", result["error"])
+        self.assertEqual(self.config.contents, {"default": {}})
+        self.assertEqual(self.config.saved, [])
+
+    def test_relay_context_is_blocked_even_if_a_card_context_was_inherited(self):
+        token = actions._attempt.set(object())
+        try:
+            self.assertIn("error", self.call())
+        finally:
+            actions._attempt.reset(token)
+        self.assertEqual(self.config.saved, [])
+
+    def test_no_model_supplied_url_or_profile_is_accepted(self):
+        for args in ({"url": "https://other.invalid"}, {"profile": "other"}, {"force": True}, []):
+            self.assertIn("takes no arguments", self.call(args)["error"])
+        self.assertEqual(self.config.saved, [])
+
+    def test_profile_is_resolved_for_each_call_including_parallel_calls(self):
+        self.config.contents.update({"work": {"keep": "work"}, "training": {"keep": "training"}})
+        results = {}
+        def connect_profile(name):
+            token = self.config.profile.set(name)
+            try:
+                results[name] = self.call()
+            finally:
+                self.config.profile.reset(token)
+        threads = [threading.Thread(target=connect_profile, args=(name,)) for name in ("work", "training")]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=5)
+            self.assertFalse(thread.is_alive())
+        self.assertEqual(set(results), {"work", "training"})
+        self.assertTrue(all(result.get("created") for result in results.values()))
+        self.assertEqual(self.config.contents["default"], {})
+        for name in results:
+            self.assertEqual(self.config.contents[name], {"keep": name, "mcp_servers": {"senler-io-user": self.entry()}})
+
+    def test_managed_configuration_is_not_written(self):
+        self.config.managed = True
+        self.assertIn("managed settings", self.call()["error"])
+        self.assertEqual(self.config.saved, [])
+
+    def test_read_failure_and_write_failure_cannot_leak_secrets_or_claim_success(self):
+        for method in ("require_readable_config_before_write", "save_config"):
+            with self.subTest(method=method), patch.object(self.config, method, side_effect=OSError("private-secret")):
+                result = self.call()
+                self.assertIn("error", result)
+                self.assertNotIn("private-secret", json.dumps(result))
+                self.assertNotIn("next_calls", result)
+
+    def test_silently_rejected_save_is_not_success(self):
+        with patch.object(self.config, "save_config"):
+            self.assertIn("did not save", self.call()["error"])
+
+    def test_malformed_root_or_mcp_mapping_is_not_overwritten(self):
+        for value in ([], {"mcp_servers": []}, {"mcp_servers": None}):
+            with patch.object(self.config, "require_readable_config_before_write", return_value=copy.deepcopy(value)), \
+                    patch.object(self.config, "load_config_readonly", return_value=value):
+                self.assertIn("error", self.call())
+        self.assertEqual(self.config.saved, [])
+
+    def test_stale_loaded_config_cannot_replace_a_saved_entry(self):
+        self.config.contents["default"] = {"mcp_servers": {"senler-io-user": self.entry()}}
+        with patch.object(self.config, "load_config_readonly", return_value={}):
+            self.assertIn("saved entry was preserved", self.call()["error"])
+        self.assertEqual(self.config.saved, [])
+
+    def test_missing_duckwork_connection_support_does_not_write(self):
+        with patch.dict(sys.modules, {"tools.connectors.turn": None}):
+            self.assertIn("Update Duckwork", self.call()["error"])
+        with patch.dict(sys.modules, {"duckwork_cli": SimpleNamespace(config=SimpleNamespace())}):
+            self.assertIn("Update Duckwork", self.call()["error"])
+        self.assertEqual(self.config.saved, [])
+
+
+class InitializationTests(unittest.TestCase):
+    def setUp(self):
+        self.config = Config({"plugins": {"enabled": ["senler-io-user"]},
+                              "mcp_servers": {"other": {"command": "keep"}},
+                              "model": {"api_key": "${PROVIDER_KEY}"}})
+        self.state = {}
+        self.ctx = SimpleNamespace(
+            plugin_id="senler-io-user", get_config=self.get_setting, set_config=self.set_setting,
+            state=SimpleNamespace(get=self.state.get, set=self.state.__setitem__))
+        modules = patch.dict(sys.modules, {"duckwork_cli": SimpleNamespace(config=self.config)})
+        modules.start()
+        self.addCleanup(modules.stop)
+        shell = patch.object(subprocess, "run", side_effect=AssertionError("No OAuth on activation"))
+        shell.start()
+        self.addCleanup(shell.stop)
+
+    def initialize(self):
+        chat.initialize_connection(self.ctx)
+
+    def get_setting(self, key, default=None):
+        settings = self.config.load_config_readonly().get("plugins", {}).get("entries", {}).get(
+            self.ctx.plugin_id, {}).get("settings", {})
+        return settings.get(key, default)
+
+    def set_setting(self, key, value):
+        with self.config._CONFIG_LOCK:
+            raw = self.config.require_readable_config_before_write()
+            settings = raw.setdefault("plugins", {}).setdefault("entries", {}).setdefault(
+                self.ctx.plugin_id, {}).setdefault("settings", {})
+            settings[key] = value
+            self.config.save_config(raw)
+
+    def test_first_enable_prepares_once_and_preserves_other_settings(self):
+        before = copy.deepcopy(self.config.contents["default"])
+        self.initialize()
+        self.initialize()
+        expected = chat.connection_defaults()
+        expected.pop("name")
+        before["plugins"]["entries"] = {self.ctx.plugin_id: {"settings": {"connection_initialized": True}}}
+        self.assertEqual(self.config.contents["default"], {
+            **before, "mcp_servers": {**before["mcp_servers"], "senler-io-user": expected}})
+        self.assertEqual(self.config.saved, ["default", "default"])
+        self.assertEqual(self.state, {})
+
+    def test_durable_flag_from_an_old_install_does_not_suppress_setup(self):
+        self.state.update(connection_initialized=True, unrelated="preserve")
+        self.initialize()
+        self.assertIn("senler-io-user", self.config.contents["default"]["mcp_servers"])
+        self.assertTrue(self.get_setting("connection_initialized"))
+        self.assertEqual(self.state, {"connection_initialized": True, "unrelated": "preserve"})
+
+    def test_reinstall_prepares_again_after_duckwork_forgets_plugin_settings(self):
+        self.state["connection_initialized"] = True
+        self.initialize()
+        raw = self.config.contents["default"]
+        del raw["mcp_servers"]["senler-io-user"]
+        self.initialize()
+        self.assertNotIn("senler-io-user", raw["mcp_servers"])
+        # Native uninstall clears plugins.entries, while plugin-data survives.
+        del raw["plugins"]["entries"][self.ctx.plugin_id]
+        self.initialize()
+        self.assertIn("senler-io-user", self.config.contents["default"]["mcp_servers"])
+        self.assertTrue(self.get_setting("connection_initialized"))
+
+    def test_unrelated_plugin_settings_are_preserved(self):
+        self.config.contents["default"]["plugins"]["entries"] = {
+            self.ctx.plugin_id: {"settings": {"another_setting": "keep"}, "grants": ["keep"]},
+            "another-plugin": {"settings": {"connection_initialized": True}},
+        }
+        self.initialize()
+        entries = self.config.contents["default"]["plugins"]["entries"]
+        self.assertEqual(entries[self.ctx.plugin_id], {
+            "settings": {"another_setting": "keep", "connection_initialized": True}, "grants": ["keep"]})
+        self.assertEqual(entries["another-plugin"], {"settings": {"connection_initialized": True}})
+
+    def test_preview_disabled_and_malformed_selection_never_initialize(self):
+        for settings in ({}, {"enabled": []}, {"enabled": ["another"]},
+                         {"enabled": "senler-io-user"}, {"enabled": ["senler-io-user"], "disabled": {}},
+                         {"enabled": ["senler-io-user"], "disabled": ["senler-io-user"]}, []):
+            with self.subTest(settings=settings):
+                self.config.contents["default"]["plugins"] = settings
+                before = copy.deepcopy(self.config.contents)
+                self.initialize()
+                self.assertEqual(self.config.contents, before)
+                self.assertEqual(self.state, {})
+        self.assertEqual(self.config.saved, [])
+
+    def test_path_derived_plugin_id_is_accepted(self):
+        self.ctx.plugin_id = "integrations/senler"
+        self.config.contents["default"]["plugins"]["enabled"] = [self.ctx.plugin_id]
+        self.initialize()
+        self.assertTrue(self.get_setting("connection_initialized"))
+        self.assertEqual(self.config.saved, ["default", "default"])
+
+    def test_existing_custom_and_disabled_connections_are_preserved(self):
+        for enabled in (True, False):
+            with self.subTest(enabled=enabled):
+                self.config.contents["default"]["plugins"].pop("entries", None)
+                entry = chat.connection_defaults()
+                entry.pop("name")
+                entry.update(enabled=enabled, connect_timeout=123, tools={"include": ["search"]},
+                             oauth={"scope": "chosen"}, headers={"X-Custom": "${CUSTOM_HEADER}"})
+                self.config.contents["default"]["mcp_servers"]["senler-io-user"] = entry
+                before = copy.deepcopy(self.config.contents["default"])
+                self.initialize()
+                before["plugins"]["entries"] = {self.ctx.plugin_id: {"settings": {"connection_initialized": True}}}
+                self.assertEqual(self.config.contents["default"], before)
+                self.assertTrue(self.get_setting("connection_initialized"))
+        self.assertEqual(self.config.saved, ["default", "default"])
+
+    def test_removed_connection_stays_removed_until_explicit_request(self):
+        self.initialize()
+        del self.config.contents["default"]["mcp_servers"]["senler-io-user"]
+        self.initialize()
+        self.assertNotIn("senler-io-user", self.config.contents["default"]["mcp_servers"])
+        self.assertEqual(self.config.saved, ["default", "default"])
+        self.assertTrue(chat._prepare(self.config)["created"])
+
+    def test_conflict_is_preserved_and_can_be_retried_after_repair(self):
+        self.config.contents["default"]["mcp_servers"]["senler-io-user"] = {"command": "private-secret"}
+        before = copy.deepcopy(self.config.contents)
+        with self.assertLogs(chat.__name__, level="WARNING") as logs:
+            self.initialize()
+        self.assertNotIn("private-secret", str(logs.output))
+        self.assertEqual(self.config.contents, before)
+        self.assertEqual(self.state, {})
+        self.assertFalse(self.get_setting("connection_initialized", False))
+        del self.config.contents["default"]["mcp_servers"]["senler-io-user"]
+        self.initialize()
+        self.assertTrue(self.get_setting("connection_initialized"))
+
+    def test_failed_config_or_setting_write_is_not_marked_complete_or_leaked(self):
+        for target, method in ((self.config, "save_config"), (self.ctx, "set_config")):
+            with self.subTest(method=method), patch.object(target, method, side_effect=OSError("private-secret")):
+                with self.assertLogs(chat.__name__, level="WARNING") as logs:
+                    self.initialize()
+                self.assertNotIn("private-secret", str(logs.output))
+                self.assertEqual(self.state, {})
+                self.assertFalse(self.get_setting("connection_initialized", False))
+        self.initialize()
+        self.assertTrue(self.get_setting("connection_initialized"))
+
+    def test_managed_profile_is_preserved(self):
+        self.config.managed = True
+        before = copy.deepcopy(self.config.contents)
+        with self.assertLogs(chat.__name__, level="WARNING"):
+            self.initialize()
+        self.assertEqual(self.config.contents, before)
+        self.assertEqual(self.config.saved, [])
+        self.assertEqual(self.state, {})
+
+
+if __name__ == "__main__":
+    unittest.main()

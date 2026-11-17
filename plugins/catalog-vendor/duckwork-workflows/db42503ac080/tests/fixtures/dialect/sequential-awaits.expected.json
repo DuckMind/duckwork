@@ -1,0 +1,43 @@
+{
+  "verdict": "importable",
+  "reason": "literal meta; three `const x = await agent(...)` with template references only to prior consts' fields (-> after + inputs + placeholders); documented options only (label, model, schema); bare `return <const>` names the sink",
+  "rows": [
+    1,
+    12,
+    15
+  ],
+  "graph_sketch": {
+    "name": "sequential-awaits",
+    "nodes": [
+      {
+        "id": "plan",
+        "type": "agent",
+        "goal": "Read README.md and propose one refactor. Return {target, rationale}."
+      },
+      {
+        "id": "patch",
+        "type": "agent",
+        "after": [
+          "plan"
+        ],
+        "inputs": [
+          "plan.target",
+          "plan.rationale"
+        ],
+        "model": "sonnet",
+        "goal": "Implement the refactor of the proposed target; the plan's target and rationale are injected below. Return a unified diff."
+      },
+      {
+        "id": "review",
+        "type": "agent",
+        "after": [
+          "patch"
+        ],
+        "inputs": [
+          "patch.diff"
+        ],
+        "goal": "Review the diff injected below for correctness only."
+      }
+    ]
+  }
+}

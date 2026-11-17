@@ -1,0 +1,285 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/olric3015/hermes-plugins/c0a93cb23627ac1856cb29db163e2cbfff77251d/docs/edit-ledger-card.png": "_catalog_assets/docs/edit-ledger-card.png"
+    },
+    "image": "_catalog_assets/docs/edit-ledger-card.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "edit-ledger",
+  "content_id": "6dd1fdf4fd27",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 5380,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "e6b28fa34cd9e06df41968ff78c3ce873255add2743bf1dc674bcd2ff96c4862"
+    },
+    {
+      "bytes": 3773,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "d72e95c39d24dcd1a322c681406dcd09a7a03823d9e964ad28fa80889c2f9c29"
+    },
+    {
+      "bytes": 41578,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/edit-ledger-card.png",
+      "sha256": "cf87f516caacc4e677ce51835704e9d5e4035b53bc9628a4193f7675cdb2748a"
+    },
+    {
+      "bytes": 1066,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "befd8b2a310281d02d4efec1bac5d8e5fdc35a31b528b0e6827148ef2535fca6"
+    },
+    {
+      "bytes": 12945,
+      "mode": "100644",
+      "path": "ledger.py",
+      "sha256": "01cd1e6b323056a2553f11aeb2f09d68a82c8a2c1f9efcdf17c1de43dd200d90"
+    },
+    {
+      "bytes": 329,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "d37fe87b1100ee99632658b66f329998347ca719c06f887ad5e5a4568b1f77df"
+    }
+  ],
+  "input_manifest_sha256": "6dd1fdf4fd274b23ce74f8c80a8187606609ac1051ab828cb4be8176de514578",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "befd8b2a310281d02d4efec1bac5d8e5fdc35a31b528b0e6827148ef2535fca6",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "ledger.py",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/olric3015/hermes-plugins",
+    "sha": "c0a93cb23627ac1856cb29db163e2cbfff77251d",
+    "subdir": "edit-ledger"
+  },
+  "original_repo": "https://github.com/olric3015/hermes-plugins",
+  "original_sha": "c0a93cb23627ac1856cb29db163e2cbfff77251d",
+  "original_subdir": "edit-ledger",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "5592d1544cbfdbc581562eb0e638f3e8d654bbebac136d49b07be4922fd3f2e7",
+      "bytes": 5408,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "20328f69ca1237095d2e45aff316583f8a0c6e03b40529edfe95f9640d06baa0",
+      "bytes": 3775,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/docs/edit-ledger-card.png",
+      "sha256": "cf87f516caacc4e677ce51835704e9d5e4035b53bc9628a4193f7675cdb2748a",
+      "bytes": 41578,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "befd8b2a310281d02d4efec1bac5d8e5fdc35a31b528b0e6827148ef2535fca6",
+      "bytes": 1066,
+      "mode": "100644"
+    },
+    {
+      "path": "ledger.py",
+      "sha256": "443fef9f78d94722a722c441c944a75ef13b325083a0e13519a3ad82d580777b",
+      "bytes": 12951,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "7345a50210b29d1064af7fb0252cc02da6a2b5245c3d828492afd925d4da586a",
+      "bytes": 331,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "cdfb84b4a10c6bcca41351922b998bcfe209a23b8b5b2ccf83c24e6d2c9d42a0",
+  "pin_verification": {
+    "archive_bytes": 506676,
+    "archive_sha256": "33013c9d6efaccc0ee63e82ab045bef6af6f1a0d0e2cca0b09a380093539a5c3",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "c0a93cb23627ac1856cb29db163e2cbfff77251d",
+    "verified_commit_marker": "c0a93cb23627ac1856cb29db163e2cbfff77251d"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "fd13ef1e3fb8bdb6c0b31fe22cb4dd679e9b9324a943ea6725a192d40eb15ca2",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "e6b28fa34cd9e06df41968ff78c3ce873255add2743bf1dc674bcd2ff96c4862",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "84f725cf4f75d281f1eb6f03749196dbd01b44258e599ddb571b632029341e69",
+        "source": "README.md",
+        "final_output_sha256": "5592d1544cbfdbc581562eb0e638f3e8d654bbebac136d49b07be4922fd3f2e7",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "84f725cf4f75d281f1eb6f03749196dbd01b44258e599ddb571b632029341e69"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "d72e95c39d24dcd1a322c681406dcd09a7a03823d9e964ad28fa80889c2f9c29",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "20328f69ca1237095d2e45aff316583f8a0c6e03b40529edfe95f9640d06baa0",
+        "source": "__init__.py",
+        "final_output_sha256": "20328f69ca1237095d2e45aff316583f8a0c6e03b40529edfe95f9640d06baa0",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "20328f69ca1237095d2e45aff316583f8a0c6e03b40529edfe95f9640d06baa0"
+      },
+      {
+        "destination": "_catalog_assets/docs/edit-ledger-card.png",
+        "input_sha256": "cf87f516caacc4e677ce51835704e9d5e4035b53bc9628a4193f7675cdb2748a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cf87f516caacc4e677ce51835704e9d5e4035b53bc9628a4193f7675cdb2748a",
+        "source": "_catalog_assets/docs/edit-ledger-card.png",
+        "final_output_sha256": "cf87f516caacc4e677ce51835704e9d5e4035b53bc9628a4193f7675cdb2748a",
+        "cli_destination": "_catalog_assets/docs/edit-ledger-card.png",
+        "previous_staging_sha256": "cf87f516caacc4e677ce51835704e9d5e4035b53bc9628a4193f7675cdb2748a"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "befd8b2a310281d02d4efec1bac5d8e5fdc35a31b528b0e6827148ef2535fca6",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "befd8b2a310281d02d4efec1bac5d8e5fdc35a31b528b0e6827148ef2535fca6",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "befd8b2a310281d02d4efec1bac5d8e5fdc35a31b528b0e6827148ef2535fca6",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "befd8b2a310281d02d4efec1bac5d8e5fdc35a31b528b0e6827148ef2535fca6"
+      },
+      {
+        "destination": "ledger.py",
+        "input_sha256": "01cd1e6b323056a2553f11aeb2f09d68a82c8a2c1f9efcdf17c1de43dd200d90",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "443fef9f78d94722a722c441c944a75ef13b325083a0e13519a3ad82d580777b",
+        "source": "ledger.py",
+        "final_output_sha256": "443fef9f78d94722a722c441c944a75ef13b325083a0e13519a3ad82d580777b",
+        "cli_destination": "ledger.py",
+        "previous_staging_sha256": "443fef9f78d94722a722c441c944a75ef13b325083a0e13519a3ad82d580777b"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "d37fe87b1100ee99632658b66f329998347ca719c06f887ad5e5a4568b1f77df",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7345a50210b29d1064af7fb0252cc02da6a2b5245c3d828492afd925d4da586a",
+        "source": "plugin.yaml",
+        "final_output_sha256": "7345a50210b29d1064af7fb0252cc02da6a2b5245c3d828492afd925d4da586a",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "7345a50210b29d1064af7fb0252cc02da6a2b5245c3d828492afd925d4da586a"
+      }
+    ],
+    "manifest_sha256": "cb27948a67abeedf6616312ff10453621b988b1794152650cf0f570c77a094d4",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "edit-ledger/README.md",
+    "__init__.py": "edit-ledger/__init__.py",
+    "_catalog_assets/docs/edit-ledger-card.png": "docs/edit-ledger-card.png",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "ledger.py": "edit-ledger/ledger.py",
+    "plugin.yaml": "edit-ledger/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "edit-ledger",
+    "python_files_compiled": 2,
+    "secret_findings": 0
+  },
+  "canonical_slug": "edit-ledger",
+  "catalog_file": "src/plugin-catalog/edit-ledger.yaml",
+  "identity": {
+    "catalog_id": "edit-ledger",
+    "canonical_slug": "edit-ledger",
+    "original_manifest_name": "edit-ledger",
+    "rebranded_manifest_name": "edit-ledger",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "e5700db924a9561710c7803cf8c424a78f6da90d3494aa2fc3176b560ff933e4",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "84f725cf4f75d281f1eb6f03749196dbd01b44258e599ddb571b632029341e69",
+          "after_sha256": "5592d1544cbfdbc581562eb0e638f3e8d654bbebac136d49b07be4922fd3f2e7",
+          "before_bytes": 5406,
+          "after_bytes": 5408,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

@@ -1,0 +1,85 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: Real gateway E2E
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  e2e:
+    name: Real Telegram gateway (${{ matrix.pin }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pin: v0.21.6
+            sha: 818c13be1dc4fd28987e1e881a9408224afd4535
+          - pin: v0.21.7
+            sha: 71d34bad1045610252eda02ee79549436896e784
+          - pin: main
+            sha: 04eb00cef7d9ac2730ed5fd9039a6f3287eb49ca
+    env:
+      DUCKWORK_DISABLE_LAZY_INSTALLS: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      TMPDIR: /tmp
+      HEARTBEAT2_E2E_DUCKWORK: ${{ github.workspace }}/duckwork
+      HEARTBEAT2_E2E_RESULTS: ${{ github.workspace }}/e2e-results
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          path: plugin
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: Fordex/duckwork-agent
+          ref: ${{ matrix.sha }}
+          path: duckwork
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.14'
+      - uses: astral-sh/setup-uv@e92bafb6253dcd438e0484186d7669ea7a8ca1cc # v6
+        with:
+          version: "0.9.28"
+      - name: Install pinned Duckwork from its lockfile
+        working-directory: duckwork
+        run: |
+          uv sync --frozen --no-dev --extra messaging --python 3.14
+          uv pip install --python .venv/bin/python pytest pytest-xdist pytest-timeout pyyaml croniter psutil
+      - name: Run real gateways on loopback
+        working-directory: plugin
+        run: |
+          pwd
+          git rev-parse HEAD
+          mkdir -p "$HEARTBEAT2_E2E_RESULTS"
+          set +e
+          ../duckwork/.venv/bin/python -m pytest tests/e2e -q -n 4 \
+            -p no:cacheprovider --durations=0 --junitxml="$HEARTBEAT2_E2E_RESULTS/results.xml" \
+            > "$HEARTBEAT2_E2E_RESULTS/full.log" 2>&1
+          result=$?
+          cat "$HEARTBEAT2_E2E_RESULTS/full.log"
+          [ "$result" = 0 ] || exit "$result"
+          # A run where every scenario skipped is not a proof.
+          python3 - "$HEARTBEAT2_E2E_RESULTS/results.xml" <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          cases = list(ET.parse(sys.argv[1]).getroot().iter("testcase"))
+          # junitxml reports strict xfails as <skipped type="pytest.xfail">.
+          skipped = [c.get("name") for c in cases
+                     if any(x.get("type") != "pytest.xfail" for x in c.findall("skipped"))]
+          print(f"e2e cells: {len(cases)}, skipped: {skipped}")
+          sys.exit(0 if len(cases) >= 19 and not skipped else 1)
+          PY
+      - name: Retain failed gateway evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: heartbeat2-e2e-${{ matrix.pin }}
+          include-hidden-files: true
+          path: |
+            e2e-results/
+            /tmp/hb-e2e-*/
+          retention-days: 7

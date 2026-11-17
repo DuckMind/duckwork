@@ -1,0 +1,29 @@
+name: magi
+version: 1.7.8
+manifest_version: 2
+api_version: 1
+requires_duckwork: ">=0.21.5"
+description: "Review pending Duckwork memory writes and inspect, add, edit, delete, or AI-compact stored MEMORY.md and USER.md entries from Desktop."
+license: MIT
+tags: [memory, review, approval, diagnostics]
+config_schema:
+  home_override:
+    type: str
+    default: ""
+    label: "Duckwork home override"
+    description: "Optional absolute DUCKWORK_HOME for unusual/custom profile layouts. Leave empty for automatic profile resolution."
+  compaction_model:
+    type: str
+    default: ""
+    label: "Compaction model"
+    description: "Optional Duckwork model id for AI compaction. Leave empty to use the active/default model. Explicit overrides require Duckwork plugins.entries.magi.llm.allow_model_override permission and any configured model allowlist."
+  default_page_size:
+    type: int
+    default: 20
+    label: "Default page size"
+    description: "Number of pending records shown by list when no explicit limit is supplied."
+  max_page_size:
+    type: int
+    default: 100
+    label: "Maximum page size"
+    description: "Upper bound for list/find result counts."

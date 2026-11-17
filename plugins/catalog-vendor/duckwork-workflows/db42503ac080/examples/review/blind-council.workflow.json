@@ -1,0 +1,174 @@
+{
+  "grammar": "wf/1",
+  "name": "blind-council",
+  "description": "Independent review seats with no shared context, merged by a synthesis seat that must state dissent. run_context seeds (ALL required): 'artifact' = a path or URL pointing at the thing under review; 'question' = the single decision the council must answer; 'focus' = the angle to weigh (pass 'none' to disable). Seat capability slots: seat-a and seat-b pin model names 'council_a' and 'council_b' - CAPABILITY CLASSES, not vendor ids. Bind them in your own config (plugins.entries.duckwork-workflows.settings.models: {council_a: <your frontier model>, council_b: <your fast model>}); an unbound class fails the launch closed with the valid list, never a silent downgrade. The third seat is deliberately unpinned (seat default route) so a council is always completable at zero frontier spend. Consensus != verification: synthesis carries a verify-list even when unanimous. Blindness contract lives on the three reviewer seats (per-seat context); defaults.context carries only the shared grounding rules so the synthesis seat is not told to ignore the payloads it must merge.",
+  "provenance": {
+    "owner": "peer-estate",
+    "source": "duckwork-workflows/examples/blind-council.workflow.json"
+  },
+  "defaults": {
+    "timeout": 1200,
+    "context": "You are one seat on an independent review council. Ground rules:\n- Grounding rule: every claim you hand downstream names its evidence (file:line, or command + observed output). Uncertainty raises a concern; disagreement alone does not.\n- Open the artifact yourself (it is a path or URL in the goal). Do not trust any description of it.\n- Reply with ONLY one fenced ```json block as your final message. No narration."
+  },
+  "nodes": [
+    {
+      "id": "seat-a",
+      "type": "agent",
+      "reasoning": "high",
+      "max_turns": 12,
+      "shape": "review",
+      "goal": "Review this artifact: {run.artifact}\nQUESTION: {run.question}\nFocus: {run.focus}\nReturn {\"verdict\": \"ready|blocked\", \"risks\": [\"<each one line, evidence cited>\"], \"minimal_fix\": \"<smallest change that clears a blocked verdict>\", \"unknowns\": [\"<what you could not verify and why>\"]}. Use 'ready' only when nothing load-bearing is wrong.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "description": "one of: ready, blocked"
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minimal_fix": {
+            "type": "string"
+          },
+          "unknowns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "verdict",
+          "risks"
+        ]
+      },
+      "model": "council_a",
+      "context": "Blindness contract: you are one of three independent reviewers. You share no context with the other seats and must not assume, guess, or address what they said. If you catch yourself reasoning about 'the other reviewer', stop and re-read the artifact."
+    },
+    {
+      "id": "seat-b",
+      "type": "agent",
+      "reasoning": "high",
+      "max_turns": 12,
+      "shape": "review",
+      "goal": "Review this artifact: {run.artifact}\nQUESTION: {run.question}\nFocus: {run.focus}\nReturn {\"verdict\": \"ready|blocked\", \"risks\": [\"<each one line, evidence cited>\"], \"minimal_fix\": \"<smallest change that clears a blocked verdict>\", \"unknowns\": [\"<what you could not verify and why>\"]}. Use 'ready' only when nothing load-bearing is wrong.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "description": "one of: ready, blocked"
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minimal_fix": {
+            "type": "string"
+          },
+          "unknowns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "verdict",
+          "risks"
+        ]
+      },
+      "model": "council_b",
+      "context": "Blindness contract: you are one of three independent reviewers. You share no context with the other seats and must not assume, guess, or address what they said. If you catch yourself reasoning about 'the other reviewer', stop and re-read the artifact."
+    },
+    {
+      "id": "seat-local",
+      "type": "agent",
+      "max_turns": 12,
+      "shape": "review",
+      "goal": "Review this artifact: {run.artifact}\nQUESTION: {run.question}\nFocus: {run.focus}\nReturn {\"verdict\": \"ready|blocked\", \"risks\": [\"<each one line, evidence cited>\"], \"minimal_fix\": \"<smallest change that clears a blocked verdict>\", \"unknowns\": [\"<what you could not verify and why>\"]}. Use 'ready' only when nothing load-bearing is wrong.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "description": "one of: ready, blocked"
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minimal_fix": {
+            "type": "string"
+          },
+          "unknowns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "verdict",
+          "risks"
+        ]
+      },
+      "context": "Blindness contract: you are one of three independent reviewers. You share no context with the other seats and must not assume, guess, or address what they said. If you catch yourself reasoning about 'the other reviewer', stop and re-read the artifact."
+    },
+    {
+      "id": "synthesis",
+      "type": "agent",
+      "after": [
+        "seat-a",
+        "seat-b",
+        "seat-local"
+      ],
+      "max_turns": 8,
+      "shape": "review",
+      "context": "You merge council verdicts; you are not a rubber stamp. Consensus is not verification: a unanimous 'ready' still gets a verify-list. Dissent is load-bearing — every blocked verdict and every risk raised by ANY seat is either resolved with evidence or carried into the risks ledger marked carried. Never average verdicts; a single grounded 'blocked' outranks two ungrounded 'ready's.",
+      "goal": "Merge the three seat payloads (in ## Inputs; one per item) for the artifact {run.artifact}, question: {run.question}\nProduce: (1) a final verdict (blocked if any seat's blocked verdict survives your evidence check); (2) the deduplicated risk ledger, each line attributed to the seat that raised it and marked resolved/carried; (3) the minimal_fix set for carried items; (4) the verify-list: the exact commands or probes the owner must run before acting on this verdict — at least one is mandatory, even when all three seats agree 'ready'; consensus never removes this list; (5) seat_divergence: where seats disagreed and which evidence decided it.\nReply with ONLY fenced json {\"verdict\": \"ready|blocked\", \"risks\": [\"<attributed, marked resolved|carried>\"], \"minimal_fix\": \"<for carried items>\", \"verify_list\": [\"<exact command/probe>\", ...], \"seat_divergence\": \"<one paragraph>\"}",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "description": "one of: ready, blocked"
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minimal_fix": {
+            "type": "string"
+          },
+          "verify_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "seat_divergence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "verdict",
+          "risks",
+          "verify_list"
+        ]
+      }
+    }
+  ]
+}

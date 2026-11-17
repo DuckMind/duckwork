@@ -1,0 +1,260 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/AhmetArif0/hermes-groq-provider/b5be0388c2b4cae8ed6a30c7371aaa1330731ee8/docs/card.png": "_catalog_assets/docs/card.png"
+    },
+    "image": "_catalog_assets/docs/card.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "groq-provider",
+  "content_id": "dbc93858a211",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 4068,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "48368b53db5a85b9c90f37c0aaf12a078f6a8d50ad3051669004e375c36108fc"
+    },
+    {
+      "bytes": 4460,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "9e9115ef9770fc1ff61b4878d8e74f28d4d17c37157ce4e8265012355320093b"
+    },
+    {
+      "bytes": 44600,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/card.png",
+      "sha256": "e6c31860d26e70413ed2a220443b7920852836f7a08c89e3c684e1cebd2f144d"
+    },
+    {
+      "bytes": 1067,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b"
+    },
+    {
+      "bytes": 306,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "ecf608b6397ad7dcf3d45ea27b1e0eefa2b2fefa5df0021981abd8ba6d75deb0"
+    }
+  ],
+  "input_manifest_sha256": "dbc93858a211f8bf0e546316597c2b0b1d434c2a292b474335be3ba44c6abdf3",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/AhmetArif0/hermes-groq-provider",
+    "sha": "b5be0388c2b4cae8ed6a30c7371aaa1330731ee8",
+    "subdir": "groq-provider"
+  },
+  "original_repo": "https://github.com/AhmetArif0/hermes-groq-provider",
+  "original_sha": "b5be0388c2b4cae8ed6a30c7371aaa1330731ee8",
+  "original_subdir": "groq-provider",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "92725e7d0b2f46e649273ab44a38fa0a5fa9dd851530426bde59948167403818",
+      "bytes": 4060,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "0fcf7cb2b59fcf9ed589ace4e30782c9aa5b52c0cc58b37484a49b079570a775",
+      "bytes": 4478,
+      "mode": "100644"
+    },
+    {
+      "path": "_catalog_assets/docs/card.png",
+      "sha256": "e6c31860d26e70413ed2a220443b7920852836f7a08c89e3c684e1cebd2f144d",
+      "bytes": 44600,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+      "bytes": 1067,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "bad3143de9d6c5a36de0cf4809782f0395a5119af784d80310f5cf7c6c82cc71",
+      "bytes": 312,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "510fc32b149036a47af281cd8672f7b40ac026c5aefbff5d1dfee533e50e5327",
+  "pin_verification": {
+    "archive_bytes": 54289,
+    "archive_sha256": "1da59804e2033699a03632b54dc15e7b2af7a5a3a50d41026d919789999b1cb5",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "b5be0388c2b4cae8ed6a30c7371aaa1330731ee8",
+    "verified_commit_marker": "b5be0388c2b4cae8ed6a30c7371aaa1330731ee8"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "a95a537c4ae8d5d5be42ded48247f2970c2280a5f72852427d07ce85e3fd54ed",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "48368b53db5a85b9c90f37c0aaf12a078f6a8d50ad3051669004e375c36108fc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8555885b0a4042f394a6f0b4278a95e8e37eeceafc3ef974df28ae9daba9ffb8",
+        "source": "README.md",
+        "final_output_sha256": "92725e7d0b2f46e649273ab44a38fa0a5fa9dd851530426bde59948167403818",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "8555885b0a4042f394a6f0b4278a95e8e37eeceafc3ef974df28ae9daba9ffb8"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "9e9115ef9770fc1ff61b4878d8e74f28d4d17c37157ce4e8265012355320093b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0fcf7cb2b59fcf9ed589ace4e30782c9aa5b52c0cc58b37484a49b079570a775",
+        "source": "__init__.py",
+        "final_output_sha256": "0fcf7cb2b59fcf9ed589ace4e30782c9aa5b52c0cc58b37484a49b079570a775",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "0fcf7cb2b59fcf9ed589ace4e30782c9aa5b52c0cc58b37484a49b079570a775"
+      },
+      {
+        "destination": "_catalog_assets/docs/card.png",
+        "input_sha256": "e6c31860d26e70413ed2a220443b7920852836f7a08c89e3c684e1cebd2f144d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e6c31860d26e70413ed2a220443b7920852836f7a08c89e3c684e1cebd2f144d",
+        "source": "_catalog_assets/docs/card.png",
+        "final_output_sha256": "e6c31860d26e70413ed2a220443b7920852836f7a08c89e3c684e1cebd2f144d",
+        "cli_destination": "_catalog_assets/docs/card.png",
+        "previous_staging_sha256": "e6c31860d26e70413ed2a220443b7920852836f7a08c89e3c684e1cebd2f144d"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "90640ae33c9eb935814e391d0e9b1b2b1035100217faf170d89b84b5dfe1a87b"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "ecf608b6397ad7dcf3d45ea27b1e0eefa2b2fefa5df0021981abd8ba6d75deb0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bad3143de9d6c5a36de0cf4809782f0395a5119af784d80310f5cf7c6c82cc71",
+        "source": "plugin.yaml",
+        "final_output_sha256": "bad3143de9d6c5a36de0cf4809782f0395a5119af784d80310f5cf7c6c82cc71",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "bad3143de9d6c5a36de0cf4809782f0395a5119af784d80310f5cf7c6c82cc71"
+      }
+    ],
+    "manifest_sha256": "77bb9c0e996abebcd221bbbc2c6e2472964edb165d806752d9210ab19394a580",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "groq-provider/README.md",
+    "__init__.py": "groq-provider/__init__.py",
+    "_catalog_assets/docs/card.png": "docs/card.png",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "groq-provider/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "groq-provider",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "groq-provider",
+  "catalog_file": "src/plugin-catalog/groq-provider.yaml",
+  "identity": {
+    "catalog_id": "groq-provider",
+    "canonical_slug": "groq-provider",
+    "original_manifest_name": "groq-provider",
+    "rebranded_manifest_name": "groq-provider",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "8d5af0ff0f41033868ac1678a375e602b7afa2f6e6d78371af1d40a1dd40768b",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "8555885b0a4042f394a6f0b4278a95e8e37eeceafc3ef974df28ae9daba9ffb8",
+          "after_sha256": "92725e7d0b2f46e649273ab44a38fa0a5fa9dd851530426bde59948167403818",
+          "before_bytes": 4118,
+          "after_bytes": 4060,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

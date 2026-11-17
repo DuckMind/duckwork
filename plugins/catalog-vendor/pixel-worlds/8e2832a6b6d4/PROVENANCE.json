@@ -1,0 +1,2513 @@
+{
+  "assets": {
+    "catalog_to_vendor": {
+      "https://raw.githubusercontent.com/cygnostik/pd-pixel-worlds/55feb15cf6d3c147504b8f5d68c2de8e8d995cac/docs/images/catalog-banner.png": "docs/images/catalog-banner.png"
+    },
+    "image": "docs/images/catalog-banner.png",
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": [
+      {
+        "before_path": "_catalog_assets/docs/images/catalog-banner.png",
+        "after_path": "docs/images/catalog-banner.png",
+        "before_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "after_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "before_bytes": 139530,
+        "after_bytes": 139530,
+        "operation": "deduplicated-catalog-asset",
+        "before_mode": "100644",
+        "after_mode": "100644"
+      }
+    ]
+  },
+  "catalog_id": "pixel-worlds",
+  "content_id": "8e2832a6b6d4",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1927,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/realm-submission.yml",
+      "sha256": "7270a51084cebc36b0b3f30c7217614242674d00a8b7a9ade20ccc5f42e6c2d9"
+    },
+    {
+      "bytes": 597,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "a4074ff1c813435cc2bc66546c92b32ea0d561fdba92b7878a073d5c84ec2cd3"
+    },
+    {
+      "bytes": 83,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "94de0726e4e4aae2f50a1914fab9e8adfab6944839a030712452852e2650c1fd"
+    },
+    {
+      "bytes": 1529,
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "563c3ef775be0b57e2eb27621d97c18bc3cdd4e22eb7ad99d6555b3201f48194"
+    },
+    {
+      "bytes": 1063,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "2200cac6dc8f7f8d9dc4015fdb5961843ebd797ab36dd66940019230c28d0f90"
+    },
+    {
+      "bytes": 1103,
+      "mode": "100644",
+      "path": "NOTICE.md",
+      "sha256": "c3e7a5843a860068ec23910b7a9b73a4e0d63c01a6cfa9c6503ae50bbf18a09b"
+    },
+    {
+      "bytes": 8378,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "75e8218165a917fbfa0945d3840a648d48e8807bf2a755a747ee3fb5de9111ea"
+    },
+    {
+      "bytes": 1498,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "b2b91a1a46e3d4bed483e70f96840256f01530bc71ddb7edc6f7c3dc94e21890"
+    },
+    {
+      "bytes": 139530,
+      "mode": "100644",
+      "path": "_catalog_assets/docs/images/catalog-banner.png",
+      "sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f"
+    },
+    {
+      "bytes": 211670,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "c10d67c0f556db586afdbd229768bb1a0f6a563c569b4b34d5ab2735425538a5"
+    },
+    {
+      "bytes": 5301,
+      "mode": "100644",
+      "path": "docs/architecture.md",
+      "sha256": "e881a89a7697d881d574f1d7cc47d54e8e574ff743697f48886d9f6826dbf339"
+    },
+    {
+      "bytes": 4384,
+      "mode": "100644",
+      "path": "docs/assets/Oxanium-OFL.txt",
+      "sha256": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b"
+    },
+    {
+      "bytes": 17820,
+      "mode": "100644",
+      "path": "docs/assets/Oxanium.woff2",
+      "sha256": "3301a72ebcb2fe6fbb1f399f5667d6cd77edccd10e9fb89139ebe65ab67e04aa"
+    },
+    {
+      "bytes": 139530,
+      "mode": "100644",
+      "path": "docs/images/catalog-banner.png",
+      "sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f"
+    },
+    {
+      "bytes": 50519,
+      "mode": "100644",
+      "path": "docs/images/display-mode.png",
+      "sha256": "7b75cdf81160187d42e49f06ba645dca326c07e41fa90b557d37507b8e8765ad"
+    },
+    {
+      "bytes": 51337,
+      "mode": "100644",
+      "path": "docs/images/kitten-cafe-scene.png",
+      "sha256": "1173752ca6915056213f2c1314fbb3063e4e63586ebdfd4a4756deeedab87f3a"
+    },
+    {
+      "bytes": 43529,
+      "mode": "100644",
+      "path": "docs/images/kitten-cafe.png",
+      "sha256": "da858821ed81afdb1b60b59f46bd2519d64779fbe8e3c5c10e4a823bcdec2cbd"
+    },
+    {
+      "bytes": 59680,
+      "mode": "100644",
+      "path": "docs/images/office-space-scene.png",
+      "sha256": "59013b4fb3f1a6c592ef72e499fb86f989e047ba8f2fa8c9b0d991c5b6f6ed2f"
+    },
+    {
+      "bytes": 46487,
+      "mode": "100644",
+      "path": "docs/images/office-space.png",
+      "sha256": "f0cab289ba6b838dfa00c41cfa576933207ea9c928ecf7c7312b511566fe5469"
+    },
+    {
+      "bytes": 58113,
+      "mode": "100644",
+      "path": "docs/images/pw-agents.png",
+      "sha256": "952ba4bff497ef594f36a93d5baac31944742ab51e56382df4af536a1930e015"
+    },
+    {
+      "bytes": 142681,
+      "mode": "100644",
+      "path": "docs/images/social-preview.png",
+      "sha256": "155d76f61651f881152e1beb0a8a3507596ff3d5f0dd49db4fc7b6431a953256"
+    },
+    {
+      "bytes": 166995,
+      "mode": "100644",
+      "path": "docs/images/starter-realms.png",
+      "sha256": "fbb3c6a0f2a75563975da43bc5dfb862ce7fa4a94546f1e8f68c7f78a31dccf7"
+    },
+    {
+      "bytes": 55443,
+      "mode": "100644",
+      "path": "docs/images/tng-bridge-scene.png",
+      "sha256": "0be388fdc7608fcfe3aa2408a53648dd514b3f743d384099cc81b59a54e99739"
+    },
+    {
+      "bytes": 49287,
+      "mode": "100644",
+      "path": "docs/images/tng-bridge.png",
+      "sha256": "6ef07e4b87dcdbb1c885751fc208b0b65b2d0dc888de14d7c1f16802c012e14d"
+    },
+    {
+      "bytes": 53460,
+      "mode": "100644",
+      "path": "docs/images/tng-engineering-scene.png",
+      "sha256": "3d8ff1c14b552cdf848af5e082886d2ee51666acb63834372226b0d42daa5890"
+    },
+    {
+      "bytes": 52674,
+      "mode": "100644",
+      "path": "docs/images/tng-engineering.png",
+      "sha256": "b9a26b7b1ee4a9d51626953bc0f0e12e40f885d6387c97855f858fea01ddbff5"
+    },
+    {
+      "bytes": 367473,
+      "mode": "100644",
+      "path": "docs/images/tng-ship-feature.png",
+      "sha256": "5954ae885a0dd30b39c6ee32a74ebfb9cdafff3c7741b3e85e920cb525ee54f3"
+    },
+    {
+      "bytes": 4112,
+      "mode": "100644",
+      "path": "docs/install.md",
+      "sha256": "d425280e78afc44573d3b2f9e336c53db59f2fd3af094903276917fa8313475e"
+    },
+    {
+      "bytes": 5861,
+      "mode": "100644",
+      "path": "docs/media.md",
+      "sha256": "1114c8c5efd38f14d3fecad5efbafec23b68ce34480533bf2867c2da5f0a2cd1"
+    },
+    {
+      "bytes": 6821,
+      "mode": "100644",
+      "path": "docs/realms.md",
+      "sha256": "d3e732b7a4976bef0e1297a081b05a4190732ceaa34abc6067369cbedd31db2d"
+    },
+    {
+      "bytes": 2278,
+      "mode": "100644",
+      "path": "docs/social-preview.html",
+      "sha256": "3ef51f2b237e1b88af6f1dbf706073caa9c8d92cf3451b921882cb2850f509de"
+    },
+    {
+      "bytes": 17231,
+      "mode": "100644",
+      "path": "package-lock.json",
+      "sha256": "b141a5c83e5ecf8f44009d731b161c6032723d20f11db1600cca3b6365da963a"
+    },
+    {
+      "bytes": 1233,
+      "mode": "100644",
+      "path": "package.json",
+      "sha256": "9fc72be1acd394077fd9e3940c1e7fcc04ec53592a5a089b3cc376503a7d594d"
+    },
+    {
+      "bytes": 211670,
+      "mode": "100644",
+      "path": "plugin.js",
+      "sha256": "c10d67c0f556db586afdbd229768bb1a0f6a563c569b4b34d5ab2735425538a5"
+    },
+    {
+      "bytes": 372,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "16d7bcd5377354929236c5bedd44d4e97acdb54de24b3ea9639cdeb0cefb98a3"
+    },
+    {
+      "bytes": 1280,
+      "mode": "100644",
+      "path": "preview/index.html",
+      "sha256": "5edac15df462c78e607c303f6200a928c20878d1bf51f424b7bae5b930a65301"
+    },
+    {
+      "bytes": 1234,
+      "mode": "100644",
+      "path": "preview/main.js",
+      "sha256": "fbc0d6cd7a7d8d6c4aaa64df05fd3a1af90c860afe180e404cb4836fd2825dc9"
+    },
+    {
+      "bytes": 2158,
+      "mode": "100644",
+      "path": "preview/sdk.js",
+      "sha256": "0e2130a54f6aad4f998d2f3f037579e7483f4cbbfcbc5fb9cc23ad5ee5bf70a6"
+    },
+    {
+      "bytes": 3119,
+      "mode": "100644",
+      "path": "realms/README.md",
+      "sha256": "ea1ef7e82bedf026418f80672824306a80c40677dcc7c0b7594d9bd2af913eca"
+    },
+    {
+      "bytes": 2128,
+      "mode": "100644",
+      "path": "realms/catalog.json",
+      "sha256": "35618b3df9eaa03c343fa84fa7adaf13aa545fec99ebb260b9c3fb98dfb002ec"
+    },
+    {
+      "bytes": 34872,
+      "mode": "100644",
+      "path": "realms/pd-kitten-cafe.pwrealm.json",
+      "sha256": "feba568dc3cf0a7b91f6de935a10a2b76237ed5369cb40471f114dee3db2642c"
+    },
+    {
+      "bytes": 45557,
+      "mode": "100644",
+      "path": "realms/pd-office-space.pwrealm.json",
+      "sha256": "61548551afe6387a5d18968703794bdf98b82648ef12508ea774a0741e0e6ec6"
+    },
+    {
+      "bytes": 57423,
+      "mode": "100644",
+      "path": "realms/pd-tng-bridge.pwrealm.json",
+      "sha256": "ec4f662cfbf817e6c189166ca6c90986c1838cb0d46c590369f0b478d7845a57"
+    },
+    {
+      "bytes": 907,
+      "mode": "100644",
+      "path": "scripts/build.mjs",
+      "sha256": "f09331f34bdf9cfec8b8a4aec45bf6265299b6065488e06a38540e005f5dfcd5"
+    },
+    {
+      "bytes": 996,
+      "mode": "100644",
+      "path": "scripts/capture-demo.mjs",
+      "sha256": "1fc6eec99dad4577796c9b0632e5e1affafb885c6cd7f511659e48d079f47ea5"
+    },
+    {
+      "bytes": 7669,
+      "mode": "100644",
+      "path": "scripts/capture-repo-media.mjs",
+      "sha256": "4e4a000da4fba551f51ebb040b47a8406fa7db9bb8cfd495f85e7ad56a0aa493"
+    },
+    {
+      "bytes": 7086,
+      "mode": "100644",
+      "path": "scripts/compose-catalog-media.mjs",
+      "sha256": "da95fccf845ca9a4472cbf354e5c60168753f12ecbd32ce37a28dd20afae92cc"
+    },
+    {
+      "bytes": 2785,
+      "mode": "100644",
+      "path": "scripts/compose-tng-feature.mjs",
+      "sha256": "74e2dcbca4219f6df3165f5c005e5de47a23b1c2a49a85ef4307480df528fded"
+    },
+    {
+      "bytes": 8335,
+      "mode": "100644",
+      "path": "scripts/export-realms.mjs",
+      "sha256": "cc22324ca0e52aa77378e6c1b9c18b040b23b8fc64f388d342903f5f4d22f6cc"
+    },
+    {
+      "bytes": 2676,
+      "mode": "100644",
+      "path": "scripts/install.mjs",
+      "sha256": "1989ad2593663132d508486b591dae6ffb48f5b641836cab8a49d597076a73a7"
+    },
+    {
+      "bytes": 1111371,
+      "mode": "100644",
+      "path": "scripts/media-assets/tng-title.png",
+      "sha256": "32a586f09f3ec806afb6ac1acff640c22cb5efe82a95e79bdf805333c5bba469"
+    },
+    {
+      "bytes": 204206,
+      "mode": "100644",
+      "path": "scripts/media-assets/tng-transporter.png",
+      "sha256": "60c9e9d4a9b57cc5e13485612e3be319bdff7deee8e7efea6c3c2e318798523b"
+    },
+    {
+      "bytes": 1697,
+      "mode": "100644",
+      "path": "scripts/preview.mjs",
+      "sha256": "3ecd27909cc11bc8b43d7119871a69e9d57d92e605e4ba70890d378b3472cd35"
+    },
+    {
+      "bytes": 3092,
+      "mode": "100644",
+      "path": "skills/pixel-worlds-creator/SKILL.md",
+      "sha256": "2886fa928be235411dc0397b2ea809736d6c97f54cb1df69d1e7c202a75ece34"
+    },
+    {
+      "bytes": 24376,
+      "mode": "100644",
+      "path": "src/app.js",
+      "sha256": "620c2022d3e6be0df937cab8a4eae9465377073abc0c772aab3a542ddecad185"
+    },
+    {
+      "bytes": 11807,
+      "mode": "100644",
+      "path": "src/art/bridge-scene.js",
+      "sha256": "a67e6195b608c8d9ede776059cb7e522df01c6eb40b78cf655af8f5d85e2ecaa"
+    },
+    {
+      "bytes": 14800,
+      "mode": "100644",
+      "path": "src/art/characters.js",
+      "sha256": "59cbbf260607a09ceaaad6f81ad33d3ae100103778464963af4b971cf49e46dc"
+    },
+    {
+      "bytes": 27884,
+      "mode": "100644",
+      "path": "src/art/engineering-scene.js",
+      "sha256": "8f4e353780f0a3b252008709c11401af37b543dd58b99e40324e346151e7ca86"
+    },
+    {
+      "bytes": 5269,
+      "mode": "100644",
+      "path": "src/art/lcars.js",
+      "sha256": "29cb27db83e23999c29a15a2eccad98f6b8bce3fbbd2771dc9e7c6582bbbce41"
+    },
+    {
+      "bytes": 3733,
+      "mode": "100644",
+      "path": "src/art/pixels.js",
+      "sha256": "13dacc55d3a66c74f06d7f95899c6ea9726e3f384b7e071b2b30cae7442aca23"
+    },
+    {
+      "bytes": 9023,
+      "mode": "100644",
+      "path": "src/art/scenes.js",
+      "sha256": "ee435c99de2746f4d5441961e42df5ae7b32401c7692ff880c98b34a8131b147"
+    },
+    {
+      "bytes": 777,
+      "mode": "100644",
+      "path": "src/art/ship-effects.js",
+      "sha256": "11f368b4adad8f936ae26761bc95b4b62618d621bc89fb5e9edf3302f935e0d6"
+    },
+    {
+      "bytes": 3101,
+      "mode": "100644",
+      "path": "src/art/warp-core.js",
+      "sha256": "cb3c7bafa2968a0433cc7ad587b8421721b0607ea5ddc4d4d2289f09ca0f434e"
+    },
+    {
+      "bytes": 10106,
+      "mode": "100644",
+      "path": "src/bridge.js",
+      "sha256": "cb9d7d765f23076f66e03ab9aa35e5952f14f633a86e3884ee46e2f871dd7174"
+    },
+    {
+      "bytes": 2829,
+      "mode": "100644",
+      "path": "src/plugin.js",
+      "sha256": "0044a7d6a633e0ca000be22c2dba69f6e53ce4104a58d0665e1313c90dbc3d12"
+    },
+    {
+      "bytes": 14561,
+      "mode": "100644",
+      "path": "src/realm-packages.js",
+      "sha256": "81e79dbee7f5570cee5d1c3c5b119f01546c0145dc3a3a262972bf7ebcbdef55"
+    },
+    {
+      "bytes": 16062,
+      "mode": "100644",
+      "path": "src/runtime.js",
+      "sha256": "06ac69334acada477934b760a6c9e99c74fd7a3680da5a2b391e54fd8f2e3ad7"
+    },
+    {
+      "bytes": 7513,
+      "mode": "100644",
+      "path": "src/ship-controls.js",
+      "sha256": "a195ec629c9975bb708e4bc08610301669c93c90b5d5fe55270308ffd9decd26"
+    },
+    {
+      "bytes": 2543,
+      "mode": "100644",
+      "path": "src/ship-layout.js",
+      "sha256": "335b16618e0abc377af4136c4fc8ee7ad8561ad963f4925557e265b02cd964d2"
+    },
+    {
+      "bytes": 4797,
+      "mode": "100644",
+      "path": "src/ship-styles.js",
+      "sha256": "5f34ef822b37ab4289361c7e742aa2e01d1dc48c377998fb1b02e9b6cb84c571"
+    },
+    {
+      "bytes": 15146,
+      "mode": "100644",
+      "path": "src/ship.js",
+      "sha256": "9241c68846722f38be46c05a38fd2540976dd2c619606a6ddfaa56b127e2e74d"
+    },
+    {
+      "bytes": 11027,
+      "mode": "100644",
+      "path": "src/styles.js",
+      "sha256": "25a0311feb216b29658cd8032d4184c4e4cfb40a1f0a736f3d5787019ce5c4b9"
+    },
+    {
+      "bytes": 2383,
+      "mode": "100644",
+      "path": "src/ui-model.js",
+      "sha256": "576e59823507e5e9ccc5aaff50f7d896ed0b35abf0c0f077680ab32eabed708f"
+    },
+    {
+      "bytes": 17100,
+      "mode": "100644",
+      "path": "src/world.js",
+      "sha256": "b31e6711a94b7df6bba5e99660fa8ab66dfba9b5897ad741827a71acd6d4b915"
+    },
+    {
+      "bytes": 4333,
+      "mode": "100644",
+      "path": "tests/bridge-render-browser.mjs",
+      "sha256": "16540d3faf20bb9a7e62a6d7583daa6fcfaf21b8b8311cef541e6cdea27963ab"
+    },
+    {
+      "bytes": 1082,
+      "mode": "100644",
+      "path": "tests/bridge-staffing.test.mjs",
+      "sha256": "46790fb160ab02a5c340a378bc659108d86a08a6d0283ac466c4b7ad13005fa8"
+    },
+    {
+      "bytes": 18132,
+      "mode": "100644",
+      "path": "tests/bridge.test.mjs",
+      "sha256": "502a230a123aeb9bcbd364cfbcd5aebe268cd97696672b13645405ec6de15b1b"
+    },
+    {
+      "bytes": 7389,
+      "mode": "100644",
+      "path": "tests/browser.mjs",
+      "sha256": "d54424a83f50a6c4cd8dd4cfe375f85dbfa9fa0768c756faec95a4bcf6ffa014"
+    },
+    {
+      "bytes": 2264,
+      "mode": "100644",
+      "path": "tests/catalog-media.test.mjs",
+      "sha256": "8ab349fcaa5c926fe4b39e198ff4db12694feed38fc38199b8b1452f3522965e"
+    },
+    {
+      "bytes": 6893,
+      "mode": "100644",
+      "path": "tests/characters.test.mjs",
+      "sha256": "f804403504d9bf19c5a64d464d5d9d5d60d2f8f283190a85e450abb875bb4b8b"
+    },
+    {
+      "bytes": 8730,
+      "mode": "100644",
+      "path": "tests/display-browser.mjs",
+      "sha256": "ed1346fb22aefc3a3caf3251d645e5ad8ad18a51d91aaec9c9c26d7b1b6bcc46"
+    },
+    {
+      "bytes": 2953,
+      "mode": "100644",
+      "path": "tests/distribution.test.mjs",
+      "sha256": "24e5f6708c5bc7c9670987a09993c5f7a419bb1d4735250386dd36633d7661eb"
+    },
+    {
+      "bytes": 9227,
+      "mode": "100644",
+      "path": "tests/engineering-render-browser.mjs",
+      "sha256": "f3934ecacf6d9fb7f757074cfa1a204e317983f6d50fd349977f2111087fd37d"
+    },
+    {
+      "bytes": 4961,
+      "mode": "100644",
+      "path": "tests/host-theme-browser.mjs",
+      "sha256": "7795ff1bddb6823e565e853111700c3a85909aaea02b8e5d2a1192c90de4dd0d"
+    },
+    {
+      "bytes": 1710,
+      "mode": "100644",
+      "path": "tests/host-theme-fixture.mjs",
+      "sha256": "65c0f6403d05186a2d1fde988923527b4d3bdf664420098eb20ae3f03746528f"
+    },
+    {
+      "bytes": 1966,
+      "mode": "100644",
+      "path": "tests/package.test.mjs",
+      "sha256": "f83980ea65506b53171369991bb083dd7b40f205916ad7e5c185cb805b858e97"
+    },
+    {
+      "bytes": 8440,
+      "mode": "100644",
+      "path": "tests/realm-packages.test.mjs",
+      "sha256": "661dd5759f76431b46bd886eeb489f409e5d56c46a6d17c74c6a10247f5a9642"
+    },
+    {
+      "bytes": 9282,
+      "mode": "100644",
+      "path": "tests/realms-browser.mjs",
+      "sha256": "30a3361234c249ef0ce1041051e0cafa287cabf6a51efc07fc1f168ea5a09e2b"
+    },
+    {
+      "bytes": 11812,
+      "mode": "100644",
+      "path": "tests/runtime.test.mjs",
+      "sha256": "c4131088594eaf2f2cdad57bbf95937d5dde4e478f27cc11af4110e21eba13ad"
+    },
+    {
+      "bytes": 11088,
+      "mode": "100644",
+      "path": "tests/ship-browser.mjs",
+      "sha256": "91732eaa6d51eca2886c73d88fc0eb9284d928d453e7ee45855394d0b75c2a31"
+    },
+    {
+      "bytes": 16114,
+      "mode": "100644",
+      "path": "tests/ship-geometry.test.mjs",
+      "sha256": "c03153874723dd758da445245f7c1bae8999e6bd04da058db0901220df002c9b"
+    },
+    {
+      "bytes": 7859,
+      "mode": "100644",
+      "path": "tests/ship-render-browser.mjs",
+      "sha256": "e3fd0605fe7fdf9d6c5b16cc9e95dcdb40c3efe981c0096ce751d6f6c257aa91"
+    },
+    {
+      "bytes": 10219,
+      "mode": "100644",
+      "path": "tests/ship.test.mjs",
+      "sha256": "2d9a46e540ba1d60ff80cd2d9322a2e8410577bcc3614f5348e858e2e6d0bfc5"
+    },
+    {
+      "bytes": 2657,
+      "mode": "100644",
+      "path": "tests/ui-model.test.mjs",
+      "sha256": "0edd911c1a0ba5c03baee974cbfd6a7a6325a3b9843eb81fbcfe40a011e3f84b"
+    },
+    {
+      "bytes": 2601,
+      "mode": "100644",
+      "path": "tests/warp-core.test.mjs",
+      "sha256": "7774e0f3dea0cbf17673caa7aab02649596194e5af12de2d7b56c07f13c3a7a0"
+    },
+    {
+      "bytes": 10506,
+      "mode": "100644",
+      "path": "tests/world.test.mjs",
+      "sha256": "502099aa6b47f0fc465341fe1a455b449d3d83edbf6fcd28518d16a176838974"
+    }
+  ],
+  "input_manifest_sha256": "8e2832a6b6d420e203bc3a6958ef2576b98d10286352a6c99436d2c375bee2f1",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "2200cac6dc8f7f8d9dc4015fdb5961843ebd797ab36dd66940019230c28d0f90",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "NOTICE.md",
+        "sha256": "c3e7a5843a860068ec23910b7a9b73a4e0d63c01a6cfa9c6503ae50bbf18a09b",
+        "source_path": "NOTICE.md"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "docs/assets/Oxanium-OFL.txt",
+        "sha256": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b",
+        "source_path": "docs/assets/Oxanium-OFL.txt"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "SECURITY.md",
+      "desktop/plugin.js",
+      "docs/architecture.md",
+      "docs/install.md",
+      "docs/media.md",
+      "docs/realms.md",
+      "docs/social-preview.html",
+      "package.json",
+      "plugin.js",
+      "plugin.yaml",
+      "preview/sdk.js",
+      "realms/README.md",
+      "realms/pd-office-space.pwrealm.json",
+      "scripts/build.mjs",
+      "scripts/capture-repo-media.mjs",
+      "scripts/compose-catalog-media.mjs",
+      "scripts/install.mjs",
+      "skills/pixel-worlds-creator/SKILL.md",
+      "src/app.js",
+      "src/bridge.js",
+      "src/plugin.js",
+      "src/runtime.js",
+      "src/ship-controls.js",
+      "tests/bridge.test.mjs",
+      "tests/host-theme-browser.mjs",
+      "tests/host-theme-fixture.mjs",
+      "tests/package.test.mjs",
+      "tests/runtime.test.mjs"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/cygnostik/pd-pixel-worlds",
+    "sha": "55feb15cf6d3c147504b8f5d68c2de8e8d995cac",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/cygnostik/pd-pixel-worlds",
+  "original_sha": "55feb15cf6d3c147504b8f5d68c2de8e8d995cac",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/ISSUE_TEMPLATE/realm-submission.yml",
+      "sha256": "7270a51084cebc36b0b3f30c7217614242674d00a8b7a9ade20ccc5f42e6c2d9",
+      "bytes": 1927,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "a4074ff1c813435cc2bc66546c92b32ea0d561fdba92b7878a073d5c84ec2cd3",
+      "bytes": 597,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "94de0726e4e4aae2f50a1914fab9e8adfab6944839a030712452852e2650c1fd",
+      "bytes": 83,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "563c3ef775be0b57e2eb27621d97c18bc3cdd4e22eb7ad99d6555b3201f48194",
+      "bytes": 1529,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "2200cac6dc8f7f8d9dc4015fdb5961843ebd797ab36dd66940019230c28d0f90",
+      "bytes": 1063,
+      "mode": "100644"
+    },
+    {
+      "path": "NOTICE.md",
+      "sha256": "c3e7a5843a860068ec23910b7a9b73a4e0d63c01a6cfa9c6503ae50bbf18a09b",
+      "bytes": 1103,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "b5405de984cf19848d640a5d66a078ca6215569135f71b223fc606e1ad4d56d8",
+      "bytes": 8414,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "4419f5abce6a0a01ec6448ebccea9f21ed430dca65aed5d1b9ee54bf3e3e2021",
+      "bytes": 1502,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "ca49f03b3d94cd167169cd0894a881bbe140a2ae50279d8fa80e6411306d6ef5",
+      "bytes": 211696,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/architecture.md",
+      "sha256": "d89f28087eedf06dc3bd08ed44437ae30a34f6251a3c5e68ba91fe1d48ffa05f",
+      "bytes": 5307,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/Oxanium-OFL.txt",
+      "sha256": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b",
+      "bytes": 4384,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/assets/Oxanium.woff2",
+      "sha256": "3301a72ebcb2fe6fbb1f399f5667d6cd77edccd10e9fb89139ebe65ab67e04aa",
+      "bytes": 17820,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/catalog-banner.png",
+      "sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+      "bytes": 139530,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/display-mode.png",
+      "sha256": "7b75cdf81160187d42e49f06ba645dca326c07e41fa90b557d37507b8e8765ad",
+      "bytes": 50519,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/kitten-cafe-scene.png",
+      "sha256": "1173752ca6915056213f2c1314fbb3063e4e63586ebdfd4a4756deeedab87f3a",
+      "bytes": 51337,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/kitten-cafe.png",
+      "sha256": "da858821ed81afdb1b60b59f46bd2519d64779fbe8e3c5c10e4a823bcdec2cbd",
+      "bytes": 43529,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/office-space-scene.png",
+      "sha256": "59013b4fb3f1a6c592ef72e499fb86f989e047ba8f2fa8c9b0d991c5b6f6ed2f",
+      "bytes": 59680,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/office-space.png",
+      "sha256": "f0cab289ba6b838dfa00c41cfa576933207ea9c928ecf7c7312b511566fe5469",
+      "bytes": 46487,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/pw-agents.png",
+      "sha256": "952ba4bff497ef594f36a93d5baac31944742ab51e56382df4af536a1930e015",
+      "bytes": 58113,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/social-preview.png",
+      "sha256": "155d76f61651f881152e1beb0a8a3507596ff3d5f0dd49db4fc7b6431a953256",
+      "bytes": 142681,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/starter-realms.png",
+      "sha256": "fbb3c6a0f2a75563975da43bc5dfb862ce7fa4a94546f1e8f68c7f78a31dccf7",
+      "bytes": 166995,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/tng-bridge-scene.png",
+      "sha256": "0be388fdc7608fcfe3aa2408a53648dd514b3f743d384099cc81b59a54e99739",
+      "bytes": 55443,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/tng-bridge.png",
+      "sha256": "6ef07e4b87dcdbb1c885751fc208b0b65b2d0dc888de14d7c1f16802c012e14d",
+      "bytes": 49287,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/tng-engineering-scene.png",
+      "sha256": "3d8ff1c14b552cdf848af5e082886d2ee51666acb63834372226b0d42daa5890",
+      "bytes": 53460,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/tng-engineering.png",
+      "sha256": "b9a26b7b1ee4a9d51626953bc0f0e12e40f885d6387c97855f858fea01ddbff5",
+      "bytes": 52674,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/images/tng-ship-feature.png",
+      "sha256": "5954ae885a0dd30b39c6ee32a74ebfb9cdafff3c7741b3e85e920cb525ee54f3",
+      "bytes": 367473,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/install.md",
+      "sha256": "98e4680d330668d4416895e4aa6f0041a35df6038b4aaea126ee217df3efe4a1",
+      "bytes": 4156,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/media.md",
+      "sha256": "5c61250884f1d0f2a9db0c105f26393f730a80c23dde9c7b35d1effb641b6e1b",
+      "bytes": 5720,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/realms.md",
+      "sha256": "7ddc5679337f187abfec65a87eb0e3ac10a52bea1cdcc26dbc4419ef521b82a0",
+      "bytes": 6823,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/social-preview.html",
+      "sha256": "b01023c630be396d7c15e5f150b20f27581c66ee3ff3158303527424ab67fd5a",
+      "bytes": 2280,
+      "mode": "100644"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "b141a5c83e5ecf8f44009d731b161c6032723d20f11db1600cca3b6365da963a",
+      "bytes": 17231,
+      "mode": "100644"
+    },
+    {
+      "path": "package.json",
+      "sha256": "84220cb39ea6082edf2afc447f7c1aec81655d4f55e330070e11e66ae79d42cf",
+      "bytes": 1235,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.js",
+      "sha256": "ca49f03b3d94cd167169cd0894a881bbe140a2ae50279d8fa80e6411306d6ef5",
+      "bytes": 211696,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "62279c11823b08102c9c7e6e9816d5952b493e4f93920339907cf7e56ecbd0c8",
+      "bytes": 374,
+      "mode": "100644"
+    },
+    {
+      "path": "preview/index.html",
+      "sha256": "5edac15df462c78e607c303f6200a928c20878d1bf51f424b7bae5b930a65301",
+      "bytes": 1280,
+      "mode": "100644"
+    },
+    {
+      "path": "preview/main.js",
+      "sha256": "fbc0d6cd7a7d8d6c4aaa64df05fd3a1af90c860afe180e404cb4836fd2825dc9",
+      "bytes": 1234,
+      "mode": "100644"
+    },
+    {
+      "path": "preview/sdk.js",
+      "sha256": "bb8b785661ee6a755e412ab49d1013f38905405dcecadf7e9454978fdcebdd3f",
+      "bytes": 2162,
+      "mode": "100644"
+    },
+    {
+      "path": "realms/README.md",
+      "sha256": "d52cb3d31aa588d094b117a6a5a2a8d81591623148d7ce074309716efa98dd6c",
+      "bytes": 3123,
+      "mode": "100644"
+    },
+    {
+      "path": "realms/catalog.json",
+      "sha256": "35618b3df9eaa03c343fa84fa7adaf13aa545fec99ebb260b9c3fb98dfb002ec",
+      "bytes": 2128,
+      "mode": "100644"
+    },
+    {
+      "path": "realms/pd-kitten-cafe.pwrealm.json",
+      "sha256": "feba568dc3cf0a7b91f6de935a10a2b76237ed5369cb40471f114dee3db2642c",
+      "bytes": 34872,
+      "mode": "100644"
+    },
+    {
+      "path": "realms/pd-office-space.pwrealm.json",
+      "sha256": "bc345543921ff13c9c6cad50d5c2ba80a00587db7e4b08eb7327417b8a3c7b83",
+      "bytes": 45558,
+      "mode": "100644"
+    },
+    {
+      "path": "realms/pd-tng-bridge.pwrealm.json",
+      "sha256": "ec4f662cfbf817e6c189166ca6c90986c1838cb0d46c590369f0b478d7845a57",
+      "bytes": 57423,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/build.mjs",
+      "sha256": "49987746094cbffa71f3aca2c86b4796c2f18296d89d56fc1b70aebb516845d8",
+      "bytes": 911,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/capture-demo.mjs",
+      "sha256": "1fc6eec99dad4577796c9b0632e5e1affafb885c6cd7f511659e48d079f47ea5",
+      "bytes": 996,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/capture-repo-media.mjs",
+      "sha256": "23ad264ea2b12d73edf2ec792fdb8948e2afc21499d373696775907bb73673ca",
+      "bytes": 7673,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/compose-catalog-media.mjs",
+      "sha256": "538a3c8f56640a748c184371513fce40deb043de77755dbb0c3ee8da4092f701",
+      "bytes": 7088,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/compose-tng-feature.mjs",
+      "sha256": "74e2dcbca4219f6df3165f5c005e5de47a23b1c2a49a85ef4307480df528fded",
+      "bytes": 2785,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/export-realms.mjs",
+      "sha256": "cc22324ca0e52aa77378e6c1b9c18b040b23b8fc64f388d342903f5f4d22f6cc",
+      "bytes": 8335,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/install.mjs",
+      "sha256": "aa4f7e5dc3362cafc25b3d49b81c5056ac2310585c86ed709f355ba5541c0eaf",
+      "bytes": 2688,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/media-assets/tng-title.png",
+      "sha256": "32a586f09f3ec806afb6ac1acff640c22cb5efe82a95e79bdf805333c5bba469",
+      "bytes": 1111371,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/media-assets/tng-transporter.png",
+      "sha256": "60c9e9d4a9b57cc5e13485612e3be319bdff7deee8e7efea6c3c2e318798523b",
+      "bytes": 204206,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/preview.mjs",
+      "sha256": "3ecd27909cc11bc8b43d7119871a69e9d57d92e605e4ba70890d378b3472cd35",
+      "bytes": 1697,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/pixel-worlds-creator/SKILL.md",
+      "sha256": "9b092e5dec6d4530761ae25e13c54152dbe78fcda69364cb66a8215b6f05dc0a",
+      "bytes": 3094,
+      "mode": "100644"
+    },
+    {
+      "path": "src/app.js",
+      "sha256": "cc4ff5ecef60fadc21ab1c44208af07328eaaa496147c05fbb1bf268387953b9",
+      "bytes": 24390,
+      "mode": "100644"
+    },
+    {
+      "path": "src/art/bridge-scene.js",
+      "sha256": "a67e6195b608c8d9ede776059cb7e522df01c6eb40b78cf655af8f5d85e2ecaa",
+      "bytes": 11807,
+      "mode": "100644"
+    },
+    {
+      "path": "src/art/characters.js",
+      "sha256": "59cbbf260607a09ceaaad6f81ad33d3ae100103778464963af4b971cf49e46dc",
+      "bytes": 14800,
+      "mode": "100644"
+    },
+    {
+      "path": "src/art/engineering-scene.js",
+      "sha256": "8f4e353780f0a3b252008709c11401af37b543dd58b99e40324e346151e7ca86",
+      "bytes": 27884,
+      "mode": "100644"
+    },
+    {
+      "path": "src/art/lcars.js",
+      "sha256": "29cb27db83e23999c29a15a2eccad98f6b8bce3fbbd2771dc9e7c6582bbbce41",
+      "bytes": 5269,
+      "mode": "100644"
+    },
+    {
+      "path": "src/art/pixels.js",
+      "sha256": "13dacc55d3a66c74f06d7f95899c6ea9726e3f384b7e071b2b30cae7442aca23",
+      "bytes": 3733,
+      "mode": "100644"
+    },
+    {
+      "path": "src/art/scenes.js",
+      "sha256": "ee435c99de2746f4d5441961e42df5ae7b32401c7692ff880c98b34a8131b147",
+      "bytes": 9023,
+      "mode": "100644"
+    },
+    {
+      "path": "src/art/ship-effects.js",
+      "sha256": "11f368b4adad8f936ae26761bc95b4b62618d621bc89fb5e9edf3302f935e0d6",
+      "bytes": 777,
+      "mode": "100644"
+    },
+    {
+      "path": "src/art/warp-core.js",
+      "sha256": "cb3c7bafa2968a0433cc7ad587b8421721b0607ea5ddc4d4d2289f09ca0f434e",
+      "bytes": 3101,
+      "mode": "100644"
+    },
+    {
+      "path": "src/bridge.js",
+      "sha256": "79b6cb598faaf186c860ad7b4b77f9fd3d97e7a2457d4f616a03568a0214e122",
+      "bytes": 10108,
+      "mode": "100644"
+    },
+    {
+      "path": "src/plugin.js",
+      "sha256": "3a8667a4fab58b64d329f00aa0cde9211a13247d5bbc765c5aa5a620dc14aa77",
+      "bytes": 2837,
+      "mode": "100644"
+    },
+    {
+      "path": "src/realm-packages.js",
+      "sha256": "81e79dbee7f5570cee5d1c3c5b119f01546c0145dc3a3a262972bf7ebcbdef55",
+      "bytes": 14561,
+      "mode": "100644"
+    },
+    {
+      "path": "src/runtime.js",
+      "sha256": "76f8942fa15a6f7a50bfe80c98fe71bd72e38fb9b960df762fc19e51e9e7faef",
+      "bytes": 16064,
+      "mode": "100644"
+    },
+    {
+      "path": "src/ship-controls.js",
+      "sha256": "b6613e4f48a55118e3ec6c759a6d38cd96e012ec5ebe9c91aaae933fea1d0e94",
+      "bytes": 7515,
+      "mode": "100644"
+    },
+    {
+      "path": "src/ship-layout.js",
+      "sha256": "335b16618e0abc377af4136c4fc8ee7ad8561ad963f4925557e265b02cd964d2",
+      "bytes": 2543,
+      "mode": "100644"
+    },
+    {
+      "path": "src/ship-styles.js",
+      "sha256": "5f34ef822b37ab4289361c7e742aa2e01d1dc48c377998fb1b02e9b6cb84c571",
+      "bytes": 4797,
+      "mode": "100644"
+    },
+    {
+      "path": "src/ship.js",
+      "sha256": "9241c68846722f38be46c05a38fd2540976dd2c619606a6ddfaa56b127e2e74d",
+      "bytes": 15146,
+      "mode": "100644"
+    },
+    {
+      "path": "src/styles.js",
+      "sha256": "25a0311feb216b29658cd8032d4184c4e4cfb40a1f0a736f3d5787019ce5c4b9",
+      "bytes": 11027,
+      "mode": "100644"
+    },
+    {
+      "path": "src/ui-model.js",
+      "sha256": "576e59823507e5e9ccc5aaff50f7d896ed0b35abf0c0f077680ab32eabed708f",
+      "bytes": 2383,
+      "mode": "100644"
+    },
+    {
+      "path": "src/world.js",
+      "sha256": "b31e6711a94b7df6bba5e99660fa8ab66dfba9b5897ad741827a71acd6d4b915",
+      "bytes": 17100,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/bridge-render-browser.mjs",
+      "sha256": "16540d3faf20bb9a7e62a6d7583daa6fcfaf21b8b8311cef541e6cdea27963ab",
+      "bytes": 4333,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/bridge-staffing.test.mjs",
+      "sha256": "46790fb160ab02a5c340a378bc659108d86a08a6d0283ac466c4b7ad13005fa8",
+      "bytes": 1082,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/bridge.test.mjs",
+      "sha256": "54cd700b739e6da01e896b0c47d5f00813f0d5b9d03504ef9479f97763a07dc2",
+      "bytes": 18180,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/browser.mjs",
+      "sha256": "d54424a83f50a6c4cd8dd4cfe375f85dbfa9fa0768c756faec95a4bcf6ffa014",
+      "bytes": 7389,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/catalog-media.test.mjs",
+      "sha256": "8ab349fcaa5c926fe4b39e198ff4db12694feed38fc38199b8b1452f3522965e",
+      "bytes": 2264,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/characters.test.mjs",
+      "sha256": "f804403504d9bf19c5a64d464d5d9d5d60d2f8f283190a85e450abb875bb4b8b",
+      "bytes": 6893,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/display-browser.mjs",
+      "sha256": "ed1346fb22aefc3a3caf3251d645e5ad8ad18a51d91aaec9c9c26d7b1b6bcc46",
+      "bytes": 8730,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/distribution.test.mjs",
+      "sha256": "24e5f6708c5bc7c9670987a09993c5f7a419bb1d4735250386dd36633d7661eb",
+      "bytes": 2953,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/engineering-render-browser.mjs",
+      "sha256": "f3934ecacf6d9fb7f757074cfa1a204e317983f6d50fd349977f2111087fd37d",
+      "bytes": 9227,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/host-theme-browser.mjs",
+      "sha256": "4c02aecf8965de17e454794c8138890359888761e15645cd942780a4b046b936",
+      "bytes": 4963,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/host-theme-fixture.mjs",
+      "sha256": "8136ce004b4dce4951acfd6788f1529e6bac9ec7477314cb825ad1102cb9c693",
+      "bytes": 1714,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/package.test.mjs",
+      "sha256": "0b85a9aeaf8bd30bdab669cdedab1e28afcf8e39b951178572cc357cf9371415",
+      "bytes": 1974,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/realm-packages.test.mjs",
+      "sha256": "661dd5759f76431b46bd886eeb489f409e5d56c46a6d17c74c6a10247f5a9642",
+      "bytes": 8440,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/realms-browser.mjs",
+      "sha256": "30a3361234c249ef0ce1041051e0cafa287cabf6a51efc07fc1f168ea5a09e2b",
+      "bytes": 9282,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/runtime.test.mjs",
+      "sha256": "dda953625bb2f83b42cfbaf5ded3f6e67b00cdf246820c99765fcd95799a1c5b",
+      "bytes": 11814,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/ship-browser.mjs",
+      "sha256": "91732eaa6d51eca2886c73d88fc0eb9284d928d453e7ee45855394d0b75c2a31",
+      "bytes": 11088,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/ship-geometry.test.mjs",
+      "sha256": "c03153874723dd758da445245f7c1bae8999e6bd04da058db0901220df002c9b",
+      "bytes": 16114,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/ship-render-browser.mjs",
+      "sha256": "e3fd0605fe7fdf9d6c5b16cc9e95dcdb40c3efe981c0096ce751d6f6c257aa91",
+      "bytes": 7859,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/ship.test.mjs",
+      "sha256": "2d9a46e540ba1d60ff80cd2d9322a2e8410577bcc3614f5348e858e2e6d0bfc5",
+      "bytes": 10219,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/ui-model.test.mjs",
+      "sha256": "0edd911c1a0ba5c03baee974cbfd6a7a6325a3b9843eb81fbcfe40a011e3f84b",
+      "bytes": 2657,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/warp-core.test.mjs",
+      "sha256": "7774e0f3dea0cbf17673caa7aab02649596194e5af12de2d7b56c07f13c3a7a0",
+      "bytes": 2601,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/world.test.mjs",
+      "sha256": "502099aa6b47f0fc465341fe1a455b449d3d83edbf6fcd28518d16a176838974",
+      "bytes": 10506,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "bcfe79060d4149a4300ca6a16281c33fb468363f7e1f99a7b66b0448ebedb52f",
+  "pin_verification": {
+    "archive_bytes": 2993174,
+    "archive_sha256": "094b81dcc83f1b33d5743c049da94fb1756179b62996ff5797dbfa2923ee3428",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "55feb15cf6d3c147504b8f5d68c2de8e8d995cac",
+    "verified_commit_marker": "55feb15cf6d3c147504b8f5d68c2de8e8d995cac"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "5c13088c1b0199508a7971fad0174a46e25ab6aede710b09b83d3d5515d6fcc2",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/ISSUE_TEMPLATE/realm-submission.yml",
+        "input_sha256": "7270a51084cebc36b0b3f30c7217614242674d00a8b7a9ade20ccc5f42e6c2d9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7270a51084cebc36b0b3f30c7217614242674d00a8b7a9ade20ccc5f42e6c2d9",
+        "source": ".github/ISSUE_TEMPLATE/realm-submission.yml",
+        "final_output_sha256": "7270a51084cebc36b0b3f30c7217614242674d00a8b7a9ade20ccc5f42e6c2d9",
+        "cli_destination": ".github/ISSUE_TEMPLATE/realm-submission.yml",
+        "previous_staging_sha256": "7270a51084cebc36b0b3f30c7217614242674d00a8b7a9ade20ccc5f42e6c2d9"
+      },
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "a4074ff1c813435cc2bc66546c92b32ea0d561fdba92b7878a073d5c84ec2cd3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a4074ff1c813435cc2bc66546c92b32ea0d561fdba92b7878a073d5c84ec2cd3",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "a4074ff1c813435cc2bc66546c92b32ea0d561fdba92b7878a073d5c84ec2cd3",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "a4074ff1c813435cc2bc66546c92b32ea0d561fdba92b7878a073d5c84ec2cd3"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "94de0726e4e4aae2f50a1914fab9e8adfab6944839a030712452852e2650c1fd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "94de0726e4e4aae2f50a1914fab9e8adfab6944839a030712452852e2650c1fd",
+        "source": ".gitignore",
+        "final_output_sha256": "94de0726e4e4aae2f50a1914fab9e8adfab6944839a030712452852e2650c1fd",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "94de0726e4e4aae2f50a1914fab9e8adfab6944839a030712452852e2650c1fd"
+      },
+      {
+        "destination": "CONTRIBUTING.md",
+        "input_sha256": "563c3ef775be0b57e2eb27621d97c18bc3cdd4e22eb7ad99d6555b3201f48194",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "563c3ef775be0b57e2eb27621d97c18bc3cdd4e22eb7ad99d6555b3201f48194",
+        "source": "CONTRIBUTING.md",
+        "final_output_sha256": "563c3ef775be0b57e2eb27621d97c18bc3cdd4e22eb7ad99d6555b3201f48194",
+        "cli_destination": "CONTRIBUTING.md",
+        "previous_staging_sha256": "563c3ef775be0b57e2eb27621d97c18bc3cdd4e22eb7ad99d6555b3201f48194"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "2200cac6dc8f7f8d9dc4015fdb5961843ebd797ab36dd66940019230c28d0f90",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "2200cac6dc8f7f8d9dc4015fdb5961843ebd797ab36dd66940019230c28d0f90",
+        "source": "LICENSE",
+        "final_output_sha256": "2200cac6dc8f7f8d9dc4015fdb5961843ebd797ab36dd66940019230c28d0f90",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "2200cac6dc8f7f8d9dc4015fdb5961843ebd797ab36dd66940019230c28d0f90"
+      },
+      {
+        "destination": "NOTICE.md",
+        "input_sha256": "c3e7a5843a860068ec23910b7a9b73a4e0d63c01a6cfa9c6503ae50bbf18a09b",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "c3e7a5843a860068ec23910b7a9b73a4e0d63c01a6cfa9c6503ae50bbf18a09b",
+        "source": "NOTICE.md",
+        "final_output_sha256": "c3e7a5843a860068ec23910b7a9b73a4e0d63c01a6cfa9c6503ae50bbf18a09b",
+        "cli_destination": "NOTICE.md",
+        "previous_staging_sha256": "c3e7a5843a860068ec23910b7a9b73a4e0d63c01a6cfa9c6503ae50bbf18a09b"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "75e8218165a917fbfa0945d3840a648d48e8807bf2a755a747ee3fb5de9111ea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b5405de984cf19848d640a5d66a078ca6215569135f71b223fc606e1ad4d56d8",
+        "source": "README.md",
+        "final_output_sha256": "b5405de984cf19848d640a5d66a078ca6215569135f71b223fc606e1ad4d56d8",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "b5405de984cf19848d640a5d66a078ca6215569135f71b223fc606e1ad4d56d8"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "b2b91a1a46e3d4bed483e70f96840256f01530bc71ddb7edc6f7c3dc94e21890",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4419f5abce6a0a01ec6448ebccea9f21ed430dca65aed5d1b9ee54bf3e3e2021",
+        "source": "SECURITY.md",
+        "final_output_sha256": "4419f5abce6a0a01ec6448ebccea9f21ed430dca65aed5d1b9ee54bf3e3e2021",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "4419f5abce6a0a01ec6448ebccea9f21ed430dca65aed5d1b9ee54bf3e3e2021"
+      },
+      {
+        "destination": "docs/images/catalog-banner.png",
+        "input_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "source": "_catalog_assets/docs/images/catalog-banner.png",
+        "final_output_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "cli_destination": "_catalog_assets/docs/images/catalog-banner.png",
+        "previous_staging_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "deduplicated_to_existing_source": true
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "c10d67c0f556db586afdbd229768bb1a0f6a563c569b4b34d5ab2735425538a5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca49f03b3d94cd167169cd0894a881bbe140a2ae50279d8fa80e6411306d6ef5",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "ca49f03b3d94cd167169cd0894a881bbe140a2ae50279d8fa80e6411306d6ef5",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "ca49f03b3d94cd167169cd0894a881bbe140a2ae50279d8fa80e6411306d6ef5"
+      },
+      {
+        "destination": "docs/architecture.md",
+        "input_sha256": "e881a89a7697d881d574f1d7cc47d54e8e574ff743697f48886d9f6826dbf339",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d89f28087eedf06dc3bd08ed44437ae30a34f6251a3c5e68ba91fe1d48ffa05f",
+        "source": "docs/architecture.md",
+        "final_output_sha256": "d89f28087eedf06dc3bd08ed44437ae30a34f6251a3c5e68ba91fe1d48ffa05f",
+        "cli_destination": "docs/architecture.md",
+        "previous_staging_sha256": "d89f28087eedf06dc3bd08ed44437ae30a34f6251a3c5e68ba91fe1d48ffa05f"
+      },
+      {
+        "destination": "docs/assets/Oxanium-OFL.txt",
+        "input_sha256": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b",
+        "source": "docs/assets/Oxanium-OFL.txt",
+        "final_output_sha256": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b",
+        "cli_destination": "docs/assets/Oxanium-OFL.txt",
+        "previous_staging_sha256": "fe17c0f2581d71b4e1ea7e636e7f4877c29223e11bb1dd1a871e8c3f2a86336b"
+      },
+      {
+        "destination": "docs/assets/Oxanium.woff2",
+        "input_sha256": "3301a72ebcb2fe6fbb1f399f5667d6cd77edccd10e9fb89139ebe65ab67e04aa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3301a72ebcb2fe6fbb1f399f5667d6cd77edccd10e9fb89139ebe65ab67e04aa",
+        "source": "docs/assets/Oxanium.woff2",
+        "final_output_sha256": "3301a72ebcb2fe6fbb1f399f5667d6cd77edccd10e9fb89139ebe65ab67e04aa",
+        "cli_destination": "docs/assets/Oxanium.woff2",
+        "previous_staging_sha256": "3301a72ebcb2fe6fbb1f399f5667d6cd77edccd10e9fb89139ebe65ab67e04aa"
+      },
+      {
+        "destination": "docs/images/catalog-banner.png",
+        "input_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "source": "docs/images/catalog-banner.png",
+        "final_output_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+        "cli_destination": "docs/images/catalog-banner.png",
+        "previous_staging_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f"
+      },
+      {
+        "destination": "docs/images/display-mode.png",
+        "input_sha256": "7b75cdf81160187d42e49f06ba645dca326c07e41fa90b557d37507b8e8765ad",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7b75cdf81160187d42e49f06ba645dca326c07e41fa90b557d37507b8e8765ad",
+        "source": "docs/images/display-mode.png",
+        "final_output_sha256": "7b75cdf81160187d42e49f06ba645dca326c07e41fa90b557d37507b8e8765ad",
+        "cli_destination": "docs/images/display-mode.png",
+        "previous_staging_sha256": "7b75cdf81160187d42e49f06ba645dca326c07e41fa90b557d37507b8e8765ad"
+      },
+      {
+        "destination": "docs/images/kitten-cafe-scene.png",
+        "input_sha256": "1173752ca6915056213f2c1314fbb3063e4e63586ebdfd4a4756deeedab87f3a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1173752ca6915056213f2c1314fbb3063e4e63586ebdfd4a4756deeedab87f3a",
+        "source": "docs/images/kitten-cafe-scene.png",
+        "final_output_sha256": "1173752ca6915056213f2c1314fbb3063e4e63586ebdfd4a4756deeedab87f3a",
+        "cli_destination": "docs/images/kitten-cafe-scene.png",
+        "previous_staging_sha256": "1173752ca6915056213f2c1314fbb3063e4e63586ebdfd4a4756deeedab87f3a"
+      },
+      {
+        "destination": "docs/images/kitten-cafe.png",
+        "input_sha256": "da858821ed81afdb1b60b59f46bd2519d64779fbe8e3c5c10e4a823bcdec2cbd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "da858821ed81afdb1b60b59f46bd2519d64779fbe8e3c5c10e4a823bcdec2cbd",
+        "source": "docs/images/kitten-cafe.png",
+        "final_output_sha256": "da858821ed81afdb1b60b59f46bd2519d64779fbe8e3c5c10e4a823bcdec2cbd",
+        "cli_destination": "docs/images/kitten-cafe.png",
+        "previous_staging_sha256": "da858821ed81afdb1b60b59f46bd2519d64779fbe8e3c5c10e4a823bcdec2cbd"
+      },
+      {
+        "destination": "docs/images/office-space-scene.png",
+        "input_sha256": "59013b4fb3f1a6c592ef72e499fb86f989e047ba8f2fa8c9b0d991c5b6f6ed2f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "59013b4fb3f1a6c592ef72e499fb86f989e047ba8f2fa8c9b0d991c5b6f6ed2f",
+        "source": "docs/images/office-space-scene.png",
+        "final_output_sha256": "59013b4fb3f1a6c592ef72e499fb86f989e047ba8f2fa8c9b0d991c5b6f6ed2f",
+        "cli_destination": "docs/images/office-space-scene.png",
+        "previous_staging_sha256": "59013b4fb3f1a6c592ef72e499fb86f989e047ba8f2fa8c9b0d991c5b6f6ed2f"
+      },
+      {
+        "destination": "docs/images/office-space.png",
+        "input_sha256": "f0cab289ba6b838dfa00c41cfa576933207ea9c928ecf7c7312b511566fe5469",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f0cab289ba6b838dfa00c41cfa576933207ea9c928ecf7c7312b511566fe5469",
+        "source": "docs/images/office-space.png",
+        "final_output_sha256": "f0cab289ba6b838dfa00c41cfa576933207ea9c928ecf7c7312b511566fe5469",
+        "cli_destination": "docs/images/office-space.png",
+        "previous_staging_sha256": "f0cab289ba6b838dfa00c41cfa576933207ea9c928ecf7c7312b511566fe5469"
+      },
+      {
+        "destination": "docs/images/pw-agents.png",
+        "input_sha256": "952ba4bff497ef594f36a93d5baac31944742ab51e56382df4af536a1930e015",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "952ba4bff497ef594f36a93d5baac31944742ab51e56382df4af536a1930e015",
+        "source": "docs/images/pw-agents.png",
+        "final_output_sha256": "952ba4bff497ef594f36a93d5baac31944742ab51e56382df4af536a1930e015",
+        "cli_destination": "docs/images/pw-agents.png",
+        "previous_staging_sha256": "952ba4bff497ef594f36a93d5baac31944742ab51e56382df4af536a1930e015"
+      },
+      {
+        "destination": "docs/images/social-preview.png",
+        "input_sha256": "155d76f61651f881152e1beb0a8a3507596ff3d5f0dd49db4fc7b6431a953256",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "155d76f61651f881152e1beb0a8a3507596ff3d5f0dd49db4fc7b6431a953256",
+        "source": "docs/images/social-preview.png",
+        "final_output_sha256": "155d76f61651f881152e1beb0a8a3507596ff3d5f0dd49db4fc7b6431a953256",
+        "cli_destination": "docs/images/social-preview.png",
+        "previous_staging_sha256": "155d76f61651f881152e1beb0a8a3507596ff3d5f0dd49db4fc7b6431a953256"
+      },
+      {
+        "destination": "docs/images/starter-realms.png",
+        "input_sha256": "fbb3c6a0f2a75563975da43bc5dfb862ce7fa4a94546f1e8f68c7f78a31dccf7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fbb3c6a0f2a75563975da43bc5dfb862ce7fa4a94546f1e8f68c7f78a31dccf7",
+        "source": "docs/images/starter-realms.png",
+        "final_output_sha256": "fbb3c6a0f2a75563975da43bc5dfb862ce7fa4a94546f1e8f68c7f78a31dccf7",
+        "cli_destination": "docs/images/starter-realms.png",
+        "previous_staging_sha256": "fbb3c6a0f2a75563975da43bc5dfb862ce7fa4a94546f1e8f68c7f78a31dccf7"
+      },
+      {
+        "destination": "docs/images/tng-bridge-scene.png",
+        "input_sha256": "0be388fdc7608fcfe3aa2408a53648dd514b3f743d384099cc81b59a54e99739",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0be388fdc7608fcfe3aa2408a53648dd514b3f743d384099cc81b59a54e99739",
+        "source": "docs/images/tng-bridge-scene.png",
+        "final_output_sha256": "0be388fdc7608fcfe3aa2408a53648dd514b3f743d384099cc81b59a54e99739",
+        "cli_destination": "docs/images/tng-bridge-scene.png",
+        "previous_staging_sha256": "0be388fdc7608fcfe3aa2408a53648dd514b3f743d384099cc81b59a54e99739"
+      },
+      {
+        "destination": "docs/images/tng-bridge.png",
+        "input_sha256": "6ef07e4b87dcdbb1c885751fc208b0b65b2d0dc888de14d7c1f16802c012e14d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6ef07e4b87dcdbb1c885751fc208b0b65b2d0dc888de14d7c1f16802c012e14d",
+        "source": "docs/images/tng-bridge.png",
+        "final_output_sha256": "6ef07e4b87dcdbb1c885751fc208b0b65b2d0dc888de14d7c1f16802c012e14d",
+        "cli_destination": "docs/images/tng-bridge.png",
+        "previous_staging_sha256": "6ef07e4b87dcdbb1c885751fc208b0b65b2d0dc888de14d7c1f16802c012e14d"
+      },
+      {
+        "destination": "docs/images/tng-engineering-scene.png",
+        "input_sha256": "3d8ff1c14b552cdf848af5e082886d2ee51666acb63834372226b0d42daa5890",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3d8ff1c14b552cdf848af5e082886d2ee51666acb63834372226b0d42daa5890",
+        "source": "docs/images/tng-engineering-scene.png",
+        "final_output_sha256": "3d8ff1c14b552cdf848af5e082886d2ee51666acb63834372226b0d42daa5890",
+        "cli_destination": "docs/images/tng-engineering-scene.png",
+        "previous_staging_sha256": "3d8ff1c14b552cdf848af5e082886d2ee51666acb63834372226b0d42daa5890"
+      },
+      {
+        "destination": "docs/images/tng-engineering.png",
+        "input_sha256": "b9a26b7b1ee4a9d51626953bc0f0e12e40f885d6387c97855f858fea01ddbff5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b9a26b7b1ee4a9d51626953bc0f0e12e40f885d6387c97855f858fea01ddbff5",
+        "source": "docs/images/tng-engineering.png",
+        "final_output_sha256": "b9a26b7b1ee4a9d51626953bc0f0e12e40f885d6387c97855f858fea01ddbff5",
+        "cli_destination": "docs/images/tng-engineering.png",
+        "previous_staging_sha256": "b9a26b7b1ee4a9d51626953bc0f0e12e40f885d6387c97855f858fea01ddbff5"
+      },
+      {
+        "destination": "docs/images/tng-ship-feature.png",
+        "input_sha256": "5954ae885a0dd30b39c6ee32a74ebfb9cdafff3c7741b3e85e920cb525ee54f3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5954ae885a0dd30b39c6ee32a74ebfb9cdafff3c7741b3e85e920cb525ee54f3",
+        "source": "docs/images/tng-ship-feature.png",
+        "final_output_sha256": "5954ae885a0dd30b39c6ee32a74ebfb9cdafff3c7741b3e85e920cb525ee54f3",
+        "cli_destination": "docs/images/tng-ship-feature.png",
+        "previous_staging_sha256": "5954ae885a0dd30b39c6ee32a74ebfb9cdafff3c7741b3e85e920cb525ee54f3"
+      },
+      {
+        "destination": "docs/install.md",
+        "input_sha256": "d425280e78afc44573d3b2f9e336c53db59f2fd3af094903276917fa8313475e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "98e4680d330668d4416895e4aa6f0041a35df6038b4aaea126ee217df3efe4a1",
+        "source": "docs/install.md",
+        "final_output_sha256": "98e4680d330668d4416895e4aa6f0041a35df6038b4aaea126ee217df3efe4a1",
+        "cli_destination": "docs/install.md",
+        "previous_staging_sha256": "98e4680d330668d4416895e4aa6f0041a35df6038b4aaea126ee217df3efe4a1"
+      },
+      {
+        "destination": "docs/media.md",
+        "input_sha256": "1114c8c5efd38f14d3fecad5efbafec23b68ce34480533bf2867c2da5f0a2cd1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "590e1e02c04efa566f5ff9290569bd54a7e5c8b1071467a42f8788fce0625ced",
+        "source": "docs/media.md",
+        "final_output_sha256": "5c61250884f1d0f2a9db0c105f26393f730a80c23dde9c7b35d1effb641b6e1b",
+        "cli_destination": "docs/media.md",
+        "previous_staging_sha256": "590e1e02c04efa566f5ff9290569bd54a7e5c8b1071467a42f8788fce0625ced"
+      },
+      {
+        "destination": "docs/realms.md",
+        "input_sha256": "d3e732b7a4976bef0e1297a081b05a4190732ceaa34abc6067369cbedd31db2d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7ddc5679337f187abfec65a87eb0e3ac10a52bea1cdcc26dbc4419ef521b82a0",
+        "source": "docs/realms.md",
+        "final_output_sha256": "7ddc5679337f187abfec65a87eb0e3ac10a52bea1cdcc26dbc4419ef521b82a0",
+        "cli_destination": "docs/realms.md",
+        "previous_staging_sha256": "7ddc5679337f187abfec65a87eb0e3ac10a52bea1cdcc26dbc4419ef521b82a0"
+      },
+      {
+        "destination": "docs/social-preview.html",
+        "input_sha256": "3ef51f2b237e1b88af6f1dbf706073caa9c8d92cf3451b921882cb2850f509de",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b01023c630be396d7c15e5f150b20f27581c66ee3ff3158303527424ab67fd5a",
+        "source": "docs/social-preview.html",
+        "final_output_sha256": "b01023c630be396d7c15e5f150b20f27581c66ee3ff3158303527424ab67fd5a",
+        "cli_destination": "docs/social-preview.html",
+        "previous_staging_sha256": "b01023c630be396d7c15e5f150b20f27581c66ee3ff3158303527424ab67fd5a"
+      },
+      {
+        "destination": "package-lock.json",
+        "input_sha256": "b141a5c83e5ecf8f44009d731b161c6032723d20f11db1600cca3b6365da963a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b141a5c83e5ecf8f44009d731b161c6032723d20f11db1600cca3b6365da963a",
+        "source": "package-lock.json",
+        "final_output_sha256": "b141a5c83e5ecf8f44009d731b161c6032723d20f11db1600cca3b6365da963a",
+        "cli_destination": "package-lock.json",
+        "previous_staging_sha256": "b141a5c83e5ecf8f44009d731b161c6032723d20f11db1600cca3b6365da963a"
+      },
+      {
+        "destination": "package.json",
+        "input_sha256": "9fc72be1acd394077fd9e3940c1e7fcc04ec53592a5a089b3cc376503a7d594d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "84220cb39ea6082edf2afc447f7c1aec81655d4f55e330070e11e66ae79d42cf",
+        "source": "package.json",
+        "final_output_sha256": "84220cb39ea6082edf2afc447f7c1aec81655d4f55e330070e11e66ae79d42cf",
+        "cli_destination": "package.json",
+        "previous_staging_sha256": "84220cb39ea6082edf2afc447f7c1aec81655d4f55e330070e11e66ae79d42cf"
+      },
+      {
+        "destination": "plugin.js",
+        "input_sha256": "c10d67c0f556db586afdbd229768bb1a0f6a563c569b4b34d5ab2735425538a5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca49f03b3d94cd167169cd0894a881bbe140a2ae50279d8fa80e6411306d6ef5",
+        "source": "plugin.js",
+        "final_output_sha256": "ca49f03b3d94cd167169cd0894a881bbe140a2ae50279d8fa80e6411306d6ef5",
+        "cli_destination": "plugin.js",
+        "previous_staging_sha256": "ca49f03b3d94cd167169cd0894a881bbe140a2ae50279d8fa80e6411306d6ef5"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "16d7bcd5377354929236c5bedd44d4e97acdb54de24b3ea9639cdeb0cefb98a3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "62279c11823b08102c9c7e6e9816d5952b493e4f93920339907cf7e56ecbd0c8",
+        "source": "plugin.yaml",
+        "final_output_sha256": "62279c11823b08102c9c7e6e9816d5952b493e4f93920339907cf7e56ecbd0c8",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "62279c11823b08102c9c7e6e9816d5952b493e4f93920339907cf7e56ecbd0c8"
+      },
+      {
+        "destination": "preview/index.html",
+        "input_sha256": "5edac15df462c78e607c303f6200a928c20878d1bf51f424b7bae5b930a65301",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5edac15df462c78e607c303f6200a928c20878d1bf51f424b7bae5b930a65301",
+        "source": "preview/index.html",
+        "final_output_sha256": "5edac15df462c78e607c303f6200a928c20878d1bf51f424b7bae5b930a65301",
+        "cli_destination": "preview/index.html",
+        "previous_staging_sha256": "5edac15df462c78e607c303f6200a928c20878d1bf51f424b7bae5b930a65301"
+      },
+      {
+        "destination": "preview/main.js",
+        "input_sha256": "fbc0d6cd7a7d8d6c4aaa64df05fd3a1af90c860afe180e404cb4836fd2825dc9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fbc0d6cd7a7d8d6c4aaa64df05fd3a1af90c860afe180e404cb4836fd2825dc9",
+        "source": "preview/main.js",
+        "final_output_sha256": "fbc0d6cd7a7d8d6c4aaa64df05fd3a1af90c860afe180e404cb4836fd2825dc9",
+        "cli_destination": "preview/main.js",
+        "previous_staging_sha256": "fbc0d6cd7a7d8d6c4aaa64df05fd3a1af90c860afe180e404cb4836fd2825dc9"
+      },
+      {
+        "destination": "preview/sdk.js",
+        "input_sha256": "0e2130a54f6aad4f998d2f3f037579e7483f4cbbfcbc5fb9cc23ad5ee5bf70a6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bb8b785661ee6a755e412ab49d1013f38905405dcecadf7e9454978fdcebdd3f",
+        "source": "preview/sdk.js",
+        "final_output_sha256": "bb8b785661ee6a755e412ab49d1013f38905405dcecadf7e9454978fdcebdd3f",
+        "cli_destination": "preview/sdk.js",
+        "previous_staging_sha256": "bb8b785661ee6a755e412ab49d1013f38905405dcecadf7e9454978fdcebdd3f"
+      },
+      {
+        "destination": "realms/README.md",
+        "input_sha256": "ea1ef7e82bedf026418f80672824306a80c40677dcc7c0b7594d9bd2af913eca",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d52cb3d31aa588d094b117a6a5a2a8d81591623148d7ce074309716efa98dd6c",
+        "source": "realms/README.md",
+        "final_output_sha256": "d52cb3d31aa588d094b117a6a5a2a8d81591623148d7ce074309716efa98dd6c",
+        "cli_destination": "realms/README.md",
+        "previous_staging_sha256": "d52cb3d31aa588d094b117a6a5a2a8d81591623148d7ce074309716efa98dd6c"
+      },
+      {
+        "destination": "realms/catalog.json",
+        "input_sha256": "35618b3df9eaa03c343fa84fa7adaf13aa545fec99ebb260b9c3fb98dfb002ec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "35618b3df9eaa03c343fa84fa7adaf13aa545fec99ebb260b9c3fb98dfb002ec",
+        "source": "realms/catalog.json",
+        "final_output_sha256": "35618b3df9eaa03c343fa84fa7adaf13aa545fec99ebb260b9c3fb98dfb002ec",
+        "cli_destination": "realms/catalog.json",
+        "previous_staging_sha256": "35618b3df9eaa03c343fa84fa7adaf13aa545fec99ebb260b9c3fb98dfb002ec"
+      },
+      {
+        "destination": "realms/pd-kitten-cafe.pwrealm.json",
+        "input_sha256": "feba568dc3cf0a7b91f6de935a10a2b76237ed5369cb40471f114dee3db2642c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "feba568dc3cf0a7b91f6de935a10a2b76237ed5369cb40471f114dee3db2642c",
+        "source": "realms/pd-kitten-cafe.pwrealm.json",
+        "final_output_sha256": "feba568dc3cf0a7b91f6de935a10a2b76237ed5369cb40471f114dee3db2642c",
+        "cli_destination": "realms/pd-kitten-cafe.pwrealm.json",
+        "previous_staging_sha256": "feba568dc3cf0a7b91f6de935a10a2b76237ed5369cb40471f114dee3db2642c"
+      },
+      {
+        "destination": "realms/pd-office-space.pwrealm.json",
+        "input_sha256": "61548551afe6387a5d18968703794bdf98b82648ef12508ea774a0741e0e6ec6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "61548551afe6387a5d18968703794bdf98b82648ef12508ea774a0741e0e6ec6",
+        "source": "realms/pd-office-space.pwrealm.json",
+        "final_output_sha256": "bc345543921ff13c9c6cad50d5c2ba80a00587db7e4b08eb7327417b8a3c7b83",
+        "cli_destination": "realms/pd-office-space.pwrealm.json",
+        "previous_staging_sha256": "61548551afe6387a5d18968703794bdf98b82648ef12508ea774a0741e0e6ec6"
+      },
+      {
+        "destination": "realms/pd-tng-bridge.pwrealm.json",
+        "input_sha256": "ec4f662cfbf817e6c189166ca6c90986c1838cb0d46c590369f0b478d7845a57",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec4f662cfbf817e6c189166ca6c90986c1838cb0d46c590369f0b478d7845a57",
+        "source": "realms/pd-tng-bridge.pwrealm.json",
+        "final_output_sha256": "ec4f662cfbf817e6c189166ca6c90986c1838cb0d46c590369f0b478d7845a57",
+        "cli_destination": "realms/pd-tng-bridge.pwrealm.json",
+        "previous_staging_sha256": "ec4f662cfbf817e6c189166ca6c90986c1838cb0d46c590369f0b478d7845a57"
+      },
+      {
+        "destination": "scripts/build.mjs",
+        "input_sha256": "f09331f34bdf9cfec8b8a4aec45bf6265299b6065488e06a38540e005f5dfcd5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "49987746094cbffa71f3aca2c86b4796c2f18296d89d56fc1b70aebb516845d8",
+        "source": "scripts/build.mjs",
+        "final_output_sha256": "49987746094cbffa71f3aca2c86b4796c2f18296d89d56fc1b70aebb516845d8",
+        "cli_destination": "scripts/build.mjs",
+        "previous_staging_sha256": "49987746094cbffa71f3aca2c86b4796c2f18296d89d56fc1b70aebb516845d8"
+      },
+      {
+        "destination": "scripts/capture-demo.mjs",
+        "input_sha256": "1fc6eec99dad4577796c9b0632e5e1affafb885c6cd7f511659e48d079f47ea5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1fc6eec99dad4577796c9b0632e5e1affafb885c6cd7f511659e48d079f47ea5",
+        "source": "scripts/capture-demo.mjs",
+        "final_output_sha256": "1fc6eec99dad4577796c9b0632e5e1affafb885c6cd7f511659e48d079f47ea5",
+        "cli_destination": "scripts/capture-demo.mjs",
+        "previous_staging_sha256": "1fc6eec99dad4577796c9b0632e5e1affafb885c6cd7f511659e48d079f47ea5"
+      },
+      {
+        "destination": "scripts/capture-repo-media.mjs",
+        "input_sha256": "4e4a000da4fba551f51ebb040b47a8406fa7db9bb8cfd495f85e7ad56a0aa493",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23ad264ea2b12d73edf2ec792fdb8948e2afc21499d373696775907bb73673ca",
+        "source": "scripts/capture-repo-media.mjs",
+        "final_output_sha256": "23ad264ea2b12d73edf2ec792fdb8948e2afc21499d373696775907bb73673ca",
+        "cli_destination": "scripts/capture-repo-media.mjs",
+        "previous_staging_sha256": "23ad264ea2b12d73edf2ec792fdb8948e2afc21499d373696775907bb73673ca"
+      },
+      {
+        "destination": "scripts/compose-catalog-media.mjs",
+        "input_sha256": "da95fccf845ca9a4472cbf354e5c60168753f12ecbd32ce37a28dd20afae92cc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "538a3c8f56640a748c184371513fce40deb043de77755dbb0c3ee8da4092f701",
+        "source": "scripts/compose-catalog-media.mjs",
+        "final_output_sha256": "538a3c8f56640a748c184371513fce40deb043de77755dbb0c3ee8da4092f701",
+        "cli_destination": "scripts/compose-catalog-media.mjs",
+        "previous_staging_sha256": "538a3c8f56640a748c184371513fce40deb043de77755dbb0c3ee8da4092f701"
+      },
+      {
+        "destination": "scripts/compose-tng-feature.mjs",
+        "input_sha256": "74e2dcbca4219f6df3165f5c005e5de47a23b1c2a49a85ef4307480df528fded",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "74e2dcbca4219f6df3165f5c005e5de47a23b1c2a49a85ef4307480df528fded",
+        "source": "scripts/compose-tng-feature.mjs",
+        "final_output_sha256": "74e2dcbca4219f6df3165f5c005e5de47a23b1c2a49a85ef4307480df528fded",
+        "cli_destination": "scripts/compose-tng-feature.mjs",
+        "previous_staging_sha256": "74e2dcbca4219f6df3165f5c005e5de47a23b1c2a49a85ef4307480df528fded"
+      },
+      {
+        "destination": "scripts/export-realms.mjs",
+        "input_sha256": "cc22324ca0e52aa77378e6c1b9c18b040b23b8fc64f388d342903f5f4d22f6cc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cc22324ca0e52aa77378e6c1b9c18b040b23b8fc64f388d342903f5f4d22f6cc",
+        "source": "scripts/export-realms.mjs",
+        "final_output_sha256": "cc22324ca0e52aa77378e6c1b9c18b040b23b8fc64f388d342903f5f4d22f6cc",
+        "cli_destination": "scripts/export-realms.mjs",
+        "previous_staging_sha256": "cc22324ca0e52aa77378e6c1b9c18b040b23b8fc64f388d342903f5f4d22f6cc"
+      },
+      {
+        "destination": "scripts/install.mjs",
+        "input_sha256": "1989ad2593663132d508486b591dae6ffb48f5b641836cab8a49d597076a73a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "aa4f7e5dc3362cafc25b3d49b81c5056ac2310585c86ed709f355ba5541c0eaf",
+        "source": "scripts/install.mjs",
+        "final_output_sha256": "aa4f7e5dc3362cafc25b3d49b81c5056ac2310585c86ed709f355ba5541c0eaf",
+        "cli_destination": "scripts/install.mjs",
+        "previous_staging_sha256": "aa4f7e5dc3362cafc25b3d49b81c5056ac2310585c86ed709f355ba5541c0eaf"
+      },
+      {
+        "destination": "scripts/media-assets/tng-title.png",
+        "input_sha256": "32a586f09f3ec806afb6ac1acff640c22cb5efe82a95e79bdf805333c5bba469",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "32a586f09f3ec806afb6ac1acff640c22cb5efe82a95e79bdf805333c5bba469",
+        "source": "scripts/media-assets/tng-title.png",
+        "final_output_sha256": "32a586f09f3ec806afb6ac1acff640c22cb5efe82a95e79bdf805333c5bba469",
+        "cli_destination": "scripts/media-assets/tng-title.png",
+        "previous_staging_sha256": "32a586f09f3ec806afb6ac1acff640c22cb5efe82a95e79bdf805333c5bba469"
+      },
+      {
+        "destination": "scripts/media-assets/tng-transporter.png",
+        "input_sha256": "60c9e9d4a9b57cc5e13485612e3be319bdff7deee8e7efea6c3c2e318798523b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "60c9e9d4a9b57cc5e13485612e3be319bdff7deee8e7efea6c3c2e318798523b",
+        "source": "scripts/media-assets/tng-transporter.png",
+        "final_output_sha256": "60c9e9d4a9b57cc5e13485612e3be319bdff7deee8e7efea6c3c2e318798523b",
+        "cli_destination": "scripts/media-assets/tng-transporter.png",
+        "previous_staging_sha256": "60c9e9d4a9b57cc5e13485612e3be319bdff7deee8e7efea6c3c2e318798523b"
+      },
+      {
+        "destination": "scripts/preview.mjs",
+        "input_sha256": "3ecd27909cc11bc8b43d7119871a69e9d57d92e605e4ba70890d378b3472cd35",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3ecd27909cc11bc8b43d7119871a69e9d57d92e605e4ba70890d378b3472cd35",
+        "source": "scripts/preview.mjs",
+        "final_output_sha256": "3ecd27909cc11bc8b43d7119871a69e9d57d92e605e4ba70890d378b3472cd35",
+        "cli_destination": "scripts/preview.mjs",
+        "previous_staging_sha256": "3ecd27909cc11bc8b43d7119871a69e9d57d92e605e4ba70890d378b3472cd35"
+      },
+      {
+        "destination": "skills/pixel-worlds-creator/SKILL.md",
+        "input_sha256": "2886fa928be235411dc0397b2ea809736d6c97f54cb1df69d1e7c202a75ece34",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9b092e5dec6d4530761ae25e13c54152dbe78fcda69364cb66a8215b6f05dc0a",
+        "source": "skills/pixel-worlds-creator/SKILL.md",
+        "final_output_sha256": "9b092e5dec6d4530761ae25e13c54152dbe78fcda69364cb66a8215b6f05dc0a",
+        "cli_destination": "skills/pixel-worlds-creator/SKILL.md",
+        "previous_staging_sha256": "9b092e5dec6d4530761ae25e13c54152dbe78fcda69364cb66a8215b6f05dc0a"
+      },
+      {
+        "destination": "src/app.js",
+        "input_sha256": "620c2022d3e6be0df937cab8a4eae9465377073abc0c772aab3a542ddecad185",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cc4ff5ecef60fadc21ab1c44208af07328eaaa496147c05fbb1bf268387953b9",
+        "source": "src/app.js",
+        "final_output_sha256": "cc4ff5ecef60fadc21ab1c44208af07328eaaa496147c05fbb1bf268387953b9",
+        "cli_destination": "src/app.js",
+        "previous_staging_sha256": "cc4ff5ecef60fadc21ab1c44208af07328eaaa496147c05fbb1bf268387953b9"
+      },
+      {
+        "destination": "src/art/bridge-scene.js",
+        "input_sha256": "a67e6195b608c8d9ede776059cb7e522df01c6eb40b78cf655af8f5d85e2ecaa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a67e6195b608c8d9ede776059cb7e522df01c6eb40b78cf655af8f5d85e2ecaa",
+        "source": "src/art/bridge-scene.js",
+        "final_output_sha256": "a67e6195b608c8d9ede776059cb7e522df01c6eb40b78cf655af8f5d85e2ecaa",
+        "cli_destination": "src/art/bridge-scene.js",
+        "previous_staging_sha256": "a67e6195b608c8d9ede776059cb7e522df01c6eb40b78cf655af8f5d85e2ecaa"
+      },
+      {
+        "destination": "src/art/characters.js",
+        "input_sha256": "59cbbf260607a09ceaaad6f81ad33d3ae100103778464963af4b971cf49e46dc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "59cbbf260607a09ceaaad6f81ad33d3ae100103778464963af4b971cf49e46dc",
+        "source": "src/art/characters.js",
+        "final_output_sha256": "59cbbf260607a09ceaaad6f81ad33d3ae100103778464963af4b971cf49e46dc",
+        "cli_destination": "src/art/characters.js",
+        "previous_staging_sha256": "59cbbf260607a09ceaaad6f81ad33d3ae100103778464963af4b971cf49e46dc"
+      },
+      {
+        "destination": "src/art/engineering-scene.js",
+        "input_sha256": "8f4e353780f0a3b252008709c11401af37b543dd58b99e40324e346151e7ca86",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8f4e353780f0a3b252008709c11401af37b543dd58b99e40324e346151e7ca86",
+        "source": "src/art/engineering-scene.js",
+        "final_output_sha256": "8f4e353780f0a3b252008709c11401af37b543dd58b99e40324e346151e7ca86",
+        "cli_destination": "src/art/engineering-scene.js",
+        "previous_staging_sha256": "8f4e353780f0a3b252008709c11401af37b543dd58b99e40324e346151e7ca86"
+      },
+      {
+        "destination": "src/art/lcars.js",
+        "input_sha256": "29cb27db83e23999c29a15a2eccad98f6b8bce3fbbd2771dc9e7c6582bbbce41",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "29cb27db83e23999c29a15a2eccad98f6b8bce3fbbd2771dc9e7c6582bbbce41",
+        "source": "src/art/lcars.js",
+        "final_output_sha256": "29cb27db83e23999c29a15a2eccad98f6b8bce3fbbd2771dc9e7c6582bbbce41",
+        "cli_destination": "src/art/lcars.js",
+        "previous_staging_sha256": "29cb27db83e23999c29a15a2eccad98f6b8bce3fbbd2771dc9e7c6582bbbce41"
+      },
+      {
+        "destination": "src/art/pixels.js",
+        "input_sha256": "13dacc55d3a66c74f06d7f95899c6ea9726e3f384b7e071b2b30cae7442aca23",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "13dacc55d3a66c74f06d7f95899c6ea9726e3f384b7e071b2b30cae7442aca23",
+        "source": "src/art/pixels.js",
+        "final_output_sha256": "13dacc55d3a66c74f06d7f95899c6ea9726e3f384b7e071b2b30cae7442aca23",
+        "cli_destination": "src/art/pixels.js",
+        "previous_staging_sha256": "13dacc55d3a66c74f06d7f95899c6ea9726e3f384b7e071b2b30cae7442aca23"
+      },
+      {
+        "destination": "src/art/scenes.js",
+        "input_sha256": "ee435c99de2746f4d5441961e42df5ae7b32401c7692ff880c98b34a8131b147",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ee435c99de2746f4d5441961e42df5ae7b32401c7692ff880c98b34a8131b147",
+        "source": "src/art/scenes.js",
+        "final_output_sha256": "ee435c99de2746f4d5441961e42df5ae7b32401c7692ff880c98b34a8131b147",
+        "cli_destination": "src/art/scenes.js",
+        "previous_staging_sha256": "ee435c99de2746f4d5441961e42df5ae7b32401c7692ff880c98b34a8131b147"
+      },
+      {
+        "destination": "src/art/ship-effects.js",
+        "input_sha256": "11f368b4adad8f936ae26761bc95b4b62618d621bc89fb5e9edf3302f935e0d6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "11f368b4adad8f936ae26761bc95b4b62618d621bc89fb5e9edf3302f935e0d6",
+        "source": "src/art/ship-effects.js",
+        "final_output_sha256": "11f368b4adad8f936ae26761bc95b4b62618d621bc89fb5e9edf3302f935e0d6",
+        "cli_destination": "src/art/ship-effects.js",
+        "previous_staging_sha256": "11f368b4adad8f936ae26761bc95b4b62618d621bc89fb5e9edf3302f935e0d6"
+      },
+      {
+        "destination": "src/art/warp-core.js",
+        "input_sha256": "cb3c7bafa2968a0433cc7ad587b8421721b0607ea5ddc4d4d2289f09ca0f434e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cb3c7bafa2968a0433cc7ad587b8421721b0607ea5ddc4d4d2289f09ca0f434e",
+        "source": "src/art/warp-core.js",
+        "final_output_sha256": "cb3c7bafa2968a0433cc7ad587b8421721b0607ea5ddc4d4d2289f09ca0f434e",
+        "cli_destination": "src/art/warp-core.js",
+        "previous_staging_sha256": "cb3c7bafa2968a0433cc7ad587b8421721b0607ea5ddc4d4d2289f09ca0f434e"
+      },
+      {
+        "destination": "src/bridge.js",
+        "input_sha256": "cb9d7d765f23076f66e03ab9aa35e5952f14f633a86e3884ee46e2f871dd7174",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "79b6cb598faaf186c860ad7b4b77f9fd3d97e7a2457d4f616a03568a0214e122",
+        "source": "src/bridge.js",
+        "final_output_sha256": "79b6cb598faaf186c860ad7b4b77f9fd3d97e7a2457d4f616a03568a0214e122",
+        "cli_destination": "src/bridge.js",
+        "previous_staging_sha256": "79b6cb598faaf186c860ad7b4b77f9fd3d97e7a2457d4f616a03568a0214e122"
+      },
+      {
+        "destination": "src/plugin.js",
+        "input_sha256": "0044a7d6a633e0ca000be22c2dba69f6e53ce4104a58d0665e1313c90dbc3d12",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3a8667a4fab58b64d329f00aa0cde9211a13247d5bbc765c5aa5a620dc14aa77",
+        "source": "src/plugin.js",
+        "final_output_sha256": "3a8667a4fab58b64d329f00aa0cde9211a13247d5bbc765c5aa5a620dc14aa77",
+        "cli_destination": "src/plugin.js",
+        "previous_staging_sha256": "3a8667a4fab58b64d329f00aa0cde9211a13247d5bbc765c5aa5a620dc14aa77"
+      },
+      {
+        "destination": "src/realm-packages.js",
+        "input_sha256": "81e79dbee7f5570cee5d1c3c5b119f01546c0145dc3a3a262972bf7ebcbdef55",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "81e79dbee7f5570cee5d1c3c5b119f01546c0145dc3a3a262972bf7ebcbdef55",
+        "source": "src/realm-packages.js",
+        "final_output_sha256": "81e79dbee7f5570cee5d1c3c5b119f01546c0145dc3a3a262972bf7ebcbdef55",
+        "cli_destination": "src/realm-packages.js",
+        "previous_staging_sha256": "81e79dbee7f5570cee5d1c3c5b119f01546c0145dc3a3a262972bf7ebcbdef55"
+      },
+      {
+        "destination": "src/runtime.js",
+        "input_sha256": "06ac69334acada477934b760a6c9e99c74fd7a3680da5a2b391e54fd8f2e3ad7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "76f8942fa15a6f7a50bfe80c98fe71bd72e38fb9b960df762fc19e51e9e7faef",
+        "source": "src/runtime.js",
+        "final_output_sha256": "76f8942fa15a6f7a50bfe80c98fe71bd72e38fb9b960df762fc19e51e9e7faef",
+        "cli_destination": "src/runtime.js",
+        "previous_staging_sha256": "76f8942fa15a6f7a50bfe80c98fe71bd72e38fb9b960df762fc19e51e9e7faef"
+      },
+      {
+        "destination": "src/ship-controls.js",
+        "input_sha256": "a195ec629c9975bb708e4bc08610301669c93c90b5d5fe55270308ffd9decd26",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b6613e4f48a55118e3ec6c759a6d38cd96e012ec5ebe9c91aaae933fea1d0e94",
+        "source": "src/ship-controls.js",
+        "final_output_sha256": "b6613e4f48a55118e3ec6c759a6d38cd96e012ec5ebe9c91aaae933fea1d0e94",
+        "cli_destination": "src/ship-controls.js",
+        "previous_staging_sha256": "b6613e4f48a55118e3ec6c759a6d38cd96e012ec5ebe9c91aaae933fea1d0e94"
+      },
+      {
+        "destination": "src/ship-layout.js",
+        "input_sha256": "335b16618e0abc377af4136c4fc8ee7ad8561ad963f4925557e265b02cd964d2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "335b16618e0abc377af4136c4fc8ee7ad8561ad963f4925557e265b02cd964d2",
+        "source": "src/ship-layout.js",
+        "final_output_sha256": "335b16618e0abc377af4136c4fc8ee7ad8561ad963f4925557e265b02cd964d2",
+        "cli_destination": "src/ship-layout.js",
+        "previous_staging_sha256": "335b16618e0abc377af4136c4fc8ee7ad8561ad963f4925557e265b02cd964d2"
+      },
+      {
+        "destination": "src/ship-styles.js",
+        "input_sha256": "5f34ef822b37ab4289361c7e742aa2e01d1dc48c377998fb1b02e9b6cb84c571",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5f34ef822b37ab4289361c7e742aa2e01d1dc48c377998fb1b02e9b6cb84c571",
+        "source": "src/ship-styles.js",
+        "final_output_sha256": "5f34ef822b37ab4289361c7e742aa2e01d1dc48c377998fb1b02e9b6cb84c571",
+        "cli_destination": "src/ship-styles.js",
+        "previous_staging_sha256": "5f34ef822b37ab4289361c7e742aa2e01d1dc48c377998fb1b02e9b6cb84c571"
+      },
+      {
+        "destination": "src/ship.js",
+        "input_sha256": "9241c68846722f38be46c05a38fd2540976dd2c619606a6ddfaa56b127e2e74d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9241c68846722f38be46c05a38fd2540976dd2c619606a6ddfaa56b127e2e74d",
+        "source": "src/ship.js",
+        "final_output_sha256": "9241c68846722f38be46c05a38fd2540976dd2c619606a6ddfaa56b127e2e74d",
+        "cli_destination": "src/ship.js",
+        "previous_staging_sha256": "9241c68846722f38be46c05a38fd2540976dd2c619606a6ddfaa56b127e2e74d"
+      },
+      {
+        "destination": "src/styles.js",
+        "input_sha256": "25a0311feb216b29658cd8032d4184c4e4cfb40a1f0a736f3d5787019ce5c4b9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "25a0311feb216b29658cd8032d4184c4e4cfb40a1f0a736f3d5787019ce5c4b9",
+        "source": "src/styles.js",
+        "final_output_sha256": "25a0311feb216b29658cd8032d4184c4e4cfb40a1f0a736f3d5787019ce5c4b9",
+        "cli_destination": "src/styles.js",
+        "previous_staging_sha256": "25a0311feb216b29658cd8032d4184c4e4cfb40a1f0a736f3d5787019ce5c4b9"
+      },
+      {
+        "destination": "src/ui-model.js",
+        "input_sha256": "576e59823507e5e9ccc5aaff50f7d896ed0b35abf0c0f077680ab32eabed708f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "576e59823507e5e9ccc5aaff50f7d896ed0b35abf0c0f077680ab32eabed708f",
+        "source": "src/ui-model.js",
+        "final_output_sha256": "576e59823507e5e9ccc5aaff50f7d896ed0b35abf0c0f077680ab32eabed708f",
+        "cli_destination": "src/ui-model.js",
+        "previous_staging_sha256": "576e59823507e5e9ccc5aaff50f7d896ed0b35abf0c0f077680ab32eabed708f"
+      },
+      {
+        "destination": "src/world.js",
+        "input_sha256": "b31e6711a94b7df6bba5e99660fa8ab66dfba9b5897ad741827a71acd6d4b915",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b31e6711a94b7df6bba5e99660fa8ab66dfba9b5897ad741827a71acd6d4b915",
+        "source": "src/world.js",
+        "final_output_sha256": "b31e6711a94b7df6bba5e99660fa8ab66dfba9b5897ad741827a71acd6d4b915",
+        "cli_destination": "src/world.js",
+        "previous_staging_sha256": "b31e6711a94b7df6bba5e99660fa8ab66dfba9b5897ad741827a71acd6d4b915"
+      },
+      {
+        "destination": "tests/bridge-render-browser.mjs",
+        "input_sha256": "16540d3faf20bb9a7e62a6d7583daa6fcfaf21b8b8311cef541e6cdea27963ab",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "16540d3faf20bb9a7e62a6d7583daa6fcfaf21b8b8311cef541e6cdea27963ab",
+        "source": "tests/bridge-render-browser.mjs",
+        "final_output_sha256": "16540d3faf20bb9a7e62a6d7583daa6fcfaf21b8b8311cef541e6cdea27963ab",
+        "cli_destination": "tests/bridge-render-browser.mjs",
+        "previous_staging_sha256": "16540d3faf20bb9a7e62a6d7583daa6fcfaf21b8b8311cef541e6cdea27963ab"
+      },
+      {
+        "destination": "tests/bridge-staffing.test.mjs",
+        "input_sha256": "46790fb160ab02a5c340a378bc659108d86a08a6d0283ac466c4b7ad13005fa8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "46790fb160ab02a5c340a378bc659108d86a08a6d0283ac466c4b7ad13005fa8",
+        "source": "tests/bridge-staffing.test.mjs",
+        "final_output_sha256": "46790fb160ab02a5c340a378bc659108d86a08a6d0283ac466c4b7ad13005fa8",
+        "cli_destination": "tests/bridge-staffing.test.mjs",
+        "previous_staging_sha256": "46790fb160ab02a5c340a378bc659108d86a08a6d0283ac466c4b7ad13005fa8"
+      },
+      {
+        "destination": "tests/bridge.test.mjs",
+        "input_sha256": "502a230a123aeb9bcbd364cfbcd5aebe268cd97696672b13645405ec6de15b1b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "54cd700b739e6da01e896b0c47d5f00813f0d5b9d03504ef9479f97763a07dc2",
+        "source": "tests/bridge.test.mjs",
+        "final_output_sha256": "54cd700b739e6da01e896b0c47d5f00813f0d5b9d03504ef9479f97763a07dc2",
+        "cli_destination": "tests/bridge.test.mjs",
+        "previous_staging_sha256": "54cd700b739e6da01e896b0c47d5f00813f0d5b9d03504ef9479f97763a07dc2"
+      },
+      {
+        "destination": "tests/browser.mjs",
+        "input_sha256": "d54424a83f50a6c4cd8dd4cfe375f85dbfa9fa0768c756faec95a4bcf6ffa014",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d54424a83f50a6c4cd8dd4cfe375f85dbfa9fa0768c756faec95a4bcf6ffa014",
+        "source": "tests/browser.mjs",
+        "final_output_sha256": "d54424a83f50a6c4cd8dd4cfe375f85dbfa9fa0768c756faec95a4bcf6ffa014",
+        "cli_destination": "tests/browser.mjs",
+        "previous_staging_sha256": "d54424a83f50a6c4cd8dd4cfe375f85dbfa9fa0768c756faec95a4bcf6ffa014"
+      },
+      {
+        "destination": "tests/catalog-media.test.mjs",
+        "input_sha256": "8ab349fcaa5c926fe4b39e198ff4db12694feed38fc38199b8b1452f3522965e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8ab349fcaa5c926fe4b39e198ff4db12694feed38fc38199b8b1452f3522965e",
+        "source": "tests/catalog-media.test.mjs",
+        "final_output_sha256": "8ab349fcaa5c926fe4b39e198ff4db12694feed38fc38199b8b1452f3522965e",
+        "cli_destination": "tests/catalog-media.test.mjs",
+        "previous_staging_sha256": "8ab349fcaa5c926fe4b39e198ff4db12694feed38fc38199b8b1452f3522965e"
+      },
+      {
+        "destination": "tests/characters.test.mjs",
+        "input_sha256": "f804403504d9bf19c5a64d464d5d9d5d60d2f8f283190a85e450abb875bb4b8b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f804403504d9bf19c5a64d464d5d9d5d60d2f8f283190a85e450abb875bb4b8b",
+        "source": "tests/characters.test.mjs",
+        "final_output_sha256": "f804403504d9bf19c5a64d464d5d9d5d60d2f8f283190a85e450abb875bb4b8b",
+        "cli_destination": "tests/characters.test.mjs",
+        "previous_staging_sha256": "f804403504d9bf19c5a64d464d5d9d5d60d2f8f283190a85e450abb875bb4b8b"
+      },
+      {
+        "destination": "tests/display-browser.mjs",
+        "input_sha256": "ed1346fb22aefc3a3caf3251d645e5ad8ad18a51d91aaec9c9c26d7b1b6bcc46",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ed1346fb22aefc3a3caf3251d645e5ad8ad18a51d91aaec9c9c26d7b1b6bcc46",
+        "source": "tests/display-browser.mjs",
+        "final_output_sha256": "ed1346fb22aefc3a3caf3251d645e5ad8ad18a51d91aaec9c9c26d7b1b6bcc46",
+        "cli_destination": "tests/display-browser.mjs",
+        "previous_staging_sha256": "ed1346fb22aefc3a3caf3251d645e5ad8ad18a51d91aaec9c9c26d7b1b6bcc46"
+      },
+      {
+        "destination": "tests/distribution.test.mjs",
+        "input_sha256": "24e5f6708c5bc7c9670987a09993c5f7a419bb1d4735250386dd36633d7661eb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "24e5f6708c5bc7c9670987a09993c5f7a419bb1d4735250386dd36633d7661eb",
+        "source": "tests/distribution.test.mjs",
+        "final_output_sha256": "24e5f6708c5bc7c9670987a09993c5f7a419bb1d4735250386dd36633d7661eb",
+        "cli_destination": "tests/distribution.test.mjs",
+        "previous_staging_sha256": "24e5f6708c5bc7c9670987a09993c5f7a419bb1d4735250386dd36633d7661eb"
+      },
+      {
+        "destination": "tests/engineering-render-browser.mjs",
+        "input_sha256": "f3934ecacf6d9fb7f757074cfa1a204e317983f6d50fd349977f2111087fd37d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f3934ecacf6d9fb7f757074cfa1a204e317983f6d50fd349977f2111087fd37d",
+        "source": "tests/engineering-render-browser.mjs",
+        "final_output_sha256": "f3934ecacf6d9fb7f757074cfa1a204e317983f6d50fd349977f2111087fd37d",
+        "cli_destination": "tests/engineering-render-browser.mjs",
+        "previous_staging_sha256": "f3934ecacf6d9fb7f757074cfa1a204e317983f6d50fd349977f2111087fd37d"
+      },
+      {
+        "destination": "tests/host-theme-browser.mjs",
+        "input_sha256": "7795ff1bddb6823e565e853111700c3a85909aaea02b8e5d2a1192c90de4dd0d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4c02aecf8965de17e454794c8138890359888761e15645cd942780a4b046b936",
+        "source": "tests/host-theme-browser.mjs",
+        "final_output_sha256": "4c02aecf8965de17e454794c8138890359888761e15645cd942780a4b046b936",
+        "cli_destination": "tests/host-theme-browser.mjs",
+        "previous_staging_sha256": "4c02aecf8965de17e454794c8138890359888761e15645cd942780a4b046b936"
+      },
+      {
+        "destination": "tests/host-theme-fixture.mjs",
+        "input_sha256": "65c0f6403d05186a2d1fde988923527b4d3bdf664420098eb20ae3f03746528f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8136ce004b4dce4951acfd6788f1529e6bac9ec7477314cb825ad1102cb9c693",
+        "source": "tests/host-theme-fixture.mjs",
+        "final_output_sha256": "8136ce004b4dce4951acfd6788f1529e6bac9ec7477314cb825ad1102cb9c693",
+        "cli_destination": "tests/host-theme-fixture.mjs",
+        "previous_staging_sha256": "8136ce004b4dce4951acfd6788f1529e6bac9ec7477314cb825ad1102cb9c693"
+      },
+      {
+        "destination": "tests/package.test.mjs",
+        "input_sha256": "f83980ea65506b53171369991bb083dd7b40f205916ad7e5c185cb805b858e97",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0b85a9aeaf8bd30bdab669cdedab1e28afcf8e39b951178572cc357cf9371415",
+        "source": "tests/package.test.mjs",
+        "final_output_sha256": "0b85a9aeaf8bd30bdab669cdedab1e28afcf8e39b951178572cc357cf9371415",
+        "cli_destination": "tests/package.test.mjs",
+        "previous_staging_sha256": "0b85a9aeaf8bd30bdab669cdedab1e28afcf8e39b951178572cc357cf9371415"
+      },
+      {
+        "destination": "tests/realm-packages.test.mjs",
+        "input_sha256": "661dd5759f76431b46bd886eeb489f409e5d56c46a6d17c74c6a10247f5a9642",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "661dd5759f76431b46bd886eeb489f409e5d56c46a6d17c74c6a10247f5a9642",
+        "source": "tests/realm-packages.test.mjs",
+        "final_output_sha256": "661dd5759f76431b46bd886eeb489f409e5d56c46a6d17c74c6a10247f5a9642",
+        "cli_destination": "tests/realm-packages.test.mjs",
+        "previous_staging_sha256": "661dd5759f76431b46bd886eeb489f409e5d56c46a6d17c74c6a10247f5a9642"
+      },
+      {
+        "destination": "tests/realms-browser.mjs",
+        "input_sha256": "30a3361234c249ef0ce1041051e0cafa287cabf6a51efc07fc1f168ea5a09e2b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "30a3361234c249ef0ce1041051e0cafa287cabf6a51efc07fc1f168ea5a09e2b",
+        "source": "tests/realms-browser.mjs",
+        "final_output_sha256": "30a3361234c249ef0ce1041051e0cafa287cabf6a51efc07fc1f168ea5a09e2b",
+        "cli_destination": "tests/realms-browser.mjs",
+        "previous_staging_sha256": "30a3361234c249ef0ce1041051e0cafa287cabf6a51efc07fc1f168ea5a09e2b"
+      },
+      {
+        "destination": "tests/runtime.test.mjs",
+        "input_sha256": "c4131088594eaf2f2cdad57bbf95937d5dde4e478f27cc11af4110e21eba13ad",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "dda953625bb2f83b42cfbaf5ded3f6e67b00cdf246820c99765fcd95799a1c5b",
+        "source": "tests/runtime.test.mjs",
+        "final_output_sha256": "dda953625bb2f83b42cfbaf5ded3f6e67b00cdf246820c99765fcd95799a1c5b",
+        "cli_destination": "tests/runtime.test.mjs",
+        "previous_staging_sha256": "dda953625bb2f83b42cfbaf5ded3f6e67b00cdf246820c99765fcd95799a1c5b"
+      },
+      {
+        "destination": "tests/ship-browser.mjs",
+        "input_sha256": "91732eaa6d51eca2886c73d88fc0eb9284d928d453e7ee45855394d0b75c2a31",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "91732eaa6d51eca2886c73d88fc0eb9284d928d453e7ee45855394d0b75c2a31",
+        "source": "tests/ship-browser.mjs",
+        "final_output_sha256": "91732eaa6d51eca2886c73d88fc0eb9284d928d453e7ee45855394d0b75c2a31",
+        "cli_destination": "tests/ship-browser.mjs",
+        "previous_staging_sha256": "91732eaa6d51eca2886c73d88fc0eb9284d928d453e7ee45855394d0b75c2a31"
+      },
+      {
+        "destination": "tests/ship-geometry.test.mjs",
+        "input_sha256": "c03153874723dd758da445245f7c1bae8999e6bd04da058db0901220df002c9b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c03153874723dd758da445245f7c1bae8999e6bd04da058db0901220df002c9b",
+        "source": "tests/ship-geometry.test.mjs",
+        "final_output_sha256": "c03153874723dd758da445245f7c1bae8999e6bd04da058db0901220df002c9b",
+        "cli_destination": "tests/ship-geometry.test.mjs",
+        "previous_staging_sha256": "c03153874723dd758da445245f7c1bae8999e6bd04da058db0901220df002c9b"
+      },
+      {
+        "destination": "tests/ship-render-browser.mjs",
+        "input_sha256": "e3fd0605fe7fdf9d6c5b16cc9e95dcdb40c3efe981c0096ce751d6f6c257aa91",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3fd0605fe7fdf9d6c5b16cc9e95dcdb40c3efe981c0096ce751d6f6c257aa91",
+        "source": "tests/ship-render-browser.mjs",
+        "final_output_sha256": "e3fd0605fe7fdf9d6c5b16cc9e95dcdb40c3efe981c0096ce751d6f6c257aa91",
+        "cli_destination": "tests/ship-render-browser.mjs",
+        "previous_staging_sha256": "e3fd0605fe7fdf9d6c5b16cc9e95dcdb40c3efe981c0096ce751d6f6c257aa91"
+      },
+      {
+        "destination": "tests/ship.test.mjs",
+        "input_sha256": "2d9a46e540ba1d60ff80cd2d9322a2e8410577bcc3614f5348e858e2e6d0bfc5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2d9a46e540ba1d60ff80cd2d9322a2e8410577bcc3614f5348e858e2e6d0bfc5",
+        "source": "tests/ship.test.mjs",
+        "final_output_sha256": "2d9a46e540ba1d60ff80cd2d9322a2e8410577bcc3614f5348e858e2e6d0bfc5",
+        "cli_destination": "tests/ship.test.mjs",
+        "previous_staging_sha256": "2d9a46e540ba1d60ff80cd2d9322a2e8410577bcc3614f5348e858e2e6d0bfc5"
+      },
+      {
+        "destination": "tests/ui-model.test.mjs",
+        "input_sha256": "0edd911c1a0ba5c03baee974cbfd6a7a6325a3b9843eb81fbcfe40a011e3f84b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0edd911c1a0ba5c03baee974cbfd6a7a6325a3b9843eb81fbcfe40a011e3f84b",
+        "source": "tests/ui-model.test.mjs",
+        "final_output_sha256": "0edd911c1a0ba5c03baee974cbfd6a7a6325a3b9843eb81fbcfe40a011e3f84b",
+        "cli_destination": "tests/ui-model.test.mjs",
+        "previous_staging_sha256": "0edd911c1a0ba5c03baee974cbfd6a7a6325a3b9843eb81fbcfe40a011e3f84b"
+      },
+      {
+        "destination": "tests/warp-core.test.mjs",
+        "input_sha256": "7774e0f3dea0cbf17673caa7aab02649596194e5af12de2d7b56c07f13c3a7a0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7774e0f3dea0cbf17673caa7aab02649596194e5af12de2d7b56c07f13c3a7a0",
+        "source": "tests/warp-core.test.mjs",
+        "final_output_sha256": "7774e0f3dea0cbf17673caa7aab02649596194e5af12de2d7b56c07f13c3a7a0",
+        "cli_destination": "tests/warp-core.test.mjs",
+        "previous_staging_sha256": "7774e0f3dea0cbf17673caa7aab02649596194e5af12de2d7b56c07f13c3a7a0"
+      },
+      {
+        "destination": "tests/world.test.mjs",
+        "input_sha256": "502099aa6b47f0fc465341fe1a455b449d3d83edbf6fcd28518d16a176838974",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "502099aa6b47f0fc465341fe1a455b449d3d83edbf6fcd28518d16a176838974",
+        "source": "tests/world.test.mjs",
+        "final_output_sha256": "502099aa6b47f0fc465341fe1a455b449d3d83edbf6fcd28518d16a176838974",
+        "cli_destination": "tests/world.test.mjs",
+        "previous_staging_sha256": "502099aa6b47f0fc465341fe1a455b449d3d83edbf6fcd28518d16a176838974"
+      }
+    ],
+    "manifest_sha256": "ec07b21ec87bd0ae83853ea1a05e06104f2cf99705584fee961e502773065918",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/ISSUE_TEMPLATE/realm-submission.yml": ".github/ISSUE_TEMPLATE/realm-submission.yml",
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".gitignore": ".gitignore",
+    "CONTRIBUTING.md": "CONTRIBUTING.md",
+    "LICENSE": "LICENSE",
+    "NOTICE.md": "NOTICE.md",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "_catalog_assets/docs/images/catalog-banner.png": "docs/images/catalog-banner.png",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "docs/architecture.md": "docs/architecture.md",
+    "docs/assets/Oxanium-OFL.txt": "docs/assets/Oxanium-OFL.txt",
+    "docs/assets/Oxanium.woff2": "docs/assets/Oxanium.woff2",
+    "docs/images/catalog-banner.png": "docs/images/catalog-banner.png",
+    "docs/images/display-mode.png": "docs/images/display-mode.png",
+    "docs/images/kitten-cafe-scene.png": "docs/images/kitten-cafe-scene.png",
+    "docs/images/kitten-cafe.png": "docs/images/kitten-cafe.png",
+    "docs/images/office-space-scene.png": "docs/images/office-space-scene.png",
+    "docs/images/office-space.png": "docs/images/office-space.png",
+    "docs/images/pw-agents.png": "docs/images/pw-agents.png",
+    "docs/images/social-preview.png": "docs/images/social-preview.png",
+    "docs/images/starter-realms.png": "docs/images/starter-realms.png",
+    "docs/images/tng-bridge-scene.png": "docs/images/tng-bridge-scene.png",
+    "docs/images/tng-bridge.png": "docs/images/tng-bridge.png",
+    "docs/images/tng-engineering-scene.png": "docs/images/tng-engineering-scene.png",
+    "docs/images/tng-engineering.png": "docs/images/tng-engineering.png",
+    "docs/images/tng-ship-feature.png": "docs/images/tng-ship-feature.png",
+    "docs/install.md": "docs/install.md",
+    "docs/media.md": "docs/media.md",
+    "docs/realms.md": "docs/realms.md",
+    "docs/social-preview.html": "docs/social-preview.html",
+    "package-lock.json": "package-lock.json",
+    "package.json": "package.json",
+    "plugin.js": "plugin.js",
+    "plugin.yaml": "plugin.yaml",
+    "preview/index.html": "preview/index.html",
+    "preview/main.js": "preview/main.js",
+    "preview/sdk.js": "preview/sdk.js",
+    "realms/README.md": "realms/README.md",
+    "realms/catalog.json": "realms/catalog.json",
+    "realms/pd-kitten-cafe.pwrealm.json": "realms/pd-kitten-cafe.pwrealm.json",
+    "realms/pd-office-space.pwrealm.json": "realms/pd-office-space.pwrealm.json",
+    "realms/pd-tng-bridge.pwrealm.json": "realms/pd-tng-bridge.pwrealm.json",
+    "scripts/build.mjs": "scripts/build.mjs",
+    "scripts/capture-demo.mjs": "scripts/capture-demo.mjs",
+    "scripts/capture-repo-media.mjs": "scripts/capture-repo-media.mjs",
+    "scripts/compose-catalog-media.mjs": "scripts/compose-catalog-media.mjs",
+    "scripts/compose-tng-feature.mjs": "scripts/compose-tng-feature.mjs",
+    "scripts/export-realms.mjs": "scripts/export-realms.mjs",
+    "scripts/install.mjs": "scripts/install.mjs",
+    "scripts/media-assets/tng-title.png": "scripts/media-assets/tng-title.png",
+    "scripts/media-assets/tng-transporter.png": "scripts/media-assets/tng-transporter.png",
+    "scripts/preview.mjs": "scripts/preview.mjs",
+    "skills/pixel-worlds-creator/SKILL.md": "skills/pixel-worlds-creator/SKILL.md",
+    "src/app.js": "src/app.js",
+    "src/art/bridge-scene.js": "src/art/bridge-scene.js",
+    "src/art/characters.js": "src/art/characters.js",
+    "src/art/engineering-scene.js": "src/art/engineering-scene.js",
+    "src/art/lcars.js": "src/art/lcars.js",
+    "src/art/pixels.js": "src/art/pixels.js",
+    "src/art/scenes.js": "src/art/scenes.js",
+    "src/art/ship-effects.js": "src/art/ship-effects.js",
+    "src/art/warp-core.js": "src/art/warp-core.js",
+    "src/bridge.js": "src/bridge.js",
+    "src/plugin.js": "src/plugin.js",
+    "src/realm-packages.js": "src/realm-packages.js",
+    "src/runtime.js": "src/runtime.js",
+    "src/ship-controls.js": "src/ship-controls.js",
+    "src/ship-layout.js": "src/ship-layout.js",
+    "src/ship-styles.js": "src/ship-styles.js",
+    "src/ship.js": "src/ship.js",
+    "src/styles.js": "src/styles.js",
+    "src/ui-model.js": "src/ui-model.js",
+    "src/world.js": "src/world.js",
+    "tests/bridge-render-browser.mjs": "tests/bridge-render-browser.mjs",
+    "tests/bridge-staffing.test.mjs": "tests/bridge-staffing.test.mjs",
+    "tests/bridge.test.mjs": "tests/bridge.test.mjs",
+    "tests/browser.mjs": "tests/browser.mjs",
+    "tests/catalog-media.test.mjs": "tests/catalog-media.test.mjs",
+    "tests/characters.test.mjs": "tests/characters.test.mjs",
+    "tests/display-browser.mjs": "tests/display-browser.mjs",
+    "tests/distribution.test.mjs": "tests/distribution.test.mjs",
+    "tests/engineering-render-browser.mjs": "tests/engineering-render-browser.mjs",
+    "tests/host-theme-browser.mjs": "tests/host-theme-browser.mjs",
+    "tests/host-theme-fixture.mjs": "tests/host-theme-fixture.mjs",
+    "tests/package.test.mjs": "tests/package.test.mjs",
+    "tests/realm-packages.test.mjs": "tests/realm-packages.test.mjs",
+    "tests/realms-browser.mjs": "tests/realms-browser.mjs",
+    "tests/runtime.test.mjs": "tests/runtime.test.mjs",
+    "tests/ship-browser.mjs": "tests/ship-browser.mjs",
+    "tests/ship-geometry.test.mjs": "tests/ship-geometry.test.mjs",
+    "tests/ship-render-browser.mjs": "tests/ship-render-browser.mjs",
+    "tests/ship.test.mjs": "tests/ship.test.mjs",
+    "tests/ui-model.test.mjs": "tests/ui-model.test.mjs",
+    "tests/warp-core.test.mjs": "tests/warp-core.test.mjs",
+    "tests/world.test.mjs": "tests/world.test.mjs"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "pixel-worlds",
+    "python_files_compiled": 0,
+    "secret_findings": 0
+  },
+  "canonical_slug": "pixel-worlds",
+  "catalog_file": "src/plugin-catalog/pixel-worlds.yaml",
+  "identity": {
+    "catalog_id": "pixel-worlds",
+    "canonical_slug": "pixel-worlds",
+    "original_manifest_name": "pixel-worlds",
+    "rebranded_manifest_name": "pixel-worlds",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "204f99b271cf31f10223f302f90d7a13c6e018fabfca29ab5ff65d9f99ccbaaf",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "_catalog_assets/docs/images/catalog-banner.png",
+          "after_path": "docs/images/catalog-banner.png",
+          "before_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+          "after_sha256": "2e49b58e7d3898740343ed97951c32dec9ad9026a541e9eac3ccc8c401d9380f",
+          "before_bytes": 139530,
+          "after_bytes": 139530,
+          "operation": "deduplicated-catalog-asset",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "docs/media.md",
+          "after_path": "docs/media.md",
+          "before_sha256": "590e1e02c04efa566f5ff9290569bd54a7e5c8b1071467a42f8788fce0625ced",
+          "after_sha256": "5c61250884f1d0f2a9db0c105f26393f730a80c23dde9c7b35d1effb641b6e1b",
+          "before_bytes": 5854,
+          "after_bytes": 5720,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "realms/pd-office-space.pwrealm.json",
+          "after_path": "realms/pd-office-space.pwrealm.json",
+          "before_sha256": "61548551afe6387a5d18968703794bdf98b82648ef12508ea774a0741e0e6ec6",
+          "after_sha256": "bc345543921ff13c9c6cad50d5c2ba80a00587db7e4b08eb7327417b8a3c7b83",
+          "before_bytes": 45557,
+          "after_bytes": 45558,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

@@ -1,0 +1,12 @@
+name: duckwork-pets-all
+version: "0.1.1"
+description: >-
+  Browse every pet installed for this Duckwork profile. Ships a desktop pane with thumbnails,
+  search and click-to-adopt (no 60-row cap), plus a read-only list_pets tool so the agent can
+  answer what pets exist and which one is active.
+author: "aei0n"
+requires_duckwork: ">=0.19"
+provides_tools:
+  - list_pets
+provides_hooks: []
+provides_middleware: []

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deliberate audit findings</title>
+<style>
+body { margin: 8px; color: #000; background: #fff; font: 16px sans-serif; }
+#overflow { width: 1800px; height: 2px; background: black; }
+#low { color: #777; background: #888; }
+#high { color: #000; background: #fff; }
+#transparent { color: rgba(0,0,0,.4); background: #fff; }
+#gradient { color: #000; background: linear-gradient(white,black); }
+#opacity { opacity:.5; }
+#opacity p { color:black; background:white; }
+#overlay-host { position:relative; }
+#obscured { color:black; background:white; }
+#overlay { position:absolute; inset:0; background:rgba(0,0,0,.5); }
+#pass-through-host { position:relative; }
+#pass-through-text { color:black; background:white; }
+#pass-through-overlay { position:absolute; inset:0; background:rgba(0,0,0,.5); pointer-events:none; }
+#pseudo { color:black; background:white; position:relative; }
+#pseudo::after { content:""; position:absolute; inset:0; background:rgba(0,0,0,.5); pointer-events:none; }
+</style>
+<h1>Audit intentionally defective markup</h1>
+<div id="overflow"></div>
+<button id="unnamed"></button><a id="empty-link" href="#low"></a>
+<input id="unlabelled"><label for="named">Name</label><input id="named">
+<button id="named-button" aria-label="Save"></button>
+<input id="false-name" aria-labelledby="does-not-exist">
+<button id="false-name-button" aria-labelledby="does-not-exist"></button>
+<span id="duplicate">One</span><span id="duplicate">Two</span>
+<img id="broken" src="missing-image.png" alt="Missing fixture image">
+<p id="low">Low contrast</p><p id="high">High contrast</p>
+<p id="transparent">Transparent foreground is unknown</p>
+<p id="gradient">Gradient background is unknown</p>
+<div id="opacity"><p id="opacity-text">Ancestor opacity is unknown</p></div>
+<div id="overlay-host"><p id="obscured">Overlaid text is unknown</p><div id="overlay"></div></div>
+<div id="pass-through-host"><p id="pass-through-text">Pointer-events-none overlay is unknown</p><div id="pass-through-overlay"></div></div>
+<p id="pseudo">Pseudo overlay is unknown</p>
+<iframe title="Uninspected fixture" srcdoc="<p>Frame contents</p>"></iframe>
+<script>
+console.error('fixture console error');
+setTimeout(() => { throw new Error('fixture page error'); }, 0);
+for (let i=0; i<130; i++) console.log('bounded event ' + i);
+for (let i=0; i<2100; i++) { const span=document.createElement('span'); span.textContent='sample '; document.body.append(span); }
+</script>
+</html>

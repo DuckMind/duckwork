@@ -1,0 +1,151 @@
+"""Structural check of the plugin backend, importable without a running Duckwork host.
+
+Asserts the router shape (WS + health endpoints), the sidecar-lifecycle helpers, and
+that the per-spawn nonce is actually wired into the sidecar env + upstream URL. Runs in
+CI with only fastapi + websockets installed (no duckwork_cli).
+"""
+
+from __future__ import annotations
+
+import asyncio
+import importlib.util
+import inspect
+import json
+import sys
+from pathlib import Path
+
+DASHBOARD = Path(__file__).resolve().parent.parent / "dashboard"
+
+
+def _load():
+    spec = importlib.util.spec_from_file_location("boardstate_plugin_api", DASHBOARD / "plugin_api.py")
+    mod = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def main() -> int:
+    mod = _load()
+    failures: list[str] = []
+
+    def check(name: str, cond: bool) -> None:
+        print(f"{'ok  ' if cond else 'FAIL'} {name}")
+        if not cond:
+            failures.append(name)
+
+    # Router exposes the browser WS bridge + health + MCP + Desktop REST RPC.
+    paths = {getattr(r, "path", None) for r in mod.router.routes}
+    check("router mounts /ws", "/ws" in paths)
+    check("router mounts /health", "/health" in paths)
+    check("router mounts /mcp (agent MCP proxy)", "/mcp" in paths)
+    check("router mounts /rpc (Desktop ctx.rest request transport)", "/rpc" in paths)
+
+    # The MCP proxy forwards to the sidecar with the per-spawn nonce (agent reachability).
+    src2 = (DASHBOARD / "plugin_api.py").read_text()
+    check("mcp proxy forwards with nonce", "/mcp?nonce=" in src2)
+    check("mcp proxy streams the response", "StreamingResponse" in src2)
+
+    # Custom-widget asset proxy: mounted, and it PRESERVES the sandbox CSP verbatim
+    # (stripping it would un-jail every custom widget in the browser).
+    check("router mounts /widgets proxy", any("/widgets" in str(getattr(r, "path", "")) for r in mod.router.routes))
+    check("widget proxy preserves the sandbox CSP", "content-security-policy" in src2)
+    asset_response = asyncio.run(mod.assets_base(type("Request", (), {"base_url": "http://internal/"})()))
+    asset_payload = json.loads(asset_response.body)
+    check("web widget base is relative behind TLS termination", asset_payload["base"].startswith("/"))
+    check("desktop receives a separate absolute widget base", asset_payload["absoluteBase"].startswith("http://internal/"))
+
+    # Sidecar lifecycle helpers are aliases/delegates to the one shared module.
+    for fn in ("_ensure_sidecar", "_read_port", "_kill_sidecar", "_ws_upgrade_authorized"):
+        check(f"has {fn}", hasattr(mod, fn))
+
+    # Single-sidecar-per-state-dir: a second backend (web + desktop) must ADOPT the
+    # first's sidecar via the port-file, not spawn a colliding second writer.
+    for fn in ("_try_adopt", "_spawn_sidecar", "_portfile_path", "_pid_alive", "_port_listening"):
+        check(f"has {fn}", hasattr(mod, fn))
+    ensure_src = inspect.getsource(mod._ensure_sidecar)
+    check("_ensure_sidecar delegates as dashboard owner", 'ensure_sidecar("dashboard"' in ensure_src)
+    runtime_src = (DASHBOARD.parent / "boardstate_sidecar.py").read_text()
+    spawn_src = inspect.getsource(mod._spawn_sidecar)
+    check("shared spawn publishes a port-file", "_write_record" in spawn_src)
+    check("shared runtime marks adoption not-owned", '"owned": False' in runtime_src)
+    check("shared runtime has dashboard-over-agent replacement", 'caller == "dashboard"' in runtime_src and '"agent"' in runtime_src)
+    check("shared runtime reaps only under its ownership/adopter rule", "should_terminate" in runtime_src)
+    check("runtime loop signals ready from inside the running loop", "loop.call_soon(ready.set)" in runtime_src)
+    internal_src = (DASHBOARD / "sidecar" / "src" / "internal.ts").read_text()
+    compare_path = DASHBOARD / "sidecar" / "src" / "secret-compare.ts"
+    compare_src = compare_path.read_text() if compare_path.exists() else ""
+    check("shared secret compare uses timingSafeEqual", "timingSafeEqual" in compare_src)
+    for name in ("internal.ts", "operator.ts", "mcp.ts", "server.ts"):
+        gate_src = (DASHBOARD / "sidecar" / "src" / name).read_text()
+        check(f"{name} nonce/secret checks use the constant-time compare", "secretsEqual(url.searchParams" in gate_src)
+    check("sidecar identity probe is nonce authenticated", '"/internal/healthz"' in internal_src)
+
+    # Per-spawn nonce is wired: generated, passed via env, and appended to the upstream URL.
+    src = (DASHBOARD / "plugin_api.py").read_text()
+    check("shared runtime generates a nonce", "secrets.token_urlsafe" in runtime_src)
+    check("shared runtime passes nonce via env", "BOARDSTATE_SIDECAR_NONCE" in runtime_src)
+    check("appends nonce to upstream ws url", "?nonce=" in src)
+    check("_ensure_sidecar returns (port, nonce)", "tuple[int, str]" in inspect.getsource(mod._ensure_sidecar))
+
+    # ── Operator gate (the security crux) ────────────────────────────────────────────
+    # The privileged operator route exists and is a POST.
+    check("router mounts /operator", "/operator" in paths)
+
+    op_src = inspect.getsource(mod.operator)
+    auth_src = inspect.getsource(mod._authorize_operator)
+
+    # Only the four operator verbs pass — anything else is refused before it reaches the
+    # sidecar. Assert the set is EXACTLY those four (no extra verb smuggled in).
+    check(
+        "operator method set is exactly the 4 verbs",
+        mod._OPERATOR_METHODS == frozenset({
+            "dashboard.widget.approve",
+            "dashboard.capability.approve",
+            "dashboard.action.confirm",
+            "dashboard.action.deny",
+        }),
+    )
+    check("operator route consults the method allowlist", "_OPERATOR_METHODS" in op_src)
+
+    # The route requires dashboard session auth AND the operators allowlist policy.
+    check("operator route authorizes before acting", "_authorize_operator" in op_src)
+    check("authorization consults the dashboard session gate", "_has_valid_session_token" in auth_src or "request.state.session" in auth_src)
+    check("authorization consults the operators allowlist", "_load_operators_allowlist" in auth_src)
+    check("allowlist file is boardstate.operators.json in state dir", "boardstate.operators.json" in src)
+    for fn in ("_operators_allowlist_path", "_load_operators_allowlist", "_authorize_operator"):
+        check(f"has {fn}", hasattr(mod, fn))
+
+    # AUTH-1 (fail CLOSED): only an EXPLICIT loopback bind (auth_required IS False) is trusted
+    # without an allowlist; indeterminate/gated require the allowlist.
+    check("gating fails closed (auth_required is False ⇒ loopback single-user)", "auth_required is False" in auth_src)
+    check("indeterminate/gated require the allowlist (loopback_single_user gate)", "loopback_single_user" in auth_src and "403" in auth_src)
+
+    # ── SEC-1: the operator secret is a DEDICATED credential, never in the port file ──
+    check("generates a separate operator secret", spawn_src.count("secrets.token_urlsafe") >= 2)
+    check("passes the operator secret via env (BOARDSTATE_OPERATOR_SECRET)", "BOARDSTATE_OPERATOR_SECRET" in spawn_src)
+    check("stores the operator secret in-memory (_sidecar)", '"operator_secret"' in spawn_src)
+    # The port-file records ownership but never the operator secret.
+    write_src = inspect.getsource(mod._runtime._write_record)
+    write_call = spawn_src.index("_write_record(")
+    record_literal = spawn_src[write_call:spawn_src.index('"adopters": []', write_call) + 16]
+    check("port file records port + nonce + pid + spawned_by", all(key in record_literal for key in ('"port"', '"nonce"', '"pid"', '"spawned_by"')))
+    check("operator secret is NEVER written to the port file", "operator_secret" not in record_literal and "operatorSecret" not in record_literal)
+    check("port file is chmod 600", "0o600" in write_src)
+    # The operator route forwards the DEDICATED secret (not the adoption nonce) and refuses when absent.
+    check("operator route forwards the operator secret to sidecar /operator?nonce=", '/operator?nonce={operator_secret}' in op_src)
+    check("operator route forwards {method, params}", '"method": method' in op_src)
+    check("adopted sidecar (no operator secret) ⇒ operator actions unavailable", "operator_secret" in op_src and "unavailable" in op_src)
+
+    # Absent allowlist file ⇒ None (loopback-only signal); present ⇒ a list of principals.
+    check("_load_operators_allowlist returns None when absent", mod._load_operators_allowlist(Path("/nonexistent-bs-state-dir")) is None)
+
+    if failures:
+        print(f"\n{len(failures)} check(s) failed: {', '.join(failures)}", file=sys.stderr)
+        return 1
+    print("\nplugin_api structural check: all checks passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

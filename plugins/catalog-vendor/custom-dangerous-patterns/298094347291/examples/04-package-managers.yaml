@@ -1,0 +1,132 @@
+# Coverage note, 2026-10-04: Duckwork already gates package-manager UNINSTALL for
+# npm, pnpm, yarn, pip, and brew. Where this file also covers an uninstall
+# subcommand, the custom rule DEFERS to the built-in gate (one prompt, not two),
+# so the custom description is not what the user sees, and choosing `always`
+# allowlists the built-in key. Duckwork has no equivalent rule for gem, cargo,
+# uv tool, or pipx -- those uninstall subcommands here are the ones genuinely
+# adding protection, and they stay live.
+patterns:
+  # --- Homebrew ---
+  # Install and uninstall are SEPARATE rules on purpose. Duckwork already gates
+  # `brew uninstall|remove|rm`, so a combined rule silently defers on its
+  # uninstall half while staying live on install -- an enforcement split no
+  # startup warning disclosed. Split, `brew install` is plainly covered and the
+  # uninstall half is plainly Duckwork's.
+  - description: brew install
+    group: package-managers
+    glob: brew install **
+
+  - description: brew remove
+    group: package-managers
+    glob: brew {remove,rm} **
+
+  - description: brew upgrade/cleanup
+    group: package-managers
+    glob: brew {upgrade,cleanup} **
+
+  # --- npm (global) ---
+  - description: npm install -g
+    group: package-managers
+    glob: npm install -g **
+
+  - description: npm uninstall -g
+    group: package-managers
+    glob: npm uninstall -g **
+
+  - description: npm -g install
+    group: package-managers
+    glob: npm -g install **
+
+  - description: npm -g add
+    group: package-managers
+    glob: npm -g add **
+
+  - description: npm -g uninstall
+    group: package-managers
+    glob: npm -g uninstall **
+
+  # --- yarn (global) ---
+  - description: yarn global add
+    group: package-managers
+    glob: yarn global add **
+
+  - description: yarn global remove
+    group: package-managers
+    glob: yarn global remove **
+
+  # --- uv tool ---
+  - description: uv tool install/uninstall
+    group: package-managers
+    glob: uv tool {install,uninstall} **
+
+  # --- pipx ---
+  - description: pipx install/uninstall/upgrade
+    group: package-managers
+    glob: pipx {install,uninstall,upgrade,upgrade-all}
+
+  # --- cargo (Rust) ---
+  - description: cargo install/uninstall
+    group: package-managers
+    glob: cargo {install,uninstall} **
+
+  # --- go ---
+  - description: go install
+    group: package-managers
+    glob: go install **
+
+  # --- pip (global) ---
+  - description: pip install
+    group: package-managers
+    glob: pip install **
+
+  - description: pip uninstall
+    group: package-managers
+    glob: pip uninstall **
+
+  # --- gem (Ruby) ---
+  - description: gem install/uninstall
+    group: package-managers
+    glob: gem {install,uninstall} **
+
+  # --- npx (remote package execution) ---
+  - description: npx execute remote package
+    group: package-managers
+    glob: npx **
+
+  # --- uvx (remote package execution) ---
+  - description: uvx execute remote package
+    group: package-managers
+    glob: uvx **
+
+  # --- bunx (remote package execution) ---
+  - description: bunx execute remote package
+    group: package-managers
+    glob: bunx **
+
+  # --- pnpm pnpx / dlx (remote package execution) ---
+  - description: pnpx execute remote package
+    group: package-managers
+    glob: pnpx **
+  - description: pnpm dlx execute remote package
+    group: package-managers
+    glob: pnpm dlx **
+
+  # --- pipx run (remote execution) ---
+  - description: pipx run remote package
+    group: package-managers
+    glob: pipx run **
+
+  # --- go run (remote module execution) ---
+  - description: go run remote module
+    group: package-managers
+    glob: go run **
+
+  # --- gem exec (remote execution) ---
+  - description: gem exec remote command
+    group: package-managers
+    glob: gem exec **
+
+  # --- deno run (remote script/module execution) ---
+  - description: deno run remote script
+    group: package-managers
+    glob: deno run **

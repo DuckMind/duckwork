@@ -1,0 +1,11 @@
+name: xmemo
+version: 1.2.1
+description: "XMemo — native Duckwork memory provider for user-owned cloud memory, orchestrated recall, semantic search, durable fact storage, working state, and session snapshots."
+pip_dependencies:
+  - httpx
+hooks:
+  - on_session_end
+provides_tools:
+  - xmemo_search
+  - xmemo_get
+  - xmemo_list

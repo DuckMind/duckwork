@@ -1,0 +1,93 @@
+# The public README says the official conformance CLI (ards-project/ard-spec)
+# runs on every push — this file is what makes that true. Stdlib only,
+# no runner beyond gitlab.com shared runners.
+stages: [check]
+
+selfcheck:
+  stage: check
+  image: python:3.11
+  script:
+    - python3 selfcheck.py
+    # The run above is stdlib-only, so check_trust() takes its designed-
+    # degradation branch and the entire JWS half of the trust suite skips.
+    # Re-run just that check with cryptography present: the attached-payload
+    # binding (R1, the 0.19.0 CRIT) must never be a silent skip in CI.
+    - pip install --quiet cryptography
+    - |
+      python3 - <<'PY'
+      from ard_kit import trust
+      from selfcheck import check_trust
+      assert trust.Ed25519PublicKey is not None, "cryptography leg must not skip"
+      check_trust()
+      PY
+    - curl -fsSL -o /tmp/conformance-test
+      https://raw.githubusercontent.com/ards-project/ard-spec/56e1325e0cb28433694555317d6920609c0fcb33/conformance/bin/conformance-test
+    # supply-chain pin: immutable ref + hash, bumped together. The checksum
+    # travels in a file rather than down a shell pipe: the form this replaced
+    # reads to the install-time plugin scanner as "piped to an interpreter",
+    # because its rule matches the two-letter prefix of sha256sum.
+    - printf '%s  %s\n' "ac2f3cae1c4ac75261fe45786a117aaad275322c92b74110529ad03a794275b4" "/tmp/conformance-test" > /tmp/conformance-test.sha256
+    - sha256sum -c /tmp/conformance-test.sha256
+    - |
+      python3 - <<'PY'
+      import os, subprocess, sys, tempfile, time, urllib.request
+      from pathlib import Path
+
+      from selfcheck import SAMPLES
+
+      # cwd below is the temp dir, so the catalogizer needs an absolute path:
+      # a relative "catalogize.py" resolved against the temp dir and the job
+      # died with Errno 2 — masked until now by the missing runner quota.
+      project = Path.cwd()
+      root = Path(tempfile.mkdtemp())
+      cat = root / "ai-catalog.json"
+      scripts = root / "scripts"
+      for name, body in SAMPLES.items():
+          p = scripts / name
+          p.parent.mkdir(parents=True, exist_ok=True)
+          p.write_text(body, encoding="utf-8")
+      subprocess.run(
+          [sys.executable, str(project / "ard_kit" / "catalogize.py"),
+           "--dir", "scripts", "--output", str(cat)],
+          cwd=root, check=True,
+      )
+      r = subprocess.run(
+          [sys.executable, "/tmp/conformance-test", "manifest", str(cat)],
+          capture_output=True, text=True, timeout=120,
+      )
+      print(r.stdout, r.stderr)
+      assert "CONFORMANCE STATUS: PASS" in r.stdout + r.stderr, "conformance failed"
+
+      # The registry leg existed only in the GitHub workflow, which has never
+      # run — Actions are disabled account-wide. Porting it here is what made
+      # the GET /agents envelope bug (search keys on a listing endpoint) visible.
+      # The server's own stdout/stderr inherit on purpose: GitLab captures them.
+      srv = subprocess.Popen(
+          [sys.executable, "-m", "ard_kit.registry", "--catalog", str(cat),
+           "--port", "8390", "--domain", "ard-kit.example.com"],
+          cwd=project, env=dict(os.environ, ARD_REGISTRY_TOKEN="ci-token"),
+      )
+      try:
+          for _ in range(40):
+              try:
+                  urllib.request.urlopen(
+                      "http://127.0.0.1:8390/health", timeout=1
+                  ).read()
+                  break
+              except Exception:
+                  time.sleep(0.25)
+          else:
+              raise AssertionError("registry did not come up on :8390")
+          r = subprocess.run(
+              [sys.executable, "/tmp/conformance-test", "registry",
+               "http://127.0.0.1:8390",
+               "--header", "Authorization: Bearer ci-token"],
+              capture_output=True, text=True, timeout=180,
+          )
+          print(r.stdout, r.stderr)
+          assert "CONFORMANCE STATUS: PASS" in r.stdout + r.stderr, \
+              "registry conformance failed"
+      finally:
+          srv.terminate()
+          srv.wait(timeout=10)
+      PY

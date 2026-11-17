@@ -1,0 +1,18 @@
+name: duckwork-fleet-connector
+version: 0.3.0
+description: "Connect Duckwork Fleet phones and observe selected Duckwork backend profiles with read-only Live Operations reporting."
+author: Hermes Fleet
+kind: standalone
+requires_duckwork: ">=0.21.6"
+python_dependencies:
+  - "fastapi>=0.133.1,<0.134"
+  - "uvicorn>=0.41.0,<0.42"
+  - "httpx>=0.28.1,<0.29"
+  - "websockets>=15.0.1,<16"
+  - "cryptography>=44,<51"
+  - "truststore>=0.10,<0.11"
+  - "ruamel.yaml>=0.18.10,<0.19"
+provides_tools: []
+provides_hooks: []
+provides_middleware: []
+requires_env: []

@@ -1,0 +1,331 @@
+# Duckwork Plugin Guard
+
+[![CI](https://github.com/DuckMind/duckwork)](https://github.com/DuckMind/duckwork)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776ab.svg)](pyproject.toml)
+
+![Duckwork Plugin Guard social card](https://github.com/DuckMind/duckwork)
+
+Review a Duckwork Agent plugin before you enable it.
+
+Duckwork Plugin Guard (`hpg`) is a local static scanner for
+[Fordex Duckwork Agent](https://github.com/DuckMind/duckwork) plugins. It
+checks plugin manifests, Python source, dependency declarations, likely secret material, and
+basic repository hygiene. Target plugin code is read as data: it is never imported or executed.
+
+This is an unofficial community project. It is not affiliated with, endorsed by, or maintained
+by Fordex.
+
+Read the engineering note:
+[I turned a Duckwork plugin scanner into a Duckwork plugin. It still cannot be an admission gate.](docs/plugin-admission-boundary.md)
+
+![20-second CLI demo recorded with Duckwork Plugin Guard v0.2.0](https://github.com/DuckMind/duckwork)
+
+## Five-minute beta test
+
+If you maintain or use a Duckwork plugin, one local scan is enough to help improve the rules.
+Python 3.11 or newer and [pipx](https://pipx.pypa.io/stable/) are required.
+
+1. Install the current release from PyPI:
+
+   ```bash
+   pipx install duckwork-plugin-guard
+   ```
+
+2. Scan your plugin without failing the command on findings:
+
+   ```bash
+   hpg scan /absolute/path/to/your-plugin --fail-on none
+   ```
+
+3. Send a short
+   [beta-test report](https://github.com/DuckMind/duckwork)
+   with the rule IDs that were useful, noisy, or missing. A public plugin URL is helpful but not
+   required.
+
+The standalone `hpg` scan stays on your computer. It reads target files as data, does not import
+or execute target plugin code, makes no network requests, includes no telemetry, and uploads
+neither source code nor results. The optional native Duckwork tool has a different, explicitly
+documented privacy boundary below. Do not paste private code, credentials, or unsanitized paths
+into a public issue.
+
+Already installed? Use `pipx upgrade duckwork-plugin-guard`. For a reproducible installation
+directly from the tagged source, install the v0.2.1 GitHub release:
+
+```bash
+pipx install \
+  "git+https://github.com/mauricemohr88-debug/hermes-plugin-guard.git@v0.2.1"
+```
+
+## Why this exists
+
+Duckwork plugins are Python extensions, not isolated data files. A third-party plugin can register
+tools and hooks and can run with the permissions of the Duckwork process. Code review remains the
+most important control; `hpg` adds a fast, repeatable first pass before enablement and in CI.
+
+The scanner is designed to make high-risk patterns visible, including:
+
+- direct subprocess calls that bypass Duckwork' terminal-tool approval path;
+- dynamic execution and unsafe deserialization;
+- sensitive-path access, destructive filesystem operations, and disabled TLS verification;
+- all-interface listeners, networking capability, concrete outbound calls with redacted
+  destinations, and undeclared secret environment variables;
+- privileged registration and middleware surfaces, plus work performed during import or
+  registration;
+- likely committed credentials, mutable remote dependencies, and remote scripts piped to shells;
+- plugin declaration drift, missing tests, and missing project policies.
+
+## Install
+
+Python 3.11 or newer is required.
+
+Install the current release from
+[PyPI](https://pypi.org/project/hermes-plugin-guard/) with
+[pipx](https://pipx.pypa.io/stable/) (recommended for command-line tools):
+
+```bash
+pipx install duckwork-plugin-guard
+```
+
+Alternatively, install reproducibly from the tagged GitHub source:
+
+```bash
+pipx install \
+  "git+https://github.com/mauricemohr88-debug/hermes-plugin-guard.git@v0.2.1"
+```
+
+Or install from a local checkout:
+
+```bash
+git clone https://github.com/DuckMind/duckwork
+cd duckwork-plugin-guard
+python -m pip install .
+```
+
+Both `hpg` and `duckwork-plugin-guard` invoke the same command.
+
+## Native Duckwork v0.20.5+ integration
+
+Duckwork Plugin Guard can also be installed as a native, review-only Duckwork plugin from Git. The
+`/src` suffix is intentional: current Duckwork releases scan that runtime-only subtree before
+installation, without including this project's deliberately adversarial test fixtures. Keep the
+plugin disabled during installation, then enable the guard itself without granting tool-override
+permission:
+
+```bash
+duckwork plugins install mauricemohr88-debug/duckwork-plugin-guard/src --no-enable
+duckwork plugins enable duckwork-plugin-guard --no-allow-tool-override
+```
+
+Duckwork v0.20.5 and v0.20.6 do not retain `.git` metadata for a subdirectory installation, so
+`duckwork plugins update duckwork-plugin-guard` cannot update this layout. Disable an existing
+installation **before** replacing its files; `--no-enable` by itself does not disable a plugin
+that is already enabled. Then reinstall the same reviewed source and enable it again only after
+review:
+
+```bash
+duckwork plugins disable duckwork-plugin-guard
+duckwork plugins install mauricemohr88-debug/duckwork-plugin-guard/src \
+  --force \
+  --no-enable
+duckwork plugins enable duckwork-plugin-guard --no-allow-tool-override
+```
+
+The package also advertises the standard `duckwork_agent.plugins` entry point. That path is useful
+only when `duckwork-plugin-guard` is installed into the **same Python environment as Duckwork**;
+installing the standalone CLI with `pipx` intentionally uses a separate environment. Use either
+the Git subdirectory installation or the same-environment package entry point as the native
+plugin source, not both.
+
+In a new Duckwork process you can use the operator CLI:
+
+```bash
+duckwork plugin-guard rules
+duckwork plugin-guard scan /path/to/a/plugin --fail-on high
+```
+
+The safest manual review sequence for another Git plugin is:
+
+```bash
+duckwork plugins install owner/repository --no-enable
+duckwork plugin-guard installed plugin-name --fail-on high
+duckwork plugins enable plugin-name --no-allow-tool-override
+```
+
+Duckwork also receives one read-only model tool, `plugin_guard_review_candidate`. It accepts only an
+installed plugin key below `DUCKWORK_HOME/plugins`, refuses currently enabled plugins, applies fixed
+high-severity policy, and returns at most 20 findings. The strict native path scans runtime-capable
+directories such as `tests`, `build`, and `generated`, rejects unsupported executable binaries,
+and runs the analyzer in a single resource-bounded worker. Its response contains only rule IDs,
+severity, opaque location IDs, bounded line numbers, and bounded counts; it omits filenames,
+source, finding messages, evidence, dependency strings, secrets, internal tree digests, and
+absolute paths. That bounded response becomes part of the active Duckwork conversation and may
+therefore be sent to the configured model provider. Exclusive, model-provider, and
+Duckwork-detected legacy memory or cron-scheduler plugins use separate activation paths. Those
+candidates are rejected by this tool rather than being incorrectly described as disabled.
+
+This integration does **not** intercept or replace Duckwork' native install, update, enable, or load
+paths. Duckwork v0.20 has no third-party plugin-admission hook, so the guard cannot honestly enforce
+a scan before every activation. Duckwork' own install-time scanner is a separate host control. The
+native surface here is a convenient additional review step; the operator still makes the
+activation decision. Its private before/after digest detects endpoint changes during a review,
+but it is not an atomic filesystem snapshot or sandbox. A generic
+[upstream admission-policy proposal](https://github.com/DuckMind/duckwork)
+is already registered with the Duckwork plugin-interface tracker.
+
+## Usage
+
+Scan one plugin directory:
+
+```bash
+hpg scan /path/to/my-plugin
+```
+
+Scan a repository containing multiple plugins and fail when a high or critical finding exists:
+
+```bash
+hpg scan /path/to/plugins-repository --fail-on high
+```
+
+The scanner recognizes directory plugins using `plugin.yaml`, dashboard-only plugins using
+`dashboard/manifest.json`, and pip-distributed plugins using
+`[project.entry-points."duckwork_agent.plugins"]` in `pyproject.toml`.
+
+Write machine-readable results:
+
+```bash
+hpg scan ./my-plugin --format json --output hpg.json
+hpg scan ./my-plugin --format sarif --output hpg.sarif
+```
+
+Show GitHub workflow annotations:
+
+```bash
+hpg scan ./my-plugin --format github
+```
+
+Exclude a reviewed rule for one invocation:
+
+```bash
+hpg scan ./my-plugin --exclude HPG106 --exclude HPG203
+```
+
+List the complete rule catalog and remediation guidance:
+
+```bash
+hpg rules
+```
+
+The default failure threshold is `high`. Use `--fail-on critical`, `high`, `medium`,
+`low`, `info`, or `none` to set policy. Exit code `0` means no finding reached the selected
+threshold, `1` means the policy threshold was reached, and `2` indicates an invocation or scan
+error.
+
+## Output
+
+`hpg` keeps rule IDs stable so findings can be discussed and tracked across runs.
+
+| Format | Intended use |
+| --- | --- |
+| `text` | Human-readable local review (default) |
+| `github` | File and line annotations in GitHub Actions logs |
+| `json` | Automation, baselines, and custom reporting |
+| `sarif` | SARIF-compatible code-scanning consumers |
+
+JSON includes the scan root, plugin and file counts, severity totals, sorted findings, and a
+stable fingerprint for each finding. SARIF includes rule metadata and source locations. Output is
+deterministic for unchanged inputs.
+
+## GitHub Actions
+
+The repository includes a composite action:
+
+```yaml
+name: Plugin security
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: mauricemohr88-debug/duckwork-plugin-guard@v0.2.1
+        with:
+          path: path/to/plugin
+          fail-on: high
+          format: github
+```
+
+For stronger supply-chain controls, pin `duckwork-plugin-guard` to a reviewed full commit SHA
+instead of a moving tag.
+
+## Rules at a glance
+
+| IDs | Area | Examples |
+| --- | --- | --- |
+| `HPG001`–`HPG006` | Declaration | Missing or invalid declarations, unknown kind, entry point and hook drift |
+| `HPG101`–`HPG112` | Python | Execution, deserialization, processes, sensitive paths, network and privileged behavior |
+| `HPG201`–`HPG204` | Supply chain | Likely secrets, mutable dependencies, unbounded versions, remote installers |
+| `HPG301`–`HPG303` | Project | License, security policy, and automated tests |
+
+Run `hpg rules` for the current severity, explanation, and suggested remediation for every rule.
+
+### Network-egress inventory
+
+`HPG106` reports that a plugin imports a network-capable module. `HPG112` is more specific: it
+reports a concrete outbound request or connection and records the statically visible destination.
+The scanner never resolves DNS or makes a request while doing this.
+
+Destination evidence is deliberately limited to the scheme, hostname, and port. User information,
+paths, query strings, fragments, headers, and payloads are never copied into a finding. Dynamic or
+relative destinations are reported as `<dynamic destination>`. Loopback calls default to low,
+encrypted external calls to medium, and explicitly cleartext HTTP, FTP, WebSocket, or gRPC and
+link-local/cloud-metadata targets to high. Raw TCP and SMTP stay medium because the protocol may
+upgrade to TLS after connecting.
+
+## Threat model
+
+The scanner assumes a plugin directory may be untrusted and inspects it without importing its
+Python modules. It aims to catch explicit, statically visible patterns that deserve human review.
+It also helps maintainers enforce a consistent minimum policy in pull requests.
+
+Scanning is a review aid, not a sandbox, signature verifier, malware detector, or proof that a
+plugin is safe. Enabling a plugin still grants its code the permissions of the Duckwork process.
+Review the source, dependencies, requested environment variables, network destinations, and
+maintainer history before installation.
+
+## Limitations
+
+- Static analysis cannot reliably resolve dynamically constructed names, paths, commands, or
+  network destinations.
+- Egress checks cover common Python HTTP, WebSocket, socket, FTP, SMTP, and gRPC APIs. Calls hidden
+  behind dependencies, arbitrary SDK wrappers, native extensions, or dashboard JavaScript can
+  require manual review.
+- A finding describes a risky capability or pattern, not necessarily a vulnerability.
+- The absence of findings does not establish safety.
+- Secret matching is heuristic and may produce false positives or miss encoded or split secrets.
+- Dependency checks inspect `requirements*.txt`, `pyproject.toml`, and relevant `plugin.yaml`
+  declarations; they do not resolve, download, or audit dependency contents.
+- Symlinks and oversized files are skipped rather than followed or executed.
+- Suppressions are command-line policy choices and should be documented in the consuming project.
+
+If a result looks wrong, please open an issue with the smallest safe reproducer. Never attach
+live credentials or private plugin code to a public report.
+
+## Development and contributing
+
+Contributions are welcome, especially focused detection rules with both positive and negative
+tests. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and design expectations,
+[SECURITY.md](SECURITY.md) for private vulnerability reporting, and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

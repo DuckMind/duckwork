@@ -1,0 +1,67 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-tenuo"
+version = "0.1.3"
+description = "Tenuo authorization plugin for Duckwork Agent"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Tenuo AI" }]
+keywords = ["duckwork", "authorization", "agents", "security", "warrants", "tenuo"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "tenuo>=0.3.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+duckwork-tenuo = "duckwork_tenuo.cli:main"
+
+[project.entry-points."duckwork_agent.plugins"]
+duckwork-tenuo = "duckwork_tenuo"
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Documentation = "https://github.com/DuckMind/duckwork"
+Repository = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["duckwork_tenuo*"]
+
+[tool.setuptools.package-data]
+duckwork_tenuo = ["skills/*/SKILL.md"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+src = ["."]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]

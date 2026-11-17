@@ -1,0 +1,372 @@
+# duckwork-vector-platform
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Duckwork plugin](https://img.shields.io/badge/Duckwork-platform%20plugin-blue)](https://github.com/DuckMind/duckwork)
+
+Standalone **Vector** ([vectorapp.io](https://vectorapp.io)) messaging gateway for [Duckwork Agent](https://github.com/DuckMind/duckwork).
+
+This is a **user-installed platform plugin**. After enable + setup, Duckwork is a first-class Vector bot (its own nsec/npub), talking through a local Rust sidecar that wraps [`vector-sdk`](https://crates.io/crates/vector_sdk). It does not log in as your personal Vector account.
+
+| | |
+|---|---|
+| Plugin id | `vector-platform` |
+| Platform name | `vector` (toolset `duckwork-vector`) |
+| Installs to | `~/.duckwork/plugins/vector-platform/` |
+
+Duckwork plugin docs: [user guide](https://duckwork-agent.fordex.com/docs/user-guide/features/plugins) · [platform adapters](https://duckwork-agent.fordex.com/docs/developer-guide/adding-platform-adapters)
+
+<img src="https://github.com/DuckMind/duckwork">
+
+## Install
+
+You need [Duckwork Agent](https://duckwork-agent.fordex.com/) and the [Vector](https://vectorapp.io) app (have **your** npub ready — hex, `npub1…`, or `nostr:npub1…`). Setup creates the bot identity. Linux and macOS (x86_64 / aarch64) get a prebuilt `vector-bridge`; otherwise you need Rust **≥ 1.75** so setup can compile it.
+
+Third-party platform plugins stay **off until you enable them**. Bundled channels (Telegram, Discord, …) auto-load; this one does not.
+
+### Plugin Catalog
+
+<a href="https://duckwork-agent.fordex.com/docs/plugins/vector-platform">Duckwork Agent Plugin Catalog</a>
+
+```bash
+duckwork plugin install vector-platform
+```
+
+### CLI from repo
+
+```bash
+duckwork plugins install BonesGit/duckwork-vector-platform --enable
+```
+
+`--enable` adds `vector-platform` to `plugins.enabled` in `~/.duckwork/config.yaml` with no prompt. Without it, install asks `Enable 'vector-platform' now? [y/N]` (default no). Confirm with `duckwork plugins list`.
+
+## Setup
+
+```bash
+duckwork gateway setup
+# pick Vector → create or import identity, enter YOUR Vector npub
+duckwork gateway restart
+```
+
+That is the whole first-run path. Setup will:
+
+1. Resolve `vector-bridge` (`VECTOR_BRIDGE_BIN`, an in-tree `bridge/target/release/vector-bridge`, or an installed prebuilt under `plugin-data/vector-platform/bin/`). If missing **or the `.version` stamp does not match this plugin**, download `vector-bridge-<triple>` + `SHA256SUMS` from the `v{plugin version}` GitHub Release (Linux / macOS, x86_64 and aarch64). Cargo (`cd bridge && cargo build --release --locked`, Rust ≥ 1.75) is the fallback. Download and build happen **only** in setup, never at `duckwork gateway start`. Gateway start still uses a previously installed prebuilt if the stamp lags (so a Python-only plugin update keeps working); re-run setup to refresh it.
+2. Run `--check` (read-only) against `VECTOR_DATA_DIR` (default `plugin-data/vector-platform/sdk`).
+3. Create a new identity, or import an existing one (nsec **or** 12-word mnemonic). Secrets go through a temp `0600` file, never the sidecar env. **Do not** save nsec or mnemonic to `.env`.
+4. Require **your** Vector npub (`hex` / `npub1` / `nostr:npub1`) as `VECTOR_HOME_CHANNEL` and the first `VECTOR_ALLOWED_USERS` entry.
+5. Save only `VECTOR_NPUB`, `VECTOR_HOME_CHANNEL`, and `VECTOR_ALLOWED_USERS` to `.env`. Profile and pairing go in `config.yaml` `vector:`. Communities stay off the wizard — set `vector.communities` later if you want groups.
+6. Merge `display.platforms.vector` (and the `vector:` block) into `~/.duckwork/config.yaml`.
+
+Then open the Vector app. On first gateway start the bot DMs **your** npub (`VECTOR_HOME_CHANNEL`) a hello so the chat appears. Reply there. Share the **bot** npub (`VECTOR_NPUB`) with anyone else who should reach it.
+
+### Identity files
+
+Both live under `VECTOR_DATA_DIR` (default `~/.duckwork/plugin-data/vector-platform/sdk/`), mode `0600`. Replacing `identity.nsec` **is** a new bot.
+
+| File | When it is written | Needed to run? |
+|------|--------------------|----------------|
+| `identity.nsec` | **Create** and **import** (from nsec or from mnemonic). | **Yes.** The sidecar loads this on every start and will not mint a replacement. Delete it and the bot will not start until you re-run setup and import from a backup. |
+| `identity.mnemonic` | **Create**, and **mnemonic import** (the phrase is copied here). Nsec-only import cannot invent a seed, so this file is omitted. | **No.** Runtime never reads it. After you have an offline copy you can delete it; the bot keeps working as long as `identity.nsec` stays. |
+
+On import you enter **either** the nsec or the mnemonic — not both. Mnemonic import writes both files; nsec import writes only `identity.nsec`.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph VectorNet["Vector / Nostr"]
+    Peer["Peer Vector app<br/>npub1peer…"]
+    Relays["Trusted relays"]
+  end
+
+  subgraph Sidecar["vector-bridge (Rust, one process)"]
+    SDK["VectorBot<br/>nsec in GuardedKey vault"]
+    HTTP["127.0.0.1:8096<br/>HTTP + SSE + token"]
+    SDK --> Relays
+    Relays --> SDK
+  end
+
+  subgraph DuckworkGW["Duckwork gateway (Python)"]
+    Adapter["VectorAdapter<br/>BasePlatformAdapter"]
+    Authz["_is_user_authorized<br/>allowlists + pairing"]
+    Sessions["SessionManager<br/>agent:main:vector:dm:npub1…"]
+    Agent["AIAgent"]
+  end
+
+  Peer -->|NIP-17 gift wrap| Relays
+  SDK <--> HTTP
+  HTTP <-->|loopback + X-Duckwork-Sidecar-Token| Adapter
+  Adapter --> Authz --> Sessions --> Agent
+  Agent -->|send / typing| Adapter
+```
+
+`VectorAdapter.connect()` generates a spawn-time `X-Duckwork-Sidecar-Token`, starts `vector-bridge` with `stdin=PIPE` + `VECTOR_SIDECAR_WATCH_STDIN=1` (parent-death), polls authenticated `GET /health` until `status=ready`, then subscribes to `GET /events` (SSE). DMs map as `chat_id = user_id = peer npub`.
+
+**SSE delivery.** The adapter tracks the last event id it finished dispatching and sends it as `Last-Event-ID` when the stream reconnects. The sidecar retains the most recent 256 items and replays everything after that point, so a dropped stream recovers the gap instead of losing it. A resume id older than the retained window replays the whole window (inbound dedup absorbs the overlap); a fresh connect with no resume point replays nothing, so a gateway restart does not re-run old turns. Anything no live client accepted is logged with its id and counted in `GET /health` as `sse_dropped` (`sse_retained` is the current replay depth). The missed-DM cursor advances only on real delivery, so anything replay cannot cover is still ❌'d by the catch-up.
+
+**Replay costs one turn per chat, not one per message.** A peer who fires off six messages into a dead stream is waiting on an answer to the last one, and six agent turns is six times the GPU. So replay is shaped before it is delivered: messages past the age horizon are skipped, the batch is capped, and every replayed message that a newer one in the same chat supersedes is flagged `superseded`. The adapter files those in the session transcript as context (no turn) and runs only the newest per chat. Skipped messages keep their cursor untouched, so they surface as ❌ catch-up marks rather than vanishing. Tune it under `vector.replay` in `config.yaml` (see below).
+
+Duckwork narrows this further on its own: `_pending_messages` holds **one** pending event per session, and the default busy mode is `interrupt`, so even a burst that does reach it collapses rather than stacking.
+
+## Environment variables
+
+Duckwork pairing and cron need these in `~/.duckwork/.env`. Setup writes only these three — not secrets, not defaults.
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `VECTOR_NPUB` | yes | Bot public key (`npub1…`); written by setup |
+| `VECTOR_ALLOWED_USERS` | recommended | Comma-separated npubs allowed to **DM** the bot. Also grants community turns. Pairing is DM-only. `duckwork pairing approve` writes back here. |
+| `VECTOR_HOME_CHANNEL` | for cron | Operator npub for cron and join notices (channel ids) |
+
+Do **not** put `nsec` or a mnemonic in `.env`. Import through the setup prompt; identity lives in `sdk/identity.nsec` (and optional `sdk/identity.mnemonic`).
+
+Sidecar plumbing stays getenv overrides (not in `plugin.yaml`, not written by the wizard): `VECTOR_DATA_DIR` (default `plugin-data/vector-platform/sdk`), `VECTOR_BRIDGE_BIN`, `VECTOR_BRIDGE_HOST` (default `127.0.0.1`), `VECTOR_BRIDGE_PORT` (default `8096`), `VECTOR_STARTUP_TIMEOUT` (default `60`; the plugin floors `DUCKWORK_GATEWAY_PLATFORM_CONNECT_TIMEOUT` to `90` when that env is unset).
+
+`VECTOR_SIDECAR_TOKEN` is generated at spawn time. Never put nsec in the sidecar environment or in the plugin install tree. Legacy `VECTOR_*` keys for profile / communities / pairing still win over YAML if you already set them.
+
+## `config.yaml` (`vector:`)
+
+Profile, communities, reactions, replay, pairing, and prebuilt sidecar fetch live here. Env still overrides if set for the older `VECTOR_*` keys. Setup writes non-default answers; omit a key to keep the code default. The wizard does not prompt `replay` or `prebuilt` and will not clobber them.
+
+```yaml
+# ~/.duckwork/config.yaml
+vector:
+  bot:
+    name: "Duckwork"                   # public kind-0; omit = do not publish a name
+    about: "Duckwork on Vector"        # omit = do not publish about
+    # avatar/banner: files at sdk/avatar.* / sdk/banner.* if present
+  unauthorized_dm_behavior: ignore   # omit (default pair) = pairing codes
+  reactions: false                   # 👀/✅/❌ on the triggering DM; default off
+  missed_react: true                 # ❌ on DMs that arrived while the sidecar was down
+  slash_commands: true               # Vector / picker (kind 10304); typed /approve still works
+  replay:                            # how much backlog a reconnect is allowed to cost
+    max_messages: 5                  # items replayed per reconnect, newest first; 0 = never replay
+    max_age_secs: 600                # skip messages older than this; 0 = no age limit
+  prebuilt:                          # GitHub Release sidecar; omit = download the matching tag
+    download: true                   # false = cargo only (Linux / macOS download by default)
+    # repo: BonesGit/duckwork-vector-platform
+    # tag: v0.5.3                    # omit = v{plugin version}
+  communities:
+    create: false                    # true = bot-owned private home room after Ready
+    name: Duckwork                     # only used when create is true
+    download_all: false              # true = download every group file on arrival
+    invite_policy: whitelist         # whitelist | manual (public is refused)
+    group_allowed_users: []          # npubs who may @mention without DM access
+    open_channels: []                # 64-hex channel ids; any member may @mention / reply
+    trusted_inviters: []             # empty = VECTOR_ALLOWED_USERS
+  group_context:                     # inject recent channel lines on a mention turn
+    enabled: false                   # true / VECTOR_GROUP_CONTEXT=1
+    max_messages: 20                 # 0 = no client cap (sidecar still clamps at 50)
+    max_chars: 8000                  # 0 = no char cap
+    max_age_secs: 7200               # 2 hours; 0 = no age limit
+```
+
+Display / tool-progress stays under `display.platforms.vector` (next section).
+
+## Display / tool progress
+
+Vector edits in place (`POST /edit` → `Channel::edit`). Duckwork tool-progress **accumulates on one bubble** (`tool_progress: new`). Token streaming stays off — each edit is another NIP-17 gift wrap. Setup merges `display.platforms.vector` (comment-preserving when `ruamel.yaml` is available; otherwise a full dump of `config.yaml`):
+
+```yaml
+# ~/.duckwork/config.yaml
+display:
+  platforms:
+    vector:
+      tool_progress: new
+      interim_assistant_messages: false
+      long_running_notifications: false
+      busy_ack_detail: false
+      streaming: false
+```
+
+There is no `display.platform_tool_progress` key. Without the YAML override the plugin inherits Duckwork' global `tool_progress: all` (still edited in place, just noisier). Vector **does** render markdown. Setup still writes this block when you decline “Reconfigure Vector?” so a pre-existing `VECTOR_NPUB` gets the same override. Re-run `duckwork gateway setup` (skip reconfigure) to flip an older `tool_progress: off` install.
+
+Session titles use the peer’s public kind-0 **name** (then `display_name`) via sidecar `GET /profile?npub=`. No card → truncated npub. Concord rooms use the **community** name (what Vector shows in the chat list). The default channel `general` is omitted; extra rooms append ` · channel`. Inbound `user_name` uses the last fetched label; this is not a live subscription to profile edits.
+
+## Default-deny inbox
+
+`VECTOR_ALLOWED_USERS` plus optional Duckwork pairing codes. Setup requires the operator npub as the first allowlisted user. The wizard defaults pairing **off** (`vector.unauthorized_dm_behavior: ignore`) so unknown npubs are dropped before `handle_message`. Answer Y to send pairing codes instead; `duckwork pairing approve` writes back into `VECTOR_ALLOWED_USERS`. Omitting the YAML key still means pairing on (the code default).
+
+**Communities:** invite the bot from a trusted npub (`VECTOR_ALLOWED_USERS`, or `vector.communities.trusted_inviters`) and it auto-joins. It then listens in that room — no channel id in `.env`. A turn still needs an @mention, a reply-to-bot, or a registered slash command (`@everyone` never counts). The sender is allowed if they have DM access (`VECTOR_ALLOWED_USERS`), they are in `vector.communities.group_allowed_users` (group-only, no DM), or the channel is in `vector.communities.open_channels`. Pairing is **not** offered in a channel.
+
+## Communities
+
+Concord communities are E2E encrypted group spaces with channels. A **fresh community is private** (direct gift-wrapped invites only). Minting a public invite link is what flips Concord to public mode — this plugin does **not** mint those links.
+
+**Join-first (smallest path):**
+
+1. In the Vector app, create a community and **direct-invite** the bot npub (`VECTOR_NPUB`).
+2. The sidecar auto-accepts only if the inviter is in `vector.communities.trusted_inviters` or `VECTOR_ALLOWED_USERS`. Anyone else stays parked (`invite_policy: manual` parks everyone).
+3. Duckwork only runs a turn on **@mention** (`@npub1…`, `nostr:npub1…`, `@` plus the bot's published name), **reply to a bot message**, or a **registered slash command** (`/approve`, `/deny`, …). `@everyone` is ignored. That turn sees only the triggering line unless you opt into group history (next paragraph).
+4. Who may trigger that turn: `VECTOR_ALLOWED_USERS` (DM list, also groups), `vector.communities.group_allowed_users` (group-only, no DMs), or any member if the channel is in `vector.communities.open_channels`. Duckwork session key is `agent:main:vector:group:<channel-hex>`.
+
+**Group history (off by default):** set `vector.group_context.enabled: true` or `VECTOR_GROUP_CONTEXT=1`. On a turn that already passed the mention/reply/slash gate, the adapter fetches the channel page ending at that message (`GET /channels/{id}/history?before_at_ms&before_id`) and attaches it as `channel_context`. The trigger stays the user message. Labels come from the sidecar's local profile cache (`GET /profile?local=true`), not a relay fetch; a missing kind-0 stays a truncated npub. The bot's own lines are `[bot]`. Message text is flattened to one line, and a line that crosses the char budget is clipped. `0` on `max_messages` or `max_chars` means no client cap (the sidecar still returns at most 50 messages). An older sidecar without the history route logs one warning and the turn still runs. This does not start turns for missed chatter and does not change DM sessions.
+
+The Vector app does not display channel ids. When the bot joins (trusted invite, `vector.communities.create`, connect-time membership sync, or a home-DM `/join`) it logs the full 64-hex `channel_id` and DMs `VECTOR_HOME_CHANNEL` a copy-pasteable notice. Restart does not re-DM the same id (`sdk/notified-channels.json`). Parked (untrusted) invites stay **silent** — no home DM when they land. List, join, or decline them from the home DM with `/invites`, `/join <community_id>`, `/decline <community_id>` (not on the `/` picker).
+
+**Bot-owned home room:** set `vector.communities.create: true`. After Ready the sidecar creates or reuses a private community, persists `sdk/home-community.json` (restart will not create a second one), and direct-invites `VECTOR_ALLOWED_USERS`. No public invite URL, and the new channel is **not** written into `open_channels`. Direct-invited allowlisted members can already @mention; anyone else needs `group_allowed_users` or the channel id in `open_channels`.
+
+Community **reactions** and missed-❌ catch-up stay DM-only. Missed Concord
+messages while the sidecar was down are **ignored** (no ❌, no Duckwork turn).
+Concord channels are text, slash commands, and **file attachments**. The Vector
+app sends group files with no caption and no @mention on that event. Default: the bot stashes
+metadata and **does not download** until someone **replies to that file** and
+@mentions the bot. A mention-only reply stores the file (session breadcrumb, no
+AI turn). Extra text on that reply starts a turn with `media_urls`. Set
+`vector.communities.download_all: true` to download every group file on arrival
+(still silent in the room); the same reply+mention flow starts a turn.
+
+## Slash commands
+
+The sidecar publishes a Vector **kind 10304** command manifest so the app `/`
+picker lists **`/approve` and `/deny` only**. Optional args are a trailing
+string (`/approve session`, `/approve all always`, `/deny all`). The sidecar
+SSE-forwards the original text to Duckwork.
+
+| Command | Arguments |
+|---------|-----------|
+| `/approve` | `once` (default), `session`, `always`, `all`, `all session`, `all always` |
+| `/deny` | optional `all` and/or a reason |
+
+In a Concord channel these do **not** need an @mention (the people-gate still
+applies). Chatter that is not a registered command stays mention-gated.
+`vector.slash_commands: false` skips publishing the picker; typed `/approve` in a
+DM still reaches Duckwork as plain text. This is **not** Concord kick/ban/invite
+— those stay operator tools, not room slash commands.
+
+## Block list and deletes
+
+**Mute a DM peer** (Vector's block list, not a Concord kick/ban). Only from
+the **`VECTOR_HOME_CHANNEL` DM** (your npub talking to the bot), type:
+
+| Command | Effect |
+|---------|--------|
+| `/block <npub>` | Mute that peer. Their DMs are dropped (no pairing, no turn). |
+| `/unblock <npub>` | Unmute. |
+| `/blocked` | List muted npubs. |
+
+These are **not** on the Vector `/` picker. The sidecar also exposes
+`POST /block` `{npub, unblock?}` and `GET /block`. Blocking the bot or
+yourself is refused.
+
+**Parked community invites** (untrusted inviter, or `vector.communities.invite_policy: manual`).
+They stay silent — the home channel is never pinged when something parks.
+Only from the **`VECTOR_HOME_CHANNEL` DM**, type:
+
+| Command | Effect |
+|---------|--------|
+| `/invites` | List parked rows (`community_id`, name, inviter). |
+| `/join <community_id>` | Accept and join. Replies with `channel_id:` lines (same as a trusted auto-join). Does **not** add the inviter to `VECTOR_ALLOWED_USERS`. |
+| `/decline <community_id>` | Drop the parked row without joining. |
+
+Not on the Vector `/` picker. Sidecar: `GET /invites`,
+`POST /invites/accept` `{community_id}`, `POST /invites/decline` `{community_id}`.
+
+**Retract a bot message:** Duckwork calls `delete_message` → `POST /delete`
+`{to, message_id}` → `Channel::delete` (DM or Concord). Used for ephemeral
+TTL and stream-preview cleanup.
+
+**Inbound deletes:** `BotEvent::Delete` is SSE `message_delete`. The adapter
+forgets last-inbound / pending-file pointers for that id and does **not**
+start a Duckwork turn.
+
+## Files / attachments
+
+Inbound files from allowlisted peers are decrypted into:
+
+```text
+~/.duckwork/plugin-data/vector-platform/files/inbox/{npub}/{YYYY-MM-DD}/
+~/.duckwork/plugin-data/vector-platform/files/inbox/{channel-id}/{npub}/{YYYY-MM-DD}/
+```
+
+(DMs use the peer npub path; community files nest under the 64-hex channel id.) A sibling `.meta.json` and an append-only `files/index.jsonl` record original name, size, mime, and Vector event id. **No outbox copies** — files Duckwork sends you exist only on Vector.
+
+- **File, no caption (DMs):** saved, Vector ack (`saved notes.pdf`), and a session breadcrumb (so a later “process the pdf I sent” can see the path). The AI turn is **not** started. Sequential files from the same peer accumulate until the next text, which is attached as `media_urls`.
+- **File + text (DMs):** saved, then a normal Duckwork turn with `media_urls` (images → vision, voice → STT, documents → path note).
+
+**DMs:** unauthorized senders are not downloaded. File-only DMs are saved, acked, and breadcrumbed (no AI turn) until the next text.
+
+**Communities:** the Vector app cannot @mention on a file send. Default (`download_all` off): stash attachment metadata; **download only when a people-gated member replies to that file and @mentions the bot**. Mention-only reply → silent store + session breadcrumb, no turn. Mention + extra text → turn with `media_urls`. `vector.communities.download_all: true` downloads every group file on arrival (no room ack); reply+mention still starts the turn. Outbound `send_image` / `send_document` / video / voice already target the channel.
+
+## Cron delivery
+
+```text
+deliver=vector
+```
+
+Uses `VECTOR_HOME_CHANNEL` (via `cron_deliver_env_var`) and `standalone_sender_fn`, which POSTs to the live sidecar `/send` with `X-Duckwork-Sidecar-Token` from `~/.duckwork/runtime/vector-sidecar.json` (mode `0600`, written on connect).
+
+**Requirement:** the Duckwork **gateway must be running** so `vector-bridge` is up. Cron in a separate process does not spawn its own sidecar.
+
+## Development
+
+```bash
+# from the plugin root
+pytest -q            # needs Duckwork on PYTHONPATH, DUCKWORK_AGENT_ROOT, or ~/.duckwork/duckwork-agent
+cd bridge && cargo test --locked
+```
+
+If your Duckwork has Plugin Doctor:
+
+```bash
+duckwork plugins doctor . --ci
+```
+
+Tests load `adapter.py` as a free module and do **not** construct `Platform("vector")` — `_missing_()` only succeeds once the registry has the plugin.
+
+HTTP sidecar tests set `VECTOR_STUB=1` so they bind localhost HTTP **without** `VectorBot::build` (no live relays). Adapter unit tests mock that HTTP sidecar (no live Vector network). Production `connect()` does **not** set `VECTOR_STUB`. Production serve requires `VECTOR_DATA_DIR` with an existing `identity.nsec` (`--setup` already wrote it) and runs `VectorBot` with `InvitePolicy::Whitelist` (from `VECTOR_ALLOWED_USERS` / `vector.communities.trusted_inviters`) unless `invite_policy: manual`. Do not set `VECTOR_STUB` in the gateway.
+
+## Live DM test (manual)
+
+CI does not talk to Vector relays. After the sidecar is built, identity exists, and the gateway is running:
+
+1. Put **your** Vector npub in `VECTOR_ALLOWED_USERS` (and `VECTOR_HOME_CHANNEL`). Unknown npubs are default-denied; with pairing on they get a Duckwork pairing code instead of a turn.
+2. Share the bot npub (`VECTOR_NPUB`) with that allowlisted peer.
+3. From the Vector app, DM the bot. Duckwork session key is `agent:main:vector:dm:<peer-npub>`.
+4. The bot reply is `POST /send` `{to: <peer-npub>, body}` with `X-Duckwork-Sidecar-Token`.
+
+If inbound is silent: check `~/.duckwork/logs/vector-bridge.log`, that `/health` is `ready`, and that the peer npub is allowlisted (not the bot's own npub).
+
+## Live community test (manual)
+
+1. Create a community in the Vector app and direct-invite the bot. Confirm `vector-bridge.log` shows `community invite` (auto-join if you are allowlisted). You should get a DM from the bot with `channel_id: <64-hex>` (needed for `vector.communities.open_channels`).
+2. In that channel, `@mention` the bot (or reply to a bot message, or `/approve` / `/deny` from the `/` picker). Duckwork session key is `agent:main:vector:group:<channel-hex>`. Unmentioned chatter must not start a turn.
+3. Drop a file in the channel (no mention on that send — Vector has none). Default: it is **not** downloaded yet. Reply to that file bubble and `@mention` the bot: mention-only stores it (no turn); add a question in the reply to start a turn with `media_urls`. `vector.communities.download_all: true` saves files on arrival. Ask Duckwork to send a file back — it should land in the channel, not a DM.
+4. A random npub inviting the bot into another community must stay parked (not on the whitelist) — no join DM. From the home DM, `/invites` lists it; `/join <community_id>` / `/decline <community_id>` act on it.
+
+## Security notes
+
+- Sidecar binds **127.0.0.1** by default; every route except `/live` requires `X-Duckwork-Sidecar-Token`
+- nsec lives at `<VECTOR_DATA_DIR>/identity.nsec` (`0600`), never in `.env` at runtime. That file **is** required to start. `identity.mnemonic` is an optional backup (create / mnemonic import only) and is not read at runtime.
+- `nsec1…` is registered as a Duckwork redaction pattern; adapter logs truncate npub (`npub1abcd…`)
+- Runtime record `~/.duckwork/runtime/vector-sidecar.json` is `0600` and deleted on disconnect
+- Keep `VECTOR_ALLOWED_USERS` tight on personal bots
+- Back up `identity.nsec` (required) and `identity.mnemonic` (if present) offline; replacing the nsec **is** a new bot
+
+## Troubleshooting
+
+Operator checks — use this table and `duckwork gateway status`. There is **no** `duckwork doctor` coverage for this plugin.
+
+| Symptom | Check |
+|---------|--------|
+| Plugin not listed | `duckwork plugins enable vector-platform` then `duckwork plugins list`. User-installed platforms are opt-in (`plugins.enabled`). |
+| Install asked for `VECTOR_NPUB` | Older manifests listed it under `requires_env`. Skip (Enter) and run `duckwork gateway setup`. Current installs do not prompt. |
+| Invalid npub / allowlist ignored | hex, `npub1…`, or `nostr:npub1`. Bech32 charset is `qpzry9x8gf2tvdw0s3jn54khce6mua7l` — no `1`, `b`, `i`, `o` in the payload. `normalize_npub()` is the source of truth (not a loose regex). |
+| `vector-bridge` binary not found | Run `duckwork gateway setup`. It downloads a Release asset into `plugin-data/vector-platform/bin/` (Linux / macOS) or `cargo build --release --locked` in `bridge/`. `VECTOR_BRIDGE_BIN` overrides. `duckwork gateway start` does **not** download or compile. After a plugin update, start still uses a previously installed prebuilt if `.version` lags. |
+| macOS “cannot be opened” / killed on start | Gatekeeper quarantine on the downloaded binary. `xattr -d com.apple.quarantine ~/.duckwork/plugin-data/vector-platform/bin/vector-bridge` |
+| Identity missing / “will not mint” | `identity.nsec` is missing from `VECTOR_DATA_DIR` (default `~/.duckwork/plugin-data/vector-platform/sdk`). Restore it or re-run setup and import. Start never mints. Deleting `identity.mnemonic` does **not** cause this. |
+| Port 8096 in use | `ss -ltnp \| rg 8096` or set `VECTOR_BRIDGE_PORT`. A leftover `vector-bridge` is reaped on connect; a foreign process is a retryable fatal. |
+| Lost the bot / contacts don't recognize it | Restoring needs `identity.nsec` **or** `identity.mnemonic`. Replacing the nsec **is** a new bot (new npub, lost DMs). Identities minted before mnemonic-on-create, or imported from nsec only, have no seed file. |
+| Sidecar is a stub / no live DMs | `VECTOR_STUB` must **not** be set in the gateway. Production `connect()` strips it. Only HTTP unit tests set it (binds without `VectorBot::build`). |
+| Missed DMs while the sidecar was down | Not sent to the agent. After Ready the sidecar reacts ❌ on allowlisted DMs newer than `sdk/missed-seen.json`. First boot only seeds the cursor. `vector.missed_react: false` disables. Missed **community** messages are ignored (no ❌, no turn). Agent react/unreact and optional 👀/✅/❌ acks: see `vector.reactions`. |
+| DM with no reply, sidecar still up | A dropped SSE stream is replayed from `Last-Event-ID` (256-item window), so this should self-heal. Check `sse_dropped` in `GET /health` — non-zero means events outran the window; `~/.duckwork/logs/vector-bridge.log` logs each drop with its id. Undelivered DMs stay unseen in `sdk/missed-seen.json` and get a ❌ on the next sidecar start. |
+| Group messages ignored | The bot must have **joined** (trusted inviter). Then the sender needs `VECTOR_ALLOWED_USERS`, `vector.communities.group_allowed_users`, or the channel in `open_channels`. Mentions (`@bot npub` / `@` display name), a reply to the bot, or a registered slash command (`/approve`, `/deny`, …) are required; `@everyone` is ignored. Pairing is not sent in groups. Group files download when you **reply to the file and @mention** the bot (or set `download_all: true`). |
+| Slash `/approve` missing from the Vector picker | Sidecar must be rebuilt after this feature (`duckwork gateway setup` / `cargo build --release` in `bridge/`). `vector.slash_commands` must not be `false`. Kind-10304 publishes in the background after `BotEvent::Ready` (does not block gateway start). Type `/` in a chat with the bot. Typed `/approve` in a DM works even without the picker. |
+| Bot not joining a community | Inviter npub must be in `trusted_inviters` or `VECTOR_ALLOWED_USERS`. `invite_policy: manual` parks all invites. Parked invites do not ping home — type `/invites` in the `VECTOR_HOME_CHANNEL` DM, or check `/health` `pending_invites`. |
+| Cron `deliver=vector` fails | Gateway must be running. Cron reads `~/.duckwork/runtime/vector-sidecar.json` (`0600`, port + token). |
+| Gateway / sidecar status | `duckwork gateway status`; `~/.duckwork/logs/vector-bridge.log`. Logger is `duckwork_plugins.vector_platform.adapter`. |
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+See also [CHANGELOG.md](CHANGELOG.md) for release history.

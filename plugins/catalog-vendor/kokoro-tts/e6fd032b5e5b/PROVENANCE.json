@@ -1,0 +1,747 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "kokoro-tts",
+  "content_id": "e6fd032b5e5b",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 51,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "cc9a6ca9790549b505840eacd50dfad2c64ff4ece83de6a41512a00245487674"
+    },
+    {
+      "bytes": 1436,
+      "mode": "100644",
+      "path": "AGENTS.md",
+      "sha256": "d5c0d02df901a60554f36854becbf3360768bda8dba385362b806864da27b03a"
+    },
+    {
+      "bytes": 1068,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "2d88284be90fa9c654d2efe9d7f7ea2a04a893ec092ad47d92a3bcdc58043d73"
+    },
+    {
+      "bytes": 9862,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "6d55de04c861a74d0b196e2c69f57fc1fb0bc4c93e6e87896e5917bd84ac60a4"
+    },
+    {
+      "bytes": 839,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "beb69d7e7437abe1a7a951dbed6e89f402fad0779cf92d634c54d12f7ddf9834"
+    },
+    {
+      "bytes": 2371,
+      "mode": "100644",
+      "path": "conftest.py",
+      "sha256": "296ac61a3e1e82161f486a99119b66dea165cd80b32bee5fd7015cc422ca9bd7"
+    },
+    {
+      "bytes": 6608,
+      "mode": "100644",
+      "path": "kokoro_cli.py",
+      "sha256": "dc297e35b4b9e9068fdc5485708770d8336ee0a2faf5fab03f154c44d07df3ec"
+    },
+    {
+      "bytes": 5832,
+      "mode": "100644",
+      "path": "kokoro_language.py",
+      "sha256": "a68cd8e6c54ad45b69c07543f77feb5b2046dfb9fa02167e7be2d55e41ee6a2c"
+    },
+    {
+      "bytes": 5804,
+      "mode": "100644",
+      "path": "kokoro_loanwords.py",
+      "sha256": "59440588b90c01c19849fd9b6b3b2bb8539f769f83ebab4bd76c518be9bd4957"
+    },
+    {
+      "bytes": 12544,
+      "mode": "100644",
+      "path": "kokoro_provider.py",
+      "sha256": "5a07be37d942742cdaeb1c8e337581dd2d5f1d8be9035091f7cced4e570746cd"
+    },
+    {
+      "bytes": 8000,
+      "mode": "100644",
+      "path": "kokoro_service.py",
+      "sha256": "ca2a064818da07ed963444a9ecd2dbcfab3c5a9be5a97f94335a8aabfba34278"
+    },
+    {
+      "bytes": 2160,
+      "mode": "100644",
+      "path": "kokoro_voices.py",
+      "sha256": "683b59852cb0e372310788be116964d30f88f9b380c2aaa04c344d6f618e3ffe"
+    },
+    {
+      "bytes": 2982,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "5ce8c6c8709da3f510e34fdf06e0b9285d066d4aa2a674e41ce20c3c020466b4"
+    },
+    {
+      "bytes": 691,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "73561b848b934a594a77d122a3465b19b962bf8a5d629bda9c18144129210303"
+    },
+    {
+      "bytes": 16582,
+      "mode": "100644",
+      "path": "server/kokoro_server.py",
+      "sha256": "374fb491adcd7379b336e1e795fec97209fabb6c8e6d5c904ef52c3db5bb6aec"
+    },
+    {
+      "bytes": 771,
+      "mode": "100644",
+      "path": "server/requirements.in",
+      "sha256": "24be78f5522b2a633119f744bfaf1433509ff618d277858366e1ec381fce702a"
+    },
+    {
+      "bytes": 1874,
+      "mode": "100644",
+      "path": "server/requirements.lock",
+      "sha256": "3bad1a21be8394c23a56be704c5e5101362d47580a5be479cf85a890023f9011"
+    },
+    {
+      "bytes": 2125,
+      "mode": "100644",
+      "path": "tests/fixtures/g2p.json",
+      "sha256": "a007d25949e30c5da5219afd11970bfc8ba3d0286ff6963313e8d038c54644b3"
+    },
+    {
+      "bytes": 1843,
+      "mode": "100644",
+      "path": "tests/record_g2p.py",
+      "sha256": "3dfea3d4c6da2db99ac9e6e9e3b3d20260ba0fd5a40f3ead5869dfa136e7299b"
+    },
+    {
+      "bytes": 3775,
+      "mode": "100644",
+      "path": "tests/test_language.py",
+      "sha256": "3cdea63e55c4f468ecddc0786d3dbf4706bb654caf3a7ca8653aab0ee7026002"
+    },
+    {
+      "bytes": 4756,
+      "mode": "100644",
+      "path": "tests/test_loanwords.py",
+      "sha256": "a106a3fd551d9ed2a1bf4326a0232f63a2e8d573b146de15885233119fb5002f"
+    },
+    {
+      "bytes": 14288,
+      "mode": "100644",
+      "path": "tests/test_provider.py",
+      "sha256": "a528614fe3c3fb446b7915170d1cf2ae69ca631cd3c16bbc0131d10e8e6f2981"
+    },
+    {
+      "bytes": 11178,
+      "mode": "100644",
+      "path": "tests/test_server.py",
+      "sha256": "7c56db428754d043ecebbb6b869b1c96fac3ffddef5b5d55db44f8c7a360f4b7"
+    },
+    {
+      "bytes": 4227,
+      "mode": "100644",
+      "path": "tests/test_service.py",
+      "sha256": "ff26830655ec762de6f2543798f6eb9b11f2d8bdd8ee7939c00c9b565220d4ea"
+    },
+    {
+      "bytes": 1198,
+      "mode": "100644",
+      "path": "tests/test_voices.py",
+      "sha256": "a6f3e36f79f02f3651125d8deee41e22ea2ea3292036aa02ef640b70b753cc6d"
+    }
+  ],
+  "input_manifest_sha256": "e6fd032b5e5bce56a7e890b83424a8dedc072be6ee7106033a34dc7cb1b88632",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "2d88284be90fa9c654d2efe9d7f7ea2a04a893ec092ad47d92a3bcdc58043d73",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "AGENTS.md",
+      "README.md",
+      "__init__.py",
+      "conftest.py",
+      "kokoro_cli.py",
+      "kokoro_provider.py",
+      "kokoro_service.py",
+      "kokoro_voices.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "server/kokoro_server.py",
+      "tests/test_provider.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/brunosouzas/hermes-kokoro-tts",
+    "sha": "9b682a84ff5b59c1b4d0b340b07b2c188b409e0b",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/brunosouzas/hermes-kokoro-tts",
+  "original_sha": "9b682a84ff5b59c1b4d0b340b07b2c188b409e0b",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".gitignore",
+      "sha256": "cc9a6ca9790549b505840eacd50dfad2c64ff4ece83de6a41512a00245487674",
+      "bytes": 51,
+      "mode": "100644"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "671c8d91d7e830e317ab345b2d49833fd5d9efeeb10cbdd00286075bf6f1aab7",
+      "bytes": 1450,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "2d88284be90fa9c654d2efe9d7f7ea2a04a893ec092ad47d92a3bcdc58043d73",
+      "bytes": 1068,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "e8c7fa4a0715f0ae7c10960d9f107335d10c5b4bed5d7cff49a8e58155036e7e",
+      "bytes": 9956,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "f9cbaba68851db6e72c336e246375dbcf245c8def403bb73ccd7ace863c99ad1",
+      "bytes": 843,
+      "mode": "100644"
+    },
+    {
+      "path": "conftest.py",
+      "sha256": "75320467f6a16dfa0979a7800fdbe0268fe9ea9b6f3f0d8f485441f0da1c00a2",
+      "bytes": 2395,
+      "mode": "100644"
+    },
+    {
+      "path": "kokoro_cli.py",
+      "sha256": "ca27299d4f0dda036fdf84382375c9205892ddb8311cbc1642b75e21cf1b7850",
+      "bytes": 6624,
+      "mode": "100644"
+    },
+    {
+      "path": "kokoro_language.py",
+      "sha256": "a68cd8e6c54ad45b69c07543f77feb5b2046dfb9fa02167e7be2d55e41ee6a2c",
+      "bytes": 5832,
+      "mode": "100644"
+    },
+    {
+      "path": "kokoro_loanwords.py",
+      "sha256": "59440588b90c01c19849fd9b6b3b2bb8539f769f83ebab4bd76c518be9bd4957",
+      "bytes": 5804,
+      "mode": "100644"
+    },
+    {
+      "path": "kokoro_provider.py",
+      "sha256": "700c227eeb43a2c8d9ee6b32a6e9842249392ecedeba0b4a91aa48e8d0d86e9a",
+      "bytes": 12560,
+      "mode": "100644"
+    },
+    {
+      "path": "kokoro_service.py",
+      "sha256": "9dd47ed2290da4511ecae51849674057ed393f564a401cd683eaff987723681c",
+      "bytes": 8012,
+      "mode": "100644"
+    },
+    {
+      "path": "kokoro_voices.py",
+      "sha256": "938f4c541b78a96c98f0727d3464eaf0f27743dca7d1fe8e82366b5ecffff46d",
+      "bytes": 2164,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "977aa06c61e370cbe7190f74f9a9619791cab4fd1cdfaa1ad4703f2a7ef40256",
+      "bytes": 2986,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "757a64449e9ea7cd31760026af9f25c1ed562eb04cb3bc4fc6cf35c6b09bdbd5",
+      "bytes": 699,
+      "mode": "100644"
+    },
+    {
+      "path": "server/kokoro_server.py",
+      "sha256": "21b3ff954533e070a375e413c272b142346209607471dcbef13b6cdc06935a62",
+      "bytes": 16588,
+      "mode": "100644"
+    },
+    {
+      "path": "server/requirements.in",
+      "sha256": "24be78f5522b2a633119f744bfaf1433509ff618d277858366e1ec381fce702a",
+      "bytes": 771,
+      "mode": "100644"
+    },
+    {
+      "path": "server/requirements.lock",
+      "sha256": "3bad1a21be8394c23a56be704c5e5101362d47580a5be479cf85a890023f9011",
+      "bytes": 1874,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/fixtures/g2p.json",
+      "sha256": "a007d25949e30c5da5219afd11970bfc8ba3d0286ff6963313e8d038c54644b3",
+      "bytes": 2125,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/record_g2p.py",
+      "sha256": "3dfea3d4c6da2db99ac9e6e9e3b3d20260ba0fd5a40f3ead5869dfa136e7299b",
+      "bytes": 1843,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_language.py",
+      "sha256": "3cdea63e55c4f468ecddc0786d3dbf4706bb654caf3a7ca8653aab0ee7026002",
+      "bytes": 3775,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_loanwords.py",
+      "sha256": "a106a3fd551d9ed2a1bf4326a0232f63a2e8d573b146de15885233119fb5002f",
+      "bytes": 4756,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_provider.py",
+      "sha256": "4d29c7964d3ad748622130cec86c3a312ac58947a9628cb269f21e9dc70e24fc",
+      "bytes": 14296,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_server.py",
+      "sha256": "7c56db428754d043ecebbb6b869b1c96fac3ffddef5b5d55db44f8c7a360f4b7",
+      "bytes": 11178,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_service.py",
+      "sha256": "ff26830655ec762de6f2543798f6eb9b11f2d8bdd8ee7939c00c9b565220d4ea",
+      "bytes": 4227,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_voices.py",
+      "sha256": "a6f3e36f79f02f3651125d8deee41e22ea2ea3292036aa02ef640b70b753cc6d",
+      "bytes": 1198,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "574d2f462256377882c08cfac18895cc9e97c5dd048891a504fd6c06d0161350",
+  "pin_verification": {
+    "archive_bytes": 39437,
+    "archive_sha256": "f7a27a4861356836799dd06ec3267452984fc40bd26a24a00344b3de6b1c7ac0",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "9b682a84ff5b59c1b4d0b340b07b2c188b409e0b",
+    "verified_commit_marker": "9b682a84ff5b59c1b4d0b340b07b2c188b409e0b"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "4de991225545173fb3d7676f812f54c0848c7ce146ccf28c8fe93828a4f14382",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".gitignore",
+        "input_sha256": "cc9a6ca9790549b505840eacd50dfad2c64ff4ece83de6a41512a00245487674",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cc9a6ca9790549b505840eacd50dfad2c64ff4ece83de6a41512a00245487674",
+        "source": ".gitignore",
+        "final_output_sha256": "cc9a6ca9790549b505840eacd50dfad2c64ff4ece83de6a41512a00245487674",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "cc9a6ca9790549b505840eacd50dfad2c64ff4ece83de6a41512a00245487674"
+      },
+      {
+        "destination": "AGENTS.md",
+        "input_sha256": "d5c0d02df901a60554f36854becbf3360768bda8dba385362b806864da27b03a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "671c8d91d7e830e317ab345b2d49833fd5d9efeeb10cbdd00286075bf6f1aab7",
+        "source": "AGENTS.md",
+        "final_output_sha256": "671c8d91d7e830e317ab345b2d49833fd5d9efeeb10cbdd00286075bf6f1aab7",
+        "cli_destination": "AGENTS.md",
+        "previous_staging_sha256": "671c8d91d7e830e317ab345b2d49833fd5d9efeeb10cbdd00286075bf6f1aab7"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "2d88284be90fa9c654d2efe9d7f7ea2a04a893ec092ad47d92a3bcdc58043d73",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "2d88284be90fa9c654d2efe9d7f7ea2a04a893ec092ad47d92a3bcdc58043d73",
+        "source": "LICENSE",
+        "final_output_sha256": "2d88284be90fa9c654d2efe9d7f7ea2a04a893ec092ad47d92a3bcdc58043d73",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "2d88284be90fa9c654d2efe9d7f7ea2a04a893ec092ad47d92a3bcdc58043d73"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "6d55de04c861a74d0b196e2c69f57fc1fb0bc4c93e6e87896e5917bd84ac60a4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e8c7fa4a0715f0ae7c10960d9f107335d10c5b4bed5d7cff49a8e58155036e7e",
+        "source": "README.md",
+        "final_output_sha256": "e8c7fa4a0715f0ae7c10960d9f107335d10c5b4bed5d7cff49a8e58155036e7e",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "e8c7fa4a0715f0ae7c10960d9f107335d10c5b4bed5d7cff49a8e58155036e7e"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "beb69d7e7437abe1a7a951dbed6e89f402fad0779cf92d634c54d12f7ddf9834",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f9cbaba68851db6e72c336e246375dbcf245c8def403bb73ccd7ace863c99ad1",
+        "source": "__init__.py",
+        "final_output_sha256": "f9cbaba68851db6e72c336e246375dbcf245c8def403bb73ccd7ace863c99ad1",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "f9cbaba68851db6e72c336e246375dbcf245c8def403bb73ccd7ace863c99ad1"
+      },
+      {
+        "destination": "conftest.py",
+        "input_sha256": "296ac61a3e1e82161f486a99119b66dea165cd80b32bee5fd7015cc422ca9bd7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "75320467f6a16dfa0979a7800fdbe0268fe9ea9b6f3f0d8f485441f0da1c00a2",
+        "source": "conftest.py",
+        "final_output_sha256": "75320467f6a16dfa0979a7800fdbe0268fe9ea9b6f3f0d8f485441f0da1c00a2",
+        "cli_destination": "conftest.py",
+        "previous_staging_sha256": "75320467f6a16dfa0979a7800fdbe0268fe9ea9b6f3f0d8f485441f0da1c00a2"
+      },
+      {
+        "destination": "kokoro_cli.py",
+        "input_sha256": "dc297e35b4b9e9068fdc5485708770d8336ee0a2faf5fab03f154c44d07df3ec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca27299d4f0dda036fdf84382375c9205892ddb8311cbc1642b75e21cf1b7850",
+        "source": "kokoro_cli.py",
+        "final_output_sha256": "ca27299d4f0dda036fdf84382375c9205892ddb8311cbc1642b75e21cf1b7850",
+        "cli_destination": "kokoro_cli.py",
+        "previous_staging_sha256": "ca27299d4f0dda036fdf84382375c9205892ddb8311cbc1642b75e21cf1b7850"
+      },
+      {
+        "destination": "kokoro_language.py",
+        "input_sha256": "a68cd8e6c54ad45b69c07543f77feb5b2046dfb9fa02167e7be2d55e41ee6a2c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a68cd8e6c54ad45b69c07543f77feb5b2046dfb9fa02167e7be2d55e41ee6a2c",
+        "source": "kokoro_language.py",
+        "final_output_sha256": "a68cd8e6c54ad45b69c07543f77feb5b2046dfb9fa02167e7be2d55e41ee6a2c",
+        "cli_destination": "kokoro_language.py",
+        "previous_staging_sha256": "a68cd8e6c54ad45b69c07543f77feb5b2046dfb9fa02167e7be2d55e41ee6a2c"
+      },
+      {
+        "destination": "kokoro_loanwords.py",
+        "input_sha256": "59440588b90c01c19849fd9b6b3b2bb8539f769f83ebab4bd76c518be9bd4957",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "59440588b90c01c19849fd9b6b3b2bb8539f769f83ebab4bd76c518be9bd4957",
+        "source": "kokoro_loanwords.py",
+        "final_output_sha256": "59440588b90c01c19849fd9b6b3b2bb8539f769f83ebab4bd76c518be9bd4957",
+        "cli_destination": "kokoro_loanwords.py",
+        "previous_staging_sha256": "59440588b90c01c19849fd9b6b3b2bb8539f769f83ebab4bd76c518be9bd4957"
+      },
+      {
+        "destination": "kokoro_provider.py",
+        "input_sha256": "5a07be37d942742cdaeb1c8e337581dd2d5f1d8be9035091f7cced4e570746cd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "700c227eeb43a2c8d9ee6b32a6e9842249392ecedeba0b4a91aa48e8d0d86e9a",
+        "source": "kokoro_provider.py",
+        "final_output_sha256": "700c227eeb43a2c8d9ee6b32a6e9842249392ecedeba0b4a91aa48e8d0d86e9a",
+        "cli_destination": "kokoro_provider.py",
+        "previous_staging_sha256": "700c227eeb43a2c8d9ee6b32a6e9842249392ecedeba0b4a91aa48e8d0d86e9a"
+      },
+      {
+        "destination": "kokoro_service.py",
+        "input_sha256": "ca2a064818da07ed963444a9ecd2dbcfab3c5a9be5a97f94335a8aabfba34278",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9dd47ed2290da4511ecae51849674057ed393f564a401cd683eaff987723681c",
+        "source": "kokoro_service.py",
+        "final_output_sha256": "9dd47ed2290da4511ecae51849674057ed393f564a401cd683eaff987723681c",
+        "cli_destination": "kokoro_service.py",
+        "previous_staging_sha256": "9dd47ed2290da4511ecae51849674057ed393f564a401cd683eaff987723681c"
+      },
+      {
+        "destination": "kokoro_voices.py",
+        "input_sha256": "683b59852cb0e372310788be116964d30f88f9b380c2aaa04c344d6f618e3ffe",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "938f4c541b78a96c98f0727d3464eaf0f27743dca7d1fe8e82366b5ecffff46d",
+        "source": "kokoro_voices.py",
+        "final_output_sha256": "938f4c541b78a96c98f0727d3464eaf0f27743dca7d1fe8e82366b5ecffff46d",
+        "cli_destination": "kokoro_voices.py",
+        "previous_staging_sha256": "938f4c541b78a96c98f0727d3464eaf0f27743dca7d1fe8e82366b5ecffff46d"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "5ce8c6c8709da3f510e34fdf06e0b9285d066d4aa2a674e41ce20c3c020466b4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "55b7e5fd32d489f635469e93ee5b349f4761fa55035c27aa05f8be7f1df5bfea",
+        "source": "plugin.yaml",
+        "final_output_sha256": "977aa06c61e370cbe7190f74f9a9619791cab4fd1cdfaa1ad4703f2a7ef40256",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "55b7e5fd32d489f635469e93ee5b349f4761fa55035c27aa05f8be7f1df5bfea"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "73561b848b934a594a77d122a3465b19b962bf8a5d629bda9c18144129210303",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "757a64449e9ea7cd31760026af9f25c1ed562eb04cb3bc4fc6cf35c6b09bdbd5",
+        "source": "pyproject.toml",
+        "final_output_sha256": "757a64449e9ea7cd31760026af9f25c1ed562eb04cb3bc4fc6cf35c6b09bdbd5",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "757a64449e9ea7cd31760026af9f25c1ed562eb04cb3bc4fc6cf35c6b09bdbd5"
+      },
+      {
+        "destination": "server/kokoro_server.py",
+        "input_sha256": "374fb491adcd7379b336e1e795fec97209fabb6c8e6d5c904ef52c3db5bb6aec",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "21b3ff954533e070a375e413c272b142346209607471dcbef13b6cdc06935a62",
+        "source": "server/kokoro_server.py",
+        "final_output_sha256": "21b3ff954533e070a375e413c272b142346209607471dcbef13b6cdc06935a62",
+        "cli_destination": "server/kokoro_server.py",
+        "previous_staging_sha256": "21b3ff954533e070a375e413c272b142346209607471dcbef13b6cdc06935a62"
+      },
+      {
+        "destination": "server/requirements.in",
+        "input_sha256": "24be78f5522b2a633119f744bfaf1433509ff618d277858366e1ec381fce702a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "24be78f5522b2a633119f744bfaf1433509ff618d277858366e1ec381fce702a",
+        "source": "server/requirements.in",
+        "final_output_sha256": "24be78f5522b2a633119f744bfaf1433509ff618d277858366e1ec381fce702a",
+        "cli_destination": "server/requirements.in",
+        "previous_staging_sha256": "24be78f5522b2a633119f744bfaf1433509ff618d277858366e1ec381fce702a"
+      },
+      {
+        "destination": "server/requirements.lock",
+        "input_sha256": "3bad1a21be8394c23a56be704c5e5101362d47580a5be479cf85a890023f9011",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3bad1a21be8394c23a56be704c5e5101362d47580a5be479cf85a890023f9011",
+        "source": "server/requirements.lock",
+        "final_output_sha256": "3bad1a21be8394c23a56be704c5e5101362d47580a5be479cf85a890023f9011",
+        "cli_destination": "server/requirements.lock",
+        "previous_staging_sha256": "3bad1a21be8394c23a56be704c5e5101362d47580a5be479cf85a890023f9011"
+      },
+      {
+        "destination": "tests/fixtures/g2p.json",
+        "input_sha256": "a007d25949e30c5da5219afd11970bfc8ba3d0286ff6963313e8d038c54644b3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a007d25949e30c5da5219afd11970bfc8ba3d0286ff6963313e8d038c54644b3",
+        "source": "tests/fixtures/g2p.json",
+        "final_output_sha256": "a007d25949e30c5da5219afd11970bfc8ba3d0286ff6963313e8d038c54644b3",
+        "cli_destination": "tests/fixtures/g2p.json",
+        "previous_staging_sha256": "a007d25949e30c5da5219afd11970bfc8ba3d0286ff6963313e8d038c54644b3"
+      },
+      {
+        "destination": "tests/record_g2p.py",
+        "input_sha256": "3dfea3d4c6da2db99ac9e6e9e3b3d20260ba0fd5a40f3ead5869dfa136e7299b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3dfea3d4c6da2db99ac9e6e9e3b3d20260ba0fd5a40f3ead5869dfa136e7299b",
+        "source": "tests/record_g2p.py",
+        "final_output_sha256": "3dfea3d4c6da2db99ac9e6e9e3b3d20260ba0fd5a40f3ead5869dfa136e7299b",
+        "cli_destination": "tests/record_g2p.py",
+        "previous_staging_sha256": "3dfea3d4c6da2db99ac9e6e9e3b3d20260ba0fd5a40f3ead5869dfa136e7299b"
+      },
+      {
+        "destination": "tests/test_language.py",
+        "input_sha256": "3cdea63e55c4f468ecddc0786d3dbf4706bb654caf3a7ca8653aab0ee7026002",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3cdea63e55c4f468ecddc0786d3dbf4706bb654caf3a7ca8653aab0ee7026002",
+        "source": "tests/test_language.py",
+        "final_output_sha256": "3cdea63e55c4f468ecddc0786d3dbf4706bb654caf3a7ca8653aab0ee7026002",
+        "cli_destination": "tests/test_language.py",
+        "previous_staging_sha256": "3cdea63e55c4f468ecddc0786d3dbf4706bb654caf3a7ca8653aab0ee7026002"
+      },
+      {
+        "destination": "tests/test_loanwords.py",
+        "input_sha256": "a106a3fd551d9ed2a1bf4326a0232f63a2e8d573b146de15885233119fb5002f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a106a3fd551d9ed2a1bf4326a0232f63a2e8d573b146de15885233119fb5002f",
+        "source": "tests/test_loanwords.py",
+        "final_output_sha256": "a106a3fd551d9ed2a1bf4326a0232f63a2e8d573b146de15885233119fb5002f",
+        "cli_destination": "tests/test_loanwords.py",
+        "previous_staging_sha256": "a106a3fd551d9ed2a1bf4326a0232f63a2e8d573b146de15885233119fb5002f"
+      },
+      {
+        "destination": "tests/test_provider.py",
+        "input_sha256": "a528614fe3c3fb446b7915170d1cf2ae69ca631cd3c16bbc0131d10e8e6f2981",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4d29c7964d3ad748622130cec86c3a312ac58947a9628cb269f21e9dc70e24fc",
+        "source": "tests/test_provider.py",
+        "final_output_sha256": "4d29c7964d3ad748622130cec86c3a312ac58947a9628cb269f21e9dc70e24fc",
+        "cli_destination": "tests/test_provider.py",
+        "previous_staging_sha256": "4d29c7964d3ad748622130cec86c3a312ac58947a9628cb269f21e9dc70e24fc"
+      },
+      {
+        "destination": "tests/test_server.py",
+        "input_sha256": "7c56db428754d043ecebbb6b869b1c96fac3ffddef5b5d55db44f8c7a360f4b7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7c56db428754d043ecebbb6b869b1c96fac3ffddef5b5d55db44f8c7a360f4b7",
+        "source": "tests/test_server.py",
+        "final_output_sha256": "7c56db428754d043ecebbb6b869b1c96fac3ffddef5b5d55db44f8c7a360f4b7",
+        "cli_destination": "tests/test_server.py",
+        "previous_staging_sha256": "7c56db428754d043ecebbb6b869b1c96fac3ffddef5b5d55db44f8c7a360f4b7"
+      },
+      {
+        "destination": "tests/test_service.py",
+        "input_sha256": "ff26830655ec762de6f2543798f6eb9b11f2d8bdd8ee7939c00c9b565220d4ea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ff26830655ec762de6f2543798f6eb9b11f2d8bdd8ee7939c00c9b565220d4ea",
+        "source": "tests/test_service.py",
+        "final_output_sha256": "ff26830655ec762de6f2543798f6eb9b11f2d8bdd8ee7939c00c9b565220d4ea",
+        "cli_destination": "tests/test_service.py",
+        "previous_staging_sha256": "ff26830655ec762de6f2543798f6eb9b11f2d8bdd8ee7939c00c9b565220d4ea"
+      },
+      {
+        "destination": "tests/test_voices.py",
+        "input_sha256": "a6f3e36f79f02f3651125d8deee41e22ea2ea3292036aa02ef640b70b753cc6d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a6f3e36f79f02f3651125d8deee41e22ea2ea3292036aa02ef640b70b753cc6d",
+        "source": "tests/test_voices.py",
+        "final_output_sha256": "a6f3e36f79f02f3651125d8deee41e22ea2ea3292036aa02ef640b70b753cc6d",
+        "cli_destination": "tests/test_voices.py",
+        "previous_staging_sha256": "a6f3e36f79f02f3651125d8deee41e22ea2ea3292036aa02ef640b70b753cc6d"
+      }
+    ],
+    "manifest_sha256": "1281648ba1ddbb97a79315b86bcbc8e121420e1ca1fd58e26c9c24b816b254e0",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".gitignore": ".gitignore",
+    "AGENTS.md": "AGENTS.md",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "conftest.py": "conftest.py",
+    "kokoro_cli.py": "kokoro_cli.py",
+    "kokoro_language.py": "kokoro_language.py",
+    "kokoro_loanwords.py": "kokoro_loanwords.py",
+    "kokoro_provider.py": "kokoro_provider.py",
+    "kokoro_service.py": "kokoro_service.py",
+    "kokoro_voices.py": "kokoro_voices.py",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "server/kokoro_server.py": "server/kokoro_server.py",
+    "server/requirements.in": "server/requirements.in",
+    "server/requirements.lock": "server/requirements.lock",
+    "tests/fixtures/g2p.json": "tests/fixtures/g2p.json",
+    "tests/record_g2p.py": "tests/record_g2p.py",
+    "tests/test_language.py": "tests/test_language.py",
+    "tests/test_loanwords.py": "tests/test_loanwords.py",
+    "tests/test_provider.py": "tests/test_provider.py",
+    "tests/test_server.py": "tests/test_server.py",
+    "tests/test_service.py": "tests/test_service.py",
+    "tests/test_voices.py": "tests/test_voices.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "kokoro-tts",
+    "python_files_compiled": 16,
+    "secret_findings": 0
+  },
+  "canonical_slug": "kokoro-tts",
+  "catalog_file": "src/plugin-catalog/kokoro-tts.yaml",
+  "identity": {
+    "catalog_id": "kokoro-tts",
+    "canonical_slug": "kokoro-tts",
+    "original_manifest_name": "kokoro-tts",
+    "rebranded_manifest_name": "kokoro-tts",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "72048254e34458100ffff62f8bed94e2b0af3337665b1fd1c3e05d825640151f",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "55b7e5fd32d489f635469e93ee5b349f4761fa55035c27aa05f8be7f1df5bfea",
+          "after_sha256": "977aa06c61e370cbe7190f74f9a9619791cab4fd1cdfaa1ad4703f2a7ef40256",
+          "before_bytes": 2998,
+          "after_bytes": 2986,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

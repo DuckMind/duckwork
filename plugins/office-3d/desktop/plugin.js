@@ -2,9 +2,9 @@
 // copies this file into ~/.duckwork/desktop-plugins/office-3d/plugin.js at install.
 //
 // Office 3D — fake-isometric office view of the Duckwork profile gateways.
-// Each profile owns a desk in the WORK zone; when busy (a session is active)
-// the avatar sits at the desk and its hands "type". Online-but-idle avatars
-// relax in the LOUNGE zone with tea. Offline profiles are NOT drawn at all:
+// Each profile owns a desk in the WORK zone. Recent session activity animates
+// the avatar at its desk as an illustration, not proof of live work. Online
+// profiles without recent activity relax in the LOUNGE zone. Offline profiles:
 // their desk sits empty with a dark monitor and a dimmed name label.
 //
 // Rendering: 2D canvas with an isometric projection. The disk-plugin
@@ -26,7 +26,6 @@ import {
   profileColor,
   cn,
   EmptyState,
-  ErrorState,
   Skeleton,
   ListRow,
   ToggleRow,
@@ -50,9 +49,9 @@ function useOfficeQuery(ctx, pollSeconds) {
   return useQuery({
     queryKey: ['office-3d', 'state', connection, profile, epoch],
     queryFn: async () => {
-      if (!current()) throw new Error('Office route changed')
+      if (!current()) throw new Error('Đã thay đổi kết nối văn phòng')
       const result = await ctx.rest('/state')
-      if (!current()) throw new Error('Office route changed')
+      if (!current()) throw new Error('Đã thay đổi kết nối văn phòng')
       return result
     },
     refetchInterval: () => typeof document !== 'undefined' && document.hidden ? false : pollSeconds * 1000,
@@ -126,8 +125,7 @@ function rgba(hex, a) {
 function profileName(entry) {
   if (typeof entry.display_name === 'string' && entry.display_name.trim()) return entry.display_name.trim()
   const id = entry.profile || ''
-  if (id.trim().toLowerCase() === 'default') return 'Duckwork'
-  return id.replace(/[-_]+/g, ' ').trim().replace(/\b\w/g, ch => ch.toUpperCase())
+  return id
 }
 
 // Darken a profile-hued name ink in LIGHT mode so it stays legible on the
@@ -137,19 +135,16 @@ function nameInk(pcolor, P) {
   return P && P.mode === 'light' ? shade(pcolor, -0.45) : pcolor
 }
 
-// Format elapsed idle duration compactly.
-// <60s  -> "idle 45s"
-// <60m  -> "idle 12m"
-// else  -> "idle 2h3m"
+// Time since the last recorded activity, not proof of an idle runtime.
 function formatIdle(elapsedMs) {
   if (!Number.isFinite(elapsedMs) || elapsedMs < 0) elapsedMs = 0
   const totalSec = Math.floor(elapsedMs / 1000)
-  if (totalSec < 60) return 'idle ' + totalSec + 's'
+  if (totalSec < 60) return 'cách đây ' + totalSec + ' giây'
   const totalMin = Math.floor(totalSec / 60)
-  if (totalMin < 60) return 'idle ' + totalMin + 'm'
+  if (totalMin < 60) return 'cách đây ' + totalMin + ' phút'
   const h = Math.floor(totalMin / 60)
   const m = totalMin % 60
-  return 'idle ' + h + 'h' + m + 'm'
+  return 'cách đây ' + h + ' giờ ' + m + ' phút'
 }
 
 // Format a large token count compactly: 1234 -> "1.2k", 1_500_000 -> "1.5M",
@@ -166,9 +161,10 @@ function formatCompact(n) {
   for (const u of units) {
     if (abs >= u.v) {
       const q = n / u.v
-      // 1 decimal, but drop trailing ".0"
+      // 1 decimal, but drop trailing ".0". The office UI is Vietnamese, which
+      // writes the decimal separator as a comma ("27,7k").
       const s = (Math.round(q * 10) / 10).toFixed(1)
-      return (s.endsWith('.0') ? s.slice(0, -2) : s) + u.s
+      return (s.endsWith('.0') ? s.slice(0, -2) : s).replace('.', ',') + u.s
     }
   }
   return String(Math.trunc(n))
@@ -1102,9 +1098,9 @@ function drawStatusBar(c, cssW, cssH, barH, entries, palette) {
   }
 
   // Left cluster: online / busy / sessions / tokens.
-  metric(String(online), 'online', accent)
-  metric(String(busy), 'busy', busy > 0 ? '#39ff88' : textTer)
-  metric(String(sessions), 'active', textSec)
+  metric(String(online), 'trực tuyến', accent)
+  metric(String(busy), 'có hoạt động gần đây', busy > 0 ? '#39ff88' : textTer)
+  metric(String(sessions), 'phiên gần đây', textSec)
   // tokens is the last left metric — no trailing separator, so draw manually.
   c.font = valFont
   c.fillStyle = textSec
@@ -1112,7 +1108,7 @@ function drawStatusBar(c, cssW, cssH, barH, entries, palette) {
   x += c.measureText(formatCompact(tokens)).width + 4
   c.font = labFont
   c.fillStyle = textTer
-  c.fillText('tokens', x, cy)
+  c.fillText('token', x, cy)
 
   // Right cluster: cost (if any) + agents.
   c.textAlign = 'right'
@@ -1120,8 +1116,8 @@ function drawStatusBar(c, cssW, cssH, barH, entries, palette) {
   // agents
   c.font = labFont
   c.fillStyle = textTer
-  c.fillText('agents', rx, cy)
-  rx -= c.measureText('agents').width + 4
+  c.fillText('agent', rx, cy)
+  rx -= c.measureText('agent').width + 4
   c.font = valFont
   c.fillStyle = textSec
   c.fillText(String(agents), rx, cy)
@@ -2011,7 +2007,7 @@ function OfficeCanvas({ entries, selectedIndex, onPick }) {
         onPointerCancel: endDrag,
         onDoubleClick: resetView,
         style: { touchAction: 'none' },
-        title: 'Click a desk to inspect · ⌘/Ctrl + scroll to zoom · drag to pan · double-click to fit',
+        title: 'Chọn bàn để xem · ⌘/Ctrl + cuộn để thu phóng · kéo để di chuyển · nhấp đúp để vừa khung',
         className: cn(
           'block w-full h-full rounded-md border border-[var(--ui-stroke-secondary)]',
           onPick ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : '',
@@ -2026,21 +2022,21 @@ function OfficeCanvas({ entries, selectedIndex, onPick }) {
           jsx('button', {
             type: 'button',
             className: btn,
-            title: 'Zoom out',
+            title: 'Thu nhỏ',
             onClick: () => applyZoom(view.zoom / 1.3),
             children: '\u2212',
           }),
           jsx('button', {
             type: 'button',
             className: cn(btn, 'min-w-[3.4rem] text-center font-medium tabular-nums'),
-            title: 'Back to fit (100%)',
+            title: 'Vừa khung (100%)',
             onClick: resetView,
             children: zoomPct + '%',
           }),
           jsx('button', {
             type: 'button',
             className: btn,
-            title: 'Zoom in',
+            title: 'Phóng to',
             onClick: () => applyZoom(view.zoom * 1.3),
             children: '+',
           }),
@@ -2051,7 +2047,7 @@ function OfficeCanvas({ entries, selectedIndex, onPick }) {
             className:
               'absolute left-2 bottom-2 pointer-events-none text-[10px] ' +
               'text-[var(--ui-text-tertiary)]',
-            children: '\u2318/Ctrl + scroll to zoom \u00b7 drag to pan',
+            children: '⌘/Ctrl + cuộn để thu phóng · kéo để di chuyển',
           })
         : null,
     ],
@@ -2123,9 +2119,9 @@ function OfficeSettingsPage({ ctx, prefs, update }) {
     className: 'flex flex-col',
     children: [
       jsx(ListRow, {
-        title: 'Refresh interval',
+        title: 'Chu kỳ cập nhật',
         description:
-          'How often the office asks the backend for profile state. The canvas animates continuously; this only controls the data poll.',
+          'Thời gian giữa các lần tải trạng thái hồ sơ. Sơ đồ vẫn chuyển động; tùy chọn này chỉ đổi chu kỳ tải dữ liệu.',
         action: jsx(SegmentedControl, {
           value: String(pollSeconds),
           onChange: (value) => update({ pollSeconds: Number(value) }),
@@ -2134,26 +2130,33 @@ function OfficeSettingsPage({ ctx, prefs, update }) {
       }),
       jsx(ToggleRow, {
         checked: hideOffline,
-        label: 'Hide offline profiles',
+        label: 'Ẩn hồ sơ ngoại tuyến',
         description:
-          'Draw only profiles that are online, so the office shows what is actually running.',
+          'Chỉ hiển thị hồ sơ có tín hiệu trực tuyến trong sơ đồ. Không thay đổi trạng thái gateway.',
         onChange: (on) => update({ hideOffline: on }),
       }),
       jsx(ToggleRow, {
         checked: notifyOnChange,
-        label: 'Notify when a profile changes state',
+        label: 'Báo khi trạng thái hồ sơ thay đổi',
         description:
-          'A desktop toast when a profile goes busy, idle or offline. The status-bar chip is the poller, so keep it enabled for this to fire.',
+          'Gửi thông báo khi tín hiệu hoạt động gần đây, trực tuyến hoặc ngoại tuyến thay đổi. Cần bật ô trạng thái để tiếp tục cập nhật.',
         onChange: (on) => update({ notifyOnChange: on }),
       }),
       jsxs('section', {
         className: 'flex flex-col gap-2 py-3',
-        'aria-label': 'Visible profiles',
+        'aria-label': 'Hồ sơ hiển thị',
         children: [
-          jsx('h3', { className: 'text-sm font-semibold text-[var(--ui-text-secondary)]', children: 'Visible profiles' }),
-          jsx('p', { className: 'text-xs text-[var(--ui-text-tertiary)]', children: 'Choose which profiles appear in the office. New profiles are shown by default; this does not stop their gateways.' }),
-          query.isError ? jsx('p', { children: 'Could not load profiles. Check the backend and try again.' }) : null,
-          query.isLoading ? jsx('p', { children: 'Loading profiles…' }) : null,
+          jsx('h3', { className: 'text-sm font-semibold text-[var(--ui-text-secondary)]', children: 'Hồ sơ hiển thị' }),
+          jsx('p', { className: 'text-xs text-[var(--ui-text-tertiary)]', children: 'Chọn hồ sơ hiển thị trong văn phòng. Hồ sơ mới được hiển thị mặc định; thao tác này không dừng gateway.' }),
+          query.isError ? jsxs('div', { role: 'alert', children: [
+            jsx('p', { children: 'Không tải được danh sách hồ sơ.' }),
+            jsx('button', { type: 'button', onClick: () => query.refetch(), children: 'Thử lại' }),
+            jsx('details', { children: [
+              jsx('summary', { children: 'Chi tiết kỹ thuật' }),
+              jsx('pre', { children: String(query.error?.message || query.error) }),
+            ] }),
+          ] }) : null,
+          query.isLoading ? jsx('p', { children: 'Đang tải hồ sơ…' }) : null,
           jsx('div', {
             className: 'flex flex-wrap gap-2',
             children: profiles.map((entry) => {
@@ -2163,9 +2166,9 @@ function OfficeSettingsPage({ ctx, prefs, update }) {
                 'aria-pressed': enabled,
                 className: 'rounded-md border px-3 py-1 text-sm',
                 style: {
-                  backgroundColor: enabled ? 'var(--ui-accent)' : 'var(--ui-bg-tertiary)',
-                  color: enabled ? 'var(--ui-bg-editor)' : 'var(--ui-text-primary)',
-                  borderColor: enabled ? 'var(--ui-accent)' : 'var(--ui-stroke-secondary)',
+                  backgroundColor: enabled ? OFFICE_INK : OFFICE_SUBTLE,
+                  color: enabled ? '#fff' : OFFICE_INK,
+                  borderColor: OFFICE_BORDER,
                 },
                 onClick: () => update((current) => ({
                   excludedProfileIds: current.excludedProfileIds.includes(entry.profile)
@@ -2194,15 +2197,18 @@ function OfficeStatusChip({ ctx, prefs }) {
   }, [query.data, excludedProfileIds, hideOffline])
   const stats = useMemo(() => summarize(entries), [entries])
 
-  // Opt-in: toast when a profile changes state. Seeded from the first payload
-  // so enabling the setting (or opening the app) never fires a burst.
+  // Opt-in: toast when a profile changes state. A failed refresh invalidates
+  // the comparison baseline, so recovery never reports a stale transition.
   const seenRef = useRef(null)
   useEffect(() => {
-    if (!notifyOnChange) { seenRef.current = null; return }
+    if (!notifyOnChange || query.isError || !Array.isArray(query.data)) {
+      seenRef.current = null
+      return
+    }
     const next = new Map()
     for (const e of entries) {
       if (e && e.profile) {
-        next.set(e.profile, e.busy ? 'busy' : e.online ? 'idle' : 'offline')
+        next.set(e.profile, e.busy ? 'recent' : e.online ? 'online' : 'offline')
       }
     }
     const prev = seenRef.current?.epoch === epoch ? seenRef.current.states : null
@@ -2213,34 +2219,39 @@ function OfficeStatusChip({ ctx, prefs }) {
       if (before && before !== state) {
         host.notify({
           kind: 'info',
-          title: 'Office 3D',
-          message: profileName(entries.find(e => e && e.profile === profile)) + ' is now ' + state,
-          action: { label: 'Open office', onClick: () => host.navigate(OFFICE_PATH) },
+          title: 'Văn phòng',
+          message: profileName(entries.find(e => e && e.profile === profile)) + ' · ' +
+            ({ recent: 'Có hoạt động phiên gần đây', online: 'Trực tuyến · chưa rõ hoạt động', offline: 'Ngoại tuyến' })[state],
+          action: { label: 'Mở văn phòng', onClick: () => openOfficeRoute(OFFICE_PATH, 'văn phòng') },
         })
       }
     }
-  }, [entries, notifyOnChange, epoch])
+  }, [entries, notifyOnChange, epoch, query.isError, query.data])
 
-  const hasData = Array.isArray(query.data)
-  const label = !hasData
-    ? '—'
+  const loadFailed = query.isError || (!query.isLoading && !Array.isArray(query.data))
+  const hasData = !loadFailed && Array.isArray(query.data)
+  const label = loadFailed
+    ? 'Không tải được'
+    : !hasData ? '—'
     : stats.busy > 0
-      ? stats.busy + ' busy'
-      : stats.online + ' online'
+      ? stats.busy + ' có hoạt động gần đây'
+      : stats.online + ' trực tuyến'
 
   return jsx(Tip, {
-    label:
-      'Office 3D — ' + stats.online + ' online · ' + stats.busy + ' busy · ' +
-      stats.sessions + ' active session' + (stats.sessions === 1 ? '' : 's'),
+    label: hasData
+      ? 'Văn phòng — ' + stats.online + ' trực tuyến · ' + stats.busy + ' có hoạt động gần đây · ' +
+        (stats.sessions > 0 ? stats.sessions + ' phiên hoạt động' : 'phiên hoạt động: ' + OFFICE_UNKNOWN)
+      : loadFailed ? 'Văn phòng — không tải được trạng thái. Mở để thử lại.'
+        : 'Văn phòng — trạng thái chưa rõ',
     children: jsxs('button', {
       type: 'button',
-      onClick: () => host.navigate(OFFICE_PATH),
+      onClick: () => openOfficeRoute(OFFICE_PATH, 'văn phòng'),
       className: cn(
         'inline-flex h-full items-center gap-1 px-1.5 text-[0.6875rem]',
         'text-(--ui-text-tertiary) hover:text-(--ui-text-secondary)',
       ),
       children: [
-        jsx('span', { 'aria-hidden': true, children: '🏢' }),
+        jsx('span', { 'aria-hidden': true, children: '▦' }),
         jsx('span', { className: 'tabular-nums', children: label }),
       ],
     }),
@@ -2250,13 +2261,13 @@ function OfficeStatusChip({ ctx, prefs }) {
 // Page overview uses enabled profiles, including offline ones.
 function profileOverview(entries) {
   const list = Array.isArray(entries) ? entries : []
-  let working = 0, idle = 0, offline = 0
+  let working = 0, onlineUnknown = 0, offline = 0
   for (const e of list) {
     if (!e.online) offline++
     else if (e.busy) working++
-    else idle++
+    else onlineUnknown++
   }
-  return { total: list.length, working, idle, offline }
+  return { total: list.length, working, onlineUnknown, offline }
 }
 
 function officeView(entries, hideOffline, selectedProfile, excludedProfileIds) {
@@ -2267,70 +2278,27 @@ function officeView(entries, hideOffline, selectedProfile, excludedProfileIds) {
   return { all, visible, selected, selectedIndex: selected ? visible.indexOf(selected) : -1 }
 }
 
-function OfficeOverview({ entries }) {
-  const stats = profileOverview(entries)
-  return jsxs('section', {
-    'aria-label': 'Global profile overview',
-    'data-office-overview': true,
-    className: 'flex flex-col gap-2',
-    children: [
-      jsx('div', {
-        className: 'grid grid-cols-2 sm:grid-cols-4 gap-2',
-        children: [['total', 'Total'], ['working', 'Working'], ['idle', 'Idle'], ['offline', 'Offline']].map(([key, label]) =>
-          jsxs('div', {
-            className: 'flex items-baseline gap-2 px-3 py-2 rounded-md border border-[var(--ui-stroke-secondary)]',
-            children: [
-              jsx('span', { className: 'text-lg font-semibold tabular-nums text-[var(--ui-text-secondary)]', 'data-count': key, children: stats[key] }),
-              jsx('span', { className: 'text-xs text-[var(--ui-text-tertiary)]', children: label }),
-            ],
-          }, key)),
-      }),
-      jsx('p', {
-        className: 'text-xs text-[var(--ui-text-tertiary)]',
-        children: 'Enabled profiles · Working = online with recent session activity · Idle = online, not working · Offline = not online.',
-      }),
-    ],
-  })
-}
-
 // ---------------------------------------------------------------------------
 // Opening a profile in the main window.
 // ---------------------------------------------------------------------------
 
-// Always-available door: a fresh chat draft in that profile (the app switches
-// the active backend for us).
-function openProfileChat(profile, label) {
+// The Agent roster owns canonical Bot Chat selection. A newChat(profile)
+// would create a separate draft and silently bypass that conversation.
+function openOfficeRoute(path, label) {
   try {
-    host.newChat(profile)
+    host.navigate(path)
   } catch (err) {
-    host.notifyError(err, 'Could not open ' + label + "'s chat")
+    host.notifyError(err, 'Không mở được ' + label)
   }
 }
 
-// Resolve a profile's most recent session through the app's OWN RPC, so we can
-// open it core-style. Only session METADATA is read here (id/title/timestamps) —
-// never message content. Returns null when nothing resolves, and the caller
-// falls back to a fresh chat. Any RPC failure (older gateway, unknown profile,
-// a rejected param) degrades to null rather than throwing.
-async function resolveLatestSession(profile) {
-  try {
-    const res = await host.request('session.list', {
-      profile,
-      limit: 1,
-      scope: 'stored',
-    })
-    const rows = res && Array.isArray(res.sessions) ? res.sessions : []
-    const first = rows[0]
-    const id = first && (first.session_id || first.id)
-    return id ? String(id) : null
-  } catch (err) {
-    return null
-  }
+function openProfileChat(label) {
+  openOfficeRoute('/agents', 'danh sách agent để tìm Bot Chat của ' + label)
 }
 
 function openStoredSession(profile, sessionId) {
-  Promise.resolve(host.openSession(sessionId, { profile })).catch((err) =>
-    host.notifyError(err, 'Could not open that session'),
+  Promise.resolve().then(() => host.openSession(sessionId, { profile })).catch((err) =>
+    host.notifyError(err, 'Không mở được phiên đã ghi nhận'),
   )
 }
 
@@ -2354,22 +2322,7 @@ function OfficeMetric({ label, value, tone }) {
 
 function OfficeDetailPanel({ entry, onClose }) {
   const pcolor = profileColor(entry.profile) || '#888'
-  const state = entry.busy ? 'busy' : entry.online ? 'idle' : 'offline'
-  const [sessionId, setSessionId] = useState(null)
-
-  // Resolve the profile's newest session lazily, so "Open latest session" only
-  // shows up when there is one to open.
-  useEffect(() => {
-    let cancelled = false
-    setSessionId(null)
-    resolveLatestSession(entry.profile).then((id) => {
-      if (!cancelled) setSessionId(id)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [entry.profile])
-
+  const state = entry.busy ? 'Có hoạt động gần đây' : entry.online ? 'Trực tuyến · chưa rõ hoạt động' : 'Ngoại tuyến'
   const idle =
     entry.online && !entry.busy && typeof entry.idle_since === 'number'
       ? formatIdle(Date.now() - entry.idle_since * 1000)
@@ -2382,7 +2335,7 @@ function OfficeDetailPanel({ entry, onClose }) {
       className: cn(
         'px-2.5 py-1 rounded-md text-xs font-medium border',
         primary
-          ? 'border-[var(--ui-accent)] text-[var(--ui-accent)] hover:bg-[var(--ui-accent)] hover:text-[var(--ui-bg)]'
+          ? 'border-[#1B1A17] bg-[#1B1A17] text-white hover:opacity-80'
           : 'border-[var(--ui-stroke-secondary)] text-[var(--ui-text-secondary)] hover:text-[var(--ui-text)]',
       ),
       children: label,
@@ -2404,41 +2357,41 @@ function OfficeDetailPanel({ entry, onClose }) {
           }),
           jsx('span', {
             className: 'text-xs text-[var(--ui-text-tertiary)]',
-            children: idle ? '· ' + state + ' · ' + idle : '· ' + state,
+            children: idle ? '· ' + state + ' · ghi nhận ' + idle : '· ' + state,
           }),
           jsx('span', { className: 'flex-1' }),
           jsx('button', {
             type: 'button',
             onClick: onClose,
-            title: 'Close',
-            'aria-label': 'Close profile details',
+            title: 'Đóng',
+            'aria-label': 'Đóng chi tiết hồ sơ',
             className: 'text-xs text-[var(--ui-text-tertiary)] hover:text-[var(--ui-text-secondary)]',
             children: '✕',
           }),
         ],
       }),
-      jsx(OfficeMetric, { label: 'Sessions active in last 90s', value: String(entry.active_sessions | 0) }),
-      jsx(OfficeMetric, { label: 'Unended recorded sessions', value: String(entry.open_sessions | 0) }),
-      jsx(OfficeMetric, { label: 'Gateway-reported agents', value: String(entry.active_agents | 0) }),
-      jsx(OfficeMetric, { label: 'Recorded-session tokens', value: formatCompact(Number(entry.tokens_total) || 0) }),
+      jsx(OfficeMetric, { label: 'Phiên có hoạt động trong 90 giây', value: recordedValue(entry, 'active_sessions') === null ? OFFICE_UNKNOWN : String(entry.active_sessions) }),
+      jsx(OfficeMetric, { label: 'Phiên chưa kết thúc đã ghi nhận', value: recordedValue(entry, 'open_sessions') === null ? OFFICE_UNKNOWN : String(entry.open_sessions) }),
+      jsx(OfficeMetric, { label: 'Agent gateway báo về', value: entry.online && Number.isFinite(entry.active_agents) ? String(entry.active_agents) : OFFICE_UNKNOWN }),
+      jsx(OfficeMetric, { label: 'Token từ phiên đã ghi nhận', value: recordedValue(entry, 'tokens_total') === null ? OFFICE_UNKNOWN : formatCompact(entry.tokens_total) }),
       jsx(OfficeMetric, {
-        label: 'Recorded-session cost',
-        value: '$' + (Number(entry.cost_total) || 0).toFixed(2),
-        tone: Number(entry.cost_total) > 0 ? '#ffd479' : undefined,
+        label: 'Chi phí từ phiên đã ghi nhận',
+        value: recordedValue(entry, 'cost_total') === null ? OFFICE_UNKNOWN : '$' + entry.cost_total.toFixed(2),
+        tone: Number(entry.cost_total) > 0 ? OFFICE_INK : undefined,
       }),
       jsxs('div', {
         className: 'flex flex-wrap gap-2 pt-0.5',
         children: [
-          button('Open chat', () => openProfileChat(entry.profile, profileName(entry)), true),
-          sessionId
-            ? button('Open latest session', () => openStoredSession(entry.profile, sessionId))
+          button('Tìm Bot Chat trong danh sách agent', () => openProfileChat(profileName(entry)), true),
+          entry.latest_session_id
+            ? button('Mở phiên gần nhất', () => openStoredSession(entry.profile, entry.latest_session_id))
             : null,
         ],
       }),
       jsx('div', {
         className: 'text-[10px] leading-snug text-[var(--ui-text-tertiary)]',
         children:
-          'Usage sums all recorded sessions in this profile’s state.db, not today or this visit. Tokens = input + output; cost = actual USD, falling back to estimated. Missing or unreadable data returns zero. Recent activity does not necessarily mean a running task; unended sessions may be stale. Agents are gateway-reported, not live desktop chats.',
+          'Mức dùng cộng từ các phiên đã ghi nhận của hồ sơ, không riêng hôm nay. Token gồm đầu vào và đầu ra; chi phí USD thực tế hoặc ước tính. Dữ liệu thiếu/không đọc được hiển thị Chưa rõ. Hoạt động gần đây không chứng minh đang chạy; phiên chưa kết thúc có thể đã cũ. Số agent do gateway báo về.',
       }),
     ],
   })
@@ -2478,9 +2431,9 @@ function OfficeLeaderboard({ entries, selectedProfile, onSelect }) {
         }),
         jsx('span', {
           className: 'text-xs font-semibold tabular-nums text-[var(--ui-text-secondary)]',
-          children: metric === 'tokens'
-            ? formatCompact(Number(entry.tokens_total) || 0)
-            : '$' + (Number(entry.cost_total) || 0).toFixed(2),
+          children: recordedValue(entry, metric === 'tokens' ? 'tokens_total' : 'cost_total') === null
+            ? OFFICE_UNKNOWN
+            : metric === 'tokens' ? formatCompact(entry.tokens_total) : '$' + entry.cost_total.toFixed(2),
         }),
       ],
     }, entry.profile))
@@ -2493,14 +2446,14 @@ function OfficeLeaderboard({ entries, selectedProfile, onSelect }) {
         children: [
           jsx('span', {
             className: 'text-xs font-semibold text-[var(--ui-text-secondary)]',
-            children: 'Recorded-session usage',
+            children: 'Mức dùng phiên đã ghi nhận',
           }),
           jsx(SegmentedControl, {
             value: metric,
             onChange: (value) => setMetric(value === 'cost' ? 'cost' : 'tokens'),
             options: [
-              { id: 'tokens', label: 'tokens' },
-              { id: 'cost', label: 'cost' },
+              { id: 'tokens', label: 'Token' },
+              { id: 'cost', label: 'Chi phí' },
             ],
           }),
         ],
@@ -2509,11 +2462,11 @@ function OfficeLeaderboard({ entries, selectedProfile, onSelect }) {
         ? jsx('div', { className: 'flex flex-col gap-0.5 max-h-[360px] overflow-y-auto min-w-0', children: body })
         : jsx('div', {
             className: 'text-xs text-[var(--ui-text-tertiary)]',
-            children: 'No profiles to rank yet.',
+            children: 'Chưa có hồ sơ để so sánh.',
           }),
       jsx('div', {
         className: 'text-[10px] leading-snug text-[var(--ui-text-tertiary)]',
-        children: 'Visible profiles only · All recorded sessions (not today). Cost uses actual USD or estimated fallback. Click a profile to inspect.',
+        children: 'Chỉ hồ sơ đang hiển thị · Mọi phiên đã ghi nhận, không riêng hôm nay. Chi phí USD thực tế hoặc ước tính. Chọn hồ sơ để xem chi tiết.',
       }),
     ],
   })
@@ -2527,9 +2480,226 @@ function leaderValue(entry, metric) {
     : Number(entry.tokens_total) || 0
 }
 
+const OFFICE_INK = '#1B1A17'
+const OFFICE_MUTED = '#5E5B54'
+const OFFICE_BORDER = '#E6E3DD'
+const OFFICE_SUBTLE = '#F7F6F3'
+const OFFICE_UNKNOWN = 'Chưa rõ'
+
+function recordedValue(entry, metric) {
+  const value = entry?.[metric]
+  // Older APIs use zero for missing/unreadable data. Only a successful read
+  // establishes that zero is a measured value.
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 &&
+    (value > 0 || entry.session_stats_available === true) ? value : null
+}
+
+function OfficePauseControl({ profile, activeProfile, connection }) {
+  const [status, setStatus] = useState({ paused: null, saving: false, error: '' })
+  const generation = useRef(0)
+  const busy = useRef(false)
+  const current = () => host.state.profile.get() === profile &&
+    host.state.connectionId.get() === connection
+
+  useEffect(() => {
+    const request = ++generation.current
+    busy.current = false
+    setStatus({ paused: null, saving: false, error: '' })
+    if (!connection || profile !== activeProfile) return
+    Promise.resolve().then(() => host.request('profile.pause.status', { profile })).then(result => {
+      if (request !== generation.current || !current()) return
+      if (typeof result?.paused !== 'boolean') throw new Error('Trạng thái tạm dừng không hợp lệ')
+      setStatus({ paused: result.paused, saving: false, error: '' })
+    }).catch(() => {
+      if (request === generation.current && current()) {
+        setStatus({ paused: null, saving: false, error: 'Không thể xác nhận quyền hoặc trạng thái tạm dừng. Hãy kiểm tra kết nối.' })
+      }
+    })
+    return () => { generation.current++ }
+  }, [profile, activeProfile, connection])
+
+  const change = async () => {
+    if (!current() || status.paused === null || status.saving || busy.current) return
+    const target = !status.paused
+    const request = generation.current
+    busy.current = true
+    setStatus(previous => ({ ...previous, saving: true, error: '' }))
+    try {
+      const result = await host.request('profile.pause.set', { profile, paused: target })
+      if (request !== generation.current || !current()) return
+      if (result?.paused !== target) throw new Error('Phản hồi tạm dừng không hợp lệ')
+      setStatus({ paused: target, saving: false, error: '' })
+    } catch {
+      if (request === generation.current && current()) {
+        setStatus(previous => ({ ...previous, saving: false, error: 'Không đổi được trạng thái agent. Hãy kiểm tra quyền và thử lại.' }))
+      }
+    } finally {
+      if (request === generation.current) busy.current = false
+    }
+  }
+  const available = profile === activeProfile && !!connection && status.paused !== null
+  return jsxs('div', { children: [
+    jsx('button', {
+      type: 'button',
+      disabled: !available || status.saving,
+      onClick: change,
+      title: available ? undefined : 'Chưa xác nhận được quyền tạm dừng an toàn cho hồ sơ này',
+      style: { minHeight: 36, padding: '0 12px', border: '1px solid ' + OFFICE_BORDER, borderRadius: 9, background: OFFICE_SUBTLE, color: OFFICE_MUTED, cursor: available && !status.saving ? 'pointer' : 'not-allowed' },
+      children: status.saving ? 'Đang cập nhật…' : available ? status.paused ? 'Tiếp tục agent' : 'Tạm dừng agent' : 'Tạm dừng · chưa hỗ trợ',
+    }),
+    status.error ? jsx('p', { role: 'alert', style: { color: '#9E3024', fontSize: 12, margin: '6px 0 0' }, children: status.error }) : null,
+  ] })
+}
+
+function OfficeDashboard({ entries }) {
+  const [metric, setMetric] = useState('tokens_total')
+  const activeProfile = useValue(host.state.profile)
+  const connection = useValue(host.state.connectionId)
+  const largest = Math.max(0, ...entries.map(e => recordedValue(e, metric) || 0))
+  const activity = entries
+    .filter(e => Number.isFinite(e.last_session_activity) && e.last_session_activity > 0 && e.session_stats_available !== false)
+    .slice()
+    .sort((a, b) => b.last_session_activity - a.last_session_activity)
+    .slice(0, 8)
+  const label = e => profileName(e)
+  const usage = e => {
+    const value = recordedValue(e, metric)
+    return value === null ? OFFICE_UNKNOWN
+      : metric === 'tokens_total' ? formatCompact(value) : '$' + value.toFixed(2)
+  }
+  const card = { border: '1px solid ' + OFFICE_BORDER, borderRadius: 14, padding: 18, background: '#fff' }
+  const sectionTitle = { margin: '0 0 12px', fontSize: 14, fontWeight: 600 }
+
+  return jsxs('div', { className: 'flex flex-col gap-6', children: [
+    jsxs('section', { 'aria-label': 'Cần bạn xử lý', children: [
+      jsx('h2', { style: sectionTitle, children: 'Cần bạn xử lý' }, 'title'),
+      jsx('p', { style: { ...card, margin: 0, color: OFFICE_MUTED, fontSize: 13, background: OFFICE_SUBTLE },
+        children: 'Dữ liệu văn phòng không cung cấp cảnh báo chi tiết. Xem danh sách agent để kiểm tra việc cần xử lý.' }, 'hint'),
+      jsx('button', { type: 'button', onClick: () => openOfficeRoute('/agents', 'việc cần xử lý'),
+        style: { minHeight: 40, marginTop: 8, padding: '0 14px', border: '1px solid ' + OFFICE_BORDER, borderRadius: 9, background: '#fff', color: OFFICE_INK, cursor: 'pointer' },
+        children: 'Xem việc cần xử lý' }, 'action'),
+    ] }, 'attention'),
+    jsxs('section', { 'aria-label': 'Agent', children: [
+      jsx('h2', { style: sectionTitle, children: 'Agent' }, 'title'),
+      jsx('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 },
+        children: entries.length ? entries.map(entry => {
+          const state = entry.busy ? 'Có hoạt động gần đây' : entry.online ? 'Trực tuyến · chưa rõ hoạt động' : 'Ngoại tuyến'
+          const stateInk = entry.busy ? '#174AA6' : OFFICE_MUTED
+          const stateBg = entry.busy ? '#EAF0FC' : '#F3F2EE'
+          const sessions = recordedValue(entry, 'active_sessions') !== null
+            ? entry.active_sessions + ' phiên có hoạt động trong 90 giây' : OFFICE_UNKNOWN
+          // "Gần đây" reads the most recent RECORDED session (live or finished);
+          // `current_*` stays reserved for a session still active right now.
+          const recent = (recentValue, liveValue) =>
+            typeof recentValue === 'string' && recentValue.trim() ? recentValue
+              : typeof liveValue === 'string' && liveValue.trim() ? liveValue : OFFICE_UNKNOWN
+          const model = recent(entry.recent_model, entry.current_model)
+          const task = recent(entry.recent_task, entry.current_task)
+          return jsxs('article', { style: { ...card, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }, children: [
+            jsxs('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }, children: [
+              jsx('span', { 'aria-hidden': true, style: { width: 40, height: 40, borderRadius: 11, background: OFFICE_INK, color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 600 }, children: label(entry).slice(0, 1).toUpperCase() }, 'avatar'),
+              jsxs('span', { style: { flex: 1, minWidth: 100, display: 'flex', flexDirection: 'column' }, children: [
+                jsx('strong', { style: { fontSize: 15 }, children: label(entry) }, 'name'),
+                jsx('span', { style: { fontSize: 12, color: OFFICE_MUTED }, children: entry.profile }, 'profile'),
+              ] }, 'label'),
+              jsx('span', { style: { borderRadius: 999, background: stateBg, color: stateInk, padding: '4px 10px', fontSize: 12 }, children: '● ' + state }, 'state'),
+            ] }, 'identity'),
+            jsxs('div', { style: { background: OFFICE_SUBTLE, padding: 12, borderRadius: 10 }, children: [
+              jsx('div', { style: { fontSize: 12, color: OFFICE_MUTED }, children: 'Phiên ghi nhận gần đây' }, 'caption'),
+              jsx('div', { style: { fontWeight: 500 }, children: sessions }, 'sessions'),
+              jsx('div', { style: { fontSize: 12, color: OFFICE_MUTED, overflowWrap: 'anywhere' }, children: 'Tiêu đề phiên gần đây: ' + task }, 'task'),
+            ] }, 'activity'),
+            jsx('dl', { style: { margin: 0, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }, children: [
+              jsxs('div', { children: [jsx('dt', { style: { fontSize: 12, color: OFFICE_MUTED }, children: 'Token đã ghi nhận' }, 'label'), jsx('dd', { style: { margin: 0, fontSize: 18, fontWeight: 600 }, children: recordedValue(entry, 'tokens_total') === null ? OFFICE_UNKNOWN : formatCompact(entry.tokens_total) }, 'value')] }, 'tokens'),
+              jsxs('div', { children: [jsx('dt', { style: { fontSize: 12, color: OFFICE_MUTED }, children: 'Mô hình phiên gần đây' }, 'label'), jsx('dd', { style: { margin: 0, fontWeight: 500, overflowWrap: 'anywhere' }, children: model }, 'value')] }, 'model'),
+            ] }, 'metrics'),
+            jsx('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 }, children: [
+              jsx('button', { type: 'button', onClick: () => openProfileChat(label(entry)),
+                style: { minHeight: 40, padding: '0 14px', border: 0, borderRadius: 9, background: OFFICE_INK, color: '#fff', cursor: 'pointer' },
+                children: 'Tìm Bot Chat của ' + label(entry) }, 'chat'),
+              entry.latest_session_id
+                ? jsx('button', { type: 'button', onClick: () => openStoredSession(entry.profile, entry.latest_session_id),
+                  style: { minHeight: 40, padding: '0 14px', border: '1px solid ' + OFFICE_BORDER, borderRadius: 9, background: '#fff', cursor: 'pointer' },
+                  children: 'Mở phiên gần nhất' }, 'session')
+                : null,
+              entry.profile === activeProfile
+                ? jsx('button', { type: 'button', onClick: () => openOfficeRoute('/cron', 'lịch chạy'),
+                  style: { minHeight: 40, padding: '0 14px', border: '1px solid ' + OFFICE_BORDER, borderRadius: 9, background: '#fff', cursor: 'pointer' },
+                  children: 'Lịch chạy của ' + label(entry) }, 'jobs')
+                : null,
+            ] }, 'actions'),
+            jsx(OfficePauseControl, { profile: entry.profile, activeProfile, connection }, 'pause-control'),
+            entry.profile !== activeProfile
+              ? jsx('span', { style: { fontSize: 12, color: OFFICE_MUTED }, children: 'Lịch chạy chỉ mở cho hồ sơ đang chọn. Đổi hồ sơ trong bộ chọn agent trước khi xem.' }, 'other-profile-jobs')
+              : null,
+          ] }, entry.profile)
+        }).concat([
+          // The dashed add card belongs in the same grid as the agents (design 03).
+          jsx('button', { type: 'button', onClick: () => openOfficeRoute('/profiles', 'quản lý hồ sơ'),
+            style: { ...card, minHeight: 120, display: 'grid', placeItems: 'center', border: '1px dashed ' + OFFICE_BORDER, color: OFFICE_MUTED, cursor: 'pointer', font: 'inherit' },
+            children: '+ Thêm agent (quản lý hồ sơ)' }, 'add-profile'),
+        ]) : jsx('p', { style: { color: OFFICE_MUTED }, children: 'Chưa có agent nào trong phạm vi văn phòng này.' }) }, 'cards'),
+    ] }, 'agents'),
+    jsx('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: 16 }, children: [
+      jsxs('section', { style: card, 'aria-label': 'Mức dùng đã ghi nhận', children: [
+        jsxs('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }, children: [
+          jsx('h2', { style: { ...sectionTitle, margin: 0 }, children: 'Mức dùng đã ghi nhận' }, 'title'),
+          jsx('div', { role: 'group', 'aria-label': 'Đơn vị', style: { display: 'flex', padding: 3, borderRadius: 8, background: '#F3F2EE' },
+            children: [['tokens_total', 'Token'], ['cost_total', 'Chi phí']].map(([id, text]) =>
+              jsx('button', { type: 'button', 'aria-pressed': metric === id, onClick: () => setMetric(id),
+                style: { minHeight: 36, padding: '0 10px', border: 0, borderRadius: 6, background: metric === id ? '#fff' : 'transparent', color: OFFICE_INK, cursor: 'pointer' },
+                children: text }, id)) }, 'unit'),
+        ] }, 'toolbar'),
+        jsx('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 },
+          children: entries.length ? entries.map(e =>
+            jsxs('div', { children: [
+              jsxs('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 13 }, children: [
+                jsx('span', { children: label(e) }, 'name'), jsx('strong', { children: usage(e) }, 'value'),
+              ] }, 'heading'),
+              jsx('div', { style: { height: 10, marginTop: 6, borderRadius: 5, background: '#F3F2EE' },
+                children: jsx('div', { style: { width: largest ? ((recordedValue(e, metric) || 0) / largest * 100) + '%' : '0%', height: 10, borderRadius: 5, background: OFFICE_INK } }) }, 'track'),
+            ] }, e.profile)) : jsx('p', { children: 'Chưa có dữ liệu.' }) }, 'bars'),
+        jsx('p', { style: { fontSize: 12, color: OFFICE_MUTED, marginBottom: 0 },
+          children: 'Tổng từ các phiên đã ghi nhận của từng hồ sơ; không phải mức dùng hôm nay. Nếu không xác nhận được dữ liệu, giá trị hiển thị là chưa rõ.' }, 'note'),
+      ] }, 'usage'),
+      jsxs('section', { style: card, 'aria-label': 'Hoạt động gần đây', children: [
+        jsx('h2', { style: sectionTitle, children: 'Hoạt động gần đây' }, 'title'),
+        activity.length ? jsx('ol', { style: { listStyle: 'none', padding: 0, margin: 0 },
+            children: activity.map(e => jsx('li', { style: { padding: '10px 0', borderBottom: '1px solid #F3F2EE', fontSize: 13 },
+            children: label(e) + ' · Phiên ghi nhận hoạt động lúc ' + new Date(e.last_session_activity * 1000).toLocaleString('vi-VN') }, e.profile)) }, 'events')
+          : jsx('p', { style: { color: OFFICE_MUTED, fontSize: 13 }, children: 'Chưa có mốc hoạt động phiên được ghi nhận.' }, 'events'),
+        jsx('p', { style: { fontSize: 12, color: OFFICE_MUTED }, children: 'Chỉ có thời điểm hoạt động gần nhất; API chưa cung cấp nhật ký sự kiện hay mô tả công việc.' }, 'note'),
+      ] }, 'activity'),
+    ] }, 'usage-activity'),
+  ] })
+}
+
+function OfficeScene({ entries, hideOffline, selectedProfile, setSelectedProfile, excludedProfileIds }) {
+  const pick = (entry) => setSelectedProfile(entry && entry.profile ? entry.profile : null)
+  const { all, visible, selected: selectedEntry, selectedIndex } = officeView(entries, hideOffline, selectedProfile, excludedProfileIds)
+  const empty = all.length === 0
+    ? jsx(EmptyState, { title: 'Chưa có hồ sơ được hiển thị', description: 'Bật hồ sơ trong cài đặt Văn phòng hoặc kiểm tra phản hồi từ backend.' })
+    : visible.length === 0
+      ? jsx(EmptyState, { title: 'Tất cả hồ sơ đều ngoại tuyến', description: 'Tắt “Ẩn hồ sơ ngoại tuyến” trong cài đặt để xem bàn của họ.' })
+      : null
+  return jsxs('div', { className: 'flex flex-col gap-3 min-w-0', children: [
+    jsx('p', { className: 'text-xs text-[var(--ui-text-tertiary)]',
+      children: 'Sơ đồ minh họa ' + visible.length + '/' + all.length + ' hồ sơ · Nhân vật gõ phím chỉ minh họa hoạt động phiên gần đây, không chứng minh agent đang chạy.' }),
+    jsxs('div', { className: 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] items-start gap-3 min-w-0', children: [
+      jsx('div', { className: 'min-w-0', style: empty ? undefined : { height: 'clamp(380px, 62vh, 760px)' },
+        children: empty || jsx(OfficeCanvas, { entries: visible, selectedIndex, onPick: pick }) }),
+      jsxs('aside', { 'aria-label': 'Mức dùng và chi tiết hồ sơ', className: 'min-w-0 w-full flex flex-col gap-2', children: [
+        selectedEntry ? jsx(OfficeDetailPanel, { entry: selectedEntry, onClose: () => setSelectedProfile(null) }, selectedEntry.profile) : null,
+        jsx(OfficeLeaderboard, { entries: visible, selectedProfile, onSelect: pick }),
+      ] }),
+    ] }),
+  ] })
+}
+
 function OfficePage({ ctx, prefs }) {
   const { pollSeconds, hideOffline, excludedProfileIds = [] } = useValue(prefs)
   const [selectedProfile, setSelectedProfile] = useState(null)
+  const [mode, setMode] = useState('dashboard')
   const epoch = useGatewayActivationEpoch()
   useEffect(() => { setSelectedProfile(null) }, [epoch])
   // Pause polling while the document is hidden (other tab / minimized).
@@ -2538,86 +2708,52 @@ function OfficePage({ ctx, prefs }) {
   // The status-bar chip polls the same query key, so this never doubles up.
   const query = useOfficeQuery(ctx, pollSeconds)
 
-  // Selecting a desk or a leaderboard row. Held by profile NAME, not index, so
-  // it survives a re-sort or a filtered-out row.
-  const pick = (entry) => setSelectedProfile(entry && entry.profile ? entry.profile : null)
-
-  let body
-  if (query.isLoading) {
-    body = jsx('div', {
-      className: 'w-full h-[420px]',
-      children: jsx(Skeleton, { className: 'w-full h-full rounded-md' }),
-    })
-  } else if (query.isError) {
-    body = jsx(ErrorState, {
-      title: 'Could not load office state',
-      description: String(query.error && query.error.message ? query.error.message : query.error || 'unknown error'),
-    })
-  } else {
-    const { all, visible: entries, selected: selectedEntry, selectedIndex } = officeView(query.data, hideOffline, selectedProfile, excludedProfileIds)
-    const empty = all.length === 0
-      ? jsx(EmptyState, { title: 'No enabled profiles', description: 'Enable profiles in Office 3D Settings, or check the backend response.' })
-      : entries.length === 0
-        ? jsx(EmptyState, { title: 'Every profile is offline', description: 'Offline profiles are hidden. Turn off "Hide offline profiles" in Settings to see their desks and usage.' })
-        : null
-    body = jsxs('div', {
-      className: 'flex flex-col gap-3 min-w-0',
-      children: [
-        jsx(OfficeOverview, { entries: all }),
-        jsx('p', {
-          className: 'text-xs text-[var(--ui-text-tertiary)]',
-          'data-office-filter': true,
-          children: 'Showing ' + entries.length + ' of ' + all.length + ' profiles in scene and usage list' + (hideOffline ? ' · Offline hidden' : ' · Offline included'),
-        }),
-        jsxs('div', {
-          className: 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] items-start gap-3 min-w-0',
-          children: [
-            jsx('div', {
-              className: 'min-w-0',
-              style: empty ? undefined : { height: 'clamp(380px, 62vh, 760px)' },
-              children: empty || jsx(OfficeCanvas, { entries, selectedIndex, onPick: pick }),
-            }),
-            jsxs('aside', {
-              'aria-label': 'Profile usage and details',
-              className: 'min-w-0 w-full flex flex-col gap-2',
-              children: [
-                selectedEntry && selectedIndex < 0
-                  ? jsx('p', { className: 'text-xs text-[var(--ui-text-tertiary)]', children: profileName(selectedEntry) + ' is hidden from the scene/list. Details remain selected.' })
-                  : null,
-                selectedEntry
-                  ? jsx(OfficeDetailPanel, { key: selectedEntry.profile, entry: selectedEntry, onClose: () => setSelectedProfile(null) })
-                  : selectedProfile && !excludedProfileIds.includes(selectedProfile)
-                    ? jsx('p', { className: 'text-xs text-[var(--ui-text-tertiary)]', children: 'The selected profile is no longer in the backend response.' })
-                    : null,
-                jsx(OfficeLeaderboard, { entries, selectedProfile, onSelect: pick }),
-              ],
-            }),
-          ],
-        }),
-      ],
-    })
-  }
+  const dataValid = !query.isError && Array.isArray(query.data)
+  const all = enabledProfiles(query.data, excludedProfileIds)
+  const counts = profileOverview(all)
+  const body = query.isError || (!query.isLoading && !dataValid)
+    ? jsxs('section', { role: 'alert', style: { border: '1px solid #F4D3CE', borderRadius: 12, padding: 16, background: '#FDF0EE' }, children: [
+      jsx('h2', { style: { fontSize: 16, margin: '0 0 8px' }, children: 'Không tải được trạng thái văn phòng' }, 'title'),
+      jsx('p', { children: 'Hãy kiểm tra kết nối rồi thử lại.' }, 'hint'),
+      jsx('button', { type: 'button', onClick: () => query.refetch(), style: { minHeight: 40, padding: '0 14px', border: 0, borderRadius: 9, background: OFFICE_INK, color: '#fff', cursor: 'pointer' }, children: 'Thử lại' }, 'retry'),
+      jsx('details', { style: { marginTop: 12, overflowWrap: 'anywhere' }, children: [
+        jsx('summary', { style: { cursor: 'pointer' }, children: 'Chi tiết kỹ thuật' }, 'summary'),
+        jsx('pre', { style: { whiteSpace: 'pre-wrap' }, children: String(query.error?.message || query.error || 'Phản hồi trạng thái không hợp lệ') }, 'error'),
+      ] }, 'details'),
+    ] })
+    : query.isLoading
+      ? jsx('div', { className: 'w-full h-[240px]', children: jsx(Skeleton, { className: 'w-full h-full rounded-md' }) })
+      : mode === 'dashboard'
+        ? jsx(OfficeDashboard, { entries: all })
+        : jsx(OfficeScene, { entries: query.data, hideOffline, selectedProfile, setSelectedProfile, excludedProfileIds })
 
   return jsx('div', {
-    className: 'flex flex-col gap-3 p-4 w-full h-full min-h-0 min-w-0 overflow-y-auto',
+    className: 'flex flex-col gap-6 p-4 sm:p-8 w-full h-full min-h-0 min-w-0 overflow-y-auto',
+    style: { background: '#fff', color: OFFICE_INK, fontFamily: "'Be Vietnam Pro', system-ui, sans-serif" },
     'data-office-page': true,
     children: [
       jsxs('div', {
-        className: 'flex flex-wrap items-baseline justify-between gap-2',
+        className: 'flex flex-wrap items-end justify-between gap-4',
         children: [
-          jsx('h1', {
-            className: 'text-lg font-semibold text-[var(--ui-text-secondary)]',
-            children: 'Office 3D',
-          }),
-          jsx('span', {
-            className: 'text-xs text-[var(--ui-text-tertiary)]',
-            children:
-              'Isometric 2D · click a desk to inspect · ⌘/Ctrl + scroll to zoom · ' +
-              'refreshes every ' + pollSeconds + 's',
-          }),
+          jsxs('div', { children: [
+            jsx('h1', { style: { margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }, children: 'Văn phòng' }, 'title'),
+            jsx('p', { style: { margin: '6px 0 0', color: OFFICE_MUTED, fontSize: 14 }, children: dataValid
+              ? counts.total + ' agent · ● ' + counts.working + ' có hoạt động gần đây · ● ' + counts.onlineUnknown + ' trực tuyến (chưa rõ hoạt động) · ' + counts.offline + ' ngoại tuyến'
+              : 'Trạng thái agent: ' + OFFICE_UNKNOWN }, 'summary'),
+          ] }, 'intro'),
+          jsx('div', { role: 'group', 'aria-label': 'Kiểu xem', style: { display: 'flex', padding: 3, background: '#F3F2EE', borderRadius: 10 },
+            children: [['dashboard', 'Bảng điều khiển'], ['scene', 'Sơ đồ văn phòng']].map(([id, text]) =>
+              jsx('button', { type: 'button', 'aria-pressed': mode === id, onClick: () => setMode(id),
+                style: { minHeight: 40, padding: '0 14px', border: 0, borderRadius: 8, cursor: 'pointer', background: mode === id ? '#fff' : 'transparent', color: mode === id ? OFFICE_INK : OFFICE_MUTED, fontWeight: mode === id ? 600 : 400 },
+                children: text }, id)) }, 'tabs'),
         ],
-      }),
-      body,
+      }, 'heading'),
+      jsx('nav', { 'aria-label': 'Tác vụ văn phòng', style: { display: 'flex', flexWrap: 'wrap', gap: 8 },
+        children: [['/cron', 'Lịch chạy'], ['/profiles', 'Quản lý hồ sơ']].map(([path, text]) =>
+          jsx('button', { type: 'button', onClick: () => openOfficeRoute(path, text.toLowerCase()),
+            style: { minHeight: 40, padding: '0 14px', border: '1px solid ' + OFFICE_BORDER, borderRadius: 9, background: '#fff', color: OFFICE_INK, cursor: 'pointer' },
+            children: text }, path)) }, 'navigation'),
+      jsx('div', { children: body }, 'content'),
     ],
   })
 }
@@ -2655,7 +2791,7 @@ export default {
     c.register({
       id: 'nav',
       area: SIDEBAR_NAV_AREA,
-      data: { path: OFFICE_PATH, label: 'Office', codicon: 'home' },
+      data: { path: OFFICE_PATH, label: 'Văn phòng', codicon: 'home' },
     })
     // Status-bar chip: the always-mounted summary, and the poller that feeds
     // the optional state-change notifications.
@@ -2670,7 +2806,7 @@ export default {
       area: PALETTE_AREA,
       data: {
         id: 'office-3d.open.row',
-        label: 'Open Office 3D',
+        label: 'Mở văn phòng',
         keywords: ['office', 'profiles', 'agents', 'busy', 'desk'],
         // Render the live keybind combo as the row's hotkey hint.
         action: 'office-3d.open',
@@ -2682,7 +2818,7 @@ export default {
       area: KEYBINDS_AREA,
       data: {
         id: 'office-3d.open',
-        label: 'Open Office 3D',
+        label: 'Mở văn phòng',
         category: 'view',
         defaults: ['mod+shift+o'],
         run: openOffice,
@@ -2692,7 +2828,7 @@ export default {
     // loads on hosts that predate ctx.registerSettingsPage.
     ctx.registerSettingsPage?.({
       id: 'settings',
-      title: 'Office 3D',
+      title: 'Văn phòng',
       icon: 'organization',
       order: 0,
       render: () => jsx(OfficeSettingsPage, { ctx, prefs, update }),

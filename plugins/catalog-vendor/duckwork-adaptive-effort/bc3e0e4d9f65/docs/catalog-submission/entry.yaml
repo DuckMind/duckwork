@@ -1,0 +1,37 @@
+# Draft for Fordex/duckwork-agent/plugin-catalog/duckwork-adaptive-effort.yaml
+# Pinned to master after the v0.3.1 pre-release (repository-root payload, so no subdir).
+# The plugin payload is identical to v0.3.1; the pin adds the README screenshots and release tooling.
+# Update sha and version together for later releases; a bump is a new catalog PR.
+name: duckwork-adaptive-effort
+repo: https://github.com/DuckMind/duckwork
+sha: 0998a083d85ea52fbef38427b44a54d27332358a
+description: Choose a separate scorer to set the reasoning effort of each Duckwork request.
+maintainer: atostivint
+tier: community
+category: models
+requires_duckwork: ">=0.21.6"
+docs_url: https://github.com/DuckMind/duckwork
+version: "0.3.1"
+readme: true
+screenshots:
+  - https://github.com/DuckMind/duckwork
+  - https://github.com/DuckMind/duckwork
+  - https://github.com/DuckMind/duckwork
+  - https://github.com/DuckMind/duckwork
+platforms: []
+title: Duckwork Adaptive Effort
+known_issues:
+  - "Pre-release: live effort acceptance is only partially validated; see the v0.3.0 release notes for the per-route evidence."
+capabilities:
+  provides_tools: []
+  provides_hooks:
+    - on_session_end
+    - on_session_finalize
+    - on_session_reset
+    - subagent_start
+    - subagent_stop
+  provides_middleware:
+    - llm_request
+  # Provider credentials are conditional on the selected scorer, so none is
+  # unconditionally required to load or use the plugin with a local endpoint.
+  requires_env: []

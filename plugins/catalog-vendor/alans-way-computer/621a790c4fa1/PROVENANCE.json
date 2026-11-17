@@ -1,0 +1,229 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "alans-way-computer",
+  "content_id": "621a790c4fa1",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 5103,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "1a8fcc99c046f6a210cc55c0f30b1ad7fadfc1e8a4c9eac5c9e81c396b1c54c5"
+    },
+    {
+      "bytes": 51138,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "b46925bf531125b85913ba80d664b0c9f03fadf5c3c68664720405dc52ef20dc"
+    },
+    {
+      "bytes": 1080,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865"
+    },
+    {
+      "bytes": 504,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "7c4ed2c72c00c7935a67688ca1f4fa71b9e2a1b7cd28e0718ac48e4274417533"
+    }
+  ],
+  "input_manifest_sha256": "621a790c4fa1486355687069bed5160984d2671a8e2f679dd5d91ce0bb9fbb52",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "README.md",
+      "__init__.py",
+      "plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/capthvnsen/alans-way-agents",
+    "sha": "23cce292c867a42ccf9853b99d798add028788f0",
+    "subdir": "alans-way-computer"
+  },
+  "original_repo": "https://github.com/capthvnsen/alans-way-agents",
+  "original_sha": "23cce292c867a42ccf9853b99d798add028788f0",
+  "original_subdir": "alans-way-computer",
+  "output_files": [
+    {
+      "path": "README.md",
+      "sha256": "5e461f4ff79ed200342efbe86a33510192d2de8fa0f5f3d0dd77f83db15b68f2",
+      "bytes": 5131,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "5d485c47d51273ec2a1eb21366862c32cdd5baeb7c6566eff0ac17212df937e1",
+      "bytes": 51186,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+      "bytes": 1080,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "7e8fd2db6e9a6c6b944503a473aab6c3afe7f89c30dcdc9af4fee34d1fe6adfc",
+      "bytes": 506,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "009bf4aebfe518fb82fbbaadb913cd23134e320ce71a9492d9705348f21cb87e",
+  "pin_verification": {
+    "archive_bytes": 575159,
+    "archive_sha256": "961d9e899b961b4904b3f311e3a55cfdbd75124d7d04105a6d2179c5308a3194",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "23cce292c867a42ccf9853b99d798add028788f0",
+    "verified_commit_marker": "23cce292c867a42ccf9853b99d798add028788f0"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "28765a360aa0f6bb435b37399792519f8228ea7590a17e2b9f2ff9e890707ee9",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "README.md",
+        "input_sha256": "1a8fcc99c046f6a210cc55c0f30b1ad7fadfc1e8a4c9eac5c9e81c396b1c54c5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5e461f4ff79ed200342efbe86a33510192d2de8fa0f5f3d0dd77f83db15b68f2",
+        "source": "README.md",
+        "final_output_sha256": "5e461f4ff79ed200342efbe86a33510192d2de8fa0f5f3d0dd77f83db15b68f2",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "5e461f4ff79ed200342efbe86a33510192d2de8fa0f5f3d0dd77f83db15b68f2"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "b46925bf531125b85913ba80d664b0c9f03fadf5c3c68664720405dc52ef20dc",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "5d485c47d51273ec2a1eb21366862c32cdd5baeb7c6566eff0ac17212df937e1",
+        "source": "__init__.py",
+        "final_output_sha256": "5d485c47d51273ec2a1eb21366862c32cdd5baeb7c6566eff0ac17212df937e1",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "5d485c47d51273ec2a1eb21366862c32cdd5baeb7c6566eff0ac17212df937e1"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "4890a3a155762297e2347b881cd960e76490e2b55e356e569d19911598d80865"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "7c4ed2c72c00c7935a67688ca1f4fa71b9e2a1b7cd28e0718ac48e4274417533",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7e8fd2db6e9a6c6b944503a473aab6c3afe7f89c30dcdc9af4fee34d1fe6adfc",
+        "source": "plugin.yaml",
+        "final_output_sha256": "7e8fd2db6e9a6c6b944503a473aab6c3afe7f89c30dcdc9af4fee34d1fe6adfc",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "7e8fd2db6e9a6c6b944503a473aab6c3afe7f89c30dcdc9af4fee34d1fe6adfc"
+      }
+    ],
+    "manifest_sha256": "c1096be43fae401d73cfdd0c17715686be57fb1e55452d7f9f47904cf578cfbc",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "README.md": "alans-way-computer/README.md",
+    "__init__.py": "alans-way-computer/__init__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "plugin.yaml": "alans-way-computer/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "alans-way-computer",
+    "python_files_compiled": 1,
+    "secret_findings": 0
+  },
+  "canonical_slug": "alans-way-computer",
+  "catalog_file": "src/plugin-catalog/alans-way-computer.yaml",
+  "identity": {
+    "catalog_id": "alans-way-computer",
+    "canonical_slug": "alans-way-computer",
+    "original_manifest_name": "alans-way-computer",
+    "rebranded_manifest_name": "alans-way-computer",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "971a65a001f2d7de4404211fe24c28a96c2d432f198ad3b8bea99d61845850a3",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {
+    "plugin.yaml": [
+      {
+        "value": "author: \"capthvnsen, Hermes Agent\"",
+        "reason": "immutable original author/maintainer attribution"
+      }
+    ]
+  }
+}

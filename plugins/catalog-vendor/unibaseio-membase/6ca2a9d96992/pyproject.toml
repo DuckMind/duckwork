@@ -1,0 +1,21 @@
+[project]
+name = "unibaseio-membase-duckwork"
+version = "0.1.0"
+description = "Duckwork Agent memory provider plugin: Membase"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+# Installed into the Duckwork venv by `duckwork plugins install` / `enable` and re-applied after
+# `duckwork update`. Duckwork pins its own dependencies exactly; the SDK only needs httpx<1,>=0.25.
+dependencies = [
+    "unibaseio-membase>=0.3.0,<0.4",
+]
+
+[project.urls]
+Homepage = "https://membase.com"
+Documentation = "https://docs.membase.com"
+Source = "https://github.com/DuckMind/duckwork"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib -p no:cacheprovider"

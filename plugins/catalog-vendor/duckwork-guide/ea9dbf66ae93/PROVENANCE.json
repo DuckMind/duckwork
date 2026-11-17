@@ -1,0 +1,3428 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "hermes-guide",
+  "content_id": "ea9dbf66ae93",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 379,
+      "mode": "100644",
+      "path": ".coderabbit.yaml",
+      "sha256": "b6409187c82673df61480a0455b32b89c5e52bc6ed4b24f83eebff2e6dbe3063"
+    },
+    {
+      "bytes": 705,
+      "mode": "100644",
+      "path": ".gitattributes",
+      "sha256": "54bd2e4ebcd8c0b4a5ed6b890b0ae389e44fbad5272e6c2a860c15b432b2b500"
+    },
+    {
+      "bytes": 1502,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/assist-request.yml",
+      "sha256": "acb8f2045df591c6567ec767257f276f9704fc30d370fbc396fb89289713cd86"
+    },
+    {
+      "bytes": 1828,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/bug-report.yml",
+      "sha256": "6b675832818d50d726473edab6d245ff2337b088509fa162745ecd8760642e23"
+    },
+    {
+      "bytes": 654,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "sha256": "21bd7d2c128c793e22d02f0f0dd50cbe0906b2cc5c1074b661166f619bced7bf"
+    },
+    {
+      "bytes": 1604,
+      "mode": "100644",
+      "path": ".github/ISSUE_TEMPLATE/skill-drift.yml",
+      "sha256": "50649a1fb195ba87acecf851e3168b81a656a033de4cc43501c3bdb0c54c4afd"
+    },
+    {
+      "bytes": 4370,
+      "mode": "100644",
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "sha256": "be4a5833aac4373545957697bcd616e55e5c7d959ca25a77c4e1ccf0fee85ffb"
+    },
+    {
+      "bytes": 434,
+      "mode": "100644",
+      "path": ".github/dependabot.yml",
+      "sha256": "9b8bf9719f5013eb68fcc4f2cf1447d56d60de8b58f7cfe7239a0dcf0ddb152c"
+    },
+    {
+      "bytes": 382,
+      "mode": "100644",
+      "path": ".github/labeler.yml",
+      "sha256": "ba211ddcd17b92cbfca016ee0bd55d4b20b7dda4dbef9f65db1acf796491eae6"
+    },
+    {
+      "bytes": 41,
+      "mode": "100644",
+      "path": ".github/upstream-drift.baseline",
+      "sha256": "986838febdde5ab577515fa06ec0fbdfd8349a07a9dadfe33500e5fcd7cbfd84"
+    },
+    {
+      "bytes": 6854,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "ea156a5a1a046bb7614789c8e2af27ec00ccfd8bd8c50067a5208d3d26f0b627"
+    },
+    {
+      "bytes": 7489,
+      "mode": "100644",
+      "path": ".github/workflows/label-pr-metadata.yml",
+      "sha256": "e8585f0d4abb3650b9114104781372570159cb2cb93cd8341c0dae8f9039d729"
+    },
+    {
+      "bytes": 595,
+      "mode": "100644",
+      "path": ".github/workflows/label-prs.yml",
+      "sha256": "1336688e9c3e07d06ab1395a895a1dad66547d1af430bac71acc8f6c1f1411cb"
+    },
+    {
+      "bytes": 3580,
+      "mode": "100644",
+      "path": ".github/workflows/release.yml",
+      "sha256": "42ff1e6ba26ec2548bd676a75766c005a06b7db5eb9e3544de6c04cfa720c3f8"
+    },
+    {
+      "bytes": 31626,
+      "mode": "100644",
+      "path": ".github/workflows/reusable-ci.yml",
+      "sha256": "2deb92a3ba865cd58ea28c7e25de6f2bdb7bb9b668bf8d643dd6c55048e27933"
+    },
+    {
+      "bytes": 957,
+      "mode": "100644",
+      "path": ".github/workflows/upstream-drift.yml",
+      "sha256": "a4e02067d94484d1cd785aa8bcb5ba1d505d8c7cc1b8a00f9d51918f1950f1f4"
+    },
+    {
+      "bytes": 22613,
+      "mode": "100644",
+      "path": ".github/workflows/validate-claim.yml",
+      "sha256": "7db4e9d6f6cd5b857c5896d9f182a7d36c33de1442203f292621acaca1f6779c"
+    },
+    {
+      "bytes": 486,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "d95b3ae26799f2a41b30fff088361a5425c3b2469559a5dd2dbe071182120223"
+    },
+    {
+      "bytes": 2130,
+      "mode": "100644",
+      "path": ".pr_agent.toml",
+      "sha256": "c09cd25335857890e533948658e2151b5aaec3e688b34ae04de0afd1de9274ac"
+    },
+    {
+      "bytes": 1277,
+      "mode": "100644",
+      "path": ".pre-commit-config.yaml",
+      "sha256": "8811750a33b2996f4fa38907a3e95b52ee0c5f505674edc8910772f34b9ecd8c"
+    },
+    {
+      "bytes": 9301,
+      "mode": "100644",
+      "path": "AGENTS.md",
+      "sha256": "c44a045d18dc622d8dbfae8df7653f3c39e3afe2d3544969057189df3c938cc8"
+    },
+    {
+      "bytes": 35628,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "a6b3fe7dc95eebca807ba242af0d553b1244fb41cfcc85306e5ae110496c71ee"
+    },
+    {
+      "bytes": 11,
+      "mode": "100644",
+      "path": "CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "bytes": 19544,
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "5582b72e54db1ab3627f9ce842bfbf38784af707570be11b9e2c9ce9729a030e"
+    },
+    {
+      "bytes": 1108,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "96c5afcf492c1b5c1535256a9fe70a6fd965ae85e7117d9770f1563c5d0c8d95"
+    },
+    {
+      "bytes": 12032,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "a689b7552ef5917986c3748fb638dd2f8f43936f4fd32443f162d2987552b829"
+    },
+    {
+      "bytes": 2656,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "ff3e3b5762657097057502109074211c2e50af0ce14a6d6bf7e20a2ef8bb376f"
+    },
+    {
+      "bytes": 14973,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "166413ee765174837e8d1c4bf526952bf671663571c14b8ace4a83540149a5bf"
+    },
+    {
+      "bytes": 59530,
+      "mode": "100644",
+      "path": "assets/terminal-interact.webp",
+      "sha256": "43e4adeb5c3a97e8dfe84ded0fa6ef101ed931b854cc518983e674b5764ad68a"
+    },
+    {
+      "bytes": 121470,
+      "mode": "100644",
+      "path": "checks.py",
+      "sha256": "786a5c85a17bcba077d00a497e8465d82096523eb15fd8d770612972c5de3c34"
+    },
+    {
+      "bytes": 6915,
+      "mode": "100644",
+      "path": "constants.py",
+      "sha256": "8f271932ab1277edd01d5846e90c95593bbf387727bc27e8a45fa0c723a47a83"
+    },
+    {
+      "bytes": 1861,
+      "mode": "100644",
+      "path": "docs/agent/README.md",
+      "sha256": "1fa5d79f836f83fa351e56a5ec019ab08a9d1dc8e1585804b955e503dfad7a5b"
+    },
+    {
+      "bytes": 5638,
+      "mode": "100644",
+      "path": "docs/agent/layout.md",
+      "sha256": "df8efd58b83d6da72e4701032322f15a93f767c26fd90360c50f84dfadf515d6"
+    },
+    {
+      "bytes": 27852,
+      "mode": "100644",
+      "path": "docs/agent/ops.md",
+      "sha256": "9a811a72f88cbba0f22b7ed6ca2c36d974c2a4bb499d31e0d5f5740b6f9e0733"
+    },
+    {
+      "bytes": 5056,
+      "mode": "100644",
+      "path": "docs/embedding.md",
+      "sha256": "34ca430af9567439e96f0f927ad6d26a02db12454f903a7621c1d209163884f3"
+    },
+    {
+      "bytes": 9590,
+      "mode": "100644",
+      "path": "docs/findings.md",
+      "sha256": "4f1f67a3832af7150da2f9cf121a3621813faf6150a09776e6aa57c42cf14f92"
+    },
+    {
+      "bytes": 10539,
+      "mode": "100644",
+      "path": "plugin-skills/start/SKILL.md",
+      "sha256": "68ba3fea012cc955924477b2ae5d9d8357bd0e9cf1ac7556a84cca15dff53a8e"
+    },
+    {
+      "bytes": 897,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "d82ab80b4f2b0e75a5a1e64f895fdf9ccfc5e86f112b472ec38b27fe0703d461"
+    },
+    {
+      "bytes": 882,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "92c62477974a87fa283fda40b2dc14e629ee91370bef81ead58ff3f7cf800163"
+    },
+    {
+      "bytes": 11459,
+      "mode": "100644",
+      "path": "skills/diagnosing-auth/SKILL.md",
+      "sha256": "73ad19912c68e810ef0cd39ecb99a6415a3dbf23049d9caad7037ae454ecd354"
+    },
+    {
+      "bytes": 6588,
+      "mode": "100644",
+      "path": "skills/diagnosing-bot-mode/SKILL.md",
+      "sha256": "9b8b864595c35146fd86d41088443ba4aca3b15e53825f9e1a1798becaa0db51"
+    },
+    {
+      "bytes": 12820,
+      "mode": "100644",
+      "path": "skills/diagnosing-browser/SKILL.md",
+      "sha256": "91999f6477d23f121e59854386b0adeec105e84b3099698cbcbaa67e58c959de"
+    },
+    {
+      "bytes": 20591,
+      "mode": "100644",
+      "path": "skills/diagnosing-cli-tui/SKILL.md",
+      "sha256": "9c2f37ea36902cbf798e3bf9a3782480826ee5eedf01010a016f6b3db84753b8"
+    },
+    {
+      "bytes": 20321,
+      "mode": "100644",
+      "path": "skills/diagnosing-cli-tui/references/hermes-cli-tui-windows-investigation.md",
+      "sha256": "bd11a8b9495191ebc51883c35c3d5b2b5f4adeabb1090b4ffde0e5417d0f9828"
+    },
+    {
+      "bytes": 8173,
+      "mode": "100644",
+      "path": "skills/diagnosing-commands/SKILL.md",
+      "sha256": "67c052124392400e4894bedf59a82398a5c532f09dd45c9c239af59e633aa45e"
+    },
+    {
+      "bytes": 5499,
+      "mode": "100644",
+      "path": "skills/diagnosing-cron/SKILL.md",
+      "sha256": "0ab526473e222101760e19bdaa84773d9b6004cdc9b91f59284bf6f6af6aab76"
+    },
+    {
+      "bytes": 12812,
+      "mode": "100644",
+      "path": "skills/diagnosing-desktop/SKILL.md",
+      "sha256": "75ae5eeb0b3e1996a6f0ba25e6c2469fd29325320cd33faa945bbd56847e3167"
+    },
+    {
+      "bytes": 7328,
+      "mode": "100644",
+      "path": "skills/diagnosing-gateway/SKILL.md",
+      "sha256": "f7ec72a828553108a9edbc3626707e8a8b424b34272ecb7a6f66e368c2217cd0"
+    },
+    {
+      "bytes": 10299,
+      "mode": "100644",
+      "path": "skills/diagnosing-hooks/SKILL.md",
+      "sha256": "ea9a85263ba2dbdb66a834e36a19a56e925d94cf043326c8e69a2fa60113c5e3"
+    },
+    {
+      "bytes": 11897,
+      "mode": "100644",
+      "path": "skills/diagnosing-host-pressure/SKILL.md",
+      "sha256": "ea2adb75f7bf6b9ff70630d2480143b5f1b056b5e39027f15cf03b3bac8e13ee"
+    },
+    {
+      "bytes": 7249,
+      "mode": "100644",
+      "path": "skills/diagnosing-host-pressure/references/cascade-transcript.md",
+      "sha256": "91bfc35af33e3b72a25550b38441a392d1d4fde76ac26088a2295b40c04f14f8"
+    },
+    {
+      "bytes": 22550,
+      "mode": "100755",
+      "path": "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+      "sha256": "8811c37e536db2d1a8f23a56cf274faacecb8c0c3c6ce0f0440b14bce53e0367"
+    },
+    {
+      "bytes": 11573,
+      "mode": "100644",
+      "path": "skills/diagnosing-mcp/SKILL.md",
+      "sha256": "5463202519f1a93f40e2684c42fe4b5ac23868f3de5f576f5ebaf64e730be2a0"
+    },
+    {
+      "bytes": 13438,
+      "mode": "100644",
+      "path": "skills/diagnosing-memory/SKILL.md",
+      "sha256": "d145c12dd71101603b1d45bf79e328833ee61c54a6484d6896e82843cf0d502f"
+    },
+    {
+      "bytes": 3874,
+      "mode": "100644",
+      "path": "skills/diagnosing-memory/references/state_db.md",
+      "sha256": "dc2550e693002fb1a1cd90373b08407658df4c6e34fdee85913158bfd1f28942"
+    },
+    {
+      "bytes": 22508,
+      "mode": "100644",
+      "path": "skills/diagnosing-path/SKILL.md",
+      "sha256": "50d9146a9baa0b8d5ec326f34985fcd338a790977249c7022d420182ebd419e8"
+    },
+    {
+      "bytes": 3021,
+      "mode": "100644",
+      "path": "skills/diagnosing-path/references/pm_era_venvs.md",
+      "sha256": "b99ab275fdafa7bc2ea18c4636f9bd9f3d237c8e80efccb6079f734c1ed35fe2"
+    },
+    {
+      "bytes": 2422,
+      "mode": "100644",
+      "path": "skills/diagnosing-path/references/resolve_venv.py",
+      "sha256": "ebc5b4036e2381c10b940875a401d3561bbfbbd7af65b82dee63ca7e182332ba"
+    },
+    {
+      "bytes": 6617,
+      "mode": "100644",
+      "path": "skills/diagnosing-path/references/venv_detection_patterns.py",
+      "sha256": "bbc90d3d5eea565823d31481ee94bc6b651640a0b234e0cc2dccd4de1b773869"
+    },
+    {
+      "bytes": 14990,
+      "mode": "100644",
+      "path": "skills/diagnosing-plugins/SKILL.md",
+      "sha256": "40e2a314f8348662188b81784a25df08698d2c3433a319e8025e82812dc482a7"
+    },
+    {
+      "bytes": 16167,
+      "mode": "100644",
+      "path": "skills/diagnosing-providers/SKILL.md",
+      "sha256": "179a03da9d4954efdfdad5fecd59ff6061441b72660eedf06aba583d752b375a"
+    },
+    {
+      "bytes": 7310,
+      "mode": "100644",
+      "path": "skills/diagnosing-runtime/SKILL.md",
+      "sha256": "312608df52ec7a19c1f49df5e4d5f244642c253465c034b04b3ecf8b3f2349ca"
+    },
+    {
+      "bytes": 11199,
+      "mode": "100644",
+      "path": "skills/diagnosing-skills/SKILL.md",
+      "sha256": "dd4701c757917b6c76115704cfe0996fd4b025aa1f93eb27267614d171256e45"
+    },
+    {
+      "bytes": 25963,
+      "mode": "100644",
+      "path": "skills/diagnosing-triage/SKILL.md",
+      "sha256": "6a8d5507f7ef5250f6e279596be021986b7774922750680adaf5a40b7f1923a7"
+    },
+    {
+      "bytes": 7002,
+      "mode": "100644",
+      "path": "skills/diagnosing-triage/goldens.md",
+      "sha256": "039b0b0918c795dea52f1b9782138021786fd20bf6982c96275b09021bf07867"
+    },
+    {
+      "bytes": 4114,
+      "mode": "100644",
+      "path": "skills/diagnosing-triage/references/symptom_map.md",
+      "sha256": "e18237c5b4f78abf95be41cd57d851cb638c55dc3522cf98e810115426c9b8a8"
+    },
+    {
+      "bytes": 8220,
+      "mode": "100644",
+      "path": "skills/diagnosing-voice/SKILL.md",
+      "sha256": "dfbce579edff9cbaf112e450869a440528b57600c8e9f79c4e349d5db9745124"
+    },
+    {
+      "bytes": 21702,
+      "mode": "100644",
+      "path": "skills/hermes-configuration-guide/SKILL.md",
+      "sha256": "cdd7689f61485daff5c7acaf755055bb4f759001ca7206be9659c7afc00f509e"
+    },
+    {
+      "bytes": 8335,
+      "mode": "100644",
+      "path": "skills/hermes-post-update/SKILL.md",
+      "sha256": "265fdc2d211ccb3ba7fb66d6321aba0439e2ca220a2e95b6253efb1d9ca87233"
+    },
+    {
+      "bytes": 13194,
+      "mode": "100755",
+      "path": "skills/installing-hermes/SKILL.md",
+      "sha256": "311f1a0d5be5c913ea2a6ea5f8e7c9ee3f3d6d97f0a850bd32b9347428411ba0"
+    },
+    {
+      "bytes": 14459,
+      "mode": "100644",
+      "path": "tests/check_scanner_hygiene.py",
+      "sha256": "b12094c339246358f974c06e67304ac72e355af796dbaa84b56c384d8573adea"
+    },
+    {
+      "bytes": 11641,
+      "mode": "100644",
+      "path": "tools/check_citation_integrity.py",
+      "sha256": "177b6d74102fed470df2c2cfbf8c6b219f111a00d463fa331209edee897e34e1"
+    },
+    {
+      "bytes": 28276,
+      "mode": "100644",
+      "path": "tools/check_cli_surface.py",
+      "sha256": "1e7c3bae85ac320214f6c87fbfcd48078017e85b2c74cd63370a130d6f2a890b"
+    },
+    {
+      "bytes": 19288,
+      "mode": "100644",
+      "path": "tools/check_doc_style.py",
+      "sha256": "585bf49639226d4482758f3c3feda7fd686a2396bd496e1f88f55dced96b45c4"
+    },
+    {
+      "bytes": 15819,
+      "mode": "100644",
+      "path": "tools/check_eol_contract.py",
+      "sha256": "a907d83fae88843fec5d3cb6eadd4781fef1094d309f2fba91b27c1b2c51d4f9"
+    },
+    {
+      "bytes": 5985,
+      "mode": "100755",
+      "path": "tools/check_gates.py",
+      "sha256": "bcceae8448101eeef410de9783667907abcd293a3fdebf2e94cd8733d9d5404c"
+    },
+    {
+      "bytes": 14155,
+      "mode": "100644",
+      "path": "tools/check_install_scan.py",
+      "sha256": "b846368ffebec5b0aefa73455880ce0280c9f6631bf086e22b8207160e29daf7"
+    },
+    {
+      "bytes": 28595,
+      "mode": "100644",
+      "path": "tools/check_issue_templates.py",
+      "sha256": "1705c24a2dae6d19496849a5adea1f77b28db528e10df0928ae128a874156a4a"
+    },
+    {
+      "bytes": 14179,
+      "mode": "100644",
+      "path": "tools/check_no_mutation.py",
+      "sha256": "661254034ae0c3cda4736b63822244d4de82753b3bf836beb91ecacd72e57242"
+    },
+    {
+      "bytes": 14463,
+      "mode": "100644",
+      "path": "tools/check_release_readiness.py",
+      "sha256": "0a74fdffe9fe7593dd583a0b5d16128d2bfe3f7a4677389a30e949bdc0f728e0"
+    },
+    {
+      "bytes": 15912,
+      "mode": "100644",
+      "path": "tools/check_scope_enumeration.py",
+      "sha256": "03e918a15e87cc2eeede5661bdd79e61287d9b65e278f906a7c38223e7b36ca7"
+    },
+    {
+      "bytes": 2324,
+      "mode": "100644",
+      "path": "tools/check_self_claim.py",
+      "sha256": "09d317ee77f45529251d50d6716f0ce71a8dba5891ca3bd4c8e50e55eb24915c"
+    },
+    {
+      "bytes": 11500,
+      "mode": "100644",
+      "path": "tools/check_skill_consistency.py",
+      "sha256": "ba8ada9dbd91c79c0dde9b544eeceea69915d210f7785d8bd42b32db6df99a67"
+    },
+    {
+      "bytes": 5916,
+      "mode": "100644",
+      "path": "tools/check_skill_dogfood.py",
+      "sha256": "a4a85491d6b9c4a733131b5451d7d01be4c523bc70136b9631d5679735233ccb"
+    },
+    {
+      "bytes": 6629,
+      "mode": "100644",
+      "path": "tools/check_skill_provenance.py",
+      "sha256": "6a745a7195e5ed98d6684b0a56fb0b2e76f3499576195f6c0d528a24f60e8b77"
+    },
+    {
+      "bytes": 5902,
+      "mode": "100644",
+      "path": "tools/check_skill_version_bump.py",
+      "sha256": "e417f26d2a0616bb72997338b8c88736727b1054617e0e379f5ce12da35e44c3"
+    },
+    {
+      "bytes": 7073,
+      "mode": "100644",
+      "path": "tools/check_tool_coverage.py",
+      "sha256": "17dbe6eb1c4f9ae5e622118616c618fb6a2f4b04d8bcece9af192f1159865f92"
+    },
+    {
+      "bytes": 33774,
+      "mode": "100644",
+      "path": "tools/check_upstream_drift.py",
+      "sha256": "1db5dd7844b6c0ebc1e6e3566787ac3561f7ab5118272c0b7b65cd0be7c7185c"
+    },
+    {
+      "bytes": 13407,
+      "mode": "100644",
+      "path": "tools/check_version_consistency.py",
+      "sha256": "7beec2eeea2e2436718ad18db71337b6b29347ea9213918b50aea82320174527"
+    },
+    {
+      "bytes": 22118,
+      "mode": "100755",
+      "path": "tools/gen_changelog.py",
+      "sha256": "aa6d08e3822fe00b0d070db617f2814c297fc841cd3fc422b5b91790bdc63b3c"
+    },
+    {
+      "bytes": 14401,
+      "mode": "100644",
+      "path": "tools/pr_metadata_labels.py",
+      "sha256": "89b6ac0546ca01c6b8b8f458bf37eaf912befc782d871023c9ea956c8f345489"
+    },
+    {
+      "bytes": 24046,
+      "mode": "100644",
+      "path": "tools/render_docs.py",
+      "sha256": "c18014b976555f6035a61aecda4edbc86c3c4fb41de446d16ef7fc84852ec715"
+    },
+    {
+      "bytes": 8589,
+      "mode": "100644",
+      "path": "tools/test_bootstrap_skill.py",
+      "sha256": "e3b513dca6d4e433d22245003b29000e9595451aa80c13cc0f04c57027aafe1a"
+    },
+    {
+      "bytes": 16636,
+      "mode": "100644",
+      "path": "tools/test_check_envelopes.py",
+      "sha256": "4a9c6f8bea1d722212a223693204aba62d79503739601f1a8accf1e77d960286"
+    },
+    {
+      "bytes": 18851,
+      "mode": "100644",
+      "path": "tools/test_check_eol_contract.py",
+      "sha256": "43e499ec19221630666fe962f20b4aca445c535eabc13c110204bf17d5338cb6"
+    },
+    {
+      "bytes": 16290,
+      "mode": "100644",
+      "path": "tools/test_check_install_scan.py",
+      "sha256": "ccc88faf840282d30afa61313b4613c5caf5fa2535251c95ca9d3128327eeb8d"
+    },
+    {
+      "bytes": 26380,
+      "mode": "100644",
+      "path": "tools/test_checks_cli_resolution.py",
+      "sha256": "c5bfd6ed5ffacc0021e997bd84fefd06e92ef9893a21c6949d22ec323abea0c0"
+    },
+    {
+      "bytes": 8206,
+      "mode": "100644",
+      "path": "tools/test_claim_validation.py",
+      "sha256": "390145e3227b16e0fc3f24cb325a617832f65664ee541b8c1d19377acce1325c"
+    },
+    {
+      "bytes": 2404,
+      "mode": "100644",
+      "path": "tools/test_drift_watch_parity.py",
+      "sha256": "ee2f543262b38a66d0f255b25bf20839ab6c0655e993db5ae8147d1a72a62a55"
+    },
+    {
+      "bytes": 3803,
+      "mode": "100644",
+      "path": "tools/test_exit_contract.py",
+      "sha256": "c7cdcd584aa6c8341cafd18b4a9bfd55842fea5dc395a9a2c262271e9df9784b"
+    },
+    {
+      "bytes": 10310,
+      "mode": "100644",
+      "path": "tools/test_fast_mode.py",
+      "sha256": "09bf4982e801e30bb11987a1fea56710987624bb81deb5dd5987f00fc95475b8"
+    },
+    {
+      "bytes": 7772,
+      "mode": "100644",
+      "path": "tools/test_finding_ids.py",
+      "sha256": "c2303ef40d58a219a4fcb7c5f2d55fe78fb2d5034d4b73c7db4b4b1501df8825"
+    },
+    {
+      "bytes": 8043,
+      "mode": "100644",
+      "path": "tools/test_gate_status.py",
+      "sha256": "cc0f08db451f0e0c5e9b843396481aa19721e7494542d9fac8f36f683b733c26"
+    },
+    {
+      "bytes": 33876,
+      "mode": "100644",
+      "path": "tools/test_gen_changelog.py",
+      "sha256": "efab137afc216926e274e16710a9ee00e230c30fa347203cd188b7be97a72715"
+    },
+    {
+      "bytes": 8586,
+      "mode": "100644",
+      "path": "tools/test_hooks_readonly_check.py",
+      "sha256": "2e0caf527509a41c81a510586aeee2cb511ec2f94c0779d08358a994be4b9c04"
+    },
+    {
+      "bytes": 36405,
+      "mode": "100644",
+      "path": "tools/test_host_pressure_probe.py",
+      "sha256": "744f767afea91021dcc4fbeb13b9034028644a70cf1257e02430e2c11f39f38e"
+    },
+    {
+      "bytes": 9739,
+      "mode": "100644",
+      "path": "tools/test_json_output.py",
+      "sha256": "229ffaa817cc003a4272e2a7cf8fad39385b9b8ca74ad9a085c1a1290ab81e4e"
+    },
+    {
+      "bytes": 3994,
+      "mode": "100644",
+      "path": "tools/test_mcp_shape.py",
+      "sha256": "81fc80c119d4f45c020a5bb16a643afdfccc4d443ebdafdcf96f4da2ac02b9cd"
+    },
+    {
+      "bytes": 7232,
+      "mode": "100644",
+      "path": "tools/test_memory_hygiene.py",
+      "sha256": "d0f8191a9b20f2c1004c3c905aed960c317028b7aa2ecd4e50ca4cb7f739ef4e"
+    },
+    {
+      "bytes": 4430,
+      "mode": "100644",
+      "path": "tools/test_plugin_skip_source.py",
+      "sha256": "e244bfa34125f7d806f8b9f2fb32a8670b4ed5b074a33f08af31e5a197ce46ef"
+    },
+    {
+      "bytes": 17057,
+      "mode": "100644",
+      "path": "tools/test_plugins_notes.py",
+      "sha256": "609c6a5d588c6bef38619095016a44f7b5c395d0b076190470e176f57dfecc6e"
+    },
+    {
+      "bytes": 10678,
+      "mode": "100644",
+      "path": "tools/test_portable_plugin_manifest.py",
+      "sha256": "83a3f5fe5f08ef0ab739008bc546244445a8183279033344bd7d46f15a9e10f2"
+    },
+    {
+      "bytes": 4902,
+      "mode": "100644",
+      "path": "tools/test_reachable_allowlist_check.py",
+      "sha256": "89825ef90efd64de73da33e1785f0de8359f397cab20fde097ac6d18d61bc71f"
+    },
+    {
+      "bytes": 2620,
+      "mode": "100644",
+      "path": "tools/test_readonly_runtime.py",
+      "sha256": "77792a4939327ac2ae8df8c3230516987addec88de6e27391ccfdbad86a5faf3"
+    },
+    {
+      "bytes": 12790,
+      "mode": "100644",
+      "path": "tools/test_release_readiness.py",
+      "sha256": "367c8792b0bb432e3f782d105280b4e91fa4c718cadb97e2949eab6afe0806f2"
+    },
+    {
+      "bytes": 6298,
+      "mode": "100644",
+      "path": "tools/test_resolve_venv.py",
+      "sha256": "569b69462ed5168722b56c9d7bda403be0646e648a2cba3f7f7d8849d99e3270"
+    },
+    {
+      "bytes": 4214,
+      "mode": "100644",
+      "path": "tools/test_scope_validation.py",
+      "sha256": "f2b3080cd1f32d9925dbd276ca9f3bae513e2ad4ba941d2f7b856994bc03ae50"
+    },
+    {
+      "bytes": 8010,
+      "mode": "100644",
+      "path": "tools/test_session_health.py",
+      "sha256": "c5bada1bd6819ad91daba9ef5dc5f6f8100ebf39862efb1fa3a2a1a43734297b"
+    },
+    {
+      "bytes": 19913,
+      "mode": "100644",
+      "path": "tools/test_skill_checks.py",
+      "sha256": "d4d2c2e8dd6be50a182462357458467c6f74a5a088fdf7766f67bbd3de59b721"
+    },
+    {
+      "bytes": 8106,
+      "mode": "100644",
+      "path": "tools/test_skill_counts.py",
+      "sha256": "355d477bf875124dc53c13bcc90c24231ec8a1665c92b71feae89bfcff99297c"
+    },
+    {
+      "bytes": 8784,
+      "mode": "100644",
+      "path": "tools/test_skill_malformed_name.py",
+      "sha256": "91f0fe661605cd7665771d1e5287840c8755185fc534b0badaffc19b6a4f7b49"
+    },
+    {
+      "bytes": 3634,
+      "mode": "100644",
+      "path": "tools/test_skill_provenance.py",
+      "sha256": "77f1155ad8ff094da120024eec28cffcd6e890bd64779062f3bd83f49b70a6a7"
+    },
+    {
+      "bytes": 5664,
+      "mode": "100644",
+      "path": "tools/test_skill_version_bump.py",
+      "sha256": "d8d1d817dcebef1664d5600e36ef130c2c238a5bbf2ef5c5f7c552a997b57929"
+    },
+    {
+      "bytes": 13444,
+      "mode": "100644",
+      "path": "tools/test_update_lock.py",
+      "sha256": "69112d25f3d7cdc2b40c9bd969b184c39cc9ca10690cb4b18af11db9df11f742"
+    },
+    {
+      "bytes": 6298,
+      "mode": "100644",
+      "path": "tools/test_update_notice_site.py",
+      "sha256": "7fb81315795d4468ba1ff6c4b589815225d6368ae1e9b4af0bef21461319b442"
+    },
+    {
+      "bytes": 36799,
+      "mode": "100644",
+      "path": "tools/test_upstream_drift_hygiene.py",
+      "sha256": "7d25ad223497355f11d4b6ca37ab273f60e7aa74aee21df438fd9e6701139065"
+    }
+  ],
+  "input_manifest_sha256": "ea9dbf66ae9365d97aacc5a300804a7c00166e75be2d62e3e2a25f9b48b4514b",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "96c5afcf492c1b5c1535256a9fe70a6fd965ae85e7117d9770f1563c5d0c8d95",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".coderabbit.yaml",
+      ".github/ISSUE_TEMPLATE/bug-report.yml",
+      ".github/ISSUE_TEMPLATE/config.yml",
+      ".github/ISSUE_TEMPLATE/skill-drift.yml",
+      ".github/PULL_REQUEST_TEMPLATE.md",
+      ".github/workflows/release.yml",
+      ".github/workflows/reusable-ci.yml",
+      ".github/workflows/upstream-drift.yml",
+      ".github/workflows/validate-claim.yml",
+      ".pr_agent.toml",
+      ".pre-commit-config.yaml",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "SECURITY.md",
+      "__init__.py",
+      "checks.py",
+      "constants.py",
+      "docs/agent/README.md",
+      "docs/agent/layout.md",
+      "docs/agent/ops.md",
+      "docs/embedding.md",
+      "docs/findings.md",
+      "plugin-skills/start/SKILL.md",
+      "plugin.yaml",
+      "pyproject.toml",
+      "skills/diagnosing-auth/SKILL.md",
+      "skills/diagnosing-bot-mode/SKILL.md",
+      "skills/diagnosing-browser/SKILL.md",
+      "skills/diagnosing-cli-tui/SKILL.md",
+      "skills/diagnosing-cli-tui/references/duckwork-cli-tui-windows-investigation.md",
+      "skills/diagnosing-commands/SKILL.md",
+      "skills/diagnosing-cron/SKILL.md",
+      "skills/diagnosing-desktop/SKILL.md",
+      "skills/diagnosing-gateway/SKILL.md",
+      "skills/diagnosing-hooks/SKILL.md",
+      "skills/diagnosing-host-pressure/SKILL.md",
+      "skills/diagnosing-host-pressure/references/cascade-transcript.md",
+      "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+      "skills/diagnosing-mcp/SKILL.md",
+      "skills/diagnosing-memory/SKILL.md",
+      "skills/diagnosing-memory/references/state_db.md",
+      "skills/diagnosing-path/SKILL.md",
+      "skills/diagnosing-path/references/pm_era_venvs.md",
+      "skills/diagnosing-path/references/resolve_venv.py",
+      "skills/diagnosing-path/references/venv_detection_patterns.py",
+      "skills/diagnosing-plugins/SKILL.md",
+      "skills/diagnosing-providers/SKILL.md",
+      "skills/diagnosing-runtime/SKILL.md",
+      "skills/diagnosing-skills/SKILL.md",
+      "skills/diagnosing-triage/SKILL.md",
+      "skills/diagnosing-triage/goldens.md",
+      "skills/diagnosing-triage/references/symptom_map.md",
+      "skills/diagnosing-voice/SKILL.md",
+      "skills/duckwork-configuration-guide/SKILL.md",
+      "skills/duckwork-post-update/SKILL.md",
+      "skills/installing-duckwork/SKILL.md",
+      "tests/check_scanner_hygiene.py",
+      "tools/check_citation_integrity.py",
+      "tools/check_cli_surface.py",
+      "tools/check_doc_style.py",
+      "tools/check_gates.py",
+      "tools/check_install_scan.py",
+      "tools/check_issue_templates.py",
+      "tools/check_no_mutation.py",
+      "tools/check_release_readiness.py",
+      "tools/check_scope_enumeration.py",
+      "tools/check_self_claim.py",
+      "tools/check_skill_consistency.py",
+      "tools/check_skill_dogfood.py",
+      "tools/check_upstream_drift.py",
+      "tools/gen_changelog.py",
+      "tools/render_docs.py",
+      "tools/test_bootstrap_skill.py",
+      "tools/test_check_envelopes.py",
+      "tools/test_check_eol_contract.py",
+      "tools/test_check_install_scan.py",
+      "tools/test_checks_cli_resolution.py",
+      "tools/test_drift_watch_parity.py",
+      "tools/test_exit_contract.py",
+      "tools/test_fast_mode.py",
+      "tools/test_finding_ids.py",
+      "tools/test_gate_status.py",
+      "tools/test_gen_changelog.py",
+      "tools/test_hooks_readonly_check.py",
+      "tools/test_host_pressure_probe.py",
+      "tools/test_json_output.py",
+      "tools/test_mcp_shape.py",
+      "tools/test_memory_hygiene.py",
+      "tools/test_plugin_skip_source.py",
+      "tools/test_plugins_notes.py",
+      "tools/test_portable_plugin_manifest.py",
+      "tools/test_reachable_allowlist_check.py",
+      "tools/test_readonly_runtime.py",
+      "tools/test_release_readiness.py",
+      "tools/test_scope_validation.py",
+      "tools/test_session_health.py",
+      "tools/test_skill_checks.py",
+      "tools/test_skill_counts.py",
+      "tools/test_skill_malformed_name.py",
+      "tools/test_update_lock.py",
+      "tools/test_update_notice_site.py",
+      "tools/test_upstream_drift_hygiene.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/iap/hermes-guide",
+    "sha": "5a3d45d8f122d0e246d7009b7dc4f00d2e7fe07b",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/iap/hermes-guide",
+  "original_sha": "5a3d45d8f122d0e246d7009b7dc4f00d2e7fe07b",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".coderabbit.yaml",
+      "sha256": "e1eb3ac5b70289a26cb714d3edd997c788431131efd739ce6072542f38aad4bc",
+      "bytes": 381,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitattributes",
+      "sha256": "54bd2e4ebcd8c0b4a5ed6b890b0ae389e44fbad5272e6c2a860c15b432b2b500",
+      "bytes": 705,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/assist-request.yml",
+      "sha256": "acb8f2045df591c6567ec767257f276f9704fc30d370fbc396fb89289713cd86",
+      "bytes": 1502,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug-report.yml",
+      "sha256": "2339bf762bb4bdab0a94386990fba53858b1c4bd37e8506c82668eb09bfc4556",
+      "bytes": 1830,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "sha256": "d6d98299ee23a86a5723ca6ca2ad159763ef6bb77ab49b45e83ad55f21870207",
+      "bytes": 615,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/skill-drift.yml",
+      "sha256": "6aed8f27d8e7dbc461f8143b21d6ae12bfe56a846197b054aea1d350dcfc3d64",
+      "bytes": 1620,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "sha256": "ca820947091122cc8aaae1f1c93910824decd93a4c0ca86c10b5f06b734b76f2",
+      "bytes": 4378,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "sha256": "9b8bf9719f5013eb68fcc4f2cf1447d56d60de8b58f7cfe7239a0dcf0ddb152c",
+      "bytes": 434,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/labeler.yml",
+      "sha256": "ba211ddcd17b92cbfca016ee0bd55d4b20b7dda4dbef9f65db1acf796491eae6",
+      "bytes": 382,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/upstream-drift.baseline",
+      "sha256": "986838febdde5ab577515fa06ec0fbdfd8349a07a9dadfe33500e5fcd7cbfd84",
+      "bytes": 41,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "ea156a5a1a046bb7614789c8e2af27ec00ccfd8bd8c50067a5208d3d26f0b627",
+      "bytes": 6854,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/label-pr-metadata.yml",
+      "sha256": "e8585f0d4abb3650b9114104781372570159cb2cb93cd8341c0dae8f9039d729",
+      "bytes": 7489,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/label-prs.yml",
+      "sha256": "1336688e9c3e07d06ab1395a895a1dad66547d1af430bac71acc8f6c1f1411cb",
+      "bytes": 595,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "sha256": "306ae09cdd57561c36f5238252c050a4d86fc084a2ab950cadff4c6aace2a656",
+      "bytes": 3582,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/reusable-ci.yml",
+      "sha256": "58d7a2a6d865f7cae02f11fe14d51230dc75bb2865ac41d86eb4e91debe079a8",
+      "bytes": 31722,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/upstream-drift.yml",
+      "sha256": "3446d0f9975861f5c05904e2a170c8fd96ca58c264c16329dd699a9e8f36665d",
+      "bytes": 963,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/validate-claim.yml",
+      "sha256": "32e54158ac4ad4aeff45cded3b9be0123d9cafd635f65438647b234e34c24af1",
+      "bytes": 22619,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "d95b3ae26799f2a41b30fff088361a5425c3b2469559a5dd2dbe071182120223",
+      "bytes": 486,
+      "mode": "100644"
+    },
+    {
+      "path": ".pr_agent.toml",
+      "sha256": "cd27752eb82fb9abd60a9138b21a7be8bee343384df5d6076f8482efbe834c4e",
+      "bytes": 2138,
+      "mode": "100644"
+    },
+    {
+      "path": ".pre-commit-config.yaml",
+      "sha256": "1e70d2b41b8e6d7974715d9e7255ba100170599e04efa98300e08825ccddbc36",
+      "bytes": 1283,
+      "mode": "100644"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "b4179c81f4c1bf1ad2660c9df542617ae03a3b3808775294309d91f969fc7fd3",
+      "bytes": 9399,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "9080db1cce2be980b3a85fbb87dcceaaee14b7428dfd704bb4818be90f3244a2",
+      "bytes": 34021,
+      "mode": "100644"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "bytes": 11,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "8a15649302c4672f04e7824de8ed91111bb1bf9d4ecb6e4a8ac74fceec25d0b9",
+      "bytes": 19606,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "96c5afcf492c1b5c1535256a9fe70a6fd965ae85e7117d9770f1563c5d0c8d95",
+      "bytes": 1108,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "764e3867bc8fc9a48bb1a2bd266b8d9da8767697fd6ad81817d4d77e22853ab6",
+      "bytes": 12185,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "681f3010d4e76cbb031b034c1c4b91f4272bb27855ab617312c56d686c27ecc1",
+      "bytes": 2647,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "66d849129ff664ad8b2fa0a474debb7a4707bfa9c1d608989c69c0655f8fd8d9",
+      "bytes": 15039,
+      "mode": "100644"
+    },
+    {
+      "path": "assets/terminal-interact.webp",
+      "sha256": "43e4adeb5c3a97e8dfe84ded0fa6ef101ed931b854cc518983e674b5764ad68a",
+      "bytes": 59530,
+      "mode": "100644"
+    },
+    {
+      "path": "checks.py",
+      "sha256": "622579c497212dcaa3892a37baf067c0c2eb03a639cdff755ec4a2093311ff85",
+      "bytes": 121897,
+      "mode": "100644"
+    },
+    {
+      "path": "constants.py",
+      "sha256": "d2dcc939299f57d08f257b66adc500b602a8dfb61314c5007ac4db8a38ec859f",
+      "bytes": 6948,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/agent/README.md",
+      "sha256": "f382a7ceeac3dd8f47c28dc83a1fc2f534b5a26bcad5578ab3d8604b47d45cbf",
+      "bytes": 1867,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/agent/layout.md",
+      "sha256": "b80a6f5c0a76c7846fb2620ea0bbaac2ebc9e1dba246b150e9f7472e0cd0bb53",
+      "bytes": 5646,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/agent/ops.md",
+      "sha256": "9f8f0186122873f4e75cf63734069213f233ddfef087d68a525ae3a8328b542b",
+      "bytes": 27928,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/embedding.md",
+      "sha256": "79bc3570199249e9dd8bfb4e8a5eb663327c4950888fc54d32cbd3c0562fa59b",
+      "bytes": 5124,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/findings.md",
+      "sha256": "1fce1df92c443b1645f8141924f116aae8b513c8acc2a20451568ce1bdb7e7cb",
+      "bytes": 9685,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin-skills/start/SKILL.md",
+      "sha256": "930b1b119e07c7f5d75c60f2f33c0369414a42ed98f9c2b2806e76d2338f880a",
+      "bytes": 10655,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "c624d1cda28668a895d5ea431cfbcb0f6e63e37bde2cd0853bc7dde2b1bf1d74",
+      "bytes": 910,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "0c73426b47de1b3f6b75f093b986574d62dbd9ca2dc4b9bd569cac991a64eea4",
+      "bytes": 888,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-auth/SKILL.md",
+      "sha256": "3f8b3851c25cf71cccded95356ec82b80dd7802f9c2eafc2bc4be0b4908e3b10",
+      "bytes": 11495,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-bot-mode/SKILL.md",
+      "sha256": "2b79490785a91c1ee6f546ad4d53b5eb21eca0e4b5ab13c9b61e03360d9a5a09",
+      "bytes": 6676,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-browser/SKILL.md",
+      "sha256": "8eacaf55e31d8e00fa43c66433d0ceeaf03a5852c3337460b3bf3d9a18f117ef",
+      "bytes": 12906,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-cli-tui/SKILL.md",
+      "sha256": "c276a418879e9a61818915517b17bdc72b617d105adb0d0f5261f83d890fda7c",
+      "bytes": 20799,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-cli-tui/references/duckwork-cli-tui-windows-investigation.md",
+      "sha256": "da0835dbc033cd3982abb5a5119439fcf430900dccd0e5c9505808ddb06695ae",
+      "bytes": 20162,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-commands/SKILL.md",
+      "sha256": "798ed79085e2bc0bd089c518bb5f0faffbea791cfcdf42adb413765ef78eafa4",
+      "bytes": 8233,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-cron/SKILL.md",
+      "sha256": "044961fdbb434ee939cb3e0cf12b61b736cbd356b55cbd092548a5baab62df18",
+      "bytes": 5587,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-desktop/SKILL.md",
+      "sha256": "8434b25c2e168ddbd719f73fb10201ee2a8f28b4b2dee24559027e4ae7a4699e",
+      "bytes": 12976,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-gateway/SKILL.md",
+      "sha256": "c36c20dc778392dcafead60756364b9a0454938f18eecf853d4c9948b7092556",
+      "bytes": 7424,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-hooks/SKILL.md",
+      "sha256": "1c043a66dc99d51dc8989a9e614f92ba8bfddf67b157f043bef7418ef123ee90",
+      "bytes": 10391,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-host-pressure/SKILL.md",
+      "sha256": "7c64bfef2ae94fe36858619e5acad9006868f6ce016ea6c730f2f1caa339728a",
+      "bytes": 11953,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-host-pressure/references/cascade-transcript.md",
+      "sha256": "83ab7a3fd9e44d348a631372e5c6e611aebfdf3c0912ab012922a3df2454d467",
+      "bytes": 7281,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+      "sha256": "7e1917298a960e95a0de3f4f3936c79447b556a6528af62254ae995495f16e74",
+      "bytes": 22579,
+      "mode": "100755"
+    },
+    {
+      "path": "skills/diagnosing-mcp/SKILL.md",
+      "sha256": "f8aae16184f7d5068586f81087dcd59a026da0e9916703f6346d5c6046983b2f",
+      "bytes": 11675,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-memory/SKILL.md",
+      "sha256": "b87f51ac2fe1efe5935bc3348db7227767a42f1cba4654e7d2cc6efbf86a1379",
+      "bytes": 13560,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-memory/references/state_db.md",
+      "sha256": "cd3b71b1fe778a9a95ec518270651976eb69b824fa6da887191442a5229f75ae",
+      "bytes": 3908,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-path/SKILL.md",
+      "sha256": "40f47b6f8946b75f54d5b9f17c4e209489c4cc0f1a271a39cd7fa2ec7478ef75",
+      "bytes": 22658,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-path/references/pm_era_venvs.md",
+      "sha256": "1434a8e31b3f0464899261df15cc0c650b3e14e7aa26ef513ba149fc65c9ce1f",
+      "bytes": 3033,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-path/references/resolve_venv.py",
+      "sha256": "6706b1f54c96deb9e8f9c356a9451038e1618bf976b661d7b9d7e914d6264f58",
+      "bytes": 2428,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-path/references/venv_detection_patterns.py",
+      "sha256": "68caac3043b3caaeb1ebedd99929442d890da3c0f5480d2eb96282162a50be42",
+      "bytes": 6655,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-plugins/SKILL.md",
+      "sha256": "503750598a8cabdee37f2320978adc3aa63a6b81e8f5226f8625024757d80c68",
+      "bytes": 15128,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-providers/SKILL.md",
+      "sha256": "45137e9a9ed085eb9a58145d70fb2fadf109dd0677b7deee63f1b5c2ceab4def",
+      "bytes": 16295,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-runtime/SKILL.md",
+      "sha256": "e458b9111166d87ce0d71f4cc357c4c62490c6989e81438c25415eba9686bb78",
+      "bytes": 7420,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-skills/SKILL.md",
+      "sha256": "681e2d87848111dd8825f494dd5bddb924875288fcdac851a2f05319fb00fcd8",
+      "bytes": 11293,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-triage/SKILL.md",
+      "sha256": "feb43333aa5f8ace8ee1e106bc7e2b07ac3c6a235e31698b99d9a29b3c09368a",
+      "bytes": 26217,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-triage/goldens.md",
+      "sha256": "792f8d6a154bdf31f17dca2bb350c8d94fe1a9a844b2ce53d035d967148436d1",
+      "bytes": 7046,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-triage/references/symptom_map.md",
+      "sha256": "d7a10e784847b91dd5ee78b9e046737c6080390ddf7562d225dc867870a85055",
+      "bytes": 4128,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/diagnosing-voice/SKILL.md",
+      "sha256": "27a1dcd877aac8a1baf019461d1dc952f728620b2d58d31ad45402506d44f0ee",
+      "bytes": 8280,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/duckwork-configuration-guide/SKILL.md",
+      "sha256": "d968a841a186e575ba7fdf253ddc9d39079b2286f621cb10abe7853ddba3ee8d",
+      "bytes": 21892,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/duckwork-post-update/SKILL.md",
+      "sha256": "6c4e9121e7114551f85c202d5dbf9e467175ea8748d476f42216446373dac593",
+      "bytes": 8479,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/installing-duckwork/SKILL.md",
+      "sha256": "c15bb91cc9a06407b8ed44b5ff4f75023fa0f54be8941c08657a888ef25bb240",
+      "bytes": 13324,
+      "mode": "100755"
+    },
+    {
+      "path": "tests/check_scanner_hygiene.py",
+      "sha256": "04fcda6627d281ce22f85461007b5b0ef665b0e9e9350bb35fc2fce61d39a647",
+      "bytes": 14455,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_citation_integrity.py",
+      "sha256": "3fc9e76ccf6e4e9b064914e035fef86b47f3f2882586e2872f93e332ff4af50b",
+      "bytes": 11669,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_cli_surface.py",
+      "sha256": "edfc4a19ce96f930d81506b9b50ed0a06c664027883864fbd0c14aeb63afb48f",
+      "bytes": 28370,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_doc_style.py",
+      "sha256": "caa9896039404337b2653fb3d7b9d509efd8301518ac384720f68019cb228e39",
+      "bytes": 19296,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_eol_contract.py",
+      "sha256": "a907d83fae88843fec5d3cb6eadd4781fef1094d309f2fba91b27c1b2c51d4f9",
+      "bytes": 15819,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_gates.py",
+      "sha256": "ea77d3dabbbecc5a17a8f96a004ddfa77c992937aed1fe4809421f6f30902302",
+      "bytes": 5999,
+      "mode": "100755"
+    },
+    {
+      "path": "tools/check_install_scan.py",
+      "sha256": "3249fd82ac2e30da3409b1d16a321a202bf38d63098006a6c0bec3e08da6f6a7",
+      "bytes": 14181,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_issue_templates.py",
+      "sha256": "410ef82858e17e834a561203a111ccb94483b6c4748a90028411f175aa10339b",
+      "bytes": 28566,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_no_mutation.py",
+      "sha256": "d660feff3561fe57064eeac2d4d1fbe637d40411351fb86be0b69e31c3dc49a0",
+      "bytes": 14183,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_release_readiness.py",
+      "sha256": "23baf6b2242f02317d4d2fcdcd1567b68605173a28540857a9987a46e1ee45f0",
+      "bytes": 14465,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_scope_enumeration.py",
+      "sha256": "3ea8ffd121c281480102cd74e58e9a3f1ee3cdf290449b373a314d6c4e7f9260",
+      "bytes": 15922,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_self_claim.py",
+      "sha256": "02463b81b5f45f33700967fb78914f46aefc3c0b3e1b7a17f213362fc06a2864",
+      "bytes": 2328,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_skill_consistency.py",
+      "sha256": "a4acf5c34f61639e4115efec97be65d4e7d9e76a64d923d02cfd90c7232c22ca",
+      "bytes": 11504,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_skill_dogfood.py",
+      "sha256": "d12f9789e7b0bd650fe0959f6070fa163dbd21ac0223627cf12bbe8eb3947ac9",
+      "bytes": 5974,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_skill_provenance.py",
+      "sha256": "6a745a7195e5ed98d6684b0a56fb0b2e76f3499576195f6c0d528a24f60e8b77",
+      "bytes": 6629,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_skill_version_bump.py",
+      "sha256": "e417f26d2a0616bb72997338b8c88736727b1054617e0e379f5ce12da35e44c3",
+      "bytes": 5902,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_tool_coverage.py",
+      "sha256": "17dbe6eb1c4f9ae5e622118616c618fb6a2f4b04d8bcece9af192f1159865f92",
+      "bytes": 7073,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_upstream_drift.py",
+      "sha256": "3a3516a2f6ddfe18397f07cc4fc20443238d640bf127174da08cb97d3f74c11a",
+      "bytes": 33834,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/check_version_consistency.py",
+      "sha256": "7beec2eeea2e2436718ad18db71337b6b29347ea9213918b50aea82320174527",
+      "bytes": 13407,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/gen_changelog.py",
+      "sha256": "29c094f786c553d1203ef8139d2c5a2377df2f6b375463a734b28f6d1a5dcc48",
+      "bytes": 22114,
+      "mode": "100755"
+    },
+    {
+      "path": "tools/pr_metadata_labels.py",
+      "sha256": "89b6ac0546ca01c6b8b8f458bf37eaf912befc782d871023c9ea956c8f345489",
+      "bytes": 14401,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/render_docs.py",
+      "sha256": "4188c5b555501d0905e29e6091387cf18072632f0abb372919c68ec14a87dcc8",
+      "bytes": 24064,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_bootstrap_skill.py",
+      "sha256": "d51d29bef44b6263cee60c1cb5d1a4de77cdbd6c484340ee028b455f33842cc7",
+      "bytes": 8627,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_check_envelopes.py",
+      "sha256": "85f49c4c9bd3377e28b06b7bb9b5a836f7035236bee71306c56405b748e9acc9",
+      "bytes": 16680,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_check_eol_contract.py",
+      "sha256": "2c0c43150da314469e8f79525e5a1364bd1eeac8157f0928d00fcf71201a387e",
+      "bytes": 18853,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_check_install_scan.py",
+      "sha256": "559802cfd67dbe58a87d05f9d6a9dd8157fe304142cdd70c6d504808e2dc52dc",
+      "bytes": 16294,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_checks_cli_resolution.py",
+      "sha256": "30b33c1b9e1341f47655a48f4b2d0eafc83aa83a4e56f8b577900bd2c724a274",
+      "bytes": 26540,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_claim_validation.py",
+      "sha256": "390145e3227b16e0fc3f24cb325a617832f65664ee541b8c1d19377acce1325c",
+      "bytes": 8206,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_drift_watch_parity.py",
+      "sha256": "22edd71987a32c1057ca5f5cf9d7ae8374dcbd8d6138a303c6a9a80e1460ca45",
+      "bytes": 2406,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_exit_contract.py",
+      "sha256": "a280d36c317eaed82070434d53267dcc66def42cfb1eb49ad810e5aa240fdfb0",
+      "bytes": 3821,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_fast_mode.py",
+      "sha256": "a618d0acff396d98b9f90bd02315501b845e23782356ec02057aab10ecb60267",
+      "bytes": 10342,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_finding_ids.py",
+      "sha256": "241c8450c1c3ba0547dea14a8bdeeadef29b6bbeced0a28f0bd3f4111c346633",
+      "bytes": 7788,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_gate_status.py",
+      "sha256": "66725f0a73fd8daece47e6c9c951bc76fa8415a350f4da5ab36aa7841b98591f",
+      "bytes": 8045,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_gen_changelog.py",
+      "sha256": "15517e5a649612ca5bc509486dfd1307fab19750c4aa9b0e4cf00497cdc58737",
+      "bytes": 33884,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_hooks_readonly_check.py",
+      "sha256": "469cd2eaf4da898233c9af6b5d1c42c7886d78fff2e761c85582c2e9100849ff",
+      "bytes": 8602,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_host_pressure_probe.py",
+      "sha256": "cc42c9c2b08c9c570d471b46fa62a2a00c6937f63377fac65316073292d315bf",
+      "bytes": 36413,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_json_output.py",
+      "sha256": "b61e97d8a2bbe674202e58a34ec8f576e70ccfe9e6adb89ea8c6b8ed90b73283",
+      "bytes": 9751,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_mcp_shape.py",
+      "sha256": "806bf8343136c86153837fb28306e27453413aabcd386555091006f8e4413e04",
+      "bytes": 4002,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_memory_hygiene.py",
+      "sha256": "e47d4add19b10507bfa6e7ba94b9a02f79bc997fea681c6247060ac632bbe7bb",
+      "bytes": 7242,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_plugin_skip_source.py",
+      "sha256": "ab0445a81d8bfa3a6c38a764decbac01c73234dba9b6e2485cb5aeb863d8eed2",
+      "bytes": 4440,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_plugins_notes.py",
+      "sha256": "683b871835f7265d31e9d98705c9268722bba8cb4a1ea09f7ac45dae3358ccfa",
+      "bytes": 17097,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_portable_plugin_manifest.py",
+      "sha256": "4f158df0af66d8c40ea2e6070ddec7cf34e007960417e3947cdba6fb5a1b406e",
+      "bytes": 10700,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_reachable_allowlist_check.py",
+      "sha256": "d6f708e1b53f23d8f7acb774263c8c38913098c188abf1b13ae521e0b36a8a6f",
+      "bytes": 4916,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_readonly_runtime.py",
+      "sha256": "17eeec3763542bb670b249f7c537a805625057a84d61d8aee72476ec2da60ed0",
+      "bytes": 2638,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_release_readiness.py",
+      "sha256": "bbd7da77e073210367af39cc20c202a72245f79788ccfa6b32cadc108922a10f",
+      "bytes": 12800,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_resolve_venv.py",
+      "sha256": "569b69462ed5168722b56c9d7bda403be0646e648a2cba3f7f7d8849d99e3270",
+      "bytes": 6298,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_scope_validation.py",
+      "sha256": "59558ec4f779cff628995e1d12f2eea04aeae5834603a4eacdc5a9f3a3729110",
+      "bytes": 4224,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_session_health.py",
+      "sha256": "6b4c9b1c07ec213545531744d41968f4c8073b92e536f4b58920a2d96081a7dc",
+      "bytes": 8038,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_skill_checks.py",
+      "sha256": "8aab919b4a52be0e6863d05961c1d941efbd0ae9b566693b120654629e31afce",
+      "bytes": 19975,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_skill_counts.py",
+      "sha256": "641e0df07aee30cc37988fe4ea78ce4ed22d3fc26ec5191e88a7dda3be4b0c7f",
+      "bytes": 8108,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_skill_malformed_name.py",
+      "sha256": "888be0fc351b387c1b286b4df7292755da8be96c69e8c5defb988e2cc4e2ee2a",
+      "bytes": 8802,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_skill_provenance.py",
+      "sha256": "77f1155ad8ff094da120024eec28cffcd6e890bd64779062f3bd83f49b70a6a7",
+      "bytes": 3634,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_skill_version_bump.py",
+      "sha256": "d8d1d817dcebef1664d5600e36ef130c2c238a5bbf2ef5c5f7c552a997b57929",
+      "bytes": 5664,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_update_lock.py",
+      "sha256": "1d801cdcef67ee48848f531cee16fe059609c7b5d1f8d8d45e5d098bb656df6e",
+      "bytes": 13532,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_update_notice_site.py",
+      "sha256": "1aeb4019a244846b11d1215f173a1a5df7aa1e71362e1885abe1a47e079ac0d7",
+      "bytes": 6328,
+      "mode": "100644"
+    },
+    {
+      "path": "tools/test_upstream_drift_hygiene.py",
+      "sha256": "b354e13f0bbfc811cf3d448d6bbd03d3115147866bd620693aa1dace64f1ce38",
+      "bytes": 36697,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "db5cddc208468fa76d43e1b6ff43ba11ce16115f5efeeeb8e26589e134ddee9d",
+  "pin_verification": {
+    "archive_bytes": 510853,
+    "archive_sha256": "14244e7755348a37ceb1319685569742b06c166c90bfcf63f33c266b2e2355ce",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "5a3d45d8f122d0e246d7009b7dc4f00d2e7fe07b",
+    "verified_commit_marker": "5a3d45d8f122d0e246d7009b7dc4f00d2e7fe07b"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "9b13d709bd0517db3e12430b9034fb1359ec09172dd7831275684a46f6336108",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".coderabbit.yaml",
+        "input_sha256": "b6409187c82673df61480a0455b32b89c5e52bc6ed4b24f83eebff2e6dbe3063",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e1eb3ac5b70289a26cb714d3edd997c788431131efd739ce6072542f38aad4bc",
+        "source": ".coderabbit.yaml",
+        "final_output_sha256": "e1eb3ac5b70289a26cb714d3edd997c788431131efd739ce6072542f38aad4bc",
+        "cli_destination": ".coderabbit.yaml",
+        "previous_staging_sha256": "e1eb3ac5b70289a26cb714d3edd997c788431131efd739ce6072542f38aad4bc"
+      },
+      {
+        "destination": ".gitattributes",
+        "input_sha256": "54bd2e4ebcd8c0b4a5ed6b890b0ae389e44fbad5272e6c2a860c15b432b2b500",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "54bd2e4ebcd8c0b4a5ed6b890b0ae389e44fbad5272e6c2a860c15b432b2b500",
+        "source": ".gitattributes",
+        "final_output_sha256": "54bd2e4ebcd8c0b4a5ed6b890b0ae389e44fbad5272e6c2a860c15b432b2b500",
+        "cli_destination": ".gitattributes",
+        "previous_staging_sha256": "54bd2e4ebcd8c0b4a5ed6b890b0ae389e44fbad5272e6c2a860c15b432b2b500"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/assist-request.yml",
+        "input_sha256": "acb8f2045df591c6567ec767257f276f9704fc30d370fbc396fb89289713cd86",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "acb8f2045df591c6567ec767257f276f9704fc30d370fbc396fb89289713cd86",
+        "source": ".github/ISSUE_TEMPLATE/assist-request.yml",
+        "final_output_sha256": "acb8f2045df591c6567ec767257f276f9704fc30d370fbc396fb89289713cd86",
+        "cli_destination": ".github/ISSUE_TEMPLATE/assist-request.yml",
+        "previous_staging_sha256": "acb8f2045df591c6567ec767257f276f9704fc30d370fbc396fb89289713cd86"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/bug-report.yml",
+        "input_sha256": "6b675832818d50d726473edab6d245ff2337b088509fa162745ecd8760642e23",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2339bf762bb4bdab0a94386990fba53858b1c4bd37e8506c82668eb09bfc4556",
+        "source": ".github/ISSUE_TEMPLATE/bug-report.yml",
+        "final_output_sha256": "2339bf762bb4bdab0a94386990fba53858b1c4bd37e8506c82668eb09bfc4556",
+        "cli_destination": ".github/ISSUE_TEMPLATE/bug-report.yml",
+        "previous_staging_sha256": "2339bf762bb4bdab0a94386990fba53858b1c4bd37e8506c82668eb09bfc4556"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/config.yml",
+        "input_sha256": "21bd7d2c128c793e22d02f0f0dd50cbe0906b2cc5c1074b661166f619bced7bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c10811c0d5d47d804d117b47909f096be837737b0b226f1771e70255c9b39f43",
+        "source": ".github/ISSUE_TEMPLATE/config.yml",
+        "final_output_sha256": "d6d98299ee23a86a5723ca6ca2ad159763ef6bb77ab49b45e83ad55f21870207",
+        "cli_destination": ".github/ISSUE_TEMPLATE/config.yml",
+        "previous_staging_sha256": "c10811c0d5d47d804d117b47909f096be837737b0b226f1771e70255c9b39f43"
+      },
+      {
+        "destination": ".github/ISSUE_TEMPLATE/skill-drift.yml",
+        "input_sha256": "50649a1fb195ba87acecf851e3168b81a656a033de4cc43501c3bdb0c54c4afd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6aed8f27d8e7dbc461f8143b21d6ae12bfe56a846197b054aea1d350dcfc3d64",
+        "source": ".github/ISSUE_TEMPLATE/skill-drift.yml",
+        "final_output_sha256": "6aed8f27d8e7dbc461f8143b21d6ae12bfe56a846197b054aea1d350dcfc3d64",
+        "cli_destination": ".github/ISSUE_TEMPLATE/skill-drift.yml",
+        "previous_staging_sha256": "6aed8f27d8e7dbc461f8143b21d6ae12bfe56a846197b054aea1d350dcfc3d64"
+      },
+      {
+        "destination": ".github/PULL_REQUEST_TEMPLATE.md",
+        "input_sha256": "be4a5833aac4373545957697bcd616e55e5c7d959ca25a77c4e1ccf0fee85ffb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ca820947091122cc8aaae1f1c93910824decd93a4c0ca86c10b5f06b734b76f2",
+        "source": ".github/PULL_REQUEST_TEMPLATE.md",
+        "final_output_sha256": "ca820947091122cc8aaae1f1c93910824decd93a4c0ca86c10b5f06b734b76f2",
+        "cli_destination": ".github/PULL_REQUEST_TEMPLATE.md",
+        "previous_staging_sha256": "ca820947091122cc8aaae1f1c93910824decd93a4c0ca86c10b5f06b734b76f2"
+      },
+      {
+        "destination": ".github/dependabot.yml",
+        "input_sha256": "9b8bf9719f5013eb68fcc4f2cf1447d56d60de8b58f7cfe7239a0dcf0ddb152c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9b8bf9719f5013eb68fcc4f2cf1447d56d60de8b58f7cfe7239a0dcf0ddb152c",
+        "source": ".github/dependabot.yml",
+        "final_output_sha256": "9b8bf9719f5013eb68fcc4f2cf1447d56d60de8b58f7cfe7239a0dcf0ddb152c",
+        "cli_destination": ".github/dependabot.yml",
+        "previous_staging_sha256": "9b8bf9719f5013eb68fcc4f2cf1447d56d60de8b58f7cfe7239a0dcf0ddb152c"
+      },
+      {
+        "destination": ".github/labeler.yml",
+        "input_sha256": "ba211ddcd17b92cbfca016ee0bd55d4b20b7dda4dbef9f65db1acf796491eae6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ba211ddcd17b92cbfca016ee0bd55d4b20b7dda4dbef9f65db1acf796491eae6",
+        "source": ".github/labeler.yml",
+        "final_output_sha256": "ba211ddcd17b92cbfca016ee0bd55d4b20b7dda4dbef9f65db1acf796491eae6",
+        "cli_destination": ".github/labeler.yml",
+        "previous_staging_sha256": "ba211ddcd17b92cbfca016ee0bd55d4b20b7dda4dbef9f65db1acf796491eae6"
+      },
+      {
+        "destination": ".github/upstream-drift.baseline",
+        "input_sha256": "986838febdde5ab577515fa06ec0fbdfd8349a07a9dadfe33500e5fcd7cbfd84",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "986838febdde5ab577515fa06ec0fbdfd8349a07a9dadfe33500e5fcd7cbfd84",
+        "source": ".github/upstream-drift.baseline",
+        "final_output_sha256": "986838febdde5ab577515fa06ec0fbdfd8349a07a9dadfe33500e5fcd7cbfd84",
+        "cli_destination": ".github/upstream-drift.baseline",
+        "previous_staging_sha256": "986838febdde5ab577515fa06ec0fbdfd8349a07a9dadfe33500e5fcd7cbfd84"
+      },
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "ea156a5a1a046bb7614789c8e2af27ec00ccfd8bd8c50067a5208d3d26f0b627",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ea156a5a1a046bb7614789c8e2af27ec00ccfd8bd8c50067a5208d3d26f0b627",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "ea156a5a1a046bb7614789c8e2af27ec00ccfd8bd8c50067a5208d3d26f0b627",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "ea156a5a1a046bb7614789c8e2af27ec00ccfd8bd8c50067a5208d3d26f0b627"
+      },
+      {
+        "destination": ".github/workflows/label-pr-metadata.yml",
+        "input_sha256": "e8585f0d4abb3650b9114104781372570159cb2cb93cd8341c0dae8f9039d729",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e8585f0d4abb3650b9114104781372570159cb2cb93cd8341c0dae8f9039d729",
+        "source": ".github/workflows/label-pr-metadata.yml",
+        "final_output_sha256": "e8585f0d4abb3650b9114104781372570159cb2cb93cd8341c0dae8f9039d729",
+        "cli_destination": ".github/workflows/label-pr-metadata.yml",
+        "previous_staging_sha256": "e8585f0d4abb3650b9114104781372570159cb2cb93cd8341c0dae8f9039d729"
+      },
+      {
+        "destination": ".github/workflows/label-prs.yml",
+        "input_sha256": "1336688e9c3e07d06ab1395a895a1dad66547d1af430bac71acc8f6c1f1411cb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1336688e9c3e07d06ab1395a895a1dad66547d1af430bac71acc8f6c1f1411cb",
+        "source": ".github/workflows/label-prs.yml",
+        "final_output_sha256": "1336688e9c3e07d06ab1395a895a1dad66547d1af430bac71acc8f6c1f1411cb",
+        "cli_destination": ".github/workflows/label-prs.yml",
+        "previous_staging_sha256": "1336688e9c3e07d06ab1395a895a1dad66547d1af430bac71acc8f6c1f1411cb"
+      },
+      {
+        "destination": ".github/workflows/release.yml",
+        "input_sha256": "42ff1e6ba26ec2548bd676a75766c005a06b7db5eb9e3544de6c04cfa720c3f8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "306ae09cdd57561c36f5238252c050a4d86fc084a2ab950cadff4c6aace2a656",
+        "source": ".github/workflows/release.yml",
+        "final_output_sha256": "306ae09cdd57561c36f5238252c050a4d86fc084a2ab950cadff4c6aace2a656",
+        "cli_destination": ".github/workflows/release.yml",
+        "previous_staging_sha256": "306ae09cdd57561c36f5238252c050a4d86fc084a2ab950cadff4c6aace2a656"
+      },
+      {
+        "destination": ".github/workflows/reusable-ci.yml",
+        "input_sha256": "2deb92a3ba865cd58ea28c7e25de6f2bdb7bb9b668bf8d643dd6c55048e27933",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "208c7354d7b3562b8a55f977876802fdf34787c842c7ef90821359d150807ac0",
+        "source": ".github/workflows/reusable-ci.yml",
+        "final_output_sha256": "58d7a2a6d865f7cae02f11fe14d51230dc75bb2865ac41d86eb4e91debe079a8",
+        "cli_destination": ".github/workflows/reusable-ci.yml",
+        "previous_staging_sha256": "208c7354d7b3562b8a55f977876802fdf34787c842c7ef90821359d150807ac0"
+      },
+      {
+        "destination": ".github/workflows/upstream-drift.yml",
+        "input_sha256": "a4e02067d94484d1cd785aa8bcb5ba1d505d8c7cc1b8a00f9d51918f1950f1f4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3446d0f9975861f5c05904e2a170c8fd96ca58c264c16329dd699a9e8f36665d",
+        "source": ".github/workflows/upstream-drift.yml",
+        "final_output_sha256": "3446d0f9975861f5c05904e2a170c8fd96ca58c264c16329dd699a9e8f36665d",
+        "cli_destination": ".github/workflows/upstream-drift.yml",
+        "previous_staging_sha256": "3446d0f9975861f5c05904e2a170c8fd96ca58c264c16329dd699a9e8f36665d"
+      },
+      {
+        "destination": ".github/workflows/validate-claim.yml",
+        "input_sha256": "7db4e9d6f6cd5b857c5896d9f182a7d36c33de1442203f292621acaca1f6779c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "32e54158ac4ad4aeff45cded3b9be0123d9cafd635f65438647b234e34c24af1",
+        "source": ".github/workflows/validate-claim.yml",
+        "final_output_sha256": "32e54158ac4ad4aeff45cded3b9be0123d9cafd635f65438647b234e34c24af1",
+        "cli_destination": ".github/workflows/validate-claim.yml",
+        "previous_staging_sha256": "32e54158ac4ad4aeff45cded3b9be0123d9cafd635f65438647b234e34c24af1"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "d95b3ae26799f2a41b30fff088361a5425c3b2469559a5dd2dbe071182120223",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d95b3ae26799f2a41b30fff088361a5425c3b2469559a5dd2dbe071182120223",
+        "source": ".gitignore",
+        "final_output_sha256": "d95b3ae26799f2a41b30fff088361a5425c3b2469559a5dd2dbe071182120223",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "d95b3ae26799f2a41b30fff088361a5425c3b2469559a5dd2dbe071182120223"
+      },
+      {
+        "destination": ".pr_agent.toml",
+        "input_sha256": "c09cd25335857890e533948658e2151b5aaec3e688b34ae04de0afd1de9274ac",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cd27752eb82fb9abd60a9138b21a7be8bee343384df5d6076f8482efbe834c4e",
+        "source": ".pr_agent.toml",
+        "final_output_sha256": "cd27752eb82fb9abd60a9138b21a7be8bee343384df5d6076f8482efbe834c4e",
+        "cli_destination": ".pr_agent.toml",
+        "previous_staging_sha256": "cd27752eb82fb9abd60a9138b21a7be8bee343384df5d6076f8482efbe834c4e"
+      },
+      {
+        "destination": ".pre-commit-config.yaml",
+        "input_sha256": "8811750a33b2996f4fa38907a3e95b52ee0c5f505674edc8910772f34b9ecd8c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1e70d2b41b8e6d7974715d9e7255ba100170599e04efa98300e08825ccddbc36",
+        "source": ".pre-commit-config.yaml",
+        "final_output_sha256": "1e70d2b41b8e6d7974715d9e7255ba100170599e04efa98300e08825ccddbc36",
+        "cli_destination": ".pre-commit-config.yaml",
+        "previous_staging_sha256": "1e70d2b41b8e6d7974715d9e7255ba100170599e04efa98300e08825ccddbc36"
+      },
+      {
+        "destination": "AGENTS.md",
+        "input_sha256": "c44a045d18dc622d8dbfae8df7653f3c39e3afe2d3544969057189df3c938cc8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b4179c81f4c1bf1ad2660c9df542617ae03a3b3808775294309d91f969fc7fd3",
+        "source": "AGENTS.md",
+        "final_output_sha256": "b4179c81f4c1bf1ad2660c9df542617ae03a3b3808775294309d91f969fc7fd3",
+        "cli_destination": "AGENTS.md",
+        "previous_staging_sha256": "b4179c81f4c1bf1ad2660c9df542617ae03a3b3808775294309d91f969fc7fd3"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "a6b3fe7dc95eebca807ba242af0d553b1244fb41cfcc85306e5ae110496c71ee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9407ed38296aee7110c5a3800b90b1033ad0aa3b25e79e3e8828536c5172fc8d",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "9080db1cce2be980b3a85fbb87dcceaaee14b7428dfd704bb4818be90f3244a2",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "9407ed38296aee7110c5a3800b90b1033ad0aa3b25e79e3e8828536c5172fc8d"
+      },
+      {
+        "destination": "CLAUDE.md",
+        "input_sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+        "source": "CLAUDE.md",
+        "final_output_sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+        "cli_destination": "CLAUDE.md",
+        "previous_staging_sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+      },
+      {
+        "destination": "CONTRIBUTING.md",
+        "input_sha256": "5582b72e54db1ab3627f9ce842bfbf38784af707570be11b9e2c9ce9729a030e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "188b3a565909250a13835b4a49e69deafcce6086d12c41597f8227c317ed3735",
+        "source": "CONTRIBUTING.md",
+        "final_output_sha256": "8a15649302c4672f04e7824de8ed91111bb1bf9d4ecb6e4a8ac74fceec25d0b9",
+        "cli_destination": "CONTRIBUTING.md",
+        "previous_staging_sha256": "188b3a565909250a13835b4a49e69deafcce6086d12c41597f8227c317ed3735"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "96c5afcf492c1b5c1535256a9fe70a6fd965ae85e7117d9770f1563c5d0c8d95",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "96c5afcf492c1b5c1535256a9fe70a6fd965ae85e7117d9770f1563c5d0c8d95",
+        "source": "LICENSE",
+        "final_output_sha256": "96c5afcf492c1b5c1535256a9fe70a6fd965ae85e7117d9770f1563c5d0c8d95",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "96c5afcf492c1b5c1535256a9fe70a6fd965ae85e7117d9770f1563c5d0c8d95"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "a689b7552ef5917986c3748fb638dd2f8f43936f4fd32443f162d2987552b829",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "31a49bee6b77593da2498c32090ffe793344e14a46370f6d26a21213889af3d3",
+        "source": "README.md",
+        "final_output_sha256": "764e3867bc8fc9a48bb1a2bd266b8d9da8767697fd6ad81817d4d77e22853ab6",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "31a49bee6b77593da2498c32090ffe793344e14a46370f6d26a21213889af3d3"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "ff3e3b5762657097057502109074211c2e50af0ce14a6d6bf7e20a2ef8bb376f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ab45034f5baa951fccd2038085e7de59ac537de95ffb4459e27c2833aea4d748",
+        "source": "SECURITY.md",
+        "final_output_sha256": "681f3010d4e76cbb031b034c1c4b91f4272bb27855ab617312c56d686c27ecc1",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "ab45034f5baa951fccd2038085e7de59ac537de95ffb4459e27c2833aea4d748"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "166413ee765174837e8d1c4bf526952bf671663571c14b8ace4a83540149a5bf",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "66d849129ff664ad8b2fa0a474debb7a4707bfa9c1d608989c69c0655f8fd8d9",
+        "source": "__init__.py",
+        "final_output_sha256": "66d849129ff664ad8b2fa0a474debb7a4707bfa9c1d608989c69c0655f8fd8d9",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "66d849129ff664ad8b2fa0a474debb7a4707bfa9c1d608989c69c0655f8fd8d9"
+      },
+      {
+        "destination": "assets/terminal-interact.webp",
+        "input_sha256": "43e4adeb5c3a97e8dfe84ded0fa6ef101ed931b854cc518983e674b5764ad68a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "43e4adeb5c3a97e8dfe84ded0fa6ef101ed931b854cc518983e674b5764ad68a",
+        "source": "assets/terminal-interact.webp",
+        "final_output_sha256": "43e4adeb5c3a97e8dfe84ded0fa6ef101ed931b854cc518983e674b5764ad68a",
+        "cli_destination": "assets/terminal-interact.webp",
+        "previous_staging_sha256": "43e4adeb5c3a97e8dfe84ded0fa6ef101ed931b854cc518983e674b5764ad68a"
+      },
+      {
+        "destination": "checks.py",
+        "input_sha256": "786a5c85a17bcba077d00a497e8465d82096523eb15fd8d770612972c5de3c34",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "41522de9fd8b1a0c04d803b02ff723f674b30eff4e3abea69d87034e2c992a0f",
+        "source": "checks.py",
+        "final_output_sha256": "622579c497212dcaa3892a37baf067c0c2eb03a639cdff755ec4a2093311ff85",
+        "cli_destination": "checks.py",
+        "previous_staging_sha256": "41522de9fd8b1a0c04d803b02ff723f674b30eff4e3abea69d87034e2c992a0f"
+      },
+      {
+        "destination": "constants.py",
+        "input_sha256": "8f271932ab1277edd01d5846e90c95593bbf387727bc27e8a45fa0c723a47a83",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f71a4cb7fb06a0f2b7535dd28cc0a095376a37968afecd27c93c691b29a15a20",
+        "source": "constants.py",
+        "final_output_sha256": "d2dcc939299f57d08f257b66adc500b602a8dfb61314c5007ac4db8a38ec859f",
+        "cli_destination": "constants.py",
+        "previous_staging_sha256": "f71a4cb7fb06a0f2b7535dd28cc0a095376a37968afecd27c93c691b29a15a20"
+      },
+      {
+        "destination": "docs/agent/README.md",
+        "input_sha256": "1fa5d79f836f83fa351e56a5ec019ab08a9d1dc8e1585804b955e503dfad7a5b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f382a7ceeac3dd8f47c28dc83a1fc2f534b5a26bcad5578ab3d8604b47d45cbf",
+        "source": "docs/agent/README.md",
+        "final_output_sha256": "f382a7ceeac3dd8f47c28dc83a1fc2f534b5a26bcad5578ab3d8604b47d45cbf",
+        "cli_destination": "docs/agent/README.md",
+        "previous_staging_sha256": "f382a7ceeac3dd8f47c28dc83a1fc2f534b5a26bcad5578ab3d8604b47d45cbf"
+      },
+      {
+        "destination": "docs/agent/layout.md",
+        "input_sha256": "df8efd58b83d6da72e4701032322f15a93f767c26fd90360c50f84dfadf515d6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b80a6f5c0a76c7846fb2620ea0bbaac2ebc9e1dba246b150e9f7472e0cd0bb53",
+        "source": "docs/agent/layout.md",
+        "final_output_sha256": "b80a6f5c0a76c7846fb2620ea0bbaac2ebc9e1dba246b150e9f7472e0cd0bb53",
+        "cli_destination": "docs/agent/layout.md",
+        "previous_staging_sha256": "b80a6f5c0a76c7846fb2620ea0bbaac2ebc9e1dba246b150e9f7472e0cd0bb53"
+      },
+      {
+        "destination": "docs/agent/ops.md",
+        "input_sha256": "9a811a72f88cbba0f22b7ed6ca2c36d974c2a4bb499d31e0d5f5740b6f9e0733",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9f8f0186122873f4e75cf63734069213f233ddfef087d68a525ae3a8328b542b",
+        "source": "docs/agent/ops.md",
+        "final_output_sha256": "9f8f0186122873f4e75cf63734069213f233ddfef087d68a525ae3a8328b542b",
+        "cli_destination": "docs/agent/ops.md",
+        "previous_staging_sha256": "9f8f0186122873f4e75cf63734069213f233ddfef087d68a525ae3a8328b542b"
+      },
+      {
+        "destination": "docs/embedding.md",
+        "input_sha256": "34ca430af9567439e96f0f927ad6d26a02db12454f903a7621c1d209163884f3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "79bc3570199249e9dd8bfb4e8a5eb663327c4950888fc54d32cbd3c0562fa59b",
+        "source": "docs/embedding.md",
+        "final_output_sha256": "79bc3570199249e9dd8bfb4e8a5eb663327c4950888fc54d32cbd3c0562fa59b",
+        "cli_destination": "docs/embedding.md",
+        "previous_staging_sha256": "79bc3570199249e9dd8bfb4e8a5eb663327c4950888fc54d32cbd3c0562fa59b"
+      },
+      {
+        "destination": "docs/findings.md",
+        "input_sha256": "4f1f67a3832af7150da2f9cf121a3621813faf6150a09776e6aa57c42cf14f92",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4df2093c6c0108dfe7a78a33c1a5b489555c9954288138a069b175e65a45d8f2",
+        "source": "docs/findings.md",
+        "final_output_sha256": "1fce1df92c443b1645f8141924f116aae8b513c8acc2a20451568ce1bdb7e7cb",
+        "cli_destination": "docs/findings.md",
+        "previous_staging_sha256": "4df2093c6c0108dfe7a78a33c1a5b489555c9954288138a069b175e65a45d8f2"
+      },
+      {
+        "destination": "plugin-skills/start/SKILL.md",
+        "input_sha256": "68ba3fea012cc955924477b2ae5d9d8357bd0e9cf1ac7556a84cca15dff53a8e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "930b1b119e07c7f5d75c60f2f33c0369414a42ed98f9c2b2806e76d2338f880a",
+        "source": "plugin-skills/start/SKILL.md",
+        "final_output_sha256": "930b1b119e07c7f5d75c60f2f33c0369414a42ed98f9c2b2806e76d2338f880a",
+        "cli_destination": "plugin-skills/start/SKILL.md",
+        "previous_staging_sha256": "930b1b119e07c7f5d75c60f2f33c0369414a42ed98f9c2b2806e76d2338f880a"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "d82ab80b4f2b0e75a5a1e64f895fdf9ccfc5e86f112b472ec38b27fe0703d461",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3f84bc530cf77f33c911a87ed65a0608cbdf5e9469d3588fd764c6032e377d7f",
+        "source": "plugin.yaml",
+        "final_output_sha256": "c624d1cda28668a895d5ea431cfbcb0f6e63e37bde2cd0853bc7dde2b1bf1d74",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "3f84bc530cf77f33c911a87ed65a0608cbdf5e9469d3588fd764c6032e377d7f"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "92c62477974a87fa283fda40b2dc14e629ee91370bef81ead58ff3f7cf800163",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c73426b47de1b3f6b75f093b986574d62dbd9ca2dc4b9bd569cac991a64eea4",
+        "source": "pyproject.toml",
+        "final_output_sha256": "0c73426b47de1b3f6b75f093b986574d62dbd9ca2dc4b9bd569cac991a64eea4",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "0c73426b47de1b3f6b75f093b986574d62dbd9ca2dc4b9bd569cac991a64eea4"
+      },
+      {
+        "destination": "skills/diagnosing-auth/SKILL.md",
+        "input_sha256": "73ad19912c68e810ef0cd39ecb99a6415a3dbf23049d9caad7037ae454ecd354",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3f8b3851c25cf71cccded95356ec82b80dd7802f9c2eafc2bc4be0b4908e3b10",
+        "source": "skills/diagnosing-auth/SKILL.md",
+        "final_output_sha256": "3f8b3851c25cf71cccded95356ec82b80dd7802f9c2eafc2bc4be0b4908e3b10",
+        "cli_destination": "skills/diagnosing-auth/SKILL.md",
+        "previous_staging_sha256": "3f8b3851c25cf71cccded95356ec82b80dd7802f9c2eafc2bc4be0b4908e3b10"
+      },
+      {
+        "destination": "skills/diagnosing-bot-mode/SKILL.md",
+        "input_sha256": "9b8b864595c35146fd86d41088443ba4aca3b15e53825f9e1a1798becaa0db51",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2b79490785a91c1ee6f546ad4d53b5eb21eca0e4b5ab13c9b61e03360d9a5a09",
+        "source": "skills/diagnosing-bot-mode/SKILL.md",
+        "final_output_sha256": "2b79490785a91c1ee6f546ad4d53b5eb21eca0e4b5ab13c9b61e03360d9a5a09",
+        "cli_destination": "skills/diagnosing-bot-mode/SKILL.md",
+        "previous_staging_sha256": "2b79490785a91c1ee6f546ad4d53b5eb21eca0e4b5ab13c9b61e03360d9a5a09"
+      },
+      {
+        "destination": "skills/diagnosing-browser/SKILL.md",
+        "input_sha256": "91999f6477d23f121e59854386b0adeec105e84b3099698cbcbaa67e58c959de",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8eacaf55e31d8e00fa43c66433d0ceeaf03a5852c3337460b3bf3d9a18f117ef",
+        "source": "skills/diagnosing-browser/SKILL.md",
+        "final_output_sha256": "8eacaf55e31d8e00fa43c66433d0ceeaf03a5852c3337460b3bf3d9a18f117ef",
+        "cli_destination": "skills/diagnosing-browser/SKILL.md",
+        "previous_staging_sha256": "8eacaf55e31d8e00fa43c66433d0ceeaf03a5852c3337460b3bf3d9a18f117ef"
+      },
+      {
+        "destination": "skills/diagnosing-cli-tui/SKILL.md",
+        "input_sha256": "9c2f37ea36902cbf798e3bf9a3782480826ee5eedf01010a016f6b3db84753b8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c276a418879e9a61818915517b17bdc72b617d105adb0d0f5261f83d890fda7c",
+        "source": "skills/diagnosing-cli-tui/SKILL.md",
+        "final_output_sha256": "c276a418879e9a61818915517b17bdc72b617d105adb0d0f5261f83d890fda7c",
+        "cli_destination": "skills/diagnosing-cli-tui/SKILL.md",
+        "previous_staging_sha256": "c276a418879e9a61818915517b17bdc72b617d105adb0d0f5261f83d890fda7c"
+      },
+      {
+        "destination": "skills/diagnosing-cli-tui/references/duckwork-cli-tui-windows-investigation.md",
+        "input_sha256": "bd11a8b9495191ebc51883c35c3d5b2b5f4adeabb1090b4ffde0e5417d0f9828",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fe46ca759927c7a017429071be232f33dc73e26fe8ef3a21e8e46085330722f8",
+        "source": "skills/diagnosing-cli-tui/references/hermes-cli-tui-windows-investigation.md",
+        "final_output_sha256": "da0835dbc033cd3982abb5a5119439fcf430900dccd0e5c9505808ddb06695ae",
+        "cli_destination": "skills/diagnosing-cli-tui/references/duckwork-cli-tui-windows-investigation.md",
+        "previous_staging_sha256": "fe46ca759927c7a017429071be232f33dc73e26fe8ef3a21e8e46085330722f8"
+      },
+      {
+        "destination": "skills/diagnosing-commands/SKILL.md",
+        "input_sha256": "67c052124392400e4894bedf59a82398a5c532f09dd45c9c239af59e633aa45e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "798ed79085e2bc0bd089c518bb5f0faffbea791cfcdf42adb413765ef78eafa4",
+        "source": "skills/diagnosing-commands/SKILL.md",
+        "final_output_sha256": "798ed79085e2bc0bd089c518bb5f0faffbea791cfcdf42adb413765ef78eafa4",
+        "cli_destination": "skills/diagnosing-commands/SKILL.md",
+        "previous_staging_sha256": "798ed79085e2bc0bd089c518bb5f0faffbea791cfcdf42adb413765ef78eafa4"
+      },
+      {
+        "destination": "skills/diagnosing-cron/SKILL.md",
+        "input_sha256": "0ab526473e222101760e19bdaa84773d9b6004cdc9b91f59284bf6f6af6aab76",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "044961fdbb434ee939cb3e0cf12b61b736cbd356b55cbd092548a5baab62df18",
+        "source": "skills/diagnosing-cron/SKILL.md",
+        "final_output_sha256": "044961fdbb434ee939cb3e0cf12b61b736cbd356b55cbd092548a5baab62df18",
+        "cli_destination": "skills/diagnosing-cron/SKILL.md",
+        "previous_staging_sha256": "044961fdbb434ee939cb3e0cf12b61b736cbd356b55cbd092548a5baab62df18"
+      },
+      {
+        "destination": "skills/diagnosing-desktop/SKILL.md",
+        "input_sha256": "75ae5eeb0b3e1996a6f0ba25e6c2469fd29325320cd33faa945bbd56847e3167",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8434b25c2e168ddbd719f73fb10201ee2a8f28b4b2dee24559027e4ae7a4699e",
+        "source": "skills/diagnosing-desktop/SKILL.md",
+        "final_output_sha256": "8434b25c2e168ddbd719f73fb10201ee2a8f28b4b2dee24559027e4ae7a4699e",
+        "cli_destination": "skills/diagnosing-desktop/SKILL.md",
+        "previous_staging_sha256": "8434b25c2e168ddbd719f73fb10201ee2a8f28b4b2dee24559027e4ae7a4699e"
+      },
+      {
+        "destination": "skills/diagnosing-gateway/SKILL.md",
+        "input_sha256": "f7ec72a828553108a9edbc3626707e8a8b424b34272ecb7a6f66e368c2217cd0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c36c20dc778392dcafead60756364b9a0454938f18eecf853d4c9948b7092556",
+        "source": "skills/diagnosing-gateway/SKILL.md",
+        "final_output_sha256": "c36c20dc778392dcafead60756364b9a0454938f18eecf853d4c9948b7092556",
+        "cli_destination": "skills/diagnosing-gateway/SKILL.md",
+        "previous_staging_sha256": "c36c20dc778392dcafead60756364b9a0454938f18eecf853d4c9948b7092556"
+      },
+      {
+        "destination": "skills/diagnosing-hooks/SKILL.md",
+        "input_sha256": "ea9a85263ba2dbdb66a834e36a19a56e925d94cf043326c8e69a2fa60113c5e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1c043a66dc99d51dc8989a9e614f92ba8bfddf67b157f043bef7418ef123ee90",
+        "source": "skills/diagnosing-hooks/SKILL.md",
+        "final_output_sha256": "1c043a66dc99d51dc8989a9e614f92ba8bfddf67b157f043bef7418ef123ee90",
+        "cli_destination": "skills/diagnosing-hooks/SKILL.md",
+        "previous_staging_sha256": "1c043a66dc99d51dc8989a9e614f92ba8bfddf67b157f043bef7418ef123ee90"
+      },
+      {
+        "destination": "skills/diagnosing-host-pressure/SKILL.md",
+        "input_sha256": "ea2adb75f7bf6b9ff70630d2480143b5f1b056b5e39027f15cf03b3bac8e13ee",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7c64bfef2ae94fe36858619e5acad9006868f6ce016ea6c730f2f1caa339728a",
+        "source": "skills/diagnosing-host-pressure/SKILL.md",
+        "final_output_sha256": "7c64bfef2ae94fe36858619e5acad9006868f6ce016ea6c730f2f1caa339728a",
+        "cli_destination": "skills/diagnosing-host-pressure/SKILL.md",
+        "previous_staging_sha256": "7c64bfef2ae94fe36858619e5acad9006868f6ce016ea6c730f2f1caa339728a"
+      },
+      {
+        "destination": "skills/diagnosing-host-pressure/references/cascade-transcript.md",
+        "input_sha256": "91bfc35af33e3b72a25550b38441a392d1d4fde76ac26088a2295b40c04f14f8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "83ab7a3fd9e44d348a631372e5c6e611aebfdf3c0912ab012922a3df2454d467",
+        "source": "skills/diagnosing-host-pressure/references/cascade-transcript.md",
+        "final_output_sha256": "83ab7a3fd9e44d348a631372e5c6e611aebfdf3c0912ab012922a3df2454d467",
+        "cli_destination": "skills/diagnosing-host-pressure/references/cascade-transcript.md",
+        "previous_staging_sha256": "83ab7a3fd9e44d348a631372e5c6e611aebfdf3c0912ab012922a3df2454d467"
+      },
+      {
+        "destination": "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+        "input_sha256": "8811c37e536db2d1a8f23a56cf274faacecb8c0c3c6ce0f0440b14bce53e0367",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "cfa97a4f90aa3ba603fd4c6d462f1cbacce76c6e1c64fa562aca43e9cf2166ae",
+        "source": "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+        "final_output_sha256": "7e1917298a960e95a0de3f4f3936c79447b556a6528af62254ae995495f16e74",
+        "cli_destination": "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+        "previous_staging_sha256": "cfa97a4f90aa3ba603fd4c6d462f1cbacce76c6e1c64fa562aca43e9cf2166ae"
+      },
+      {
+        "destination": "skills/diagnosing-mcp/SKILL.md",
+        "input_sha256": "5463202519f1a93f40e2684c42fe4b5ac23868f3de5f576f5ebaf64e730be2a0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "f8aae16184f7d5068586f81087dcd59a026da0e9916703f6346d5c6046983b2f",
+        "source": "skills/diagnosing-mcp/SKILL.md",
+        "final_output_sha256": "f8aae16184f7d5068586f81087dcd59a026da0e9916703f6346d5c6046983b2f",
+        "cli_destination": "skills/diagnosing-mcp/SKILL.md",
+        "previous_staging_sha256": "f8aae16184f7d5068586f81087dcd59a026da0e9916703f6346d5c6046983b2f"
+      },
+      {
+        "destination": "skills/diagnosing-memory/SKILL.md",
+        "input_sha256": "d145c12dd71101603b1d45bf79e328833ee61c54a6484d6896e82843cf0d502f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b87f51ac2fe1efe5935bc3348db7227767a42f1cba4654e7d2cc6efbf86a1379",
+        "source": "skills/diagnosing-memory/SKILL.md",
+        "final_output_sha256": "b87f51ac2fe1efe5935bc3348db7227767a42f1cba4654e7d2cc6efbf86a1379",
+        "cli_destination": "skills/diagnosing-memory/SKILL.md",
+        "previous_staging_sha256": "b87f51ac2fe1efe5935bc3348db7227767a42f1cba4654e7d2cc6efbf86a1379"
+      },
+      {
+        "destination": "skills/diagnosing-memory/references/state_db.md",
+        "input_sha256": "dc2550e693002fb1a1cd90373b08407658df4c6e34fdee85913158bfd1f28942",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cd3b71b1fe778a9a95ec518270651976eb69b824fa6da887191442a5229f75ae",
+        "source": "skills/diagnosing-memory/references/state_db.md",
+        "final_output_sha256": "cd3b71b1fe778a9a95ec518270651976eb69b824fa6da887191442a5229f75ae",
+        "cli_destination": "skills/diagnosing-memory/references/state_db.md",
+        "previous_staging_sha256": "cd3b71b1fe778a9a95ec518270651976eb69b824fa6da887191442a5229f75ae"
+      },
+      {
+        "destination": "skills/diagnosing-path/SKILL.md",
+        "input_sha256": "50d9146a9baa0b8d5ec326f34985fcd338a790977249c7022d420182ebd419e8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "40f47b6f8946b75f54d5b9f17c4e209489c4cc0f1a271a39cd7fa2ec7478ef75",
+        "source": "skills/diagnosing-path/SKILL.md",
+        "final_output_sha256": "40f47b6f8946b75f54d5b9f17c4e209489c4cc0f1a271a39cd7fa2ec7478ef75",
+        "cli_destination": "skills/diagnosing-path/SKILL.md",
+        "previous_staging_sha256": "40f47b6f8946b75f54d5b9f17c4e209489c4cc0f1a271a39cd7fa2ec7478ef75"
+      },
+      {
+        "destination": "skills/diagnosing-path/references/pm_era_venvs.md",
+        "input_sha256": "b99ab275fdafa7bc2ea18c4636f9bd9f3d237c8e80efccb6079f734c1ed35fe2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1434a8e31b3f0464899261df15cc0c650b3e14e7aa26ef513ba149fc65c9ce1f",
+        "source": "skills/diagnosing-path/references/pm_era_venvs.md",
+        "final_output_sha256": "1434a8e31b3f0464899261df15cc0c650b3e14e7aa26ef513ba149fc65c9ce1f",
+        "cli_destination": "skills/diagnosing-path/references/pm_era_venvs.md",
+        "previous_staging_sha256": "1434a8e31b3f0464899261df15cc0c650b3e14e7aa26ef513ba149fc65c9ce1f"
+      },
+      {
+        "destination": "skills/diagnosing-path/references/resolve_venv.py",
+        "input_sha256": "ebc5b4036e2381c10b940875a401d3561bbfbbd7af65b82dee63ca7e182332ba",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6706b1f54c96deb9e8f9c356a9451038e1618bf976b661d7b9d7e914d6264f58",
+        "source": "skills/diagnosing-path/references/resolve_venv.py",
+        "final_output_sha256": "6706b1f54c96deb9e8f9c356a9451038e1618bf976b661d7b9d7e914d6264f58",
+        "cli_destination": "skills/diagnosing-path/references/resolve_venv.py",
+        "previous_staging_sha256": "6706b1f54c96deb9e8f9c356a9451038e1618bf976b661d7b9d7e914d6264f58"
+      },
+      {
+        "destination": "skills/diagnosing-path/references/venv_detection_patterns.py",
+        "input_sha256": "bbc90d3d5eea565823d31481ee94bc6b651640a0b234e0cc2dccd4de1b773869",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "68caac3043b3caaeb1ebedd99929442d890da3c0f5480d2eb96282162a50be42",
+        "source": "skills/diagnosing-path/references/venv_detection_patterns.py",
+        "final_output_sha256": "68caac3043b3caaeb1ebedd99929442d890da3c0f5480d2eb96282162a50be42",
+        "cli_destination": "skills/diagnosing-path/references/venv_detection_patterns.py",
+        "previous_staging_sha256": "68caac3043b3caaeb1ebedd99929442d890da3c0f5480d2eb96282162a50be42"
+      },
+      {
+        "destination": "skills/diagnosing-plugins/SKILL.md",
+        "input_sha256": "40e2a314f8348662188b81784a25df08698d2c3433a319e8025e82812dc482a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "503750598a8cabdee37f2320978adc3aa63a6b81e8f5226f8625024757d80c68",
+        "source": "skills/diagnosing-plugins/SKILL.md",
+        "final_output_sha256": "503750598a8cabdee37f2320978adc3aa63a6b81e8f5226f8625024757d80c68",
+        "cli_destination": "skills/diagnosing-plugins/SKILL.md",
+        "previous_staging_sha256": "503750598a8cabdee37f2320978adc3aa63a6b81e8f5226f8625024757d80c68"
+      },
+      {
+        "destination": "skills/diagnosing-providers/SKILL.md",
+        "input_sha256": "179a03da9d4954efdfdad5fecd59ff6061441b72660eedf06aba583d752b375a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "45137e9a9ed085eb9a58145d70fb2fadf109dd0677b7deee63f1b5c2ceab4def",
+        "source": "skills/diagnosing-providers/SKILL.md",
+        "final_output_sha256": "45137e9a9ed085eb9a58145d70fb2fadf109dd0677b7deee63f1b5c2ceab4def",
+        "cli_destination": "skills/diagnosing-providers/SKILL.md",
+        "previous_staging_sha256": "45137e9a9ed085eb9a58145d70fb2fadf109dd0677b7deee63f1b5c2ceab4def"
+      },
+      {
+        "destination": "skills/diagnosing-runtime/SKILL.md",
+        "input_sha256": "312608df52ec7a19c1f49df5e4d5f244642c253465c034b04b3ecf8b3f2349ca",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e458b9111166d87ce0d71f4cc357c4c62490c6989e81438c25415eba9686bb78",
+        "source": "skills/diagnosing-runtime/SKILL.md",
+        "final_output_sha256": "e458b9111166d87ce0d71f4cc357c4c62490c6989e81438c25415eba9686bb78",
+        "cli_destination": "skills/diagnosing-runtime/SKILL.md",
+        "previous_staging_sha256": "e458b9111166d87ce0d71f4cc357c4c62490c6989e81438c25415eba9686bb78"
+      },
+      {
+        "destination": "skills/diagnosing-skills/SKILL.md",
+        "input_sha256": "dd4701c757917b6c76115704cfe0996fd4b025aa1f93eb27267614d171256e45",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "681e2d87848111dd8825f494dd5bddb924875288fcdac851a2f05319fb00fcd8",
+        "source": "skills/diagnosing-skills/SKILL.md",
+        "final_output_sha256": "681e2d87848111dd8825f494dd5bddb924875288fcdac851a2f05319fb00fcd8",
+        "cli_destination": "skills/diagnosing-skills/SKILL.md",
+        "previous_staging_sha256": "681e2d87848111dd8825f494dd5bddb924875288fcdac851a2f05319fb00fcd8"
+      },
+      {
+        "destination": "skills/diagnosing-triage/SKILL.md",
+        "input_sha256": "6a8d5507f7ef5250f6e279596be021986b7774922750680adaf5a40b7f1923a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a4029e9f5b5ac9657dcd4535e2f09231547454be8b39c69a3f81026b2d8d95c5",
+        "source": "skills/diagnosing-triage/SKILL.md",
+        "final_output_sha256": "feb43333aa5f8ace8ee1e106bc7e2b07ac3c6a235e31698b99d9a29b3c09368a",
+        "cli_destination": "skills/diagnosing-triage/SKILL.md",
+        "previous_staging_sha256": "a4029e9f5b5ac9657dcd4535e2f09231547454be8b39c69a3f81026b2d8d95c5"
+      },
+      {
+        "destination": "skills/diagnosing-triage/goldens.md",
+        "input_sha256": "039b0b0918c795dea52f1b9782138021786fd20bf6982c96275b09021bf07867",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "792f8d6a154bdf31f17dca2bb350c8d94fe1a9a844b2ce53d035d967148436d1",
+        "source": "skills/diagnosing-triage/goldens.md",
+        "final_output_sha256": "792f8d6a154bdf31f17dca2bb350c8d94fe1a9a844b2ce53d035d967148436d1",
+        "cli_destination": "skills/diagnosing-triage/goldens.md",
+        "previous_staging_sha256": "792f8d6a154bdf31f17dca2bb350c8d94fe1a9a844b2ce53d035d967148436d1"
+      },
+      {
+        "destination": "skills/diagnosing-triage/references/symptom_map.md",
+        "input_sha256": "e18237c5b4f78abf95be41cd57d851cb638c55dc3522cf98e810115426c9b8a8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d7a10e784847b91dd5ee78b9e046737c6080390ddf7562d225dc867870a85055",
+        "source": "skills/diagnosing-triage/references/symptom_map.md",
+        "final_output_sha256": "d7a10e784847b91dd5ee78b9e046737c6080390ddf7562d225dc867870a85055",
+        "cli_destination": "skills/diagnosing-triage/references/symptom_map.md",
+        "previous_staging_sha256": "d7a10e784847b91dd5ee78b9e046737c6080390ddf7562d225dc867870a85055"
+      },
+      {
+        "destination": "skills/diagnosing-voice/SKILL.md",
+        "input_sha256": "dfbce579edff9cbaf112e450869a440528b57600c8e9f79c4e349d5db9745124",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "27a1dcd877aac8a1baf019461d1dc952f728620b2d58d31ad45402506d44f0ee",
+        "source": "skills/diagnosing-voice/SKILL.md",
+        "final_output_sha256": "27a1dcd877aac8a1baf019461d1dc952f728620b2d58d31ad45402506d44f0ee",
+        "cli_destination": "skills/diagnosing-voice/SKILL.md",
+        "previous_staging_sha256": "27a1dcd877aac8a1baf019461d1dc952f728620b2d58d31ad45402506d44f0ee"
+      },
+      {
+        "destination": "skills/duckwork-configuration-guide/SKILL.md",
+        "input_sha256": "cdd7689f61485daff5c7acaf755055bb4f759001ca7206be9659c7afc00f509e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d968a841a186e575ba7fdf253ddc9d39079b2286f621cb10abe7853ddba3ee8d",
+        "source": "skills/hermes-configuration-guide/SKILL.md",
+        "final_output_sha256": "d968a841a186e575ba7fdf253ddc9d39079b2286f621cb10abe7853ddba3ee8d",
+        "cli_destination": "skills/duckwork-configuration-guide/SKILL.md",
+        "previous_staging_sha256": "d968a841a186e575ba7fdf253ddc9d39079b2286f621cb10abe7853ddba3ee8d"
+      },
+      {
+        "destination": "skills/duckwork-post-update/SKILL.md",
+        "input_sha256": "265fdc2d211ccb3ba7fb66d6321aba0439e2ca220a2e95b6253efb1d9ca87233",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6c4e9121e7114551f85c202d5dbf9e467175ea8748d476f42216446373dac593",
+        "source": "skills/hermes-post-update/SKILL.md",
+        "final_output_sha256": "6c4e9121e7114551f85c202d5dbf9e467175ea8748d476f42216446373dac593",
+        "cli_destination": "skills/duckwork-post-update/SKILL.md",
+        "previous_staging_sha256": "6c4e9121e7114551f85c202d5dbf9e467175ea8748d476f42216446373dac593"
+      },
+      {
+        "destination": "skills/installing-duckwork/SKILL.md",
+        "input_sha256": "311f1a0d5be5c913ea2a6ea5f8e7c9ee3f3d6d97f0a850bd32b9347428411ba0",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "c15bb91cc9a06407b8ed44b5ff4f75023fa0f54be8941c08657a888ef25bb240",
+        "source": "skills/installing-hermes/SKILL.md",
+        "final_output_sha256": "c15bb91cc9a06407b8ed44b5ff4f75023fa0f54be8941c08657a888ef25bb240",
+        "cli_destination": "skills/installing-duckwork/SKILL.md",
+        "previous_staging_sha256": "c15bb91cc9a06407b8ed44b5ff4f75023fa0f54be8941c08657a888ef25bb240"
+      },
+      {
+        "destination": "tests/check_scanner_hygiene.py",
+        "input_sha256": "b12094c339246358f974c06e67304ac72e355af796dbaa84b56c384d8573adea",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "04fcda6627d281ce22f85461007b5b0ef665b0e9e9350bb35fc2fce61d39a647",
+        "source": "tests/check_scanner_hygiene.py",
+        "final_output_sha256": "04fcda6627d281ce22f85461007b5b0ef665b0e9e9350bb35fc2fce61d39a647",
+        "cli_destination": "tests/check_scanner_hygiene.py",
+        "previous_staging_sha256": "04fcda6627d281ce22f85461007b5b0ef665b0e9e9350bb35fc2fce61d39a647"
+      },
+      {
+        "destination": "tools/check_citation_integrity.py",
+        "input_sha256": "177b6d74102fed470df2c2cfbf8c6b219f111a00d463fa331209edee897e34e1",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3fc9e76ccf6e4e9b064914e035fef86b47f3f2882586e2872f93e332ff4af50b",
+        "source": "tools/check_citation_integrity.py",
+        "final_output_sha256": "3fc9e76ccf6e4e9b064914e035fef86b47f3f2882586e2872f93e332ff4af50b",
+        "cli_destination": "tools/check_citation_integrity.py",
+        "previous_staging_sha256": "3fc9e76ccf6e4e9b064914e035fef86b47f3f2882586e2872f93e332ff4af50b"
+      },
+      {
+        "destination": "tools/check_cli_surface.py",
+        "input_sha256": "1e7c3bae85ac320214f6c87fbfcd48078017e85b2c74cd63370a130d6f2a890b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "edfc4a19ce96f930d81506b9b50ed0a06c664027883864fbd0c14aeb63afb48f",
+        "source": "tools/check_cli_surface.py",
+        "final_output_sha256": "edfc4a19ce96f930d81506b9b50ed0a06c664027883864fbd0c14aeb63afb48f",
+        "cli_destination": "tools/check_cli_surface.py",
+        "previous_staging_sha256": "edfc4a19ce96f930d81506b9b50ed0a06c664027883864fbd0c14aeb63afb48f"
+      },
+      {
+        "destination": "tools/check_doc_style.py",
+        "input_sha256": "585bf49639226d4482758f3c3feda7fd686a2396bd496e1f88f55dced96b45c4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "caa9896039404337b2653fb3d7b9d509efd8301518ac384720f68019cb228e39",
+        "source": "tools/check_doc_style.py",
+        "final_output_sha256": "caa9896039404337b2653fb3d7b9d509efd8301518ac384720f68019cb228e39",
+        "cli_destination": "tools/check_doc_style.py",
+        "previous_staging_sha256": "caa9896039404337b2653fb3d7b9d509efd8301518ac384720f68019cb228e39"
+      },
+      {
+        "destination": "tools/check_eol_contract.py",
+        "input_sha256": "a907d83fae88843fec5d3cb6eadd4781fef1094d309f2fba91b27c1b2c51d4f9",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a907d83fae88843fec5d3cb6eadd4781fef1094d309f2fba91b27c1b2c51d4f9",
+        "source": "tools/check_eol_contract.py",
+        "final_output_sha256": "a907d83fae88843fec5d3cb6eadd4781fef1094d309f2fba91b27c1b2c51d4f9",
+        "cli_destination": "tools/check_eol_contract.py",
+        "previous_staging_sha256": "a907d83fae88843fec5d3cb6eadd4781fef1094d309f2fba91b27c1b2c51d4f9"
+      },
+      {
+        "destination": "tools/check_gates.py",
+        "input_sha256": "bcceae8448101eeef410de9783667907abcd293a3fdebf2e94cd8733d9d5404c",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "ea77d3dabbbecc5a17a8f96a004ddfa77c992937aed1fe4809421f6f30902302",
+        "source": "tools/check_gates.py",
+        "final_output_sha256": "ea77d3dabbbecc5a17a8f96a004ddfa77c992937aed1fe4809421f6f30902302",
+        "cli_destination": "tools/check_gates.py",
+        "previous_staging_sha256": "ea77d3dabbbecc5a17a8f96a004ddfa77c992937aed1fe4809421f6f30902302"
+      },
+      {
+        "destination": "tools/check_install_scan.py",
+        "input_sha256": "b846368ffebec5b0aefa73455880ce0280c9f6631bf086e22b8207160e29daf7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3249fd82ac2e30da3409b1d16a321a202bf38d63098006a6c0bec3e08da6f6a7",
+        "source": "tools/check_install_scan.py",
+        "final_output_sha256": "3249fd82ac2e30da3409b1d16a321a202bf38d63098006a6c0bec3e08da6f6a7",
+        "cli_destination": "tools/check_install_scan.py",
+        "previous_staging_sha256": "3249fd82ac2e30da3409b1d16a321a202bf38d63098006a6c0bec3e08da6f6a7"
+      },
+      {
+        "destination": "tools/check_issue_templates.py",
+        "input_sha256": "1705c24a2dae6d19496849a5adea1f77b28db528e10df0928ae128a874156a4a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b1b1a3436a9bc88055fbe4917906d1899d4afeeaccedce40eb5f5dcf080c8af3",
+        "source": "tools/check_issue_templates.py",
+        "final_output_sha256": "410ef82858e17e834a561203a111ccb94483b6c4748a90028411f175aa10339b",
+        "cli_destination": "tools/check_issue_templates.py",
+        "previous_staging_sha256": "b1b1a3436a9bc88055fbe4917906d1899d4afeeaccedce40eb5f5dcf080c8af3"
+      },
+      {
+        "destination": "tools/check_no_mutation.py",
+        "input_sha256": "661254034ae0c3cda4736b63822244d4de82753b3bf836beb91ecacd72e57242",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d660feff3561fe57064eeac2d4d1fbe637d40411351fb86be0b69e31c3dc49a0",
+        "source": "tools/check_no_mutation.py",
+        "final_output_sha256": "d660feff3561fe57064eeac2d4d1fbe637d40411351fb86be0b69e31c3dc49a0",
+        "cli_destination": "tools/check_no_mutation.py",
+        "previous_staging_sha256": "d660feff3561fe57064eeac2d4d1fbe637d40411351fb86be0b69e31c3dc49a0"
+      },
+      {
+        "destination": "tools/check_release_readiness.py",
+        "input_sha256": "0a74fdffe9fe7593dd583a0b5d16128d2bfe3f7a4677389a30e949bdc0f728e0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "23baf6b2242f02317d4d2fcdcd1567b68605173a28540857a9987a46e1ee45f0",
+        "source": "tools/check_release_readiness.py",
+        "final_output_sha256": "23baf6b2242f02317d4d2fcdcd1567b68605173a28540857a9987a46e1ee45f0",
+        "cli_destination": "tools/check_release_readiness.py",
+        "previous_staging_sha256": "23baf6b2242f02317d4d2fcdcd1567b68605173a28540857a9987a46e1ee45f0"
+      },
+      {
+        "destination": "tools/check_scope_enumeration.py",
+        "input_sha256": "03e918a15e87cc2eeede5661bdd79e61287d9b65e278f906a7c38223e7b36ca7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3ea8ffd121c281480102cd74e58e9a3f1ee3cdf290449b373a314d6c4e7f9260",
+        "source": "tools/check_scope_enumeration.py",
+        "final_output_sha256": "3ea8ffd121c281480102cd74e58e9a3f1ee3cdf290449b373a314d6c4e7f9260",
+        "cli_destination": "tools/check_scope_enumeration.py",
+        "previous_staging_sha256": "3ea8ffd121c281480102cd74e58e9a3f1ee3cdf290449b373a314d6c4e7f9260"
+      },
+      {
+        "destination": "tools/check_self_claim.py",
+        "input_sha256": "09d317ee77f45529251d50d6716f0ce71a8dba5891ca3bd4c8e50e55eb24915c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "02463b81b5f45f33700967fb78914f46aefc3c0b3e1b7a17f213362fc06a2864",
+        "source": "tools/check_self_claim.py",
+        "final_output_sha256": "02463b81b5f45f33700967fb78914f46aefc3c0b3e1b7a17f213362fc06a2864",
+        "cli_destination": "tools/check_self_claim.py",
+        "previous_staging_sha256": "02463b81b5f45f33700967fb78914f46aefc3c0b3e1b7a17f213362fc06a2864"
+      },
+      {
+        "destination": "tools/check_skill_consistency.py",
+        "input_sha256": "ba8ada9dbd91c79c0dde9b544eeceea69915d210f7785d8bd42b32db6df99a67",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a4acf5c34f61639e4115efec97be65d4e7d9e76a64d923d02cfd90c7232c22ca",
+        "source": "tools/check_skill_consistency.py",
+        "final_output_sha256": "a4acf5c34f61639e4115efec97be65d4e7d9e76a64d923d02cfd90c7232c22ca",
+        "cli_destination": "tools/check_skill_consistency.py",
+        "previous_staging_sha256": "a4acf5c34f61639e4115efec97be65d4e7d9e76a64d923d02cfd90c7232c22ca"
+      },
+      {
+        "destination": "tools/check_skill_dogfood.py",
+        "input_sha256": "a4a85491d6b9c4a733131b5451d7d01be4c523bc70136b9631d5679735233ccb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d12f9789e7b0bd650fe0959f6070fa163dbd21ac0223627cf12bbe8eb3947ac9",
+        "source": "tools/check_skill_dogfood.py",
+        "final_output_sha256": "d12f9789e7b0bd650fe0959f6070fa163dbd21ac0223627cf12bbe8eb3947ac9",
+        "cli_destination": "tools/check_skill_dogfood.py",
+        "previous_staging_sha256": "d12f9789e7b0bd650fe0959f6070fa163dbd21ac0223627cf12bbe8eb3947ac9"
+      },
+      {
+        "destination": "tools/check_skill_provenance.py",
+        "input_sha256": "6a745a7195e5ed98d6684b0a56fb0b2e76f3499576195f6c0d528a24f60e8b77",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6a745a7195e5ed98d6684b0a56fb0b2e76f3499576195f6c0d528a24f60e8b77",
+        "source": "tools/check_skill_provenance.py",
+        "final_output_sha256": "6a745a7195e5ed98d6684b0a56fb0b2e76f3499576195f6c0d528a24f60e8b77",
+        "cli_destination": "tools/check_skill_provenance.py",
+        "previous_staging_sha256": "6a745a7195e5ed98d6684b0a56fb0b2e76f3499576195f6c0d528a24f60e8b77"
+      },
+      {
+        "destination": "tools/check_skill_version_bump.py",
+        "input_sha256": "e417f26d2a0616bb72997338b8c88736727b1054617e0e379f5ce12da35e44c3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e417f26d2a0616bb72997338b8c88736727b1054617e0e379f5ce12da35e44c3",
+        "source": "tools/check_skill_version_bump.py",
+        "final_output_sha256": "e417f26d2a0616bb72997338b8c88736727b1054617e0e379f5ce12da35e44c3",
+        "cli_destination": "tools/check_skill_version_bump.py",
+        "previous_staging_sha256": "e417f26d2a0616bb72997338b8c88736727b1054617e0e379f5ce12da35e44c3"
+      },
+      {
+        "destination": "tools/check_tool_coverage.py",
+        "input_sha256": "17dbe6eb1c4f9ae5e622118616c618fb6a2f4b04d8bcece9af192f1159865f92",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "17dbe6eb1c4f9ae5e622118616c618fb6a2f4b04d8bcece9af192f1159865f92",
+        "source": "tools/check_tool_coverage.py",
+        "final_output_sha256": "17dbe6eb1c4f9ae5e622118616c618fb6a2f4b04d8bcece9af192f1159865f92",
+        "cli_destination": "tools/check_tool_coverage.py",
+        "previous_staging_sha256": "17dbe6eb1c4f9ae5e622118616c618fb6a2f4b04d8bcece9af192f1159865f92"
+      },
+      {
+        "destination": "tools/check_upstream_drift.py",
+        "input_sha256": "1db5dd7844b6c0ebc1e6e3566787ac3561f7ab5118272c0b7b65cd0be7c7185c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3a3516a2f6ddfe18397f07cc4fc20443238d640bf127174da08cb97d3f74c11a",
+        "source": "tools/check_upstream_drift.py",
+        "final_output_sha256": "3a3516a2f6ddfe18397f07cc4fc20443238d640bf127174da08cb97d3f74c11a",
+        "cli_destination": "tools/check_upstream_drift.py",
+        "previous_staging_sha256": "3a3516a2f6ddfe18397f07cc4fc20443238d640bf127174da08cb97d3f74c11a"
+      },
+      {
+        "destination": "tools/check_version_consistency.py",
+        "input_sha256": "7beec2eeea2e2436718ad18db71337b6b29347ea9213918b50aea82320174527",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7beec2eeea2e2436718ad18db71337b6b29347ea9213918b50aea82320174527",
+        "source": "tools/check_version_consistency.py",
+        "final_output_sha256": "7beec2eeea2e2436718ad18db71337b6b29347ea9213918b50aea82320174527",
+        "cli_destination": "tools/check_version_consistency.py",
+        "previous_staging_sha256": "7beec2eeea2e2436718ad18db71337b6b29347ea9213918b50aea82320174527"
+      },
+      {
+        "destination": "tools/gen_changelog.py",
+        "input_sha256": "aa6d08e3822fe00b0d070db617f2814c297fc841cd3fc422b5b91790bdc63b3c",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "d94945662d0ed1313ea5f3ad4ce2b1408375ba87f47c93baf6f31e37af8312c8",
+        "source": "tools/gen_changelog.py",
+        "final_output_sha256": "29c094f786c553d1203ef8139d2c5a2377df2f6b375463a734b28f6d1a5dcc48",
+        "cli_destination": "tools/gen_changelog.py",
+        "previous_staging_sha256": "d94945662d0ed1313ea5f3ad4ce2b1408375ba87f47c93baf6f31e37af8312c8"
+      },
+      {
+        "destination": "tools/pr_metadata_labels.py",
+        "input_sha256": "89b6ac0546ca01c6b8b8f458bf37eaf912befc782d871023c9ea956c8f345489",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "89b6ac0546ca01c6b8b8f458bf37eaf912befc782d871023c9ea956c8f345489",
+        "source": "tools/pr_metadata_labels.py",
+        "final_output_sha256": "89b6ac0546ca01c6b8b8f458bf37eaf912befc782d871023c9ea956c8f345489",
+        "cli_destination": "tools/pr_metadata_labels.py",
+        "previous_staging_sha256": "89b6ac0546ca01c6b8b8f458bf37eaf912befc782d871023c9ea956c8f345489"
+      },
+      {
+        "destination": "tools/render_docs.py",
+        "input_sha256": "c18014b976555f6035a61aecda4edbc86c3c4fb41de446d16ef7fc84852ec715",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4188c5b555501d0905e29e6091387cf18072632f0abb372919c68ec14a87dcc8",
+        "source": "tools/render_docs.py",
+        "final_output_sha256": "4188c5b555501d0905e29e6091387cf18072632f0abb372919c68ec14a87dcc8",
+        "cli_destination": "tools/render_docs.py",
+        "previous_staging_sha256": "4188c5b555501d0905e29e6091387cf18072632f0abb372919c68ec14a87dcc8"
+      },
+      {
+        "destination": "tools/test_bootstrap_skill.py",
+        "input_sha256": "e3b513dca6d4e433d22245003b29000e9595451aa80c13cc0f04c57027aafe1a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d51d29bef44b6263cee60c1cb5d1a4de77cdbd6c484340ee028b455f33842cc7",
+        "source": "tools/test_bootstrap_skill.py",
+        "final_output_sha256": "d51d29bef44b6263cee60c1cb5d1a4de77cdbd6c484340ee028b455f33842cc7",
+        "cli_destination": "tools/test_bootstrap_skill.py",
+        "previous_staging_sha256": "d51d29bef44b6263cee60c1cb5d1a4de77cdbd6c484340ee028b455f33842cc7"
+      },
+      {
+        "destination": "tools/test_check_envelopes.py",
+        "input_sha256": "4a9c6f8bea1d722212a223693204aba62d79503739601f1a8accf1e77d960286",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "85f49c4c9bd3377e28b06b7bb9b5a836f7035236bee71306c56405b748e9acc9",
+        "source": "tools/test_check_envelopes.py",
+        "final_output_sha256": "85f49c4c9bd3377e28b06b7bb9b5a836f7035236bee71306c56405b748e9acc9",
+        "cli_destination": "tools/test_check_envelopes.py",
+        "previous_staging_sha256": "85f49c4c9bd3377e28b06b7bb9b5a836f7035236bee71306c56405b748e9acc9"
+      },
+      {
+        "destination": "tools/test_check_eol_contract.py",
+        "input_sha256": "43e499ec19221630666fe962f20b4aca445c535eabc13c110204bf17d5338cb6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2c0c43150da314469e8f79525e5a1364bd1eeac8157f0928d00fcf71201a387e",
+        "source": "tools/test_check_eol_contract.py",
+        "final_output_sha256": "2c0c43150da314469e8f79525e5a1364bd1eeac8157f0928d00fcf71201a387e",
+        "cli_destination": "tools/test_check_eol_contract.py",
+        "previous_staging_sha256": "2c0c43150da314469e8f79525e5a1364bd1eeac8157f0928d00fcf71201a387e"
+      },
+      {
+        "destination": "tools/test_check_install_scan.py",
+        "input_sha256": "ccc88faf840282d30afa61313b4613c5caf5fa2535251c95ca9d3128327eeb8d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "559802cfd67dbe58a87d05f9d6a9dd8157fe304142cdd70c6d504808e2dc52dc",
+        "source": "tools/test_check_install_scan.py",
+        "final_output_sha256": "559802cfd67dbe58a87d05f9d6a9dd8157fe304142cdd70c6d504808e2dc52dc",
+        "cli_destination": "tools/test_check_install_scan.py",
+        "previous_staging_sha256": "559802cfd67dbe58a87d05f9d6a9dd8157fe304142cdd70c6d504808e2dc52dc"
+      },
+      {
+        "destination": "tools/test_checks_cli_resolution.py",
+        "input_sha256": "c5bfd6ed5ffacc0021e997bd84fefd06e92ef9893a21c6949d22ec323abea0c0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "30b33c1b9e1341f47655a48f4b2d0eafc83aa83a4e56f8b577900bd2c724a274",
+        "source": "tools/test_checks_cli_resolution.py",
+        "final_output_sha256": "30b33c1b9e1341f47655a48f4b2d0eafc83aa83a4e56f8b577900bd2c724a274",
+        "cli_destination": "tools/test_checks_cli_resolution.py",
+        "previous_staging_sha256": "30b33c1b9e1341f47655a48f4b2d0eafc83aa83a4e56f8b577900bd2c724a274"
+      },
+      {
+        "destination": "tools/test_claim_validation.py",
+        "input_sha256": "390145e3227b16e0fc3f24cb325a617832f65664ee541b8c1d19377acce1325c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "390145e3227b16e0fc3f24cb325a617832f65664ee541b8c1d19377acce1325c",
+        "source": "tools/test_claim_validation.py",
+        "final_output_sha256": "390145e3227b16e0fc3f24cb325a617832f65664ee541b8c1d19377acce1325c",
+        "cli_destination": "tools/test_claim_validation.py",
+        "previous_staging_sha256": "390145e3227b16e0fc3f24cb325a617832f65664ee541b8c1d19377acce1325c"
+      },
+      {
+        "destination": "tools/test_drift_watch_parity.py",
+        "input_sha256": "ee2f543262b38a66d0f255b25bf20839ab6c0655e993db5ae8147d1a72a62a55",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "22edd71987a32c1057ca5f5cf9d7ae8374dcbd8d6138a303c6a9a80e1460ca45",
+        "source": "tools/test_drift_watch_parity.py",
+        "final_output_sha256": "22edd71987a32c1057ca5f5cf9d7ae8374dcbd8d6138a303c6a9a80e1460ca45",
+        "cli_destination": "tools/test_drift_watch_parity.py",
+        "previous_staging_sha256": "22edd71987a32c1057ca5f5cf9d7ae8374dcbd8d6138a303c6a9a80e1460ca45"
+      },
+      {
+        "destination": "tools/test_exit_contract.py",
+        "input_sha256": "c7cdcd584aa6c8341cafd18b4a9bfd55842fea5dc395a9a2c262271e9df9784b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a280d36c317eaed82070434d53267dcc66def42cfb1eb49ad810e5aa240fdfb0",
+        "source": "tools/test_exit_contract.py",
+        "final_output_sha256": "a280d36c317eaed82070434d53267dcc66def42cfb1eb49ad810e5aa240fdfb0",
+        "cli_destination": "tools/test_exit_contract.py",
+        "previous_staging_sha256": "a280d36c317eaed82070434d53267dcc66def42cfb1eb49ad810e5aa240fdfb0"
+      },
+      {
+        "destination": "tools/test_fast_mode.py",
+        "input_sha256": "09bf4982e801e30bb11987a1fea56710987624bb81deb5dd5987f00fc95475b8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a618d0acff396d98b9f90bd02315501b845e23782356ec02057aab10ecb60267",
+        "source": "tools/test_fast_mode.py",
+        "final_output_sha256": "a618d0acff396d98b9f90bd02315501b845e23782356ec02057aab10ecb60267",
+        "cli_destination": "tools/test_fast_mode.py",
+        "previous_staging_sha256": "a618d0acff396d98b9f90bd02315501b845e23782356ec02057aab10ecb60267"
+      },
+      {
+        "destination": "tools/test_finding_ids.py",
+        "input_sha256": "c2303ef40d58a219a4fcb7c5f2d55fe78fb2d5034d4b73c7db4b4b1501df8825",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "241c8450c1c3ba0547dea14a8bdeeadef29b6bbeced0a28f0bd3f4111c346633",
+        "source": "tools/test_finding_ids.py",
+        "final_output_sha256": "241c8450c1c3ba0547dea14a8bdeeadef29b6bbeced0a28f0bd3f4111c346633",
+        "cli_destination": "tools/test_finding_ids.py",
+        "previous_staging_sha256": "241c8450c1c3ba0547dea14a8bdeeadef29b6bbeced0a28f0bd3f4111c346633"
+      },
+      {
+        "destination": "tools/test_gate_status.py",
+        "input_sha256": "cc0f08db451f0e0c5e9b843396481aa19721e7494542d9fac8f36f683b733c26",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "66725f0a73fd8daece47e6c9c951bc76fa8415a350f4da5ab36aa7841b98591f",
+        "source": "tools/test_gate_status.py",
+        "final_output_sha256": "66725f0a73fd8daece47e6c9c951bc76fa8415a350f4da5ab36aa7841b98591f",
+        "cli_destination": "tools/test_gate_status.py",
+        "previous_staging_sha256": "66725f0a73fd8daece47e6c9c951bc76fa8415a350f4da5ab36aa7841b98591f"
+      },
+      {
+        "destination": "tools/test_gen_changelog.py",
+        "input_sha256": "efab137afc216926e274e16710a9ee00e230c30fa347203cd188b7be97a72715",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "15517e5a649612ca5bc509486dfd1307fab19750c4aa9b0e4cf00497cdc58737",
+        "source": "tools/test_gen_changelog.py",
+        "final_output_sha256": "15517e5a649612ca5bc509486dfd1307fab19750c4aa9b0e4cf00497cdc58737",
+        "cli_destination": "tools/test_gen_changelog.py",
+        "previous_staging_sha256": "15517e5a649612ca5bc509486dfd1307fab19750c4aa9b0e4cf00497cdc58737"
+      },
+      {
+        "destination": "tools/test_hooks_readonly_check.py",
+        "input_sha256": "2e0caf527509a41c81a510586aeee2cb511ec2f94c0779d08358a994be4b9c04",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "469cd2eaf4da898233c9af6b5d1c42c7886d78fff2e761c85582c2e9100849ff",
+        "source": "tools/test_hooks_readonly_check.py",
+        "final_output_sha256": "469cd2eaf4da898233c9af6b5d1c42c7886d78fff2e761c85582c2e9100849ff",
+        "cli_destination": "tools/test_hooks_readonly_check.py",
+        "previous_staging_sha256": "469cd2eaf4da898233c9af6b5d1c42c7886d78fff2e761c85582c2e9100849ff"
+      },
+      {
+        "destination": "tools/test_host_pressure_probe.py",
+        "input_sha256": "744f767afea91021dcc4fbeb13b9034028644a70cf1257e02430e2c11f39f38e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cc42c9c2b08c9c570d471b46fa62a2a00c6937f63377fac65316073292d315bf",
+        "source": "tools/test_host_pressure_probe.py",
+        "final_output_sha256": "cc42c9c2b08c9c570d471b46fa62a2a00c6937f63377fac65316073292d315bf",
+        "cli_destination": "tools/test_host_pressure_probe.py",
+        "previous_staging_sha256": "cc42c9c2b08c9c570d471b46fa62a2a00c6937f63377fac65316073292d315bf"
+      },
+      {
+        "destination": "tools/test_json_output.py",
+        "input_sha256": "229ffaa817cc003a4272e2a7cf8fad39385b9b8ca74ad9a085c1a1290ab81e4e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b61e97d8a2bbe674202e58a34ec8f576e70ccfe9e6adb89ea8c6b8ed90b73283",
+        "source": "tools/test_json_output.py",
+        "final_output_sha256": "b61e97d8a2bbe674202e58a34ec8f576e70ccfe9e6adb89ea8c6b8ed90b73283",
+        "cli_destination": "tools/test_json_output.py",
+        "previous_staging_sha256": "b61e97d8a2bbe674202e58a34ec8f576e70ccfe9e6adb89ea8c6b8ed90b73283"
+      },
+      {
+        "destination": "tools/test_mcp_shape.py",
+        "input_sha256": "81fc80c119d4f45c020a5bb16a643afdfccc4d443ebdafdcf96f4da2ac02b9cd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "806bf8343136c86153837fb28306e27453413aabcd386555091006f8e4413e04",
+        "source": "tools/test_mcp_shape.py",
+        "final_output_sha256": "806bf8343136c86153837fb28306e27453413aabcd386555091006f8e4413e04",
+        "cli_destination": "tools/test_mcp_shape.py",
+        "previous_staging_sha256": "806bf8343136c86153837fb28306e27453413aabcd386555091006f8e4413e04"
+      },
+      {
+        "destination": "tools/test_memory_hygiene.py",
+        "input_sha256": "d0f8191a9b20f2c1004c3c905aed960c317028b7aa2ecd4e50ca4cb7f739ef4e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e47d4add19b10507bfa6e7ba94b9a02f79bc997fea681c6247060ac632bbe7bb",
+        "source": "tools/test_memory_hygiene.py",
+        "final_output_sha256": "e47d4add19b10507bfa6e7ba94b9a02f79bc997fea681c6247060ac632bbe7bb",
+        "cli_destination": "tools/test_memory_hygiene.py",
+        "previous_staging_sha256": "e47d4add19b10507bfa6e7ba94b9a02f79bc997fea681c6247060ac632bbe7bb"
+      },
+      {
+        "destination": "tools/test_plugin_skip_source.py",
+        "input_sha256": "e244bfa34125f7d806f8b9f2fb32a8670b4ed5b074a33f08af31e5a197ce46ef",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ab0445a81d8bfa3a6c38a764decbac01c73234dba9b6e2485cb5aeb863d8eed2",
+        "source": "tools/test_plugin_skip_source.py",
+        "final_output_sha256": "ab0445a81d8bfa3a6c38a764decbac01c73234dba9b6e2485cb5aeb863d8eed2",
+        "cli_destination": "tools/test_plugin_skip_source.py",
+        "previous_staging_sha256": "ab0445a81d8bfa3a6c38a764decbac01c73234dba9b6e2485cb5aeb863d8eed2"
+      },
+      {
+        "destination": "tools/test_plugins_notes.py",
+        "input_sha256": "609c6a5d588c6bef38619095016a44f7b5c395d0b076190470e176f57dfecc6e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "683b871835f7265d31e9d98705c9268722bba8cb4a1ea09f7ac45dae3358ccfa",
+        "source": "tools/test_plugins_notes.py",
+        "final_output_sha256": "683b871835f7265d31e9d98705c9268722bba8cb4a1ea09f7ac45dae3358ccfa",
+        "cli_destination": "tools/test_plugins_notes.py",
+        "previous_staging_sha256": "683b871835f7265d31e9d98705c9268722bba8cb4a1ea09f7ac45dae3358ccfa"
+      },
+      {
+        "destination": "tools/test_portable_plugin_manifest.py",
+        "input_sha256": "83a3f5fe5f08ef0ab739008bc546244445a8183279033344bd7d46f15a9e10f2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4f158df0af66d8c40ea2e6070ddec7cf34e007960417e3947cdba6fb5a1b406e",
+        "source": "tools/test_portable_plugin_manifest.py",
+        "final_output_sha256": "4f158df0af66d8c40ea2e6070ddec7cf34e007960417e3947cdba6fb5a1b406e",
+        "cli_destination": "tools/test_portable_plugin_manifest.py",
+        "previous_staging_sha256": "4f158df0af66d8c40ea2e6070ddec7cf34e007960417e3947cdba6fb5a1b406e"
+      },
+      {
+        "destination": "tools/test_reachable_allowlist_check.py",
+        "input_sha256": "89825ef90efd64de73da33e1785f0de8359f397cab20fde097ac6d18d61bc71f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d6f708e1b53f23d8f7acb774263c8c38913098c188abf1b13ae521e0b36a8a6f",
+        "source": "tools/test_reachable_allowlist_check.py",
+        "final_output_sha256": "d6f708e1b53f23d8f7acb774263c8c38913098c188abf1b13ae521e0b36a8a6f",
+        "cli_destination": "tools/test_reachable_allowlist_check.py",
+        "previous_staging_sha256": "d6f708e1b53f23d8f7acb774263c8c38913098c188abf1b13ae521e0b36a8a6f"
+      },
+      {
+        "destination": "tools/test_readonly_runtime.py",
+        "input_sha256": "77792a4939327ac2ae8df8c3230516987addec88de6e27391ccfdbad86a5faf3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "17eeec3763542bb670b249f7c537a805625057a84d61d8aee72476ec2da60ed0",
+        "source": "tools/test_readonly_runtime.py",
+        "final_output_sha256": "17eeec3763542bb670b249f7c537a805625057a84d61d8aee72476ec2da60ed0",
+        "cli_destination": "tools/test_readonly_runtime.py",
+        "previous_staging_sha256": "17eeec3763542bb670b249f7c537a805625057a84d61d8aee72476ec2da60ed0"
+      },
+      {
+        "destination": "tools/test_release_readiness.py",
+        "input_sha256": "367c8792b0bb432e3f782d105280b4e91fa4c718cadb97e2949eab6afe0806f2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bbd7da77e073210367af39cc20c202a72245f79788ccfa6b32cadc108922a10f",
+        "source": "tools/test_release_readiness.py",
+        "final_output_sha256": "bbd7da77e073210367af39cc20c202a72245f79788ccfa6b32cadc108922a10f",
+        "cli_destination": "tools/test_release_readiness.py",
+        "previous_staging_sha256": "bbd7da77e073210367af39cc20c202a72245f79788ccfa6b32cadc108922a10f"
+      },
+      {
+        "destination": "tools/test_resolve_venv.py",
+        "input_sha256": "569b69462ed5168722b56c9d7bda403be0646e648a2cba3f7f7d8849d99e3270",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "569b69462ed5168722b56c9d7bda403be0646e648a2cba3f7f7d8849d99e3270",
+        "source": "tools/test_resolve_venv.py",
+        "final_output_sha256": "569b69462ed5168722b56c9d7bda403be0646e648a2cba3f7f7d8849d99e3270",
+        "cli_destination": "tools/test_resolve_venv.py",
+        "previous_staging_sha256": "569b69462ed5168722b56c9d7bda403be0646e648a2cba3f7f7d8849d99e3270"
+      },
+      {
+        "destination": "tools/test_scope_validation.py",
+        "input_sha256": "f2b3080cd1f32d9925dbd276ca9f3bae513e2ad4ba941d2f7b856994bc03ae50",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "59558ec4f779cff628995e1d12f2eea04aeae5834603a4eacdc5a9f3a3729110",
+        "source": "tools/test_scope_validation.py",
+        "final_output_sha256": "59558ec4f779cff628995e1d12f2eea04aeae5834603a4eacdc5a9f3a3729110",
+        "cli_destination": "tools/test_scope_validation.py",
+        "previous_staging_sha256": "59558ec4f779cff628995e1d12f2eea04aeae5834603a4eacdc5a9f3a3729110"
+      },
+      {
+        "destination": "tools/test_session_health.py",
+        "input_sha256": "c5bada1bd6819ad91daba9ef5dc5f6f8100ebf39862efb1fa3a2a1a43734297b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6b4c9b1c07ec213545531744d41968f4c8073b92e536f4b58920a2d96081a7dc",
+        "source": "tools/test_session_health.py",
+        "final_output_sha256": "6b4c9b1c07ec213545531744d41968f4c8073b92e536f4b58920a2d96081a7dc",
+        "cli_destination": "tools/test_session_health.py",
+        "previous_staging_sha256": "6b4c9b1c07ec213545531744d41968f4c8073b92e536f4b58920a2d96081a7dc"
+      },
+      {
+        "destination": "tools/test_skill_checks.py",
+        "input_sha256": "d4d2c2e8dd6be50a182462357458467c6f74a5a088fdf7766f67bbd3de59b721",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "8aab919b4a52be0e6863d05961c1d941efbd0ae9b566693b120654629e31afce",
+        "source": "tools/test_skill_checks.py",
+        "final_output_sha256": "8aab919b4a52be0e6863d05961c1d941efbd0ae9b566693b120654629e31afce",
+        "cli_destination": "tools/test_skill_checks.py",
+        "previous_staging_sha256": "8aab919b4a52be0e6863d05961c1d941efbd0ae9b566693b120654629e31afce"
+      },
+      {
+        "destination": "tools/test_skill_counts.py",
+        "input_sha256": "355d477bf875124dc53c13bcc90c24231ec8a1665c92b71feae89bfcff99297c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "641e0df07aee30cc37988fe4ea78ce4ed22d3fc26ec5191e88a7dda3be4b0c7f",
+        "source": "tools/test_skill_counts.py",
+        "final_output_sha256": "641e0df07aee30cc37988fe4ea78ce4ed22d3fc26ec5191e88a7dda3be4b0c7f",
+        "cli_destination": "tools/test_skill_counts.py",
+        "previous_staging_sha256": "641e0df07aee30cc37988fe4ea78ce4ed22d3fc26ec5191e88a7dda3be4b0c7f"
+      },
+      {
+        "destination": "tools/test_skill_malformed_name.py",
+        "input_sha256": "91f0fe661605cd7665771d1e5287840c8755185fc534b0badaffc19b6a4f7b49",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "888be0fc351b387c1b286b4df7292755da8be96c69e8c5defb988e2cc4e2ee2a",
+        "source": "tools/test_skill_malformed_name.py",
+        "final_output_sha256": "888be0fc351b387c1b286b4df7292755da8be96c69e8c5defb988e2cc4e2ee2a",
+        "cli_destination": "tools/test_skill_malformed_name.py",
+        "previous_staging_sha256": "888be0fc351b387c1b286b4df7292755da8be96c69e8c5defb988e2cc4e2ee2a"
+      },
+      {
+        "destination": "tools/test_skill_provenance.py",
+        "input_sha256": "77f1155ad8ff094da120024eec28cffcd6e890bd64779062f3bd83f49b70a6a7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "77f1155ad8ff094da120024eec28cffcd6e890bd64779062f3bd83f49b70a6a7",
+        "source": "tools/test_skill_provenance.py",
+        "final_output_sha256": "77f1155ad8ff094da120024eec28cffcd6e890bd64779062f3bd83f49b70a6a7",
+        "cli_destination": "tools/test_skill_provenance.py",
+        "previous_staging_sha256": "77f1155ad8ff094da120024eec28cffcd6e890bd64779062f3bd83f49b70a6a7"
+      },
+      {
+        "destination": "tools/test_skill_version_bump.py",
+        "input_sha256": "d8d1d817dcebef1664d5600e36ef130c2c238a5bbf2ef5c5f7c552a997b57929",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d8d1d817dcebef1664d5600e36ef130c2c238a5bbf2ef5c5f7c552a997b57929",
+        "source": "tools/test_skill_version_bump.py",
+        "final_output_sha256": "d8d1d817dcebef1664d5600e36ef130c2c238a5bbf2ef5c5f7c552a997b57929",
+        "cli_destination": "tools/test_skill_version_bump.py",
+        "previous_staging_sha256": "d8d1d817dcebef1664d5600e36ef130c2c238a5bbf2ef5c5f7c552a997b57929"
+      },
+      {
+        "destination": "tools/test_update_lock.py",
+        "input_sha256": "69112d25f3d7cdc2b40c9bd969b184c39cc9ca10690cb4b18af11db9df11f742",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1d801cdcef67ee48848f531cee16fe059609c7b5d1f8d8d45e5d098bb656df6e",
+        "source": "tools/test_update_lock.py",
+        "final_output_sha256": "1d801cdcef67ee48848f531cee16fe059609c7b5d1f8d8d45e5d098bb656df6e",
+        "cli_destination": "tools/test_update_lock.py",
+        "previous_staging_sha256": "1d801cdcef67ee48848f531cee16fe059609c7b5d1f8d8d45e5d098bb656df6e"
+      },
+      {
+        "destination": "tools/test_update_notice_site.py",
+        "input_sha256": "7fb81315795d4468ba1ff6c4b589815225d6368ae1e9b4af0bef21461319b442",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1aeb4019a244846b11d1215f173a1a5df7aa1e71362e1885abe1a47e079ac0d7",
+        "source": "tools/test_update_notice_site.py",
+        "final_output_sha256": "1aeb4019a244846b11d1215f173a1a5df7aa1e71362e1885abe1a47e079ac0d7",
+        "cli_destination": "tools/test_update_notice_site.py",
+        "previous_staging_sha256": "1aeb4019a244846b11d1215f173a1a5df7aa1e71362e1885abe1a47e079ac0d7"
+      },
+      {
+        "destination": "tools/test_upstream_drift_hygiene.py",
+        "input_sha256": "7d25ad223497355f11d4b6ca37ab273f60e7aa74aee21df438fd9e6701139065",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e39558209147ad0ec6844785f575bed26f0bb77f9079fbc534e35ae3bb5c9c93",
+        "source": "tools/test_upstream_drift_hygiene.py",
+        "final_output_sha256": "b354e13f0bbfc811cf3d448d6bbd03d3115147866bd620693aa1dace64f1ce38",
+        "cli_destination": "tools/test_upstream_drift_hygiene.py",
+        "previous_staging_sha256": "e39558209147ad0ec6844785f575bed26f0bb77f9079fbc534e35ae3bb5c9c93"
+      }
+    ],
+    "manifest_sha256": "60940994552c757d163c399ff1826d31af3b69738d85e7cf6ba0c94244ab9ae9",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".coderabbit.yaml": ".coderabbit.yaml",
+    ".gitattributes": ".gitattributes",
+    ".github/ISSUE_TEMPLATE/assist-request.yml": ".github/ISSUE_TEMPLATE/assist-request.yml",
+    ".github/ISSUE_TEMPLATE/bug-report.yml": ".github/ISSUE_TEMPLATE/bug-report.yml",
+    ".github/ISSUE_TEMPLATE/config.yml": ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/skill-drift.yml": ".github/ISSUE_TEMPLATE/skill-drift.yml",
+    ".github/PULL_REQUEST_TEMPLATE.md": ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/dependabot.yml": ".github/dependabot.yml",
+    ".github/labeler.yml": ".github/labeler.yml",
+    ".github/upstream-drift.baseline": ".github/upstream-drift.baseline",
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".github/workflows/label-pr-metadata.yml": ".github/workflows/label-pr-metadata.yml",
+    ".github/workflows/label-prs.yml": ".github/workflows/label-prs.yml",
+    ".github/workflows/release.yml": ".github/workflows/release.yml",
+    ".github/workflows/reusable-ci.yml": ".github/workflows/reusable-ci.yml",
+    ".github/workflows/upstream-drift.yml": ".github/workflows/upstream-drift.yml",
+    ".github/workflows/validate-claim.yml": ".github/workflows/validate-claim.yml",
+    ".gitignore": ".gitignore",
+    ".pr_agent.toml": ".pr_agent.toml",
+    ".pre-commit-config.yaml": ".pre-commit-config.yaml",
+    "AGENTS.md": "AGENTS.md",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "CLAUDE.md": "CLAUDE.md",
+    "CONTRIBUTING.md": "CONTRIBUTING.md",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "__init__.py": "__init__.py",
+    "assets/terminal-interact.webp": "assets/terminal-interact.webp",
+    "checks.py": "checks.py",
+    "constants.py": "constants.py",
+    "docs/agent/README.md": "docs/agent/README.md",
+    "docs/agent/layout.md": "docs/agent/layout.md",
+    "docs/agent/ops.md": "docs/agent/ops.md",
+    "docs/embedding.md": "docs/embedding.md",
+    "docs/findings.md": "docs/findings.md",
+    "plugin-skills/start/SKILL.md": "plugin-skills/start/SKILL.md",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "skills/diagnosing-auth/SKILL.md": "skills/diagnosing-auth/SKILL.md",
+    "skills/diagnosing-bot-mode/SKILL.md": "skills/diagnosing-bot-mode/SKILL.md",
+    "skills/diagnosing-browser/SKILL.md": "skills/diagnosing-browser/SKILL.md",
+    "skills/diagnosing-cli-tui/SKILL.md": "skills/diagnosing-cli-tui/SKILL.md",
+    "skills/diagnosing-cli-tui/references/hermes-cli-tui-windows-investigation.md": "skills/diagnosing-cli-tui/references/hermes-cli-tui-windows-investigation.md",
+    "skills/diagnosing-commands/SKILL.md": "skills/diagnosing-commands/SKILL.md",
+    "skills/diagnosing-cron/SKILL.md": "skills/diagnosing-cron/SKILL.md",
+    "skills/diagnosing-desktop/SKILL.md": "skills/diagnosing-desktop/SKILL.md",
+    "skills/diagnosing-gateway/SKILL.md": "skills/diagnosing-gateway/SKILL.md",
+    "skills/diagnosing-hooks/SKILL.md": "skills/diagnosing-hooks/SKILL.md",
+    "skills/diagnosing-host-pressure/SKILL.md": "skills/diagnosing-host-pressure/SKILL.md",
+    "skills/diagnosing-host-pressure/references/cascade-transcript.md": "skills/diagnosing-host-pressure/references/cascade-transcript.md",
+    "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh": "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+    "skills/diagnosing-mcp/SKILL.md": "skills/diagnosing-mcp/SKILL.md",
+    "skills/diagnosing-memory/SKILL.md": "skills/diagnosing-memory/SKILL.md",
+    "skills/diagnosing-memory/references/state_db.md": "skills/diagnosing-memory/references/state_db.md",
+    "skills/diagnosing-path/SKILL.md": "skills/diagnosing-path/SKILL.md",
+    "skills/diagnosing-path/references/pm_era_venvs.md": "skills/diagnosing-path/references/pm_era_venvs.md",
+    "skills/diagnosing-path/references/resolve_venv.py": "skills/diagnosing-path/references/resolve_venv.py",
+    "skills/diagnosing-path/references/venv_detection_patterns.py": "skills/diagnosing-path/references/venv_detection_patterns.py",
+    "skills/diagnosing-plugins/SKILL.md": "skills/diagnosing-plugins/SKILL.md",
+    "skills/diagnosing-providers/SKILL.md": "skills/diagnosing-providers/SKILL.md",
+    "skills/diagnosing-runtime/SKILL.md": "skills/diagnosing-runtime/SKILL.md",
+    "skills/diagnosing-skills/SKILL.md": "skills/diagnosing-skills/SKILL.md",
+    "skills/diagnosing-triage/SKILL.md": "skills/diagnosing-triage/SKILL.md",
+    "skills/diagnosing-triage/goldens.md": "skills/diagnosing-triage/goldens.md",
+    "skills/diagnosing-triage/references/symptom_map.md": "skills/diagnosing-triage/references/symptom_map.md",
+    "skills/diagnosing-voice/SKILL.md": "skills/diagnosing-voice/SKILL.md",
+    "skills/hermes-configuration-guide/SKILL.md": "skills/hermes-configuration-guide/SKILL.md",
+    "skills/hermes-post-update/SKILL.md": "skills/hermes-post-update/SKILL.md",
+    "skills/installing-hermes/SKILL.md": "skills/installing-hermes/SKILL.md",
+    "tests/check_scanner_hygiene.py": "tests/check_scanner_hygiene.py",
+    "tools/check_citation_integrity.py": "tools/check_citation_integrity.py",
+    "tools/check_cli_surface.py": "tools/check_cli_surface.py",
+    "tools/check_doc_style.py": "tools/check_doc_style.py",
+    "tools/check_eol_contract.py": "tools/check_eol_contract.py",
+    "tools/check_gates.py": "tools/check_gates.py",
+    "tools/check_install_scan.py": "tools/check_install_scan.py",
+    "tools/check_issue_templates.py": "tools/check_issue_templates.py",
+    "tools/check_no_mutation.py": "tools/check_no_mutation.py",
+    "tools/check_release_readiness.py": "tools/check_release_readiness.py",
+    "tools/check_scope_enumeration.py": "tools/check_scope_enumeration.py",
+    "tools/check_self_claim.py": "tools/check_self_claim.py",
+    "tools/check_skill_consistency.py": "tools/check_skill_consistency.py",
+    "tools/check_skill_dogfood.py": "tools/check_skill_dogfood.py",
+    "tools/check_skill_provenance.py": "tools/check_skill_provenance.py",
+    "tools/check_skill_version_bump.py": "tools/check_skill_version_bump.py",
+    "tools/check_tool_coverage.py": "tools/check_tool_coverage.py",
+    "tools/check_upstream_drift.py": "tools/check_upstream_drift.py",
+    "tools/check_version_consistency.py": "tools/check_version_consistency.py",
+    "tools/gen_changelog.py": "tools/gen_changelog.py",
+    "tools/pr_metadata_labels.py": "tools/pr_metadata_labels.py",
+    "tools/render_docs.py": "tools/render_docs.py",
+    "tools/test_bootstrap_skill.py": "tools/test_bootstrap_skill.py",
+    "tools/test_check_envelopes.py": "tools/test_check_envelopes.py",
+    "tools/test_check_eol_contract.py": "tools/test_check_eol_contract.py",
+    "tools/test_check_install_scan.py": "tools/test_check_install_scan.py",
+    "tools/test_checks_cli_resolution.py": "tools/test_checks_cli_resolution.py",
+    "tools/test_claim_validation.py": "tools/test_claim_validation.py",
+    "tools/test_drift_watch_parity.py": "tools/test_drift_watch_parity.py",
+    "tools/test_exit_contract.py": "tools/test_exit_contract.py",
+    "tools/test_fast_mode.py": "tools/test_fast_mode.py",
+    "tools/test_finding_ids.py": "tools/test_finding_ids.py",
+    "tools/test_gate_status.py": "tools/test_gate_status.py",
+    "tools/test_gen_changelog.py": "tools/test_gen_changelog.py",
+    "tools/test_hooks_readonly_check.py": "tools/test_hooks_readonly_check.py",
+    "tools/test_host_pressure_probe.py": "tools/test_host_pressure_probe.py",
+    "tools/test_json_output.py": "tools/test_json_output.py",
+    "tools/test_mcp_shape.py": "tools/test_mcp_shape.py",
+    "tools/test_memory_hygiene.py": "tools/test_memory_hygiene.py",
+    "tools/test_plugin_skip_source.py": "tools/test_plugin_skip_source.py",
+    "tools/test_plugins_notes.py": "tools/test_plugins_notes.py",
+    "tools/test_portable_plugin_manifest.py": "tools/test_portable_plugin_manifest.py",
+    "tools/test_reachable_allowlist_check.py": "tools/test_reachable_allowlist_check.py",
+    "tools/test_readonly_runtime.py": "tools/test_readonly_runtime.py",
+    "tools/test_release_readiness.py": "tools/test_release_readiness.py",
+    "tools/test_resolve_venv.py": "tools/test_resolve_venv.py",
+    "tools/test_scope_validation.py": "tools/test_scope_validation.py",
+    "tools/test_session_health.py": "tools/test_session_health.py",
+    "tools/test_skill_checks.py": "tools/test_skill_checks.py",
+    "tools/test_skill_counts.py": "tools/test_skill_counts.py",
+    "tools/test_skill_malformed_name.py": "tools/test_skill_malformed_name.py",
+    "tools/test_skill_provenance.py": "tools/test_skill_provenance.py",
+    "tools/test_skill_version_bump.py": "tools/test_skill_version_bump.py",
+    "tools/test_update_lock.py": "tools/test_update_lock.py",
+    "tools/test_update_notice_site.py": "tools/test_update_notice_site.py",
+    "tools/test_upstream_drift_hygiene.py": "tools/test_upstream_drift_hygiene.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "duckwork-guide",
+    "python_files_compiled": 61,
+    "secret_findings": 0
+  },
+  "canonical_slug": "duckwork-guide",
+  "catalog_file": "src/plugin-catalog/duckwork-guide.yaml",
+  "identity": {
+    "catalog_id": "hermes-guide",
+    "canonical_slug": "duckwork-guide",
+    "original_manifest_name": "hermes-guide",
+    "rebranded_manifest_name": "duckwork-guide",
+    "manifest_name_changed": true,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "19963fcee29fa746bb95bf7d5d7c75abfc9fed99efdaa77de979093f69a4087d",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": ".github/ISSUE_TEMPLATE/config.yml",
+          "after_path": ".github/ISSUE_TEMPLATE/config.yml",
+          "before_sha256": "c10811c0d5d47d804d117b47909f096be837737b0b226f1771e70255c9b39f43",
+          "after_sha256": "d6d98299ee23a86a5723ca6ca2ad159763ef6bb77ab49b45e83ad55f21870207",
+          "before_bytes": 662,
+          "after_bytes": 615,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": ".github/workflows/reusable-ci.yml",
+          "after_path": ".github/workflows/reusable-ci.yml",
+          "before_sha256": "208c7354d7b3562b8a55f977876802fdf34787c842c7ef90821359d150807ac0",
+          "after_sha256": "58d7a2a6d865f7cae02f11fe14d51230dc75bb2865ac41d86eb4e91debe079a8",
+          "before_bytes": 31734,
+          "after_bytes": 31722,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "CHANGELOG.md",
+          "after_path": "CHANGELOG.md",
+          "before_sha256": "9407ed38296aee7110c5a3800b90b1033ad0aa3b25e79e3e8828536c5172fc8d",
+          "after_sha256": "9080db1cce2be980b3a85fbb87dcceaaee14b7428dfd704bb4818be90f3244a2",
+          "before_bytes": 35676,
+          "after_bytes": 34021,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "CONTRIBUTING.md",
+          "after_path": "CONTRIBUTING.md",
+          "before_sha256": "188b3a565909250a13835b4a49e69deafcce6086d12c41597f8227c317ed3735",
+          "after_sha256": "8a15649302c4672f04e7824de8ed91111bb1bf9d4ecb6e4a8ac74fceec25d0b9",
+          "before_bytes": 19620,
+          "after_bytes": 19606,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "31a49bee6b77593da2498c32090ffe793344e14a46370f6d26a21213889af3d3",
+          "after_sha256": "764e3867bc8fc9a48bb1a2bd266b8d9da8767697fd6ad81817d4d77e22853ab6",
+          "before_bytes": 12198,
+          "after_bytes": 12185,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "SECURITY.md",
+          "after_path": "SECURITY.md",
+          "before_sha256": "ab45034f5baa951fccd2038085e7de59ac537de95ffb4459e27c2833aea4d748",
+          "after_sha256": "681f3010d4e76cbb031b034c1c4b91f4272bb27855ab617312c56d686c27ecc1",
+          "before_bytes": 2670,
+          "after_bytes": 2647,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "checks.py",
+          "after_path": "checks.py",
+          "before_sha256": "41522de9fd8b1a0c04d803b02ff723f674b30eff4e3abea69d87034e2c992a0f",
+          "after_sha256": "622579c497212dcaa3892a37baf067c0c2eb03a639cdff755ec4a2093311ff85",
+          "before_bytes": 121904,
+          "after_bytes": 121897,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "constants.py",
+          "after_path": "constants.py",
+          "before_sha256": "f71a4cb7fb06a0f2b7535dd28cc0a095376a37968afecd27c93c691b29a15a20",
+          "after_sha256": "d2dcc939299f57d08f257b66adc500b602a8dfb61314c5007ac4db8a38ec859f",
+          "before_bytes": 6947,
+          "after_bytes": 6948,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "docs/findings.md",
+          "after_path": "docs/findings.md",
+          "before_sha256": "4df2093c6c0108dfe7a78a33c1a5b489555c9954288138a069b175e65a45d8f2",
+          "after_sha256": "1fce1df92c443b1645f8141924f116aae8b513c8acc2a20451568ce1bdb7e7cb",
+          "before_bytes": 9692,
+          "after_bytes": 9685,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "3f84bc530cf77f33c911a87ed65a0608cbdf5e9469d3588fd764c6032e377d7f",
+          "after_sha256": "c624d1cda28668a895d5ea431cfbcb0f6e63e37bde2cd0853bc7dde2b1bf1d74",
+          "before_bytes": 909,
+          "after_bytes": 910,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "skills/diagnosing-cli-tui/references/duckwork-cli-tui-windows-investigation.md",
+          "after_path": "skills/diagnosing-cli-tui/references/duckwork-cli-tui-windows-investigation.md",
+          "before_sha256": "fe46ca759927c7a017429071be232f33dc73e26fe8ef3a21e8e46085330722f8",
+          "after_sha256": "da0835dbc033cd3982abb5a5119439fcf430900dccd0e5c9505808ddb06695ae",
+          "before_bytes": 20435,
+          "after_bytes": 20162,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+          "after_path": "skills/diagnosing-host-pressure/scripts/host_pressure_probe.sh",
+          "before_sha256": "cfa97a4f90aa3ba603fd4c6d462f1cbacce76c6e1c64fa562aca43e9cf2166ae",
+          "after_sha256": "7e1917298a960e95a0de3f4f3936c79447b556a6528af62254ae995495f16e74",
+          "before_bytes": 22590,
+          "after_bytes": 22579,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100755",
+          "after_mode": "100755"
+        },
+        {
+          "before_path": "skills/diagnosing-triage/SKILL.md",
+          "after_path": "skills/diagnosing-triage/SKILL.md",
+          "before_sha256": "a4029e9f5b5ac9657dcd4535e2f09231547454be8b39c69a3f81026b2d8d95c5",
+          "after_sha256": "feb43333aa5f8ace8ee1e106bc7e2b07ac3c6a235e31698b99d9a29b3c09368a",
+          "before_bytes": 26223,
+          "after_bytes": 26217,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "tools/check_issue_templates.py",
+          "after_path": "tools/check_issue_templates.py",
+          "before_sha256": "b1b1a3436a9bc88055fbe4917906d1899d4afeeaccedce40eb5f5dcf080c8af3",
+          "after_sha256": "410ef82858e17e834a561203a111ccb94483b6c4748a90028411f175aa10339b",
+          "before_bytes": 28603,
+          "after_bytes": 28566,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "tools/gen_changelog.py",
+          "after_path": "tools/gen_changelog.py",
+          "before_sha256": "d94945662d0ed1313ea5f3ad4ce2b1408375ba87f47c93baf6f31e37af8312c8",
+          "after_sha256": "29c094f786c553d1203ef8139d2c5a2377df2f6b375463a734b28f6d1a5dcc48",
+          "before_bytes": 22128,
+          "after_bytes": 22114,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100755",
+          "after_mode": "100755"
+        },
+        {
+          "before_path": "tools/test_upstream_drift_hygiene.py",
+          "after_path": "tools/test_upstream_drift_hygiene.py",
+          "before_sha256": "e39558209147ad0ec6844785f575bed26f0bb77f9079fbc534e35ae3bb5c9c93",
+          "after_sha256": "b354e13f0bbfc811cf3d448d6bbd03d3115147866bd620693aa1dace64f1ce38",
+          "before_bytes": 36853,
+          "after_bytes": 36697,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

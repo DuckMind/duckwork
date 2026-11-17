@@ -1,0 +1,410 @@
+"""Skill-Router Dashboard-Plugin — Backend-API.
+
+Mounted at /api/plugins/skill-router/ by the dashboard plugin
+system (auth via the dashboard session token, like all core API routes).
+
+Liest die beiden Lern-Dateien des Plugins (learned_keywords.json =
+Wort→Tool-Kookkurrenz, tool_stats.json = Marginalien) und berechnet daraus
+den Kausalitäts-Status jedes Wortes (Lift vs. Zufallserwartung).
+
+Seit Schritt 5 (Review-Plan): Die Lift-/Status-Logik kommt aus
+``skill_router.engine`` (eine Quelle — kein Drift mehr durch Duplikation).
+Ein mtime-basierter Cache verhindert Neuberechnung pro Request bei
+unverändertem Zustand (Overhead ≈ 0).
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import sys
+from pathlib import Path
+
+from fastapi import APIRouter
+
+# Der Web-Server lädt plugin_api.py als ISOLIERTES Modul (spec_from_file_location)
+# — das Plugin-Verzeichnis ist dabei NICHT im sys.path. Ohne diesen Eintrag
+# schlägt der skill_router-Import fehl und die API-Routen werden nie gemountet
+# (404 im Dashboard). Das Plugin-Verzeichnis muss sich selbst bekannt machen.
+_PLUGIN_DIR = Path(__file__).resolve().parent.parent
+if str(_PLUGIN_DIR) not in sys.path:
+    sys.path.insert(0, str(_PLUGIN_DIR))
+
+# Eine Quelle für Lift/Schwellen/Status — D3-Fix: keine Duplikation mehr.
+from skill_router import engine
+from skill_router.engine import (
+    LIFT_THRESHOLD,
+    MIN_CALLS_FOR_LIFT,
+    MIN_COOCCUR,
+    lift,
+    word_status,
+)
+
+log = logging.getLogger(__name__)
+router = APIRouter()
+
+# Daten liegen zentral im Plugin-Datenordner (data/) — dieselben Pfade wie
+# die Engine (skill_router/__init__.py). D2-Fix: vorher las das Dashboard
+# aus dem Root und zeigte bei Repo-Installation immer leere Daten.
+_LEXICON_PATH = _PLUGIN_DIR / "data" / "learned_keywords.json"
+_STATS_PATH = _PLUGIN_DIR / "data" / "tool_stats.json"
+_AUDIT_PATH = _PLUGIN_DIR / "data" / "v2_injections.jsonl"
+
+# mtime-Cache: nur bei Datei-Änderung neu berechnen (Overhead ≈ 0).
+_cache_mtime: tuple[float, float, float] | None = None
+_cache_overview: dict | None = None
+_cache_decision: dict | None = None
+
+
+def _load_json(path: Path) -> dict:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _audit_events(limit: int = 100) -> list[dict]:
+    try:
+        lines = _AUDIT_PATH.read_text(encoding="utf-8").splitlines()[-limit:]
+    except OSError:
+        return []
+    events = []
+    for line in lines:
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(item, dict):
+            events.append(item)
+    return events
+
+
+def _data_mtime() -> tuple[float, float, float]:
+    """Stable mtime-Triple; missing optional files count as unchanged (0.0)."""
+    def mtime(path: Path) -> float:
+        try:
+            return path.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    return (mtime(_LEXICON_PATH), mtime(_STATS_PATH), mtime(_AUDIT_PATH))
+
+
+def _invalidate_if_changed() -> None:
+    """Cache invalidieren, wenn sich Lern- oder Auditdaten ändern."""
+    global _cache_mtime, _cache_overview, _cache_decision
+    mtime = _data_mtime()
+    if mtime != _cache_mtime:
+        _cache_mtime = mtime
+        _cache_overview = None
+        _cache_decision = None
+
+
+@router.get("/runtime-metrics")
+def runtime_metrics() -> dict:
+    """V2-Diagnosemetriken aus anonymisierten Routing-Events."""
+    events = _audit_events()
+    accepted = sum(int(e.get("accepted_count", len(e.get("accepted", [])))) for e in events)
+    rejected = sum(int(e.get("rejected_count", 0)) for e in events)
+    injections = sum(bool(e.get("accepted")) for e in events)
+    fallbacks = sum(bool(e.get("fallback_reason")) for e in events)
+    budget = sum(int(e.get("budget_rejections", 0)) for e in events)
+    chars = [int(e.get("estimated_chars", 0)) for e in events]
+    confidence = [float(e.get("confidence_avg", 0.0)) for e in events]
+    evidence: dict[str, int] = {}
+    for event in events:
+        for kind, count in event.get("evidence_kind_counts", {}).items():
+            evidence[kind] = evidence.get(kind, 0) + int(count)
+    recent = []
+    for event in reversed(events[-12:]):
+        recent.append({
+            "ts": event.get("ts"),
+            "accepted": event.get("accepted", []),
+            "accepted_count": int(event.get("accepted_count", len(event.get("accepted", [])))),
+            "rejected_count": int(event.get("rejected_count", 0)),
+            "budget_rejections": int(event.get("budget_rejections", 0)),
+            "estimated_chars": int(event.get("estimated_chars", 0)),
+            "confidence": round(float(event.get("confidence_avg", 0.0)), 2),
+            "fallback": event.get("fallback_reason"),
+        })
+    return {
+        "version": "0.7.0",
+        "events": len(events),
+        "injections": injections,
+        "fallbacks": fallbacks,
+        "fallback_rate": round(fallbacks / len(events), 3) if events else 0.0,
+        "accepted_candidates": accepted,
+        "rejected_candidates": rejected,
+        "budget_rejections": budget,
+        "avg_candidates": round(accepted / len(events), 2) if events else 0.0,
+        "avg_chars": round(sum(chars) / len(chars), 1) if chars else 0.0,
+        "avg_confidence": round(sum(confidence) / len(confidence), 3) if confidence else 0.0,
+        "evidence": dict(sorted(evidence.items())),
+        "recent": recent,
+    }
+
+
+@router.get("/overview")
+def overview() -> dict:
+    """Kompakter Gesamtzustand: Marginalien + Wort-Tabelle mit Status."""
+    global _cache_overview
+    _invalidate_if_changed()
+    if _cache_overview is not None:
+        return _cache_overview
+    lexicon = _load_json(_LEXICON_PATH)
+    stats = _load_json(_STATS_PATH)
+    total_calls = stats.get("total_calls", 0)
+
+    rows = []
+    for w, assoc in lexicon.items():
+        best_tool, best_lift, best_co = "", 0.0, 0
+        for t, co in assoc.items():
+            lv = lift(w, t, lexicon, stats)
+            if lv > best_lift:
+                best_tool, best_lift, best_co = t, lv, co
+        rows.append({
+            "wort": w,
+            "status": word_status(w, lexicon, stats, best_tool, best_lift, best_co),
+            "lift": round(best_lift, 2),
+            "count": sum(assoc.values()),
+            "top_tool": best_tool,
+            "tools": len(assoc),
+        })
+    rows.sort(key=lambda r: (-(r["status"] == "kausal"), -r["lift"]))
+
+    result = {
+        "total_calls": total_calls,
+        "lexicon_size": len(lexicon),
+        "words_tracked": len(stats.get("words", {})),
+        "tools_tracked": len(stats.get("tools", {})),
+        "lift_active": total_calls >= MIN_CALLS_FOR_LIFT,
+        "top_tools": sorted(
+            stats.get("tools", {}).items(), key=lambda kv: -kv[1]
+        )[:12],
+        "words": rows[:200],
+    }
+    _cache_overview = result
+    return result
+
+
+@router.get("/decision")
+def decision() -> dict:
+    """Entscheidungs-Mindmap: Task -> Skill-Kandidaten mit Pro/Contra.
+
+    Zeigt den LERN-Zustand: Welche Skills die meisten Kookkurrenzen haben,
+    welche Wörter dafür sprechen (Pro = kausal, Lift >= Schwelle) und welche
+    dagegen (Contra = Kookkurrenz ohne Kausalität, wird bereinigt).
+    """
+    global _cache_decision
+    _invalidate_if_changed()
+    if _cache_decision is not None:
+        return _cache_decision
+    lexicon = _load_json(_LEXICON_PATH)
+    stats = _load_json(_STATS_PATH)
+    total_calls = stats.get("total_calls", 0)
+
+    tool_counts: dict = {}
+    for w, assoc in lexicon.items():
+        for t, co in assoc.items():
+            tool_counts[t] = tool_counts.get(t, 0) + co
+
+    candidates = []
+    generic_words = 0
+    for t in sorted(tool_counts, key=lambda t: -tool_counts[t])[:6]:
+        pro, contra = [], []
+        for w, assoc in lexicon.items():
+            co = assoc.get(t, 0)
+            if co == 0:
+                continue
+            lv = lift(w, t, lexicon, stats)
+            item = {"word": w, "count": co, "lift": round(lv, 2)}
+            if word_status(w, lexicon, stats, t, lv, co) == "kausal":
+                pro.append(item)
+            else:
+                contra.append(item)  # 1x-Zufall oder unter der Lift-Schwelle
+            if (
+                total_calls >= MIN_CALLS_FOR_LIFT
+                and co >= MIN_COOCCUR
+                and lv < LIFT_THRESHOLD
+            ):
+                generic_words += 1
+        pro.sort(key=lambda i: -i["lift"])
+        contra.sort(key=lambda i: -i["count"])
+
+        if total_calls < MIN_CALLS_FOR_LIFT:
+            status = "beobachtet"  # zu wenige Daten — Lift noch nicht belastbar
+        elif pro:
+            status = "kausal"
+        elif contra:
+            status = "generisch"  # Kookkurrenz ohne Kausalität -> bereinigt
+        else:
+            status = "beobachtet"
+
+        candidates.append({
+            "tool": t,
+            "count": tool_counts[t],
+            "status": status,
+            "pro": pro[:4],
+            "contra": contra[:4],
+        })
+
+    result = {
+        "total_calls": total_calls,
+        "generic_words": generic_words,
+        "candidates": candidates,
+    }
+    _cache_decision = result
+    return result
+
+
+@router.get("/clusters")
+def clusters() -> dict:
+    """Cluster-Ansicht: ALLE Skills, dynamisch ergänzt.
+
+    Zeile pro Skill: Skills mit kausalen Assoziationen zuerst (Wörter mit
+    Status 'kausal', sortiert nach Cluster-Größe), danach alle übrigen
+    installierten Skills ohne Lern-Daten (leere Zeile, erscheint nach
+    erster Nutzung). Kein Top-N-Limit — neue Skills tauchen automatisch
+    auf, sobald sie im System existieren.
+    """
+    _invalidate_if_changed()
+    lexicon = _load_json(_LEXICON_PATH)
+    stats = _load_json(_STATS_PATH)
+
+    # Kausale Cluster je Tool (nur Wörter mit Status 'kausal')
+    cluster_map = {t: assoc for t, assoc in _cluster_items(lexicon, stats)}
+
+    # Alle installierten Skills: Cluster-Daten (falls vorhanden) + Meta-Wörter
+    try:
+        all_skills = engine.scan_skills(engine.duckwork_home() / "skills")
+    except OSError:
+        all_skills = []
+    seen: set[str] = set()
+    rows = []
+    for s in all_skills:
+        name = s["name"]
+        seen.add(name)
+        assoc = cluster_map.get(name, [])
+        words = []
+        for w, co in assoc:
+            lv = lift(w, name, lexicon, stats)
+            words.append({
+                "word": w,
+                "lift": round(lv, 2),
+                "count": co,
+                "status": word_status(w, lexicon, stats, name, lv, co),
+            })
+        words.sort(key=lambda i: -i["lift"])
+        rows.append({
+            "tool": name,
+            "count": len(words),
+            "words": words[:12],  # Chips pro Zeile begrenzt, Rest via +N
+            "more": max(len(words) - 12, 0),
+            # Meta-Wörter: die Wörter, die der Skill SELBST mitbringt
+            # (Tags + Name + Description) — so hat JEDE Zeile sofort
+            # Inhalt, und die kausalen Wörter wachsen durch Nutzung dazu.
+            "meta_words": _skill_meta_words(s),
+        })
+
+    # Tools mit Lern-Daten, die keine installierten Skills sind (z.B.
+    # terminal, process, todo): als eigene Zeilen mit Cluster anhängen.
+    for t, assoc in cluster_map.items():
+        if t in seen:
+            continue
+        words = []
+        for w, co in assoc:
+            lv = lift(w, t, lexicon, stats)
+            words.append({
+                "word": w,
+                "lift": round(lv, 2),
+                "count": co,
+                "status": word_status(w, lexicon, stats, t, lv, co),
+            })
+        words.sort(key=lambda i: -i["lift"])
+        rows.append({
+            "tool": t,
+            "count": len(words),
+            "words": words[:12],
+            "more": max(len(words) - 12, 0),
+            "meta_words": [],
+        })
+
+    # Sortierung: Skills MIT Lern-Daten zuerst, dann nach Name
+    rows.sort(key=lambda r: (-(r["count"] > 0), r["tool"].casefold()))
+
+    return {
+        "total_calls": stats.get("total_calls", 0),
+        "total_skills": len(all_skills),
+        "clusters": rows,
+    }
+
+
+def _skill_meta_words(skill: dict) -> list[str]:
+    """Eigene Wörter eines Skills: Tags + Name + Description-Wörter.
+
+    Liefert bis zu 8 lesbare Begriffe — die statische Wortfläche, die der
+    Skill beim Matching ohnehin bietet (build_injection matcht gegen Tags,
+    Name, Kategorie und Description-Wörter).
+    """
+    seen: set[str] = set()
+    out: list[str] = []
+    for w in list(skill.get("tags", [])) + [skill.get("name", "")]:
+        w = w.strip()
+        if w and w not in seen:
+            seen.add(w)
+            out.append(w)
+    for w in skill.get("desc_words", []):
+        if w not in seen:
+            seen.add(w)
+            out.append(w)
+    return out[:8]
+
+
+@router.get("/last-injection")
+def last_injection() -> dict:
+    """Letzte reale Skill-Injektion (Task -> Skills), vom Hook persistiert.
+
+    Zeigt, was der Router ZULETZT tatsächlich in eine Session injiziert
+    hat (Task-Wörter, Matched Topics, Skill-Pfade) — die lebendige
+    Momentaufnahme statt der statischen Top-Kandidaten der Mindmap.
+    """
+    path = _PLUGIN_DIR / "data" / "last_injection.json"
+    if not path.is_file():
+        return {"exists": False, "ts": None, "message": None, "topics": [], "skills": []}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"exists": False, "ts": None, "message": None, "topics": [], "skills": []}
+    return {
+        "exists": True,
+        "ts": data.get("ts"),
+        "message": data.get("message"),
+        "topics": data.get("topics", []),
+        "skills": data.get("skills", []),
+    }
+
+
+def _cluster_items(
+    lexicon: dict, stats: dict
+) -> list[tuple[str, list[tuple[str, int]]]]:
+    """Alle (Tool, kausal assoziierte Wörter)-Paare, sortiert nach Cluster-Größe.
+
+    Es zählen NUR Wörter mit Status 'kausal' — generische Wörter (>= 5
+    Skill-Assoziationen oder Lift < Schwelle) sind keine Signale und
+    verfälschen die Cluster-Ansicht.
+    """
+    clusters_map: dict[str, list[tuple[str, int]]] = {}
+    for w, assoc in lexicon.items():
+        for t, co in assoc.items():
+            if co < MIN_COOCCUR:
+                continue
+            lv = lift(w, t, lexicon, stats)
+            if (
+                lv >= LIFT_THRESHOLD
+                and word_status(w, lexicon, stats, t, lv, co) == "kausal"
+            ):
+                clusters_map.setdefault(t, []).append((w, co))
+    return sorted(
+        clusters_map.items(), key=lambda kv: -len(kv[1])
+    )

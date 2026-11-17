@@ -1,0 +1,45 @@
+# Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Duckwork
+        run: |
+          curl -fsSL https://duckwork-agent.fordex.com/install.sh -o /tmp/duckwork-install.sh
+          bash /tmp/duckwork-install.sh
+        # The official catalog gate (duckwork plugins validate) is what reviewers run
+        # before merging an entry, so CI runs it here too.
+
+      - name: Validate plugin (catalog admission gate)
+        run: |
+          export PATH="$HOME/.duckwork/bin:$PATH"
+          test -x "$(command -v duckwork)" || duckwork --version
+          duckwork plugins validate --json . || { echo "plugin validate failed (see ^)"; exit 1; }
+
+      - name: Unit tests
+        run: python3 -m unittest discover -s tests -q
+
+      - name: Shell syntax
+        run: |
+          set -e
+          for f in scripts/*.sh; do bash -n "$f"; done
+
+      - name: Python compile
+        run: |
+          python3 -m py_compile __init__.py tests/*.py
+        # Manifest name/version/description are already asserted by `duckwork plugins validate`
+        # above; no separate yaml check needed (avoids a runner PyYAML dependency).

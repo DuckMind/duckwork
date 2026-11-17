@@ -1,0 +1,60 @@
+# Set up pstack
+
+> Originally by [poteto](https://github.com/poteto) for [Cursor pstack](https://github.com/cursor/plugins/tree/main/pstack). Adapted for Duckwork Agent.
+
+In this page you install the plugin, pick which models pstack uses, and run your first task. Setup is one command plus a short conversation.
+
+## Install the plugin
+
+Install via the Duckwork CLI:
+
+```text
+duckwork plugin add pstack
+```
+
+Duckwork confirms the plugin is installed.
+
+## Pick your models
+
+Load the setup skill:
+
+```text
+load pstack:setup-pstack
+```
+
+[`pstack:setup-pstack`](../../skills/setup-pstack/SKILL.md) reads your current Duckwork config, detects the models you can route to, asks for a reasoning budget and a delegate model, then writes Duckwork' native `delegation` settings (`delegation.model`, `delegation.provider`, `delegation.reasoning_effort`). Every `delegate_task` call pstack makes reads them.
+
+Pick `inherit-parent` to keep delegates on your chat model. A rerun overwrites the same keys. To go back to the default, run `duckwork config unset delegation.model`.
+
+Duckwork runs every delegate of one call on the same delegation model. Panels in `pstack:interrogate` and `pstack:architect` get their independence from separate subagents and distinct prompts. For a multi-model panel, change `delegation.model` between runs.
+
+## Accept the verification offer, or don't
+
+At the end of setup, `pstack:setup-pstack` checks whether your project has a way to prove app behavior, either a `verify-*` skill or an existing harness. If it finds neither, it says so once and suggests writing one. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers when it earns its place.
+
+After setup, start a new chat. The model configuration applies to new sessions.
+
+If you're new to pstack, say yes. An agent that can check its own work keeps going until the check passes. An agent that can't hands every result back to you to check by hand. Of everything in this guide, the verification skill pays off the most.
+
+## Keep the cost in check
+
+pstack spends extra tokens on subagents and review panels. That's the price of the rigor. To spend fewer:
+
+- Rerun `pstack:setup-pstack` and pick a smaller reasoning budget or cheaper models. A strong model in the main chat with cheaper, faster models in the code roles is a good split.
+- Let a role inherit the parent model so it runs on the chat's own model.
+- Shorten a panel list. Each entry runs one delegate.
+- Save `pstack:poteto-mode` for work that needs rigor. A small, obvious edit doesn't.
+
+## Run your first task
+
+Pick something real but small, and describe it the way you'd describe it to a colleague:
+
+```text
+load pstack:poteto-mode add a --json flag to this command. text output stays byte-identical. verify both.
+```
+
+Watch the todo list. Its first items are the matched playbook's steps copied in, the Feature playbook for this prompt. If `pstack:poteto-mode` skips a step, the step stays in the list with `skip: <reason>`, so you can see what it chose not to do.
+
+From here you can type normal follow-ups. `pstack:poteto-mode` is sticky. It stays on for the conversation until you opt out by saying so.
+
+Next: [Route work through `pstack:poteto-mode`](./02-poteto-mode.md).

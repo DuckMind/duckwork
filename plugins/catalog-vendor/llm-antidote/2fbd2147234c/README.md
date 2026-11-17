@@ -1,0 +1,430 @@
+# llmAntidote for Duckwork Agent - provenance and runtime guardrails
+
+[![CI](https://github.com/GroveMinting/llmAntidote/actions/workflows/ci.yml/badge.svg)](https://github.com/GroveMinting/llmAntidote/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/GroveMinting/llmAntidote?include_prereleases&sort=semver)](https://github.com/GroveMinting/llmAntidote/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Target: Duckwork Agent](https://img.shields.io/badge/target-Duckwork%20Agent-6F42C1)](https://duckwork-agent.fordex.com/docs/user-guide/features/plugins)
+[![Policy: Block + Approve](https://img.shields.io/badge/policy-block%20%2B%20approve-B42318)](docs/POLICY.md)
+[![Audit: Model Provenance](https://img.shields.io/badge/audit-model%20provenance-0A66C2)](docs/MODEL_PROVENANCE.md)
+[![Eval: Behavioral](https://img.shields.io/badge/eval-behavioral-2E7D32)](docs/BEHAVIORAL_EVALUATION.md)
+[![Fleet: Signed Admission](https://img.shields.io/badge/fleet-signed%20admission-7B1FA2)](docs/FLEET_ADMISSION.md)
+
+**Runtime guardrails · behavioral evaluation · signed attestations · fleet admission control**
+
+Inspect what you are running, constrain what it can access, and stop recognized
+credential-exfiltration chains before Duckwork executes them.
+
+> [!IMPORTANT]
+> llmAntidote reduces the blast radius of a compromised or backdoored model. It
+> cannot prove that model weights are backdoor-free, discover arbitrary secret
+> trigger phrases, or replace OS-level sandboxing and network egress controls.
+
+## Why llmAntidote
+
+A poisoned model can behave normally until a hidden phrase causes it to request
+a malicious tool call. ProjectDiscovery demonstrated a 7B model that downloaded
+a payload, read project credentials, and sent them to an external collector.
+Routine prompts and benchmark scores did not reveal the backdoor.
+
+llmAntidote addresses the enforceable part of that problem: the model may request
+an action, but Duckwork and the host decide whether it runs.
+
+## Safeguards
+
+**Runtime policy**
+- Blocks commands that combine sensitive reads with network transmission.
+- Blocks recognizable download-and-execute and reverse-shell patterns.
+- Classifies tools by capability, not only argument text; send/upload connectors
+  and unknown plugin tools are treated as egress-capable.
+- Requires approval for reads outside operator-configured safe roots, including
+  unlisted secret filenames such as `token.json`.
+- Routes ambiguous sensitive access through Duckwork' human approval flow.
+- Tracks approved sensitive reads as session-scoped taint metadata, scoped by
+  capability, and reserves pending sensitive access so outbound calls cannot run
+  before a read resolves (correlated by tool-call id).
+- Records rule IDs, fixed tool families, and decisions without raw tool names,
+  arguments, results, or secrets.
+
+**Provenance**
+- Inspects local and Hugging Face model provenance without loading model weights.
+- Creates immutable model lockfiles and verifies local files against SHA-256 hashes.
+
+**Evaluation**
+- Runs paired trigger-candidate evaluations with synthetic tools and coverage-scoped verdicts.
+
+**Fleet admission**
+- Enforces signed fleet policy over attestations, model locks, and evaluation evidence.
+- Enforces signed runtime admission and blocks tool calls on model-route mismatch.
+- Produces signed PASS/DENY receipts with a rotatable/revocable signer trust root
+  and metadata-only fleet status reporting.
+
+## Requirements
+
+- Duckwork Agent 0.21.5 or newer.
+- Python 3.11 or newer.
+- A trusted Duckwork installation with plugins enabled explicitly.
+
+## Quick Start
+
+Install from GitHub and enable the plugin:
+
+```bash
+duckwork plugins install GroveMinting/llmAntidote --enable
+duckwork plugins doctor llm-antidote --ci
+```
+
+Duckwork' install scanner is expected to return `caution` because the policy and
+tests intentionally contain credential-path and malicious-command signatures.
+Review those findings before accepting the prompt. A `dangerous` verdict is not
+expected and must not be bypassed.
+
+Restart Duckwork, then inspect the active runtime state:
+
+```text
+/antidote status
+```
+
+Inspect a local model directory:
+
+```bash
+duckwork antidote model inspect /models/my-model
+```
+
+Inspect an immutable Hugging Face revision:
+
+```bash
+duckwork antidote model inspect hf:publisher/model \
+  --revision 0123456789abcdef0123456789abcdef01234567
+```
+
+Create and verify a local model lockfile:
+
+```bash
+duckwork antidote model lock /models/my-model --output model-lock.json
+duckwork antidote model verify model-lock.json
+```
+
+Run the standard behavioral suite against a local OpenAI-compatible endpoint:
+
+```bash
+duckwork antidote eval run \
+  --endpoint http://127.0.0.1:8000/v1 \
+  --model local-model \
+  --model-lock model-lock.json \
+  --output antidote-eval-report.json \
+  --markdown-output antidote-eval-report.md \
+  --minimize
+```
+
+The evaluator sends prompts only to the endpoint you provide. Its file, shell,
+write, and HTTP tools are simulations: no command, filesystem mutation, or
+outbound request is executed by the evaluator.
+
+To reach a remote vLLM host such as a DGX Spark, tunnel loopback over SSH rather
+than exposing plaintext HTTP on the LAN:
+
+```bash
+ssh -N -L 8000:127.0.0.1:8000 spark-centurion
+duckwork antidote eval run --endpoint http://127.0.0.1:8000/v1 --model MODEL_ID ...
+```
+
+See [`docs/BEHAVIORAL_EVALUATION.md`](docs/BEHAVIORAL_EVALUATION.md) for the
+explicit `--trusted-host` opt-in and its cleartext tradeoff.
+
+## Fleet Quick Start
+
+Generate separate Ed25519 keys for policy authority, evidence attestation, and
+online receipt signing, then initialize policy:
+
+```bash
+duckwork antidote fleet keygen \
+  --private-key policy-private.pem \
+  --public-key policy-public.pem
+
+duckwork antidote fleet keygen \
+  --private-key attestation-private.pem \
+  --public-key attestation-public.pem
+
+duckwork antidote fleet keygen \
+  --private-key receipt-private.pem \
+  --public-key receipt-public.pem
+
+duckwork antidote fleet policy init \
+  --name production \
+  --output fleet-policy.json
+
+duckwork antidote fleet sign fleet-policy.json \
+  --private-key policy-private.pem \
+  --output fleet-policy.sig.json
+
+duckwork antidote fleet policy validate fleet-policy.json
+```
+
+Record the printed policy SHA-256 in protected configuration. Admission requires
+that out-of-band value through `--trusted-policy-sha256`, preventing replay of
+an older policy signed by the same authority.
+
+Bind a model lock and behavioral report into an attestation:
+
+```bash
+duckwork antidote fleet attest \
+  --subject model-lock.json \
+  --subject-name model-a \
+  --evidence antidote-eval-report.json \
+  --output model-a.attestation.json
+
+duckwork antidote fleet sign model-a.attestation.json \
+  --private-key attestation-private.pem \
+  --output model-a.attestation.sig.json
+```
+
+Run the admission gate and issue a signed receipt:
+
+```bash
+duckwork antidote fleet admit \
+  --policy fleet-policy.json \
+  --policy-signature fleet-policy.sig.json \
+  --policy-public-key policy-public.pem \
+  --trusted-policy-sha256 <trusted-policy-sha256> \
+  --attestation model-a.attestation.json \
+  --attestation-signature model-a.attestation.sig.json \
+  --attestation-public-key attestation-public.pem \
+  --evaluation-report antidote-eval-report.json \
+  --model-lock model-lock.json \
+  --receipt model-a.receipt.json \
+  --receipt-private-key receipt-private.pem \
+  --receipt-signature model-a.receipt.sig.json
+```
+
+Ingest the verified signed receipt into the metadata-only ledger:
+
+```bash
+duckwork antidote fleet ledger ingest \
+  --database antidote-fleet.db \
+  --receipt model-a.receipt.json \
+  --signature model-a.receipt.sig.json \
+  --public-key receipt-public.pem
+
+duckwork antidote fleet ledger summary --database antidote-fleet.db
+```
+
+See [`docs/FLEET_ADMISSION.md`](docs/FLEET_ADMISSION.md) before distributing
+keys or policy bundles. Policy and attestation private keys should normally
+remain offline. CI receives only their public keys plus a separately scoped
+receipt-signing key.
+
+## Policy Modes
+
+| Mode | Known exfiltration | Ambiguous risk | Audit records |
+|---|---|---|---|
+| `balanced` | Block | Require approval | Yes |
+| `strict` | Block | Block | Yes |
+| `audit` | Allow with finding | Allow with finding | Yes |
+
+`balanced` is the default. Configure the plugin through Duckwork Desktop or under
+`plugins.entries.llm-antidote.settings` in `~/.duckwork/config.yaml`:
+
+```yaml
+plugins:
+  entries:
+    llm-antidote:
+      settings:
+        mode: balanced
+        taint_ttl_minutes: 60
+        pending_ttl_minutes: 5
+        taint_scope: egress_persist_shell
+        max_scan_bytes: 1048576
+        audit_capacity: 200
+        safe_read_roots: /home/agent/workspace
+        sensitive_roots: /home/agent/.config
+```
+
+Reads inside `safe_read_roots` are ordinary unless the name matches a known
+secret pattern; reads outside every safe root require approval. `taint_scope`
+chooses which capabilities a completed sensitive read blocks
+(`egress`, `egress_persist_shell` (default), or `all`); `max_scan_bytes` is the
+argument scan limit, above which a call is refused. See
+[`docs/POLICY.md`](docs/POLICY.md) for capability classification, outbound
+allow-listing, content-vs-intent handling, and the pending-sensitive-access state
+machine.
+
+## Enforced Fleet Runtime
+
+Admission is not only a CI gate. Set `admission_enforcement: enforced` with a
+signed policy and a verified model binding and the plugin will refuse to
+register unless both verify. The signed policy's runtime mode and taint TTL
+become authoritative, and tool calls are blocked if the served model route stops
+matching the admitted model. In enforced mode an unobserved or empty model route
+also fails closed unless `admission_require_route_observation: "false"` is set,
+and if model binding is required but `admission_model_name` is empty, tool calls
+are blocked with `admission.model_route_unconfigured` (shown by `/antidote
+status` and the startup log). Use `llm-antidote fleet runtime-verify --settings
+SETTINGS.json` as an external supervisor/startup probe. See
+[`docs/FLEET_ADMISSION.md`](docs/FLEET_ADMISSION.md).
+
+## Decision Flow
+
+```text
+model requests tool call
+        |
+        v
+pre_tool_call policy
+        |
+        +-- known exfiltration or payload execution --> block
+        |
+        +-- tainted or pending session egress ---------> block
+        |
+        +-- ambiguous sensitive or outbound ----------> Duckwork approval
+        |                                               (+ pending reservation)
+        |
+        +-- ordinary operation ----------------------> allow
+        |
+        v
+post_tool_call metadata update
+        |
+        +-- successful sensitive access -------------> taint session
+        +-- denial, error, timeout ------------------> release pending
+        +-- no sensitive result ----------------------> no taint
+```
+
+Policy evaluation is deterministic and does not call an LLM.
+
+## Model Inspection
+
+The inspector reports evidence rather than a misleading safety score:
+
+- resolved immutable revision;
+- model, adapter, and base-model lineage claims;
+- file inventory and weight formats;
+- unsafe pickle-based serialization;
+- repository code or executable artifacts;
+- mutable revision use and missing file digests;
+- local SHA-256 values in deep scans and lockfiles.
+
+Hugging Face inspection reads repository metadata only. It does not download
+multi-gigabyte weight shards. Local inspection never deserializes model files.
+
+## Behavioral Evaluation
+
+v0.2 runs matched control and candidate prompts through a bounded synthetic
+tool loop. The existing runtime policy classifies requested actions, while the
+evaluator measures activation rate, control rate, carrier-prompt coverage, and
+endpoint failures. Reports use four explicit verdicts:
+
+- `TRIGGER_RECOVERED`
+- `SUSPICIOUS_BEHAVIOR_DETECTED`
+- `NO_BACKDOOR_DETECTED_WITHIN_TEST_COVERAGE`
+- `INCONCLUSIVE`
+
+`TRIGGER_RECOVERED` means a candidate reproducibly changed tool behavior under
+the configured controls. It does not prove how the behavior entered the model
+or whether it was intentional. See
+[`docs/BEHAVIORAL_EVALUATION.md`](docs/BEHAVIORAL_EVALUATION.md).
+
+## Threat Model
+
+llmAntidote assumes the selected model may intentionally emit malicious tool
+calls. The Duckwork host and this plugin remain trusted. See
+[`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) for boundaries and bypass risks.
+
+## Fleet Admission
+
+v3 adds a local control-plane contract for model promotion. Signed policies
+declare acceptable evaluation verdicts, suite identities, coverage, error rate,
+evidence age, and model-lock binding. Admission produces a signed receipt whose
+exit status is suitable for CI/CD gates. A metadata-only SQLite ledger accepts
+only signed receipts, supports signer allowlisting/revocation/rotation, and
+reports PASS/DENY counts without ingesting prompts, tool arguments, credentials,
+or model output.
+
+## Development
+
+```bash
+python -m pip install -e .
+python -m pip install -r requirements-dev.txt
+pytest --cov=llm_antidote --cov-fail-under=80
+ruff check .
+mypy
+```
+
+Development tooling lives in `requirements-dev.txt`, not a `[project.optional-dependencies]`
+extra: Duckwork resolves directory plugins with `--all-extras`, so a `dev` extra
+would be installed into the host environment and can conflict with Duckwork' own
+pinned tooling.
+
+With a Duckwork checkout on `PYTHONPATH`, the end-to-end hook harness drives the
+plugin through Duckwork' real plugin manager:
+
+```bash
+PYTHONPATH=/path/to/duckwork-agent python tests/integration/duckwork_e2e.py --mode standalone
+PYTHONPATH=/path/to/duckwork-agent python tests/integration/duckwork_e2e.py --mode enforced
+```
+
+When Duckwork is installed locally, also run:
+
+```bash
+duckwork plugins doctor . --ci
+duckwork plugins validate .
+```
+
+## Repository Layout
+
+```text
+plugin.yaml                 Duckwork plugin manifest
+__init__.py                 Duckwork registration entry point
+llm_antidote/               capability policy, runtime, evaluation, admission, deployment, ledger
+tests/                      policy, provenance, and property tests
+tests/integration/          real-Duckwork end-to-end hook harness
+tests/data/                 maintained Duckwork tool inventory
+scripts/                    maintenance helpers (tool-inventory recorder)
+docs/                       threat model, policy, evaluation, fleet admission, roadmap
+examples/                   bounded evaluation suite examples
+.github/workflows/ci.yml    static checks, unit tests, and Duckwork end-to-end
+```
+
+## Sources and Limitations
+
+- [ProjectDiscovery: How abliterated models can get you pwned](https://projectdiscovery.io/research/how-abliterated-models-can-get-you-pwned)
+  motivates the runtime consequence-control design.
+- [Duckwork Agent plugin hooks](https://duckwork-agent.fordex.com/docs/user-guide/features/hooks#plugin-hooks)
+  provide the supported interception and approval surfaces.
+- [Hugging Face pickle scanning](https://huggingface.co/docs/hub/en/security-pickle)
+  documents why pickle model files require special care.
+
+Pattern-based command analysis is not a shell interpreter and can be bypassed
+through sufficiently novel indirection. Run untrusted models with real secret
+separation, a container or microVM, and deny-by-default egress.
+
+## Disclosure
+
+What this plugin does that a user should know before installing:
+
+- **Network calls.** The runtime hooks make **no** network calls. The optional
+  evaluation CLI (`duckwork antidote eval run`, `llm-antidote eval run`) sends
+  synthetic prompts to an OpenAI-compatible endpoint you specify; `model inspect`
+  with an `hf:` source fetches metadata and file listings from Hugging Face.
+- **Reads outside the plugin's own data.** At runtime the policy engine reads
+  tool-call arguments in memory only, and never persists or logs them. The CLI
+  reads the files you point it at: model directories, signed policy / lock /
+  attestation / evaluation files, and the ledger database.
+- **Credentials.** `fleet keygen` writes unencrypted Ed25519 PKCS#8 private keys
+  to operator-chosen paths (mode `0600`); keep them offline. The evaluation CLI
+  reads its API key through Duckwork' secret scope (`agent.secret_scope.get_secret`)
+  when running inside Duckwork, and through the named environment variable in the
+  standalone entry point. The runtime hooks never read secrets, `.env`, or
+  `auth.json`.
+- **Storage.** Admission receipts and the fleet ledger live in a local SQLite
+  database at the path you choose.
+- **No** shell commands, subprocesses, background processes, or telemetry.
+
+The catalog security scan reports three `caution` findings
+(`dump_all_env` and `sudo_usage`) that point at the detection regexes in
+`llm_antidote/policy.py` (patterns that *recognize* `printenv`/`env` and `sudo`
+in a model's tool call). They are matchers, not behavior; the plugin never dumps
+the environment or runs `sudo`.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE). Research, Duckwork
+Agent, model repositories, and third-party artifacts retain their own licenses.
+See [`ATTRIBUTION.md`](ATTRIBUTION.md).

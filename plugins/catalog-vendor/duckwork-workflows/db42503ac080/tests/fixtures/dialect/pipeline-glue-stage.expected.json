@@ -1,0 +1,11 @@
+{
+  "verdict": "refuse",
+  "reason": "stage 2 (line 16) is a block-bodied function with an `if`, a `Promise.resolve(...)` short-circuit and a `.then` result merge — per-item conditional glue (dialect.md rows 3 and 6); the shape is the cookbook's own 08_Dynamic_workflows pattern, kept here so the refusal message is exercised on a real idiom; the nearest graph form is a `when` gate per stage, which needs a per-node (not per-item) predicate and is out of the import subset",
+  "rows": [
+    3,
+    6,
+    7
+  ],
+  "refuse_construct": "block-bodied pipeline stage with if / Promise.resolve / .then",
+  "refuse_line": 16
+}

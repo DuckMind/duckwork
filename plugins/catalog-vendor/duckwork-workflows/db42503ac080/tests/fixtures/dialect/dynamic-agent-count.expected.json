@@ -1,0 +1,11 @@
+{
+  "verdict": "refuse",
+  "reason": "the parallel() argument at line 15 is a computed array (closure over `owners` via Set/map/filter/join at lines 10-13), so the agent COUNT and each prompt are decided by JS glue, not by a declared item source — this is the core complexity deviation (dialect.md row 6): a closed graph can fan out over `items_from:'owners.entries'` but cannot dedup or regroup between nodes; the importer names the first glue construct (`new Set(...).map` at line 10) and stops; also computed `return` at line 17",
+  "rows": [
+    2,
+    6,
+    12
+  ],
+  "refuse_construct": "closure/glue between agents (Set/map/filter/join)",
+  "refuse_line": 10
+}

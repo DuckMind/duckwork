@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install pytest
+      - run: python -m pytest -q
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: plugin
+      - uses: astral-sh/setup-uv@v6
+      - name: Install Duckwork Agent
+        run: |
+          git clone --depth 1 --branch v0.21.6 https://github.com/DuckMind/duckwork duckwork
+          uv venv --python 3.14 venv
+          VIRTUAL_ENV=$PWD/venv uv pip install -e ./duckwork
+      - name: Validate for the plugin catalog
+        env:
+          DUCKWORK_HOME: ${{ runner.temp }}/duckwork-home
+        run: |
+          mkdir -p "$DUCKWORK_HOME"
+          venv/bin/duckwork plugins doctor plugin --ci
+          venv/bin/duckwork plugins validate plugin

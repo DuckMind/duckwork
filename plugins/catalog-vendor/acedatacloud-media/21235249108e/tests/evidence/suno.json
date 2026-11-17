@@ -1,0 +1,44 @@
+{
+  "duckwork_version": "0.21.6",
+  "duckwork_sha": "818c13be1dc4fd28987e1e881a9408224afd4535",
+  "tested_at": "2026-10-08T17:53:37.680415+00:00",
+  "operation": "acedata_suno_generate",
+  "invocation": "Duckwork registered tool dispatcher",
+  "generation_attempts": 1,
+  "status": "succeeded",
+  "task_id": "fecf6b7f-baef-4a48-b0e0-20c8cc473e6d",
+  "media_verification": [
+    {
+      "content_type": "audio/mpeg",
+      "bytes": 634662,
+      "sha256": "0cd08e1d11d4785c812a4b4f2a8177a6fef2dc767dd02397d0881d5991ec6543",
+      "duration": "27.912000",
+      "streams": [
+        {
+          "codec_type": "audio",
+          "codec_name": "mp3",
+          "sample_rate": "48000"
+        }
+      ],
+      "decoded": true
+    },
+    {
+      "content_type": "audio/mpeg",
+      "bytes": 743094,
+      "sha256": "deeef9ef8018e58803eb08a145f414ff0079eee43e20683cc7f72009fe64e1dd",
+      "duration": "32.424000",
+      "streams": [
+        {
+          "codec_type": "audio",
+          "codec_name": "mp3",
+          "sample_rate": "48000"
+        }
+      ],
+      "decoded": true
+    }
+  ],
+  "runtime_client_sha256": "662dd5d6d48c53dbf0ea527732080c37fde0d7dfdcc16fa93b7bd81cafca91db",
+  "limitations": "Primary operation only. Other options are schema-validated but not all combinations were sent to the paid API. Catalog distribution is a separate verification step.",
+  "validation_context": "Historical standalone source before consolidation; unchanged service schema and transport. Consolidated regression is recorded separately.",
+  "media_note": "Historical decoded media digests retained; temporary URLs omitted. The local validation artifacts retain actual responses."
+}

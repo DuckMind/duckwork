@@ -1,0 +1,734 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "rtk-rewrite",
+  "content_id": "8b4169adb79c",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 1336,
+      "mode": "100644",
+      "path": ".github/workflows/ci.yml",
+      "sha256": "912a8cacf5f0e17fd214868ae0e740ced5ca7852a9af2479198dd942d2b1ca75"
+    },
+    {
+      "bytes": 1705,
+      "mode": "100644",
+      "path": ".github/workflows/security.yml",
+      "sha256": "6388889183233711ca778609888ea0e62000d68c2c4c00beac9956f9dd044b1d"
+    },
+    {
+      "bytes": 130,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "743e24b0f2d08ecbcf8c8850bd3469c6b6c5d9d87e479a26970680f44715a1b4"
+    },
+    {
+      "bytes": 332,
+      "mode": "100644",
+      "path": ".gitleaks.toml",
+      "sha256": "f227abe4352149352455b4fef205ac84132368dd7ee3266d9bf92feb38037764"
+    },
+    {
+      "bytes": 263,
+      "mode": "100644",
+      "path": ".pre-commit-config.yaml",
+      "sha256": "ada28cd5168340667a69268140aaba6912beccfccac5bb026ad6ce2f02ae56fa"
+    },
+    {
+      "bytes": 1937,
+      "mode": "100644",
+      "path": "CHANGELOG.md",
+      "sha256": "d0ed9cc2dc64103ce421907122c795b83dda0fc1da746b6df60cc0b8b1a019c8"
+    },
+    {
+      "bytes": 2110,
+      "mode": "100644",
+      "path": "CODE_OF_CONDUCT.md",
+      "sha256": "6ea3e2b79e57fc321dcff98cfb4e8a8452dcd76252677e1272ffe7b36b9a4eb5"
+    },
+    {
+      "bytes": 1579,
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "379925a66b23c9e21fed18c906c31ed67243e2b3acf92921312e4d53b88ddec6"
+    },
+    {
+      "bytes": 10767,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "4044ade9c21d8b084d3d16a03375cf3b7e166b946a327bb37a3fbbdb53287cfd"
+    },
+    {
+      "bytes": 761,
+      "mode": "100644",
+      "path": "NOTICE",
+      "sha256": "1bf03cf70fd924692d8c649d6540aa040413fb8bd96d12ed1c5e5878a698562f"
+    },
+    {
+      "bytes": 6681,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "08e18bfc226a388abf4062c4db3a479fe28cf5db2c3710e38ad814fd207746cd"
+    },
+    {
+      "bytes": 2288,
+      "mode": "100644",
+      "path": "SECURITY.md",
+      "sha256": "fb6808f6e4c02832dbe901754b592f2f5828100906bcb57219b033820b183f8c"
+    },
+    {
+      "bytes": 2358,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "1c211b6248d9277fed7d615faa7287db5174462c92efcecff3ed1165af81d5bb"
+    },
+    {
+      "bytes": 2022,
+      "mode": "100644",
+      "path": "desktop/plugin.js",
+      "sha256": "8a2d86f995f6709cab6a060295d1d650b747f59470dc93bfebe26c08cb150ec8"
+    },
+    {
+      "bytes": 5433,
+      "mode": "100644",
+      "path": "docs/AGENT-GUIDE.md",
+      "sha256": "fdad975e4d58e6a7a8c6a95ea8869cf1e016d474221658eb74cd3c115c1fca18"
+    },
+    {
+      "bytes": 3196,
+      "mode": "100644",
+      "path": "docs/VALIDATION.md",
+      "sha256": "e034caf6bbb76bbeec8a5d0c081d5219f759c9073c340b82a48f735ff4c73d96"
+    },
+    {
+      "bytes": 542,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "5baca663ba72bb6b6fce7a12f8caf540075de45c54b99677a9c22c39b1474a2d"
+    },
+    {
+      "bytes": 858,
+      "mode": "100755",
+      "path": "scripts/sync-upstream.sh",
+      "sha256": "8b3a19e067188b1191ea76e4ec1f0a806c7e6c6b608133b94121d4cdd055682f"
+    },
+    {
+      "bytes": 2355,
+      "mode": "100644",
+      "path": "scripts/update.sh",
+      "sha256": "2ddc97cd66c3212fad9899343af0fc3f3aaafc0ac11655dfa4ae2507ecbc29e3"
+    },
+    {
+      "bytes": 0,
+      "mode": "100644",
+      "path": "tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 14254,
+      "mode": "100644",
+      "path": "tests/test_rtk_rewrite_plugin.py",
+      "sha256": "5bcb169685e07461adee3fb3709ac20329e184a23ea767cdfc8906c932c95746"
+    },
+    {
+      "bytes": 195,
+      "mode": "100644",
+      "path": "upstream/plugin.yaml",
+      "sha256": "2f285a22ad9958ef0084c75a1b42ea350139bf35a7c3835626d93abac84c601a"
+    }
+  ],
+  "input_manifest_sha256": "8b4169adb79cd10d87b4bce28105cdad990e6bea294eb91066d919c6bd96483a",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "Apache-2.0",
+        "path": "LICENSE",
+        "sha256": "4044ade9c21d8b084d3d16a03375cf3b7e166b946a327bb37a3fbbdb53287cfd",
+        "source_path": "LICENSE"
+      },
+      {
+        "byte_exact": true,
+        "license_id": null,
+        "path": "NOTICE",
+        "sha256": "1bf03cf70fd924692d8c649d6540aa040413fb8bd96d12ed1c5e5878a698562f",
+        "source_path": "NOTICE"
+      }
+    ],
+    "id": "Apache-2.0",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".github/workflows/ci.yml",
+      ".gitleaks.toml",
+      "CHANGELOG.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "SECURITY.md",
+      "__init__.py",
+      "desktop/plugin.js",
+      "docs/AGENT-GUIDE.md",
+      "docs/VALIDATION.md",
+      "plugin.yaml",
+      "scripts/sync-upstream.sh",
+      "scripts/update.sh",
+      "tests/test_rtk_rewrite_plugin.py",
+      "upstream/plugin.yaml"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": [
+      ".github/workflows/ci.yml",
+      ".gitleaks.toml",
+      "CHANGELOG.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "SECURITY.md",
+      "__init__.py",
+      "desktop/plugin.js",
+      "docs/AGENT-GUIDE.md",
+      "docs/VALIDATION.md",
+      "plugin.yaml",
+      "scripts/sync-upstream.sh",
+      "scripts/update.sh",
+      "tests/test_rtk_rewrite_plugin.py",
+      "upstream/plugin.yaml"
+    ]
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/kerrz2020/hermes-rtk-rewrite",
+    "sha": "4c5f8a5abdfd7980cba5ef02df86b8efe52c00d6",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/kerrz2020/hermes-rtk-rewrite",
+  "original_sha": "4c5f8a5abdfd7980cba5ef02df86b8efe52c00d6",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "2053077e1ef56f131bc9b8d1088082a3a291450ead4fd10ecd8edd416ace582f",
+      "bytes": 1492,
+      "mode": "100644"
+    },
+    {
+      "path": ".github/workflows/security.yml",
+      "sha256": "6388889183233711ca778609888ea0e62000d68c2c4c00beac9956f9dd044b1d",
+      "bytes": 1705,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "743e24b0f2d08ecbcf8c8850bd3469c6b6c5d9d87e479a26970680f44715a1b4",
+      "bytes": 130,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitleaks.toml",
+      "sha256": "d36521134b0d59b108eb0ea0480fac451e748d9f9ccbb085d75c64da163529ef",
+      "bytes": 476,
+      "mode": "100644"
+    },
+    {
+      "path": ".pre-commit-config.yaml",
+      "sha256": "ada28cd5168340667a69268140aaba6912beccfccac5bb026ad6ce2f02ae56fa",
+      "bytes": 263,
+      "mode": "100644"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "809640a4a87ba7db00fa871d544728997510a9235a31c8321b2fc0fd59952a46",
+      "bytes": 2092,
+      "mode": "100644"
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "sha256": "6ea3e2b79e57fc321dcff98cfb4e8a8452dcd76252677e1272ffe7b36b9a4eb5",
+      "bytes": 2110,
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "540b2c470dd6047e9d4c795df9e24a98a09e3b02c05f3450779e49f4d674d25f",
+      "bytes": 1738,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "4044ade9c21d8b084d3d16a03375cf3b7e166b946a327bb37a3fbbdb53287cfd",
+      "bytes": 10767,
+      "mode": "100644"
+    },
+    {
+      "path": "NOTICE",
+      "sha256": "1bf03cf70fd924692d8c649d6540aa040413fb8bd96d12ed1c5e5878a698562f",
+      "bytes": 761,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "8387eb1a37bf4051273b89e5ed8807326e5e1fb76f1a511b69b166a4fad0599c",
+      "bytes": 6700,
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "0cf2d08971bb5b8ffd5735eb24c3283d798a1b7f80aa79a08ff4fae0d3a4a747",
+      "bytes": 2408,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "492d7b7ca3ed5b1649f5bb1a6c5a1a80bbfe44e4f6d6b1a645dfc026faec1372",
+      "bytes": 2512,
+      "mode": "100644"
+    },
+    {
+      "path": "desktop/plugin.js",
+      "sha256": "e2c2e671f155a6bd76fdfa846d8502899e0472ca6c3d9407d2eb95f176a608af",
+      "bytes": 2180,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/AGENT-GUIDE.md",
+      "sha256": "1f3b1d776bc0dd464bdf856145e707711af3a0d5a4f2e7090856e3f8b8e7be93",
+      "bytes": 5628,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "sha256": "4ea0ff1bda56a8dedf0da6b1fc1d6b1cc36d83fab5e5049184c1ad1377086d18",
+      "bytes": 3361,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "1d5bda59c16cb2f3ea80a770d1d9af8e2053a5754750d930f3585a24d3dd727c",
+      "bytes": 679,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/sync-upstream.sh",
+      "sha256": "b5dd8506f42b831eb5c6d82bbe484b5d1d9009c55a75bb74d5471975b5f5bbb2",
+      "bytes": 973,
+      "mode": "100755"
+    },
+    {
+      "path": "scripts/update.sh",
+      "sha256": "d4ad43e9f3d68f45168ed98469e607f99649867fecd636c0513dfbfe63b61284",
+      "bytes": 2517,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_rtk_rewrite_plugin.py",
+      "sha256": "259cde8d654ad335919db74d09167e67c5fef6d715c41f576f5c25cef603fe5e",
+      "bytes": 14424,
+      "mode": "100644"
+    },
+    {
+      "path": "upstream/plugin.yaml",
+      "sha256": "18ec286eab34b8a3d518dda314a0bba34850647b3794270420851467ab69532b",
+      "bytes": 339,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "f49f849cc328be31ef83c9fef2af6daa517daf5d66d46b08cd9afb82460b9127",
+  "pin_verification": {
+    "archive_bytes": 20248,
+    "archive_sha256": "421792be42c40c601808d6f82b5ea538b3e9caa41dabf31871c89483f1b8b5f0",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "4c5f8a5abdfd7980cba5ef02df86b8efe52c00d6",
+    "verified_commit_marker": "4c5f8a5abdfd7980cba5ef02df86b8efe52c00d6"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "5d28a5ebeb7381cbda490ca5cfd36f6b2901ea10b7858c43dec25260c06b9830",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".github/workflows/ci.yml",
+        "input_sha256": "912a8cacf5f0e17fd214868ae0e740ced5ca7852a9af2479198dd942d2b1ca75",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e354605fcf31918f90ff131b661e47f3b7a714773a547c6cca2b08b4d55565bf",
+        "source": ".github/workflows/ci.yml",
+        "final_output_sha256": "2053077e1ef56f131bc9b8d1088082a3a291450ead4fd10ecd8edd416ace582f",
+        "cli_destination": ".github/workflows/ci.yml",
+        "previous_staging_sha256": "2053077e1ef56f131bc9b8d1088082a3a291450ead4fd10ecd8edd416ace582f"
+      },
+      {
+        "destination": ".github/workflows/security.yml",
+        "input_sha256": "6388889183233711ca778609888ea0e62000d68c2c4c00beac9956f9dd044b1d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6388889183233711ca778609888ea0e62000d68c2c4c00beac9956f9dd044b1d",
+        "source": ".github/workflows/security.yml",
+        "final_output_sha256": "6388889183233711ca778609888ea0e62000d68c2c4c00beac9956f9dd044b1d",
+        "cli_destination": ".github/workflows/security.yml",
+        "previous_staging_sha256": "6388889183233711ca778609888ea0e62000d68c2c4c00beac9956f9dd044b1d"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "743e24b0f2d08ecbcf8c8850bd3469c6b6c5d9d87e479a26970680f44715a1b4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "743e24b0f2d08ecbcf8c8850bd3469c6b6c5d9d87e479a26970680f44715a1b4",
+        "source": ".gitignore",
+        "final_output_sha256": "743e24b0f2d08ecbcf8c8850bd3469c6b6c5d9d87e479a26970680f44715a1b4",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "743e24b0f2d08ecbcf8c8850bd3469c6b6c5d9d87e479a26970680f44715a1b4"
+      },
+      {
+        "destination": ".gitleaks.toml",
+        "input_sha256": "f227abe4352149352455b4fef205ac84132368dd7ee3266d9bf92feb38037764",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "1328f7a581de860db236e62f511f27a99008ffbc522918f51dc42c5baaad0c25",
+        "source": ".gitleaks.toml",
+        "final_output_sha256": "d36521134b0d59b108eb0ea0480fac451e748d9f9ccbb085d75c64da163529ef",
+        "cli_destination": ".gitleaks.toml",
+        "previous_staging_sha256": "d36521134b0d59b108eb0ea0480fac451e748d9f9ccbb085d75c64da163529ef"
+      },
+      {
+        "destination": ".pre-commit-config.yaml",
+        "input_sha256": "ada28cd5168340667a69268140aaba6912beccfccac5bb026ad6ce2f02ae56fa",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ada28cd5168340667a69268140aaba6912beccfccac5bb026ad6ce2f02ae56fa",
+        "source": ".pre-commit-config.yaml",
+        "final_output_sha256": "ada28cd5168340667a69268140aaba6912beccfccac5bb026ad6ce2f02ae56fa",
+        "cli_destination": ".pre-commit-config.yaml",
+        "previous_staging_sha256": "ada28cd5168340667a69268140aaba6912beccfccac5bb026ad6ce2f02ae56fa"
+      },
+      {
+        "destination": "CHANGELOG.md",
+        "input_sha256": "d0ed9cc2dc64103ce421907122c795b83dda0fc1da746b6df60cc0b8b1a019c8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "945a0f6a0e1450d2c3159741aafa88ff46fdc9792eae7eb92d93eeffaa9540dc",
+        "source": "CHANGELOG.md",
+        "final_output_sha256": "809640a4a87ba7db00fa871d544728997510a9235a31c8321b2fc0fd59952a46",
+        "cli_destination": "CHANGELOG.md",
+        "previous_staging_sha256": "809640a4a87ba7db00fa871d544728997510a9235a31c8321b2fc0fd59952a46"
+      },
+      {
+        "destination": "CODE_OF_CONDUCT.md",
+        "input_sha256": "6ea3e2b79e57fc321dcff98cfb4e8a8452dcd76252677e1272ffe7b36b9a4eb5",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "6ea3e2b79e57fc321dcff98cfb4e8a8452dcd76252677e1272ffe7b36b9a4eb5",
+        "source": "CODE_OF_CONDUCT.md",
+        "final_output_sha256": "6ea3e2b79e57fc321dcff98cfb4e8a8452dcd76252677e1272ffe7b36b9a4eb5",
+        "cli_destination": "CODE_OF_CONDUCT.md",
+        "previous_staging_sha256": "6ea3e2b79e57fc321dcff98cfb4e8a8452dcd76252677e1272ffe7b36b9a4eb5"
+      },
+      {
+        "destination": "CONTRIBUTING.md",
+        "input_sha256": "379925a66b23c9e21fed18c906c31ed67243e2b3acf92921312e4d53b88ddec6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a494a4d8d07ecd762433a6c6e46e96be1da65631547099270a813b0ffd7c1bf4",
+        "source": "CONTRIBUTING.md",
+        "final_output_sha256": "540b2c470dd6047e9d4c795df9e24a98a09e3b02c05f3450779e49f4d674d25f",
+        "cli_destination": "CONTRIBUTING.md",
+        "previous_staging_sha256": "540b2c470dd6047e9d4c795df9e24a98a09e3b02c05f3450779e49f4d674d25f"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "4044ade9c21d8b084d3d16a03375cf3b7e166b946a327bb37a3fbbdb53287cfd",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "4044ade9c21d8b084d3d16a03375cf3b7e166b946a327bb37a3fbbdb53287cfd",
+        "source": "LICENSE",
+        "final_output_sha256": "4044ade9c21d8b084d3d16a03375cf3b7e166b946a327bb37a3fbbdb53287cfd",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "4044ade9c21d8b084d3d16a03375cf3b7e166b946a327bb37a3fbbdb53287cfd"
+      },
+      {
+        "destination": "NOTICE",
+        "input_sha256": "1bf03cf70fd924692d8c649d6540aa040413fb8bd96d12ed1c5e5878a698562f",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "1bf03cf70fd924692d8c649d6540aa040413fb8bd96d12ed1c5e5878a698562f",
+        "source": "NOTICE",
+        "final_output_sha256": "1bf03cf70fd924692d8c649d6540aa040413fb8bd96d12ed1c5e5878a698562f",
+        "cli_destination": "NOTICE",
+        "previous_staging_sha256": "1bf03cf70fd924692d8c649d6540aa040413fb8bd96d12ed1c5e5878a698562f"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "08e18bfc226a388abf4062c4db3a479fe28cf5db2c3710e38ad814fd207746cd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "ec2e4d830f8cc9abb2899633e08091baac2f9b56fe7175fc45baa81902a73f72",
+        "source": "README.md",
+        "final_output_sha256": "8387eb1a37bf4051273b89e5ed8807326e5e1fb76f1a511b69b166a4fad0599c",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "4464da0b5d0457b3911116f1572d66ec648f050c015d6c20b20a6a8c52177239"
+      },
+      {
+        "destination": "SECURITY.md",
+        "input_sha256": "fb6808f6e4c02832dbe901754b592f2f5828100906bcb57219b033820b183f8c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "b3aabe3814b8e90d6b761072b5ecf1bf9a5d2a9748f3192df24779d60b3ce7c5",
+        "source": "SECURITY.md",
+        "final_output_sha256": "0cf2d08971bb5b8ffd5735eb24c3283d798a1b7f80aa79a08ff4fae0d3a4a747",
+        "cli_destination": "SECURITY.md",
+        "previous_staging_sha256": "20804faffb4bd0896a9f180eded85ca85bc839885e5b9b50ba0e1e88f0fc1644"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "1c211b6248d9277fed7d615faa7287db5174462c92efcecff3ed1165af81d5bb",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "aa7264c8d48dc6f1f58a2e90c69a1460da7d27cfd80853e33a19474dcc42e44f",
+        "source": "__init__.py",
+        "final_output_sha256": "492d7b7ca3ed5b1649f5bb1a6c5a1a80bbfe44e4f6d6b1a645dfc026faec1372",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "492d7b7ca3ed5b1649f5bb1a6c5a1a80bbfe44e4f6d6b1a645dfc026faec1372"
+      },
+      {
+        "destination": "desktop/plugin.js",
+        "input_sha256": "8a2d86f995f6709cab6a060295d1d650b747f59470dc93bfebe26c08cb150ec8",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cdf0a66c713236ed75ad73e204aaf6d4fe8444e7631a1ac8a9d1b380e26234c6",
+        "source": "desktop/plugin.js",
+        "final_output_sha256": "e2c2e671f155a6bd76fdfa846d8502899e0472ca6c3d9407d2eb95f176a608af",
+        "cli_destination": "desktop/plugin.js",
+        "previous_staging_sha256": "e2c2e671f155a6bd76fdfa846d8502899e0472ca6c3d9407d2eb95f176a608af"
+      },
+      {
+        "destination": "docs/AGENT-GUIDE.md",
+        "input_sha256": "fdad975e4d58e6a7a8c6a95ea8869cf1e016d474221658eb74cd3c115c1fca18",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "583bf341caadafbdd806ea893405d1736ba9df399bc84b3d7aa9bb199ee41ba5",
+        "source": "docs/AGENT-GUIDE.md",
+        "final_output_sha256": "1f3b1d776bc0dd464bdf856145e707711af3a0d5a4f2e7090856e3f8b8e7be93",
+        "cli_destination": "docs/AGENT-GUIDE.md",
+        "previous_staging_sha256": "1f3b1d776bc0dd464bdf856145e707711af3a0d5a4f2e7090856e3f8b8e7be93"
+      },
+      {
+        "destination": "docs/VALIDATION.md",
+        "input_sha256": "e034caf6bbb76bbeec8a5d0c081d5219f759c9073c340b82a48f735ff4c73d96",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c96db66ef55480fe3f77e454cb366537fe877ab2e853a42d1a5b9be2e9363c5",
+        "source": "docs/VALIDATION.md",
+        "final_output_sha256": "4ea0ff1bda56a8dedf0da6b1fc1d6b1cc36d83fab5e5049184c1ad1377086d18",
+        "cli_destination": "docs/VALIDATION.md",
+        "previous_staging_sha256": "4ea0ff1bda56a8dedf0da6b1fc1d6b1cc36d83fab5e5049184c1ad1377086d18"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "5baca663ba72bb6b6fce7a12f8caf540075de45c54b99677a9c22c39b1474a2d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "782b178bbbc2b54991125ac169f02d99815a7602d9a138c4e37d26f47691bf90",
+        "source": "plugin.yaml",
+        "final_output_sha256": "1d5bda59c16cb2f3ea80a770d1d9af8e2053a5754750d930f3585a24d3dd727c",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "6b592a7410e2123cd3e2938b127d6f51bbc3547b6c3ff72ef0ce1c8ca0e19db8"
+      },
+      {
+        "destination": "scripts/sync-upstream.sh",
+        "input_sha256": "8b3a19e067188b1191ea76e4ec1f0a806c7e6c6b608133b94121d4cdd055682f",
+        "legal_preserved": false,
+        "mode": 493,
+        "output_sha256": "e41a75ba2b02c5a90b8ad2aa29df16c30e9a3969ba1835018bb9204f14bc3517",
+        "source": "scripts/sync-upstream.sh",
+        "final_output_sha256": "b5dd8506f42b831eb5c6d82bbe484b5d1d9009c55a75bb74d5471975b5f5bbb2",
+        "cli_destination": "scripts/sync-upstream.sh",
+        "previous_staging_sha256": "8581def5e6bb0d0be959ce6892d0cea252a9dcd76fe7e92a98e25812903aba55"
+      },
+      {
+        "destination": "scripts/update.sh",
+        "input_sha256": "2ddc97cd66c3212fad9899343af0fc3f3aaafc0ac11655dfa4ae2507ecbc29e3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0ded0d8cd94e100fd18770867b05e86fc68075b236baf3ab196d4cf9c049f395",
+        "source": "scripts/update.sh",
+        "final_output_sha256": "d4ad43e9f3d68f45168ed98469e607f99649867fecd636c0513dfbfe63b61284",
+        "cli_destination": "scripts/update.sh",
+        "previous_staging_sha256": "d4ad43e9f3d68f45168ed98469e607f99649867fecd636c0513dfbfe63b61284"
+      },
+      {
+        "destination": "tests/__init__.py",
+        "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source": "tests/__init__.py",
+        "final_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cli_destination": "tests/__init__.py",
+        "previous_staging_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "destination": "tests/test_rtk_rewrite_plugin.py",
+        "input_sha256": "5bcb169685e07461adee3fb3709ac20329e184a23ea767cdfc8906c932c95746",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "cf5621d017ba9162a040980b80ea1c02ec961ea524f2b3a794cf9d0427575e1d",
+        "source": "tests/test_rtk_rewrite_plugin.py",
+        "final_output_sha256": "259cde8d654ad335919db74d09167e67c5fef6d715c41f576f5c25cef603fe5e",
+        "cli_destination": "tests/test_rtk_rewrite_plugin.py",
+        "previous_staging_sha256": "259cde8d654ad335919db74d09167e67c5fef6d715c41f576f5c25cef603fe5e"
+      },
+      {
+        "destination": "upstream/plugin.yaml",
+        "input_sha256": "2f285a22ad9958ef0084c75a1b42ea350139bf35a7c3835626d93abac84c601a",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "c5d2b725c0c2c0cc451daa62ea5360adb245db2cd576558ebb8d095f158d78f0",
+        "source": "upstream/plugin.yaml",
+        "final_output_sha256": "18ec286eab34b8a3d518dda314a0bba34850647b3794270420851467ab69532b",
+        "cli_destination": "upstream/plugin.yaml",
+        "previous_staging_sha256": "18ec286eab34b8a3d518dda314a0bba34850647b3794270420851467ab69532b"
+      }
+    ],
+    "manifest_sha256": "a4088db082ada00e0dea99c63f85f3e81c2c436209e0ebcd3812e43964b75292",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".github/workflows/ci.yml": ".github/workflows/ci.yml",
+    ".github/workflows/security.yml": ".github/workflows/security.yml",
+    ".gitignore": ".gitignore",
+    ".gitleaks.toml": ".gitleaks.toml",
+    ".pre-commit-config.yaml": ".pre-commit-config.yaml",
+    "CHANGELOG.md": "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md": "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md": "CONTRIBUTING.md",
+    "LICENSE": "LICENSE",
+    "NOTICE": "NOTICE",
+    "README.md": "README.md",
+    "SECURITY.md": "SECURITY.md",
+    "__init__.py": "__init__.py",
+    "desktop/plugin.js": "desktop/plugin.js",
+    "docs/AGENT-GUIDE.md": "docs/AGENT-GUIDE.md",
+    "docs/VALIDATION.md": "docs/VALIDATION.md",
+    "plugin.yaml": "plugin.yaml",
+    "scripts/sync-upstream.sh": "scripts/sync-upstream.sh",
+    "scripts/update.sh": "scripts/update.sh",
+    "tests/__init__.py": "tests/__init__.py",
+    "tests/test_rtk_rewrite_plugin.py": "tests/test_rtk_rewrite_plugin.py",
+    "upstream/plugin.yaml": "upstream/plugin.yaml"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "rtk-rewrite",
+    "python_files_compiled": 3,
+    "secret_findings": 0
+  },
+  "canonical_slug": "rtk-rewrite",
+  "catalog_file": "src/plugin-catalog/rtk-rewrite.yaml",
+  "identity": {
+    "catalog_id": "rtk-rewrite",
+    "canonical_slug": "rtk-rewrite",
+    "original_manifest_name": "rtk-rewrite",
+    "rebranded_manifest_name": "rtk-rewrite",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "d1f41a62c5325538cd9092454603c5ad026c22c3e5a5226cfa3361a30544d151",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "4464da0b5d0457b3911116f1572d66ec648f050c015d6c20b20a6a8c52177239",
+          "after_sha256": "8387eb1a37bf4051273b89e5ed8807326e5e1fb76f1a511b69b166a4fad0599c",
+          "before_bytes": 6876,
+          "after_bytes": 6700,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "SECURITY.md",
+          "after_path": "SECURITY.md",
+          "before_sha256": "20804faffb4bd0896a9f180eded85ca85bc839885e5b9b50ba0e1e88f0fc1644",
+          "after_sha256": "0cf2d08971bb5b8ffd5735eb24c3283d798a1b7f80aa79a08ff4fae0d3a4a747",
+          "before_bytes": 2443,
+          "after_bytes": 2408,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "6b592a7410e2123cd3e2938b127d6f51bbc3547b6c3ff72ef0ce1c8ca0e19db8",
+          "after_sha256": "1d5bda59c16cb2f3ea80a770d1d9af8e2053a5754750d930f3585a24d3dd727c",
+          "before_bytes": 690,
+          "after_bytes": 679,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "scripts/sync-upstream.sh",
+          "after_path": "scripts/sync-upstream.sh",
+          "before_sha256": "8581def5e6bb0d0be959ce6892d0cea252a9dcd76fe7e92a98e25812903aba55",
+          "after_sha256": "b5dd8506f42b831eb5c6d82bbe484b5d1d9009c55a75bb74d5471975b5f5bbb2",
+          "before_bytes": 1002,
+          "after_bytes": 973,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100755",
+          "after_mode": "100755"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

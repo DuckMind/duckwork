@@ -1,0 +1,62 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify version matches tag (across all 4 sources)
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, re, sys, tomllib
+
+          tag = os.environ["GITHUB_REF"].removeprefix("refs/tags/").lstrip("v")
+          root = pathlib.Path(".")
+          pyver = tomllib.load(open(root / "pyproject.toml", "rb"))["project"]["version"]
+          init  = re.search(r'^__version__\s*=\s*"([^"]+)"',
+                            (root / "__init__.py").read_text(), re.M).group(1)
+          plug  = re.search(r'^version:\s*"?([\d.]+)"?',
+                            (root / "plugin.yaml").read_text(), re.M).group(1)
+          manif = json.loads((root / "dashboard" / "manifest.json").read_text())["version"]
+
+          sources = {"git tag": tag, "pyproject.toml": pyver, "__init__.py": init,
+                     "plugin.yaml": plug, "dashboard/manifest.json": manif}
+          if len(set(sources.values())) != 1:
+              for k, v in sources.items():
+                  print(f"  {k}: {v}")
+              sys.exit("::error::version drift between tag and source files")
+          print(f"Version OK: {tag}")
+          PY
+      - name: Extract release notes from CHANGELOG
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"; VERSION="${VERSION#v}"
+          python - "$VERSION" <<'PY' > release-notes.md
+          import re
+          import sys
+
+          version = sys.argv[1]
+          text = open("CHANGELOG.md", encoding="utf-8").read()
+          # Capture everything under "## [VERSION] ..." up to the next "## [" header.
+          pattern = rf"^## \[{re.escape(version)}\][^\n]*\n(.*?)(?=^## \[|\Z)"
+          m = re.search(pattern, text, re.DOTALL | re.MULTILINE)
+          if not m or not m.group(1).strip():
+              sys.exit(f"::error::no CHANGELOG.md section found for {version}")
+          print(m.group(1).strip())
+          PY
+          echo "----- release notes -----"
+          cat release-notes.md
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          generate_release_notes: false
+          draft: false

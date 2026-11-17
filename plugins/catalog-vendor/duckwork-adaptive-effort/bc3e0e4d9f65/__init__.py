@@ -1,0 +1,78 @@
+"""Duckwork Adaptive Effort — opt-in per-request reasoning-effort router.
+
+Registered capabilities: ``llm_request`` middleware + session lifecycle hooks.
+Everything else (effort mapping, scorer adapters, session state) lives in
+sibling modules so it can be unit-tested without booting Duckwork.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+if __package__:
+    from . import command as _command
+    from . import middleware as _middleware
+else:
+    # Pytest may import the repository-root __init__.py as a standalone module
+    # because this plugin is installed from the repository root. Duckwork loads it
+    # with a package name, so only that real plugin path needs sibling imports.
+    _command = None
+    _middleware = None
+
+
+def register(ctx: Any) -> None:
+    """Attach middleware, lifecycle hooks and effort commands to a real PluginContext."""
+    if _command is None or _middleware is None:
+        raise RuntimeError("Duckwork plugin entrypoint must be loaded as a package")
+
+    # Read settings through the context facade when it offers one, so a config
+    # edit is picked up per call rather than frozen at import time.
+    if hasattr(ctx, "get_config"):
+        _middleware._settings_provider = ctx.get_config
+    state = getattr(ctx, "state", None)
+    if state is not None:
+        _middleware.set_history_path_provider(
+            lambda: state.data_dir / "effort-history.sqlite3")
+
+    # Newer Duckwork hosts expose a thread-safe TUI status item. Older hosts keep
+    # working with the CLI log and /status command until that API is available.
+    register_cli_status_item = getattr(ctx, "register_cli_status_item", None)
+    if callable(register_cli_status_item):
+        try:
+            # "N/A", not an em dash: this renders in a terminal status bar, and on a
+            # Windows console a non-ASCII glyph degrades to a replacement box. It also
+            # states the truth — a route with no writable effort field has no effort
+            # to report, as opposed to one that simply has not decided yet.
+            status_handle = register_cli_status_item("effort", "N/A", priority=30)
+            _middleware.set_cli_status_handle(status_handle)
+        except Exception:
+            _middleware.set_cli_status_handle(None)
+
+    ctx.register_middleware("llm_request", _middleware.on_llm_request)
+    # Duckwork fires on_session_end after each turn with turn_id; preserve the bounded
+    # per-turn status until the actual on_session_finalize / on_session_reset boundary.
+    ctx.register_hook("on_session_end", _middleware.on_session_end)
+    ctx.register_hook("on_session_finalize", _middleware.on_session_finalize)
+    ctx.register_hook("on_session_reset", _middleware.on_session_reset)
+    # Verified hook names (tools/delegate_tool.py emits them with these kwargs):
+    #   subagent_start(parent_session_id=…, child_session_id=…, child_goal=…)
+    #   subagent_stop(parent_session_id=…, child_session_id=…)
+    # Together they let a child's own request be recognised and classified from
+    # the goal its parent wrote.
+    ctx.register_hook("subagent_start", _middleware.on_subagent_start)
+    ctx.register_hook("subagent_stop", _middleware.on_subagent_stop)
+    # Observers for the route trial: the provider's own cache counters after each call, and a
+    # rejected request. They only read counts and a status code, never request or response text.
+    ctx.register_hook("post_api_request", _middleware.on_post_api_request)
+    ctx.register_hook("api_request_error", _middleware.on_api_request_error)
+    command_description = (
+        "Duckwork Adaptive Effort: conversation history, status, bounded probe, and "
+        "auto|once|always|off for future requests"
+    )
+    command_args = "[history [N|all] [full]|status [full|json]|probe <text>|auto|once|always|off]"
+    ctx.register_command(
+        "hae",
+        handler=_command.handle,
+        description=command_description,
+        args_hint=command_args,
+    )

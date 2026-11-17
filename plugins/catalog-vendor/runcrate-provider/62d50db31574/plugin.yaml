@@ -1,0 +1,11 @@
+name: runcrate-provider
+kind: model-provider
+version: 1.0.0
+description: Runcrate (runcrate.ai) open models via the OpenAI-compatible API
+author: Runcrate (Aeonmind LLC)
+requires_duckwork: ">=0.21.5"
+requires_env:
+  - name: RUNCRATE_API_KEY
+    description: Runcrate API key (rc_live_...)
+    url: https://www.runcrate.ai/dashboard/api-keys
+    secret: true

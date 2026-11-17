@@ -1,0 +1,50 @@
+name: Tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 6 * * 1'
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.11', '3.13', '3.14']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install .
+      - run: python tests/installed_package.py
+  real-slicer:
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - name: Linux Orca runtime libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-0 libglu1-mesa libegl1 xvfb
+      - run: python -m pip install .
+      - run: python tests/install_orca_ci.py
+      - name: Real installed-package slicing on Linux
+        if: runner.os == 'Linux'
+        run: xvfb-run -a python tests/installed_package.py --slicer
+      - name: Real installed-package slicing on macOS and Windows
+        if: runner.os != 'Linux'
+        run: python tests/installed_package.py --slicer

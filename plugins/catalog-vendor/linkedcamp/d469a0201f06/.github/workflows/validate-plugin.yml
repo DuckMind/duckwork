@@ -1,0 +1,46 @@
+name: Validate Duckwork plugin
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: plugin
+
+      - name: Check out Duckwork validator
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: Fordex/duckwork-agent
+          ref: 67491b50f7e5ef8be6e591d745b32758aa60c33e
+          path: duckwork-agent
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.14"
+
+      - name: Validate JSON
+        run: |
+          jq -e . plugin/plugin.json >/dev/null
+          jq -e . plugin/mcp.json >/dev/null
+
+      - name: Validate with Duckwork
+        run: |
+          # Duckwork pins pillow==13.0.0 while its browser-harness pin wants 12.3.0;
+          # the override resolves that upstream conflict for validation only.
+          pip install uv
+          echo "pillow==13.0.0" > overrides.txt
+          uv pip install --system --override overrides.txt -e duckwork-agent
+          export DUCKWORK_HOME="$RUNNER_TEMP/duckwork-home"
+          duckwork plugins validate plugin
+          duckwork plugins doctor plugin --ci

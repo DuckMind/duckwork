@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install tooling
+        run: pip install --upgrade pip ruff pytest pyyaml
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Install Duckwork
+        # Best effort. Without it the Duckwork-driven tests skip and the pure ones
+        # still run, which is a useful signal either way.
+        continue-on-error: true
+        run: curl -fsSL https://duckwork-agent.fordex.com/install.sh | bash
+
+      - name: Test
+        # Duckwork' own interpreter is the one that can import duckwork_cli and
+        # agent.*, so the full suite runs there when Duckwork installed.
+        run: |
+          PY=python
+          if [ -x /usr/local/lib/duckwork-agent/venv/bin/python ]; then
+            PY=/usr/local/lib/duckwork-agent/venv/bin/python
+          fi
+          echo "using $PY"
+          "$PY" -m pytest tests/ -v
+
+  validate-plugin:
+    # Duckwork' own admission checks: manifest, capability probe, declared
+    # tools/hooks, security scan, no core override — the same set the plugin
+    # catalog's CI runs on a submission.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install Duckwork
+        run: curl -fsSL https://duckwork-agent.fordex.com/install.sh | bash
+
+      - name: Validate
+        run: duckwork plugins validate .
+
+      - name: Doctor
+        run: duckwork plugins doctor .

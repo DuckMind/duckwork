@@ -1,0 +1,100 @@
+# Nachos for Duckwork Agent
+
+Nachos is a durable-memory provider for [Duckwork Agent](https://duckwork-agent.fordex.com). It replaces full-file memory injection with a bounded, three-tier assembly:
+
+1. **Manifest** — a compact table of contents is present every turn.
+2. **Prefetch** — relevant entry bodies are ranked and injected within a bounded budget.
+3. **Recall** — the agent retrieves full entries only when needed.
+
+The package is local-first: SQLite and flat-file stores use the standard library, lexical ranking is the default, and no LLM call occurs in the hot path.
+
+## Install
+
+Install Nachos into the same Python environment that runs Duckwork:
+
+```bash
+python -m pip install "git+https://github.com/Nacho-Labs-LLC/hermes-plugin-nachos.git@v0.5.4"
+```
+
+For a reproducible production deployment, pin a full 40-character commit SHA instead of a tag.
+
+Select Nachos for the active Duckwork profile:
+
+```bash
+duckwork config set memory.provider nachos
+duckwork config set memory.memory_enabled false
+```
+
+Start a new session or restart the profile gateway after switching providers. Nachos injects an explicit durable-memory contract that directs the agent to `nachos_memory_recall`, `nachos_memory_put`, and `nachos_memory_remove`.
+
+### Catalog / directory installs
+
+When installing from the Duckwork catalog, keep the complete repository root at
+`$DUCKWORK_HOME/plugins/nachos/` (including `plugin.yaml`, `__init__.py`,
+`nachos_core/`, and `nachos_duckwork/`). Unlike the pip installation above, this
+single directory exposes both the memory provider and context engine; it does
+not use the pip-only `nachos-context` entry-point name.
+
+Select `memory.provider: nachos` as above. For Nachos Context, set
+`context.engine: nachos`; no `duckwork plugins enable nachos-context` command is
+needed for this directory-install path. Start a new session after installation
+or configuration changes.
+
+## Configuration
+
+Run `duckwork memory setup` to configure the packaged provider. Settings are stored at `$DUCKWORK_HOME/nachos/config.json`, so each Duckwork profile remains isolated.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `store` | `sqlite` | Local durable store: `sqlite` or hand-editable `flatfile`. |
+| `scorer` | `lexical` | Ranking method: `lexical` or optional `semantic`. |
+| `semantic_provider` | `nachos` | Optional semantic backend: `nachos`, `sentence-transformers`, or `openai`. |
+| `prefetch_top_n` | `5` | Maximum entries preloaded for a turn. |
+| `prefetch_char_budget` | `1500` | Maximum characters injected by prefetch. |
+| `manifest_char_budget` | `1200` | Target budget for the always-on manifest. |
+
+Existing `nachos.memory` values in `config.yaml` remain supported for backwards compatibility. Profile-scoped setup values take precedence.
+
+## Privacy and network behavior
+
+Nachos stores its SQLite database, flat-file memory, and snapshots locally under `$DUCKWORK_HOME/nachos/`. The default `lexical` scorer makes no network requests. Selecting `scorer: semantic` is opt-in: the `nachos` backend invokes a separately installed `nachos-embeddings` CLI with fixed arguments, while the `openai` backend sends embedding inputs (the turn query and candidate memory titles/summaries) to `api.openai.com` using `OPENAI_API_KEY`.
+
+## Tools
+
+- `nachos_memory_recall` — fetch an entry by key or search matching entries.
+- `nachos_memory_put` — add or update an entry.
+- `nachos_memory_remove` — delete an entry.
+- `/nachos-memory-status` — display provider status.
+- `/nachos-memory-list` — render the current manifest.
+
+## Development
+
+```bash
+uv sync --group dev
+.venv/Scripts/python.exe -m pytest tests -q  # Windows
+.venv/Scripts/python.exe -m ruff check .
+.venv/Scripts/python.exe -m build
+```
+
+The release gate builds a wheel, installs it into a clean environment, loads the `duckwork_agent.memory_providers` entry point, and exercises provider registration.
+
+## Nachos Context Engine
+
+Nachos Context is a supported, dogfooded context engine that applies zone-based compaction, preserves tool-call/result pairs, and captures conversation snapshots before aggressive compaction. The same package installs its `nachos-context` Duckwork plugin entry point.
+
+Enable it for the active profile, then select it. This replaces Duckwork' selected context engine only while `context.engine` is set to `nachos`:
+
+```bash
+duckwork plugins enable nachos-context
+duckwork config set context.engine nachos
+```
+
+Start a new session after enabling it. Context settings remain under the existing `nachos.compaction` and `nachos.snapshots` configuration sections.
+
+## Experimental policy layer
+
+The YAML policy layer is still experimental. It is not yet a supported installation artifact because it needs profile-safe configuration and packaging before it can be recommended to others.
+
+## License
+
+MIT

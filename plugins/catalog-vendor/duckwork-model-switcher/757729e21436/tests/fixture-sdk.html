@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Model Switcher — Dashboard SDK fixture</title>
+<style>
+  body { background: #16181d; color: #e6e8ee; font-family: system-ui, sans-serif; margin: 0; }
+  /* Host Tailwind preflight: fixtures must not supply missing plugin chrome. */
+  *, ::before, ::after { box-sizing: border-box; border: 0 solid; margin: 0; padding: 0; }
+  button, input, select, textarea { font: inherit; color: inherit; background: transparent; border-radius: 0; }
+
+  td, th { padding: 4px; }
+</style>
+<link rel="stylesheet" href="dashboard/dist/style.css">
+<script>window.__mockApi = { failState: false, failReadback: false, failUndo: false, failSavePreset: false, failStateHttp: false };</script>
+<script src="tests/mock-api.js"></script>
+</head>
+<body>
+  <!--
+    Dashboard-contract fixture: same globals the real shell provides
+    (window.__DUCKWORK_PLUGIN_SDK__ + window.__DUCKWORK_PLUGINS__) and NO
+    globalThis.React/ReactDOM. The tab pane is host-owned — there is no
+    data-plugin-root element, because a dashboard plugin must not self-mount.
+  -->
+  <main data-testid="dashboard-main">
+    <div id="tab-pane"></div>
+  </main>
+  <script src="tests/vendor-sdk.js"></script>
+  <script src="dashboard/dist/index.js"></script>
+  <script>
+    window.__hostMounted = false;
+    window.__hostMountError = null;
+    try {
+      window.__mountRegisteredTab("duckwork-model-switcher", document.getElementById("tab-pane"));
+      window.__hostMounted = true;
+    } catch (e) {
+      window.__hostMountError = String((e && e.message) || e);
+    }
+  </script>
+</body>
+</html>

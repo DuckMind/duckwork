@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duckwork-plugin-nachos"
+version = "0.5.4"
+description = "Nachos durable-memory provider for Duckwork Agent"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [{name = "Nacho Labs"}]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/DuckMind/duckwork"
+Issues = "https://github.com/DuckMind/duckwork"
+
+[project.entry-points."duckwork_agent.memory_providers"]
+nachos = "nachos_duckwork.memory_provider:register"
+
+[project.entry-points."duckwork_agent.plugins"]
+nachos-context = "nachos_duckwork.context_engine"
+
+[dependency-groups]
+dev = [
+    "build>=1.2,<2",
+    "pytest>=8,<10",
+    "ruff>=0.8,<1",
+]
+
+[tool.setuptools.packages.find]
+include = ["nachos_core*", "nachos_duckwork*"]
+
+[tool.ruff]
+# Python analog of a fallow/ESLint setup for this repo.
+target-version = "py39"
+line-length = 100
+extend-exclude = ["tests/test_engine.py", "tests/smoke_engine.py", "tests/smoke_real_memory.py"]
+
+[tool.ruff.lint]
+# E/F pyflakes+pycodestyle, I import-sort, B bugbear, SIM simplify.
+# This is the "code smells / slop" net. UP (pyupgrade) is intentionally
+# NOT selected: this plugin targets a Python 3.9 runtime, so PEP-585/604
+# annotation rewrites (list[str], X | None) would be wrong here.
+select = ["E", "F", "I", "B", "SIM"]
+ignore = [
+    "E501",   # line length handled by formatter, not worth failing commits
+    "B008",   # dataclass/default-factory pattern used intentionally
+]
+
+[tool.ruff.lint.per-file-ignores]
+# ABC-override + slash-handler params are contract-mandated, not slop.
+"plugins/memory/nachos/__init__.py" = ["ARG002"]

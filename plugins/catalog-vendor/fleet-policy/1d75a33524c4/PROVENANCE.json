@@ -1,0 +1,459 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "fleet-policy",
+  "content_id": "1d75a33524c4",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "plugin.yaml",
+  "input_files": [
+    {
+      "bytes": 2791,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "f10182d80dda2f76ac114ef38f3825ce8ac9afd091cbf6c23f617c1b23465792"
+    },
+    {
+      "bytes": 1960,
+      "mode": "100644",
+      "path": "__main__.py",
+      "sha256": "9c4b48fa6dc389db448189541c1105ea8946210c898e60b75a0e6def71536ba4"
+    },
+    {
+      "bytes": 1070,
+      "mode": "100644",
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8"
+    },
+    {
+      "bytes": 6828,
+      "mode": "100644",
+      "path": "cli.py",
+      "sha256": "63abd523fa915e6134bd9d0f173ba9660b634aa1cf7dd3f8c5406440f174f59b"
+    },
+    {
+      "bytes": 15369,
+      "mode": "100644",
+      "path": "cost.py",
+      "sha256": "ddc2a5e029be1eee59caa2697d7a342f94c2ecde6841c443ec7a23e8fac9e796"
+    },
+    {
+      "bytes": 6132,
+      "mode": "100644",
+      "path": "extract.py",
+      "sha256": "646dc66ca3fb289c84a2febeab4893e71ee8319fefb90cc0382f416e715a769f"
+    },
+    {
+      "bytes": 3004,
+      "mode": "100644",
+      "path": "observer.py",
+      "sha256": "6b73dcad12505891936962c82cd76633e6e4c7c82f260fc48b7ef8b3095f8033"
+    },
+    {
+      "bytes": 1260,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "f3f3186f491a9b641d5b5a652496ffb70b31063bdc494f01e941f6898f72c11e"
+    },
+    {
+      "bytes": 10061,
+      "mode": "100644",
+      "path": "policy.py",
+      "sha256": "8baaf9bc5736a754cb9017aba5588b6521afecd6ed81625aed8325fd6ce0bc08"
+    },
+    {
+      "bytes": 2586,
+      "mode": "100644",
+      "path": "skills/fleet-policy-admin/SKILL.md",
+      "sha256": "0af2f4c591a4a153e5646118e1dd4dd8b1d83e208fee7c2eabc285f4fb05698c"
+    },
+    {
+      "bytes": 5400,
+      "mode": "100644",
+      "path": "skills/recurring-tasks/SKILL.md",
+      "sha256": "8e2b5c84afa45a5015550f04cfb982078b9316b21b99413fbcd131f7de60ca54"
+    },
+    {
+      "bytes": 5264,
+      "mode": "100644",
+      "path": "store.py",
+      "sha256": "bc0ab50163df80e40d821c4dd8649a63867d92973ca90f3f7b6ff86c9def967d"
+    },
+    {
+      "bytes": 21741,
+      "mode": "100644",
+      "path": "watch.py",
+      "sha256": "f35a40c365fa393a089f929948ded68173f232ecfa4842215bda1199a37920f3"
+    }
+  ],
+  "input_manifest_sha256": "1d75a33524c440a263ead2b4696017058cf396570e1e5392d91f94e0722c732e",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "_upstream_legal/LICENSE",
+        "sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      "__init__.py",
+      "__main__.py",
+      "cli.py",
+      "cost.py",
+      "extract.py",
+      "observer.py",
+      "plugin.yaml",
+      "policy.py",
+      "skills/fleet-policy-admin/SKILL.md",
+      "skills/recurring-tasks/SKILL.md",
+      "store.py",
+      "watch.py"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/Julientalbot/hermes-fleet-policy",
+    "sha": "7d36874a5a625fc2a0c24ee280e34872e5259800",
+    "subdir": "fleet_policy"
+  },
+  "original_repo": "https://github.com/Julientalbot/hermes-fleet-policy",
+  "original_sha": "7d36874a5a625fc2a0c24ee280e34872e5259800",
+  "original_subdir": "fleet_policy",
+  "output_files": [
+    {
+      "path": "__init__.py",
+      "sha256": "4fb9e31612279823b83bedd21140752ffa43250566445835e2c6bc411717c306",
+      "bytes": 2811,
+      "mode": "100644"
+    },
+    {
+      "path": "__main__.py",
+      "sha256": "3f377dc92373b232a62414a55bf8e15f50db1c707e3d1e589fc25bad790cffd6",
+      "bytes": 1972,
+      "mode": "100644"
+    },
+    {
+      "path": "_upstream_legal/LICENSE",
+      "sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+      "bytes": 1070,
+      "mode": "100644"
+    },
+    {
+      "path": "cli.py",
+      "sha256": "a1fc869be7a6412d698703eca1ba86f5e0b4e9c6a12900100236febb3bf33109",
+      "bytes": 6836,
+      "mode": "100644"
+    },
+    {
+      "path": "cost.py",
+      "sha256": "3a7947d51cc8bbcd67a5ee58245c1a9c834ad59fe86c3446100cecb056f509f4",
+      "bytes": 15383,
+      "mode": "100644"
+    },
+    {
+      "path": "extract.py",
+      "sha256": "40998b18a745b83cbca338a6b97e92bbb97ee3ab55230c75cc68e70aee522d76",
+      "bytes": 6140,
+      "mode": "100644"
+    },
+    {
+      "path": "observer.py",
+      "sha256": "d8ebd6b38d5b99bd9f482167e6859b1e26d178c9866aaa5308f818d12beb1de7",
+      "bytes": 3006,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "ae0e272087b025df8a5eb2b3023284bcf9a2bd70a6de66198cb194a04ea0a21f",
+      "bytes": 1251,
+      "mode": "100644"
+    },
+    {
+      "path": "policy.py",
+      "sha256": "7633836ca396c4d5d4d89859f8332b8271ac432b1483edeaa74c4b7bde399c2f",
+      "bytes": 10103,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/fleet-policy-admin/SKILL.md",
+      "sha256": "3fbc203bd97c15d7b36ef2e15da9a8968876b8572a521e26a4b9b2d9d6569aac",
+      "bytes": 2614,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/recurring-tasks/SKILL.md",
+      "sha256": "0c6cd2bb5887a4c15052b022993b726a9e6634fea40a65a99b0e7ac5a3537b5b",
+      "bytes": 5424,
+      "mode": "100644"
+    },
+    {
+      "path": "store.py",
+      "sha256": "7e8e9770e29b015d3f0b352b8b8319b379a35bddd403ca90e8749558341aee7c",
+      "bytes": 5294,
+      "mode": "100644"
+    },
+    {
+      "path": "watch.py",
+      "sha256": "239b521d048921078ed4f010ee6251b50fd6b3e88c311592efe35c5fd4c46d68",
+      "bytes": 21753,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "f39a3aac081161af11f0303df8f203f73025c171046b8889b2c8949d14b21b08",
+  "pin_verification": {
+    "archive_bytes": 53871,
+    "archive_sha256": "898be9ca86990eff4ad42732afdd64783d31d2292ae6cf0902fa067fdbb4547d",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "7d36874a5a625fc2a0c24ee280e34872e5259800",
+    "verified_commit_marker": "7d36874a5a625fc2a0c24ee280e34872e5259800"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "74bc67e6ae49f41666a723740218141fa3a0379016f52a38e6b6b256c0460d6d",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": "__init__.py",
+        "input_sha256": "f10182d80dda2f76ac114ef38f3825ce8ac9afd091cbf6c23f617c1b23465792",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "4fb9e31612279823b83bedd21140752ffa43250566445835e2c6bc411717c306",
+        "source": "__init__.py",
+        "final_output_sha256": "4fb9e31612279823b83bedd21140752ffa43250566445835e2c6bc411717c306",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "4fb9e31612279823b83bedd21140752ffa43250566445835e2c6bc411717c306"
+      },
+      {
+        "destination": "__main__.py",
+        "input_sha256": "9c4b48fa6dc389db448189541c1105ea8946210c898e60b75a0e6def71536ba4",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3f377dc92373b232a62414a55bf8e15f50db1c707e3d1e589fc25bad790cffd6",
+        "source": "__main__.py",
+        "final_output_sha256": "3f377dc92373b232a62414a55bf8e15f50db1c707e3d1e589fc25bad790cffd6",
+        "cli_destination": "__main__.py",
+        "previous_staging_sha256": "3f377dc92373b232a62414a55bf8e15f50db1c707e3d1e589fc25bad790cffd6"
+      },
+      {
+        "destination": "_upstream_legal/LICENSE",
+        "input_sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+        "source": "_upstream_legal/LICENSE",
+        "final_output_sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8",
+        "cli_destination": "_upstream_legal/LICENSE",
+        "previous_staging_sha256": "2c7a60acf3abc34d2826bf7534a5c35beba708a931f0940fc4b2f8f4160a9ad8"
+      },
+      {
+        "destination": "cli.py",
+        "input_sha256": "63abd523fa915e6134bd9d0f173ba9660b634aa1cf7dd3f8c5406440f174f59b",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a1fc869be7a6412d698703eca1ba86f5e0b4e9c6a12900100236febb3bf33109",
+        "source": "cli.py",
+        "final_output_sha256": "a1fc869be7a6412d698703eca1ba86f5e0b4e9c6a12900100236febb3bf33109",
+        "cli_destination": "cli.py",
+        "previous_staging_sha256": "a1fc869be7a6412d698703eca1ba86f5e0b4e9c6a12900100236febb3bf33109"
+      },
+      {
+        "destination": "cost.py",
+        "input_sha256": "ddc2a5e029be1eee59caa2697d7a342f94c2ecde6841c443ec7a23e8fac9e796",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3a7947d51cc8bbcd67a5ee58245c1a9c834ad59fe86c3446100cecb056f509f4",
+        "source": "cost.py",
+        "final_output_sha256": "3a7947d51cc8bbcd67a5ee58245c1a9c834ad59fe86c3446100cecb056f509f4",
+        "cli_destination": "cost.py",
+        "previous_staging_sha256": "3a7947d51cc8bbcd67a5ee58245c1a9c834ad59fe86c3446100cecb056f509f4"
+      },
+      {
+        "destination": "extract.py",
+        "input_sha256": "646dc66ca3fb289c84a2febeab4893e71ee8319fefb90cc0382f416e715a769f",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "40998b18a745b83cbca338a6b97e92bbb97ee3ab55230c75cc68e70aee522d76",
+        "source": "extract.py",
+        "final_output_sha256": "40998b18a745b83cbca338a6b97e92bbb97ee3ab55230c75cc68e70aee522d76",
+        "cli_destination": "extract.py",
+        "previous_staging_sha256": "40998b18a745b83cbca338a6b97e92bbb97ee3ab55230c75cc68e70aee522d76"
+      },
+      {
+        "destination": "observer.py",
+        "input_sha256": "6b73dcad12505891936962c82cd76633e6e4c7c82f260fc48b7ef8b3095f8033",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "d8ebd6b38d5b99bd9f482167e6859b1e26d178c9866aaa5308f818d12beb1de7",
+        "source": "observer.py",
+        "final_output_sha256": "d8ebd6b38d5b99bd9f482167e6859b1e26d178c9866aaa5308f818d12beb1de7",
+        "cli_destination": "observer.py",
+        "previous_staging_sha256": "d8ebd6b38d5b99bd9f482167e6859b1e26d178c9866aaa5308f818d12beb1de7"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "f3f3186f491a9b641d5b5a652496ffb70b31063bdc494f01e941f6898f72c11e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "da57abd8b5f627b94950f7b3bf61ae316a6f10ed4609dd8848514bef3dfd9990",
+        "source": "plugin.yaml",
+        "final_output_sha256": "ae0e272087b025df8a5eb2b3023284bcf9a2bd70a6de66198cb194a04ea0a21f",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "da57abd8b5f627b94950f7b3bf61ae316a6f10ed4609dd8848514bef3dfd9990"
+      },
+      {
+        "destination": "policy.py",
+        "input_sha256": "8baaf9bc5736a754cb9017aba5588b6521afecd6ed81625aed8325fd6ce0bc08",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7633836ca396c4d5d4d89859f8332b8271ac432b1483edeaa74c4b7bde399c2f",
+        "source": "policy.py",
+        "final_output_sha256": "7633836ca396c4d5d4d89859f8332b8271ac432b1483edeaa74c4b7bde399c2f",
+        "cli_destination": "policy.py",
+        "previous_staging_sha256": "7633836ca396c4d5d4d89859f8332b8271ac432b1483edeaa74c4b7bde399c2f"
+      },
+      {
+        "destination": "skills/fleet-policy-admin/SKILL.md",
+        "input_sha256": "0af2f4c591a4a153e5646118e1dd4dd8b1d83e208fee7c2eabc285f4fb05698c",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "3fbc203bd97c15d7b36ef2e15da9a8968876b8572a521e26a4b9b2d9d6569aac",
+        "source": "skills/fleet-policy-admin/SKILL.md",
+        "final_output_sha256": "3fbc203bd97c15d7b36ef2e15da9a8968876b8572a521e26a4b9b2d9d6569aac",
+        "cli_destination": "skills/fleet-policy-admin/SKILL.md",
+        "previous_staging_sha256": "3fbc203bd97c15d7b36ef2e15da9a8968876b8572a521e26a4b9b2d9d6569aac"
+      },
+      {
+        "destination": "skills/recurring-tasks/SKILL.md",
+        "input_sha256": "8e2b5c84afa45a5015550f04cfb982078b9316b21b99413fbcd131f7de60ca54",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "0c6cd2bb5887a4c15052b022993b726a9e6634fea40a65a99b0e7ac5a3537b5b",
+        "source": "skills/recurring-tasks/SKILL.md",
+        "final_output_sha256": "0c6cd2bb5887a4c15052b022993b726a9e6634fea40a65a99b0e7ac5a3537b5b",
+        "cli_destination": "skills/recurring-tasks/SKILL.md",
+        "previous_staging_sha256": "0c6cd2bb5887a4c15052b022993b726a9e6634fea40a65a99b0e7ac5a3537b5b"
+      },
+      {
+        "destination": "store.py",
+        "input_sha256": "bc0ab50163df80e40d821c4dd8649a63867d92973ca90f3f7b6ff86c9def967d",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "7e8e9770e29b015d3f0b352b8b8319b379a35bddd403ca90e8749558341aee7c",
+        "source": "store.py",
+        "final_output_sha256": "7e8e9770e29b015d3f0b352b8b8319b379a35bddd403ca90e8749558341aee7c",
+        "cli_destination": "store.py",
+        "previous_staging_sha256": "7e8e9770e29b015d3f0b352b8b8319b379a35bddd403ca90e8749558341aee7c"
+      },
+      {
+        "destination": "watch.py",
+        "input_sha256": "f35a40c365fa393a089f929948ded68173f232ecfa4842215bda1199a37920f3",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "239b521d048921078ed4f010ee6251b50fd6b3e88c311592efe35c5fd4c46d68",
+        "source": "watch.py",
+        "final_output_sha256": "239b521d048921078ed4f010ee6251b50fd6b3e88c311592efe35c5fd4c46d68",
+        "cli_destination": "watch.py",
+        "previous_staging_sha256": "239b521d048921078ed4f010ee6251b50fd6b3e88c311592efe35c5fd4c46d68"
+      }
+    ],
+    "manifest_sha256": "dd1074d13514d5e45582f90f49aa807adbb89a686c1a1e60f2ab4e178460e4cd",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    "__init__.py": "fleet_policy/__init__.py",
+    "__main__.py": "fleet_policy/__main__.py",
+    "_upstream_legal/LICENSE": "LICENSE",
+    "cli.py": "fleet_policy/cli.py",
+    "cost.py": "fleet_policy/cost.py",
+    "extract.py": "fleet_policy/extract.py",
+    "observer.py": "fleet_policy/observer.py",
+    "plugin.yaml": "fleet_policy/plugin.yaml",
+    "policy.py": "fleet_policy/policy.py",
+    "skills/fleet-policy-admin/SKILL.md": "fleet_policy/skills/fleet-policy-admin/SKILL.md",
+    "skills/recurring-tasks/SKILL.md": "fleet_policy/skills/recurring-tasks/SKILL.md",
+    "store.py": "fleet_policy/store.py",
+    "watch.py": "fleet_policy/watch.py"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "fleet-policy",
+    "python_files_compiled": 9,
+    "secret_findings": 0
+  },
+  "canonical_slug": "fleet-policy",
+  "catalog_file": "src/plugin-catalog/fleet-policy.yaml",
+  "identity": {
+    "catalog_id": "fleet-policy",
+    "canonical_slug": "fleet-policy",
+    "original_manifest_name": "fleet-policy",
+    "rebranded_manifest_name": "fleet-policy",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "90ced6364216137ac0096f2e52b0bc8a98f5526441c920921458a449f5ef74f7",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "plugin.yaml",
+          "after_path": "plugin.yaml",
+          "before_sha256": "da57abd8b5f627b94950f7b3bf61ae316a6f10ed4609dd8848514bef3dfd9990",
+          "after_sha256": "ae0e272087b025df8a5eb2b3023284bcf9a2bd70a6de66198cb194a04ea0a21f",
+          "before_bytes": 1266,
+          "after_bytes": 1251,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

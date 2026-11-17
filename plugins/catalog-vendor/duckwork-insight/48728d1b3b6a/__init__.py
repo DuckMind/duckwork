@@ -1,0 +1,359 @@
+import argparse, base64, json, os, sys
+
+_payload_cache = None
+
+
+def _payload():
+    global _payload_cache
+    if _payload_cache is None:
+        from duckwork_cli.inventory import build_models_payload, load_picker_context
+        _payload_cache = build_models_payload(load_picker_context(), explicit_only=False, include_unconfigured=True, refresh=False)
+    return _payload_cache
+
+
+def _prov_cfg(slug):
+    try:
+        import yaml
+        from duckwork_constants import get_duckwork_home
+        p = get_duckwork_home() / "config.yaml"
+        if os.path.exists(p):
+            with open(p) as f:
+                return ((yaml.safe_load(f) or {}).get("providers") or {}).get(slug) or {}
+    except Exception:
+        pass
+    return {}
+
+
+def _provider_models_fast(slug):
+    try:
+        return [str(m) for m in (_prov_cfg((slug or "").replace("custom:", "")).get("models") or [])]
+    except Exception:
+        return []
+
+
+def _provider_models(slug):
+    try:
+        return [str(m) for m in next((p.get("models") or []) for p in (_payload().get("providers") or []) if p.get("slug") == slug)]
+    except Exception:
+        return []
+
+
+def _models_by_base_url(base_url):
+    try:
+        want = str(base_url or "").rstrip("/")
+        for p in _payload().get("providers") or []:
+            u = str(p.get("api_url") or p.get("base_url") or "").rstrip("/")
+            if u and u == want:
+                return [str(m) for m in (p.get("models") or [])]
+    except Exception:
+        pass
+    return []
+
+
+def _qualify_model(model_id, runtime):
+    if not model_id:
+        return ""
+    slug = (runtime.get("provider") or "").replace("custom:", "")
+    known = _provider_models_fast(slug) or _provider_models(slug) or _models_by_base_url(runtime.get("base_url") or "")
+    if known and model_id not in known:
+        cands = [m for m in known if m == model_id or m.endswith("/" + model_id)]
+        if cands:
+            return cands[0]
+    if not known and "/" not in model_id:
+        return _prov_cfg(slug).get("model") or model_id
+    return model_id
+
+
+def _list_providers():
+    return [{
+        "id": r.get("slug") or r.get("provider_id") or r.get("id") or "",
+        "name": r.get("name") or r.get("slug") or "",
+        "base_url": r.get("api_url") or r.get("base_url") or "",
+        "models": r.get("models") or [],
+    } for r in _payload().get("providers") or []]
+
+
+def _searxng_rows(term, limit=5):
+    try:
+        import httpx
+        import yaml
+        from duckwork_constants import get_duckwork_home
+        url = ""
+        p = get_duckwork_home() / "config.yaml"
+        if os.path.exists(p):
+            with open(p) as f:
+                url = str(((yaml.safe_load(f) or {}).get("web") or {}).get("searxng_url") or "")
+        url = (url or os.environ.get("SEARXNG_URL") or "").rstrip("/")
+        if not url:
+            return []
+        r = httpx.get(url + "/search", params={"q": term, "format": "json"}, timeout=10.0)
+        pool = []
+        for x in (r.json().get("results") or []):
+            link = x.get("url") or ""
+            if not link:
+                continue
+            pool.append({
+                "title": x.get("title") or "",
+                "url": link,
+                "content": (x.get("content") or "")[:300],
+                "image": x.get("thumbnail") or x.get("img_src") or "",
+            })
+        with_img = [p for p in pool if p["image"] and not _is_listing(p["url"])]
+        picked = []
+        for p in with_img + [p for p in pool if p not in with_img]:
+            if len(picked) >= limit:
+                break
+            picked.append(p)
+        return picked
+    except Exception:
+        return []
+
+
+def _is_listing(url):
+    u = str(url or "").lower()
+    return any(t in u for t in ("/s?", "/search", "/suche", "/suchergebnis", "?k=", "/results", "/catalogsearch"))
+
+
+def _inline_image(url):
+    try:
+        import httpx
+        from urllib.parse import urljoin
+        from tools.url_safety import is_safe_url
+        for _ in range(4):
+            if not is_safe_url(url):
+                return ""
+            with httpx.stream("GET", url, timeout=6.0, follow_redirects=False) as r:
+                if r.is_redirect:
+                    loc = r.headers.get("location") or ""
+                    if not loc:
+                        return ""
+                    url = urljoin(url, loc)
+                    continue
+                if r.status_code != 200:
+                    return ""
+                mime = (r.headers.get("content-type") or "").split(";")[0].strip().lower()
+                if not mime.startswith("image/"):
+                    return ""
+                buf = b""
+                for chunk in r.iter_bytes():
+                    buf += chunk
+                    if len(buf) > 400000:
+                        return ""
+                return "data:" + mime + ";base64," + base64.b64encode(buf).decode()
+        return ""
+    except Exception:
+        return ""
+
+
+def _search(term):
+    from tools.web_tools import web_search_tool
+    try:
+        data = json.loads(web_search_tool(term, limit=4))
+    except Exception:
+        data = {}
+    rows = [{
+        "title": x.get("title") or "",
+        "url": x.get("url") or x.get("href") or "",
+        "content": (x.get("description") or x.get("snippet") or "")[:300],
+        "image": x.get("image") or x.get("img_src") or x.get("thumbnail") or "",
+    } for x in ((data.get("data") or {}).get("web") or [])[:5]]
+    if not any(r["image"] for r in rows):
+        rows = _searxng_rows(term) or rows
+    for r in rows:
+        if r["image"] and _is_listing(r["url"]):
+            r["image"] = ""
+    targets = [i for i, r in enumerate(rows) if r["image"]]
+    if targets:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=len(targets)) as ex:
+            for i, data in zip(targets, ex.map(lambda i: _inline_image(rows[i]["image"]), targets)):
+                rows[i]["image"] = data
+    return rows
+
+
+def _extract(url):
+    import asyncio
+    from tools.web_tools import web_extract_tool
+    try:
+        data = json.loads(asyncio.run(web_extract_tool(urls=[url])))
+        results = data.get("results") or []
+        if results and results[0].get("content"):
+            return results[0]["content"][:1200]
+    except Exception:
+        pass
+    return ""
+
+
+def _session_runtime(session_id):
+    try:
+        from tui_gateway.server import _sessions, _main_runtime_from_agent
+        session = _sessions.get(session_id or "")
+        agent = session.get("agent") if session else None
+        rt = _main_runtime_from_agent(agent) if agent else None
+        if rt:
+            return rt
+        mo = session.get("model_override") if session else None
+        if isinstance(mo, dict):
+            return {"provider": mo.get("provider") or "", "model": mo.get("model") or ""}
+    except Exception:
+        pass
+    try:
+        from duckwork_cli.inventory import load_picker_context
+        ctx = load_picker_context()
+        if ctx.current_provider and ctx.current_model:
+            return {"provider": ctx.current_provider, "model": ctx.current_model}
+    except Exception:
+        pass
+    return None
+
+
+def _stream_complete(term, template, provider, model, session_id, do_search, emit):
+    found = _search(term) if do_search else []
+    found.sort(key=lambda s: not s.get("image"))
+    sources = found[:2]
+    if sources:
+        emit("sources", sources)
+
+    system = template or 'Define "{term}" for a knowledgeable general audience.'
+    user_prompt = term
+    ctx = "\n".join(f"[{i+1}] {s['title']} — {s['url']}" for i, s in enumerate(sources) if s.get("url"))
+    if ctx:
+        user_prompt += "\n\nSearch results (cite EXACTLY TWO of them inline like [1], [2] — never more, never invented sources):\n" + ctx
+        user_prompt += "\nThe app attaches a source image automatically when one is available. Do not embed a markdown image."
+
+    provider_name = provider
+    if provider:
+        from duckwork_cli.runtime_provider import resolve_runtime_provider
+        runtime = resolve_runtime_provider(requested=provider, target_model=model or None)
+    else:
+        runtime = _session_runtime(session_id)
+        provider_name = (runtime or {}).get("provider") or ""
+
+    if runtime and provider_name:
+        try:
+            from duckwork_cli.runtime_provider import resolve_runtime_provider
+            fresh = resolve_runtime_provider(requested=provider_name, target_model=model or None)
+            if fresh and fresh.get("base_url"):
+                runtime = {**runtime, **{k: fresh[k] for k in ("base_url", "api_key", "api_mode") if fresh.get(k)}}
+        except Exception:
+            pass
+
+    if not runtime or not runtime.get("base_url"):
+        from agent.oneshot import run_oneshot
+        text = run_oneshot(instructions=system, user_input=user_prompt, max_tokens=1200, temperature=0.3, timeout=120.0)
+        emit("delta", text)
+        emit("done", {"text": text, "sources": sources})
+        return
+
+    base_url = str(runtime.get("base_url") or "").rstrip("/")
+    api_key = runtime.get("api_key") or ""
+    model_id = model or runtime.get("model") or ""
+    if model_id:
+        model_id = _qualify_model(model_id, runtime)
+    if not model_id:
+        model_id = _prov_cfg((runtime.get("provider") or "").replace("custom:", "")).get("model") or ""
+    if not model_id:
+        known = _provider_models_fast((runtime.get("provider") or "").replace("custom:", "")) or _provider_models((runtime.get("provider") or "").replace("custom:", "")) or _models_by_base_url(base_url)
+        if known:
+            model_id = known[0]
+    if not model_id:
+        raise RuntimeError("No model could be resolved for this provider. Pick a provider+model in the panel.")
+
+    import httpx
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    def stream_once(msgs, label):
+        acc = ""
+        tool_calls = []
+        with httpx.stream("POST", base_url + "/chat/completions", headers=headers, json={
+            "model": model_id, "stream": True, "max_tokens": 1200, "temperature": 0.3, "messages": msgs,
+        }, timeout=120.0) as resp:
+            if resp.status_code != 200:
+                raise RuntimeError(f"{label} HTTP {resp.status_code}: {resp.read().decode('utf-8', 'replace')[:400]}")
+            resp.raise_for_status()
+            for line in resp.iter_lines():
+                if not line or not line.startswith("data: "):
+                    continue
+                payload = line[6:]
+                if payload.strip() == "[DONE]":
+                    break
+                try:
+                    chunk = json.loads(payload)
+                except Exception:
+                    continue
+                choices = chunk.get("choices") or []
+                if not choices:
+                    continue
+                delta = choices[0].get("delta") or {}
+                txt = delta.get("content") or ""
+                if txt:
+                    acc += txt
+                    emit("delta", txt)
+                tool_calls.extend(delta.get("tool_calls") or [])
+        return acc, tool_calls
+
+    acc, tool_calls = stream_once(messages, "provider")
+    url = ""
+    for tc in tool_calls:
+        try:
+            url = json.loads((tc.get("function") or {}).get("arguments") or "{}").get("url") or ""
+        except Exception:
+            pass
+    if url:
+        emit("extract", {"url": url})
+        content = _extract(url)
+        emit("extract_done", {"url": url, "len": len(content)})
+        messages = messages + [
+            {"role": "assistant", "content": acc or "", "tool_calls": tool_calls},
+            {"role": "tool", "tool_call_id": str((tool_calls[0] or {}).get("id") or "call_0"), "content": content or "extraction failed"},
+        ]
+        acc2, _ = stream_once(messages, "provider follow-up")
+        acc = acc2 or acc
+
+    emit("done", {"text": acc, "sources": sources})
+
+
+def _setup(sub: argparse.ArgumentParser) -> None:
+    sub.add_argument("--term", default="", help="Term to define")
+    sub.add_argument("--template", default="", help="Format template (the only system instruction)")
+    sub.add_argument("--provider", default="", help="Provider id")
+    sub.add_argument("--model", default="", help="Model id")
+    sub.add_argument("--search", default="0", help="1 = run web search first")
+    sub.add_argument("--list-providers", action="store_true", help="Print the provider list as JSON and exit")
+
+
+def _handler(args: argparse.Namespace) -> None:
+    try:
+        if getattr(args, "list_providers", False) or not args.term:
+            out = {"providers": _list_providers()}
+        else:
+            events = []
+
+            def emit(event, data):
+                events.append({"event": event, "data": data})
+
+            _stream_complete(
+                args.term, args.template or "", args.provider or "", args.model or "",
+                "", str(args.search or "").strip() in ("1", "true", "yes"), emit,
+            )
+            out = {"events": events}
+    except Exception as e:
+        out = {"error": f"{type(e).__name__}: {e}", "text": "", "sources": []}
+    print(json.dumps(out, ensure_ascii=False))
+
+
+def register(ctx) -> None:
+    ctx.register_cli_command(
+        name="insight",
+        help="Stateless definition backend for the Selection Definition plugin",
+        description="Stateless, provider-backed completions with optional web search, exposed as `duckwork insight`.",
+        setup_fn=_setup,
+        handler_fn=_handler,
+    )

@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set — a small print-room work desk</title>
+<!-- Direction: OPERATE. A print shop's job jacket becomes an open, two-pane
+work desk, not a metric dashboard. Midnight navigation, blue stock and a solid
+selection edge distinguish location from written status. Select a job, inspect its
+production brief, and edit a session-only status or note. On small screens the
+job list precedes the inspector in DOM and visual order; anchors connect them.
+All jobs are fictional; no persistence, collaboration or backend is implied. -->
+<style>
+/* Baseline: one complete column. Enhancements never hide a task. */
+:root {
+  color-scheme: light;
+  --ink: #172b3e;
+  --paper: #f4f6f8;
+  --stock: #e4ebf0;
+  --line: #9baab8;
+  --orange: #fbb47c;
+  --muted: #344e63;
+  --focus: #a33d0b;
+  --gutter: clamp(1rem, 3vw, 2.5rem);
+}
+* { box-sizing: border-box; }
+html { scroll-padding-block-start: 1.5rem; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font: 1rem/1.55 Arial, Helvetica, sans-serif;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button, a, select { touch-action: manipulation; }
+button { cursor: pointer; }
+a { color: inherit; text-underline-offset: .2em; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+[hidden] { display: none !important; }
+.skip {
+  position: absolute;
+  inset-block-start: -10rem;
+  inset-inline-start: 1rem;
+  z-index: 5;
+  background: var(--paper);
+  padding: .75rem;
+}
+.skip:focus { inset-block-start: .75rem; }
+.shell { display: grid; grid-template-columns: 12rem minmax(0, 1fr); min-block-size: 100vh; }
+.sidebar {
+  background: var(--ink);
+  color: var(--stock);
+  padding: 2rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.5rem;
+}
+.brand { font-weight: 900; font-size: 3.5rem; line-height: 1; letter-spacing: -.08em; text-decoration: none; }
+.brand span { color: var(--orange); }
+.sidebar p { margin: .75rem 0 0; font-size: .8125rem; color: #c0cedb; max-inline-size: 17ch; }
+.sidebar nav { inline-size: 100%; display: grid; gap: .5rem; }
+.sidebar nav a { padding: .75rem; text-decoration: none; border: 1px solid transparent; }
+.sidebar nav a[aria-current] { border-color: #8295a6; background: #273e53; color: white; }
+.sidebar nav a:hover { background: #273e53; }
+.sidebar .gallery { font-size: .8125rem; }
+.sidebar :focus-visible { outline-color: var(--orange); }
+.main { min-inline-size: 0; container: desk / inline-size; }
+.notice { background: var(--stock); border-block-end: 1px solid var(--line); padding: .75rem var(--gutter); color: var(--muted); font-size: .8125rem; }
+.notice strong { color: var(--ink); }
+.head { padding: 2.5rem var(--gutter) 2rem; display: flex; flex-wrap: wrap; gap: 1rem 2rem; align-items: end; }
+.head > div { flex: 1 1 20rem; min-inline-size: 0; }
+.head h1 { font-size: clamp(2rem, 1.5rem + 1.5vw, 3rem); line-height: 1.1; letter-spacing: -.035em; margin: 0 0 .75rem; text-wrap: balance; }
+.head p { color: var(--muted); margin: 0; font-size: .9375rem; max-inline-size: 60ch; }
+.head .room { font-size: .8125rem; border-block-end: 1px solid var(--ink); padding-block-end: .4rem; }
+.workbench { margin-inline: var(--gutter); display: grid; grid-template-columns: minmax(0, 1fr); border: 1px solid var(--line); align-items: start; }
+.queue { min-inline-size: 0; background: var(--stock); }
+.queue-head { padding: 1.5rem; border-block-end: 1px solid var(--line); }
+h2 { font-size: 1.125rem; letter-spacing: -.02em; margin: 0 0 .75rem; }
+.filters label, .edit-form label { display: block; font-size: .8125rem; margin: .75rem 0 .375rem; }
+.filters input, .filters select, .edit-form textarea, .edit-form select {
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: .625rem .75rem;
+  border: 1px solid #6c8294;
+  background: var(--paper);
+  border-radius: .125rem;
+}
+.filters-row { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+.filters-row > div { flex: 1 1 10rem; min-inline-size: 0; }
+.filters button, .empty button { background: transparent; border: 1px solid #6c8294; padding: .625rem .75rem; }
+.filters button:hover, .empty button:hover { background: var(--ink); color: white; }
+.result { font-size: .8125rem; margin: .875rem 0 0; color: var(--muted); }
+.jobs { list-style: none; margin: 0; padding: 0; }
+.job-link { display: block; text-decoration: none; padding: 1.5rem; border-block-end: 1px solid var(--line); border-inline-start: .25rem solid transparent; }
+.job-link:hover { background: #d5e0e9; }
+.job-link[aria-current] { background: var(--paper); border-inline-start-color: var(--ink); }
+.job-link .code { font-size: .75rem; display: block; margin-block-end: .5rem; }
+.job-link strong { font-size: 1.25rem; letter-spacing: -.02em; line-height: 1.3; display: block; }
+.job-link .job-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem .75rem; margin-block-start: 1rem; font-size: .8125rem; }
+.badge { display: inline-block; border: 1px solid #6c8294; padding-inline: .375rem; background: var(--paper); color: var(--ink); }
+.queue-foot { font-size: .8125rem; color: var(--muted); margin: 0; padding: 1.25rem 1.5rem; }
+.empty { padding: 1.5rem; }
+.empty p { margin-block-start: 0; }
+.inspector { border-block-start: 1px solid var(--line); min-inline-size: 0; padding: 1.75rem; }
+.jacket { scroll-margin-block-start: 1.5rem; }
+.jacket header { display: flex; justify-content: space-between; gap: .75rem; align-items: start; border-block-end: 1px solid var(--line); padding-block-end: 1.25rem; margin-block-end: 1.25rem; }
+.jacket header > div { min-inline-size: 0; }
+.jacket .code { font-size: .8125rem; }
+.jacket h2 { font-size: clamp(1.75rem, 1.4rem + .65vw, 2.25rem); line-height: 1.2; letter-spacing: -.035em; margin: .5rem 0 0; text-wrap: balance; }
+.registration { inline-size: 2.75rem; block-size: 2.75rem; flex-shrink: 0; }
+.jacket > p { color: var(--muted); max-inline-size: 55ch; }
+.specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); margin-block: 1.75rem; gap: .5rem 1.25rem; }
+.specs div { display: grid; grid-template-rows: auto 1fr; border-block-start: 1px solid var(--line); padding-block: .75rem; gap: .375rem; }
+.specs dt { font-size: .8125rem; color: var(--muted); }
+.specs dd { margin: 0; font-size: .9375rem; }
+.preview { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin: 1.75rem 0; padding-block: 1.25rem; border-block: 1px solid var(--line); }
+.preview svg { inline-size: 5.625rem; block-size: 6.875rem; flex-shrink: 0; }
+.preview figcaption { font-size: .8125rem; max-inline-size: 24ch; }
+.note-heading { font-size: .875rem; margin: 0; }
+.saved-note { font-size: .9375rem; overflow-wrap: anywhere; }
+.edit-form { border-block-start: 1px solid var(--line); margin-block-start: 1.5rem; padding-block-start: 1rem; }
+.edit-form textarea { resize: vertical; min-block-size: 6rem; }
+.edit-form button { background: var(--ink); color: white; border: 1px solid var(--ink); padding: .75rem 1rem; margin-block-start: 1rem; }
+.edit-form button:hover { background: #304c64; }
+.session-state { font-size: .8125rem; color: var(--muted); min-block-size: 1.5em; }
+.return { font-size: .875rem; display: inline-block; padding-block: .75rem; margin-block-start: .75rem; }
+.support { margin: 3rem var(--gutter) 0; display: grid; gap: 2rem; }
+.support section { border-block-start: 2px solid var(--ink); padding-block-start: 1.25rem; scroll-margin-block-start: 1.5rem; min-inline-size: 0; }
+.support h2 { font-size: 1.5rem; }
+.support p, .support li, .support dd { font-size: .9375rem; color: var(--muted); }
+.material-list { margin-block: 1.25rem; }
+.material-list dt { font-weight: bold; margin-block-start: 1rem; font-size: .9375rem; }
+.material-list dd { margin: .25rem 0; }
+.log { padding-inline-start: 1.25rem; }
+.log li { padding-block: .375rem; }
+.footer { padding: 2rem var(--gutter); font-size: .8125rem; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+.nojs { margin: 0 var(--gutter) 1.25rem; font-size: .875rem; }
+p, h1, h2, h3, a, dd, dt, button, label { overflow-wrap: anywhere; }
+@supports (grid-template-rows: subgrid) {
+  .specs div { grid-row: span 2; grid-template-rows: subgrid; }
+}
+@container desk (min-width: 52rem) {
+  .workbench { grid-template-columns: minmax(16rem, .85fr) minmax(0, 1.15fr); }
+  .inspector { border-block-start: 0; border-inline-start: 1px solid var(--line); }
+  .support { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.5rem; }
+}
+@media (min-width: 110rem) {
+  .shell { max-inline-size: 110rem; margin-inline: auto; }
+}
+@media (max-width: 60rem) {
+  .shell { display: block; }
+  .sidebar { padding: 1.25rem var(--gutter); gap: 1.25rem; }
+  .sidebar > div { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  .brand { font-size: 2.75rem; }
+  .sidebar p { margin: 0; max-inline-size: none; }
+  .sidebar nav { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+  .sidebar nav a { font-size: .875rem; padding: .625rem .75rem; }
+  .head { padding-block: 2rem; }
+}
+@media (max-width: 30rem) {
+  :root { --gutter: min(1rem, 5vw); }
+  .inspector, .queue-head, .job-link { padding: min(1.25rem, 5vw); }
+  .registration { display: none; } /* Decorative print registration mark. */
+}
+@media (prefers-reduced-motion: no-preference) {
+  .job-link { transition: background-color 120ms ease; }
+}
+@media (forced-colors: active) {
+  .job-link[aria-current] { border-inline-start-color: Highlight; }
+  :focus-visible, .sidebar :focus-visible { outline-color: Highlight; }
+  .sidebar nav a[aria-current] { border-color: Highlight; }
+}
+</style></head>
+<body>
+<a class="skip" href="#desk">Skip to work desk</a>
+<div class="shell">
+<aside class="sidebar">
+<div>
+<a class="brand" href="#desk" aria-label="Set work desk">set<span>—</span>
+</a>
+<p>A small print-room work desk</p>
+</div>
+<nav aria-label="Workspace">
+<a href="#desk" aria-current="location">Work desk</a>
+<a href="#materials">Materials</a>
+<a href="#session-log">Session log</a>
+<a class="gallery" href="index.html">All demos ↗</a>
+</nav>
+</aside>
+<main class="main" id="desk">
+<div class="notice">
+<strong>Session-only working demo.</strong> Fictional jobs. Edits stay in this tab; reload resets them.</div>
+<header class="head">
+<div>
+<h1>Make room for the work.</h1>
+<p>Select a job jacket. Review the brief. Leave the next person a useful note.</p>
+</div>
+<span class="room">Print room / Work desk</span>
+</header>
+<noscript>
+<p class="nojs">All four job jackets are readable below. Editing and filters require JavaScript; nothing is sent or saved.</p>
+</noscript>
+<div class="workbench">
+<section class="queue" id="work-list" aria-labelledby="queue-title">
+<div class="queue-head">
+<h2 id="queue-title">On the worktable</h2>
+<form class="filters" role="search" hidden>
+<label for="job-search">Find a job</label>
+<input type="search" id="job-search" placeholder="Title, stock or job number" autocomplete="off">
+<div class="filters-row">
+<div>
+<label for="status-filter">Show status</label>
+<select id="status-filter">
+<option value="all">All statuses</option>
+<option value="In progress">In progress</option>
+<option value="Needs review">Needs review</option>
+<option value="Ready for press">Ready for press</option>
+</select>
+</div>
+<button type="reset">Reset</button>
+</div>
+<p class="result" id="filter-state" aria-live="polite">4 jobs. Select one to open its jacket.</p>
+</form>
+</div>
+<ul class="jobs">
+<li>
+<a class="job-link" href="#job-atlas" data-status="In progress">
+<span class="code">J—014 / Edition</span>
+<strong>Atlas of small places</strong>
+<span class="job-meta">
+<span>Uncoated / 2 inks</span>
+<span class="badge">In progress</span>
+</span>
+</a>
+</li>
+<li>
+<a class="job-link" href="#job-imprint" data-status="Needs review">
+<span class="code">J—015 / Identity</span>
+<strong>A useful imprint</strong>
+<span class="job-meta">
+<span>Cotton / 1 ink</span>
+<span class="badge">Needs review</span>
+</span>
+</a>
+</li>
+<li>
+<a class="job-link" href="#job-fold" data-status="Ready for press">
+<span class="code">J—016 / Folded matter</span>
+<strong>One sheet, six rooms</strong>
+<span class="job-meta">
+<span>Recycled / 2 inks</span>
+<span class="badge">Ready for press</span>
+</span>
+</a>
+</li>
+<li>
+<a class="job-link" href="#job-proof" data-status="Needs review">
+<span class="code">J—017 / Test sheet</span>
+<strong>The overprint study</strong>
+<span class="job-meta">
+<span>Uncoated / 3 inks</span>
+<span class="badge">Needs review</span>
+</span>
+</a>
+</li>
+</ul>
+<div class="empty" hidden>
+<p>No jobs match these filters. Your open jacket has not changed.</p>
+<button type="button" id="clear-filters">Show all jobs</button>
+</div>
+<p class="queue-foot">A job’s status is written out, not encoded by color.</p>
+</section>
+<div class="inspector" aria-label="Job jackets">
+<article class="jacket" id="job-atlas">
+<header>
+<div>
+<span class="code">J—014 / Edition</span>
+<h2>Atlas of small places</h2>
+</div>
+<svg class="registration" viewBox="0 0 44 44" aria-hidden="true">
+<circle cx="22" cy="22" r="13" fill="none" stroke="currentColor"/>
+<path d="M22 0v44M0 22h44" stroke="currentColor"/>
+</svg>
+</header>
+<p>A pocket atlas of overlooked public spaces. Two colors, generous margins, and enough room to write your own coordinates.</p>
+<dl class="specs">
+<div>
+<dt>Stock</dt>
+<dd>Uncoated, 120 gsm</dd>
+</div>
+<div>
+<dt>Format</dt>
+<dd>A6 / 24 pages</dd>
+</div>
+<div>
+<dt>Ink</dt>
+<dd>Deep blue + warm red</dd>
+</div>
+<div>
+<dt>Current status</dt>
+<dd class="current-status">In progress</dd>
+</div>
+</dl>
+<figure class="preview">
+<svg viewBox="0 0 90 110" role="img" aria-label="Original illustrative cover proof for the atlas">
+<path fill="#193b54" d="M0 0h90v110H0z"/>
+<path fill="none" stroke="#fbb47c" stroke-width="1.5" d="M-5 86L70 8 99 35 11 117M-5 64L58-2M30 115L99 50M15-2v117M55-2v117"/>
+<circle fill="#fbb47c" cx="55" cy="66" r="14"/>
+<path stroke="#193b54" d="M55 56v20M45 66h20"/>
+</svg>
+<figcaption>Cover working proof.<br>Original SVG, illustrative.<br>Not a press-ready file.</figcaption>
+</figure>
+<h3 class="note-heading">Handoff note</h3>
+<p class="saved-note">Check the map key at actual size before the next proof.</p>
+<form class="edit-form" hidden>
+<label for="atlas-status">Job status</label>
+<select id="atlas-status" name="status">
+<option>In progress</option>
+<option>Needs review</option>
+<option>Ready for press</option>
+</select>
+<label for="atlas-note">Handoff note</label>
+<textarea id="atlas-note" name="note" maxlength="600">Check the map key at actual size before the next proof.</textarea>
+<button type="submit">Apply to this session</button>
+<p class="session-state" aria-live="polite">Nothing is saved outside this tab.</p>
+</form>
+<a class="return" href="#work-list">↑ Back to the worktable</a>
+</article>
+<article class="jacket" id="job-imprint">
+<header>
+<div>
+<span class="code">J—015 / Identity</span>
+<h2>A useful imprint</h2>
+</div>
+</header>
+<p>A quiet stationery mark for an imagined lending library. A single deep-blue impression on warm cotton stock.</p>
+<dl class="specs">
+<div>
+<dt>Stock</dt>
+<dd>Cotton, 300 gsm</dd>
+</div>
+<div>
+<dt>Format</dt>
+<dd>85 × 55 mm</dd>
+</div>
+<div>
+<dt>Ink</dt>
+<dd>Deep blue</dd>
+</div>
+<div>
+<dt>Current status</dt>
+<dd class="current-status">Needs review</dd>
+</div>
+</dl>
+<h3 class="note-heading">Handoff note</h3>
+<p class="saved-note">Review the fine rules for fill-in on the cotton stock.</p>
+<form class="edit-form" hidden>
+<label for="imprint-status">Job status</label>
+<select id="imprint-status" name="status">
+<option>In progress</option>
+<option selected>Needs review</option>
+<option>Ready for press</option>
+</select>
+<label for="imprint-note">Handoff note</label>
+<textarea id="imprint-note" name="note" maxlength="600">Review the fine rules for fill-in on the cotton stock.</textarea>
+<button type="submit">Apply to this session</button>
+<p class="session-state" aria-live="polite">Nothing is saved outside this tab.</p>
+</form>
+<a class="return" href="#work-list">↑ Back to the worktable</a>
+</article>
+<article class="jacket" id="job-fold">
+<header>
+<div>
+<span class="code">J—016 / Folded matter</span>
+<h2>One sheet, six rooms</h2>
+</div>
+</header>
+<p>A small exhibition guide that unfolds into a room plan. Fold order is the navigation: outside to inside, entrance to last room.</p>
+<dl class="specs">
+<div>
+<dt>Stock</dt>
+<dd>Recycled, 100 gsm</dd>
+</div>
+<div>
+<dt>Format</dt>
+<dd>A3 / six-panel fold</dd>
+</div>
+<div>
+<dt>Ink</dt>
+<dd>Deep blue + ochre</dd>
+</div>
+<div>
+<dt>Current status</dt>
+<dd class="current-status">Ready for press</dd>
+</div>
+</dl>
+<h3 class="note-heading">Handoff note</h3>
+<p class="saved-note">Fold dummy checked. Keep the entrance panel on the outside.</p>
+<form class="edit-form" hidden>
+<label for="fold-status">Job status</label>
+<select id="fold-status" name="status">
+<option>In progress</option>
+<option>Needs review</option>
+<option selected>Ready for press</option>
+</select>
+<label for="fold-note">Handoff note</label>
+<textarea id="fold-note" name="note" maxlength="600">Fold dummy checked. Keep the entrance panel on the outside.</textarea>
+<button type="submit">Apply to this session</button>
+<p class="session-state" aria-live="polite">Nothing is saved outside this tab.</p>
+</form>
+<a class="return" href="#work-list">↑ Back to the worktable</a>
+</article>
+<article class="jacket" id="job-proof">
+<header>
+<div>
+<span class="code">J—017 / Test sheet</span>
+<h2>The overprint study</h2>
+</div>
+</header>
+<p>Three inks meet on one test sheet. This jacket is a reminder to compare the overlaps, not just the separate colors.</p>
+<dl class="specs">
+<div>
+<dt>Stock</dt>
+<dd>Uncoated, 140 gsm</dd>
+</div>
+<div>
+<dt>Format</dt>
+<dd>A4 / single sheet</dd>
+</div>
+<div>
+<dt>Ink</dt>
+<dd>Blue + red + ochre</dd>
+</div>
+<div>
+<dt>Current status</dt>
+<dd class="current-status">Needs review</dd>
+</div>
+</dl>
+<h3 class="note-heading">Handoff note</h3>
+<p class="saved-note">Compare the three-ink overlap under neutral light.</p>
+<form class="edit-form" hidden>
+<label for="proof-status">Job status</label>
+<select id="proof-status" name="status">
+<option>In progress</option>
+<option selected>Needs review</option>
+<option>Ready for press</option>
+</select>
+<label for="proof-note">Handoff note</label>
+<textarea id="proof-note" name="note" maxlength="600">Compare the three-ink overlap under neutral light.</textarea>
+<button type="submit">Apply to this session</button>
+<p class="session-state" aria-live="polite">Nothing is saved outside this tab.</p>
+</form>
+<a class="return" href="#work-list">↑ Back to the worktable</a>
+</article>
+</div>
+</div>
+<div class="support">
+<section id="materials">
+<h2>Stock cupboard</h2>
+<p>Illustrative production notes, not inventory or supplier claims.</p>
+<dl class="material-list">
+<dt>Uncoated</dt>
+<dd>Open surface, soft color. Check small reverses on a physical proof.</dd>
+<dt>Cotton</dt>
+<dd>A tactile sheet. Fine detail needs particular attention to impression.</dd>
+<dt>Recycled</dt>
+<dd>Expect visible fibers. Fold a blank before committing the layout.</dd>
+</dl>
+<a href="#desk">↑ Work desk</a>
+</section>
+<section id="session-log">
+<h2>This tab’s handoff log</h2>
+<p>Changes appear here after you apply a status or note. Reloading clears this log.</p>
+<ol class="log" id="change-log">
+<li id="no-changes">No changes yet. Open a jacket to begin.</li>
+</ol>
+<a href="#desk">↑ Work desk</a>
+</section>
+</div>
+<footer class="footer">
+<span>Set · An original Hardlight UI demonstration</span>
+<a href="index.html">Back to the demo index ↗</a>
+</footer>
+</main>
+</div>
+<script>
+(() => {
+  const links = [...document.querySelectorAll('.job-link')];
+  const jackets = [...document.querySelectorAll('.jacket')];
+  const filterForm = document.querySelector('.filters');
+  const search = document.querySelector('#job-search');
+  const status = document.querySelector('#status-filter');
+  const result = document.querySelector('#filter-state');
+  const empty = document.querySelector('.empty');
+  let selected = 'job-atlas';
+
+  filterForm.hidden = false;
+  document.querySelectorAll('.edit-form').forEach(form => { form.hidden = false; });
+
+  function filter() {
+    const query = search.value.trim().toLocaleLowerCase();
+    let count = 0;
+    links.forEach(link => {
+      const visible = (!query || link.textContent.toLocaleLowerCase().includes(query)) &&
+        (status.value === 'all' || link.dataset.status === status.value);
+      link.parentElement.hidden = !visible;
+      if (visible) count++;
+    });
+    empty.hidden = count !== 0;
+    result.textContent = count + ' of 4 jobs shown.' +
+      (count ? ' Select a job to open its jacket.' : ' Reset filters to show all jobs.');
+  }
+
+  function select() {
+    const id = location.hash.slice(1);
+    if (!id) selected = 'job-atlas';
+    else if (jackets.some(jacket => jacket.id === id)) selected = id;
+    jackets.forEach(jacket => { jacket.hidden = jacket.id !== selected; });
+    links.forEach(link => {
+      if (link.hash === '#' + selected) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+    document.querySelectorAll('.sidebar nav a').forEach(link => {
+      const current = (id === 'materials' || id === 'session-log') ?
+        link.hash === '#' + id : link.hash === '#desk';
+      if (current) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  }
+
+  function reveal() {
+    select();
+    const target = jackets.find(jacket => '#' + jacket.id === location.hash);
+    if (!target) return;
+    target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+    // Follow actual topology, including an embedded narrow container and fallback CSS.
+    const queue = document.querySelector('.queue').getBoundingClientRect();
+    const inspector = document.querySelector('.inspector').getBoundingClientRect();
+    if (inspector.top >= queue.bottom - 1) target.scrollIntoView({ block: 'start' });
+  }
+
+  window.addEventListener('hashchange', reveal);
+  select();
+  filterForm.addEventListener('submit', event => { event.preventDefault(); filter(); });
+  search.addEventListener('input', filter);
+  status.addEventListener('change', filter);
+
+  function reset() {
+    search.value = '';
+    status.value = 'all';
+    filter();
+  }
+  filterForm.addEventListener('reset', event => { event.preventDefault(); reset(); });
+  document.querySelector('#clear-filters').addEventListener('click', () => { reset(); search.focus(); });
+
+  jackets.forEach(jacket => {
+    const form = jacket.querySelector('form');
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const next = form.elements.status.value;
+      const note = form.elements.note.value.trim();
+      jacket.querySelector('.current-status').textContent = next;
+      jacket.querySelector('.saved-note').textContent = note || 'No handoff note.';
+      const link = links.find(item => item.hash === '#' + jacket.id);
+      link.dataset.status = next;
+      link.querySelector('.badge').textContent = next;
+      form.querySelector('.session-state').textContent = 'Applied in this tab. Reload will reset this job.';
+      document.querySelector('#no-changes')?.remove();
+      const entry = document.createElement('li');
+      entry.textContent = jacket.querySelector('h2').textContent + ' — ' + next +
+        '. Note ' + (note ? 'updated.' : 'cleared.');
+      document.querySelector('#change-log').prepend(entry);
+      filter();
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Unit tests (fake NetBox, no network)
+        run: python -m unittest discover -s tests -t . -v
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+      - run: ruff format --check .
+
+  duckwork-loader:
+    # Loads the plugin through Duckwork' real PluginManager. Best-effort: Duckwork moves fast.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Fetch duckwork-agent
+        run: git clone --depth 1 https://github.com/DuckMind/duckwork /tmp/duckwork-agent
+      - name: Install duckwork-agent requirements
+        run: pip install -e /tmp/duckwork-agent
+      - name: Loader test
+        env:
+          DUCKWORK_AGENT_ROOT: /tmp/duckwork-agent
+        run: python -m unittest tests.test_plugin_load -v

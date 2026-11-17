@@ -1,0 +1,45 @@
+{
+  "grammar": "wf/1",
+  "name": "machine-watch",
+  "description": "Deterministic scheduled watcher: a machine gate polls a check command at a fixed cadence and costs ZERO tokens while parked; the run releases only when the check exits 0. LAUNCH LAW (the whole point): always launch with run args lane_key=<team>/<watch-name> — a second dispatch while the incumbent is unfinished is DEDUPED by the engine (no spawn; the incumbent's run_id comes back), so cron double-fire cannot double-run the watch. Seeds (run_context map, ALL required): 'watch_name' = human label echoed into the report; 'check_cmd' = one shell line whose exit 0 means the watched condition is clear (e.g. 'test -f /ready.flag && pgrep -f worker >/dev/null'). The bootstrap node writes check_cmd verbatim to $DUCKWORK_HOME/machine-watch-example/check_cmd.txt; the gate polls that file through a fixed probe — edit the file to retarget the watch without touching the graph. This gate has no human question: a machine wait polls only the check. Exit 0 releases; exit 1 parks as unhealthy; exit 2 parks as broken, writes a sticky probe_broken diagnostic until a genuine healthy poll, and never treats a blank command as health. The 300-second deadline fails loudly. A later dispatch of a completed lane_key is a NEW run, not a deduped retry; a scheduler that knows health is unchanged should skip dispatch while transition.claim exists; otherwise this gate parks the duplicate until bounded timeout. Human escalation belongs outside this gate. Scratch root $DUCKWORK_HOME/machine-watch-example is shared handoff state: one watch per root, or change both the bootstrap goal and the probe path together. every_s/timeout_s set poll cadence and bounded wait; choose >=30s polling for production. Keep the scratch root stable across dispatches: transition.claim is a durable at-most-once reservation written by the gate; delivered.transition is a separate acknowledgement written only after actual receiver acceptance. An observed exit-1 check re-arms the claim; exit-2 never re-arms. On a repeated healthy dispatch the gate parks rather than running report again. A scheduler may skip that duplicate only when it independently knows health has not changed; otherwise dispatch so the gate can observe an exit-1 re-arm. For a new watch use a distinct scratch root and lane_key. The report must acknowledge only after the receiver accepts the delivery; its fenced answer alone is not proof of an external notification.",
+  "provenance": {
+    "owner": "duckwork-workflows",
+    "source": "duckwork-workflows/examples/machine-watch.workflow.json"
+  },
+  "nodes": [
+    {
+      "id": "bootstrap",
+      "type": "agent",
+      "max_turns": 6,
+      "goal": "Install the watch probe. 1) mkdir -p $DUCKWORK_HOME/machine-watch-example. 2) Delete any stale state: rm -f $DUCKWORK_HOME/machine-watch-example/check_cmd.txt $DUCKWORK_HOME/machine-watch-example/last_probe.json (a leftover check from a previous watch must never poll for the wrong condition). 3) Write this exact command, verbatim, as a single line to $DUCKWORK_HOME/machine-watch-example/check_cmd.txt:\n{run.check_cmd}\n4) Read the file back and compare it byte-for-byte to what you were given. Reply with ONLY fenced json {\"watch_name\": \"{run.watch_name}\", \"check_cmd\": \"<the verbatim line>\", \"state_written\": true} — state_written only if the read-back matched."
+    },
+    {
+      "id": "watch",
+      "type": "gate",
+      "after": [
+        "bootstrap"
+      ],
+      "wait": {
+        "until_argv": [
+          "/usr/bin/python3",
+          "-c",
+          "import os, pathlib, subprocess, sys\nS=pathlib.Path(os.environ.get('MW_STATE_ROOT') or (os.environ.get('DUCKWORK_HOME') or '~/.duckwork') + '/machine-watch-example').expanduser()\nC=S/'check_cmd.txt'\nB=S/'probe_broken'\nL=S/'last_probe.json'\nA=S/'transition.claim'\nD=S/'delivered.transition'\ndef broken(why):\n    B.write_text(why+'\\n')\n    print('machine-watch probe broken: '+why, file=sys.stderr)\n    sys.exit(2)\ntry:\n    cmd=C.read_text().strip()\nexcept OSError as e:\n    broken('missing or unreadable handoff: '+str(e))\nif not cmd:\n    broken('empty check command')\ntry:\n    rc=subprocess.run(cmd, shell=True).returncode\nexcept OSError as e:\n    broken('adapter could not run: '+str(e))\nL.write_text(str(rc))\nif rc==0:\n    B.unlink(missing_ok=True)\n    if A.exists():\n        print('machine-watch: transition already claimed; waiting for unhealthy re-arm', file=sys.stderr)\n        sys.exit(1)\n    A.write_text('healthy claimed\\n')\n    sys.exit(0)\nif rc!=1:\n    broken('adapter exit '+str(rc))\nA.unlink(missing_ok=True)\nD.unlink(missing_ok=True)\nsys.exit(1)"
+        ],
+        "every_s": 3,
+        "timeout_s": 300
+      }
+    },
+    {
+      "id": "report",
+      "type": "agent",
+      "after": [
+        "watch"
+      ],
+      "max_turns": 4,
+      "goal": "The machine gate 'watch' released when the polled check exited 0 (its committed answer in ## Inputs carries attempt + waited_s + last_exit). Read $DUCKWORK_HOME/machine-watch-example/last_probe.json. For the watch named in the bootstrap payload, reply with ONLY fenced json {\"released\": true, \"attempts\": <int from the gate answer>, \"waited_s\": <int from the gate answer>, \"report\": \"<one line: watch_name cleared after N polls, last probe exit E>\"}\nDeliver the transition to the receiver at most once. The gate wrote $DUCKWORK_HOME/machine-watch-example/transition.claim before releasing, so a repeated completed dispatch with unchanged health parks without starting another report. After the receiver actually accepts the report, write $DUCKWORK_HOME/machine-watch-example/delivered.transition with watch_name and last probe exit 0 as the delivery acknowledgement. If delivery fails, reply released:false and do not acknowledge; leave the claim in place to prevent an uncertain duplicate. An operator may clear an undelivered claim ONLY after establishing no delivery occurred. A real exit-1 poll re-arms the claim; exit-2 never re-arms.",
+      "inputs": [
+        "bootstrap"
+      ]
+    }
+  ]
+}

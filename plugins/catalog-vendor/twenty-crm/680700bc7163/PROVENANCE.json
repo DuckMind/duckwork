@@ -1,0 +1,470 @@
+{
+  "assets": {
+    "catalog_to_vendor": {},
+    "image": null,
+    "omitted": [],
+    "screenshots": [],
+    "deduplicated": []
+  },
+  "catalog_id": "twenty-crm",
+  "content_id": "680700bc7163",
+  "content_id_algorithm": "first 12 hex of SHA256(canonical JSON sorted pre-rebrand file manifest: path, sha256, bytes, git-normalized mode)",
+  "docs": "README.md",
+  "input_files": [
+    {
+      "bytes": 759,
+      "mode": "100644",
+      "path": ".env.example",
+      "sha256": "a087d7880c81a31f7915bf91fb1676be0c9c08881351d651c82e4adb710a4edd"
+    },
+    {
+      "bytes": 110,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "52887f75539b23e302606f8a016ca736dbac7beef234e4ca51170cb7a34a7210"
+    },
+    {
+      "bytes": 1072,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "e2da237cb59eb8b9dbb8599517781777edd49631c400be0cee5cff19637fe0d3"
+    },
+    {
+      "bytes": 3768,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "9a2458aabfe38274a8396540a2977a1bf0c42d2434cd7943473b5d9bca0d7f47"
+    },
+    {
+      "bytes": 3003,
+      "mode": "100644",
+      "path": "__init__.py",
+      "sha256": "2ad6c3fb560c5a74e173e86109038749740d1674edf59ef15d4f1ae8e976cdc7"
+    },
+    {
+      "bytes": 390,
+      "mode": "100644",
+      "path": "plugin.yaml",
+      "sha256": "2cc2d54d224ffafde7e2147342379e01a1e0530626833af23e9321d3cc8a1d26"
+    },
+    {
+      "bytes": 607,
+      "mode": "100644",
+      "path": "pyproject.toml",
+      "sha256": "3574c0c39287a0a03f99c71742d2cbaf1ccb7cbabde5edffc2bab6593ecf7da6"
+    },
+    {
+      "bytes": 10123,
+      "mode": "100644",
+      "path": "runtime.py",
+      "sha256": "a2082630149cc03ee2d5612dffeec9ce727214fa92f85b80458564ff3a06935e"
+    },
+    {
+      "bytes": 3014,
+      "mode": "100644",
+      "path": "schemas.py",
+      "sha256": "13e38558447087449d6c96f58a55d98de5c647e8c90843f9776ea99a97414e12"
+    },
+    {
+      "bytes": 4498,
+      "mode": "100644",
+      "path": "skills/twenty-crm/SKILL.md",
+      "sha256": "659c70ee9d7940f0dabfbb9c5f1d9096b388720a7c1f0352eb053532320e7809"
+    },
+    {
+      "bytes": 4519,
+      "mode": "100644",
+      "path": "tests/test_tools.py",
+      "sha256": "3fa7512ac640a42f47f8f15a381bcf66e97e6a4d8e2b189ceadfc1deb0766ba2"
+    },
+    {
+      "bytes": 11279,
+      "mode": "100644",
+      "path": "tools.py",
+      "sha256": "56e4184cae493dc433871ebbf91c3ab3ecb7c08f043a8dadd6c01d22a5c67734"
+    },
+    {
+      "bytes": 21294,
+      "mode": "100644",
+      "path": "uv.lock",
+      "sha256": "9c1c2bcc6d72e1ad801da2dede17c77e16d6bd1ba1cb8c8b96932c6a5512fbb0"
+    }
+  ],
+  "input_manifest_sha256": "680700bc716321d1cf2e300842ef8caf9638ac838589a8c2c742521576a5e47c",
+  "license": {
+    "distribution": "separate opt-in complete source package; no bundled dependencies fetched",
+    "files": [
+      {
+        "byte_exact": true,
+        "license_id": "MIT",
+        "path": "LICENSE",
+        "sha256": "e2da237cb59eb8b9dbb8599517781777edd49631c400be0cee5cff19637fe0d3",
+        "source_path": "LICENSE"
+      }
+    ],
+    "id": "MIT",
+    "original_notices_preserved": true,
+    "supplemental": []
+  },
+  "modification": {
+    "by": "Fordex",
+    "changed_files": [
+      ".env.example",
+      ".gitignore",
+      "README.md",
+      "__init__.py",
+      "plugin.yaml",
+      "pyproject.toml",
+      "runtime.py",
+      "schemas.py",
+      "skills/twenty-crm/SKILL.md",
+      "tests/test_tools.py",
+      "tools.py",
+      "uv.lock"
+    ],
+    "date": "2026-11-17",
+    "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+    "per_file_notices": []
+  },
+  "omitted_generated_files": [],
+  "original": {
+    "repo": "https://github.com/TREE-Ind/hermes-twenty-crm",
+    "sha": "3d87c1634e4b159738b35954ac4efc15c876d46d",
+    "subdir": ""
+  },
+  "original_repo": "https://github.com/TREE-Ind/hermes-twenty-crm",
+  "original_sha": "3d87c1634e4b159738b35954ac4efc15c876d46d",
+  "original_subdir": "",
+  "output_files": [
+    {
+      "path": ".env.example",
+      "sha256": "a8ed27b54a056881a284c0dac07e7e28ca652e9208099d5e1e75552874791d69",
+      "bytes": 765,
+      "mode": "100644"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "fb49a677a7c97d696e54d42de02e5efd5d8a27fd944612595413a4803086322b",
+      "bytes": 112,
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "e2da237cb59eb8b9dbb8599517781777edd49631c400be0cee5cff19637fe0d3",
+      "bytes": 1072,
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "sha256": "79b63f5c1966ce4d993e645c6597503de5f4aa1fd2add58924aed073742080c5",
+      "bytes": 3783,
+      "mode": "100644"
+    },
+    {
+      "path": "__init__.py",
+      "sha256": "48b1578871d778da5a041fc0e76925716a3a74e7ec5c0dd24bf196033f989270",
+      "bytes": 3007,
+      "mode": "100644"
+    },
+    {
+      "path": "plugin.yaml",
+      "sha256": "957e80c909af3ca18b14c55d5b7237244ed1cab6314158164610ff20708fef54",
+      "bytes": 392,
+      "mode": "100644"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "791861fdfe6b77f65db9e2e954fba97e43690637c16b7624eeef8199dc7a4de8",
+      "bytes": 611,
+      "mode": "100644"
+    },
+    {
+      "path": "runtime.py",
+      "sha256": "bfd741dc38dbd1b9b7b81e1ecdcc5d0e47488b3faeea22622fba318d32124f7b",
+      "bytes": 10133,
+      "mode": "100644"
+    },
+    {
+      "path": "schemas.py",
+      "sha256": "2c95c8a77f0757aec3b0d849af89ce0749f5aeb2cf23e2ae3b2a2211e484015f",
+      "bytes": 3016,
+      "mode": "100644"
+    },
+    {
+      "path": "skills/twenty-crm/SKILL.md",
+      "sha256": "bb451677235ffb89c4e0ff82eeccc70b042472825e0f77e6bcd5ccd1eafdbcb2",
+      "bytes": 4507,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/test_tools.py",
+      "sha256": "9d18604cfdb9a0d08c4ca25ad3475b6c08b4980e82410231fea7e74a5fda7c87",
+      "bytes": 4525,
+      "mode": "100644"
+    },
+    {
+      "path": "tools.py",
+      "sha256": "707c39229bddbd1fff9381c9d5ae461a8b891c1a8d744c5fd84866318ea6affa",
+      "bytes": 11287,
+      "mode": "100644"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "9cca0840bfc5b1ee3deca0e0dd31f94bd60f53b9137ab9548b41a9d36e4be1ac",
+      "bytes": 21296,
+      "mode": "100644"
+    }
+  ],
+  "output_manifest_sha256": "6bd7fe4c460dd56dc250fef7d35d25fd222b1af09db354038cd3a71300d1e967",
+  "pin_verification": {
+    "archive_bytes": 21022,
+    "archive_sha256": "33f9c38528ef0aacc9591da3b2e18c08a053f187b6a0bd38aae1537b272b3656",
+    "independent_commit_object_comparison": false,
+    "method": "anonymous codeload archive PAX full-commit marker equality",
+    "requested_sha": "3d87c1634e4b159738b35954ac4efc15c876d46d",
+    "verified_commit_marker": "3d87c1634e4b159738b35954ac4efc15c876d46d"
+  },
+  "rebrand_tool": {
+    "adapter_sha256": "fa5eae5041a51cbbcd699f46f2a9a525ef4c38606a1d28e5688954925bb8e29c",
+    "command": [
+      "src/.venv/bin/python",
+      "scripts/rebrand.py",
+      "--vendor-input",
+      "<pinned staging>",
+      "--vendor-output",
+      "<isolated staging>",
+      "--rename-manifest",
+      "<reviewed manifest>",
+      "--rename-map",
+      "<receipt>"
+    ],
+    "manifest_sha256": "897c916f602bba26441c62ad83ecd203a77241f3bc41e4c37189cd85b3423523",
+    "script_sha256": "368254837cd76ed3a2addad5305f4d1464a6c347b9765cef45eb6575e59fe5f0"
+  },
+  "rename_map": {
+    "files": [
+      {
+        "destination": ".env.example",
+        "input_sha256": "a087d7880c81a31f7915bf91fb1676be0c9c08881351d651c82e4adb710a4edd",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "a8ed27b54a056881a284c0dac07e7e28ca652e9208099d5e1e75552874791d69",
+        "source": ".env.example",
+        "final_output_sha256": "a8ed27b54a056881a284c0dac07e7e28ca652e9208099d5e1e75552874791d69",
+        "cli_destination": ".env.example",
+        "previous_staging_sha256": "a8ed27b54a056881a284c0dac07e7e28ca652e9208099d5e1e75552874791d69"
+      },
+      {
+        "destination": ".gitignore",
+        "input_sha256": "52887f75539b23e302606f8a016ca736dbac7beef234e4ca51170cb7a34a7210",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "fb49a677a7c97d696e54d42de02e5efd5d8a27fd944612595413a4803086322b",
+        "source": ".gitignore",
+        "final_output_sha256": "fb49a677a7c97d696e54d42de02e5efd5d8a27fd944612595413a4803086322b",
+        "cli_destination": ".gitignore",
+        "previous_staging_sha256": "fb49a677a7c97d696e54d42de02e5efd5d8a27fd944612595413a4803086322b"
+      },
+      {
+        "destination": "LICENSE",
+        "input_sha256": "e2da237cb59eb8b9dbb8599517781777edd49631c400be0cee5cff19637fe0d3",
+        "legal_preserved": true,
+        "mode": 420,
+        "output_sha256": "e2da237cb59eb8b9dbb8599517781777edd49631c400be0cee5cff19637fe0d3",
+        "source": "LICENSE",
+        "final_output_sha256": "e2da237cb59eb8b9dbb8599517781777edd49631c400be0cee5cff19637fe0d3",
+        "cli_destination": "LICENSE",
+        "previous_staging_sha256": "e2da237cb59eb8b9dbb8599517781777edd49631c400be0cee5cff19637fe0d3"
+      },
+      {
+        "destination": "README.md",
+        "input_sha256": "9a2458aabfe38274a8396540a2977a1bf0c42d2434cd7943473b5d9bca0d7f47",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2c3ba468980896550af9a00675dc1ba2987d4657a2c7d6a202653dd67837a4ce",
+        "source": "README.md",
+        "final_output_sha256": "79b63f5c1966ce4d993e645c6597503de5f4aa1fd2add58924aed073742080c5",
+        "cli_destination": "README.md",
+        "previous_staging_sha256": "2c3ba468980896550af9a00675dc1ba2987d4657a2c7d6a202653dd67837a4ce"
+      },
+      {
+        "destination": "__init__.py",
+        "input_sha256": "2ad6c3fb560c5a74e173e86109038749740d1674edf59ef15d4f1ae8e976cdc7",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "48b1578871d778da5a041fc0e76925716a3a74e7ec5c0dd24bf196033f989270",
+        "source": "__init__.py",
+        "final_output_sha256": "48b1578871d778da5a041fc0e76925716a3a74e7ec5c0dd24bf196033f989270",
+        "cli_destination": "__init__.py",
+        "previous_staging_sha256": "48b1578871d778da5a041fc0e76925716a3a74e7ec5c0dd24bf196033f989270"
+      },
+      {
+        "destination": "plugin.yaml",
+        "input_sha256": "2cc2d54d224ffafde7e2147342379e01a1e0530626833af23e9321d3cc8a1d26",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "957e80c909af3ca18b14c55d5b7237244ed1cab6314158164610ff20708fef54",
+        "source": "plugin.yaml",
+        "final_output_sha256": "957e80c909af3ca18b14c55d5b7237244ed1cab6314158164610ff20708fef54",
+        "cli_destination": "plugin.yaml",
+        "previous_staging_sha256": "957e80c909af3ca18b14c55d5b7237244ed1cab6314158164610ff20708fef54"
+      },
+      {
+        "destination": "pyproject.toml",
+        "input_sha256": "3574c0c39287a0a03f99c71742d2cbaf1ccb7cbabde5edffc2bab6593ecf7da6",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "791861fdfe6b77f65db9e2e954fba97e43690637c16b7624eeef8199dc7a4de8",
+        "source": "pyproject.toml",
+        "final_output_sha256": "791861fdfe6b77f65db9e2e954fba97e43690637c16b7624eeef8199dc7a4de8",
+        "cli_destination": "pyproject.toml",
+        "previous_staging_sha256": "791861fdfe6b77f65db9e2e954fba97e43690637c16b7624eeef8199dc7a4de8"
+      },
+      {
+        "destination": "runtime.py",
+        "input_sha256": "a2082630149cc03ee2d5612dffeec9ce727214fa92f85b80458564ff3a06935e",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "bfd741dc38dbd1b9b7b81e1ecdcc5d0e47488b3faeea22622fba318d32124f7b",
+        "source": "runtime.py",
+        "final_output_sha256": "bfd741dc38dbd1b9b7b81e1ecdcc5d0e47488b3faeea22622fba318d32124f7b",
+        "cli_destination": "runtime.py",
+        "previous_staging_sha256": "bfd741dc38dbd1b9b7b81e1ecdcc5d0e47488b3faeea22622fba318d32124f7b"
+      },
+      {
+        "destination": "schemas.py",
+        "input_sha256": "13e38558447087449d6c96f58a55d98de5c647e8c90843f9776ea99a97414e12",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "2c95c8a77f0757aec3b0d849af89ce0749f5aeb2cf23e2ae3b2a2211e484015f",
+        "source": "schemas.py",
+        "final_output_sha256": "2c95c8a77f0757aec3b0d849af89ce0749f5aeb2cf23e2ae3b2a2211e484015f",
+        "cli_destination": "schemas.py",
+        "previous_staging_sha256": "2c95c8a77f0757aec3b0d849af89ce0749f5aeb2cf23e2ae3b2a2211e484015f"
+      },
+      {
+        "destination": "skills/twenty-crm/SKILL.md",
+        "input_sha256": "659c70ee9d7940f0dabfbb9c5f1d9096b388720a7c1f0352eb053532320e7809",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "34e2088b59e4972a1892960580809d57f1c2816cd5c1edb48fe089f1be3ad209",
+        "source": "skills/twenty-crm/SKILL.md",
+        "final_output_sha256": "bb451677235ffb89c4e0ff82eeccc70b042472825e0f77e6bcd5ccd1eafdbcb2",
+        "cli_destination": "skills/twenty-crm/SKILL.md",
+        "previous_staging_sha256": "34e2088b59e4972a1892960580809d57f1c2816cd5c1edb48fe089f1be3ad209"
+      },
+      {
+        "destination": "tests/test_tools.py",
+        "input_sha256": "3fa7512ac640a42f47f8f15a381bcf66e97e6a4d8e2b189ceadfc1deb0766ba2",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9d18604cfdb9a0d08c4ca25ad3475b6c08b4980e82410231fea7e74a5fda7c87",
+        "source": "tests/test_tools.py",
+        "final_output_sha256": "9d18604cfdb9a0d08c4ca25ad3475b6c08b4980e82410231fea7e74a5fda7c87",
+        "cli_destination": "tests/test_tools.py",
+        "previous_staging_sha256": "9d18604cfdb9a0d08c4ca25ad3475b6c08b4980e82410231fea7e74a5fda7c87"
+      },
+      {
+        "destination": "tools.py",
+        "input_sha256": "56e4184cae493dc433871ebbf91c3ab3ecb7c08f043a8dadd6c01d22a5c67734",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "707c39229bddbd1fff9381c9d5ae461a8b891c1a8d744c5fd84866318ea6affa",
+        "source": "tools.py",
+        "final_output_sha256": "707c39229bddbd1fff9381c9d5ae461a8b891c1a8d744c5fd84866318ea6affa",
+        "cli_destination": "tools.py",
+        "previous_staging_sha256": "707c39229bddbd1fff9381c9d5ae461a8b891c1a8d744c5fd84866318ea6affa"
+      },
+      {
+        "destination": "uv.lock",
+        "input_sha256": "9c1c2bcc6d72e1ad801da2dede17c77e16d6bd1ba1cb8c8b96932c6a5512fbb0",
+        "legal_preserved": false,
+        "mode": 420,
+        "output_sha256": "9cca0840bfc5b1ee3deca0e0dd31f94bd60f53b9137ab9548b41a9d36e4be1ac",
+        "source": "uv.lock",
+        "final_output_sha256": "9cca0840bfc5b1ee3deca0e0dd31f94bd60f53b9137ab9548b41a9d36e4be1ac",
+        "cli_destination": "uv.lock",
+        "previous_staging_sha256": "9cca0840bfc5b1ee3deca0e0dd31f94bd60f53b9137ab9548b41a9d36e4be1ac"
+      }
+    ],
+    "manifest_sha256": "55d137a9592c3dda7c0ed089080140860398a0ef329f1878c7820218acb4b48e",
+    "reason": "fork-owned identities only; legal/model/npm/external API identities preserved",
+    "schema": "duckwork.vendor-rename-map.v1"
+  },
+  "schema": "duckwork.catalog-vendor-provenance.v1",
+  "scope_limitations": [
+    "Manifest parse and Python compilation do not establish runtime behavior or upstream service availability.",
+    "Exact commit identity is checked against GitHub-generated archive metadata; no independent Git commit-object/tree comparison.",
+    "Retained legal/author/model/package/API/provenance identities require exact hash/field/value/count exceptions; no directory exemptions."
+  ],
+  "source_paths": {
+    ".env.example": ".env.example",
+    ".gitignore": ".gitignore",
+    "LICENSE": "LICENSE",
+    "README.md": "README.md",
+    "__init__.py": "__init__.py",
+    "plugin.yaml": "plugin.yaml",
+    "pyproject.toml": "pyproject.toml",
+    "runtime.py": "runtime.py",
+    "schemas.py": "schemas.py",
+    "skills/twenty-crm/SKILL.md": "skills/twenty-crm/SKILL.md",
+    "tests/test_tools.py": "tests/test_tools.py",
+    "tools.py": "tools.py",
+    "uv.lock": "uv.lock"
+  },
+  "verification": {
+    "manifest": "plugin.yaml",
+    "manifest_name": "twenty-crm",
+    "python_files_compiled": 5,
+    "secret_findings": 0
+  },
+  "canonical_slug": "twenty-crm",
+  "catalog_file": "src/plugin-catalog/twenty-crm.yaml",
+  "identity": {
+    "catalog_id": "twenty-crm",
+    "canonical_slug": "twenty-crm",
+    "original_manifest_name": "twenty-crm",
+    "rebranded_manifest_name": "twenty-crm",
+    "manifest_name_changed": false,
+    "catalog_id_preserved": true,
+    "state_migration_implemented_by_w2": false
+  },
+  "rename_map_stage": "W1 CLI receipt plus W2 reviewed revision; cli_destination/output_sha256 bind W1 output, destination/final_output_sha256 bind final output",
+  "revisions": [
+    {
+      "revision": "r46-parent-dedupe-and-complete-branding",
+      "date": "2026-11-17",
+      "by": "Fordex",
+      "prior_provenance_sha256": "2ac8ae0146113f77b5bbe5cc6b980b89d60fe6700c55630f99d8203a8859cc4a",
+      "input_manifest_unchanged": true,
+      "content_id_unchanged": true,
+      "files": [
+        {
+          "before_path": "README.md",
+          "after_path": "README.md",
+          "before_sha256": "2c3ba468980896550af9a00675dc1ba2987d4657a2c7d6a202653dd67837a4ce",
+          "after_sha256": "79b63f5c1966ce4d993e645c6597503de5f4aa1fd2add58924aed073742080c5",
+          "before_bytes": 3796,
+          "after_bytes": 3783,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        },
+        {
+          "before_path": "skills/twenty-crm/SKILL.md",
+          "after_path": "skills/twenty-crm/SKILL.md",
+          "before_sha256": "34e2088b59e4972a1892960580809d57f1c2816cd5c1edb48fe089f1be3ad209",
+          "after_sha256": "bb451677235ffb89c4e0ff82eeccc70b042472825e0f77e6bcd5ccd1eafdbcb2",
+          "before_bytes": 4516,
+          "after_bytes": 4507,
+          "operation": "rebrand-fork-surface",
+          "before_mode": "100644",
+          "after_mode": "100644"
+        }
+      ],
+      "notice": "Modified by Fordex for Duckwork distribution on 2026-11-17: fork-owned names and paths rebranded; original authorship and notices retained.",
+      "schema_bound_notice_strategy": "Detailed per-file before/after provenance; no invented JSON keys or invalid comments injected."
+    }
+  ],
+  "preserved_identity_evidence": {}
+}

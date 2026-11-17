@@ -1,0 +1,10 @@
+name: gondola-provider
+kind: model-provider
+version: 1.0.0
+description: Gondola, a USDC-settled marketplace API for Venice AI inference
+author: Codonyat
+requires_env:
+  - name: GONDOLA_API_KEY
+    description: Gondola API key (starts with gnd_)
+    url: https://gondola-ai.com/wallet?tab=keys
+    secret: true

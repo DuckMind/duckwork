@@ -1,0 +1,27 @@
+name: next-prompt
+version: 0.3.1
+manifest_version: 2
+api_version: 1
+description: AI-generated follow-up prompt suggestions under the Desktop composer after each turn.
+author: soymarketing
+license: MIT
+homepage: https://github.com/DuckMind/duckwork
+requires_duckwork: ">=0.21"
+tags: [desktop, productivity, composer, suggestions]
+provides_hooks:
+  - pre_llm_call
+  - post_llm_call
+provides_tools: []
+config_schema:
+  enabled:
+    type: bool
+    default: true
+    description: "Enable or disable next-prompt suggestions"
+  max_context_messages:
+    type: int
+    default: 4
+    description: "Context size in messages: your last N/2 requests plus the agent's final reply to each (2-10)"
+  cooldown_seconds:
+    type: int
+    default: 3
+    description: "Minimum seconds between suggestions to avoid spamming"

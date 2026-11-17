@@ -1,0 +1,64 @@
+# Contributing
+
+Thanks for considering a contribution to Duckwork Local Knowledge.
+
+This is a small Duckwork Agent plugin, so the best contributions are focused, tested, and easy to review.
+
+## Before you open an issue or pull request
+
+- Search existing issues and pull requests first.
+- Keep reports free of secrets, tokens, private document contents, full local credential paths, and sensitive logs.
+- For security-sensitive reports, follow [`SECURITY.md`](SECURITY.md) instead of opening a detailed public issue.
+
+## Development setup
+
+```bash
+python -m pip install -e '.[test]'
+python -m pytest -q
+python -m ruff check .
+python -m mypy
+python scripts/check_version_policy.py --base-ref origin/main
+git diff --check
+```
+
+The package has no runtime dependencies beyond the Python standard library. Test dependencies are intentionally small.
+
+## Release process
+
+Release-relevant changes must bump the synchronized version metadata described below. After a push to `main` passes the `CI` workflow, `.github/workflows/release.yml` compares that version with existing GitHub releases. For a new version it builds and checks a fresh wheel and source distribution, installation-smokes both artifacts, verifies the Duckwork plugin entry point, and creates the matching `v<version>` tag and GitHub release.
+
+Release notes are rendered from the exact `CHANGELOG.md` section and compare link for the package version. Re-running CI for an already released version is safe: the release workflow verifies the published status, exact notes body, and both expected artifacts before skipping it. A notes-only mismatch is repaired without rebuilding complete assets; a draft or artifact-incomplete release is repaired from its existing tag. If a matching tag exists without a release, the workflow only uses it when it points to the exact commit that passed CI.
+
+## Pull request expectations
+
+A good pull request includes:
+
+- a short explanation of the user-facing behavior change;
+- tests or a clear reason tests are not needed;
+- a synchronized plugin version bump when release-relevant files change;
+- documentation updates when install, configuration, or public behavior changes;
+- local verification output in the PR checklist.
+
+The version policy is checked in CI. Keep `plugin.yaml`, `pyproject.toml`, and
+`duckwork_local_knowledge/__init__.py` synchronized. If a change touches a
+release-relevant path—`__init__.py`, `duckwork_local_knowledge/**`, `plugin.yaml`,
+`pyproject.toml`, `after-install.md`, `examples/**`, or `skills/**`—bump the
+version in all three locations compared with the target branch.
+
+Generated or local-only files must stay out of commits, including:
+
+- `.env` and `.env.*`;
+- `*.sqlite`, `*.sqlite3`, `*.db`, and `*.jsonl`;
+- `knowledge/`, `state/`, `logs/`, `tmp/`;
+- caches, build outputs, mutation-test workspaces, and virtualenvs.
+
+## Evaluating search changes
+
+Use the [bounded search-change evaluation guide](docs/search-evaluation.md) to
+freeze expectations, distinguish judgment provenance, inspect changed first
+results, and decide whether to accept or shelve a candidate. Synthetic regression
+tests belong in the existing test suite; private experiment data does not.
+
+## Scope guidelines
+
+Prefer behavior-level fixes over speculative abstractions. If a change expands what the index scans by default, explain the privacy impact and add tests for private/local-state exclusion.
