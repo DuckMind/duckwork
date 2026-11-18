@@ -2,7 +2,7 @@
 # Duckwork binary distribution. No Git, Python source checkout, or source fallback.
 # Installs, upgrades and rolls back the terminal CLI and Duckwork Desktop (see --help).
 set -euo pipefail
-release=v0.22.15
+release=v0.22.16
 repo=DuckMind/duckwork
 arch=
 bundle_id=com.fordex.duckwork-bundled
